@@ -135,6 +135,23 @@
       <ContainerGenerateLabelsImageBaseDigest Condition="'$(ContainerGenerateLabelsImageBaseDigest)' == ''">true</ContainerGenerateLabelsImageBaseDigest>
       <ContainerGenerateLabelsImageBaseName Condition="'$(ContainerGenerateLabelsImageBaseName)' == ''">true</ContainerGenerateLabelsImageBaseName>
       <ContainerGenerateLabelsDotnetToolset Condition="'$(ContainerGenerateLabelsDotnetToolset)' == ''">true</ContainerGenerateLabelsDotnetToolset>
+      <!-- Manifest annotations default on for explicitly requested OCI output. Otherwise they remain opt-in because the default format follows the base image for compatibility. -->
+      <ContainerGenerateAnnotations Condition="'$(ContainerGenerateAnnotations)' == '' and '$(ContainerImageFormat)' == 'OCI'">true</ContainerGenerateAnnotations>
+      <ContainerGenerateAnnotations Condition="'$(ContainerGenerateAnnotations)' == ''">false</ContainerGenerateAnnotations>
+      <ContainerGenerateAnnotationsImageCreated Condition="'$(ContainerGenerateAnnotationsImageCreated)' == ''">$(ContainerGenerateLabelsImageCreated)</ContainerGenerateAnnotationsImageCreated>
+      <ContainerGenerateAnnotationsImageDescription Condition="'$(ContainerGenerateAnnotationsImageDescription)' == ''">$(ContainerGenerateLabelsImageDescription)</ContainerGenerateAnnotationsImageDescription>
+      <ContainerGenerateAnnotationsImageAuthors Condition="'$(ContainerGenerateAnnotationsImageAuthors)' == ''">$(ContainerGenerateLabelsImageAuthors)</ContainerGenerateAnnotationsImageAuthors>
+      <ContainerGenerateAnnotationsImageUrl Condition="'$(ContainerGenerateAnnotationsImageUrl)' == ''">$(ContainerGenerateLabelsImageUrl)</ContainerGenerateAnnotationsImageUrl>
+      <ContainerGenerateAnnotationsImageDocumentation Condition="'$(ContainerGenerateAnnotationsImageDocumentation)' == ''">$(ContainerGenerateLabelsImageDocumentation)</ContainerGenerateAnnotationsImageDocumentation>
+      <ContainerGenerateAnnotationsImageSource Condition="'$(ContainerGenerateAnnotationsImageSource)' == ''">$(ContainerGenerateLabelsImageSource)</ContainerGenerateAnnotationsImageSource>
+      <ContainerGenerateAnnotationsImageVersion Condition="'$(ContainerGenerateAnnotationsImageVersion)' == ''">$(ContainerGenerateLabelsImageVersion)</ContainerGenerateAnnotationsImageVersion>
+      <ContainerGenerateAnnotationsImageRevision Condition="'$(ContainerGenerateAnnotationsImageRevision)' == ''">$(ContainerGenerateLabelsImageRevision)</ContainerGenerateAnnotationsImageRevision>
+      <ContainerGenerateAnnotationsImageVendor Condition="'$(ContainerGenerateAnnotationsImageVendor)' == ''">$(ContainerGenerateLabelsImageVendor)</ContainerGenerateAnnotationsImageVendor>
+      <ContainerGenerateAnnotationsImageLicenses Condition="'$(ContainerGenerateAnnotationsImageLicenses)' == ''">$(ContainerGenerateLabelsImageLicenses)</ContainerGenerateAnnotationsImageLicenses>
+      <ContainerGenerateAnnotationsImageTitle Condition="'$(ContainerGenerateAnnotationsImageTitle)' == ''">$(ContainerGenerateLabelsImageTitle)</ContainerGenerateAnnotationsImageTitle>
+      <ContainerGenerateAnnotationsImageBaseDigest Condition="'$(ContainerGenerateAnnotationsImageBaseDigest)' == ''">$(ContainerGenerateLabelsImageBaseDigest)</ContainerGenerateAnnotationsImageBaseDigest>
+      <ContainerGenerateAnnotationsImageBaseName Condition="'$(ContainerGenerateAnnotationsImageBaseName)' == ''">$(ContainerGenerateLabelsImageBaseName)</ContainerGenerateAnnotationsImageBaseName>
+      <ContainerGenerateAnnotationsDotnetToolset Condition="'$(ContainerGenerateAnnotationsDotnetToolset)' == ''">$(ContainerGenerateLabelsDotnetToolset)</ContainerGenerateAnnotationsDotnetToolset>
     </PropertyGroup>
 
     <PropertyGroup Label="Defaults for Container Labels">
@@ -145,11 +162,12 @@
       <ContainerVersion Condition="'$(ContainerVersion)' == '' and '$(PackageVersion)' != ''">$(PackageVersion)</ContainerVersion>
       <ContainerLicenseExpression Condition="'$(ContainerLicenseExpression)' == '' and '$(PackageLicenseExpression)' != ''">$(PackageLicenseExpression)</ContainerLicenseExpression>
       <ContainerTitle Condition="'$(ContainerTitle)' == '' and '$(Title)' != ''">$(Title)</ContainerTitle>
+      <_ContainerImageCreated>$([System.DateTime]::UtcNow.ToString('o'))</_ContainerImageCreated>
     </PropertyGroup>
 
     <!-- Labels generated from descriptions from the spec at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
     <ItemGroup Label="Conventional Label assignment" Condition="'$(ContainerGenerateLabels)' == 'true'">
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageCreated)' == 'true'" Include="org.opencontainers.image.created;org.opencontainers.artifact.created" Value="$([System.DateTime]::UtcNow.ToString('o'))" />
+      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageCreated)' == 'true'" Include="org.opencontainers.image.created;org.opencontainers.artifact.created" Value="$(_ContainerImageCreated)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.artifact.description;org.opencontainers.image.description" Value="$(ContainerDescription)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageAuthors)' == 'true' and '$(ContainerAuthors)' != ''" Include="org.opencontainers.image.authors" Value="$(ContainerAuthors)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageUrl)' == 'true' and '$(ContainerInformationUrl)' != ''" Include="org.opencontainers.image.url" Value="$(ContainerInformationUrl)" />
@@ -165,9 +183,27 @@
       <ContainerLabel Condition="'$(ContainerGenerateLabelsDotnetToolset)' == 'true'" Include="net.dot.sdk.version" Value="$(NETCoreSdkVersion)" />
     </ItemGroup>
 
+    <!-- OCI annotations describe the manifest or index itself. Architecture-neutral metadata is emitted on both; image-specific metadata is emitted only on manifests. -->
+    <ItemGroup Label="Conventional Annotation assignment" Condition="'$(ContainerGenerateAnnotations)' == 'true'">
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageCreated)' == 'true'" Include="org.opencontainers.image.created" Value="$(_ContainerImageCreated)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.image.description" Value="$(ContainerDescription)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageAuthors)' == 'true' and '$(ContainerAuthors)' != ''" Include="org.opencontainers.image.authors" Value="$(ContainerAuthors)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageUrl)' == 'true' and '$(ContainerInformationUrl)' != ''" Include="org.opencontainers.image.url" Value="$(ContainerInformationUrl)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageDocumentation)' == 'true' and '$(ContainerDocumentationUrl)' != ''" Include="org.opencontainers.image.documentation" Value="$(ContainerDocumentationUrl)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageVersion)' == 'true' and '$(ContainerVersion)' != ''" Include="org.opencontainers.image.version" Value="$(ContainerVersion)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageVendor)' == 'true' and '$(ContainerVendor)' != ''" Include="org.opencontainers.image.vendor" Value="$(ContainerVendor)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageLicenses)' == 'true' and '$(ContainerLicenseExpression)' != ''" Include="org.opencontainers.image.licenses" Value="$(ContainerLicenseExpression)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageTitle)' == 'true' and '$(ContainerTitle)' != ''" Include="org.opencontainers.image.title" Value="$(ContainerTitle)" />
+      <!-- Base-image and .NET toolset metadata describes each platform-specific image, not the aggregate index. The base digest value is resolved after fetching the platform-specific base manifest. -->
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsImageBaseDigest)' == 'true'" Include="org.opencontainers.image.base.digest" />
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsImageBaseName)' == 'true' and '$(ContainerBaseImage)' != ''" Include="org.opencontainers.image.base.name" Value="$(ContainerBaseImage)" />
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsDotnetToolset)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'" Include="net.dot.runtime.majorminor" Value="$(_TargetFrameworkVersionWithoutV)" />
+      <ContainerAnnotation Scope="Manifest" Condition="'$(ContainerGenerateAnnotationsDotnetToolset)' == 'true'" Include="net.dot.sdk.version" Value="$(NETCoreSdkVersion)" />
+    </ItemGroup>
+
     <!-- These sourcelink-derived properties are only allowed to flow to generated artifacts if `PublishRepositoryUrl` is set as a user signal for opt-in.
              In addition, the 'nice' property names are currently set by NuGet Pack targets and so we have to use the private/generic names here. -->
-    <PropertyGroup Label="Source control label assignment" Condition="'$(ContainerGenerateLabels)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
+    <PropertyGroup Label="Source control metadata assignment" Condition="('$(ContainerGenerateLabels)' == 'true' or '$(ContainerGenerateAnnotations)' == 'true') and '$(PublishRepositoryUrl)' == 'true'">
       <!-- Sourcelink gives us the .git suffix, but scanning tools aren't looking for that so we trim it off here. -->
       <_TrimmedRepositoryUrl Condition="'$(RepositoryType)' == 'git' and '$(PrivateRepositoryUrl)' != '' and $(PrivateRepositoryUrl.EndsWith('.git'))">$(PrivateRepositoryUrl.Substring(0, $(PrivateRepositoryUrl.LastIndexOf('.git'))))</_TrimmedRepositoryUrl>
       <_TrimmedRepositoryUrl Condition="'$(_TrimmedRepositoryUrl)' == '' and '$(PrivateRepositoryUrl)' != ''">$(PrivateRepositoryUrl)</_TrimmedRepositoryUrl>
@@ -176,6 +212,24 @@
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageSource)' == 'true' and '$(_TrimmedRepositoryUrl)' != ''" Include="org.opencontainers.image.source" Value="$(_TrimmedRepositoryUrl)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageRevision)' == 'true' and '$(SourceRevisionId)' != ''" Include="org.opencontainers.image.revision" Value="$(SourceRevisionId)" />
     </ItemGroup>
+    <ItemGroup Label="Source control annotation assignment" Condition="'$(ContainerGenerateAnnotations)' == 'true' and '$(PublishRepositoryUrl)' == 'true'">
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageSource)' == 'true' and '$(_TrimmedRepositoryUrl)' != ''" Include="org.opencontainers.image.source" Value="$(_TrimmedRepositoryUrl)" />
+      <ContainerAnnotation Scope="Manifest,Index" Condition="'$(ContainerGenerateAnnotationsImageRevision)' == 'true' and '$(SourceRevisionId)' != ''" Include="org.opencontainers.image.revision" Value="$(SourceRevisionId)" />
+    </ItemGroup>
+    <ItemGroup>
+      <!-- Project items without an explicit scope retain the historical manifest behavior. -->
+      <ContainerAnnotation Update="@(ContainerAnnotation)" Scope="Manifest" Condition="$([System.String]::IsNullOrWhiteSpace('%(ContainerAnnotation.Scope)'))" />
+      <_ManifestContainerAnnotation Include="@(ContainerAnnotation)" Condition="$([System.String]::Copy('%(ContainerAnnotation.Scope)').ToLowerInvariant().Contains('manifest'))" />
+      <_IndexContainerAnnotation Include="@(ContainerAnnotation)" Condition="$([System.String]::Copy('%(ContainerAnnotation.Scope)').ToLowerInvariant().Contains('index'))" />
+      <_ApplicableContainerAnnotation Include="@(_ManifestContainerAnnotation)" />
+      <_ApplicableContainerAnnotation Include="@(_IndexContainerAnnotation)" Condition="'$(_IsMultiRIDBuild)' == 'true'" />
+    </ItemGroup>
+    <PropertyGroup>
+      <ContainerImageFormat Condition="@(_ApplicableContainerAnnotation->Count()) > 0 and '$(ContainerImageFormat)' == ''">OCI</ContainerImageFormat>
+    </PropertyGroup>
+    <Error Condition="@(_ApplicableContainerAnnotation->Count()) > 0 and '$(ContainerImageFormat)' != 'OCI'"
+           Code="CONTAINER006"
+           Text="Container annotations require the OCI image format. Remove the annotations or set ContainerImageFormat to OCI." />
   </Target>
 
   <PropertyGroup>
@@ -271,6 +325,7 @@
                     AppCommandInstruction="$(ContainerAppCommandInstruction)"
                     DefaultArgs="@(ContainerDefaultArgs)"
                     Labels="@(ContainerLabel)"
+                    Annotations="@(ContainerAnnotation)"
                     ExposedPorts="@(ContainerPort)"
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
@@ -313,6 +368,10 @@
       <_SingleImageContainerFormat Condition="$(_SkipContainerPublishing) == 'true' ">OCI</_SingleImageContainerFormat>
     </PropertyGroup>
 
+    <ConvertContainerAnnotations Annotations="@(ContainerAnnotation)">
+      <Output TaskParameter="EncodedAnnotations" PropertyName="_SerializedContainerAnnotations" />
+    </ConvertContainerAnnotations>
+
     <ItemGroup>
       <_rids Include="$(ContainerRuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' != ''" />
       <_rids Include="$(RuntimeIdentifiers)" Condition="'$(ContainerRuntimeIdentifiers)' == '' and '$(RuntimeIdentifiers)' != ''" />
@@ -329,6 +388,7 @@
           _ContainerImageTags=@(ContainerImageTags, ';');
           ContainerRepository=$(ContainerRepository);
           _ContainerLabel=@(ContainerLabel->'%(Identity):%(Value)');
+          _SerializedContainerAnnotations=$(_SerializedContainerAnnotations);
           _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerGenerateLabels=$(ContainerGenerateLabels);
@@ -356,6 +416,7 @@
                       ArchiveOutputPath="$(ContainerArchiveOutputPath)"
                       Repository="$(ContainerRepository)"
                       ImageTags="@(ContainerImageTags)"
+                      Annotations="@(ContainerAnnotation)"
                       BaseRegistry="$(ContainerBaseRegistry)"
                       BaseImageName="$(ContainerBaseName)"
                       BaseImageTag="$(ContainerBaseTag)"
@@ -366,6 +427,9 @@
   </Target>
 
   <Target Name="_ParseItemsForPublishingSingleContainer">
+    <ConvertContainerAnnotations SerializedAnnotations="$(_SerializedContainerAnnotations)" Condition="'$(_SerializedContainerAnnotations)' != ''">
+      <Output TaskParameter="DecodedAnnotations" ItemName="ContainerAnnotation" />
+    </ConvertContainerAnnotations>
     <ItemGroup>
       <OriginalImageTags Include="$(_ContainerImageTags)"/>
       <ContainerImageTags Include="@(OriginalImageTags->'%(Identity)-$(ContainerRuntimeIdentifier)')" />

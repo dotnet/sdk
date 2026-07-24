@@ -68,7 +68,23 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             return false;
         }
 
-        var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind);
+        if (!ContainerAnnotationScopes.TryFilter(Annotations, ContainerAnnotationScope.Index, Log, out ITaskItem[] indexAnnotations))
+        {
+            return false;
+        }
+        if (indexAnnotations.Length > 0 && destinationImageReference.Kind == DestinationImageReferenceKind.RemoteRegistry &&
+            images.Any(image => image.ManifestMediaType == SchemaTypes.DockerManifestV2))
+        {
+            Log.LogError(Resource.GetString("IndexAnnotationsRequireOci"));
+            return false;
+        }
+
+        Dictionary<string, string> annotations = new(StringComparer.Ordinal);
+        foreach (ITaskItem annotation in indexAnnotations)
+        {
+            annotations[annotation.ItemSpec] = annotation.GetMetadata("Value");
+        }
+        var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind, annotations);
 
         GeneratedImageIndex = multiArchImage.ImageIndex;
         GeneratedArchiveOutputPath = ArchiveOutputPath;
@@ -163,7 +179,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         return (architecture, os);
     }
 
-    private static MultiArchImage CreateMultiArchImage(BuiltImage[] images, DestinationImageReferenceKind destinationImageKind)
+    private static MultiArchImage CreateMultiArchImage(BuiltImage[] images, DestinationImageReferenceKind destinationImageKind, IReadOnlyDictionary<string, string> annotations)
     {
         switch (destinationImageKind)
         {
@@ -171,12 +187,12 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 return new MultiArchImage()
                 {
                     // For multi-arch we publish only oci-formatted image tarballs.
-                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1),
+                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1, annotations),
                     ImageIndexMediaType = SchemaTypes.OciImageIndexV1,
                     Images = images
                 };
             case DestinationImageReferenceKind.RemoteRegistry:
-                (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
+                (string imageIndex, string mediaType) = ImageIndexGenerator.GenerateImageIndex(images, annotations);
                 return new MultiArchImage()
                 {
                     ImageIndex = imageIndex,

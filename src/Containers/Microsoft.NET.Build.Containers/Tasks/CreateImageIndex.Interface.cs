@@ -67,6 +67,12 @@ partial class CreateImageIndex
     public string[] ImageTags { get; set; }
 
     /// <summary>
+    /// Annotations that the OCI image index will include in metadata. Items whose comma-separated Scope metadata includes Index are used;
+    /// for direct task callers, missing or empty Scope defaults to Index.
+    /// </summary>
+    public ITaskItem[] Annotations { get; set; }
+
+    /// <summary>
     /// The generated archive output path.
     /// </summary>
     [Output]
@@ -90,9 +96,10 @@ partial class CreateImageIndex
         LocalRegistry = string.Empty;
         Repository = string.Empty;
         ImageTags = Array.Empty<string>();
+        Annotations = Array.Empty<ITaskItem>();
         GeneratedArchiveOutputPath = string.Empty;
         GeneratedImageIndex = string.Empty;
 
         TaskResources = Resource.Manager;
     }
-} 
+}
