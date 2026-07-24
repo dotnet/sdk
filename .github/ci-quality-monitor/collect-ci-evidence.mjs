@@ -711,6 +711,9 @@ async function collectEventCandidateByHead(registry, headSha, state, fetchImplem
 async function collectCandidates(registry, buildId, eventBuildId, eventHeadSha, state, fetchImplementation = fetch) {
   if (buildId) {
     const selected = await selectManualBuild(registry.pipelines, buildId, fetchImplementation);
+    if (selected.build.status?.toLowerCase() !== "completed") {
+      return { candidates: [], bootstrap: false, pipelineHealth: [] };
+    }
     const history = await listCompletedBuilds(selected.pipeline, selected.build.sourceBranch, fetchImplementation);
     return { candidates: [{ ...selected, history }], bootstrap: false, pipelineHealth: [] };
   }

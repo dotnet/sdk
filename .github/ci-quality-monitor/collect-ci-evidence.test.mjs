@@ -138,6 +138,29 @@ test("PR check-suite builds analyze once without bootstrap suppression", async (
   assert.equal(second.failures.length, 0);
 });
 
+test("manual build IDs skip incomplete attempts without consuming them", async () => {
+  const build = {
+    id: 44, status: "inProgress", result: null, reason: "pullRequest", sourceBranch: "refs/pull/123/merge",
+    sourceVersion: "abc", finishTime: null,
+    definition: { id: 101, name: "dotnet-sdk-public-ci" }, repository: { id: "dotnet/sdk" }
+  };
+  const fetchImplementation = async url => {
+    assert.match(url, /\/build\/builds\/44\?/);
+    return { ok: true, status: 200, json: async () => build };
+  };
+  const state = { schemaVersion: 1, pipelines: {} };
+  const registry = { pipelines: [{
+    organization: "dnceng-public", project: "public", definitionId: 101,
+    repository: "dotnet/sdk", branches: ["refs/heads/main"]
+  }] };
+
+  const dossier = await collectEvidence(registry, "44", state, fetchImplementation);
+
+  assert.equal(dossier.failures.length, 0);
+  assert.equal(shouldRunAgent(dossier), false);
+  assert.deepEqual(state.pipelines, {});
+});
+
 test("check-suite events silently ignore non-PR Azure builds", async () => {
   const build = {
     id: 43,
