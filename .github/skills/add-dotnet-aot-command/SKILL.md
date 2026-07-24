@@ -65,7 +65,7 @@ but inside that process the BCL "where am I" APIs do **not** point there:
 So deriving an SDK-relative path (`MSBuild.dll`, `Sdks/`, `DotnetTools/`, targets) from
 `AppContext.BaseDirectory` or a dll path is **wrong** in the AOT bubble. Instead:
 
-- **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.Utils`), which resolves the
+- **In-repo:** read `SdkPaths.SdkDirectory` (in `Microsoft.DotNet.Cli.CoreUtils`), which resolves the
   `Microsoft.DotNet.Sdk.Root` AppContext value -> SDK assembly directory -> `AppContext.BaseDirectory`
   (once, cached).
 - `NativeEntryPoint.ExecuteCore` resolves the SDK directory once (host `sdk_dir`, else self-locating the
