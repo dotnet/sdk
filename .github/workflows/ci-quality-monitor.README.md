@@ -169,12 +169,14 @@ is an intentional promotion audit, not an unrestricted rerun. Only a transition
 to a higher-priority context permits reuse of the Azure evidence; events at the
 same or lower priority remain consumed.
 
-The promotion audit coordinates with issue deduplication. The hidden
-failure-signature marker identifies an existing issue regardless of audit
-context. If a MED or LOW issue already tracks the mechanism, a later HIGH audit
-updates and relabels that issue with stable-branch evidence instead of silently
-skipping the incident or opening an indistinguishable duplicate. If no issue
-exists, the HIGH audit creates the live incident normally.
+The promotion audit coordinates with issue deduplication. The issue body carries
+the exact collector failure signature, and the agent searches for that marker
+before filing. If an issue already tracks the mechanism, the agent does not open
+an indistinguishable duplicate. Native title deduplication provides an
+additional approximate safeguard. Under the current minimal implementation,
+automatic relabeling of an existing lower-priority issue is not enforced; the
+agent reports the existing issue instead. If no issue exists, the HIGH audit
+creates the live incident normally.
 
 ## Monitoring Priority
 

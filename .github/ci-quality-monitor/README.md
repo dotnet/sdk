@@ -169,29 +169,31 @@ Issue creation is initially configured in staged mode. A preview requires:
   inference, states `High`, `Medium`, or `Low` confidence, identifies remaining
   alternatives or unknowns, and leads with the next discriminating check
 
-The custom issue applicator enforces two separate paths:
+The agent follows two issue paths using GitHub AW's native `create-issue` safe
+output:
 
 - Ordinary build, YAML, heartbeat, Helix crash/timeout, and infrastructure
-  issues receive only `agentic-workflows` and never contain Build Analysis JSON.
+  issues must not request `Known Build Error` or contain Build Analysis JSON.
 - A recurring named-test KBE receives `agentic-workflows` and
   `Known Build Error` only when its collector-generated pattern validated
   against the original TRX and the same test/mechanism appeared in a prior
-  build. The applicator rejects non-recurring or unvalidated signatures and
-  generates the `## Error Message` block; the agent cannot author or override
-  it.
+  build. The agent must copy the collector-generated `## Error Message` values
+  verbatim rather than constructing a pattern.
 
-For both paths, the applicator rejects bodies missing `Build Information`,
-`Failure History`, `Error Details`, `Root Cause Analysis`, or `Suggested
-Investigation`. The RCA must explicitly include observed evidence, assessment,
-confidence, and alternatives or unknowns.
+For both paths, the prompt requires `Build Information`, `Failure History`,
+`Error Details`, `Root Cause Analysis`, and `Suggested Investigation`. The RCA
+must explicitly include observed evidence, assessment, confidence, and
+alternatives or unknowns. The body also carries the exact collector observation
+signature so the agent can search for an existing issue before filing. Native
+title deduplication is a second, approximate safeguard.
 
 The monitor never applies `cookie`. Normal issue triage can add an area, type,
 `Test Debt`, and `cookie` when the resulting work is bounded enough for Issue
 Monster.
 
-At most three distinct mechanism issues are previewed per run. After maintainers
-review staged output quality, remove `staged: true` from the workflow safe
-outputs to enable issue creation.
+GitHub AW applies the title prefix, fixed `agentic-workflows` label, staged-mode
+behavior, and limit of three issue writes per run. The agent may request only
+the additional labels allowlisted by the workflow.
 
 ## Adding Pipelines or Branches
 
