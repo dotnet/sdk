@@ -319,17 +319,22 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         }
 
         [TestMethod]
-        [DataRow("roslyn3.9")]
-        [DataRow("roslyn4.0")]
-        public void It_resolves_analyzers_targeting_mulitple_roslyn_versions(string compilerApiVersion)
+        [DataRow("roslyn3.9", false)]
+        [DataRow("roslyn3.9", true)]
+        [DataRow("roslyn4.0", false)]
+        [DataRow("roslyn4.0", true)]
+        public void It_resolves_analyzers_targeting_multiple_roslyn_versions(
+            string compilerApiVersion,
+            bool restoreEnableAnalyzerAssets)
         {
             var testProject = new TestProject()
             {
                 TargetFrameworks = "netstandard2.0"
             };
 
-            //  Disable analyzers built in to the SDK so we can more easily test the ones coming from NuGet packages
+            // Disable analyzers built in to the SDK so we can more easily test the ones coming from NuGet packages.
             testProject.AdditionalProperties["EnableNETAnalyzers"] = "false";
+            testProject.AdditionalProperties["RestoreEnableAnalyzerAssets"] = restoreEnableAnalyzerAssets.ToString();
 
             testProject.ProjectChanges.Add(project =>
             {
@@ -342,11 +347,14 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 project.Root?.Add(itemGroup);
             });
 
-            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: compilerApiVersion);
+            var testAsset = TestAssetsManager.CreateTestProject(
+                testProject,
+                identifier: $"{compilerApiVersion}-{restoreEnableAnalyzerAssets}");
 
             NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
-            var command = new GetValuesCommand(testAsset,
+            var command = new GetValuesCommand(
+                testAsset,
                 "Analyzer",
                 GetValuesCommand.ValueType.Item);
 
@@ -358,25 +366,38 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             var analyzers = command.GetValues();
 
-            switch (compilerApiVersion)
+            if (restoreEnableAnalyzerAssets)
             {
-                case "roslyn3.9":
-                    analyzers.Select(RelativeNuGetPath).Should().BeEquivalentTo(
-                        "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn3.9/cs/Library.ContainsAnalyzer.dll",
-                        "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.8/cs/Library.ContainsAnalyzer2.dll"
-                        );
-                    break;
-
-                case "roslyn4.0":
-                    analyzers.Select(RelativeNuGetPath).Should().BeEquivalentTo(
-                        "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn4.0/cs/Library.ContainsAnalyzer.dll",
-                        "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.10/cs/Library.ContainsAnalyzer2.dll"
-                        );
-                    break;
-
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(compilerApiVersion));
+                AssertAnalyzerAssetsWereRestored(testAsset.Path);
             }
+
+            string[] expectedAnalyzers = compilerApiVersion switch
+            {
+                "roslyn3.9" => new[]
+                {
+                    "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn3.9/cs/Library.ContainsAnalyzer.dll",
+                    "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.8/cs/Library.ContainsAnalyzer2.dll",
+                },
+                "roslyn4.0" => new[]
+                {
+                    "library.containsanalyzer/1.0.0/analyzers/dotnet/roslyn4.0/cs/Library.ContainsAnalyzer.dll",
+                    "library.containsanalyzer2/1.0.0/analyzers/dotnet/roslyn3.10/cs/Library.ContainsAnalyzer2.dll",
+                },
+                _ => throw new ArgumentOutOfRangeException(nameof(compilerApiVersion))
+            };
+
+            analyzers.Select(RelativeNuGetPath).Should().BeEquivalentTo(expectedAnalyzers);
+        }
+
+        private static void AssertAnalyzerAssetsWereRestored(string testAssetPath)
+        {
+            string projectFile = Directory.GetFiles(testAssetPath, "*.*proj", SearchOption.AllDirectories).Single();
+            string projectDirectory = Path.GetDirectoryName(projectFile)
+                ?? throw new InvalidOperationException($"Could not determine the project directory for '{projectFile}'.");
+            string assetsFile = File.ReadAllText(Path.Combine(projectDirectory, "obj", "project.assets.json"));
+
+            assetsFile.Should().Contain(@"""restoreEnableAnalyzerAssets"": true");
+            assetsFile.Should().Contain(@"""analyzers"": {");
         }
 
         static readonly List<string?> nugetRoots = new()
@@ -389,7 +410,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
         {
             foreach (var nugetRoot in nugetRoots)
             {
-                if (nugetRoot is not null &&  absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
+                if (nugetRoot is not null && absoluteNuGetPath.StartsWith(nugetRoot + Path.DirectorySeparatorChar))
                 {
                     return absoluteNuGetPath.Substring(nugetRoot.Length + 1)
                                 .Replace(Path.DirectorySeparatorChar, '/');
