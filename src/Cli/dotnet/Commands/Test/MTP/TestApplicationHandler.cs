@@ -11,7 +11,7 @@ internal sealed class TestApplicationHandler
     private readonly TerminalTestReporter _output;
     private readonly TestModule _module;
     private readonly TestOptions _options;
-    private readonly TestRunPolicy _testRunPolicy;
+    private readonly TestRunPolicy? _testRunPolicy;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
@@ -23,7 +23,7 @@ internal sealed class TestApplicationHandler
         _output = output;
         _module = module;
         _options = options;
-        _testRunPolicy = testRunPolicy ?? new TestRunPolicy(maximumFailedTests: null, timeout: null);
+        _testRunPolicy = testRunPolicy;
     }
 
     /// <summary>
@@ -297,7 +297,7 @@ internal sealed class TestApplicationHandler
                 errorOutput: testResult.ErrorOutput);
         }
 
-        _testRunPolicy.ReportFailedTests(testResultMessage.FailedTestMessages.Length);
+        _testRunPolicy?.ReportFailedTests(testResultMessage.FailedTestMessages.Length);
     }
 
     internal void OnTestInProgressReceived(TestInProgressMessages testInProgressMessages)
