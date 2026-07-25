@@ -7,9 +7,10 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class ServerControlMessageSerializerTests
 {
-    [Fact]
+    [TestMethod]
     public void ServerControlMessageRoundTrips()
     {
         var serializer = new ServerControlMessageSerializer();
@@ -22,14 +23,14 @@ public class ServerControlMessageSerializerTests
         serializer.Deserialize(stream).Should().Be(message);
     }
 
-    [Fact]
+    [TestMethod]
     public void SerializerIdsMatchTestFxContract()
     {
         new WaitForServerControlRequestSerializer().Id.Should().Be(13);
         new ServerControlMessageSerializer().Id.Should().Be(14);
     }
 
-    [Fact]
+    [TestMethod]
     public void WaitForServerControlRequestHasNoPayload()
     {
         var serializer = new WaitForServerControlRequestSerializer();
