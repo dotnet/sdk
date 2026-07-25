@@ -48,7 +48,7 @@ _{{binaryName}}() {
         writer.Indent++;
         writer.WriteLine(ArgumentsHandler());
         writer.Indent++;
-        GenerateOptionsAndArgumentsForCommand(pathToCurrentCommand, command, writer);
+        GenerateOptionsAndArgumentsForCommand(pathToCurrentCommand, command, writer, this);
         writer.Indent--;
 
         // tiny hack here - for dynamic completions we need to know what the entire command line is,
@@ -57,7 +57,7 @@ _{{binaryName}}() {
 
         writer.Indent--;
         writer.Indent++;
-        GenerateSubcommandList(pathToCurrentCommand, command, writer);
+        GenerateSubcommandList(pathToCurrentCommand, command, writer, this);
         writer.Indent--;
         writer.WriteLine("}");
         writer.WriteLine();
@@ -75,7 +75,7 @@ fi
         return textWriter.ToString();
     }
 
-    private static void GenerateOptionsAndArgumentsForCommand(string[] commandPathForThisCommand, Command command, IndentedTextWriter writer)
+    private static void GenerateOptionsAndArgumentsForCommand(string[] commandPathForThisCommand, Command command, IndentedTextWriter writer, IShellProvider provider)
     {
         var shouldWriteDynamicCompleter = false;
         foreach (var option in command.HierarchicalOptions())
@@ -84,7 +84,7 @@ fi
             var helpText = SanitizeHelp(option.Description);
             if (option.IsFlag())
             {
-                foreach (var name in option.Names().Where(n => n.StartsWith('-')))
+                foreach (var name in provider.SanitizeOptionNames(option.Names()))
                 {
                     writer.WriteLine($"'{multiplicity}{name}[{helpText}]' \\");
                 }
@@ -97,7 +97,7 @@ fi
                 }
                 var argumentName = option.HelpName ?? " ";
                 var argumentValues = ZshValueExpression(option);
-                foreach (var name in option.Names().Where(n => n.StartsWith('-')))
+                foreach (var name in provider.SanitizeOptionNames(option.Names()))
                 {
                     writer.Write($"'{multiplicity}{name}=[{helpText}]:{argumentName}");
                     WriteValueExpression(writer, argumentValues);
@@ -178,7 +178,7 @@ fi
         }
     }
 
-    private static void GenerateSubcommandList(string[] pathToCurrentCommand, Command command, IndentedTextWriter writer)
+    private static void GenerateSubcommandList(string[] pathToCurrentCommand, Command command, IndentedTextWriter writer, IShellProvider provider)
     {
         if (command.Subcommands.Count == 0)
         {
@@ -209,8 +209,8 @@ fi
             writer.Indent++;
             writer.WriteLine(ArgumentsHandler());
             writer.Indent++;
-            GenerateOptionsAndArgumentsForCommand(pathToSubcommand, subcommand, writer);
-            GenerateSubcommandList(pathToSubcommand, subcommand, writer);
+            GenerateOptionsAndArgumentsForCommand(pathToSubcommand, subcommand, writer, provider);
+            GenerateSubcommandList(pathToSubcommand, subcommand, writer, provider);
             writer.Indent--;
             writer.WriteLine(";;");
             writer.Indent--;

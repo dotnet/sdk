@@ -53,7 +53,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
         writer.WriteLine("$completions = @()");
         writer.WriteLine("switch ($command) {");
         writer.Indent++;
-        GenerateSubcommandCompletions([], writer, command);
+        GenerateSubcommandCompletions([], writer, command, this);
 
         writer.Indent--;
         writer.WriteLine("}");
@@ -88,7 +88,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// </summary>
     /// <param name="o"></param>
     /// <returns></returns>
-    private static IEnumerable<string> GenerateOptionNameCompletions(Option o)
+    private static IEnumerable<string> GenerateOptionNameCompletions(Option o, IShellProvider provider)
     {
         if (o.Hidden)
         {
@@ -96,7 +96,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
         }
 
         var verboseName = o.Name;
-        var names = o.Names();
+        var names = provider.SanitizeOptionNames(o.Names());
         var helpText = SanitizeHelpDescription(o);
 
         // generate a completion recognizer for each alias, but have it's 'commit' value
@@ -144,7 +144,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// <param name="writer"></param>
     /// <param name="command"></param>
     /// <remarks>Dynamically-generated completions are not yet supported</remarks>
-    internal static void GenerateSubcommandCompletions(string[] parentCommandNames, IndentedTextWriter writer, Command command)
+    internal static void GenerateSubcommandCompletions(string[] parentCommandNames, IndentedTextWriter writer, Command command, IShellProvider provider)
     {
         string[] commandNameList = parentCommandNames switch
         {
@@ -153,7 +153,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             var names => [.. names, command.Name]
         };
 
-        GenerateStaticCompletionsForCommand(commandNameList, command, writer);
+        GenerateStaticCompletionsForCommand(commandNameList, command, writer, provider);
         GenerateDynamicCompletionsForOptions(commandNameList, command.Options, writer);
         GenerateDynamicCompletionsForArguments(commandNameList, command.Arguments, writer);
 
@@ -163,7 +163,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             {
                 continue;
             }
-            GenerateSubcommandCompletions(commandNameList, writer, subcommand);
+            GenerateSubcommandCompletions(commandNameList, writer, subcommand, provider);
         }
 
     }
@@ -171,13 +171,13 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// <summary>
     /// Generate completions for the statically-known options, arguments, and subcommands of a given command.
     /// </summary>
-    private static void GenerateStaticCompletionsForCommand(string[] commandPath, Command command, IndentedTextWriter writer)
+    private static void GenerateStaticCompletionsForCommand(string[] commandPath, Command command, IndentedTextWriter writer, IShellProvider provider)
     {
         List<string> completions = new();
 
         foreach (var option in command.HierarchicalOptions())
         {
-            completions.AddRange(GenerateOptionNameCompletions(option));
+            completions.AddRange(GenerateOptionNameCompletions(option, provider));
         }
 
         foreach (var argument in command.Arguments)

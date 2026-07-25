@@ -39,10 +39,10 @@ public class FishShellProvider : IShellProvider
 
         WriteTokenization(writer);
         writer.WriteLine();
-        WriteStateWalker(writer, states, stateIdByCommand);
+        WriteStateWalker(writer, states, stateIdByCommand, this);
         writer.WriteLine();
-        WriteOptionValueCompletions(writer, states);
-        WriteStateCompletions(writer, states);
+        WriteOptionValueCompletions(writer, states, this);
+        WriteStateCompletions(writer, states, this);
 
         writer.Indent--;
         writer.WriteLine("end");
@@ -87,7 +87,7 @@ public class FishShellProvider : IShellProvider
     /// For each state, we check if the current word matches a known subcommand (transitioning to that subcommand's state)
     /// or a value-taking option (skipping tokens for the option's value(s), respecting the option's arity).
     /// </summary>
-    private static void WriteStateWalker(IndentedTextWriter writer, List<(int id, Command cmd)> states, Dictionary<Command, int> stateIdByCommand)
+    private static void WriteStateWalker(IndentedTextWriter writer, List<(int id, Command cmd)> states, Dictionary<Command, int> stateIdByCommand, IShellProvider provider)
     {
         writer.WriteLine("set -l state 0");
         writer.WriteLine("set -l i 2"); // start after the command name (fish arrays are 1-based)
@@ -128,7 +128,7 @@ public class FishShellProvider : IShellProvider
             // Single-value options (arity exactly 1): skip the next token
             var singleValueNames = valueOptions
                 .Where(o => o.Arity.MaximumNumberOfValues == 1)
-                .SelectMany(o => o.Names().Where(n => n.StartsWith('-')))
+                .SelectMany(o => provider.SanitizeOptionNames(o.Names()))
                 .ToArray();
             if (singleValueNames.Length > 0)
             {
@@ -145,7 +145,7 @@ public class FishShellProvider : IShellProvider
                 .GroupBy(o => o.Arity.MaximumNumberOfValues);
             foreach (var group in multiValueByArity)
             {
-                var names = string.Join(" ", group.SelectMany(o => o.Names().Where(n => n.StartsWith('-'))));
+                var names = string.Join(" ", group.SelectMany(o => provider.SanitizeOptionNames(o.Names())));
                 writer.WriteLine($"case {names}");
                 writer.Indent++;
                 WriteMultiValueSkipLoop(writer, group.Key);
@@ -208,7 +208,7 @@ public class FishShellProvider : IShellProvider
     /// multi-value options (e.g. <c>--sources foo bar</c> with arity 3 still offers completions
     /// for the third value).
     /// </summary>
-    private static void WriteOptionValueCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states)
+    private static void WriteOptionValueCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states, IShellProvider provider)
     {
         var hasAnyValueOptions = states.Any(s =>
             s.cmd.HierarchicalOptions().Any(o => !o.Hidden && !o.IsFlag()));
@@ -257,7 +257,7 @@ public class FishShellProvider : IShellProvider
 
             foreach (var option in valueOptions)
             {
-                var names = string.Join(" ", option.Names().Where(n => n.StartsWith('-')));
+                var names = string.Join(" ", provider.SanitizeOptionNames(option.Names()));
                 var maxValues = option.Arity.MaximumNumberOfValues;
                 bool isBounded = maxValues < UnboundedArityThreshold;
 
@@ -311,7 +311,7 @@ public class FishShellProvider : IShellProvider
     /// Generate the main completion output for each state.
     /// Emits subcommands, options, and positional argument completions for the current context.
     /// </summary>
-    private static void WriteStateCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states)
+    private static void WriteStateCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states, IShellProvider provider)
     {
         writer.WriteLine("switch $state");
         writer.Indent++;
@@ -327,11 +327,11 @@ public class FishShellProvider : IShellProvider
                 WriteCandidate(writer, sub.Name, SanitizeDescription(sub.Description));
             }
 
-            // Option completions - emit all aliases so both -h and --help are completable
+            // Option completions - emit all supported aliases so both -h and --help are completable
             foreach (var option in cmd.HierarchicalOptions().Where(o => !o.Hidden))
             {
                 var desc = SanitizeDescription(option.Description);
-                foreach (var name in option.Names().Where(n => n.StartsWith('-')))
+                foreach (var name in provider.SanitizeOptionNames(option.Names()))
                 {
                     WriteCandidate(writer, name, desc);
                 }

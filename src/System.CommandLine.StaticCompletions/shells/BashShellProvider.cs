@@ -80,7 +80,7 @@ public class BashShellProvider : IShellProvider
         writer.WriteLine();
 
         // generate how to handle completions for options or flags
-        var optionHandlers = GenerateOptionHandlers(command);
+        var optionHandlers = GenerateOptionHandlers(command, this);
         if (optionHandlers is not null)
         {
             writer.WriteLine("case $prev in");
@@ -158,16 +158,6 @@ public class BashShellProvider : IShellProvider
         return $$"""${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' '""";
     }
 
-    internal static string? GenerateOptionHandlers(Command command)
-    {
-        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler).Where(handler => handler is not null).ToArray();
-        if (optionHandlers.Length == 0)
-        {
-            return null;
-        }
-        return string.Join("\n", optionHandlers);
-    }
-
     /// <summary>
     /// Emit a bash command that calls compgen with a set of choices given the current work/stem, and sets those choices to COMPREPLY.
     /// Think of this like a 'return' from a function.
@@ -178,18 +168,33 @@ public class BashShellProvider : IShellProvider
     /// <returns></returns>
     internal static string GenerateChoicesPrompt(string choicesInvocation) => $$"""COMPREPLY=( $(compgen -W "{{choicesInvocation}}" -- "$cur") )""";
 
+    internal static string? GenerateOptionHandlers(Command command, IShellProvider provider)
+    {
+        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(o => GenerateOptionHandler(o, provider)).Where(handler => handler is not null).ToArray();
+        if (optionHandlers.Length == 0)
+        {
+            return null;
+        }
+        return string.Join("\n", optionHandlers);
+    }
+
     /// <summary>
     /// Generates a concrete set of bash completion selection for a given option.
     /// If the option's completions are dynamic, this will emit a call to the dynamic completion function (dotnet complete)
     /// to get completions when the user requests completions for this option.
     /// </summary>
     /// <param name="option"></param>
+    /// <param name="provider"></param>
     /// <returns>a bash switch case expression for providing completions for this option</returns>
-    internal static string? GenerateOptionHandler(Option option)
+    internal static string? GenerateOptionHandler(Option option, IShellProvider provider)
     {
         // unlike the completion-options generation, for actually implementing suggestions we should be able to handle all of the options' aliases.
         // this ensures if the user manually enters an alias we can support that usage.
-        var optionNames = string.Join('|', option.Names());
+        var optionNames = string.Join('|', provider.SanitizeOptionNames(option.Names()));
+        if (string.IsNullOrEmpty(optionNames))
+        {
+            return null;
+        }
         string completionCommand;
         if (option.IsDynamic)
         {
