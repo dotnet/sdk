@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class RemoveEmptyFinalizersFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpCodeFixTestRemoveEmptyFinalizersAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -33,7 +33,7 @@ public class Class1
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821BasicCodeFixTestRemoveEmptyFinalizersAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

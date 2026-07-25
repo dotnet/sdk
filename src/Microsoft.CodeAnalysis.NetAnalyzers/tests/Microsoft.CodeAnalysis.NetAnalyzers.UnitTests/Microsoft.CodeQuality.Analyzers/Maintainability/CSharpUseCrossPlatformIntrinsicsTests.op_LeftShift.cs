@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -14,15 +13,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("byte", "7", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("sbyte", "7", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("short", "15", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("ushort", "15", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("int", "31", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("uint", "31", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("long", "63", "AdvSimd.ShiftLeftLogicalScalar")]
-        [InlineData("ulong", "63", "AdvSimd.ShiftLeftLogicalScalar")]
+        [TestMethod]
+        [DataRow("byte", "7", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("sbyte", "7", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("short", "15", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("ushort", "15", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("int", "31", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("uint", "31", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("long", "63", "AdvSimd.ShiftLeftLogicalScalar")]
+        [DataRow("ulong", "63", "AdvSimd.ShiftLeftLogicalScalar")]
         public async Task Fixer_opLeftShiftArmV64Async(string type, string max, string method)
         {
             // lang=C#-test
@@ -59,19 +58,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "7", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("sbyte", "7", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("short", "15", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("ushort", "15", "AdvSimd.ShiftLeftLogical")]
+        [TestMethod]
+        [DataRow("byte", "7", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("sbyte", "7", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("short", "15", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("ushort", "15", "AdvSimd.ShiftLeftLogical")]
         // The int32 overload does not exist today:
         //   [InlineData("int", "31", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("uint", "31", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("long", "63", "AdvSimd.ShiftLeftLogical")]
-        [InlineData("ulong", "63", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("uint", "31", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("long", "63", "AdvSimd.ShiftLeftLogical")]
+        [DataRow("ulong", "63", "AdvSimd.ShiftLeftLogical")]
         public async Task Fixer_opLeftShiftArmV128Async(string type, string max, string method)
         {
             // lang=C#-test
@@ -108,18 +107,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "7", "PackedSimd.ShiftLeft")]
-        [InlineData("sbyte", "7", "PackedSimd.ShiftLeft")]
-        [InlineData("short", "15", "PackedSimd.ShiftLeft")]
-        [InlineData("ushort", "15", "PackedSimd.ShiftLeft")]
-        [InlineData("int", "31", "PackedSimd.ShiftLeft")]
-        [InlineData("uint", "31", "PackedSimd.ShiftLeft")]
-        [InlineData("long", "63", "PackedSimd.ShiftLeft")]
-        [InlineData("ulong", "63", "PackedSimd.ShiftLeft")]
+        [TestMethod]
+        [DataRow("byte", "7", "PackedSimd.ShiftLeft")]
+        [DataRow("sbyte", "7", "PackedSimd.ShiftLeft")]
+        [DataRow("short", "15", "PackedSimd.ShiftLeft")]
+        [DataRow("ushort", "15", "PackedSimd.ShiftLeft")]
+        [DataRow("int", "31", "PackedSimd.ShiftLeft")]
+        [DataRow("uint", "31", "PackedSimd.ShiftLeft")]
+        [DataRow("long", "63", "PackedSimd.ShiftLeft")]
+        [DataRow("ulong", "63", "PackedSimd.ShiftLeft")]
         public async Task Fixer_opLeftShiftWasmV128Async(string type, string max, string method)
         {
             // lang=C#-test
@@ -156,16 +155,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("short", "15", "Sse2.ShiftLeftLogical")]
-        [InlineData("ushort", "15", "Sse2.ShiftLeftLogical")]
-        [InlineData("int", "31", "Sse2.ShiftLeftLogical")]
-        [InlineData("uint", "31", "Sse2.ShiftLeftLogical")]
-        [InlineData("long", "63", "Sse2.ShiftLeftLogical")]
-        [InlineData("ulong", "63", "Sse2.ShiftLeftLogical")]
+        [TestMethod]
+        [DataRow("short", "15", "Sse2.ShiftLeftLogical")]
+        [DataRow("ushort", "15", "Sse2.ShiftLeftLogical")]
+        [DataRow("int", "31", "Sse2.ShiftLeftLogical")]
+        [DataRow("uint", "31", "Sse2.ShiftLeftLogical")]
+        [DataRow("long", "63", "Sse2.ShiftLeftLogical")]
+        [DataRow("ulong", "63", "Sse2.ShiftLeftLogical")]
         public async Task Fixer_opLeftShiftx86V128Async(string type, string max, string method)
         {
             // lang=C#-test
@@ -202,16 +201,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("short", "15", "Avx2.ShiftLeftLogical")]
-        [InlineData("ushort", "15", "Avx2.ShiftLeftLogical")]
-        [InlineData("int", "31", "Avx2.ShiftLeftLogical")]
-        [InlineData("uint", "31", "Avx2.ShiftLeftLogical")]
-        [InlineData("long", "63", "Avx2.ShiftLeftLogical")]
-        [InlineData("ulong", "63", "Avx2.ShiftLeftLogical")]
+        [TestMethod]
+        [DataRow("short", "15", "Avx2.ShiftLeftLogical")]
+        [DataRow("ushort", "15", "Avx2.ShiftLeftLogical")]
+        [DataRow("int", "31", "Avx2.ShiftLeftLogical")]
+        [DataRow("uint", "31", "Avx2.ShiftLeftLogical")]
+        [DataRow("long", "63", "Avx2.ShiftLeftLogical")]
+        [DataRow("ulong", "63", "Avx2.ShiftLeftLogical")]
         public async Task Fixer_opLeftShiftx86V256Async(string type, string max, string method)
         {
             // lang=C#-test
@@ -248,16 +247,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("short", "15", "Avx512BW.ShiftLeftLogical")]
-        [InlineData("ushort", "15", "Avx512BW.ShiftLeftLogical")]
-        [InlineData("int", "31", "Avx512F.ShiftLeftLogical")]
-        [InlineData("uint", "31", "Avx512F.ShiftLeftLogical")]
-        [InlineData("long", "63", "Avx512F.ShiftLeftLogical")]
-        [InlineData("ulong", "63", "Avx512F.ShiftLeftLogical")]
+        [TestMethod]
+        [DataRow("short", "15", "Avx512BW.ShiftLeftLogical")]
+        [DataRow("ushort", "15", "Avx512BW.ShiftLeftLogical")]
+        [DataRow("int", "31", "Avx512F.ShiftLeftLogical")]
+        [DataRow("uint", "31", "Avx512F.ShiftLeftLogical")]
+        [DataRow("long", "63", "Avx512F.ShiftLeftLogical")]
+        [DataRow("ulong", "63", "Avx512F.ShiftLeftLogical")]
         public async Task Fixer_opLeftShiftx86V512Async(string type, string max, string method)
         {
             // lang=C#-test
@@ -294,7 +293,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

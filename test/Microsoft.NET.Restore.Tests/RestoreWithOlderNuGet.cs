@@ -1,15 +1,13 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Restore.Tests
 {
+    [TestClass]
     public class RestoreWithOlderNuGet : SdkTest
     {
-        public RestoreWithOlderNuGet(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItCanBuildProjectRestoredWithNuGet5_7()
         {
             var testProject = new TestProject()

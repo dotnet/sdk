@@ -5,7 +5,6 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpAvoidZeroLengthArrayAllocationsAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsFixer>;
@@ -15,6 +14,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class AvoidZeroLengthArrayAllocationsAnalyzerTests
     {
         /// <summary>
@@ -59,7 +59,7 @@ namespace System
             return IsArrayEmptyDefined() ? string.Empty : arrayEmptySourceRaw;
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharpAsync()
         {
             const string badSource = @"
@@ -162,7 +162,7 @@ class C
                 "using System;\r\n" + fixedSource.Replace("System.Array.Empty", "Array.Empty", StringComparison.Ordinal) + arrayEmptySource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharpErrorAsync()
         {
             const string badSource = @"
@@ -173,7 +173,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(badSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayVisualBasicAsync()
         {
             const string badSource = @"
@@ -275,7 +275,7 @@ End Class";
                 "Imports System\r\n" + fixedSource.Replace("System.Array.Empty", "Array.Empty", StringComparison.Ordinal) + arrayEmptySource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_DifferentTypeKindAsync()
         {
             const string badSource = @"
@@ -328,7 +328,7 @@ class C
         }
 
         [WorkItem(10214, "https://github.com/dotnet/roslyn/issues/10214")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayVisualBasic_CompilerGeneratedArrayCreationAsync()
         {
             const string source = @"
@@ -350,7 +350,7 @@ End Class
         }
 
         [WorkItem(1209, "https://github.com/dotnet/roslyn-analyzers/issues/1209")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInObjectCreationAsync()
         {
             const string source = @"
@@ -379,7 +379,7 @@ namespace N
         }
 
         [WorkItem(1209, "https://github.com/dotnet/roslyn-analyzers/issues/1209")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInIndexerAccessAsync()
         {
             const string source = @"
@@ -400,7 +400,7 @@ public abstract class C
             await VerifyCS.VerifyAnalyzerAsync(source + arrayEmptySource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedInAttribute_NoDiagnosticsAsync()
         {
             const string source = @"
@@ -423,7 +423,7 @@ class C
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedInAttributeParams_NoDiagnosticsAsync()
         {
             const string source = @"
@@ -447,7 +447,7 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_FieldOrPropertyInitializerAsync()
         {
             const string badSource = @"
@@ -484,7 +484,7 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedInAssignmentAsync()
         {
             const string badSource = @"
@@ -528,7 +528,7 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_NotArrayAsync()
         {
             const string badSource = @"
@@ -602,7 +602,7 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_DifferentElementTypeAsync()
         {
             const string badSource = @"
@@ -631,7 +631,7 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedAsExpressionAsync()
         {
             const string badSource = @"
@@ -710,7 +710,7 @@ class C
                 fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_SystemNotImportedAsync()
         {
             const string badSource = @"
@@ -733,7 +733,7 @@ class C
                 fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
         public async Task NoDiagnosticInExpressionTree_CSharpAsync()
         {
@@ -749,7 +749,7 @@ class C
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
         public async Task NoDiagnosticInExpressionTree_VisualBasicAsync()
         {
@@ -765,7 +765,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
         public async Task NoDiagnosticForCollectionExpression_NonArrayTargetType_CSharpAsync()
         {
@@ -783,10 +783,10 @@ class C
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
         public async Task NoDiagnosticForCollectionExpression_EmptyArrayTargetType_CSharpAsync()
         {
@@ -801,10 +801,10 @@ class C
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
         public async Task DiagnosticForZeroLengthArrayInsideCollectionExpression_CSharpAsync()
         {
@@ -837,7 +837,7 @@ class C
                     VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(7, 23).WithArguments("Array.Empty<int>()"),
 #pragma warning restore RS0030 // Do not use banned APIs
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

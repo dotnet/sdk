@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-internal class TestLoggerFactory(ITestOutputHelper? output = null) : ILoggerFactory
+internal class TestLoggerFactory(DualOutputHelper? output = null) : ILoggerFactory
 {
     public Func<string, ILogger>? CreateLoggerImpl;
 

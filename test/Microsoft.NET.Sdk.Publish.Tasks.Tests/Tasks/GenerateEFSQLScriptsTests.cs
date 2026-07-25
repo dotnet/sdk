@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -6,6 +6,9 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
+#if NET472
+    [TestClass]
+#endif
     public class GenerateEFSQLScriptsTests
     {
         private static readonly ITaskItem DefaultContext = new TaskItem("DefaultContext", new Dictionary<string, string>() { { "Value", @"Server=(localdb)\mssqllocaldb; Database=defaultDB;Trusted_Connection=True;MultipleActiveResultSets=true" } });
@@ -24,8 +27,8 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         }
 
 #if NET472
-        [Theory]
-        [MemberData(nameof(EFMigrations))]
+        [TestMethod]
+        [DynamicData(nameof(EFMigrations))]
         public void GenerateEFScripts_ReturnsFalse_forInValidContexts(ITaskItem[] efMigrationsData)
         {
             //Arrange
@@ -47,7 +50,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
             bool isSucces = task.GenerateEFSQLScriptsInternal(false);
 
             // Assert
-            Assert.False(isSucces);
+            Assert.IsFalse(isSucces);
         }
 #endif
     }

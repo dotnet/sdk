@@ -1,17 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenExponentialRetry : SdkTest
     {
-        public GivenExponentialRetry(ITestOutputHelper log) : base(log)
+        public GivenExponentialRetry()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ItReturnsOnSuccess()
         {
             var retryCount = 0;
@@ -25,7 +26,7 @@ namespace Microsoft.DotNet.Tests
             retryCount.Should().Be(1);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ItRetriesOnError()
         {
             var retryCount = 0;

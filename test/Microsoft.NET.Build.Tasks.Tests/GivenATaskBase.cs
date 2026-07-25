@@ -5,6 +5,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenATaskBase
     {
         private sealed class TestTask : TaskBase
@@ -12,7 +13,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             protected override void ExecuteCore() { }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItRoutesLogMessagesToMSBuild()
         {
             var task = new TestTask();

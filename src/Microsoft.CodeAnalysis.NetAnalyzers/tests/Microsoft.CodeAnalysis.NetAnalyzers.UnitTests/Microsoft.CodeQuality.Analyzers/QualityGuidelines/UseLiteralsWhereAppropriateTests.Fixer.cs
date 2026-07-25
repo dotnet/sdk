@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriate,
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriateFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class UseLiteralsWhereAppropriateFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CodeFixForEmptyStringAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -45,7 +45,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CodeFixForNonEmptyStringAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -79,7 +79,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CodeFixForMultiDeclarationAsync()
         {
             // Fixers are disabled on multiple fields, because it may introduce compile error.
@@ -112,7 +112,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CodeFixForInt32Async()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -146,7 +146,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4732, "https://github.com/dotnet/roslyn-analyzers/issues/4732")]
         public async Task ConstantInterpolatedString_LanguageVersionNotSupportedAsync()
         {

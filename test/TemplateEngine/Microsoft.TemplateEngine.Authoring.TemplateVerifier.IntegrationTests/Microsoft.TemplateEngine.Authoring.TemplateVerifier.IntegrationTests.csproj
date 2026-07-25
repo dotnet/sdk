@@ -1,6 +1,14 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <Import Project="Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests.Shared.props" />
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Verify.MSTest" />
+  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateEngine.Authoring.TemplateVerifier\Microsoft.TemplateEngine.Authoring.TemplateVerifier.csproj" />

@@ -1,13 +1,12 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
-
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Utils.UnitTests
 {
+    [TestClass]
     public class EqualityExtensionsTests
     {
-        [Fact(DisplayName = "AllAreTheSameDefaultComparerTrueTest")]
+        [TestMethod]
         public void AllAreTheSameDefaultComparerTrueTest()
         {
             IDictionary<int, string> items = new Dictionary<int, string>()
@@ -19,10 +18,10 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             };
             static string Selector(KeyValuePair<int, string> x) => x.Value;
 
-            Assert.True(items.AllAreTheSame(Selector));
+            Assert.IsTrue(items.AllAreTheSame(Selector));
         }
 
-        [Fact(DisplayName = "AllAreTheSameDefaultComparerFailsTest")]
+        [TestMethod]
         public void AllAreTheSameDefaultComparerFailsTest()
         {
             IDictionary<int, string> items = new Dictionary<int, string>()
@@ -34,10 +33,10 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             };
             static string Selector(KeyValuePair<int, string> x) => x.Value;
 
-            Assert.False(items.AllAreTheSame(Selector));
+            Assert.IsFalse(items.AllAreTheSame(Selector));
         }
 
-        [Fact(DisplayName = "AllAreTheSameCustomComparerTest")]
+        [TestMethod]
         public void AllAreTheSameCustomComparerTest()
         {
             IDictionary<int, string> items = new Dictionary<int, string>()
@@ -52,10 +51,10 @@ namespace Microsoft.TemplateEngine.Utils.UnitTests
             static bool LengthComparer(string? x, string? y) => x!.Length == y!.Length;
 
             // they're all the same length
-            Assert.True(items.AllAreTheSame(Selector, LengthComparer));
+            Assert.IsTrue(items.AllAreTheSame(Selector, LengthComparer));
 
             static bool UpperComparer(string? x, string? y) => x!.ToUpper() == y!.ToUpper();
-            Assert.False(items.AllAreTheSame(Selector, UpperComparer));
+            Assert.IsFalse(items.AllAreTheSame(Selector, UpperComparer));
         }
     }
 }

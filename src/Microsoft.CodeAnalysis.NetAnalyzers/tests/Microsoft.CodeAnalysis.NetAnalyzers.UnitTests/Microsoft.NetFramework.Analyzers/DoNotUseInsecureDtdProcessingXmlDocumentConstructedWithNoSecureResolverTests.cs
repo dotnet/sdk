@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -25,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlDocumentWithNoSecureResolver).WithLocation(line, column);
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentSetResolverToNullShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -63,7 +62,7 @@ End Namespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentSetResolverToNullInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -103,7 +102,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetResolverToNullInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -138,7 +137,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetInsecureResolverInInitializerShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -172,7 +171,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldNoResolverPre452ShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -204,7 +203,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldNoResolverPost452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -234,7 +233,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentUseSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -271,7 +270,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentSetSecureResolverInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -311,7 +310,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentUseSecureResolverWithPermissionsShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -368,7 +367,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentSetResolverToNullInTryClauseShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -413,7 +412,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoResolverPre452ShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -450,7 +449,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentNoResolverPost452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -485,7 +484,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentUseNonSecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -525,7 +524,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentUseNonSecureResolverInTryClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -573,7 +572,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentReassignmentSetResolverToNullInInitializerShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -615,7 +614,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentReassignmentDefaultTargetPre452ShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -660,7 +659,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentReassignmentDefaultTargetPost452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -702,7 +701,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentSetResolversInDifferentBlockPre452ShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -751,7 +750,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentSetResolversInDifferentBlockPost452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -798,7 +797,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetResolverToInsecureResolverInOnlyMethodPre452ShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -841,7 +840,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetResolverToInsecureResolverInOnlyMethodPost452ShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -883,7 +882,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetResolverToInsecureResolverInSomeMethodPre452ShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -936,7 +935,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetResolverToNullInSomeMethodPre452ShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -986,7 +985,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetResolverToInsecureResolverInSomeMethodPost452ShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1037,7 +1036,7 @@ namespace TestNamespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentAsFieldSetResolverToNullInSomeMethodPost452ShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1085,7 +1084,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentCreatedAsTempNotSetResolverPre452ShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1129,7 +1128,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentCreatedAsTempNotSetResolverPost452ShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1171,7 +1170,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeNotSetResolverShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -1222,7 +1221,7 @@ End Namespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeWithNoSecureResolverShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(

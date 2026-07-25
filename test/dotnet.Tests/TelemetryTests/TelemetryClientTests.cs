@@ -9,26 +9,27 @@ using Moq;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
-[Collection(TestConstants.UsesStaticTelemetryState)]
-public class TelemetryClientTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class TelemetryClientTests : SdkTest
 {
-    public static TheoryData<string[], string> CommandsWithExitCode => new()
-    {
-        { new[] { "--help" }, "0" },
-        { new[] { "--info" }, "0" },
-        { new[] { "workload", "list" }, "0" },
-        { new[] { "sdk", "check" }, "0" },
-        { new[] { "build-server", "shutdown" }, "0" },
-        { new[] { "solution", "list" }, "1" },
-        { new[] { "clean" }, "1" },
-        { new[] { "run" }, "1" },
-        { new[] { "new", "details" }, "127" }
-    };
+    public static IEnumerable<object[]> CommandsWithExitCode =>
+    [
+        [new[] { "--help" }, "0"],
+        [new[] { "--info" }, "0"],
+        [new[] { "workload", "list" }, "0"],
+        [new[] { "sdk", "check" }, "0"],
+        [new[] { "build-server", "shutdown" }, "0"],
+        [new[] { "solution", "list" }, "1"],
+        [new[] { "clean" }, "1"],
+        [new[] { "run" }, "1"],
+        [new[] { "new", "details" }, "127"]
+    ];
 
     // Only runs on Windows because OTel libraries are only referenced on Windows builds.
     // Thus, this test that writes telemetry logs will not work on other platforms.
-    [PlatformSpecificTheory(TestPlatforms.Windows)]
-    [MemberData(nameof(CommandsWithExitCode))]
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DynamicData(nameof(CommandsWithExitCode))]
     public void ItProcessesTelemetryData(string[] commandArgs, string exitCodeExpected)
     {
         var testDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -70,7 +71,8 @@ public class TelemetryClientTests(ITestOutputHelper log) : SdkTest(log)
         exitCode.Should().Be(exitCodeExpected);
     }
 
-    [Fact]
+    [TestMethod]
+    [DoNotParallelize]
     public void ItSeedsCurrentSessionIdFromEnvironmentWhenSessionIdIsNotProvided()
     {
         const string sessionId = "gha-12345-1";
@@ -99,7 +101,8 @@ public class TelemetryClientTests(ITestOutputHelper log) : SdkTest(log)
         }
     }
 
-    [Fact]
+    [TestMethod]
+    [DoNotParallelize]
     public void ItPrefersExplicitSessionIdOverEnvironmentSeed()
     {
         const string sessionId = "explicit-session";

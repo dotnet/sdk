@@ -12,6 +12,7 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Workload.Search.Tests
 {
+    [TestClass]
     public class GivenDotnetWorkloadSearch : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -28,17 +29,17 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
         static WorkloadResolver.WorkloadInfo CreateWorkloadInfo(string id, string description = null)
             => new(new WorkloadId(id), description);
 
-        public GivenDotnetWorkloadSearch(ITestOutputHelper log) : base(log)
+        public GivenDotnetWorkloadSearch()
         {
             _reporter = new BufferedReporter();
         }
 
-        [Theory]
-        [InlineData("--invalidArgument")]
-        [InlineData("notAVersion")]
-        [InlineData("1.2")] // too short
-        [InlineData("1.2.3.4.5")] // too long
-        [InlineData("1.2-3.4")] // numbers after [-, +] don't count
+        [TestMethod]
+        [DataRow("--invalidArgument")]
+        [DataRow("notAVersion")]
+        [DataRow("1.2")] // too short
+        [DataRow("1.2.3.4.5")] // too long
+        [DataRow("1.2-3.4")] // numbers after [-, +] don't count
         public void GivenInvalidArgumentToWorkloadSearchVersionItFailsCleanly(string argument)
         {
             _reporter.Clear();
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             command.Should().Throw<CommandParsingException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoWorkloadsAreInstalledSearchIsEmpty()
         {
             _reporter.Clear();
@@ -62,7 +63,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Lines.Count.Should().Be(4, because: "Output should have header and no values.");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadSearchWithComponentsItFindsHighestMatchingSet()
         {
             string workloadSet1 = @"{
@@ -110,7 +111,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Lines.Single().Should().Be("9.0.101");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenNoStubIsProvidedSearchShowsAllWorkloads()
         {
             _reporter.Clear();
@@ -131,7 +132,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenDetailedVerbositySearchShowsAllColumns()
         {
             _reporter.Clear();
@@ -152,7 +153,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenStubIsProvidedSearchShowsAllMatchingWorkloads()
         {
             _reporter.Clear();
@@ -174,7 +175,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenSearchResultsAreOrdered()
         {
             _reporter.Clear();
@@ -191,7 +192,7 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             _reporter.Lines[7].Should().Contain("mock-workload-3");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenWorkloadSearchItSearchesDescription()
         {
             _reporter.Clear();

@@ -218,7 +218,7 @@ internal class ToolPackageInstance : IToolPackage
                 }
 
                 throw new ToolConfigurationException(
-                    CliStrings.MissingToolSettingsFile);
+                    GetMissingToolSettingsFileMessage(packageId, library.Version));
             }
 
             var toolConfigurationPath =
@@ -239,6 +239,14 @@ internal class ToolPackageInstance : IToolPackage
                     ex.Message),
                 ex);
         }
+    }
+
+    internal static string GetMissingToolSettingsFileMessage(PackageId packageId, NuGetVersion packageVersion)
+    {
+        return string.Format(
+            CliStrings.MissingToolSettingsFile,
+            packageId,
+            packageVersion.ToNormalizedString());
     }
 
     private static LockFileTargetLibrary FindLibraryInLockFile(LockFile lockFile)

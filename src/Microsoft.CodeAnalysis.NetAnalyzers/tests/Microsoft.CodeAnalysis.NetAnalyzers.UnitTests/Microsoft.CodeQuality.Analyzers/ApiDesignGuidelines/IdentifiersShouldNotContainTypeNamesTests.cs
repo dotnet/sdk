@@ -1,20 +1,20 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotContainTypeNames,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class IdentifiersShouldNotContainTypeNamesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -24,7 +24,7 @@ public class IntA
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_SomeDiagnostic1Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -35,7 +35,7 @@ public class Int
     GetCA1720CSharpResultAt(line: 2, column: 14, identifierName: "Int"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_CA1720_Internal_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -59,7 +59,7 @@ internal class C2
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_SomeDiagnostic2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -70,7 +70,7 @@ public struct Int32
     GetCA1720CSharpResultAt(line: 2, column: 15, identifierName: "Int32"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_SomeDiagnostic3Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,7 +81,7 @@ public enum Int64
     GetCA1720CSharpResultAt(line: 2, column: 13, identifierName: "Int64"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_SomeDiagnostic4Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -95,7 +95,7 @@ public class Derived
     GetCA1720CSharpResultAt(line: 4, column: 16, identifierName: "Int"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_SomeDiagnostic5Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -109,7 +109,7 @@ public class SomeClass
     GetCA1720CSharpResultAt(line: 4, column: 31, identifierName: "Int"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_SomeDiagnostic6Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -121,7 +121,7 @@ public class DerivedClass
     GetCA1720CSharpResultAt(line: 4, column: 15, identifierName: "Int"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_NoDiagnosticOnEqualsOverrideAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -135,7 +135,7 @@ public class SomeClass
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnAbstractBaseNotImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -162,7 +162,7 @@ public class Derived : Base
     GetCA1720CSharpResultAt(line: 7, column: 35, identifierName: "guid"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnBaseNotImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -195,7 +195,7 @@ public class Derived : Base
     GetCA1720CSharpResultAt(line: 10, column: 34, identifierName: "guid"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnBaseNotNestedImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -219,7 +219,7 @@ public class SomeClass : Derived
     GetCA1720CSharpResultAt(line: 4, column: 56, identifierName: "object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnInterfaceNotImplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -239,7 +239,7 @@ public class Derived : IDerived
     GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnInterfaceNotExplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -259,7 +259,7 @@ public class Derived : IDerived
     GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnGenericInterfaceNotImplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -280,7 +280,7 @@ public class Derived : IDerived<int, string>
     GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnGenericInterfaceNotExplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -301,7 +301,7 @@ public class Derived : IDerived<int, string>
     GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnInterfaceNotNestedImplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -325,7 +325,7 @@ public class Derived : IMyInterface
     GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnInterfaceNotNestedExplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -349,7 +349,7 @@ public class Derived : IMyInterface
     GetCA1720CSharpResultAt(line: 6, column: 44, identifierName: "object"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnGenericInterfaceNotNestedImplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -374,7 +374,7 @@ public class Derived : IMyInterface<int, string>
     GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_DiagnosticOnGenericInterfaceNotNestedExplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -399,7 +399,7 @@ public class Derived : IMyInterface<int, string>
     GetCA1720CSharpResultAt(line: 6, column: 49, identifierName: "int"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_NoDiagnosticOnIEqualityComparerGetHashCodeImplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -425,7 +425,7 @@ public sealed class SomeEqualityComparer : IEqualityComparer<string>, IEqualityC
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1720_NoDiagnosticOnIEqualityComparerGetHashCodeExplicitImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -451,7 +451,7 @@ public sealed class SomeEqualityComparer : IEqualityComparer<string>, IEqualityC
 ");
         }
 
-        [Fact, WorkItem(1823, "https://github.com/dotnet/roslyn-analyzers/issues/1823")]
+        [TestMethod, WorkItem(1823, "https://github.com/dotnet/roslyn-analyzers/issues/1823")]
         public async Task CA1720_ObjIdentifier_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -461,7 +461,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
+        [TestMethod, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
         public async Task CA1720_TopLevelStatements_NoDiagnosticAsync()
         {
             await new VerifyCS.Test()
@@ -472,7 +472,7 @@ public class C
                     OutputKind = OutputKind.ConsoleApplication,
                 },
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         #region Helpers

@@ -179,11 +179,6 @@
         <target state="translated">已將影像 '{0}' 推送至登錄 '{1}'。</target>
         <note />
       </trans-unit>
-      <trans-unit id="ImageIndex_PodmanNotSupported">
-        <source>Image index creation for Podman is not supported.</source>
-        <target state="translated">不支援建立 Podman 的映射索引。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ImageLoadFailed">
         <source>CONTAINER1009: Failed to load image from local registry. stdout: {0}</source>
         <target state="translated">CONTAINER1009: 無法從本機登錄載入映像。stdout: {0}</target>
@@ -193,6 +188,11 @@
         <source>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</source>
         <target state="translated">CONTAINER1020: 因為 Docker 未啟用容器映像存放區，所以無法載入映像。提示: 您可以在 [Docker 桌面] 設定中勾選 [使用容器化來提取和儲存映像] 來啟用此功能。</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
+      </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
       </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>

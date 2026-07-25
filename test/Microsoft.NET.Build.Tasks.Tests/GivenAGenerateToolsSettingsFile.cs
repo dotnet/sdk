@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGenerateToolsSettingsFile
     {
         private XDocument _generatedDocument = null;
@@ -16,7 +17,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 commandRunner: null, runtimeIdentifier: null, toolPackageId: "mytool", toolPackageVersion: "1.0.0", Array.Empty<ITaskItem>());
         }
 
-        [Fact]
+        [TestMethod]
         public void It_puts_command_name_in_correct_place_of_the_file()
         {
             _generatedDocument
@@ -28,7 +29,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().Be("mytool");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_puts_entryPoint_in_correct_place_of_the_file()
         {
             _generatedDocument
@@ -40,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().Be("tool.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_puts_runner_as_dotnet()
         {
             _generatedDocument
@@ -52,7 +53,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().Be("dotnet");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_puts_format_version_in_correct_place_of_the_file()
         {
             _generatedDocument

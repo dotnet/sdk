@@ -1,16 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Runtime.CompilerServices;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class CopyPreservingRelativeSymlinksTests : SdkTest
 {
 #if !NETFRAMEWORK
-    [Fact]
+    [TestMethod]
     public void ItCopiesRegularFiles()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -29,7 +31,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         task.CopiedFiles.Should().HaveCount(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void ItPreservesRelativeSymbolicLinks()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -57,7 +59,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         destInfo.LinkTarget.Should().Be("target.dll");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItPreservesRelativeSymbolicLinksWithPathTraversal()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -90,7 +92,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         destInfo.LinkTarget.Should().Be("../target.dll");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItCopiesMixedFilesAndSymlinks()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -126,7 +128,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         new FileInfo(destSymlink).LinkTarget.Should().Be("target.dll");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItCreatesDestinationDirectories()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -143,7 +145,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         File.Exists(destFile).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItOverwritesExistingFiles()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -161,7 +163,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         File.ReadAllText(destFile).Should().Be("new content");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItOverwritesExistingSymlinkWithRegularFile()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -186,7 +188,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         File.ReadAllText(destFile).Should().Be("regular content");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItOverwritesExistingRegularFileWithSymlink()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -212,7 +214,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         destInfo.LinkTarget.Should().Be("target.dll");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItFailsWhenSymlinkTargetIsOutsideCopyScope()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -236,7 +238,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         task.Execute().Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItSucceedsWhenSymlinkTargetIsWithinCopyScope()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -261,7 +263,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         new FileInfo(destSymlink).LinkTarget.Should().Be("target.dll");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItFailsWhenSourceFileDoesNotExist()
     {
         var (_, destDir) = CreateSourceAndDestDirs();
@@ -273,7 +275,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         task.Execute().Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItFailsWhenSourceAndDestinationCountMismatch()
     {
         var (sourceDir, destDir) = CreateSourceAndDestDirs();
@@ -290,7 +292,7 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         task.Execute().Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItSucceedsWithEmptySourceFiles()
     {
         var task = CreateTask([], []);
@@ -299,9 +301,9 @@ public class CopyPreservingRelativeSymlinksTests(ITestOutputHelper log) : SdkTes
         task.CopiedFiles.Should().BeEmpty();
     }
 
-    private (string sourceDir, string destDir) CreateSourceAndDestDirs()
+    private (string sourceDir, string destDir) CreateSourceAndDestDirs([CallerMemberName] string testName = "")
     {
-        var testDir = TestAssetsManager.CreateTestDirectory().Path;
+        var testDir = TestAssetsManager.CreateTestDirectory(testName).Path;
         var sourceDir = Path.Combine(testDir, "source");
         var destDir = Path.Combine(testDir, "dest");
         Directory.CreateDirectory(sourceDir);

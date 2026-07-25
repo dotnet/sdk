@@ -5,36 +5,32 @@ using Microsoft.CodeAnalysis.Tools.Formatters;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
+    [TestClass]
     public class CharsetFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new CharsetFormatter();
 
-        public CharsetFormatterTests(ITestOutputHelper output)
-        {
-            TestOutputHelper = output;
-        }
-
-        [Theory]
-        [InlineData("latin1", "utf-8")]
-        [InlineData("latin1", "utf-8-bom")]
-        [InlineData("latin1", "utf-16be")]
-        [InlineData("latin1", "utf-16le")]
-        [InlineData("utf-8", "latin1")]
-        [InlineData("utf-8", "utf-8-bom")]
-        [InlineData("utf-8", "utf-16be")]
-        [InlineData("utf-8", "utf-16le")]
-        [InlineData("utf-8-bom", "latin1")]
-        [InlineData("utf-8-bom", "utf-8")]
-        [InlineData("utf-8-bom", "utf-16be")]
-        [InlineData("utf-8-bom", "utf-16le")]
-        [InlineData("utf-16be", "latin1")]
-        [InlineData("utf-16be", "utf-8")]
-        [InlineData("utf-16be", "utf-8-bom")]
-        [InlineData("utf-16be", "utf-16le")]
-        [InlineData("utf-16le", "latin1")]
-        [InlineData("utf-16le", "utf-8")]
-        [InlineData("utf-16le", "utf-8-bom")]
-        [InlineData("utf-16le", "utf-16be")]
+        [TestMethod]
+        [DataRow("latin1", "utf-8")]
+        [DataRow("latin1", "utf-8-bom")]
+        [DataRow("latin1", "utf-16be")]
+        [DataRow("latin1", "utf-16le")]
+        [DataRow("utf-8", "latin1")]
+        [DataRow("utf-8", "utf-8-bom")]
+        [DataRow("utf-8", "utf-16be")]
+        [DataRow("utf-8", "utf-16le")]
+        [DataRow("utf-8-bom", "latin1")]
+        [DataRow("utf-8-bom", "utf-8")]
+        [DataRow("utf-8-bom", "utf-16be")]
+        [DataRow("utf-8-bom", "utf-16le")]
+        [DataRow("utf-16be", "latin1")]
+        [DataRow("utf-16be", "utf-8")]
+        [DataRow("utf-16be", "utf-8-bom")]
+        [DataRow("utf-16be", "utf-16le")]
+        [DataRow("utf-16le", "latin1")]
+        [DataRow("utf-16le", "utf-8")]
+        [DataRow("utf-16le", "utf-8-bom")]
+        [DataRow("utf-16le", "utf-16be")]
         public async Task TestCharsetWrong_CharsetFixed(string codeValue, string expectedValue)
         {
             var codeEncoding = CharsetFormatter.GetCharset(codeValue);
@@ -51,10 +47,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var formattedText = await AssertCodeUnchangedAsync(testCode, editorConfig, codeEncoding);
 
-            Assert.Equal(expectedEncoding, formattedText.Encoding);
+            Assert.AreEqual(expectedEncoding, formattedText.Encoding);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCharsetNotSpecified_NoChange()
         {
             // This encoding is not supported by .editorconfig, so if it roundtrips then there was no change.
@@ -68,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var formattedText = await AssertCodeUnchangedAsync(testCode, editorConfig, codeEncoding);
 
-            Assert.Equal(codeEncoding, formattedText.Encoding);
+            Assert.AreEqual(codeEncoding, formattedText.Encoding);
         }
     }
 }

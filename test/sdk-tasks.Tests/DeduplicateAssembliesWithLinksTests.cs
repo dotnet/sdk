@@ -7,10 +7,11 @@ using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class DeduplicateAssembliesWithLinksTests : SdkTest
 {
 #if !NETFRAMEWORK
-    [Fact]
+    [TestMethod]
     public void WhenDuplicatesExistItCreatesHardLinks()
     {
         var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -48,7 +49,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         inode2.Should().Be(inode3);
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenDuplicatesExistItCreatesSymbolicLinks()
     {
         var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -77,7 +78,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         symlinksCreated.Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItSelectsMasterByDepthThenAlphabetically()
     {
         var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -118,7 +119,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         GetInode(nestedFile).Should().Be(primaryInode);
     }
 
-    [Fact]
+    [TestMethod]
     public void ItOnlyDeduplicatesAssemblies()
     {
         var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -168,7 +169,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         json1Inode.Should().NotBe(json2Inode);
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenLayoutDirectoryDoesNotExistItFails()
     {
         var nonExistentDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
@@ -179,7 +180,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         result.Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void ItHandlesMultipleDuplicateGroups()
     {
         var layoutDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -221,7 +222,7 @@ public class DeduplicateAssembliesWithLinksTests(ITestOutputHelper log) : SdkTes
         inodeUnique.Should().NotBe(inodeB1);
     }
 
-    [Fact]
+    [TestMethod]
     public void ItCreatesRelativeSymbolicLinks()
     {
         var layoutDir = TestAssetsManager.CreateTestDirectory().Path;

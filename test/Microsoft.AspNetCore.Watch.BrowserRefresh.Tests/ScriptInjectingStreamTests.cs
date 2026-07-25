@@ -1,13 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
 
+[TestClass]
 public class ScriptInjectingStreamTests
 {
     private static readonly string s_injectedScript = ScriptInjectingStream.InjectedScript;
 
-    [Fact]
+    public TestContext TestContext { get; set; } = null!;
+
+    [TestMethod]
     public void Write_CompleteBodyTagInSingleWrite_InjectsScript()
     {
         // Arrange
@@ -20,11 +23,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_CompleteBodyTagInSingleWrite_InjectsScript()
     {
         // Arrange
@@ -33,25 +36,25 @@ public class ScriptInjectingStreamTests
         var html = "<html><body>Content</body></html>";
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), TestContext.Current.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Theory]
-    [InlineData("<html><body>Content^<", "/body></html>")]
-    [InlineData("<html><body>Content^</", "body></html>")]
-    [InlineData("<html><body>Content^</b", "ody></html>")]
-    [InlineData("<html><body>Content^</bo", "dy></html>")]
-    [InlineData("<html><body>Content^</bod", "y></html>")]
-    [InlineData("<html><body>Content^</body", "></html>")]
-    [InlineData("<html><body>Content^", "<", "/body></html>")]
-    [InlineData("<html><body>C", "o", "ntent^", "<", "/body></html>")]
-    [InlineData("<html><body>Content^", "</", "body", "></html>")]
-    [InlineData("<html><body>Content", "</", "^</", "body></html>")]
+    [TestMethod]
+    [DataRow("<html><body>Content^<", "/body></html>")]
+    [DataRow("<html><body>Content^</", "body></html>")]
+    [DataRow("<html><body>Content^</b", "ody></html>")]
+    [DataRow("<html><body>Content^</bo", "dy></html>")]
+    [DataRow("<html><body>Content^</bod", "y></html>")]
+    [DataRow("<html><body>Content^</body", "></html>")]
+    [DataRow("<html><body>Content^", "<", "/body></html>")]
+    [DataRow("<html><body>C", "o", "ntent^", "<", "/body></html>")]
+    [DataRow("<html><body>Content^", "</", "body", "></html>")]
+    [DataRow("<html><body>Content", "</", "^</", "body></html>")]
     public void Write_BodyTagSplitAcrossMultipleWrites_InjectsScript(params string[] parts)
     {
         // Arrange
@@ -67,21 +70,21 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal(expectedResult, result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual(expectedResult, result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Theory]
-    [InlineData("<html><body>Content^<", "/body></html>")]
-    [InlineData("<html><body>Content^</", "body></html>")]
-    [InlineData("<html><body>Content^</b", "ody></html>")]
-    [InlineData("<html><body>Content^</bo", "dy></html>")]
-    [InlineData("<html><body>Content^</bod", "y></html>")]
-    [InlineData("<html><body>Content^</body", "></html>")]
-    [InlineData("<html><body>Content^", "<", "/body></html>")]
-    [InlineData("<html><body>C", "o", "ntent^", "<", "/body></html>")]
-    [InlineData("<html><body>Content^", "</", "body", "></html>")]
-    [InlineData("<html><body>Content", "</", "^</", "body></html>")]
+    [TestMethod]
+    [DataRow("<html><body>Content^<", "/body></html>")]
+    [DataRow("<html><body>Content^</", "body></html>")]
+    [DataRow("<html><body>Content^</b", "ody></html>")]
+    [DataRow("<html><body>Content^</bo", "dy></html>")]
+    [DataRow("<html><body>Content^</bod", "y></html>")]
+    [DataRow("<html><body>Content^</body", "></html>")]
+    [DataRow("<html><body>Content^", "<", "/body></html>")]
+    [DataRow("<html><body>C", "o", "ntent^", "<", "/body></html>")]
+    [DataRow("<html><body>Content^", "</", "body", "></html>")]
+    [DataRow("<html><body>Content", "</", "^</", "body></html>")]
     public async Task WriteAsync_BodyTagSplitAcrossMultipleWrites_InjectsScript(params string[] parts)
     {
         // Arrange
@@ -92,16 +95,16 @@ public class ScriptInjectingStreamTests
         // Act
         foreach (var part in parts)
         {
-            await stream.WriteAsync(Encoding.UTF8.GetBytes(part.Replace("^", "")), TestContext.Current.CancellationToken);
+            await stream.WriteAsync(Encoding.UTF8.GetBytes(part.Replace("^", "")), TestContext.CancellationToken);
         }
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal(expectedResult, result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual(expectedResult, result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Dispose_FlushesPartialBodyTagAtEndOfInput()
     {
         // Arrange
@@ -116,12 +119,12 @@ public class ScriptInjectingStreamTests
         var flushResult = Encoding.UTF8.GetString(baseStream.ToArray());
 
         // Assert
-        Assert.Equal("<html><head>Content</head></html>", writeResult);
-        Assert.Equal("<html><head>Content</head></html></bod", flushResult);
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.AreEqual("<html><head>Content</head></html>", writeResult);
+        Assert.AreEqual("<html><head>Content</head></html></bod", flushResult);
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DisposeAsync_FlushesPartialBodyTagAtEndOfInput()
     {
         // Arrange
@@ -129,19 +132,19 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><head>Content</head></html></bod"), TestContext.Current.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><head>Content</head></html></bod"), TestContext.CancellationToken);
         var writeResult = Encoding.UTF8.GetString(baseStream.ToArray());
 
         await stream.DisposeAsync();
         var flushResult = Encoding.UTF8.GetString(baseStream.ToArray());
 
         // Assert
-        Assert.Equal("<html><head>Content</head></html>", writeResult);
-        Assert.Equal("<html><head>Content</head></html></bod", flushResult);
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.AreEqual("<html><head>Content</head></html>", writeResult);
+        Assert.AreEqual("<html><head>Content</head></html></bod", flushResult);
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Write_BodyTagSplitAcrossMultipleSingleByteWrites_InjectsScript()
     {
         // Arrange
@@ -159,11 +162,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_BodyTagSplitAcrossMultipleSingleByteWrites_InjectsScript()
     {
         // Arrange
@@ -171,21 +174,21 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act - Split "</body>" across 7 writes
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content<"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("/"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("b"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("o"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("d"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("y"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("></html>"), TestContext.Current.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content<"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("/"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("b"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("o"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("d"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("y"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("></html>"), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Write_FalsePositivePartialMatch_FlushesCorrectly()
     {
         // Arrange
@@ -198,11 +201,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content</br>Not a body tag{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content</br>Not a body tag{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_FalsePositivePartialMatch_FlushesCorrectly()
     {
         // Arrange
@@ -210,16 +213,16 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act - Start with partial match that turns out false
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content</b"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("r>Not a body tag</body></html>"), TestContext.Current.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>Content</b"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("r>Not a body tag</body></html>"), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content</br>Not a body tag{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content</br>Not a body tag{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Write_NoBodyTag_NoInjection()
     {
         // Arrange
@@ -232,11 +235,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal(html, result);
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.AreEqual(html, result);
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_NoBodyTag_NoInjection()
     {
         // Arrange
@@ -245,15 +248,15 @@ public class ScriptInjectingStreamTests
         var html = "<html><div>Content</div></html>";
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), TestContext.Current.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes(html), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal(html, result);
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.AreEqual(html, result);
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Write_MultipleBodyTags_InjectsOnlyOnce()
     {
         // Arrange
@@ -266,11 +269,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>First{s_injectedScript}</body><body>Second</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>First{s_injectedScript}</body><body>Second</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_MultipleBodyTags_InjectsOnlyOnce()
     {
         // Arrange
@@ -278,16 +281,16 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>First</body>"), TestContext.Current.CancellationToken);
-        await stream.WriteAsync(Encoding.UTF8.GetBytes("<body>Second</body></html>"), TestContext.Current.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<html><body>First</body>"), TestContext.CancellationToken);
+        await stream.WriteAsync(Encoding.UTF8.GetBytes("<body>Second</body></html>"), TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>First{s_injectedScript}</body><body>Second</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>First{s_injectedScript}</body><body>Second</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void WriteByte_PassesThroughDirectly()
     {
         // Arrange
@@ -300,11 +303,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = baseStream.ToArray();
-        Assert.Equal(new byte[] { 65, 66 }, result);
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.AreSequenceEqual(new byte[] { 65, 66 }, result);
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Write_EmptyBuffer_DoesNothing()
     {
         // Arrange
@@ -315,11 +318,11 @@ public class ScriptInjectingStreamTests
         stream.Write(ReadOnlySpan<byte>.Empty);
 
         // Assert
-        Assert.Empty(baseStream.ToArray());
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.IsEmpty(baseStream.ToArray());
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_EmptyBuffer_DoesNothing()
     {
         // Arrange
@@ -327,33 +330,29 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.WriteAsync(ReadOnlyMemory<byte>.Empty, TestContext.Current.CancellationToken);
+        await stream.WriteAsync(ReadOnlyMemory<byte>.Empty, TestContext.CancellationToken);
 
         // Assert
-        Assert.Empty(baseStream.ToArray());
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.IsEmpty(baseStream.ToArray());
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_WithCancellation_PropagatesCancellation()
     {
         // Arrange
-        var baseStream = new MemoryStream();
-        var stream = new ScriptInjectingStream(baseStream);
         var cts = new CancellationTokenSource();
         cts.Cancel();
+        var mockStream = new CancellationTestStream();
+        var testStream = new ScriptInjectingStream(mockStream);
+        var buffer = Encoding.UTF8.GetBytes("test");
 
         // Act & Assert
-        await Assert.ThrowsAsync<OperationCanceledException>(async () =>
-        {
-            // Use a mock stream that respects cancellation
-            var mockStream = new CancellationTestStream();
-            var testStream = new ScriptInjectingStream(mockStream);
-            await testStream.WriteAsync(Encoding.UTF8.GetBytes("test"), cts.Token);
-        });
+        await Assert.ThrowsExactlyAsync<OperationCanceledException>(async () =>
+            await testStream.WriteAsync(buffer, cts.Token));
     }
 
-    [Fact]
+    [TestMethod]
     public void Write_ArrayOverload_CompleteBodyTag_InjectsScript()
     {
         // Arrange
@@ -367,11 +366,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_ArrayOverload_CompleteBodyTag_InjectsScript()
     {
         // Arrange
@@ -381,15 +380,15 @@ public class ScriptInjectingStreamTests
         var bytes = Encoding.UTF8.GetBytes(html);
 
         // Act
-        await stream.WriteAsync(bytes, 0, bytes.Length, TestContext.Current.CancellationToken);
+        await stream.WriteAsync(bytes, 0, bytes.Length, TestContext.CancellationToken);
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Write_ArrayOverloadWithOffset_InjectsScript()
     {
         // Arrange
@@ -402,11 +401,11 @@ public class ScriptInjectingStreamTests
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task WriteAsync_ArrayOverloadWithOffset_InjectsScript()
     {
         // Arrange
@@ -415,15 +414,15 @@ public class ScriptInjectingStreamTests
         var buffer = Encoding.UTF8.GetBytes("XXX<html><body>Content</body></html>YYY");
 
         // Act
-        await stream.WriteAsync(buffer, 3, buffer.Length - 6, TestContext.Current.CancellationToken); // Skip XXX and YYY
+        await stream.WriteAsync(buffer, 3, buffer.Length - 6, TestContext.CancellationToken); // Skip XXX and YYY
 
         // Assert
         var result = Encoding.UTF8.GetString(baseStream.ToArray());
-        Assert.Equal($"<html><body>Content{s_injectedScript}</body></html>", result);
-        Assert.True(stream.ScriptInjectionPerformed);
+        Assert.AreEqual($"<html><body>Content{s_injectedScript}</body></html>", result);
+        Assert.IsTrue(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public void Flush_WithoutAnyWrites_DoesNotCrash()
     {
         // Arrange
@@ -434,11 +433,11 @@ public class ScriptInjectingStreamTests
         stream.Flush();
 
         // Assert
-        Assert.Empty(baseStream.ToArray());
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.IsEmpty(baseStream.ToArray());
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task FlushAsync_WithoutAnyWrites_DoesNotCrash()
     {
         // Arrange
@@ -446,11 +445,11 @@ public class ScriptInjectingStreamTests
         var stream = new ScriptInjectingStream(baseStream);
 
         // Act
-        await stream.FlushAsync(TestContext.Current.CancellationToken);
+        await stream.FlushAsync(TestContext.CancellationToken);
 
         // Assert
-        Assert.Empty(baseStream.ToArray());
-        Assert.False(stream.ScriptInjectionPerformed);
+        Assert.IsEmpty(baseStream.ToArray());
+        Assert.IsFalse(stream.ScriptInjectionPerformed);
     }
 
     private class CancellationTestStream : Stream

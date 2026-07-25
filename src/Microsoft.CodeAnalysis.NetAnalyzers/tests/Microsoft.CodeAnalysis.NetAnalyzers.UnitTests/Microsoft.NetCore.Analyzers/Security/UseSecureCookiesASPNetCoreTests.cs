@@ -5,16 +5,16 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseSecureCookiesASPNetCore,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseSecureCookiesASPNetCoreTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestHasWrongSecurePropertyAssignmentDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -34,7 +34,7 @@ class TestClass
                 GetCSharpResultAt(12, 9, UseSecureCookiesASPNetCore.DefinitelyUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestHasWrongSecurePropertyAssignmentMaybeChangedRightDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -62,7 +62,7 @@ class TestClass
                     GetCSharpResultAt(20, 9, UseSecureCookiesASPNetCore.MaybeUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestHasRightSecurePropertyAssignmentMaybeChangedWrongDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -90,7 +90,7 @@ class TestClass
                 GetCSharpResultAt(20, 9, UseSecureCookiesASPNetCore.MaybeUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignSecurePropertyAnUnassignedVariableMaybeChangedWrongDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -118,7 +118,7 @@ class TestClass
                 GetCSharpResultAt(20, 9, UseSecureCookiesASPNetCore.MaybeUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignSecurePropertyAnUnassignedVariableMaybeChangedRightDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -146,7 +146,7 @@ class TestClass
                 GetCSharpResultAt(20, 9, UseSecureCookiesASPNetCore.MaybeUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAssignSecurePropertyAnAssignedVariableMaybeChangedDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -175,7 +175,7 @@ class TestClass
                 GetCSharpResultAt(21, 9, UseSecureCookiesASPNetCore.MaybeUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestHasWrongSecurePropertyInitializerDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -194,7 +194,7 @@ class TestClass
                 GetCSharpResultAt(11, 9, UseSecureCookiesASPNetCore.DefinitelyUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutSecurePropertyAssignmentDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -213,7 +213,7 @@ class TestClass
                 GetCSharpResultAt(11, 9, UseSecureCookiesASPNetCore.DefinitelyUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestParamterLengthLessThan3TrueDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -231,7 +231,7 @@ class TestClass
                 GetCSharpResultAt(10, 9, UseSecureCookiesASPNetCore.DefinitelyUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetCookieOptionsFromOtherMethodInterproceduralDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -257,7 +257,7 @@ class TestClass
                 GetCSharpResultAt(10, 9, UseSecureCookiesASPNetCore.DefinitelyUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPassCookieOptionsAsParameterInterproceduralDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -282,7 +282,7 @@ class TestClass
                 GetCSharpResultAt(17, 9, UseSecureCookiesASPNetCore.DefinitelyUseSecureCookiesASPNetCoreRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestHasRightSecurePropertyAssignmentNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -301,7 +301,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestHasRightSecurePropertyInitializerNoDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -329,7 +329,7 @@ class TestClass
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

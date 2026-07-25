@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -7,9 +7,10 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class CollapseMultiplePathOperationsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_SingleCombineCall()
         {
             var csCode = """
@@ -26,7 +27,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(csCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_SingleJoinCall()
         {
             var csCode = """
@@ -43,7 +44,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(csCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_NestedCombineCalls()
         {
             var csCode = """
@@ -71,7 +72,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_NestedJoinCalls()
         {
             var csCode = """
@@ -99,7 +100,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_DeeplyNestedCombineCalls()
         {
             var csCode = """
@@ -127,7 +128,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_FullyQualifiedName()
         {
             var csCode = """
@@ -151,7 +152,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_DifferentMethods()
         {
             var csCode = """
@@ -168,7 +169,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(csCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_WithMultipleArgumentsInInnerCall()
         {
             var csCode = """
@@ -196,7 +197,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_MultipleNestedLevels()
         {
             var csCode = """
@@ -224,7 +225,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_LargeNumberOfArguments()
         {
             var csCode = """
@@ -258,7 +259,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_NestedInMiddlePosition()
         {
             var csCode = """
@@ -286,7 +287,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_NestedInLastPosition()
         {
             var csCode = """
@@ -314,7 +315,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_WithNonConstArguments()
         {
             var csCode = """
@@ -348,7 +349,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyCodeFixAsync(csCode, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_JoinNestedInCombine()
         {
             var csCode = """
@@ -365,7 +366,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(csCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_CombineNestedInJoinMultipleLevels()
         {
             var csCode = """
@@ -382,7 +383,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(csCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_DeeplyMixedCombineAndJoinNesting()
         {
             var csCode = """
