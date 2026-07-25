@@ -3,14 +3,55 @@ import { createFailureFingerprint, normalizeEvidenceText, splitNonEmptyLines } f
 
 export function classifyTaskFailure(name, issues = []) {
   const text = `${name}\n${issues.join("\n")}`;
-  if (/artifact (?:was )?not found|download previous build|missing artifact/i.test(text)) return "cascade";
-  if (/yaml|pipeline validation|unexpected value|mapping was not expected|template expression/i.test(text)) return "pipeline-configuration";
-  if (/monitor helix jobs|send to helix|testbuild tests/i.test(text)) return "helix";
-  if (/checkout|initialize container|install|acquire|setup/i.test(text)) return "setup";
-  if (/restore|nuget|feed/i.test(text)) return "restore";
-  if (/\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b|\bbuild\b|compile/i.test(text)) return "build";
-  if (/test/i.test(text)) return "test";
-  return "pipeline-task";
+  const diagnosticCode = text.match(/\b(?:MSB|NETSDK|CS|NU)\d{4}\b/i)?.[0]?.toUpperCase() ?? null;
+  if (/artifact (?:was )?not found|download previous build|missing artifact/i.test(text)) {
+    return { phase: "artifact-transfer", failureType: "artifact-missing", diagnosticCode };
+  }
+  if (/yaml|pipeline validation|unexpected value|mapping was not expected|template expression/i.test(text)) {
+    return { phase: "pipeline-validation", failureType: "configuration-error", diagnosticCode };
+  }
+  if (/monitor helix jobs|send to helix|testbuild tests/i.test(text)) {
+    return { phase: "test-orchestration", failureType: "downstream-failure", diagnosticCode };
+  }
+  if (/checkout|couldn't find remote ref|repository not found/i.test(text)) {
+    return { phase: "source-checkout", failureType: "source-unavailable", diagnosticCode };
+  }
+  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed|credentials? (?:were )?rejected/i.test(text)) {
+    return { phase: inferTaskPhase(name, text), failureType: "authentication-failure", diagnosticCode };
+  }
+  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text)) {
+    return { phase: inferTaskPhase(name, text), failureType: "network-failure", diagnosticCode };
+  }
+  if (diagnosticCode?.startsWith("CS")) {
+    return { phase: "compilation", failureType: "compiler-error", diagnosticCode };
+  }
+  if (/exec format error|cannot execute binary|signing failed|signtool|sn\.exe/i.test(text)) {
+    return { phase: "signing", failureType: "tool-execution-error", diagnosticCode };
+  }
+  if (/\bNU19\d{2}\b|known (?:low|moderate|high|critical) severity vulnerability/i.test(text)) {
+    return { phase: "dependency-restore", failureType: "package-policy-error", diagnosticCode };
+  }
+  if (diagnosticCode?.startsWith("NU") || /restore|nuget|feed/i.test(text)) {
+    return { phase: "dependency-restore", failureType: "package-resolution-error", diagnosticCode };
+  }
+  if (/initialize container|install|acquire|setup/i.test(text)) {
+    return { phase: "environment-setup", failureType: "tool-execution-error", diagnosticCode };
+  }
+  if (/\b(?:MSB\d{4}|NETSDK\d{4})\b|\bbuild\b|compile/i.test(text)) {
+    return { phase: "compilation", failureType: "build-task-error", diagnosticCode };
+  }
+  if (/test/i.test(text)) return { phase: "test-execution", failureType: "unknown-error", diagnosticCode };
+  return { phase: "unknown", failureType: "unknown-error", diagnosticCode };
+}
+
+function inferTaskPhase(name, text) {
+  if (/checkout/i.test(name)) return "source-checkout";
+  if (/restore|nuget|feed|NuGet\.targets/i.test(text)) return "dependency-restore";
+  if (/sign|sn\.exe/i.test(text)) return "signing";
+  if (/test|helix/i.test(name)) return "test-execution";
+  if (/build|compile/i.test(name)) return "compilation";
+  if (/install|acquire|setup|initialize/i.test(name)) return "environment-setup";
+  return "unknown";
 }
 
 function timelinePath(record, recordsById) {
@@ -54,24 +95,41 @@ function summarizeTaskLog(logText) {
   return [...new Set((diagnostics.length > 0 ? diagnostics : fallback.length > 0 ? fallback : lines).slice(-8))];
 }
 
+function selectTaskMechanism(evidence, taskName) {
+  const usable = evidence
+    .filter(line => !/back off .* before retry/i.test(line))
+    .filter(line => !/^Bash exited with code/i.test(line));
+  const ranked = [
+    usable.filter(line => /\b(?:MSB|NETSDK|CS|NU)\d{4}\b/i.test(line)),
+    usable.filter(line => /\b(?:fatal|error|exception)\b/i.test(line)),
+    usable
+  ];
+  const candidates = ranked.find(group => group.length > 0) ?? [];
+  return candidates
+    .map(line => normalizeEvidenceText(line))
+    .sort((left, right) => left.localeCompare(right))[0]
+    ?? taskName;
+}
+
 export function createTaskObservations(timelineFailures, logsById = new Map()) {
   return timelineFailures
     .filter(failure => failure.type === "Task")
     .map(failure => {
       const logExcerpt = summarizeTaskLog(logsById.get(failure.logId));
       const evidence = [...failure.issues, ...logExcerpt];
-      const category = classifyTaskFailure(failure.name, evidence);
-      const mechanism = evidence.find(issue => /\b(?:fatal|error\b|MSB\d{4}|NETSDK\d{4}|CS\d{4})/i.test(issue)
-        && !/back off .* before retry/i.test(issue))
-        ?? evidence.find(issue => !/^Bash exited with code/i.test(issue) && !/back off .* before retry/i.test(issue))
-        ?? failure.name;
+      const classification = classifyTaskFailure(failure.name, evidence);
+      const mechanism = selectTaskMechanism(evidence, failure.name);
       return {
         kind: "pipeline-task",
-        category,
+        ...classification,
+        evidenceSources: ["azure-timeline", ...(logExcerpt.length > 0 ? ["azure-task-log"] : [])],
         component: failure.name,
         mechanism,
-        fingerprint: createFailureFingerprint(category, failure.name, mechanism),
-        actionable: category !== "cascade" && category !== "helix",
+        fingerprint: createFailureFingerprint({
+          ...classification, component: failure.name, mechanism
+        }),
+        actionable: classification.failureType !== "artifact-missing"
+          && classification.failureType !== "downstream-failure",
         path: failure.path,
         issues: failure.issues,
         logExcerpt,
@@ -86,14 +144,19 @@ export function createPipelineObservation(build, timelineRecords = []) {
     .filter(validation => `${validation.result ?? ""}`.toLowerCase() !== "ok")
     .map(validation => normalizeEvidenceText(validation.message ?? validation.result));
   if (validations.length === 0 && timelineRecords.length > 0) return null;
-  const category = validations.length > 0 ? "pipeline-configuration" : "pipeline-startup";
   const mechanism = validations.join("\n") || "Pipeline failed without creating stages, jobs, or tasks.";
+  const phase = validations.length > 0 ? "pipeline-validation" : "pipeline-startup";
+  const failureType = validations.length > 0 ? "configuration-error" : "missing-execution";
   return {
     kind: "pipeline",
-    category,
+    phase,
+    failureType,
+    evidenceSources: [validations.length > 0 ? "azure-validation" : "azure-timeline"],
     component: build.definition?.name ?? "Azure DevOps pipeline",
     mechanism,
-    fingerprint: createFailureFingerprint(category, build.definition?.name ?? "pipeline", mechanism),
+    fingerprint: createFailureFingerprint({
+      phase, failureType, component: build.definition?.name ?? "pipeline", mechanism
+    }),
     actionable: validations.length > 0,
     validationResults: validations
   };

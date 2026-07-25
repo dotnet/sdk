@@ -11,10 +11,17 @@ export function createHeartbeatObservation(pipeline, branch, head, builds, now =
   const mechanism = `No ${pipeline.definitionId} build was queued for branch head ${head.sha}; the head was at least 90 minutes old when checked.`;
   return {
     kind: "pipeline-heartbeat",
-    category: "pipeline-not-triggered",
+    phase: "pipeline-scheduling",
+    failureType: "missing-execution",
+    evidenceSources: ["github-branch", "azure-build-history"],
     component: `${pipeline.repository}:${branch}`,
     mechanism,
-    fingerprint: createFailureFingerprint("pipeline-not-triggered", pipeline.definitionId, branch),
+    fingerprint: createFailureFingerprint({
+      phase: "pipeline-scheduling",
+      failureType: "missing-execution",
+      component: pipeline.definitionId,
+      mechanism: branch
+    }),
     actionable: false,
     branch,
     branchHead: head,

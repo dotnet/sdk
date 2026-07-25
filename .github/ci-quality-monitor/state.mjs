@@ -5,8 +5,8 @@ export function createPipelineStateKey(pipeline, branch) {
   return `${pipeline.organization}/${pipeline.project}/${pipeline.definitionId}:${branch}`;
 }
 
-export function createAuditKey(build, monitoringCategory, contextIdentity) {
-  return `${createBuildAttemptKey(build)}|${monitoringCategory}:${contextIdentity}`;
+export function createAuditKey(build, monitoringScope, contextIdentity) {
+  return `${createBuildAttemptKey(build)}|${monitoringScope}:${contextIdentity}`;
 }
 
 function createAuditStateKey(pipeline) {

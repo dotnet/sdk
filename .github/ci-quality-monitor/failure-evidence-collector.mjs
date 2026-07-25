@@ -55,7 +55,7 @@ export class FailureEvidenceCollector {
     return {
       pipeline,
       build: createBuildSummary(build),
-      monitoringCategory: candidate.monitoringCategory ?? null,
+      monitoringScope: candidate.monitoringScope ?? null,
       priority: candidate.priority ?? null,
       auditContext: candidate.auditContext ?? null,
       mergedPullRequest: candidate.mergedPullRequest ?? null,

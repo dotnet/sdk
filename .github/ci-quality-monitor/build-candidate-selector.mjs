@@ -46,7 +46,7 @@ export class BuildCandidateSelector {
     markAuditProcessed(this.state, pipeline, auditKey);
     return {
       candidates: candidate ? [{
-        pipeline, build: candidate, history, monitoringCategory: "stable-branch", priority: "HIGH",
+        pipeline, build: candidate, history, monitoringScope: "stable-branch", priority: "HIGH",
         auditContext, mergedPullRequest
       }] : [],
       bootstrap: false,
@@ -116,7 +116,7 @@ export class BuildCandidateSelector {
             if (!isAuditProcessed(this.state, pipeline, auditKey)) {
               markAuditProcessed(this.state, pipeline, auditKey);
               candidates.push({
-                pipeline, build, history, monitoringCategory: "stable-branch", priority: "HIGH", auditContext
+                pipeline, build, history, monitoringScope: "stable-branch", priority: "HIGH", auditContext
               });
             }
           }

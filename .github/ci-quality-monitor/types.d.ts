@@ -9,10 +9,13 @@ export interface Pipeline {
 
 export interface Observation {
   kind: string;
-  category: string;
+  phase: string;
+  failureType: string;
+  evidenceSources: string[];
   component: string;
   mechanism: string;
   fingerprint?: string;
+  diagnosticCode?: string | null;
   actionable: boolean;
   [detail: string]: unknown;
 }
@@ -21,7 +24,7 @@ export interface BuildCandidate {
   pipeline: Pipeline;
   build: Record<string, unknown>;
   history: Array<Record<string, unknown>>;
-  monitoringCategory?: "stable-branch";
+  monitoringScope?: "stable-branch";
   priority?: "HIGH";
   auditContext?: string;
   mergedPullRequest?: Record<string, unknown>;

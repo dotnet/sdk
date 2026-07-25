@@ -30,14 +30,20 @@ function createTestObservation(reference, test, testSummary) {
   const component = test.fullyQualifiedName || test.testName;
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
   const sharedMechanism = summarizeSharedTestMechanism(test.errorMessage, test.outcome);
-  const fingerprint = createFailureFingerprint("test", component, mechanism);
+  const phase = "test-execution";
+  const failureType = classifyTestFailureType(test.errorMessage);
+  const fingerprint = createFailureFingerprint({ phase, failureType, component, mechanism });
   return {
     kind: "test",
-    category: "test-failure",
+    phase,
+    failureType,
+    evidenceSources: ["helix-trx"],
     component,
     mechanism,
     fingerprint,
-    mechanismFingerprint: createFailureFingerprint("test-mechanism", "shared", sharedMechanism),
+    mechanismFingerprint: createFailureFingerprint({
+      phase, failureType, component: "shared", mechanism: sharedMechanism
+    }),
     actionable: true,
     workItem: reference.workItem,
     jobId: reference.jobId,
@@ -48,6 +54,20 @@ function createTestObservation(reference, test, testSummary) {
     stackTrace: normalizeEvidenceText(test.stackTrace),
     kbe: createTestKbeCandidate(test, fingerprint)
   };
+}
+
+function classifyTestFailureType(errorMessage) {
+  const text = `${errorMessage ?? ""}`;
+  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed/i.test(text)) {
+    return "authentication-failure";
+  }
+  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text)) {
+    return "network-failure";
+  }
+  if (/timed? ?out|timeout/i.test(text)) return "timeout";
+  if (/segmentation fault|stack overflow|core dump|app_crash/i.test(text)) return "process-crash";
+  if (/\bCS\d{4}\b/i.test(text)) return "compiler-error";
+  return "test-assertion";
 }
 
 export class HelixEvidenceClient {
@@ -87,7 +107,7 @@ export class HelixEvidenceClient {
     if (testResults.failures.length > 0) {
       return testResults.failures.map(test => createTestObservation(reference, test, testResults.summary));
     }
-    const category = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
+    const classification = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
     const consoleSummary = summarizeHelixConsole(consoleText);
     const causalConsoleLines = consoleSummary.hangEvidence.filter(line => line === consoleSummary.activeTest
       || /still running|hang timeout|timed? ?out|test host crashed|recovered \d+ test result|exit code/i.test(line));
@@ -97,11 +117,13 @@ export class HelixEvidenceClient {
     const mechanism = mechanismLines.join("\n") || `Exit code ${workItem.ExitCode ?? reference.exitCode}`;
     return [{
       kind: "helix-work-item",
-      category,
+      ...classification,
       component: reference.workItem,
       mechanism,
-      fingerprint: createFailureFingerprint(category, reference.workItem, mechanism),
-      actionable: category !== "infrastructure",
+      fingerprint: createFailureFingerprint({
+        ...classification, component: reference.workItem, mechanism
+      }),
+      actionable: classification.failureType !== "infrastructure-unavailable",
       jobId: reference.jobId,
       queue: reference.queue,
       exitCode: workItem.ExitCode ?? reference.exitCode,
@@ -124,10 +146,17 @@ export class HelixEvidenceClient {
       } catch (error) {
         observations.push({
           kind: "helix-work-item",
-          category: "work-item-failure",
+          phase: "test-execution",
+          failureType: "evidence-unavailable",
+          evidenceSources: ["helix-api"],
           component: reference.workItem,
           mechanism: normalizeEvidenceText(error.message),
-          fingerprint: createFailureFingerprint("work-item-failure", reference.workItem, error.message),
+          fingerprint: createFailureFingerprint({
+            phase: "test-execution",
+            failureType: "evidence-unavailable",
+            component: reference.workItem,
+            mechanism: error.message
+          }),
           actionable: false,
           ...reference
         });

@@ -21,7 +21,9 @@ export class PipelineHealthMonitor {
     } catch (error) {
       return {
         kind: "pipeline-heartbeat",
-        category: "heartbeat-unavailable",
+        phase: "pipeline-scheduling",
+        failureType: "evidence-unavailable",
+        evidenceSources: ["github-api", "azure-build-history"],
         component: `${pipeline.repository}:${branch}`,
         mechanism: normalizeEvidenceText(error.message),
         actionable: false

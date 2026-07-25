@@ -78,9 +78,20 @@ but is not required for the initial experiment.
 
 ## Failure Model
 
-The collector emits independent observations for pipeline configuration,
-startup, setup, restore, build, test, and Helix work-item failures. Artifact
-download cascades and generic Helix monitor parents are context only.
+The collector models each observation on independent axes:
+
+- `phase`: where execution stopped, such as `pipeline-validation`,
+  `source-checkout`, `dependency-restore`, `compilation`, `signing`, or
+  `test-execution`
+- `failureType`: what happened, such as `configuration-error`,
+  `network-failure`, `authentication-failure`, `compiler-error`, `timeout`, or
+  `process-crash`
+- `evidenceSources`: how the conclusion was established, such as Azure
+  validation, task logs, Helix TRX, console output, exit codes, or dumps
+
+This keeps transport failures independent from the build step that encountered
+them and keeps observation provenance independent from both. Artifact download
+cascades and generic Helix monitor parents are context only.
 Each failure also exposes `issueCandidates`, the actionable observations from
 the selected current build. Related-build observations are recurrence context
 and cannot directly anchor an issue. Non-actionable current observations are
@@ -93,7 +104,7 @@ stable evidence match. The same test can therefore map to multiple issues when
 it fails for different reasons. KBE recurrence requires the same test and
 mechanism on a different commit; retries of one commit do not count.
 
-Fingerprints are generated locally from the observation category, component, and
+Fingerprints are generated locally from phase, failure type, component, and
 normalized mechanism; they are not downloaded from Azure or Helix. Evidence
 normalization removes volatile GUIDs, timestamps, and machine-specific paths
 and bounds text size. It is domain-specific stability and data minimization,

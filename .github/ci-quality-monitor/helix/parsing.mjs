@@ -14,25 +14,54 @@ export function parseHelixWorkItemReferences(messages) {
 }
 
 export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
-  if (testFailures.length > 0) return "test-failure";
+  if (testFailures.length > 0) {
+    return { phase: "test-execution", failureType: "test-assertion", evidenceSources: ["helix-trx"] };
+  }
   const text = `${consoleText ?? ""}`;
   if (/test run completed|detected test end tag/i.test(text)
       && /app_crash|timed_out|exit(?:ed)? with (?:80|143)/i.test(text)) {
-    return "post-test-harness-failure";
+    return {
+      phase: "test-post-processing",
+      failureType: /app_crash/i.test(text) ? "process-crash" : "harness-error",
+      evidenceSources: ["helix-console", "process-exit-code"]
+    };
   }
   if (/workload timed out|run timed out|timed_out|timeout|timed out/i.test(text)
       || exitCode === 130 || exitCode === 143) {
-    return "timeout";
+    return {
+      phase: "test-execution",
+      failureType: "timeout",
+      evidenceSources: ["helix-console", "process-exit-code"]
+    };
   }
   if (/segmentation fault|stack overflow|core dump(?:ed)?|assert failed|app_crash|created crash dump/i.test(text)
       || [133, 134, 139].includes(exitCode)) {
-    return "crash";
+    return {
+      phase: "test-execution",
+      failureType: "process-crash",
+      evidenceSources: ["helix-console", "process-exit-code"]
+    };
+  }
+  if ([137, 143, 255].includes(exitCode)) {
+    return {
+      phase: "test-execution",
+      failureType: "process-termination",
+      evidenceSources: ["helix-console", "process-exit-code"]
+    };
   }
   if (/device_not_found|infrastructure error|agent connection|machine is not available/i.test(text)
       || [-4, 71, 81].includes(exitCode)) {
-    return "infrastructure";
+    return {
+      phase: "test-execution",
+      failureType: "infrastructure-unavailable",
+      evidenceSources: ["helix-console", "helix-work-item"]
+    };
   }
-  return "work-item-failure";
+  return {
+    phase: "test-execution",
+    failureType: "unknown-error",
+    evidenceSources: ["helix-console", "helix-work-item"]
+  };
 }
 
 export function summarizeHelixConsole(consoleText) {

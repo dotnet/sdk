@@ -16,30 +16,40 @@ function parseArguments(argumentsList) {
 
 function evaluateExample(example, dossier) {
   const candidates = dossier.failures.flatMap(failure => failure.issueCandidates ?? []);
-  const categories = [...new Set(candidates.map(candidate => candidate.category))];
-  const missing = example.expectedCategories.filter(category => !categories.includes(category));
+  const phases = [...new Set(candidates.map(candidate => candidate.phase))];
+  const failureTypes = [...new Set(candidates.map(candidate => candidate.failureType))];
+  const missingPhases = example.expectedPhases.filter(phase => !phases.includes(phase));
+  const missingFailureTypes = example.expectedFailureTypes
+    .filter(failureType => !failureTypes.includes(failureType));
   const minimum = example.minimumObservations ?? 1;
-  const categoryMatches = candidates.filter(candidate => example.expectedCategories.includes(candidate.category));
+  const minimumTotalCandidates = example.minimumTotalCandidates ?? 1;
+  const taxonomyMatches = candidates.filter(candidate => example.expectedPhases.includes(candidate.phase)
+    && example.expectedFailureTypes.includes(candidate.failureType));
   const mechanismTerms = example.expectedMechanismIncludes ?? [];
   const componentTerm = example.expectedComponentIncludes?.toLowerCase();
-  const exactMatches = categoryMatches.filter(candidate =>
+  const exactMatches = taxonomyMatches.filter(candidate =>
     mechanismTerms.every(term => candidate.mechanism?.toLowerCase().includes(term.toLowerCase()))
     && (!componentTerm || candidate.component?.toLowerCase().includes(componentTerm)));
   const sharedMechanismTerms = example.expectedMatchingMechanismIncludes ?? [];
   const matchingCandidates = candidates.filter(candidate =>
     sharedMechanismTerms.every(term => candidate.mechanism?.toLowerCase().includes(term.toLowerCase())));
   const minimumMatchingCandidates = example.minimumMatchingCandidates ?? 0;
-  const passed = missing.length === 0
-    && categoryMatches.length >= minimum
+  const passed = missingPhases.length === 0
+    && missingFailureTypes.length === 0
+    && candidates.length >= minimumTotalCandidates
+    && taxonomyMatches.length >= minimum
     && exactMatches.length > 0
     && matchingCandidates.length >= minimumMatchingCandidates;
   return {
     passed,
-    categories,
-    categoryMatchCount: categoryMatches.length,
+    phases,
+    failureTypes,
+    taxonomyMatchCount: taxonomyMatches.length,
+    totalCandidateCount: candidates.length,
     exactMatchCount: exactMatches.length,
     matchingCandidateCount: matchingCandidates.length,
-    missing
+    missingPhases,
+    missingFailureTypes
   };
 }
 
@@ -54,7 +64,7 @@ async function main() {
     const result = evaluateExample(example, dossier);
     results.push({ ...example, ...result });
     await writeFile(path.join(options.output, `${example.buildId}.json`), `${JSON.stringify(dossier, null, 2)}\n`);
-    console.log(`${result.passed ? "PASS" : "FAIL"} ${example.buildId} ${example.name}: ${result.categories.join(", ")}`);
+    console.log(`${result.passed ? "PASS" : "FAIL"} ${example.buildId} ${example.name}: ${result.phases.join(", ")} / ${result.failureTypes.join(", ")}`);
   }
   await writeFile(path.join(options.output, "summary.json"), `${JSON.stringify(results, null, 2)}\n`);
   if (results.some(result => !result.passed)) process.exitCode = 1;

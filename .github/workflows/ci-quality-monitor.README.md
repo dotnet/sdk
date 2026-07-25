@@ -62,7 +62,7 @@ current behavior from planned categories and priorities.
 | PR validation build | A definition `101` build of GitHub's synthetic `refs/pull/<number>/merge` ref. It tests the PR head merged into the target branch state available when Azure queued the build. |
 | Infrastructure PR | An automated integration PR. The planned first subtype is Maestro codeflow: sender `dotnet-maestro`, a `darc-*` head branch, and a source-code or dependency-flow title. Branding and automated interbranch merge PRs may be added later. |
 | Developer PR | A non-infrastructure development PR, whether authored by a person or a coding agent. Backports are also treated as developer PRs unless a later policy explicitly enrolls them. |
-| Monitoring category | The provenance class used to interpret a failure: `stable-branch`, `infra-pr`, or `developer-pr`. |
+| Monitoring scope | The provenance class used to interpret a failure: `stable-branch`, `infra-pr`, or `developer-pr`. |
 | Monitoring priority | The response policy derived from trusted build and PR metadata: `HIGH`, `MED`, or `LOW`. Manual callers and the AI agent cannot choose it. |
 | Actionable mechanism | A specific root failure after generic parent failures, dependency cancellations, artifact cascades, and duplicates have been removed. |
 | Recurrence | The same stable test and failure mechanism observed on independent refs. Repeated attempts of one PR are not independent recurrence because that PR may deterministically contain the defect. |
@@ -76,7 +76,7 @@ It must:
 
 1. Collect bounded public Azure DevOps and Helix evidence deterministically
 	before AI runs.
-2. Derive monitoring category and priority from trusted Azure and GitHub
+2. Derive monitoring scope and priority from trusted Azure and GitHub
 	metadata.
 3. Separate failures in integrated branch content from failures that may have
 	been introduced by an open PR.
@@ -90,9 +90,9 @@ It must:
 The current implementation milestone is **HIGH priority only**. MED and LOW are
 specified below for future expansion and to clarify design intent.
 
-## Monitoring Category
+## Monitoring Scope
 
-| Category | Included builds | Interpretation | Implementation status |
+| Scope | Included builds | Interpretation | Implementation status |
 | --- | --- | --- | --- |
 | Stable branch | Failed direct builds on allowlisted stable branches; a failed final PR validation linked by a merged-PR event to an allowlisted stable target | Content is integrated, or a failed validation was nevertheless followed by integration. Treat actionable mechanisms as live incidents. A merge event alone is not a failure. | **Current milestone** |
 | Infrastructure PR | Automated integration PRs. Start with verified Maestro codeflow PRs only. Branding and interbranch merge PRs are later extensions. | A failure can be flow infrastructure, a flake, or a valid incompatibility in incoming changes. It is not equivalent to a stable-branch incident. | Planned |
@@ -125,13 +125,13 @@ as unknown unless another evidence source establishes it.
 
 ## Trigger Category
 
-| Trigger | Candidate monitoring categories | Policy |
+| Trigger | Candidate monitoring scopes | Policy |
 | --- | --- | --- |
 | Azure `check_suite: completed` | Stable branch; infrastructure PR | For a non-success `azure-pipelines` suite, resolve and verify the definition `101` build. A direct allowlisted stable-branch failure is HIGH. Planned MED support may accept verified codeflow PR failures. Ordinary open PR failures do not file in the HIGH-only milestone. |
 | `pull_request: closed` with `merged == true` | Stable branch; infrastructure PR lifecycle | A merge is an evidence and lifecycle event, not a failure by itself. Link the PR to its final Azure validation. If that final validation failed and the target is allowlisted as stable, create a HIGH candidate. A successful PR build creates no incident. The current collector does not compare tested and landed trees, so it cannot claim exact landed-content validation. |
 | Daily routine | Stable branch; planned developer PR | Reconcile missed stable-branch check-suite events and poll only branches verified to have direct public branch CI. Detect a branch head for which Azure created no build record after two daily polls. The planned LOW extension will use this same run to select at most three newest unprocessed, completed, non-draft failures from distinct PRs and apply the independent-recurrence policy before AI may file anything. |
-| Manual dispatch with `build_id` | Evaluation only | Accept any completed registered public build for repeatable investigation and bypass automatic processing state. The current manual path does not assign a production monitoring category or priority and therefore cannot promote a build to HIGH. |
-| Fork-only evaluation push | Test harness only | Disposable validation mechanism. It is not a production monitoring category or production trigger policy. |
+| Manual dispatch with `build_id` | Evaluation only | Accept any completed registered public build for repeatable investigation and bypass automatic processing state. The current manual path does not assign a production monitoring scope or priority and therefore cannot promote a build to HIGH. |
+| Fork-only evaluation push | Test harness only | Disposable validation mechanism. It is not a production monitoring scope or production trigger policy. |
 
 ## Audit Processing and Promotion
 
@@ -139,7 +139,7 @@ Automatic deduplication uses both the Azure build attempt and its trusted audit
 context:
 
 ```text
-<build ID>:<finish time>:<result>|<monitoring category>:<context identity>
+<build ID>:<finish time>:<result>|<monitoring scope>:<context identity>
 ```
 
 | Audit context | Context identity | Re-audit rule |
@@ -162,7 +162,7 @@ spend AI on the same audit context again.
 
 | Delivery path | Processing behavior |
 | --- | --- |
-| Check-suite event | Resolve and verify the Azure build, derive its monitoring category and context identity, and mark that audit key processed before AI. Redelivery of the suite is suppressed. |
+| Check-suite event | Resolve and verify the Azure build, derive its monitoring scope and context identity, and mark that audit key processed before AI. Redelivery of the suite is suppressed. |
 | Daily stable-branch reconciliation | Derive the same `stable-direct` key as event delivery, so a build seen through either path is audited once. |
 | Updated Azure retry | A changed finish time or result creates a distinct audit key and is eligible in the same context. |
 | Manual `build_id` | Bypass automatic processing state for repeatable investigation, while still deriving category and priority from trusted metadata. |
@@ -201,23 +201,25 @@ New findings update the existing issue for that PR. A PR-close workflow may clos
 that linked issue, but must not close a cross-PR KBE merely because one codeflow
 PR closed.
 
-## Issue Category
+## Failure Taxonomy
 
-The collector can classify the following failure surfaces. The examples are
-historical public builds used to validate evidence collection; inclusion here
-does not retroactively assign production priority.
+Issue boundaries follow materially different causal mechanisms, not a flat list
+of CI task names. Phase and evidence source provide context but do not by
+themselves create separate issues. One package-service outage may surface during
+restore and inside test wrappers; those observations can form one incident when
+the endpoint and stable mechanism match. A compiler diagnostic and a timeout
+remain separate even when both happen under a build stage.
 
-| Issue category | Example | Potential issue description | Detection path in the evaluation |
+| Example | Phase | Failure type | Evidence sources |
 | --- | --- | --- | --- |
-| YAML pre-flight | [Build 1521345](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1521345) | `.vsts-pr.yml` was rejected before jobs started because `useFullyQualifiedTestName` was not a valid template parameter. | Azure validation result; neutral Azure check suite; manually replayed through the collector. |
-| Checkout or setup | [Build 1523420](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523420) | Checkout failed across multiple jobs after `git fetch` exited with code 128. | Azure timeline and task-log evidence; manually replayed through the collector. |
-| Restore or feed | [Build 1523525](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523525) | NuGet restore failed with HTTP 503; named tests also reported NU1301 against the dotnet6 feed. | Azure task logs and Helix TRX evidence; manually replayed through the collector. |
-| Compiler break | [Build 1525235](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525235) | `CS0114` in `RunReadyToRunCompiler.TaskEnvironment` failed multiple build legs before tests. | Azure timeline and logs; manually replayed through the collector. |
-| Stable release build break | [Build 1522972](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522972) | On `release/8.0.4xx`, `SignToolTask` failed with `MSB4018` because `sn.exe` produced an exec-format error on Linux and macOS. | Direct stable-branch Azure build; schedule/manual evaluation. This is representative of HIGH stable-branch monitoring. |
-| Multiple named tests | [Build 1525292](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525292) | Four named tests failed; two package tests shared an HTTP 503 mechanism and required mechanism-aware grouping. | Helix work-item APIs and TRX parsing on a direct `main` build. |
-| Helix hang or host crash | [Build 1524763](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1524763), [PR #55431](https://github.com/dotnet/sdk/pull/55431) | `BrowserDiagnostics` remained active for 50 minutes, the watchdog captured hang dumps, 83 streamed results contained no failed assertion, and the test host exited 137/work-item exit 7. A potential issue should describe the proximate watchdog termination separately from the still-unknown underlying hang. | Azure check suite identified the PR build; the deterministic collector recovered Helix console, TRX totals, exit codes, and dump links; AI produced the bounded RCA. Under the planned developer-PR policy this would require independent recurrence before a KBE could be filed. |
-| Pipeline not triggered | Synthetic heartbeat case | A registered direct-CI branch head remained without any Azure build record across two consecutive daily routines. The 90-minute threshold is only the minimum head age for recording each miss; daily scheduling makes ordinary detection latency approximately 24–48 hours. Invalid YAML with a recorded Azure build is not this category. | Daily GitHub-to-Azure heartbeat only; no completion event can exist when no Azure run exists. |
-| Internal or official CI | `dnceng/internal`, including definition `286` | Not scanned. Internal evidence may contain credentials or require authentication and is outside the public monitor registry. | None. |
+| YAML pre-flight [1521345](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1521345) | `pipeline-validation` | `configuration-error` | Azure validation |
+| Checkout [1523420](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523420) | `source-checkout` | `source-unavailable` | Azure timeline and task log |
+| NuGet 503 [1523525](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523525) | `dependency-restore`; wrapped occurrences at `test-execution` | `network-failure` | Azure task log; Helix TRX |
+| Compiler break [1525235](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525235) | `compilation` | `compiler-error` | Azure task log (`CS0114`) |
+| Signing tool break [1522972](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522972) | `signing` | `tool-execution-error` | Azure task log (`MSB4018`, `sn.exe`) |
+| Named tests [1525292](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525292) | `test-execution` | `test-assertion` or wrapped `network-failure` | Helix TRX |
+| Hang/watchdog [1524763](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1524763) | `test-execution` | `timeout` | Helix console, exit code, and dump |
+| Pipeline not triggered | `pipeline-scheduling` | `missing-execution` | GitHub branch and Azure build history |
 
 ## Scope Boundaries
 
@@ -233,4 +235,4 @@ does not retroactively assign production priority.
 - Developer PR LOW support requires independent recurrence data and bounded
   daily sampling before it can be enabled.
 - Manual evaluation bypasses automatic processing state but currently assigns
-  no production monitoring category or priority.
+  no production monitoring scope or priority.

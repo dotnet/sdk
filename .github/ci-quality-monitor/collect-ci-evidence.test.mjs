@@ -226,7 +226,8 @@ test("merged stable-target PR failures promote the same Azure attempt once", asy
 
   assert.equal(openPr.failures.length, 0);
   assert.equal(promoted.failures.length, 1);
-  assert.equal(promoted.failures[0].issueCandidates[0].category, "pipeline-configuration");
+  assert.equal(promoted.failures[0].issueCandidates[0].phase, "pipeline-validation");
+  assert.equal(promoted.failures[0].issueCandidates[0].failureType, "configuration-error");
   assert.equal(promoted.failures[0].priority, "HIGH");
   assert.equal(promoted.failures[0].auditContext, "stable-merge:124:landed-sha");
   assert.equal(redelivery.failures.length, 0);
@@ -286,25 +287,38 @@ test("parseHelixWorkItemReferences extracts SDK timeline warnings", () => {
 });
 
 test("classifyWorkItem distinguishes tests, timeout, crash, and infrastructure", () => {
-  assert.equal(classifyWorkItem(2, "", [{ test: "Example" }]), "test-failure");
-  assert.equal(classifyWorkItem(143, "WORKLOAD TIMED OUT"), "timeout");
-  assert.equal(classifyWorkItem(139, "Segmentation fault (core dumped)"), "crash");
-  assert.equal(classifyWorkItem(81, "DEVICE_NOT_FOUND"), "infrastructure");
-  assert.equal(classifyWorkItem(80, "Test run completed\nAPP_CRASH"), "post-test-harness-failure");
-  assert.equal(classifyWorkItem(2, "Copy all crash dumps to upload directory"), "work-item-failure");
+  assert.deepEqual(classifyWorkItem(2, "", [{ test: "Example" }]), {
+    phase: "test-execution", failureType: "test-assertion", evidenceSources: ["helix-trx"]
+  });
+  assert.equal(classifyWorkItem(143, "WORKLOAD TIMED OUT").failureType, "timeout");
+  assert.equal(classifyWorkItem(139, "Segmentation fault (core dumped)").failureType, "process-crash");
+  assert.equal(classifyWorkItem(81, "DEVICE_NOT_FOUND").failureType, "infrastructure-unavailable");
+  assert.equal(classifyWorkItem(80, "Test run completed\nAPP_CRASH").phase, "test-post-processing");
+  assert.equal(classifyWorkItem(2, "Copy all crash dumps to upload directory").failureType, "unknown-error");
 });
 
 test("classifyTaskFailure identifies roots and artifact cascades", () => {
-  assert.equal(classifyTaskFailure("Download Previous Build", ["Artifact not found"]), "cascade");
-  assert.equal(classifyTaskFailure("Initialize containers", []), "setup");
-  assert.equal(classifyTaskFailure("Build", ["error NETSDK1005"]), "build");
-  assert.equal(classifyTaskFailure("Validate pipeline", ["Unexpected value 'jobs'"]), "pipeline-configuration");
+  assert.deepEqual(classifyTaskFailure("Download Previous Build", ["Artifact not found"]), {
+    phase: "artifact-transfer", failureType: "artifact-missing", diagnosticCode: null
+  });
+  assert.equal(classifyTaskFailure("Initialize containers", []).phase, "environment-setup");
+  assert.equal(classifyTaskFailure("Build", ["error NETSDK1005"]).failureType, "build-task-error");
+  assert.equal(classifyTaskFailure("Validate pipeline", ["Unexpected value 'jobs'"]).phase, "pipeline-validation");
+  assert.deepEqual(classifyTaskFailure("Build", ["ResolvePackageAssets.cs: error CS1061: missing member"]), {
+    phase: "compilation", failureType: "compiler-error", diagnosticCode: "CS1061"
+  });
+  assert.equal(classifyTaskFailure("Build", ["NuGet.targets error 503 Service Unavailable"]).failureType, "network-failure");
+  assert.equal(classifyTaskFailure("Restore", ["401 Unauthorized from package source"]).failureType, "authentication-failure");
+  assert.equal(classifyTaskFailure("Restore", ["error NU1902: known vulnerability"]).failureType, "package-policy-error");
 });
 
 test("createFailureFingerprint removes volatile numeric values", () => {
   assert.equal(
-    createFailureFingerprint("test", "ItCanUpdatePackages", "HTTP 503 on port 443"),
-    "test|itcanupdatepackages|http-<n>-on-port-<n>");
+    createFailureFingerprint({
+      phase: "test-execution", failureType: "network-failure",
+      component: "ItCanUpdatePackages", mechanism: "HTTP 503 on port 443"
+    }),
+    "test-execution|network-failure|itcanupdatepackages|http-<n>-on-port-<n>");
 });
 
 test("parseTestResultXml returns recovered totals and independent named failures", () => {
@@ -351,10 +365,12 @@ test("createTaskObservations preserves roots and suppresses cascades", () => {
     { type: "Task", name: "Download Previous Build", issues: ["Artifact not found"], path: ["Validate", "Download Previous Build"], logId: 2 }
   ]);
 
-  assert.equal(observations[0].category, "build");
+  assert.equal(observations[0].phase, "compilation");
+  assert.equal(observations[0].failureType, "build-task-error");
   assert.equal(observations[0].actionable, true);
   assert.deepEqual(observations[0].path, ["Build", "Windows", "Build"]);
-  assert.equal(observations[1].category, "cascade");
+  assert.equal(observations[1].phase, "artifact-transfer");
+  assert.equal(observations[1].failureType, "artifact-missing");
   assert.equal(observations[1].actionable, false);
 });
 
@@ -375,7 +391,9 @@ test("createTaskObservations classifies restore failures from task logs", () => 
     type: "Task", name: "Build", issues: [], path: ["Build", "Linux", "Build"], logId: 28
   }], new Map([[28, "error: Unable to load the service index for NuGet source.\nResponse status code does not indicate success: 503 (Service Unavailable)."]]));
 
-  assert.equal(observations[0].category, "restore");
+  assert.equal(observations[0].phase, "dependency-restore");
+  assert.equal(observations[0].failureType, "network-failure");
+  assert.deepEqual(observations[0].evidenceSources, ["azure-timeline", "azure-task-log"]);
   assert.match(observations[0].mechanism, /NuGet source/);
   assert.equal(observations[0].actionable, true);
 });
@@ -404,9 +422,12 @@ test("createPipelineObservation represents YAML rejection and empty execution", 
   }, []);
   const empty = createPipelineObservation({ definition: { name: "sdk-ci" } }, []);
 
-  assert.equal(rejected.category, "pipeline-configuration");
+  assert.equal(rejected.phase, "pipeline-validation");
+  assert.equal(rejected.failureType, "configuration-error");
+  assert.deepEqual(rejected.evidenceSources, ["azure-validation"]);
   assert.equal(rejected.actionable, true);
-  assert.equal(empty.category, "pipeline-startup");
+  assert.equal(empty.phase, "pipeline-startup");
+  assert.equal(empty.failureType, "missing-execution");
   assert.equal(empty.actionable, false);
   assert.equal(createPipelineObservation({}, [{ id: "stage" }]), null);
 });
@@ -424,7 +445,8 @@ test("createHeartbeatObservation tolerates batching and detects an unbuilt branc
   const missed = createHeartbeatObservation(pipeline, branch, head, [
     { sourceVersion: "old", queueTime: "2026-07-24T11:59:00Z", definition: { id: 101 } }
   ], now);
-  assert.equal(missed.category, "pipeline-not-triggered");
+  assert.equal(missed.phase, "pipeline-scheduling");
+  assert.equal(missed.failureType, "missing-execution");
   assert.equal(missed.actionable, false);
 });
 
@@ -546,18 +568,50 @@ test("tracked issue fingerprints suppress candidates before agent activation", a
 test("evaluation scenarios retain only the intended current-build mechanism", () => {
   const dossier = {
     failures: [{ issueCandidates: [
-      { category: "restore", component: "Build", mechanism: "NuGet.targets error 503 Service Unavailable" },
-      { category: "test-failure", component: "CliSchema", mechanism: "snapshot mismatch" }
+      { phase: "dependency-restore", failureType: "network-failure", component: "Build", mechanism: "NuGet.targets error 503 Service Unavailable" },
+      { phase: "test-execution", failureType: "test-assertion", component: "CliSchema", mechanism: "snapshot mismatch" }
     ] }]
   };
 
   selectEvaluationCandidates(dossier, {
     name: "Feed service failure",
-    expectedCategories: ["restore"],
+    expectedPhases: ["dependency-restore"],
+    expectedFailureTypes: ["network-failure"],
     expectedMechanismIncludes: ["NuGet.targets", "503", "Service Unavailable"],
     evidence: "NuGet restore failed"
   });
 
-  assert.deepEqual(dossier.failures[0].issueCandidates.map(candidate => candidate.category), ["restore"]);
+  assert.deepEqual(dossier.failures[0].issueCandidates.map(candidate => candidate.failureType), ["network-failure"]);
   assert.equal(dossier.evaluationScenario.name, "Feed service failure");
+});
+
+test("test observations separate execution phase from wrapped network failures", () => {
+  const classification = classifyWorkItem(2, "", [{ test: "Example" }]);
+  assert.equal(classification.phase, "test-execution");
+  assert.equal(classification.failureType, "test-assertion");
+});
+
+test("compiler fingerprints converge across CI workspace roots", () => {
+  const mechanisms = [
+    "D:\\a\\_work\\1\\s\\src\\Tasks\\Task.cs(12,3): error CS0114: member hides inherited member",
+    "/Users/runner/work/1/s/src/Tasks/Task.cs(12,3): error CS0114: member hides inherited member",
+    "/mnt/vss/_work/1/s/src/Tasks/Task.cs(12,3): error CS0114: member hides inherited member",
+    "/__w/1/s/src/Tasks/Task.cs(12,3): error CS0114: member hides inherited member"
+  ];
+  const fingerprints = mechanisms.map(mechanism => createFailureFingerprint({
+    phase: "compilation", failureType: "compiler-error", component: "Build", mechanism
+  }));
+
+  assert.equal(new Set(fingerprints).size, 1);
+});
+
+test("task fingerprints do not depend on evidence order", () => {
+  const failures = [
+    { type: "Task", name: "Build", issues: ["error CS0114: first", "error CS0115: second"], path: ["Build"] },
+    { type: "Task", name: "Build", issues: ["error CS0115: second", "error CS0114: first"], path: ["Build"] }
+  ];
+
+  const observations = createTaskObservations(failures);
+
+  assert.equal(observations[0].fingerprint, observations[1].fingerprint);
 });
