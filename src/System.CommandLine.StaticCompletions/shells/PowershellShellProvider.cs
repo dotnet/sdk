@@ -19,6 +19,12 @@ public class PowerShellShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
+    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
+        names.Where(n => n.StartsWith('-'));
+
+    IEnumerable<string> IShellProvider.SanitizeOptionNames(IEnumerable<string> names) =>
+        SanitizeOptionNames(names);
+
     public string GenerateCompletions(Command command)
     {
         var binaryName = command.Name;
@@ -53,7 +59,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
         writer.WriteLine("$completions = @()");
         writer.WriteLine("switch ($command) {");
         writer.Indent++;
-        GenerateSubcommandCompletions([], writer, command, this);
+        GenerateSubcommandCompletions([], writer, command);
 
         writer.Indent--;
         writer.WriteLine("}");
@@ -88,7 +94,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// </summary>
     /// <param name="o"></param>
     /// <returns></returns>
-    private static IEnumerable<string> GenerateOptionNameCompletions(Option o, IShellProvider provider)
+    private static IEnumerable<string> GenerateOptionNameCompletions(Option o)
     {
         if (o.Hidden)
         {
@@ -96,7 +102,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
         }
 
         var verboseName = o.Name;
-        var names = provider.SanitizeOptionNames(o.Names());
+        var names = SanitizeOptionNames(o.Names());
         var helpText = SanitizeHelpDescription(o);
 
         // generate a completion recognizer for each alias, but have it's 'commit' value
@@ -144,7 +150,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// <param name="writer"></param>
     /// <param name="command"></param>
     /// <remarks>Dynamically-generated completions are not yet supported</remarks>
-    internal static void GenerateSubcommandCompletions(string[] parentCommandNames, IndentedTextWriter writer, Command command, IShellProvider provider)
+    internal static void GenerateSubcommandCompletions(string[] parentCommandNames, IndentedTextWriter writer, Command command)
     {
         string[] commandNameList = parentCommandNames switch
         {
@@ -153,7 +159,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             var names => [.. names, command.Name]
         };
 
-        GenerateStaticCompletionsForCommand(commandNameList, command, writer, provider);
+        GenerateStaticCompletionsForCommand(commandNameList, command, writer);
         GenerateDynamicCompletionsForOptions(commandNameList, command.Options, writer);
         GenerateDynamicCompletionsForArguments(commandNameList, command.Arguments, writer);
 
@@ -163,7 +169,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
             {
                 continue;
             }
-            GenerateSubcommandCompletions(commandNameList, writer, subcommand, provider);
+            GenerateSubcommandCompletions(commandNameList, writer, subcommand);
         }
 
     }
@@ -171,13 +177,13 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
     /// <summary>
     /// Generate completions for the statically-known options, arguments, and subcommands of a given command.
     /// </summary>
-    private static void GenerateStaticCompletionsForCommand(string[] commandPath, Command command, IndentedTextWriter writer, IShellProvider provider)
+    private static void GenerateStaticCompletionsForCommand(string[] commandPath, Command command, IndentedTextWriter writer)
     {
         List<string> completions = new();
 
         foreach (var option in command.HierarchicalOptions())
         {
-            completions.AddRange(GenerateOptionNameCompletions(option, provider));
+            completions.AddRange(GenerateOptionNameCompletions(option));
         }
 
         foreach (var argument in command.Arguments)

@@ -18,6 +18,12 @@ public class BashShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
+    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
+        names.Where(n => n.StartsWith('-'));
+
+    IEnumerable<string> IShellProvider.SanitizeOptionNames(IEnumerable<string> names) =>
+        SanitizeOptionNames(names);
+
     public string GenerateCompletions(Command command)
     {
         var initialFunctionName = command.FunctionName().MakeSafeFunctionName();
@@ -80,7 +86,7 @@ public class BashShellProvider : IShellProvider
         writer.WriteLine();
 
         // generate how to handle completions for options or flags
-        var optionHandlers = GenerateOptionHandlers(command, this);
+        var optionHandlers = GenerateOptionHandlers(command);
         if (optionHandlers is not null)
         {
             writer.WriteLine("case $prev in");
@@ -168,9 +174,9 @@ public class BashShellProvider : IShellProvider
     /// <returns></returns>
     internal static string GenerateChoicesPrompt(string choicesInvocation) => $$"""COMPREPLY=( $(compgen -W "{{choicesInvocation}}" -- "$cur") )""";
 
-    internal static string? GenerateOptionHandlers(Command command, IShellProvider provider)
+    internal static string? GenerateOptionHandlers(Command command)
     {
-        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(o => GenerateOptionHandler(o, provider)).Where(handler => handler is not null).ToArray();
+        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(o => GenerateOptionHandler(o)).Where(handler => handler is not null).ToArray();
         if (optionHandlers.Length == 0)
         {
             return null;
@@ -184,13 +190,12 @@ public class BashShellProvider : IShellProvider
     /// to get completions when the user requests completions for this option.
     /// </summary>
     /// <param name="option"></param>
-    /// <param name="provider"></param>
     /// <returns>a bash switch case expression for providing completions for this option</returns>
-    internal static string? GenerateOptionHandler(Option option, IShellProvider provider)
+    internal static string? GenerateOptionHandler(Option option)
     {
         // unlike the completion-options generation, for actually implementing suggestions we should be able to handle all of the options' aliases.
         // this ensures if the user manually enters an alias we can support that usage.
-        var optionNames = string.Join('|', provider.SanitizeOptionNames(option.Names()));
+        var optionNames = string.Join('|', SanitizeOptionNames(option.Names()));
         if (string.IsNullOrEmpty(optionNames))
         {
             return null;

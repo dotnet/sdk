@@ -18,6 +18,12 @@ public class FishShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
+    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
+        names.Where(n => n.StartsWith('-'));
+
+    IEnumerable<string> IShellProvider.SanitizeOptionNames(IEnumerable<string> names) =>
+        SanitizeOptionNames(names);
+
     public string GenerateCompletions(Command command)
     {
         var safeName = command.Name.MakeSafeFunctionName();
@@ -39,10 +45,10 @@ public class FishShellProvider : IShellProvider
 
         WriteTokenization(writer);
         writer.WriteLine();
-        WriteStateWalker(writer, states, stateIdByCommand, this);
+        WriteStateWalker(writer, states, stateIdByCommand);
         writer.WriteLine();
-        WriteOptionValueCompletions(writer, states, this);
-        WriteStateCompletions(writer, states, this);
+        WriteOptionValueCompletions(writer, states);
+        WriteStateCompletions(writer, states);
 
         writer.Indent--;
         writer.WriteLine("end");
@@ -87,7 +93,7 @@ public class FishShellProvider : IShellProvider
     /// For each state, we check if the current word matches a known subcommand (transitioning to that subcommand's state)
     /// or a value-taking option (skipping tokens for the option's value(s), respecting the option's arity).
     /// </summary>
-    private static void WriteStateWalker(IndentedTextWriter writer, List<(int id, Command cmd)> states, Dictionary<Command, int> stateIdByCommand, IShellProvider provider)
+    private static void WriteStateWalker(IndentedTextWriter writer, List<(int id, Command cmd)> states, Dictionary<Command, int> stateIdByCommand)
     {
         writer.WriteLine("set -l state 0");
         writer.WriteLine("set -l i 2"); // start after the command name (fish arrays are 1-based)
@@ -128,7 +134,7 @@ public class FishShellProvider : IShellProvider
             // Single-value options (arity exactly 1): skip the next token
             var singleValueNames = valueOptions
                 .Where(o => o.Arity.MaximumNumberOfValues == 1)
-                .SelectMany(o => provider.SanitizeOptionNames(o.Names()))
+                .SelectMany(o => SanitizeOptionNames(o.Names()))
                 .ToArray();
             if (singleValueNames.Length > 0)
             {
@@ -145,7 +151,7 @@ public class FishShellProvider : IShellProvider
                 .GroupBy(o => o.Arity.MaximumNumberOfValues);
             foreach (var group in multiValueByArity)
             {
-                var names = string.Join(" ", group.SelectMany(o => provider.SanitizeOptionNames(o.Names())));
+                var names = string.Join(" ", group.SelectMany(o => SanitizeOptionNames(o.Names())));
                 writer.WriteLine($"case {names}");
                 writer.Indent++;
                 WriteMultiValueSkipLoop(writer, group.Key);
@@ -208,7 +214,7 @@ public class FishShellProvider : IShellProvider
     /// multi-value options (e.g. <c>--sources foo bar</c> with arity 3 still offers completions
     /// for the third value).
     /// </summary>
-    private static void WriteOptionValueCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states, IShellProvider provider)
+    private static void WriteOptionValueCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states)
     {
         var hasAnyValueOptions = states.Any(s =>
             s.cmd.HierarchicalOptions().Any(o => !o.Hidden && !o.IsFlag()));
@@ -257,7 +263,7 @@ public class FishShellProvider : IShellProvider
 
             foreach (var option in valueOptions)
             {
-                var names = string.Join(" ", provider.SanitizeOptionNames(option.Names()));
+                var names = string.Join(" ", SanitizeOptionNames(option.Names()));
                 var maxValues = option.Arity.MaximumNumberOfValues;
                 bool isBounded = maxValues < UnboundedArityThreshold;
 
@@ -311,7 +317,7 @@ public class FishShellProvider : IShellProvider
     /// Generate the main completion output for each state.
     /// Emits subcommands, options, and positional argument completions for the current context.
     /// </summary>
-    private static void WriteStateCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states, IShellProvider provider)
+    private static void WriteStateCompletions(IndentedTextWriter writer, List<(int id, Command cmd)> states)
     {
         writer.WriteLine("switch $state");
         writer.Indent++;
@@ -331,7 +337,7 @@ public class FishShellProvider : IShellProvider
             foreach (var option in cmd.HierarchicalOptions().Where(o => !o.Hidden))
             {
                 var desc = SanitizeDescription(option.Description);
-                foreach (var name in provider.SanitizeOptionNames(option.Names()))
+                foreach (var name in SanitizeOptionNames(option.Names()))
                 {
                     WriteCandidate(writer, name, desc);
                 }
