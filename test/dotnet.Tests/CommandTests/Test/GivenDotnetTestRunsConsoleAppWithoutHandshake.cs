@@ -7,15 +7,16 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestRunsConsoleAppWithoutHandshake : SdkTest
     {
-        public GivenDotnetTestRunsConsoleAppWithoutHandshake(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestRunsConsoleAppWithoutHandshake()
         {
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunConsoleAppDoesNothing_ShouldReturnCorrectExitCode(string configuration)
         {
             // This test validates the behavior when running `dotnet test` against a console application
@@ -40,9 +41,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         ///   2) print "Failed!" — not "Zero tests ran" — as the summary headline, so a handshake
         ///      failure is not masked by the empty-run wording.
         /// </summary>
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunConsoleAppDoesNothing_ShouldReprintHandshakeFailureRecapAndPrintFailedSummary(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("ConsoleAppDoesNothing", Guid.NewGuid().ToString())
@@ -78,6 +79,27 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 summaryLine.Should().Contain("Failed!", "handshake/assembly failures must take precedence over the 'Zero tests ran' headline");
                 summaryLine.Should().NotContain("Zero tests ran", "the summary headline must not mask a handshake failure as an empty run");
             }
+        }
+
+        [TestMethod]
+        public void RunConsoleAppWithInvalidOptionError_ShouldSurfaceErrorOutput()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("ConsoleAppDoesNothing", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Combine(testInstance.Path, "Program.cs"),
+                """
+                System.Console.Error.WriteLine("Option '--unsupported-option' is not recognized.");
+                return 5;
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--unsupported-option");
+
+            result.ExitCode.Should().Be(5);
+            result.StdOut.Should().Contain("Option '--unsupported-option' is not recognized.");
+            result.StdOut.Should().Contain("Test run summary: Failed!");
         }
     }
 }

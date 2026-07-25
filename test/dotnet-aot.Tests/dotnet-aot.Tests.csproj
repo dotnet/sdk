@@ -6,8 +6,8 @@
     <DefineConstants>$(DefineConstants);CLI_AOT</DefineConstants>
     <RootNamespace>Microsoft.DotNet.Cli.Tests</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
-    <!-- Tests modify process-global state; run serially ([assembly: DoNotParallelize]). -->
-    <MSTestParallelizeScope></MSTestParallelizeScope>
+    <!-- Tests modify process-global state; run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
 
     <!-- Strong naming deprecated on .NET Core -->
     <NoWarn>$(NoWarn);CS8002</NoWarn>
@@ -35,6 +35,7 @@
   <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
   <ItemGroup>
     <Compile Include="..\..\src\Cli\dotnet-aot\NativeEntryPoint.cs" Link="NativeEntryPoint.cs" />
+    <Compile Include="..\..\src\Cli\dotnet-aot\SdkRootLocator.cs" Link="SdkRootLocator.cs" />
   </ItemGroup>
 
   <!-- DotnetRootResolver from the dn project -->
@@ -47,13 +48,14 @@
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" />
+    <!-- TelemetryClient.cs (compiled via AotSourceFiles.props) calls AddPersistentStorageExporter,
+         which is defined here. dotnet-aot.csproj references this for the same reason. -->
+    <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.DotNet.ProjectTools\Microsoft.DotNet.ProjectTools.csproj" />
-    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj">
+      <Aliases>global,NativeWrapper,DotNetNativeWrapper</Aliases>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

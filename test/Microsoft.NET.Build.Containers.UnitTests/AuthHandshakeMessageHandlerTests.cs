@@ -10,10 +10,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.NET.Build.Containers.UnitTests
 {
     [TestClass]
-    // These tests mutate process-global environment variables (REGISTRY_AUTH_FILE and the
-    // registry credential vars) and rely on AuthHandshakeMessageHandler's static auth-header
-    // cache keyed by a shared registry name. Under MSTest method-level parallelism (the repo
-    // default) the methods/data rows race on that global state, so run them sequentially.
+    // Mutates process-global environment variables (registry credentials, REGISTRY_AUTH_FILE),
+    // so it must not run concurrently with other tests under method-level parallelization.
     [DoNotParallelize]
     public class AuthHandshakeMessageHandlerTests
     {
@@ -37,20 +35,24 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             Environment.SetEnvironmentVariable(unameVarName, "uname");
             Environment.SetEnvironmentVariable(pwordVarName, "pword");
 
-            if (AuthHandshakeMessageHandler.GetDockerCredentialsFromEnvironment((RegistryMode)mode) is (string credU, string credP))
+            try
             {
-                Assert.AreEqual("uname", credU);
-                Assert.AreEqual("pword", credP);
+                if (AuthHandshakeMessageHandler.GetDockerCredentialsFromEnvironment((RegistryMode)mode) is (string credU, string credP))
+                {
+                    Assert.AreEqual("uname", credU);
+                    Assert.AreEqual("pword", credP);
+                }
+                else
+                {
+                    Assert.Fail("Should have parsed credentials from environment");
+                }
             }
-            else 
+            finally
             {
-                Assert.Fail("Should have parsed credentials from environment");
+                // restore env variable values even if an assertion throws
+                Environment.SetEnvironmentVariable(unameVarName, originalUnameValue);
+                Environment.SetEnvironmentVariable(pwordVarName, originalPwordValue);
             }
-
-
-            // restore env variable values
-            Environment.SetEnvironmentVariable(unameVarName, originalUnameValue);
-            Environment.SetEnvironmentVariable(pwordVarName, originalPwordValue);
         }
 
         [TestMethod]
@@ -58,6 +60,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
         public async Task Authenticate(string authConf, Func<HttpRequestMessage, HttpResponseMessage> server)
         {
             string authFile = Path.GetTempFileName();
+            string? originalAuthFileValue = Environment.GetEnvironmentVariable("REGISTRY_AUTH_FILE");
             try
             {
                 File.WriteAllText(authFile, authConf);
@@ -71,6 +74,8 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             }
             finally
             {
+                // restore REGISTRY_AUTH_FILE so later tests don't see a stale path
+                Environment.SetEnvironmentVariable("REGISTRY_AUTH_FILE", originalAuthFileValue);
                 try
                 {
                     File.Delete(authFile);

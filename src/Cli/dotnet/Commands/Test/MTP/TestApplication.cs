@@ -21,9 +21,12 @@ internal sealed class TestApplication(
     TestOptions testOptions,
     TerminalTestReporter output,
     Action<CommandLineOptionMessages> onHelpRequested,
-    TestRunPolicy testRunPolicy) : IDisposable
+    ArtifactPostProcessingManager? artifactPostProcessingManager = null,
+    ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+    TestRunPolicy? testRunPolicy = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
+    private static readonly TimeSpan ArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
     private const int LiveOutputTailLineCount = 200;
 
     private readonly Lock _requestLock = new();
@@ -31,8 +34,15 @@ internal sealed class TestApplication(
     private readonly Lock _pipeConnectionsLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
-    private readonly TestApplicationHandler _handler = new(output, module, testOptions, testRunPolicy);
-    private readonly TestRunPolicy _testRunPolicy = testRunPolicy;
+    private readonly TestApplicationHandler _handler = new(
+        output,
+        module,
+        testOptions,
+        artifactPostProcessingManager,
+        artifactPostProcessingInvocation,
+        testRunPolicy);
+    private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
+    private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
@@ -78,7 +88,7 @@ internal sealed class TestApplication(
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
             process = Process.Start(processStartInfo)!;
-            _testRunPolicy.OnTestApplicationStarted();
+            _testRunPolicy?.OnTestApplicationStarted();
             testApplicationStarted = true;
 
             // Register with the Ctrl+C manager so a force-exit (second Ctrl+C) kills this process
@@ -118,39 +128,67 @@ internal sealed class TestApplication(
 
             // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
             // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
-            Task processExitTask = process.WaitForExitAsync();
-            Task firstCompletedTask = await Task.WhenAny(processExitTask, _testRunPolicy.Cancellation);
-            if (firstCompletedTask != processExitTask)
+            bool artifactPostProcessingTimedOut = false;
+            if (_artifactPostProcessingInvocation is null)
             {
-                RequestSessionCancellation();
-                try
+                Task processExitTask = process.WaitForExitAsync();
+                if (_testRunPolicy is { } testRunPolicy)
                 {
-                    await processExitTask.WaitAsync(_testRunPolicy.CancellationGracePeriod);
-                }
-                catch (TimeoutException)
-                {
-                    try
+                    Task firstCompletedTask = await Task.WhenAny(processExitTask, testRunPolicy.Cancellation);
+                    if (firstCompletedTask != processExitTask)
                     {
-                        if (!process.HasExited)
+                        RequestSessionCancellation();
+                        try
                         {
-                            process.Kill(entireProcessTree: true);
+                            await processExitTask.WaitAsync(testRunPolicy.CancellationGracePeriod);
+                        }
+                        catch (TimeoutException)
+                        {
+                            try
+                            {
+                                if (!process.HasExited)
+                                {
+                                    process.Kill(entireProcessTree: true);
+                                }
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // The process exited between the HasExited check and Kill.
+                                Logger.LogTrace($"Test process exited before it could be killed after cancellation:\n{ex}");
+                            }
+
+                            await processExitTask;
                         }
                     }
-                    catch (InvalidOperationException ex)
+                    else
                     {
-                        // The process exited between the HasExited check and Kill.
-                        Logger.LogTrace($"Test process exited before it could be killed after cancellation:\n{ex}");
+                        await processExitTask;
                     }
-
+                }
+                else
+                {
                     await processExitTask;
                 }
             }
             else
             {
-                await processExitTask;
+                try
+                {
+                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout);
+                }
+                catch (TimeoutException)
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                        await process.WaitForExitAsync();
+                    }
+
+                    artifactPostProcessingTimedOut = true;
+                }
             }
 
-            _testRunPolicy.OnTestApplicationExited();
+            _testRunPolicy?.OnTestApplicationExited();
             testApplicationStarted = false;
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
@@ -161,6 +199,11 @@ internal sealed class TestApplication(
             }
             catch (TimeoutException)
             {
+            }
+
+            if (artifactPostProcessingTimedOut)
+            {
+                throw new TimeoutException();
             }
 
             var exitCode = process.ExitCode;
@@ -182,7 +225,7 @@ internal sealed class TestApplication(
         {
             if (testApplicationStarted)
             {
-                _testRunPolicy.OnTestApplicationExited();
+                _testRunPolicy?.OnTestApplicationExited();
             }
 
             if (process is not null)
@@ -226,15 +269,17 @@ internal sealed class TestApplication(
                 processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
-            if (!_buildOptions.NoLaunchProfileArguments &&
+            if (_artifactPostProcessingInvocation is null &&
+                !_buildOptions.NoLaunchProfileArguments &&
                 !string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
             }
         }
 
-        // Env variables specified on command line override those specified in launch profile:
-        foreach (var (name, value) in TestOptions.EnvironmentVariables)
+        // Command-line variables (including changes made by opted-in MSBuild targets)
+        // override variables specified in the launch profile.
+        foreach (var (name, value) in Module.EnvironmentVariables)
         {
             processStartInfo.Environment[name] = value;
         }
@@ -257,7 +302,24 @@ internal sealed class TestApplication(
         // RunArguments is intentionally not escaped. It can contain multiple arguments and spaces there shouldn't cause the whole
         // value to be wrapped in double quotes. This matches dotnet run behavior.
         // In short, it's expected to already be escaped properly.
-        StringBuilder builder = new(Module.RunProperties.Arguments);
+        StringBuilder builder = new(
+            _artifactPostProcessingInvocation is null
+                ? Module.RunProperties.Arguments
+                : GetArtifactPostProcessingLaunchArguments(Module));
+
+        if (_artifactPostProcessingInvocation is not null)
+        {
+            builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
+            builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(_artifactPostProcessingInvocation.ManifestPath)}");
+
+            if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } toolDiagnosticOutputDirectoryPath)
+            {
+                builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(toolDiagnosticOutputDirectoryPath)}");
+            }
+
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+            return builder.ToString();
+        }
 
         if (TestOptions.IsHelp)
         {
@@ -293,6 +355,14 @@ internal sealed class TestApplication(
 
         return builder.ToString();
     }
+
+    internal static string GetArtifactPostProcessingLaunchArguments(TestModule module)
+        => string.Equals(
+            Path.GetFileNameWithoutExtension(module.RunProperties.Command),
+            "dotnet",
+            StringComparison.OrdinalIgnoreCase)
+            ? $"exec {ArgumentEscaper.EscapeSingleArg(module.TargetPath)}"
+            : string.Empty;
 
     private async Task WaitConnectionAsync(CancellationToken token)
     {
@@ -453,6 +523,14 @@ internal sealed class TestApplication(
                         OnSessionEvent(sessionEvent);
                         break;
 
+                    case AzureDevOpsLogMessage azureDevOpsLogMessage:
+                        OnAzureDevOpsLogMessage(azureDevOpsLogMessage);
+                        break;
+
+                    case DisplayMessage displayMessage:
+                        OnDisplayMessage(displayMessage);
+                        break;
+
                     // If we don't recognize the message, log and skip it
                     case UnknownMessage unknownMessage:
                         Logger.LogTrace($"Request '{request.GetType()}' with Serializer ID = {unknownMessage.SerializerId} is unsupported.");
@@ -595,6 +673,12 @@ internal sealed class TestApplication(
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
         => _handler.OnSessionEventReceived(sessionEvent);
+
+    private void OnAzureDevOpsLogMessage(AzureDevOpsLogMessage azureDevOpsLogMessage)
+        => _handler.OnAzureDevOpsLogReceived(azureDevOpsLogMessage);
+
+    private void OnDisplayMessage(DisplayMessage displayMessage)
+        => _handler.OnDisplayMessageReceived(displayMessage);
 
     private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {

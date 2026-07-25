@@ -1,13 +1,50 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+extern alias MSTestFramework;
+
 using System.IO.Pipes;
 using System.Text.Json;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class AspireLauncherIntegrationTests(ITestOutputHelper logger) : WatchSdkTest(logger)
+[TestClass]
+public class AspireLauncherIntegrationTests : MSTestFramework::Microsoft.NET.TestFramework.SdkTest
 {
+    private TestAssetsManager? _testAssetsManager;
+    public TestAssetsManager TestAssets => _testAssetsManager ??= new TestAssetsManager(Logger);
+
+    private DualOutputHelper? _logger;
+    private DualOutputHelper Logger
+        => _logger ??= new DualOutputHelper(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
+
+    public new void Log(string message, [System.Runtime.CompilerServices.CallerFilePath] string? testPath = null, [System.Runtime.CompilerServices.CallerLineNumber] int testLine = 0)
+        => Logger.Log(message, testPath, testLine);
+
+    public static void WriteAllText(string path, string text)
+    {
+        using var stream = File.Open(path, FileMode.OpenOrCreate);
+        using (var writer = new StreamWriter(stream, Encoding.UTF8, leaveOpen: true))
+        {
+            writer.Write(text);
+        }
+
+        stream.SetLength(stream.Position);
+    }
+
+    public void UpdateSourceFile(string path, string text, [System.Runtime.CompilerServices.CallerFilePath] string? testPath = null, [System.Runtime.CompilerServices.CallerLineNumber] int testLine = 0)
+    {
+        var existed = File.Exists(path);
+        WriteAllText(path, text);
+        Log($"File '{path}' " + (existed ? "updated" : "added"), testPath, testLine);
+    }
+
+    public void UpdateSourceFile(string path, Func<string, string> contentTransform, [System.Runtime.CompilerServices.CallerFilePath] string? testPath = null, [System.Runtime.CompilerServices.CallerLineNumber] int testLine = 0)
+        => UpdateSourceFile(path, contentTransform(File.ReadAllText(path, Encoding.UTF8)), testPath, testLine);
+
+    public void UpdateSourceFile(string path)
+        => UpdateSourceFile(path, content => content);
+
     private WatchableApp CreateHostApp()
         => new(
             Logger,
@@ -29,7 +66,8 @@ public class AspireLauncherIntegrationTests(ITestOutputHelper logger) : WatchSdk
             commandName: "resource",
             commandArguments: ["--server", serverPipe]);
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
     public async Task Host()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -45,7 +83,8 @@ public class AspireLauncherIntegrationTests(ITestOutputHelper logger) : WatchSdk
         await host.WaitUntilOutputContains("Started");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
     public async Task ServerAndResources()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppMultiProc")
@@ -72,8 +111,21 @@ public class AspireLauncherIntegrationTests(ITestOutputHelper logger) : WatchSdk
         serviceA.Start(testAsset, ["--entrypoint", serviceProjectA]);
         serviceB.Start(testAsset, ["--entrypoint", serviceProjectB]);
 
-        using var statusCancellationSource = new CancellationTokenSource();
-        var statusReaderTask = PipeUtilities.ReadStatusEventsAsync(statusPipeName, statusCancellationSource.Token);
+        // The expected status events delivered by the server over the status pipe (listed in causal order;
+        // the assertion below compares them order-independently). The reader stops once it has received this
+        // many events, so we don't need to cancel based on the server's output, which races with delivery.
+        string[] expectedStatusEvents =
+        [
+            $"type=build_complete, projects=[{serviceProjectA};{serviceProjectB}]",
+            $"type=building, projects=[{serviceProjectA};{serviceProjectB}]",
+            $"type=hot_reload_applied, projects=[{serviceProjectA};{serviceProjectB}]",
+            $"type=process_started, projects=[{serviceProjectA}]",
+            $"type=process_started, projects=[{serviceProjectA}]",
+            $"type=process_started, projects=[{serviceProjectB}]",
+            $"type=restarting, projects=[{serviceProjectA}]",
+        ];
+
+        var statusReaderTask = PipeUtilities.ReadStatusEventsAsync(statusPipeName, expectedStatusEvents.Length, TestContext.CancellationToken);
 
         server.Start(testAsset,
         [
@@ -112,7 +164,7 @@ public class AspireLauncherIntegrationTests(ITestOutputHelper logger) : WatchSdk
         serviceB.Process.ClearOutput();
 
         using var controlPipe = new NamedPipeServerStream(controlPipeName, PipeDirection.Out, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
-        await controlPipe.WaitForConnectionAsync();
+        await controlPipe.WaitForConnectionAsync(TestContext.CancellationToken);
         using var controlPipeWriter = new StreamWriter(controlPipe) { AutoFlush = true };
 
         // restart resource process:
@@ -129,19 +181,14 @@ public class AspireLauncherIntegrationTests(ITestOutputHelper logger) : WatchSdk
         // initial updates are applied when the process restarts:
         await server.WaitUntilOutputContains(MessageDescriptor.SendingUpdateBatch.GetMessage(0), $"A ({tfm})");
 
-        statusCancellationSource.Cancel();
+        // The reader completes once all expected status events have been received (or the test times out),
+        // so there is no race between cancellation and status delivery.
         var statusEvents = await statusReaderTask;
 
-        // validate that we received the expected status events from the server, ignoring the order:
+        // validate that we received the expected status events from the server, ignoring the order
+        // (both sequences are sorted so the comparison does not depend on event arrival order):
         AssertEx.SequenceEqual(
-        [
-            $"type=build_complete, projects=[{serviceProjectA};{serviceProjectB}]",
-            $"type=building, projects=[{serviceProjectA};{serviceProjectB}]",
-            $"type=hot_reload_applied, projects=[{serviceProjectA};{serviceProjectB}]",
-            $"type=process_started, projects=[{serviceProjectA}]",
-            $"type=process_started, projects=[{serviceProjectA}]",
-            $"type=process_started, projects=[{serviceProjectB}]",
-            $"type=restarting, projects=[{serviceProjectA}]",
-        ], statusEvents.Select(e => $"type={e.Type}, projects=[{string.Join(";", e.Projects.Order())}]").Order());
+            expectedStatusEvents.Order(),
+            statusEvents.Select(e => $"type={e.Type}, projects=[{string.Join(";", e.Projects.Order())}]").Order());
     }
 }

@@ -135,7 +135,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         private void DeleteProviderKey(DependencyProvider dep)
         {
             using RegistryKey providerKey = dep.BaseKey.OpenSubKey(DependencyProvider.DependenciesKeyRelativePath, writable: true);
-            providerKey?.DeleteSubKeyTree(dep.ProviderKeyName);
+            providerKey?.DeleteSubKeyTree(dep.ProviderKeyName, throwOnMissingSubKey: false);
         }
     }
 #pragma warning restore CA1416

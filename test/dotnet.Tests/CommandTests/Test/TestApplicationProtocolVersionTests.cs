@@ -6,16 +6,17 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class TestApplicationProtocolVersionTests
 {
-    [Theory]
-    [InlineData("1.0.0;1.1.0", "1.1.0")]
-    [InlineData("1.0.0", "1.0.0")]
-    [InlineData("1.1.0", "1.1.0")]
-    [InlineData("2.0.0", "")]
-    [InlineData("", "")]
-    [InlineData(null, "")]
-    [InlineData("0.9.0;1.0.0;9.9.9", "1.0.0")]
+    [TestMethod]
+    [DataRow("1.0.0;1.1.0", "1.1.0")]
+    [DataRow("1.0.0", "1.0.0")]
+    [DataRow("1.1.0", "1.1.0")]
+    [DataRow("2.0.0", "")]
+    [DataRow("", "")]
+    [DataRow(null, "")]
+    [DataRow("0.9.0;1.0.0;9.9.9", "1.0.0")]
     public void GetSupportedProtocolVersion_ReturnsHighestCommonVersion(string? advertisedVersions, string expectedVersion)
     {
         var properties = new Dictionary<byte, string>();

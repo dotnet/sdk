@@ -9,13 +9,10 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
+[TestClass]
 public class CollectStaticWebAssetsToCopyMultiThreadingTest
 {
-    [Fact]
+    [TestMethod]
     public void ResolvesOutputPathRelativeToTaskEnvironmentProjectDirectory()
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(CollectStaticWebAssetsToCopyMultiThreadingTest), Guid.NewGuid().ToString("N"));

@@ -390,14 +390,20 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                         Arguments = processArguments,
                         UseShellExecute = false,
                         WorkingDirectory = clientDir,
+#if NETFRAMEWORK
                         RedirectStandardInput = true,
                         RedirectStandardOutput = true,
                         RedirectStandardError = true,
+#endif
                         CreateNoWindow = true
                     };
 
-                    var process = Process.Start(startInfo);
+#if NETFRAMEWORK
+                    using Process process = Process.Start(startInfo);
                     processId = process.Id;
+#else
+                    processId = Process.StartAndForget(startInfo);
+#endif
 
                     return true;
                 }

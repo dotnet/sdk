@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,7 +6,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldHaveCorrectSuffixAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldHaveCorrectSuffixFixer>;
@@ -16,9 +15,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class IdentifiersShouldHaveCorrectSuffixTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1710_AllScenarioDiagnostics_CSharpAsync()
         {
             await new VerifyCS.Test
@@ -251,10 +251,10 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                         GetCA1710CSharpResultAt(line: 186, column: 14, typeName: "DataTableWithWrongSuffix", suffix: "DataTable", additionalSuffixes: "Collection"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1710_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -432,7 +432,7 @@ public class MyCollectionDataTable : DataTable, IEnumerable
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1710_AllScenarioDiagnostics_VisualBasicAsync()
         {
             await new VerifyVB.Test
@@ -796,10 +796,10 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                         GetCA1710BasicResultAt(line: 263, column: 14, typeName: "WronglyNamedType", suffix: "Stream"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1710_NoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1108,7 +1108,7 @@ Public NotInheritable Class VerifiableAttribute
 End Class");
         }
 
-        [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
+        [TestMethod, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
         public async Task CA1710_SystemAction_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1120,7 +1120,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
+        [TestMethod, WorkItem(1822, "https://github.com/dotnet/roslyn-analyzers/issues/1822")]
         public async Task CA1710_CustomDelegate_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1133,7 +1133,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        [TestMethod, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
         public async Task CA1710_IReadOnlyDictionaryAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1159,7 +1159,7 @@ public class C : IReadOnlyDictionary<int, string>
                 GetCA1710CSharpResultAt(6, 14, "C", "Dictionary", "Collection"));
         }
 
-        [Fact, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
+        [TestMethod, WorkItem(2955, "https://github.com/dotnet/roslyn-analyzers/issues/2955")]
         public async Task CA1710_IReadOnlyCollection_IncludeIndirectBaseTypes()
         {
             await new VerifyCS.Test
@@ -1190,21 +1190,21 @@ dotnet_code_quality.CA1710.exclude_indirect_base_types = false") },
                         GetCA1710CSharpResultAt(6, 14, "C", "Collection", "Dictionary', 'Set', 'Stack', 'Queue"),
                     },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = SomeOtherClass->ABC")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:SomeOtherClass->ABC")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.IMyInterface->Interface")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.IMyInterface->Interface")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = invalid")]
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = SomeOtherClass->ABC")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:SomeOtherClass->ABC")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.IMyInterface->Interface")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.IMyInterface->Interface")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = invalid")]
         // In case of duplicated entries, only the first is kept
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.SomeClass->SecondSuffix")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.SomeClass->SecondSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = MyNamespace.SomeClass->FirstSuffix|MyNamespace.SomeClass->SecondSuffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->FirstSuffix|T:MyNamespace.SomeClass->SecondSuffix")]
         public async Task CA1710_AdditionalSuffixesAsync(string editorConfigText)
         {
             editorConfigText = $@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
@@ -1268,7 +1268,7 @@ public class SomeOtherSubClass : SomeOtherClass {}"},
                 });
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1340,18 +1340,18 @@ End Class"
                 });
             }
 
-            await vbTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         // methods are not handled
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = M:MyNamespace.SomeClass.MyMethod()->Suffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = M:MyNamespace.SomeClass.MyMethod()->Suffix")]
         // namespaces are not handled
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = N:MyNamespace:Suffix")]
         // more than one -> is not handled
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->Suffix1->Suffix2")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass->Suffix1->Suffix2")]
         // no suffix
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:MyNamespace.SomeClass")]
         public async Task CA1710_InvalidSyntaxNoSuffixAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -1375,7 +1375,7 @@ namespace MyNamespace
 {editorConfigText}
 ")  },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1397,10 +1397,10 @@ End Namespace"
 {editorConfigText}
 ")  },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
         public async Task CA1710_UserMappingWinsOverHardcodedAsync()
         {
             var editorConfigText = @"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
@@ -1430,7 +1430,7 @@ public class SomeClass : Dictionary<string, string>
                         GetCA1710CSharpResultAt(4, 14, "SomeClass", "MySuffix"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1455,10 +1455,10 @@ End Class"
                         GetCA1710BasicResultAt(4, 14, "SomeClass", "MySuffix"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        [TestMethod, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
         public async Task CA1710_DefaultValueForExclusionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1487,16 +1487,16 @@ Public Class FreezableList
 End Class");
         }
 
-        [Theory, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {}")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{} ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {} ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ }")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { }")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ } ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { } ")]
-        [InlineData("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {     } ")]
+        [TestMethod, WorkItem(1818, "https://github.com/dotnet/roslyn-analyzers/issues/1818")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{}")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {}")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{} ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {} ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ }")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { }")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader->{ } ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> { } ")]
+        [DataRow("dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Data.IDataReader-> {     } ")]
         public async Task CA1710_AllowEmptySuffixAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -1559,7 +1559,7 @@ public class SomeClass : IDataReader
 {editorConfigText}
 ")  },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1754,10 +1754,10 @@ End Class"
 {editorConfigText}
 ")  },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
+        [TestMethod, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
         public async Task CA1710_AllowEmptySuffix2Async()
         {
             await new VerifyCS.Test
@@ -1808,10 +1808,10 @@ public class C : IReadOnlyDictionary<string, object>
 dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.Generic.IReadOnlyDictionary`2->{}
 ")  },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
+        [TestMethod, WorkItem(5035, "https://github.com/dotnet/roslyn-analyzers/issues/5035")]
         public async Task CA1710_AllowEmptySuffix3Async()
         {
             await new VerifyCS.Test
@@ -1863,17 +1863,17 @@ dotnet_code_quality.CA1710.additional_required_suffixes = T:System.Collections.G
 ")  },
                     ExpectedDiagnostics = { GetCA1710CSharpResultAt(5, 14, "C", "Collection", "Dictionary', 'Set', 'Stack', 'Queue") }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
-        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = true")]
-        [InlineData("dotnet_code_quality.CA1710.exclude_indirect_base_types = invalid")]
-        [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = true
+        [TestMethod, WorkItem(3065, "https://github.com/dotnet/roslyn-analyzers/issues/3065")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA1710.exclude_indirect_base_types = false")]
+        [DataRow("dotnet_code_quality.CA1710.exclude_indirect_base_types = true")]
+        [DataRow("dotnet_code_quality.CA1710.exclude_indirect_base_types = invalid")]
+        [DataRow(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = true
                       dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
-        [InlineData(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
+        [DataRow(@"dotnet_code_quality.CA1710.exclude_indirect_base_types = false
                       dotnet_code_quality.CA1710.additional_required_suffixes = SomeClass->Suffix1")]
         public async Task CA1710_ExcludeIndirectTypesAsync(string editorConfigText)
         {
@@ -1937,7 +1937,7 @@ public class SomeSubSubClass : SomeSubClass {}"
                 }
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -2012,10 +2012,10 @@ End Class"
                 }
             }
 
-            await vbTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
+        [TestMethod, WorkItem(3414, "https://github.com/dotnet/roslyn-analyzers/issues/3414")]
         public async Task CA1710_InterfacesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2024,7 +2024,7 @@ public interface I
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EventArgsNotInheritingFromSystemEventArgs_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2050,10 +2050,10 @@ Public Class C
 End Class");
         }
 
-        [Theory, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
-        [InlineData("")]
-        [InlineData("Set")]
-        [InlineData("Collection")]
+        [TestMethod, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
+        [DataRow("")]
+        [DataRow("Set")]
+        [DataRow("Collection")]
         public async Task CA1710_ISet_IReadOnlySet(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
@@ -2225,12 +2225,12 @@ public class {|#1:Second" + typeNameSuffix + @"|} : IReadOnlySet<int>
                 });
             }
 
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
-        [InlineData("")]
-        [InlineData("Collection")]
+        [TestMethod, WorkItem(4513, "https://github.com/dotnet/roslyn-analyzers/issues/4513")]
+        [DataRow("")]
+        [DataRow("Collection")]
         public async Task CA1710_IReadOnlyCollection(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
@@ -2257,13 +2257,13 @@ public class {|#0:C" + typeNameSuffix + @"|} : IReadOnlyCollection<int>
                         .WithArguments("C", "Collection", "Dictionary', 'Set', 'Stack', 'Queue"));
             }
 
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("Dictionary")]
-        [InlineData("Collection")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("Dictionary")]
+        [DataRow("Collection")]
         public async Task CA1710_IDictionary_IDictionary2_IReadOnlyDictionary2(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
@@ -2443,13 +2443,13 @@ public class {|#2:Third" + typeNameSuffix + @"|} : IReadOnlyDictionary<int, stri
                 });
             }
 
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("Queue")]
-        [InlineData("Collection")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("Queue")]
+        [DataRow("Collection")]
         public async Task CA1710_Queue_Queue1(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
@@ -2481,13 +2481,13 @@ public class {|#1:Second" + typeNameSuffix + @"|} : Queue<int>
                 });
             }
 
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("Stack")]
-        [InlineData("Collection")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("Stack")]
+        [DataRow("Collection")]
         public async Task CA1710_Stack_Stack1(string typeNameSuffix)
         {
             var test = new VerifyCS.Test
@@ -2519,7 +2519,7 @@ public class {|#1:Second" + typeNameSuffix + @"|} : Stack<int>
                 });
             }
 
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1710BasicResultAt(int line, int column, string typeName, string suffix, params string[] additionalSuffixes)

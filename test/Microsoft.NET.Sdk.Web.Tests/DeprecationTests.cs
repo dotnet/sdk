@@ -3,11 +3,18 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.ProjectConstruction;
+using Microsoft.NET.TestFramework.Utilities;
+
 namespace Microsoft.NET.Sdk.Web.Tests;
 
-public class DeprecationTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class DeprecationTests : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void It_does_not_show_deprecation_warning_when_IncludeOpenAPIAnalyzers_is_not_set()
     {
         var testProject = new TestProject()
@@ -30,7 +37,7 @@ public class DeprecationTests(ITestOutputHelper log) : SdkTest(log)
             .NotHaveStdOutContaining("IncludeOpenAPIAnalyzers");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_show_deprecation_warning_when_IncludeOpenAPIAnalyzers_is_false()
     {
         var testProject = new TestProject()
@@ -53,10 +60,10 @@ public class DeprecationTests(ITestOutputHelper log) : SdkTest(log)
             .NotHaveStdOutContaining("ASPDEPR007");
     }
 
-    [Theory]
-    [InlineData(ToolsetInfo.CurrentTargetFramework)]
-    [InlineData("net8.0")]
-    [InlineData("net9.0")]
+    [TestMethod]
+    [DataRow(ToolsetInfo.CurrentTargetFramework)]
+    [DataRow("net8.0")]
+    [DataRow("net9.0")]
     public void It_shows_deprecation_warning_across_target_frameworks(string targetFramework)
     {
         var testProject = new TestProject()

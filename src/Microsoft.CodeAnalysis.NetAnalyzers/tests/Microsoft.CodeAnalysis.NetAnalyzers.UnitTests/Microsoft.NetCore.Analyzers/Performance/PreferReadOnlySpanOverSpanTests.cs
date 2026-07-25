@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
@@ -10,9 +10,10 @@ using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferReadOnlySpanOverSpanTests
     {
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_NotWritten_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -38,7 +39,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ReassignedToOwnSliceLoop_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -78,7 +79,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ReassignedToOwnSliceLoopThenConsumedByWritableApi_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -104,7 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ReassignedToOwnSliceLoopThenWritten_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -131,7 +132,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedToMethodReadOnly_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -167,7 +168,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInForEachLoop_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -199,7 +200,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInForLoop_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -233,7 +234,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInLinqQuery_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -261,7 +262,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ReadThroughIndexer_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -289,7 +290,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_InTernaryExpression_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -315,7 +316,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedToGenericMethod_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -351,7 +352,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInReturnStatement_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -377,7 +378,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ConditionalAccess_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -403,7 +404,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_MultipleReferences_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -433,7 +434,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_CopyTo_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -461,7 +462,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_TryCopyTo_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -489,7 +490,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ReturnedAsReadOnlySpan_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -515,7 +516,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_StoredInReadOnlyMemoryField_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -545,7 +546,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_StoredInReadOnlyMemoryArray_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -571,7 +572,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_StoredInReadOnlySpanProperty_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -607,7 +608,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_PassedToMethodExpectingReadOnly_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -643,7 +644,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_NotWritten_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -660,7 +661,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_Written_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -676,7 +677,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_WrittenViaIndexer_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -695,7 +696,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedAsRefParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -716,7 +717,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicMethod_DefaultConfig_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -732,7 +733,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OverrideMethod_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -753,7 +754,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InterfaceImplementation_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -774,7 +775,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReadOnlySpanParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -790,7 +791,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_SlicedButNotWritten_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -807,7 +808,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleParameters_MixedUsage()
         {
             await VerifyFixerAsync("""
@@ -835,7 +836,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedToWritableSpanMethod_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -856,7 +857,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_CopiedToLocal_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -873,7 +874,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedAsOutArgument_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -894,7 +895,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_AccessSpanProperty_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -911,7 +912,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_SliceAndRead_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -928,7 +929,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_RangeOperator_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -945,7 +946,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_RangeFromEndOperator_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -962,7 +963,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ReturnedFromMethod_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -978,7 +979,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ExpressionReturnedFromMethod_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -991,7 +992,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_StoredInRefParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1009,7 +1010,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_StoredInOutParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1025,7 +1026,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_StoredInField_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1043,7 +1044,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_StoredInArray_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1059,7 +1060,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_StoredInProperty_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1080,7 +1081,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_MultipleReferencesOneWrite_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1099,7 +1100,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedAsRefArgument_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1129,7 +1130,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_RefVariableDeclaration_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1147,7 +1148,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_RefReturn_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1164,7 +1165,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_PassedToMethodViaSlice_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1198,7 +1199,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInFixed_NoDiagnostic()
         {
             var source = """
@@ -1226,10 +1227,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
                         ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_IndexerWithDecrementOperator_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1246,7 +1247,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_SliceAssignedToLocalAndWritten_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1274,7 +1275,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ChainedSliceWithIncrementOperator_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1290,7 +1291,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInSwitchExpression_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1326,7 +1327,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInPatternMatching_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1360,7 +1361,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInNullCoalescingOperator_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1377,7 +1378,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_MultipleParametersSameType_OnlyReadOnlyOnesMarked()
         {
             await VerifyFixerAsync("""
@@ -1405,7 +1406,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInConditionalExpression_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1421,7 +1422,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInInterpolatedString_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1447,7 +1448,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_OnlyAccessedViaLength_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1473,7 +1474,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ComparedWithOtherSpan_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1499,7 +1500,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInLocalFunction_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1520,7 +1521,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedToStaticMethodWithReadOnlyOverload_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1539,7 +1540,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_WithDefaultParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1556,7 +1557,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_NullableReferenceTypeContext_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1590,7 +1591,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_NestedGenericType_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1618,7 +1619,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInThrowExpression_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1644,7 +1645,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInRecursiveMethod_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1672,7 +1673,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedWithMemoryExtensionsIndexOf_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1698,7 +1699,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedWithMemoryExtensionsContains_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1724,7 +1725,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedWithStartsWith_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1750,7 +1751,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_AccessedViaExplicitInterfaceCast_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1780,7 +1781,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_PassedToGenericMethodConstrainedToSpan_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1801,7 +1802,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInUsingStatement_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1818,7 +1819,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_WrittenViaCompoundAssignment_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1837,7 +1838,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_WrittenViaPrefixIncrement_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1856,7 +1857,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_WrittenViaPostfixIncrement_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1875,7 +1876,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_Clear_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1891,7 +1892,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_Fill_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1907,7 +1908,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_Reverse_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1923,7 +1924,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_Sort_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1939,7 +1940,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_AccessSpanAndWrite_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -1956,7 +1957,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_ImplicitOperatorToReadOnlySpan_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -1984,7 +1985,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_UsedInConstructor_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -2030,7 +2031,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_TryCopyToWithoutWrite_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -2058,7 +2059,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_GetPinnableReference_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
@@ -2075,7 +2076,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_AssignedBackToItself_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -2103,7 +2104,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SpanParameter_OverloadedOperatorEquals_ProducesDiagnostic()
         {
             await VerifyFixerAsync("""
@@ -2129,7 +2130,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MemoryParameter_PinMethod_ProducesDiagnostic()
         {
             await new VerifyCS.Test
@@ -2178,7 +2179,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                     (solution, projectId) => solution.WithProjectCompilationOptions(projectId,
                         ((CSharpCompilationOptions)solution.GetProject(projectId)!.CompilationOptions!).WithAllowUnsafe(true))
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyAnalyzerAsync(
@@ -2190,7 +2191,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = languageVersion,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyFixerAsync(
@@ -2204,7 +2205,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 FixedCode = fixedSource,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
                 LanguageVersion = languageVersion,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

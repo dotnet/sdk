@@ -4,21 +4,29 @@
 #nullable disable
 
 using System.Reflection;
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
 public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
 {
+    protected override string RestoreNugetPackagePath => nameof(TypeScriptIntegrationTest);
+
     public string TypeScriptMSBuildPackageVersion { get; }
 
-    public TypeScriptIntegrationTest(ITestOutputHelper log) : base(log, nameof(TypeScriptIntegrationTest))
+    public TypeScriptIntegrationTest()
     {
         var testAssemblyMetadata = TestAssembly.GetCustomAttributes<AssemblyMetadataAttribute>();
         TypeScriptMSBuildPackageVersion = testAssemblyMetadata.SingleOrDefault(a => a.Key == "MicrosoftTypeScriptMSBuildPackageVersion")?.Value ?? "5.9.3";
     }
 
-    [Fact]
+    [TestMethod]
     public void Build_RegistersTypeScriptOutputsAsStaticWebAssets()
     {
         var testAsset = "RazorClassLibrary";
@@ -42,7 +50,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         buildManifest.Assets.Should().Contain(a => a.RelativePath.EndsWith("app.js"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Build_TypeScriptOutputsAreProperlyCompressed()
     {
         var testAsset = "RazorClassLibrary";
@@ -71,7 +79,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         buildManifest.Assets.Should().Contain(a => a.RelativePath.EndsWith("app.js.gz") || a.RelativePath.EndsWith("app.js.br"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Rebuild_SucceedsWithTypeScriptOutputs()
     {
         var testAsset = "RazorClassLibrary";
@@ -98,7 +106,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         buildManifest.Assets.Should().Contain(a => a.RelativePath.EndsWith("app.js"));
     }
 
-    [Fact]
+    [TestMethod]
     public async Task Build_IncrementalBuild_WorksCorrectly()
     {
         var testAsset = "RazorClassLibrary";
@@ -116,7 +124,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         var firstBuildManifestTime = File.GetLastWriteTime(manifestPath);
 
         // Wait a bit and do incremental build
-        await Task.Delay(100, TestContext.Current.CancellationToken);
+        await Task.Delay(100, TestContext.CancellationToken);
 
         build = CreateBuildCommand(ProjectDirectory);
         ExecuteCommand(build).Should().Pass();
@@ -126,7 +134,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         secondBuildManifestTime.Should().Be(firstBuildManifestTime);
     }
 
-    [Fact]
+    [TestMethod]
     public void Build_ModifyTypeScriptFile_UpdatesStaticWebAssets()
     {
         var testAsset = "RazorClassLibrary";
@@ -154,7 +162,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         File.ReadAllText(jsFilePath).Should().Contain("Modified");
     }
 
-    [Fact]
+    [TestMethod]
     public void Publish_IncludesTypeScriptOutputs()
     {
         var testAsset = "RazorClassLibrary";
@@ -175,7 +183,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         publishManifest.Assets.Should().Contain(a => a.RelativePath.EndsWith("app.js"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Clean_ThenBuild_SucceedsWithTypeScriptOutputs()
     {
         var testAsset = "RazorClassLibrary";
@@ -207,7 +215,7 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         buildManifest.Assets.Should().Contain(a => a.RelativePath.EndsWith("app.js"));
     }
 
-    [Fact]
+    [TestMethod]
     public void Build_TypeScriptDisabled_DoesNotRegisterAssets()
     {
         var testAsset = "RazorClassLibrary";

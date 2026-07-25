@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.InteropServices;
@@ -9,13 +9,15 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
+    [TestClass]
     public class ConfigurationTests : BootstrapperTestBase
     {
-        [Fact]
-        internal async Task PhysicalConfigurationTest()
+        public TestContext TestContext { get; set; } = null!;
+        [TestMethod]
+        public async Task PhysicalConfigurationTest()
         {
             var userProfileDir = Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME");
-            Assert.NotNull(userProfileDir);
+            Assert.IsNotNull(userProfileDir);
             var hostDir = Path.Combine(userProfileDir!, ".templateengine", nameof(PhysicalConfigurationTest).ToString());
             try
             {
@@ -23,12 +25,12 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
                 var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest).ToString(), "1.0.0", null, builtIns, []);
 
                 Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: false, loadDefaultComponents: true);
-                var result = await bootstrapper.GetTemplatesAsync(cancellationToken: TestContext.Current.CancellationToken);
-                Assert.True(result.Any());
+                var result = await bootstrapper.GetTemplatesAsync(cancellationToken: TestContext.CancellationToken);
+                Assert.IsNotEmpty(result);
                 bootstrapper.Dispose();
-                Assert.True(Directory.Exists(hostDir));
-                Assert.True(Directory.Exists(Path.Combine(hostDir, "1.0.0")));
-                Assert.True(File.Exists(Path.Combine(hostDir, "1.0.0", "templatecache.json")));
+                Assert.IsTrue(Directory.Exists(hostDir));
+                Assert.IsTrue(Directory.Exists(Path.Combine(hostDir, "1.0.0")));
+                Assert.IsTrue(File.Exists(Path.Combine(hostDir, "1.0.0", "templatecache.json")));
             }
             finally
             {
@@ -36,11 +38,11 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
         }
 
-        [Fact]
-        internal async Task VirtualConfigurationTest()
+        [TestMethod]
+        public async Task VirtualConfigurationTest()
         {
             string? userProfileDir = Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME");
-            Assert.NotNull(userProfileDir);
+            Assert.IsNotNull(userProfileDir);
 
             string baseDir = Path.Combine(userProfileDir!, ".templateengine");
             var hostDir = Path.Combine(baseDir, nameof(VirtualConfigurationTest).ToString());
@@ -49,8 +51,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var host = new DefaultTemplateEngineHost(nameof(VirtualConfigurationTest).ToString(), "1.0.0", null, builtIns, []);
 
             Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: true, loadDefaultComponents: true);
-            var result = await bootstrapper.GetTemplatesAsync(cancellationToken: TestContext.Current.CancellationToken);
-            Assert.True(result.Any());
+            var result = await bootstrapper.GetTemplatesAsync(cancellationToken: TestContext.CancellationToken);
+            Assert.IsNotEmpty(result);
 
             DateTime? packagesJsonModificationTime = null;
             if (File.Exists(Path.Combine(baseDir, "packages.json")))
@@ -59,29 +61,29 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             }
 
             InstallRequest installRequest = new InstallRequest("Microsoft.DotNet.Web.ProjectTemplates.5.0", "5.0.0");
-            IReadOnlyList<InstallResult> installResult = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, TestContext.Current.CancellationToken);
+            IReadOnlyList<InstallResult> installResult = await bootstrapper.InstallTemplatePackagesAsync(new[] { installRequest }, InstallationScope.Global, TestContext.CancellationToken);
 
-            Assert.Single(installResult);
-            Assert.True(installResult[0].Success);
+            Assert.ContainsSingle(installResult);
+            Assert.IsTrue(installResult[0].Success);
             bootstrapper.Dispose();
 
             if (packagesJsonModificationTime == null)
             {
-                Assert.False(File.Exists(Path.Combine(baseDir, "packages.json")));
+                Assert.IsFalse(File.Exists(Path.Combine(baseDir, "packages.json")));
             }
             else
             {
-                Assert.Equal(packagesJsonModificationTime, File.GetLastWriteTimeUtc(Path.Combine(baseDir, "packages.json")));
+                Assert.AreEqual(packagesJsonModificationTime, File.GetLastWriteTimeUtc(Path.Combine(baseDir, "packages.json")));
             }
 
-            Assert.False(Directory.Exists(hostDir));
+            Assert.IsFalse(Directory.Exists(hostDir));
         }
 
-        [Fact]
-        internal async Task PhysicalConfigurationTest_WithChangedHostLocation()
+        [TestMethod]
+        public async Task PhysicalConfigurationTest_WithChangedHostLocation()
         {
             var userProfileDir = Environment.GetEnvironmentVariable(RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "USERPROFILE" : "HOME");
-            Assert.NotNull(userProfileDir);
+            Assert.IsNotNull(userProfileDir);
             var unexpectedHostDir = Path.Combine(userProfileDir!, ".templateengine", nameof(PhysicalConfigurationTest_WithChangedHostLocation).ToString());
             var expectedHostDir = TestUtils.CreateTemporaryFolder();
 
@@ -89,15 +91,15 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var host = new DefaultTemplateEngineHost(nameof(PhysicalConfigurationTest_WithChangedHostLocation).ToString(), "1.0.0", null, builtIns, []);
 
             Bootstrapper bootstrapper = new Bootstrapper(host, virtualizeConfiguration: false, loadDefaultComponents: true, hostSettingsLocation: expectedHostDir);
-            var result = await bootstrapper.GetTemplatesAsync(cancellationToken: TestContext.Current.CancellationToken);
-            Assert.True(result.Any());
+            var result = await bootstrapper.GetTemplatesAsync(cancellationToken: TestContext.CancellationToken);
+            Assert.IsNotEmpty(result);
             bootstrapper.Dispose();
             var hostDir = Path.Combine(expectedHostDir, nameof(PhysicalConfigurationTest_WithChangedHostLocation).ToString());
-            Assert.True(Directory.Exists(hostDir));
-            Assert.True(Directory.Exists(Path.Combine(hostDir, "1.0.0")));
-            Assert.True(File.Exists(Path.Combine(hostDir, "1.0.0", "templatecache.json")));
+            Assert.IsTrue(Directory.Exists(hostDir));
+            Assert.IsTrue(Directory.Exists(Path.Combine(hostDir, "1.0.0")));
+            Assert.IsTrue(File.Exists(Path.Combine(hostDir, "1.0.0", "templatecache.json")));
 
-            Assert.False(Directory.Exists(unexpectedHostDir));
+            Assert.IsFalse(Directory.Exists(unexpectedHostDir));
         }
     }
 }

@@ -3,6 +3,7 @@
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
 
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage

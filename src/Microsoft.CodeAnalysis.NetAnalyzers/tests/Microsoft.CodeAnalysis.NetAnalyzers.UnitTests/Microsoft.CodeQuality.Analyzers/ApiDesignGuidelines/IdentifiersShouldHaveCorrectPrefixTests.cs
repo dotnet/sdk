@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldHaveCorrectPrefixAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldHaveCorrectPrefixFixer>;
@@ -15,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class IdentifiersShouldHaveCorrectPrefixTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestInterfaceNamesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -73,7 +73,7 @@ public interface IAmAnInterface
                 GetCA1715CSharpResultAt(34, 22, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Controller"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTypeParameterNamesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -164,7 +164,7 @@ public class Class6<TTypeParameter>
                 GetCA1715CSharpResultAt(58, 28, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_V"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestInternalInterfaceNamesCSharp_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -191,7 +191,7 @@ public class C2
 ");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestTypeParameterNamesInternalCSharp_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -216,7 +216,7 @@ public class C2
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
-        [Fact]
+        [TestMethod]
         public async Task TestTypeParameterNamesCSharp_SingleLetterCases_DefaultAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -252,11 +252,11 @@ public class Class6<TTypeParameter>
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
-        [Theory]
-        [InlineData(@"")]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false")]
-        [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
+        [TestMethod]
+        [DataRow(@"")]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = false")]
+        [DataRow(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
         public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_DiagnosticAsync(string editorConfigText)
         {
@@ -306,14 +306,14 @@ public class Class6<TTypeParameter>
                         GetCA1715CSharpResultAt(16, 27, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
-        [Theory]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true")]
-        [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
+        [TestMethod]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = true")]
+        [DataRow(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
         public async Task TestTypeParameterNamesCSharp_SingleLetterCases_EditorConfig_NoDiagnosticAsync(string editorConfigText)
         {
@@ -355,10 +355,10 @@ public class Class6<TTypeParameter>
 {editorConfigText}
 ") }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInterfaceNamesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -405,7 +405,7 @@ End Interface
                 GetCA1715BasicResultAt(27, 22, IdentifiersShouldHaveCorrectPrefixAnalyzer.InterfaceRule, "Controller"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTypeParameterNamesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -482,7 +482,7 @@ End Class
                 GetCA1715BasicResultAt(46, 30, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "_V"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestInterfaceNamesInternalBasic_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -504,7 +504,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TestTypeParameterNamesInternalBasic_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -525,7 +525,7 @@ End Class
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
-        [Fact]
+        [TestMethod]
         public async Task TestTypeParameterNamesBasic_SingleLetterCases_DefaultAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -556,11 +556,11 @@ End Class
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
-        [Theory]
-        [InlineData(@"")]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false")]
-        [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
+        [TestMethod]
+        [DataRow(@"")]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = false")]
+        [DataRow(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = true
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = false")]
         public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_DiagnosticAsync(string editorConfigText)
         {
@@ -605,14 +605,14 @@ End Class
                         GetCA1715BasicResultAt(13, 29, IdentifiersShouldHaveCorrectPrefixAnalyzer.TypeParameterRule, "V"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         [WorkItem(1604, "https://github.com/dotnet/roslyn-analyzers/issues/1604")]
-        [Theory]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = true")]
-        [InlineData(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
-        [InlineData(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
+        [TestMethod]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = true")]
+        [DataRow(@"dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
+        [DataRow(@"dotnet_code_quality.exclude_single_letter_type_parameters = false
                       dotnet_code_quality.CA1715.exclude_single_letter_type_parameters = true")]
         public async Task TestTypeParameterNamesBasic_SingleLetterCases_EditorConfig_NoDiagnosticAsync(string editorConfigText)
         {
@@ -649,7 +649,7 @@ End Class
 {editorConfigText}
 ") }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1715CSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

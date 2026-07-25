@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForEmptyStringsUsingStringLengthAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpTestForEmptyStringsUsingStringLengthFixer>;
@@ -13,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class TestForEmptyStringsUsingStringLengthFixerTests
     {
         private const int c_StringLengthCodeActionIndex = 1;
 
-        [Fact, WorkItem(3686, "https://github.com/dotnet/roslyn-analyzers/pull/3686")]
+        [TestMethod, WorkItem(3686, "https://github.com/dotnet/roslyn-analyzers/pull/3686")]
         public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmpty_WhenStringIsLiteralAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -70,7 +70,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingStringLength_WhenStringIsLiteralAsync()
         {
             await new VerifyCS.Test
@@ -107,7 +107,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -139,10 +139,10 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmptyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -177,7 +177,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingStringLengthAsync()
         {
             await new VerifyCS.Test
@@ -214,7 +214,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -246,10 +246,10 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingIsNullOrEmptyComparisonOnRightAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -285,7 +285,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingStringLengthComparisonOnRightAsync()
         {
             await new VerifyCS.Test
@@ -322,7 +322,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -354,10 +354,10 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixInequalityTestEmptyStringsUsingIsNullOrEmptyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -392,7 +392,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixInequalityTestEmptyStringsUsingStringLengthAsync()
         {
             await new VerifyCS.Test
@@ -429,7 +429,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -461,10 +461,10 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixInequalityTestEmptyStringsUsingIsNullOrEmptyComparisonOnRightAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -499,7 +499,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixInequalityTestEmptyStringsUsingStringLengthComparisonOnRightAsync()
         {
             await new VerifyCS.Test
@@ -536,7 +536,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -568,10 +568,10 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInFunctionArgumentAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -625,7 +625,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInTernaryOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -670,7 +670,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInThrowStatementAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -696,7 +696,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInCatchFilterClauseAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -724,7 +724,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInYieldReturnStatementAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -754,7 +754,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInSwitchStatementAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -788,7 +788,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInForLoopAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -820,7 +820,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInWhileLoopAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -850,7 +850,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixForComparisonWithEmptyStringInDoWhileLoopAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -882,7 +882,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_MultilineFixTestEmptyStringsUsingIsNullOrEmptyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -925,7 +925,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_MultilineFixTestEmptyStringsUsingStringLengthAsync()
         {
             await new VerifyCS.Test
@@ -966,7 +966,7 @@ public class A
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1002,10 +1002,10 @@ End Class
                 },
                 CodeActionIndex = c_StringLengthCodeActionIndex,
                 CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingStringLength_WhenStringEqualsMethodIsUsedWithStringEmptyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1040,7 +1040,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingStringLength_WhenStringEqualsMethodIsUsedWithEmptyLiteralAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1075,7 +1075,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820_FixTestEmptyStringsUsingStringLength_WhenNotStringEqualsMethodIsUsedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"

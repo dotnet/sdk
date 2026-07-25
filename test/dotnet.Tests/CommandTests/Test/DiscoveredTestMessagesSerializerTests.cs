@@ -8,9 +8,10 @@ using Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class DiscoveredTestMessagesSerializerTests
 {
-    [Fact]
+    [TestMethod]
     public void RoundTrip_AllFieldsPopulated_PreservesValues()
     {
         var original = new DiscoveredTestMessages(
@@ -51,7 +52,7 @@ public class DiscoveredTestMessagesSerializerTests
         test.Traits[1].Value.Should().Be("team-x");
     }
 
-    [Fact]
+    [TestMethod]
     public void RoundTrip_OnlyUidAndDisplayName_BackwardCompatibility()
     {
         // Mimics a legacy MTP producing only Uid/DisplayName: optional fields are absent on the wire,
@@ -90,7 +91,7 @@ public class DiscoveredTestMessagesSerializerTests
         test.Traits.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void Serialize_LineNumber_UsesFourBytes()
     {
         // The wire format for LineNumber is a 4-byte signed integer. This protects against
@@ -142,7 +143,7 @@ public class DiscoveredTestMessagesSerializerTests
         lineNumberValue.Should().Be(7);
     }
 
-    [Fact]
+    [TestMethod]
     public void Serialize_EmptyArrays_AreOmittedFromWire()
     {
         // Empty Traits and empty ParameterTypeFullNames should be omitted entirely (no field id, no size).

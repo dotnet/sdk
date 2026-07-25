@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Channels;
@@ -25,6 +25,7 @@ internal class TestApplicationActionQueue
         TerminalTestReporter output,
         Action<CommandLineOptionMessages> onHelpRequested,
         CtrlCCancellationManager ctrlC,
+        ArtifactPostProcessingManager artifactPostProcessingManager,
         TestRunPolicy testRunPolicy,
         CancellationToken cancellationToken)
     {
@@ -34,7 +35,14 @@ internal class TestApplicationActionQueue
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
-            _readers[i] = Task.Run(async () => await Read(buildOptions, testOptions, output, onHelpRequested, ctrlC, testRunPolicy));
+            _readers[i] = Task.Run(async () => await Read(
+                buildOptions,
+                testOptions,
+                output,
+                onHelpRequested,
+                ctrlC,
+                artifactPostProcessingManager,
+                testRunPolicy));
         }
     }
 
@@ -69,6 +77,7 @@ internal class TestApplicationActionQueue
         TerminalTestReporter output,
         Action<CommandLineOptionMessages> onHelpRequested,
         CtrlCCancellationManager ctrlC,
+        ArtifactPostProcessingManager artifactPostProcessingManager,
         TestRunPolicy testRunPolicy)
     {
         try
@@ -80,7 +89,14 @@ internal class TestApplicationActionQueue
                     _cancellationToken.ThrowIfCancellationRequested();
 
                     int result = ExitCode.GenericFailure;
-                    var testApp = new TestApplication(module, buildOptions, testOptions, output, onHelpRequested, testRunPolicy);
+                    var testApp = new TestApplication(
+                        module,
+                        buildOptions,
+                        testOptions,
+                        output,
+                        onHelpRequested,
+                        artifactPostProcessingManager,
+                        testRunPolicy: testRunPolicy);
                     try
                     {
                         using (testApp)
@@ -96,10 +112,14 @@ internal class TestApplicationActionQueue
                         result = ExitCode.GenericFailure;
                     }
 
-                    if (result == ExitCode.Success && testApp.HasFailureDuringDispose)
-                    {
-                        result = ExitCode.GenericFailure;
-                    }
+                    // A module that ran zero tests (exit code 8) is not, by itself, a whole-run failure.
+                    // With --test-modules or a global --filter, some modules may legitimately match no tests.
+                    // Normalize it to success here; the aggregate "zero tests ran" verdict is decided once at
+                    // the whole-run level in MicrosoftTestingPlatformTestCommand from the total test count. A
+                    // stricter per-module minimum requested via -- --minimum-expected-tests N still fails that
+                    // module with ExitCode.MinimumExpectedTestsPolicyViolation (9) and is preserved.
+                    // See https://github.com/microsoft/testfx/issues/7457.
+                    result = NormalizeExitCode(result, testApp.HasFailureDuringDispose);
 
                     lock (_lock)
                     {
@@ -131,6 +151,7 @@ internal class TestApplicationActionQueue
                     }
                 }
             }
+
         }
         catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
         {
@@ -138,5 +159,17 @@ internal class TestApplicationActionQueue
             // Already-running test apps are left alone so they can gracefully cancel themselves
             // and report final session state via IPC.
         }
+    }
+
+    internal static int NormalizeExitCode(int result, bool hasFailureDuringDispose)
+    {
+        if (result == ExitCode.ZeroTests)
+        {
+            result = ExitCode.Success;
+        }
+
+        return result == ExitCode.Success && hasFailureDuringDispose
+            ? ExitCode.GenericFailure
+            : result;
     }
 }

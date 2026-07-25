@@ -23,6 +23,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
 #endif
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
+        [Ignore("https://github.com/dotnet/sdk/issues/54951")]
         public void ItShouldDetectFileWithMarkOfTheWeb()
         {
             var testFile = Path.Combine(TestAssetsManager.CreateTestDirectory().Path, Path.GetRandomFileName());

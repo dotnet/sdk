@@ -3,6 +3,11 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,7 +16,8 @@ using System.Threading.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBaselineTest(log)
+[TestClass]
+public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
 {
 #if DEBUG
     public const string Configuration = "Debug";
@@ -19,7 +25,7 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
     public const string Configuration = "Release";
 #endif
 
-    [Fact]
+    [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_ReportsAddedFiles()
     {
         // Arrange
@@ -55,7 +61,7 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
     }
 
-    [Fact]
+    [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_ReportsRemovedFiles_Once()
     {
         // Arrange
@@ -90,7 +96,7 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
     }
 
-    [Fact]
+    [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_IncludesReferencedProjectsManifests()
     {
         // Arrange

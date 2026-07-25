@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Update="Manifests\WorkloadManifest.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

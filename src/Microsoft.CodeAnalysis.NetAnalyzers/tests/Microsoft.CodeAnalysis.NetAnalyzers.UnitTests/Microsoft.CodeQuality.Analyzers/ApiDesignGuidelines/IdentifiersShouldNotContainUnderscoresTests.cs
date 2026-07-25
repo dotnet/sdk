@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotContainUnderscoresAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldNotContainUnderscoresFixer>;
@@ -16,10 +15,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class IdentifiersShouldNotContainUnderscoresTests
     {
         #region CSharp Tests
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForAssembly_CSharpAsync() // TODO: How to test the code fixer for this?
         {
             await new VerifyCS.Test
@@ -38,10 +38,10 @@ public class DoesNotMatter
                 {
                     GetCA1707CSharpResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_")
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForAssembly_NoDiagnostics_CSharpAsync()
         {
             await new VerifyCS.Test
@@ -56,10 +56,10 @@ public class DoesNotMatter
                     (solution, projectId) =>
                         solution.WithProjectAssemblyName(projectId, "AssemblyNameHasNoUnderScore")
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForNamespace_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -98,7 +98,7 @@ namespace HasNoUnderScore
 }");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1707_ForTypes_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -149,7 +149,7 @@ internal class OuterType2
 ");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1707_ForFields_CSharpAsync()
         {
             await new VerifyCS.Test
@@ -230,10 +230,10 @@ public class C
                         VerifyCS.Diagnostic(IdentifiersShouldNotContainUnderscoresAnalyzer.MemberRule).WithLocation(0).WithArguments("DoesNotMatterEnum._"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1707_ForMethods_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -309,7 +309,7 @@ internal class C
 }");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1707_ForProperties_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -385,7 +385,7 @@ internal class C
 }");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CA1707_ForEvents_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -465,7 +465,7 @@ internal class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForDelegates_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -484,7 +484,7 @@ public delegate T Del<T>(int t);
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForMemberparameters_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -579,7 +579,7 @@ public class Der : Base
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForTypeTypeParameters_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -599,7 +599,7 @@ class NoDiag<U_>
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForMemberTypeParameters_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -696,7 +696,7 @@ public class Der : Base
 }");
         }
 
-        [Fact, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
+        [TestMethod, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
         public async Task CA1707_ForOperators_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -715,7 +715,7 @@ public struct S
 ");
         }
 
-        [Fact, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
+        [TestMethod, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
         public async Task CA1707_CustomOperator_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -735,7 +735,7 @@ public class Span
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_CSharp_DiscardSymbolParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -757,7 +757,7 @@ public static class MyHelper
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_CSharp_DiscardSymbolTuple_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -774,7 +774,7 @@ public class SomeClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_CSharp_DiscardSymbolPatternMatching_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -801,7 +801,7 @@ public class SomeClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_CSharp_StandaloneDiscardSymbol_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -816,7 +816,7 @@ public class SomeClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_CSharp_LambdaDiscardParameterSymbol_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -841,10 +841,10 @@ public class SomeClass
 
     public int GetSomethingElse() => 42;
 }"
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
+        [TestMethod, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
         public async Task CA1707_CSharp_GlobalAsaxSpecialMethodsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -928,7 +928,7 @@ public class InvalidContext
         #endregion
 
         #region Visual Basic Tests
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForAssembly_VisualBasicAsync()
         {
             await new VerifyVB.Test
@@ -946,10 +946,10 @@ End Class
                 {
                     GetCA1707BasicResultAt(line: 2, column: 1, symbolKind: SymbolKind.Assembly, identifierNames: "AssemblyNameHasUnderScore_")
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForAssembly_NoDiagnostics_VisualBasicAsync()
         {
             await new VerifyVB.Test
@@ -963,10 +963,10 @@ End Class
                     (solution, projectId) =>
                         solution.WithProjectAssemblyName(projectId, "AssemblyNameHasNoUnderScore")
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForNamespace_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -995,7 +995,7 @@ Namespace HasNoUnderScore
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForTypes_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1016,7 +1016,7 @@ Public Class OuterType
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForFields_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1055,7 +1055,7 @@ Public Enum DoesNotMatterEnum
 End Enum");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForMethods_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1131,7 +1131,7 @@ Public Class Derives
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForProperties_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1277,7 +1277,7 @@ Public Class Derives
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForEvents_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1339,7 +1339,7 @@ Public Class Derives
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForDelegates_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1360,7 +1360,7 @@ Public Delegate Function Del(Of T)(t As Integer) As T
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForMemberparameters_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1453,7 +1453,7 @@ Public Class Der
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForTypeTypeParameters_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1470,7 +1470,7 @@ Class NoDiag(Of U_)
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1707_ForMemberTypeParameters_VisualBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1561,7 +1561,7 @@ Public Class Der
 End Class");
         }
 
-        [Fact, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
+        [TestMethod, WorkItem(947, "https://github.com/dotnet/roslyn-analyzers/issues/947")]
         public async Task CA1707_ForOperators_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1577,7 +1577,7 @@ End Structure
 ");
         }
 
-        [Fact, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
+        [TestMethod, WorkItem(1319, "https://github.com/dotnet/roslyn-analyzers/issues/1319")]
         public async Task CA1707_CustomOperator_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1602,7 +1602,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
+        [TestMethod, WorkItem(3121, "https://github.com/dotnet/roslyn-analyzers/issues/3121")]
         public async Task CA1707_VisualBasic_GlobalAsaxSpecialMethodsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

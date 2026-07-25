@@ -6,8 +6,8 @@ using System.CommandLine.Invocation;
 using System.Runtime.InteropServices;
 #if !CLI_AOT
 using Microsoft.DotNet.Cli.CommandLine;
-using Microsoft.DotNet.Cli.Commands.Workload;
 #endif
+using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Help;
 using Microsoft.DotNet.Cli.Utils;
@@ -149,12 +149,8 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetSdkInfoLabel}");
         Reporter.Output.WriteLine($" Version:           {Product.Version}");
         Reporter.Output.WriteLine($" Commit:            {commitSha}");
-#if !CLI_AOT
-        // Workload and MSBuild version reporting are not AOT-compatible yet (they pull in the
-        // workload manager and MSBuild forwarding machinery), so they are omitted from the AOT build.
         Reporter.Output.WriteLine($" Workload version:  {WorkloadInfoHelper.GetWorkloadsVersion()}");
         Reporter.Output.WriteLine($" MSBuild version:   {MSBuildForwardingAppWithoutLogging.MSBuildVersion}");
-#endif
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotNetRuntimeInfoLabel}");
         Reporter.Output.WriteLine($" OS Name:     {RuntimeEnvironment.OperatingSystem}");
@@ -166,12 +162,17 @@ internal class PrintInfoAction(Option<bool> option) : InvocableOptionAction(opti
         // GetDisplayRid consults the shared framework's deps file, which isn't available in AOT.
         Reporter.Output.WriteLine($" RID:         {RuntimeInformation.RuntimeIdentifier}");
 #endif
+#if CLI_AOT
+        // In the AOT bubble AppContext.BaseDirectory is the muxer/install root, so report the resolved
+        // versioned SDK directory instead. The managed CLI keeps AppContext.BaseDirectory - it is correct
+        // there and preserves the existing output (including its trailing directory separator).
+        Reporter.Output.WriteLine($" Base Path:   {SdkPaths.SdkDirectory}");
+#else
         Reporter.Output.WriteLine($" Base Path:   {AppContext.BaseDirectory}");
-#if !CLI_AOT
+#endif
         Reporter.Output.WriteLine();
         Reporter.Output.WriteLine($"{LocalizableStrings.DotnetWorkloadInfoLabel}");
         new WorkloadInfoHelper(isInteractive: false).ShowWorkloadsInfo(showVersion: false);
-#endif
 
         return 0;
     }

@@ -25,6 +25,7 @@ namespace Microsoft.NET.Build.Tests
                 .Should()
                 .OnlyHaveFiles(new[] {
                     "x64SolutionBuild.runtimeconfig.json",
+                    "x64SolutionBuild.runtimeconfig.dev.json",
                     "x64SolutionBuild.deps.json",
                     "x64SolutionBuild.dll",
                     "x64SolutionBuild.pdb",

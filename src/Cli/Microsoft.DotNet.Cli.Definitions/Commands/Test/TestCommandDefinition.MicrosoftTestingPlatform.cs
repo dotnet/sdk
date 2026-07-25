@@ -108,6 +108,11 @@ internal abstract partial class TestCommandDefinition
             Description = CommandDefinitionStrings.CmdNoBuildDescription
         };
 
+        public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(
+            defaultValue: false,
+            forwardAs: null,
+            description: CommandDefinitionStrings.TestCmdNoLogo);
+
         public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
 
         public readonly Option<bool> NoDependenciesOption = new Option<bool>("--no-dependencies")
@@ -136,11 +141,16 @@ internal abstract partial class TestCommandDefinition
 
         public const string ListTestsOptionName = "--list-tests";
 
-        public readonly Option<string> ListTestsOption = new(ListTestsOptionName)
+        public const string ListTestsFormatText = "text";
+
+        public const string ListTestsFormatJson = "json";
+
+        public readonly Option<string> ListTestsOption = new Option<string>(ListTestsOptionName)
         {
             Description = CommandDefinitionStrings.CmdListTestsDescription,
-            Arity = ArgumentArity.Zero
-        };
+            HelpName = $"{ListTestsFormatText}|{ListTestsFormatJson}",
+            Arity = ArgumentArity.ZeroOrOne
+        }.AcceptOnlyFromAmong(ListTestsFormatText, ListTestsFormatJson);
 
         public readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
         {
@@ -155,8 +165,14 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<string> DeviceOption = new("--device")
         {
-            Description = CommandDefinitionStrings.CommandOptionDeviceDescription,
+            Description = CommandDefinitionStrings.CommandOptionDeviceDescriptionForTest,
             HelpName = CommandDefinitionStrings.CommandOptionDeviceHelpName
+        };
+
+        public readonly Option<bool> ListDevicesOption = new("--list-devices")
+        {
+            Description = CommandDefinitionStrings.CommandOptionListDevicesDescriptionForTest,
+            Arity = ArgumentArity.Zero
         };
 
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
@@ -192,6 +208,8 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            NoLogoOption.Aliases.Add("--no-banner");
+            Options.Add(NoLogoOption);
             Options.Add(NoDependenciesOption);
             Options.Add(ArtifactsPathOption);
             Options.Add(UseCurrentRuntimeOption);
@@ -202,6 +220,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoLaunchProfileOption);
             Options.Add(NoLaunchProfileArgumentsOption);
             Options.Add(DeviceOption);
+            Options.Add(ListDevicesOption);
             Options.Add(MTPTargetOption);
         }
 

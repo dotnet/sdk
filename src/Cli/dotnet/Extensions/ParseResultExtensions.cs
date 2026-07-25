@@ -142,8 +142,6 @@ public static class ParseResultExtensions
         string.IsNullOrEmpty(parseResult.RootSubCommandResult())
         || Parser.GetBuiltInCommand(parseResult.RootSubCommandResult()) != null;
 
-#if !CLI_AOT
-
     public static void ShowHelpOrErrorIfAppropriate(this ParseResult parseResult)
     {
         if (parseResult.Errors.Any())
@@ -233,6 +231,7 @@ public static class ParseResultExtensions
         }
     }
 
+#if !CLI_AOT
     [Conditional("DEBUG")]
     public static void HandleDebugSwitch(this ParseResult parseResult)
     {
@@ -255,15 +254,12 @@ public static class ParseResultExtensions
         }
         parentNames.Reverse();
 
-#if !CLI_AOT
         // Options that perform terminating actions are considered part of the command name as they are essentially subcommands themselves.
         // Example: dotnet --version
         if (parseResult.Action is InvocableOptionAction { Terminating: true } optionAction)
         {
             parentNames.Add(optionAction.Option.Name);
         }
-#endif
-
         return string.Join(' ', parentNames);
     }
 }

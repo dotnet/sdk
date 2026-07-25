@@ -1,8 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Usage.ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectly,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
+    [TestClass]
     public class ProvideHttpClientHandlerMaxResponseHeaderLengthValueCorrectlyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2262_ProvideCorrectValueFor_HttpClientHandlerMaxResponseHeader_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
