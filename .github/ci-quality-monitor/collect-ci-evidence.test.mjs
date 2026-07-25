@@ -13,6 +13,7 @@ import {
   collectCiEvidence,
   CiEvidenceCollector,
   getTimelineFailuresFromRecords,
+  getRecentlyTrackedFingerprints,
   createBuildSummary,
   parseArguments,
   parseHelixWorkItemReferences,
@@ -21,6 +22,7 @@ import {
   summarizeHelixConsole,
   summarizeSharedTestMechanism,
   shouldRunAgent,
+  suppressTrackedIssueCandidates,
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
 
@@ -256,7 +258,11 @@ test("merged PR audits require a landed commit identity", async () => {
 test("agent gating skips bootstrap and previously processed windows", () => {
   assert.equal(shouldRunAgent({ bootstrap: true, pipelineHealth: [], failures: [{ build: { id: 4 } }] }), false);
   assert.equal(shouldRunAgent({ bootstrap: false, pipelineHealth: [], failures: [] }), false);
-  assert.equal(shouldRunAgent({ bootstrap: false, pipelineHealth: [], failures: [{ build: { id: 4 } }] }), true);
+  assert.equal(shouldRunAgent({
+    bootstrap: false,
+    pipelineHealth: [],
+    failures: [{ issueCandidates: [{ fingerprint: "build|compiler|cs0114" }] }]
+  }), true);
   assert.equal(shouldRunAgent({
     bootstrap: false,
     pipelineHealth: [{ actionable: false }, { actionable: true }],
@@ -511,4 +517,27 @@ test("applyKbeRecurrence ignores retries of the current commit", () => {
 
   assert.equal(result[0].kbe.recurring, false);
   assert.deepEqual(result[0].kbe.matchingBuilds, []);
+});
+
+test("tracked issue fingerprints suppress candidates before agent activation", async () => {
+  const fingerprint = "restore|build|nuget-503";
+  const fetchImplementation = async (url, options) => {
+    assert.match(url, /repos\/nagilson\/sdk\/issues/);
+    assert.equal(options.headers.Authorization, "Bearer token");
+    return new Response(JSON.stringify([{
+      body: `## Build Information\n\n- **Failure fingerprint:** \`${fingerprint}\``
+    }]), { status: 200 });
+  };
+  const dossier = {
+    bootstrap: false,
+    pipelineHealth: [],
+    failures: [{ issueCandidates: [{ fingerprint }, { fingerprint: "build|compiler|cs0114" }] }]
+  };
+
+  const tracked = await getRecentlyTrackedFingerprints("nagilson/sdk", "token", fetchImplementation);
+  suppressTrackedIssueCandidates(dossier, tracked);
+
+  assert.deepEqual(dossier.failures[0].issueCandidates, [{ fingerprint: "build|compiler|cs0114" }]);
+  dossier.failures[0].issueCandidates = [];
+  assert.equal(shouldRunAgent(dossier), false);
 });

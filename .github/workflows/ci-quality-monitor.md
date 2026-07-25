@@ -36,6 +36,7 @@ jobs:
       actions: read
       checks: read
       contents: read
+      issues: read
     outputs:
       dossier: ${{ steps.collect.outputs.dossier }}
       failure_count: ${{ steps.collect.outputs.failure_count }}
@@ -111,6 +112,7 @@ jobs:
           MERGED_PR_NUMBER: ${{ github.event.pull_request.number }}
           MERGED_PR_BASE_REF: ${{ github.event.pull_request.base.ref }}
           MERGED_PR_COMMIT_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+          CI_QUALITY_GITHUB_TOKEN: ${{ github.token }}
         run: |
           mkdir -p .ci-quality-monitor
           args=(
@@ -119,6 +121,8 @@ jobs:
             --state .ci-quality-monitor/state.json
             --state-output .ci-quality-monitor/state.json
             --github-output "$GITHUB_OUTPUT"
+            --github-repository "$GITHUB_REPOSITORY"
+            --github-token "$CI_QUALITY_GITHUB_TOKEN"
           )
           if [[ -n "$BUILD_ID" ]]; then
             args+=(--build-id "$BUILD_ID")

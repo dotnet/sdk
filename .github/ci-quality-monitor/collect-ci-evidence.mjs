@@ -3,6 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { collectCiEvidence } from "./collector.mjs";
+import { getRecentlyTrackedFingerprints, suppressTrackedIssueCandidates } from "./issue-deduplication.mjs";
 
 export {
   createBuildAttemptKey,
@@ -33,6 +34,7 @@ export {
 } from "./helix/parsing.mjs";
 export { selectUnprocessedFailures } from "./state.mjs";
 export { parseTestResultXml } from "./test-results.mjs";
+export { getRecentlyTrackedFingerprints, suppressTrackedIssueCandidates } from "./issue-deduplication.mjs";
 
 export function parseArguments(argumentsList) {
   const options = {};
@@ -66,7 +68,9 @@ async function readState(statePath) {
 export function shouldRunAgent(dossier) {
   if (dossier.bootstrap) return false;
   const actionableHealth = dossier.pipelineHealth.filter(observation => observation.actionable).length;
-  return dossier.failures.length + actionableHealth > 0;
+  const issueCandidates = dossier.failures.reduce(
+    (count, failure) => count + (failure.issueCandidates?.length ?? 0), 0);
+  return issueCandidates + actionableHealth > 0;
 }
 
 async function writeGitHubOutputs(outputPath, dossier) {
@@ -95,6 +99,9 @@ async function main() {
       baseRef: options["merged-pr-base-ref"],
       mergeCommitSha: options["merged-pr-commit-sha"]
     } : null);
+  const trackedFingerprints = await getRecentlyTrackedFingerprints(
+    options["github-repository"], options["github-token"]);
+  suppressTrackedIssueCandidates(dossier, trackedFingerprints);
   await mkdir(path.dirname(options.output), { recursive: true });
   await writeFile(options.output, `${JSON.stringify(dossier, null, 2)}\n`);
   if (options["state-output"]) {
