@@ -3,6 +3,7 @@ import path from "node:path";
 import process from "node:process";
 import { pathToFileURL } from "node:url";
 import { collectCiEvidence } from "./collector.mjs";
+import { selectEvaluationCandidates } from "./evaluation-scenario.mjs";
 import { getRecentlyTrackedFingerprints, suppressTrackedIssueCandidates } from "./issue-deduplication.mjs";
 
 export {
@@ -35,6 +36,7 @@ export {
 export { selectUnprocessedFailures } from "./state.mjs";
 export { parseTestResultXml } from "./test-results.mjs";
 export { getRecentlyTrackedFingerprints, suppressTrackedIssueCandidates } from "./issue-deduplication.mjs";
+export { selectEvaluationCandidates } from "./evaluation-scenario.mjs";
 
 export function parseArguments(argumentsList) {
   const options = {};
@@ -99,6 +101,11 @@ async function main() {
       baseRef: options["merged-pr-base-ref"],
       mergeCommitSha: options["merged-pr-commit-sha"]
     } : null);
+  if (options["evaluation-catalog"] && options["build-id"]) {
+    const catalog = JSON.parse(await readFile(options["evaluation-catalog"], "utf8"));
+    const scenario = catalog.examples.find(example => `${example.buildId}` === `${options["build-id"]}`);
+    selectEvaluationCandidates(dossier, scenario);
+  }
   const trackedFingerprints = await getRecentlyTrackedFingerprints(
     options["github-repository"], options["github-token"]);
   suppressTrackedIssueCandidates(dossier, trackedFingerprints);

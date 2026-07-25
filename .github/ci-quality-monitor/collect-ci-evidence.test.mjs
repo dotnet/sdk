@@ -22,6 +22,7 @@ import {
   summarizeHelixConsole,
   summarizeSharedTestMechanism,
   shouldRunAgent,
+  selectEvaluationCandidates,
   suppressTrackedIssueCandidates,
   selectUnprocessedFailures
 } from "./collect-ci-evidence.mjs";
@@ -540,4 +541,23 @@ test("tracked issue fingerprints suppress candidates before agent activation", a
   assert.deepEqual(dossier.failures[0].issueCandidates, [{ fingerprint: "build|compiler|cs0114" }]);
   dossier.failures[0].issueCandidates = [];
   assert.equal(shouldRunAgent(dossier), false);
+});
+
+test("evaluation scenarios retain only the intended current-build mechanism", () => {
+  const dossier = {
+    failures: [{ issueCandidates: [
+      { category: "restore", component: "Build", mechanism: "NuGet.targets error 503 Service Unavailable" },
+      { category: "test-failure", component: "CliSchema", mechanism: "snapshot mismatch" }
+    ] }]
+  };
+
+  selectEvaluationCandidates(dossier, {
+    name: "Feed service failure",
+    expectedCategories: ["restore"],
+    expectedMechanismIncludes: ["NuGet.targets", "503", "Service Unavailable"],
+    evidence: "NuGet restore failed"
+  });
+
+  assert.deepEqual(dossier.failures[0].issueCandidates.map(candidate => candidate.category), ["restore"]);
+  assert.equal(dossier.evaluationScenario.name, "Feed service failure");
 });
