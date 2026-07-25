@@ -83,7 +83,9 @@ startup, setup, restore, build, test, and Helix work-item failures. Artifact
 download cascades and generic Helix monitor parents are context only.
 Each failure also exposes `issueCandidates`, the actionable observations from
 the selected current build. Related-build observations are recurrence context
-and cannot directly anchor an issue.
+and cannot directly anchor an issue. Non-actionable current observations are
+emitted separately as `contextObservations`; raw timelines and task logs are
+used to derive observations but are not duplicated in the agent dossier.
 
 Named tests retain per-test fingerprints and a separate mechanism fingerprint.
 Different tests can share one issue only when their mechanism fingerprints and

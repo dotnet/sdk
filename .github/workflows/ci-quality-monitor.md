@@ -224,7 +224,7 @@ When `github.ref_name` is `nagilson/ci-quality-monitor-live-evaluation`, this is
 Follow these steps in order:
 
 1. If `bootstrap` is true, call `noop`. The first scheduled run establishes state and must not create historical issues.
-2. Read `pipelineHealth` and each current build's `issueCandidates`. Only `issueCandidates` may anchor an issue. Use `observations`, `relatedFailureSummaries`, and their nested observations only as context for history and recurrence; never file a related-build observation as the current failure. In particular, never file the generic `Monitor Helix Jobs` parent or an artifact-download cascade when specific child/root observations exist.
+2. Read `pipelineHealth` and each current build's `issueCandidates`. Only `issueCandidates` may anchor an issue. Use `contextObservations`, `relatedFailureSummaries`, and their nested observations only as context for history and recurrence; never file a related-build observation as the current failure. In particular, never file the generic `Monitor Helix Jobs` parent or an artifact-download cascade when specific child/root observations exist.
 3. Keep every observation independent initially. A named test is not a root cause, and a red build is not a root cause.
 4. Group different tests into one candidate only when their `mechanismFingerprint` values are equal and their stable evidence supports the same mechanism. List every affected test in that issue.
 5. Keep separate candidates when fingerprints differ. The same test may map to multiple issues when it fails through different mechanisms in different builds.

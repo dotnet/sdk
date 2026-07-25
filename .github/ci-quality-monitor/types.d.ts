@@ -43,7 +43,7 @@ export interface CiEvidenceDossier {
   pipelineHealth: Observation[];
   failures: Array<{
     issueCandidates: Observation[];
-    observations: Observation[];
+    contextObservations: Observation[];
     [detail: string]: unknown;
   }>;
 }

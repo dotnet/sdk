@@ -225,7 +225,7 @@ test("merged stable-target PR failures promote the same Azure attempt once", asy
 
   assert.equal(openPr.failures.length, 0);
   assert.equal(promoted.failures.length, 1);
-  assert.equal(promoted.failures[0].observations[0].category, "pipeline-configuration");
+  assert.equal(promoted.failures[0].issueCandidates[0].category, "pipeline-configuration");
   assert.equal(promoted.failures[0].priority, "HIGH");
   assert.equal(promoted.failures[0].auditContext, "stable-merge:124:landed-sha");
   assert.equal(redelivery.failures.length, 0);
@@ -502,7 +502,7 @@ test("issue candidates contain only actionable observations from the selected bu
     registry, "45", { schemaVersion: 1, pipelines: {} }, fetchImplementation);
 
   assert.deepEqual(dossier.failures[0].issueCandidates.map(candidate => candidate.mechanism), ["Current YAML failure"]);
-  assert.match(dossier.failures[0].relatedFailureSummaries[0].timelineFailures[0].issues[0], /related failure/);
+  assert.match(dossier.failures[0].relatedFailureSummaries[0].taskFailures[0].issues[0], /related failure/);
 });
 
 test("applyKbeRecurrence ignores retries of the current commit", () => {

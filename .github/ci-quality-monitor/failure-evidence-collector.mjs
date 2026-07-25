@@ -18,10 +18,16 @@ export class FailureEvidenceCollector {
       try {
         const timeline = await this.getAzureClient(pipeline).getTimeline(build.id);
         const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
+        const observations = await this.helixEvidence.collectObservations(
+          timelineFailures, MAX_RELATED_HELIX_REFERENCES);
         related.push({
           build: createBuildSummary(build),
-          timelineFailures,
-          observations: await this.helixEvidence.collectObservations(timelineFailures, MAX_RELATED_HELIX_REFERENCES)
+          taskFailures: timelineFailures.map(failure => ({
+            name: failure.name,
+            path: failure.path,
+            issues: failure.issues
+          })),
+          observations: deduplicateObservations(observations)
         });
       } catch (error) {
         related.push({ build: createBuildSummary(build), unavailable: normalizeEvidenceText(error.message) });
@@ -42,10 +48,10 @@ export class FailureEvidenceCollector {
     const taskObservations = createTaskObservations(
       timelineFailures,
       new Map(logFailures.filter(failure => failure.text).map(failure => [failure.logId, failure.text])));
-    const observations = applyKbeRecurrence(
+    const observations = deduplicateObservations(applyKbeRecurrence(
       [pipelineObservation, ...taskObservations, ...helixObservations].filter(Boolean),
       relatedFailureSummaries,
-      createBuildSummary(build));
+      createBuildSummary(build)));
     return {
       pipeline,
       build: createBuildSummary(build),
@@ -55,11 +61,9 @@ export class FailureEvidenceCollector {
       mergedPullRequest: candidate.mergedPullRequest ?? null,
       recentBuilds: history.map(createBuildSummary),
       issueCandidates: observations.filter(observation => observation.actionable),
-      observations,
-      timelineFailures,
+      contextObservations: observations.filter(observation => !observation.actionable),
       relatedFailureSummaries,
-      testFailures: await this.collectAzureTestFailures(azure, build.id),
-      logFailures
+      testFailures: await this.collectAzureTestFailures(azure, build.id)
     };
   }
 
@@ -89,4 +93,11 @@ export class FailureEvidenceCollector {
     }
     return logs;
   }
+}
+
+function deduplicateObservations(observations) {
+  return [...new Map(observations.map(observation => [
+    observation.fingerprint ?? `${observation.kind}:${observation.component}:${observation.mechanism}`,
+    observation
+  ])).values()];
 }
