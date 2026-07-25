@@ -31,6 +31,30 @@ The command writes one dossier per build and `summary.json` under
 `artifacts/tmp/ci-quality-monitor/evaluations` and exits nonzero when an expected
 category is absent.
 
+## Successful Fork Evaluation
+
+The final serial evaluation ran the corrected collector and native GitHub AW
+issue output against all seven scenarios. Each issue contains the selected build,
+exact failure fingerprint, required evidence sections, bounded root cause
+analysis, and fork-evaluation labels.
+
+| Scenario | Workflow run | Evaluation issue |
+| --- | --- | --- |
+| Pipeline YAML | [30134772222](https://github.com/nagilson/sdk/actions/runs/30134772222) | [nagilson/sdk#71](https://github.com/nagilson/sdk/issues/71) |
+| Setup/checkout | [30135725391](https://github.com/nagilson/sdk/actions/runs/30135725391) | [nagilson/sdk#73](https://github.com/nagilson/sdk/issues/73) |
+| Restore/feed | [30136527251](https://github.com/nagilson/sdk/actions/runs/30136527251) | [nagilson/sdk#75](https://github.com/nagilson/sdk/issues/75) |
+| Compiler build break | [30136852103](https://github.com/nagilson/sdk/actions/runs/30136852103) | [nagilson/sdk#76](https://github.com/nagilson/sdk/issues/76) |
+| Release build break | [30137125115](https://github.com/nagilson/sdk/actions/runs/30137125115) | [nagilson/sdk#77](https://github.com/nagilson/sdk/issues/77) |
+| Multiple named tests | [30137407258](https://github.com/nagilson/sdk/actions/runs/30137407258) | [nagilson/sdk#78](https://github.com/nagilson/sdk/issues/78) |
+| Helix hang/host crash | [30144976771](https://github.com/nagilson/sdk/actions/runs/30144976771) | [nagilson/sdk#79](https://github.com/nagilson/sdk/issues/79) |
+
+Duplicate suppression was verified twice against YAML build `1521345` after
+issue #71 existed. Automatic push run
+[30135628726](https://github.com/nagilson/sdk/actions/runs/30135628726) and manual
+dispatch run [30135696008](https://github.com/nagilson/sdk/actions/runs/30135696008)
+both completed successfully with activation, agent, detection, and safe-output
+jobs skipped and no additional issue created.
+
 ## Synthetic-Only Cases
 
 - `pipeline-not-triggered`: a missing pipeline run has no build ID. Validate it
