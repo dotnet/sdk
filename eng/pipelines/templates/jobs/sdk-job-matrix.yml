@@ -4,29 +4,26 @@ parameters:
   locBranch: ''
   ### WINDOWS ###
   windowsJobParameterSets:
-  - categoryName: TestBuild
-    publishRetryConfig: true
+  - publishRetryConfig: true
     runNativeAotCliTests: true
+  - categoryName: AOT
+    runAoTTests: true
   - categoryName: FullFramework
     testFullMSBuild: true
-  - categoryName: AoT
-    runAoTTests: true
   ### LINUX ###
   linuxJobParameterSets:
-  - categoryName: TestBuild
-    osProperties: $(linuxOsglibcProperties)
+  - osProperties: $(linuxOsglibcProperties)
     runNativeAotCliTests: true
-  - categoryName: TestBuild
-    targetArchitecture: arm64
+  - targetArchitecture: arm64
     runtimeIdentifier: linux-arm64
     osProperties: $(linuxOsglibcProperties)
     # Don't run the tests on arm64. Only perform the build itself.
     runTests: false
-  # The x64 AoT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
+  # The x64 AOT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
   # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
-  # run the *.AoT.Tests.csproj test projects. linux-arm64 AoT is covered by a separate cross-build
+  # run the *.AoT.Tests.csproj test projects. linux-arm64 AOT is covered by a separate cross-build
   # leg (see .vsts-pr.yml / .vsts-ci.yml).
-  - categoryName: AoT
+  - categoryName: AOT
     runAoTTests: true
     osProperties: $(linuxOsglibcProperties)
   - categoryName: ContainerBased
@@ -37,8 +34,7 @@ parameters:
     disableJob: true
   ### MACOS ###
   macOSJobParameterSets:
-  - categoryName: TestBuild
-    targetArchitecture: arm64
+  - targetArchitecture: arm64
     runtimeIdentifier: osx-arm64
     runNativeAotCliTests: true
 
@@ -62,6 +58,7 @@ jobs:
         parameters:
           ${{ insert }}: ${{ parameters }}
           ${{ insert }}: ${{ jobParameters }}
+          platformName: Windows
 - ${{ if eq(parameters.pool.os, 'linux') }}:
   - ${{ each jobParameters in parameters.linuxJobParameterSets }}:
     - ${{ if not(jobParameters.disableJob) }}:
@@ -69,6 +66,7 @@ jobs:
         parameters:
           ${{ insert }}: ${{ parameters }}
           ${{ insert }}: ${{ jobParameters }}
+          platformName: Linux
 - ${{ if eq(parameters.pool.os, 'macOS') }}:
   - ${{ each jobParameters in parameters.macOSJobParameterSets }}:
     - ${{ if not(jobParameters.disableJob) }}:
@@ -76,3 +74,4 @@ jobs:
         parameters:
           ${{ insert }}: ${{ parameters }}
           ${{ insert }}: ${{ jobParameters }}
+          platformName: Mac

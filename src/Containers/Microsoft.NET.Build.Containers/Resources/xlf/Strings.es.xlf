@@ -189,6 +189,11 @@
         <target state="translated">CONTAINER1020: no se pudo cargar la imagen porque el almacén de imágenes en contenedor no está habilitado para Docker. Sugerencia: Para habilitarla, active "Usar contenedores para extraer y almacenar imágenes" en la configuración de Docker Desktop.</target>
         <note>{StrBegin="CONTAINER1020: "}</note>
       </trans-unit>
+      <trans-unit id="ImageLoadFailed_WslcMultiArchUnsupported">
+        <source>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</source>
+        <target state="new">CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</target>
+        <note>{StrBegins="CONTAINER1021: "}</note>
+      </trans-unit>
       <trans-unit id="ImagePullNotSupported">
         <source>CONTAINER1010: Pulling images from local registry is not supported.</source>
         <target state="translated">CONTAINER1010: No se admite la extracción de imágenes del registro local.</target>

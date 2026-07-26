@@ -5,11 +5,11 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 static class ContainerCli
 {
-    public static bool IsPodman => _isPodman.Value;
+    public static bool IsPodman => DockerCliStatus.Runtime == ContainerRuntimeKind.Podman;
 
-    public static bool IsAvailable => _isAvailable.Value;
+    public static bool IsAvailable => DockerCliStatus.IsAvailable;
 
-    public static bool IsContainerdStoreEnabledForDocker => DockerCli.IsContainerdStoreEnabledForDocker();
+    public static bool IsContainerdStoreEnabledForDocker => DockerContainerRuntime.IsContainerdStoreEnabled();
 
     public static RunExeCommand PullCommand(ITestOutputHelper log, params string[] args)
       => CreateCommand(log, "pull", args);
@@ -58,10 +58,4 @@ static class ContainerCli
 
         return new RunExeCommand(log, commandPath, new[] { command }.Concat(args).ToArray());
     }
-
-    private static readonly Lazy<bool> _isPodman =
-      new(() => new DockerCli(loggerFactory: new TestLoggerFactory()).GetCommand() == DockerCli.PodmanCommand);
-
-    private static readonly Lazy<bool> _isAvailable =
-      new(() => new DockerCli(loggerFactory: new TestLoggerFactory()).IsAvailable());
 }
