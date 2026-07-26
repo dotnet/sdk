@@ -31,30 +31,38 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    local install_test_runtimes=true
+    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+    # Also install the exact runtime versions that arcade's toolset requires
+    # (from Version.Details.props) so tests can target those specific versions.
+    local runtime_version
+    runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
+    local aspnetcore_version
+    aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
+    if [[ -n "$runtime_version" ]]; then
+      runtime_specs+=("$runtime_version")
+    fi
+    if [[ -n "$aspnetcore_version" ]]; then
+      runtime_specs+=("aspnetcore@$aspnetcore_version")
+    fi
+
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
     if [[ -n "${TARGET_ARCHITECTURE:-}" && "$TARGET_ARCHITECTURE" != "$native_arch" ]]; then
-      install_test_runtimes=false
-      echo "Skipping test-runtime install: host architecture '$native_arch' cannot run target architecture '$TARGET_ARCHITECTURE' runtimes on this cross-build leg."
-    fi
-
-    if [[ "$install_test_runtimes" == true ]]; then
-      local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
-      # Also install the exact runtime versions that arcade's toolset requires
-      # (from Version.Details.props) so tests can target those specific versions.
-      local runtime_version
-      runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
-      local aspnetcore_version
-      aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
-      if [[ -n "$runtime_version" ]]; then
-        runtime_specs+=("$runtime_version")
-      fi
-      if [[ -n "$aspnetcore_version" ]]; then
-        runtime_specs+=("aspnetcore@$aspnetcore_version")
-      fi
-
-      InstallDotNetSharedFrameworks "" "${runtime_specs[@]}"
+      # Cross-build (e.g. an x64 host producing an arm64 test payload). The host cannot execute
+      # target-architecture runtimes, so installing them into the host .dotnet would break host
+      # tools that must load a shared framework there (e.g. the NuGet credential provider, whose
+      # libhostpolicy load fails on an architecture mismatch). Instead, download the
+      # target-architecture test runtimes into a sidecar folder under artifacts. The matching
+      # OverlayCrossArchTestRuntimes target in src/Layout/redist/targets/OverlaySdkOnLKG.targets
+      # copies these into the test host that ships to Helix, where they run on target-architecture
+      # hardware. The host .dotnet keeps only host-architecture runtimes; host tools roll forward
+      # to the host SDK runtime.
+      local sidecar_dir="$artifacts_dir/test-runtimes/$TARGET_ARCHITECTURE"
+      echo "Cross-build detected (host '$native_arch', target '$TARGET_ARCHITECTURE'). Installing target-architecture test runtimes into sidecar '$sidecar_dir' for the Helix test payload."
+      mkdir -p "$sidecar_dir"
+      InstallDotNetSharedFrameworks "$sidecar_dir" "$TARGET_ARCHITECTURE" "${runtime_specs[@]}"
+    else
+      InstallDotNetSharedFrameworks "$DOTNET_INSTALL_DIR" "" "${runtime_specs[@]}"
     fi
   fi
 
@@ -106,9 +114,9 @@ function IsSharedFrameworkInstalled {
 
 # Installs additional shared frameworks for testing purposes.
 function InstallDotNetSharedFrameworks {
-  local arch=$1
-  shift
-  local dotnet_root=$DOTNET_INSTALL_DIR
+  local dotnet_root=$1
+  local arch=$2
+  shift 2
   local specs_to_install=()
 
   for spec in "$@"; do
