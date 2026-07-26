@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using System.Collections.Generic;
+using System.Text.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
@@ -37,6 +39,40 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "blazor.webassembly.js")).Should().NotExist();
             // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
             new FileInfo(Path.Combine(buildOutputDirectory, "wwwroot", "_framework", "dotnet.native.wasm")).Should().NotExist();
+        }
+
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow(null, "true", "true")]
+        [DataRow("false", "false", "false")]
+        public void Build_ResolvesBlazorDiagnosticsFeatureSwitches(string diagnosticsEnabled, string expectedDiagnosticsEnabled, string expectedFeatureValue)
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
+            var build = CreateBuildCommand(testInstance);
+
+            var arguments = new List<string>
+            {
+                "-getProperty:BlazorWebAssemblyDiagnosticsEnabled",
+                "-getProperty:MetricsSupport",
+                "-getProperty:EventSourceSupport",
+                "-getProperty:HttpActivityPropagationSupport"
+            };
+
+            if (diagnosticsEnabled is not null)
+            {
+                arguments.Add($"/p:BlazorWebAssemblyDiagnosticsEnabled={diagnosticsEnabled}");
+            }
+
+            var result = ExecuteCommand(build, arguments.ToArray());
+            result.Should().Pass();
+
+            using var propertiesDocument = JsonDocument.Parse(result.StdOut!);
+            var properties = propertiesDocument.RootElement.GetProperty("Properties");
+
+            properties.GetProperty("BlazorWebAssemblyDiagnosticsEnabled").GetString().Should().Be(expectedDiagnosticsEnabled);
+            properties.GetProperty("MetricsSupport").GetString().Should().Be(expectedFeatureValue);
+            properties.GetProperty("EventSourceSupport").GetString().Should().Be(expectedFeatureValue);
+            properties.GetProperty("HttpActivityPropagationSupport").GetString().Should().Be(expectedFeatureValue);
         }
     }
 }

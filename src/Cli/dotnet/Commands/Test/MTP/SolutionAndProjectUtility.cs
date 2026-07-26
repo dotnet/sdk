@@ -240,10 +240,40 @@ internal static class SolutionAndProjectUtility
         BuildOptions buildOptions,
         FacadeLogger? logger,
         string? configuration,
-        string? platform)
+        string? platform,
+        HashSet<string>? visitedTraversalProjects = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform);
+
+        // Traversal projects (e.g. Microsoft.Build.Traversal "dirs.proj") are not test projects themselves.
+        // They act as a container that forwards build/test operations to their ProjectReference items.
+        // Special-case them the same way solutions are handled: expand into the referenced projects and
+        // evaluate each of them. This is done recursively so that nested traversal projects work as well.
+        if (IsTraversalProject(projectInstance))
+        {
+            // Track visited (project, configuration, platform) tuples across the whole traversal graph so
+            // that a project referenced by multiple traversal projects with the same configuration/platform
+            // (a "diamond") is only tested once, while the same project referenced with a *different*
+            // configuration/platform is still tested for each distinct combination. This also guards against
+            // cycles (a traversal project that transitively references itself).
+            visitedTraversalProjects ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            visitedTraversalProjects.Add(GetTraversalVisitKey(Path.GetFullPath(projectFilePath), configuration, platform));
+
+            foreach (var reference in GetTraversalReferencedProjects(projectInstance, configuration, platform))
+            {
+                if (!visitedTraversalProjects.Add(GetTraversalVisitKey(reference.FullPath, reference.Configuration, reference.Platform)))
+                {
+                    // Already handled via another traversal path (diamond) or a cycle, with the same
+                    // configuration/platform combination.
+                    continue;
+                }
+
+                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, logger, reference.Configuration, reference.Platform, visitedTraversalProjects));
+            }
+
+            return projects;
+        }
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -312,7 +342,60 @@ internal static class SolutionAndProjectUtility
     }
 
     /// <summary>
-    /// Performs device selection for each TFM BEFORE the build, so that device-provided
+    /// Determines whether the evaluated project is a traversal project (e.g. a
+    /// <c>Microsoft.Build.Traversal</c> "dirs.proj"). Traversal projects set the
+    /// <c>IsTraversal</c> property to <c>true</c> and merely forward operations to their
+    /// <c>ProjectReference</c> items rather than producing a test module of their own.
+    /// </summary>
+    private static bool IsTraversalProject(ProjectInstance projectInstance)
+        => bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.IsTraversal), out bool isTraversal) && isTraversal;
+
+    /// <summary>
+    /// Builds a stable key identifying a (project, configuration, platform) combination for
+    /// traversal-graph de-duplication and cycle detection.
+    /// </summary>
+    private static string GetTraversalVisitKey(string fullPath, string? configuration, string? platform)
+        => $"{fullPath}|{configuration}|{platform}";
+
+    /// <summary>
+    /// Returns the projects a traversal project references. The globs and conditions in the traversal
+    /// project are already expanded by MSBuild during evaluation, so the resolved <c>ProjectReference</c>
+    /// items represent the effective set of projects to test. Per-reference <c>Configuration</c>/
+    /// <c>Platform</c> metadata is honored when present (falling back to the values inherited from the
+    /// traversal project), mirroring how MSBuild lets a <c>ProjectReference</c> target a specific
+    /// configuration or platform.
+    /// </summary>
+    private static IEnumerable<(string FullPath, string? Configuration, string? Platform)> GetTraversalReferencedProjects(
+        ProjectInstance projectInstance,
+        string? inheritedConfiguration,
+        string? inheritedPlatform)
+    {
+        // Resolve reference paths relative to the traversal project's directory (not the process working
+        // directory). MSBuild's "FullPath" well-known metadata is normally already absolute, but resolving
+        // against the project directory explicitly keeps us correct even if a relative value is returned or
+        // the current directory differs from the project directory.
+        var projectDirectory = projectInstance.Directory;
+
+        foreach (ProjectItemInstance projectReference in projectInstance.GetItems(ProjectProperties.ProjectReferenceItemName))
+        {
+            // "FullPath" is a well-known item metadata that MSBuild computes relative to the project directory.
+            var fullPath = projectReference.GetMetadataValue("FullPath");
+            if (string.IsNullOrEmpty(fullPath))
+            {
+                continue;
+            }
+
+            var configurationMetadata = projectReference.GetMetadataValue(ProjectProperties.Configuration);
+            var platformMetadata = projectReference.GetMetadataValue(ProjectProperties.Platform);
+
+            yield return (
+                Path.GetFullPath(fullPath, projectDirectory),
+                string.IsNullOrEmpty(configurationMetadata) ? inheritedConfiguration : configurationMetadata,
+                string.IsNullOrEmpty(platformMetadata) ? inheritedPlatform : platformMetadata);
+        }
+    }
+
+    /// <summary>
     /// RuntimeIdentifiers are included in the build. Returns a result with device mappings
     /// and TestTfmsInParallel setting, or null if no device selection is needed.
     /// When projectCollection/evaluationContext are provided, reuses them to avoid redundant evaluation.
