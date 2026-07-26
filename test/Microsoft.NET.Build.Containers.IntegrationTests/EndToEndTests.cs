@@ -44,7 +44,7 @@ public class EndToEndTests : SdkTest, IDisposable
         FileInfo[] Files = d.GetFiles("*.csproj"); //Getting .csproj files
         string csprojFilename = Files[0].Name; // There is only one
         string text = File.ReadAllText(Path.Combine(path, csprojFilename));
-        text = text.Replace("net10.0", _oldFramework);
+        text = text.Replace(ToolsetInfo.CurrentTargetFramework, _oldFramework);
         File.WriteAllText(Path.Combine(path, csprojFilename), text);
     }
 
@@ -127,7 +127,7 @@ public class EndToEndTests : SdkTest, IDisposable
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net9ImageTag, null);
         var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { "latest", "1.0" });
 
-        await new DockerCli(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new ContainerRuntime(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         foreach (string tag in destinationReference.Tags)
@@ -136,6 +136,73 @@ public class EndToEndTests : SdkTest, IDisposable
                 .Execute()
                 .Should().Pass();
         }
+    }
+
+    [TestMethod]
+    [WslcAvailableCondition]
+    public void EndToEndWithWslcLocalLoad()
+    {
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        new DotnetCommand(
+            Log,
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "-r", "linux-x64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            $"/p:LocalRegistry={KnownLocalRegistryTypes.Wslc}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new RunExeCommand(Log, ContainerRuntime.WslcCommand, "run", "--rm", $"{imageName}:{imageTag}")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+
+        newProjectDir.Delete(recursive: true);
+    }
+
+    [TestMethod]
+    [MacOSContainerAvailableCondition]
+    public void EndToEndWithMacOSContainerAndDockerManifestLocalLoad()
+    {
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        string imageName = NewImageName();
+        string imageTag = "1.0";
+        new DotnetCommand(
+            Log,
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "-r", "linux-arm64",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageDefault}",
+            $"/p:ContainerRepository={imageName}",
+            $"/p:ContainerImageTag={imageTag}",
+            "/p:ContainerImageFormat=Docker",
+            $"/p:LocalRegistry={KnownLocalRegistryTypes.MacOSContainer}",
+            "/p:EnableSdkContainerSupport=true",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute()
+            .Should().Pass();
+
+        new RunExeCommand(Log, ContainerRuntime.MacOSContainerCommand, "run", "--rm", $"{imageName}:{imageTag}")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+
+        newProjectDir.Delete(recursive: true);
     }
 
     [TestMethod]
@@ -249,7 +316,9 @@ public class EndToEndTests : SdkTest, IDisposable
             Manifest = builtImage.Manifest,
             ManifestDigest = builtImage.ManifestDigest,
             ManifestMediaType = SchemaTypes.OciManifestV1,
-            Layers = builtImage.Layers
+            Layers = builtImage.Layers,
+            Architecture = builtImage.Architecture,
+            OS = builtImage.OS
         };
 
         return ociImage;
@@ -812,28 +881,36 @@ public class EndToEndTests : SdkTest, IDisposable
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
     }
 
-    /**
-    [DataRow("endtoendmultiarch-localregisty")]
-    [DataRow("myteam/endtoendmultiarch-localregisty")]
     [TestMethod]
-    [Ignore("https://github.com/dotnet/sdk/issues/49502")]
-    public void EndToEndMultiArch_LocalRegistry(string imageName)
+    [DynamicData(nameof(AvailableMultiArchLocalRegistryData))]
+    public void EndToEndMultiArch_LocalRegistry(string imageName, string localRegistry)
     {
         string tag = "1.0";
         string image = $"{imageName}:{tag}";
+        string command = localRegistry switch
+        {
+            KnownLocalRegistryTypes.Docker => ContainerRuntime.DockerCommand,
+            KnownLocalRegistryTypes.Podman => ContainerRuntime.PodmanCommand,
+            KnownLocalRegistryTypes.Wslc => ContainerRuntime.WslcCommand,
+            KnownLocalRegistryTypes.MacOSContainer => ContainerRuntime.MacOSContainerCommand,
+            _ => throw new ArgumentOutOfRangeException(nameof(localRegistry))
+        };
 
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
 
         // Run PublishContainer for multi-arch
         CommandResult commandResult = new DotnetCommand(
             Log,
-            "build",
+            "publish",
             "/t:PublishContainer",
+            "-f", _oldFramework,
             "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
             $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
             $"/p:ContainerRepository={imageName}",
-            $"/p:ContainerImageTag={tag}")
+            $"/p:ContainerImageTag={tag}",
+            $"/p:LocalRegistry={localRegistry}")
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute();
 
@@ -846,19 +923,31 @@ public class EndToEndTests : SdkTest, IDisposable
             .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
 
         // Check that the containers can be run
-        CommandResult processResultX64 = ContainerCli.RunCommand(
-            Log,
+        List<string> x64Arguments =
+        [
+            "run",
             "--rm",
             "--platform",
-            "linux/amd64",
+            "linux/amd64"
+        ];
+        if (localRegistry == KnownLocalRegistryTypes.MacOSContainer)
+        {
+            x64Arguments.Add("--rosetta");
+        }
+        x64Arguments.AddRange(
+        [
             "--name",
             $"test-container-{imageName.Replace('/', '-')}-x64",
-            image)
-        .Execute();
+            image
+        ]);
+
+        CommandResult processResultX64 = new RunExeCommand(Log, command, [.. x64Arguments]).Execute();
         processResultX64.Should().Pass().And.HaveStdOut("Hello, World!");
 
-        CommandResult processResultArm64 = ContainerCli.RunCommand(
+        CommandResult processResultArm64 = new RunExeCommand(
             Log,
+            command,
+            "run",
             "--rm",
             "--platform",
             "linux/arm64",
@@ -871,7 +960,60 @@ public class EndToEndTests : SdkTest, IDisposable
         // Cleanup
         newProjectDir.Delete(true);
     }
-    */
+
+    [TestMethod]
+    [WslcAvailableCondition]
+    public void EndToEndMultiArch_WslcIsRejected()
+    {
+        DirectoryInfo newProjectDir = CreateNewProject("console");
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
+
+        CommandResult commandResult = new DotnetCommand(
+            Log,
+            "publish",
+            "/t:PublishContainer",
+            "-f", _oldFramework,
+            "/p:RuntimeIdentifiers=\"linux-x64;linux-arm64\"",
+            $"/p:ContainerBaseImage={DockerRegistryManager.FullyQualifiedBaseImageAspNet}",
+            $"/p:ContainerRepository={NewImageName()}",
+            "/p:ContainerImageTag=1.0",
+            $"/p:LocalRegistry={KnownLocalRegistryTypes.Wslc}",
+            "/bl")
+            .WithWorkingDirectory(newProjectDir.FullName)
+            .Execute();
+
+        commandResult.Should().Fail().And.HaveStdOutContaining(Strings.ImageLoadFailed_WslcMultiArchUnsupported);
+
+        newProjectDir.Delete(true);
+    }
+
+    public static IEnumerable<TestDataRow<(string ImageName, string LocalRegistry)>> AvailableMultiArchLocalRegistryData()
+    {
+        string[] imageNames =
+        [
+            "endtoendmultiarch-localregistry",
+            "myteam/endtoendmultiarch-localregistry"
+        ];
+
+        string[] localRegistries = [.. MultiArchLocalRegistryTestData.AvailableRuntimes()];
+        if (localRegistries.Length == 0)
+        {
+            yield return new((string.Empty, string.Empty))
+            {
+                IgnoreMessage = "No multi-architecture local container runtime is available."
+            };
+
+            yield break;
+        }
+
+        foreach (string localRegistry in localRegistries)
+        {
+            foreach (string imageName in imageNames)
+            {
+                yield return new((imageName, localRegistry));
+            }
+        }
+    }
 
     [TestMethod]
     [Ignore("https://github.com/dotnet/sdk/issues/49502")]
@@ -1428,7 +1570,7 @@ public class EndToEndTests : SdkTest, IDisposable
         // Load the image into the local registry
         var sourceReference = new SourceImageReference(registry, DockerRegistryManager.RuntimeBaseImage, DockerRegistryManager.Net9ImageTag, null);
         var destinationReference = new DestinationImageReference(registry, NewImageName(), new[] { rid });
-        await new DockerCli(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
+        await new ContainerRuntime(LoggerFactory).LoadAsync(builtImage, sourceReference, destinationReference, default).ConfigureAwait(false);
 
         // Run the image
         ContainerCli.RunCommand(

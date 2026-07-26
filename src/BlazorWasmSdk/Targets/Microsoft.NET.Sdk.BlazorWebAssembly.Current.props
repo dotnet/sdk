@@ -42,12 +42,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       WebAssembly apps. The low-level WASM runtime defaults these to 'false' to reduce download size via aggressive
       trimming, but Blazor apps commonly use HttpClient with distributed tracing, structured logging, and metrics
       (especially with .NET Aspire). Developers who want smaller binaries can opt out by setting
-      BlazorWasmDiagnosticsEnabled to 'false' or by setting the individual properties explicitly.
+      BlazorWebAssemblyDiagnosticsEnabled to 'false' or by setting the individual properties explicitly.
     -->
     <BlazorWebAssemblyDiagnosticsEnabled Condition="'$(BlazorWebAssemblyDiagnosticsEnabled)' == ''">true</BlazorWebAssemblyDiagnosticsEnabled>
-    <MetricsSupport Condition="'$(MetricsSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</MetricsSupport>
-    <EventSourceSupport Condition="'$(EventSourceSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</EventSourceSupport>
-    <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == '' and '$(BlazorWasmDiagnosticsEnabled)' == 'true'">true</HttpActivityPropagationSupport>
+    <MetricsSupport Condition="'$(MetricsSupport)' == '' and '$(BlazorWebAssemblyDiagnosticsEnabled)' == 'true'">true</MetricsSupport>
+    <EventSourceSupport Condition="'$(EventSourceSupport)' == '' and '$(BlazorWebAssemblyDiagnosticsEnabled)' == 'true'">true</EventSourceSupport>
+    <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == '' and '$(BlazorWebAssemblyDiagnosticsEnabled)' == 'true'">true</HttpActivityPropagationSupport>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.props" />
