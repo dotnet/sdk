@@ -197,7 +197,7 @@ safe-outputs:
     - "helix.dot.net"
     - "*.blob.core.windows.net"
   create-issue:
-    title-prefix: "[AI discovered CI] "
+    title-prefix: "[AI] [CI] "
     labels: [agentic-workflows]
     allowed-labels: ["Known Build Error", "Test Debt", live-build-incident, cookie]
     deduplicate-by-title: true
@@ -220,7 +220,7 @@ Apply the reasoning standards used by the `ci-analysis` skill, but do not claim 
 
 `mergedPullRequest` metadata links a final PR validation to a merge event, but the current collector does not compare the tested merge tree with the landed commit tree. Never describe that PR build as exact landed-content validation unless independent evidence establishes tree equivalence.
 
-When the dossier contains `evaluationScenario`, this is a fork-only evaluation and this rule takes precedence over production ownership and recurrence routing: create exactly one issue for the filtered `issueCandidates` even when the failure is one-off, externally owned, or would be routed to `dotnet/dnceng` in production. Explain the production routing in the RCA, but do not call `noop`. Start the body with `> Fork-only CI monitor evaluation; not a production tracking issue.` and pass `labels: [cookie, Test Debt]` to `create_issue`. For evaluation build `1525292` only, also pass `Known Build Error` and create the issue for the strongest named test failure only when `kbe.eligible` and `kbe.validation.valid` are true; evaluation mode relaxes recurrence, not pattern safety. For every other evaluation build, create an ordinary issue.
+When the dossier contains `evaluationScenario`, this is a fork-only evaluation and this rule takes precedence over production ownership and recurrence routing: create exactly one issue for the filtered `issueCandidates` even when the failure is one-off, externally owned, or would be routed to `dotnet/dnceng` in production. Explain the production routing in the RCA, but do not call `noop`. Pass `labels: [cookie, Test Debt]` to `create_issue`. For evaluation build `1525292` only, also pass `Known Build Error` and create the issue for the strongest named test failure only when `kbe.eligible` and `kbe.validation.valid` are true; evaluation mode relaxes recurrence, not pattern safety. For every other evaluation build, create an ordinary issue.
 
 ## Decision process
 
