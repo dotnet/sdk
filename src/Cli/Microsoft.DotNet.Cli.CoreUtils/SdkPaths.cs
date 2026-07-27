@@ -19,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 ///  <para>
 ///   Under the Native AOT CLI (<c>dotnet-aot</c> loaded directly by the muxer) the BCL location APIs do
 ///   NOT point at the versioned SDK directory: <see cref="System.AppContext.BaseDirectory"/> and
-///   <see cref="System.Environment.ProcessPath"/> resolve to the install root (the muxer's own
+///   <c>Environment.ProcessPath</c> resolve to the install root (the muxer's own
 ///   directory) and <c>Assembly.Location</c> is empty. The AOT entry point therefore publishes the
 ///   resolved SDK directory as the <c>Microsoft.DotNet.Sdk.Root</c> AppContext value, which this helper
 ///   reads first. Code that needs an SDK-relative path (MSBuild, tasks, tools, forwarders) should use
@@ -66,7 +66,7 @@ internal static class SdkPaths
             return sdkRoot;
         }
 
-        // The SDK assemblies ship in the versioned SDK directory, so the location of this assembly is that
+        // CoreUtils ships in the versioned SDK directory, so the location of this assembly is that
         // directory for the JIT-compiled managed CLI. Under a single-file / NativeAOT deployment
         // Assembly.Location is empty (which is what the IL3000 analyzer flags); fall through to
         // AppContext.BaseDirectory in that case - the AOT bridge sets the AppContext value (preferred above).

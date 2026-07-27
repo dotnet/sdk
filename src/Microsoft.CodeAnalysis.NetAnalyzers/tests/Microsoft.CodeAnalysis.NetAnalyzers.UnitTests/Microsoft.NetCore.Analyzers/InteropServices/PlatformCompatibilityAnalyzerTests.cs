@@ -1993,7 +1993,7 @@ namespace CallerSupportsSubsetOfTarget
             [|Target.SupportedOnBrowser()|]; // This call site is unreachable on: 'browser'. 'Target.SupportedOnBrowser()' is only supported on: 'browser'.
             [|Target.SupportedOnWindowsAndBrowser()|]; // This call site is unreachable on: 'browser'. 'Target.SupportedOnWindowsAndBrowser()' is only supported on: 'browser', 'windows'.
 
-            Target.UnsupportedOnWindows(); // if call site has now support of it and MSbuild list not containg the platform name it will not be warned
+            Target.UnsupportedOnWindows(); // if call site has now support of it and MSbuild list not containing the platform name it will not be warned
             Target.UnsupportedOnBrowser();
             Target.UnsupportedOnWindowsAndBrowser(); // same here
         }
