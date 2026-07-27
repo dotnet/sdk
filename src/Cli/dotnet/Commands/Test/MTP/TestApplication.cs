@@ -22,13 +22,16 @@ internal sealed class TestApplication(
     TerminalTestReporter output,
     Action<CommandLineOptionMessages> onHelpRequested,
     ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-    ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null) : IDisposable
+    ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+    TestRunPolicy? testRunPolicy = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
     private static readonly TimeSpan ArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
     private const int LiveOutputTailLineCount = 200;
 
     private readonly Lock _requestLock = new();
+    private readonly Lock _controlRequestLock = new();
+    private readonly Lock _pipeConnectionsLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(
@@ -36,16 +39,22 @@ internal sealed class TestApplication(
         module,
         testOptions,
         artifactPostProcessingManager,
-        artifactPostProcessingInvocation);
+        artifactPostProcessingInvocation,
+        testRunPolicy);
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
+    private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
+    private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+    private readonly string _controlPipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
+    private readonly List<TaskCompletionSource<IResponse>> _pendingControlRequests = [];
 
     private int _hasRun;
     private int _protocolNegotiated;
+    private int _sessionCancellationRequested;
     private Version? _negotiatedProtocolVersion;
     private ProcessOutputCollector? _standardOutputCollector;
     private ProcessOutputCollector? _standardErrorCollector;
@@ -68,16 +77,19 @@ internal sealed class TestApplication(
 
         var processStartInfo = CreateProcessStartInfo();
 
-        var cancellationTokenSource = new CancellationTokenSource();
-        var cancellationToken = cancellationTokenSource.Token;
+        var cancellationToken = _pipeCancellationTokenSource.Token;
         var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
+        var controlPipeConnectionLoop = Task.Run(async () => await WaitControlConnectionAsync(cancellationToken));
 
         Process? process = null;
+        bool testApplicationStarted = false;
         try
         {
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
             process = Process.Start(processStartInfo)!;
+            _testRunPolicy?.OnTestApplicationStarted();
+            testApplicationStarted = true;
 
             // Register with the Ctrl+C manager so a force-exit (second Ctrl+C) kills this process
             // tree even if the child's own cooperative cancellation hangs.
@@ -119,7 +131,44 @@ internal sealed class TestApplication(
             bool artifactPostProcessingTimedOut = false;
             if (_artifactPostProcessingInvocation is null)
             {
-                await process.WaitForExitAsync();
+                Task processExitTask = process.WaitForExitAsync();
+                if (_testRunPolicy is { } testRunPolicy)
+                {
+                    Task firstCompletedTask = await Task.WhenAny(processExitTask, testRunPolicy.Cancellation);
+                    if (firstCompletedTask != processExitTask)
+                    {
+                        RequestSessionCancellation();
+                        try
+                        {
+                            await processExitTask.WaitAsync(testRunPolicy.CancellationGracePeriod);
+                        }
+                        catch (TimeoutException)
+                        {
+                            try
+                            {
+                                if (!process.HasExited)
+                                {
+                                    process.Kill(entireProcessTree: true);
+                                }
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // The process exited between the HasExited check and Kill.
+                                Logger.LogTrace($"Test process exited before it could be killed after cancellation:\n{ex}");
+                            }
+
+                            await processExitTask;
+                        }
+                    }
+                    else
+                    {
+                        await processExitTask;
+                    }
+                }
+                else
+                {
+                    await processExitTask;
+                }
             }
             else
             {
@@ -138,6 +187,9 @@ internal sealed class TestApplication(
                     artifactPostProcessingTimedOut = true;
                 }
             }
+
+            _testRunPolicy?.OnTestApplicationExited();
+            testApplicationStarted = false;
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
@@ -171,6 +223,11 @@ internal sealed class TestApplication(
         }
         finally
         {
+            if (testApplicationStarted)
+            {
+                _testRunPolicy?.OnTestApplicationExited();
+            }
+
             if (process is not null)
             {
                 ctrlC.Unregister(process);
@@ -180,8 +237,8 @@ internal sealed class TestApplication(
             Volatile.Write(ref _standardOutputCollector, null);
             Volatile.Write(ref _standardErrorCollector, null);
 
-            cancellationTokenSource.Cancel();
-            await testAppPipeConnectionLoop;
+            _pipeCancellationTokenSource.Cancel();
+            await Task.WhenAll(testAppPipeConnectionLoop, controlPipeConnectionLoop);
         }
     }
 
@@ -317,7 +374,7 @@ internal sealed class TestApplication(
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
-                _testAppPipeConnections.Add(pipeConnection);
+                AddPipeConnection(pipeConnection);
             }
         }
         catch (OperationCanceledException ex)
@@ -330,6 +387,91 @@ internal sealed class TestApplication(
             var exAsString = ex.ToString();
             Logger.LogTrace(exAsString);
             Environment.FailFast(exAsString);
+        }
+    }
+
+    private async Task WaitControlConnectionAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                NamedPipeServer? pipeConnection = new(
+                    _controlPipeName,
+                    OnControlRequest,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    token,
+                    skipUnknownMessages: false);
+                try
+                {
+                    pipeConnection.RegisterAllSerializers();
+
+                    await pipeConnection.WaitConnectionAsync(token);
+                    AddPipeConnection(pipeConnection);
+                    pipeConnection = null;
+                }
+                finally
+                {
+                    pipeConnection?.Dispose();
+                }
+            }
+        }
+        catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+        {
+            Logger.LogTrace("WaitControlConnectionAsync() was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            // The reverse channel is an optional capability. A failure here must not replace
+            // the test application's result; policy cancellation can still use the kill fallback.
+            Logger.LogTrace($"The server-control pipe stopped accepting connections:\n{ex}");
+        }
+    }
+
+    private Task<IResponse> OnControlRequest(NamedPipeServer _, IRequest request)
+    {
+        if (request is not WaitForServerControlRequest)
+        {
+            throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+        }
+
+        lock (_controlRequestLock)
+        {
+            if (Volatile.Read(ref _sessionCancellationRequested) != 0)
+            {
+                return Task.FromResult<IResponse>(new ServerControlMessage(ServerControlKinds.CancelSession));
+            }
+
+            var completion = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _pendingControlRequests.Add(completion);
+            _pipeCancellationTokenSource.Token.Register(
+                () => completion.TrySetCanceled(_pipeCancellationTokenSource.Token));
+            return completion.Task;
+        }
+    }
+
+    private void AddPipeConnection(NamedPipeServer pipeConnection)
+    {
+        lock (_pipeConnectionsLock)
+        {
+            _testAppPipeConnections.Add(pipeConnection);
+        }
+    }
+
+    private void RequestSessionCancellation()
+    {
+        if (Interlocked.Exchange(ref _sessionCancellationRequested, 1) != 0)
+        {
+            return;
+        }
+
+        lock (_controlRequestLock)
+        {
+            var message = new ServerControlMessage(ServerControlKinds.CancelSession);
+            foreach (TaskCompletionSource<IResponse> request in _pendingControlRequests)
+            {
+                request.TrySetResult(message);
+            }
         }
     }
 
@@ -463,15 +605,24 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new HandshakeMessage(new Dictionary<byte, string>(capacity: 5)
+    private HandshakeMessage CreateHandshakeMessage(string version)
+    {
+        var properties = new Dictionary<byte, string>(capacity: 6)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
             { HandshakeMessagePropertyNames.Framework, RuntimeInformation.FrameworkDescription },
             { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
-        });
+        };
+
+        if (version.Length > 0)
+        {
+            properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+        }
+
+        return new HandshakeMessage(properties);
+    }
 
     private void SetNegotiatedProtocolVersion(string negotiatedVersion)
     {
@@ -676,5 +827,7 @@ internal sealed class TestApplication(
                 Reporter.Error.WriteLine(messageBuilder.ToString());
             }
         }
+
+        _pipeCancellationTokenSource.Dispose();
     }
 }

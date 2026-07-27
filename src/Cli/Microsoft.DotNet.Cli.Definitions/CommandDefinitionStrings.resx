@@ -1344,7 +1344,22 @@ To display a value, specify the corresponding command-line option without provid
     <value>VERSION</value>
   </data>
   <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
-    <value>Specifies the minimum number of tests that are expected to run.</value>
+    <value>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</value>
+  </data>
+  <data name="CmdMaximumFailedTestsDescription" xml:space="preserve">
+    <value>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</value>
+  </data>
+  <data name="CmdTimeoutDescription" xml:space="preserve">
+    <value>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</value>
+  </data>
+  <data name="CmdDurationName" xml:space="preserve">
+    <value>DURATION</value>
+  </data>
+  <data name="CmdTestPositiveIntegerRequired" xml:space="preserve">
+    <value>The value must be a positive integer.</value>
+  </data>
+  <data name="CmdTestInvalidTimeout" xml:space="preserve">
+    <value>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</value>
   </data>
   <data name="Option_Output" xml:space="preserve">
     <value>Location to place the generated output.</value>

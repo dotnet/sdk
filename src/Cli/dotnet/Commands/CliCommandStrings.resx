@@ -2742,4 +2742,12 @@ Proceed?</value>
   <data name="CmdTestNoTestProjectsFound" xml:space="preserve">
     <value>No test projects were found.</value>
   </data>
+  <data name="WorkloadSetVersionInPackageVersionFormat" xml:space="preserve">
+    <value>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</value>
+    <comment>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</comment>
+  </data>
+  <data name="WorkloadSetVersionSpecifiedInGlobalJson" xml:space="preserve">
+    <value> (Specified in '{0}')</value>
+    <comment>{0} is the path to the global.json file.</comment>
+  </data>
 </root>
