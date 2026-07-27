@@ -91,7 +91,7 @@ internal static class CliSchema
 
     public static object GetJsonSchema()
     {
-        var node = s_jsonContext.Options.GetJsonSchemaAsNode(typeof(RootCommandDetails), new JsonSchemaExporterOptions());
+          var node = s_jsonContext.RootCommandDetails.GetJsonSchemaAsNode(new JsonSchemaExporterOptions());
         return node.ToJsonString(s_jsonContext.Options);
     }
 
@@ -199,10 +199,15 @@ internal static class CliSchema
     /// <summary>
     /// Maps some types that don't serialize well to more human-readable strings.
     /// For example, <see cref="VerbosityOptions"/> is serialized as a string instead of an integer.
+    /// Enums in general are rendered as their name: besides being more readable, this avoids
+    /// requiring the source-generated <see cref="CliSchemaJsonSerializerContext"/> to carry metadata
+    /// for every enum type that might appear as an option/argument default (which is also required
+    /// for the schema to serialize under NativeAOT).
     /// </summary>
     private static object? HumanizeValue(object? v) => v switch
     {
         VerbosityOptions o => Enum.GetName(o),
+        Enum e => e.ToString(),
         null => null,
         _ => v // For other types, return as is
     };

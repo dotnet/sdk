@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class RSATests
 {
-    [Fact]
+    [TestMethod]
     public void TestNetFrameworkImpl()
     {
 

@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -14,13 +13,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("sbyte", "AdvSimd.Negate")]
-        [InlineData("short", "AdvSimd.Negate")]
-        [InlineData("int", "AdvSimd.Negate")]
-        [InlineData("long", "AdvSimd.Arm64.NegateScalar")]
-        [InlineData("float", "AdvSimd.Negate")]
-        [InlineData("double", "AdvSimd.NegateScalar")]
+        [TestMethod]
+        [DataRow("sbyte", "AdvSimd.Negate")]
+        [DataRow("short", "AdvSimd.Negate")]
+        [DataRow("int", "AdvSimd.Negate")]
+        [DataRow("long", "AdvSimd.Arm64.NegateScalar")]
+        [DataRow("float", "AdvSimd.Negate")]
+        [DataRow("double", "AdvSimd.NegateScalar")]
         public async Task Fixer_opUnaryNegationArmV64Async(string type, string method)
         {
             // lang=C#-test
@@ -55,16 +54,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("sbyte", "AdvSimd.Negate")]
-        [InlineData("short", "AdvSimd.Negate")]
-        [InlineData("int", "AdvSimd.Negate")]
-        [InlineData("long", "AdvSimd.Arm64.Negate")]
-        [InlineData("float", "AdvSimd.Negate")]
-        [InlineData("double", "AdvSimd.Arm64.Negate")]
+        [TestMethod]
+        [DataRow("sbyte", "AdvSimd.Negate")]
+        [DataRow("short", "AdvSimd.Negate")]
+        [DataRow("int", "AdvSimd.Negate")]
+        [DataRow("long", "AdvSimd.Arm64.Negate")]
+        [DataRow("float", "AdvSimd.Negate")]
+        [DataRow("double", "AdvSimd.Arm64.Negate")]
         public async Task Fixer_opUnaryNegationArmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -99,16 +98,16 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("sbyte", "PackedSimd.Negate")]
-        [InlineData("short", "PackedSimd.Negate")]
-        [InlineData("int", "PackedSimd.Negate")]
-        [InlineData("long", "PackedSimd.Negate")]
-        [InlineData("float", "PackedSimd.Negate")]
-        [InlineData("double", "PackedSimd.Negate")]
+        [TestMethod]
+        [DataRow("sbyte", "PackedSimd.Negate")]
+        [DataRow("short", "PackedSimd.Negate")]
+        [DataRow("int", "PackedSimd.Negate")]
+        [DataRow("long", "PackedSimd.Negate")]
+        [DataRow("float", "PackedSimd.Negate")]
+        [DataRow("double", "PackedSimd.Negate")]
         public async Task Fixer_opUnaryNegationWasmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -143,7 +142,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

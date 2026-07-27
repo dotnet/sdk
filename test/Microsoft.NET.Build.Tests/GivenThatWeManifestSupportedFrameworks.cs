@@ -1,17 +1,16 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeManifestSupportedFrameworks : SdkTest
     {
-        public GivenThatWeManifestSupportedFrameworks(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionTheory("17.12.0")]
-        [InlineData(".NETCoreApp")]
-        [InlineData(".NETStandard")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12.0")]
+        [DataRow(".NETCoreApp")]
+        [DataRow(".NETStandard")]
         public void TheMaximumVersionsAreSupported(string targetFrameworkIdentifier)
         {
             var project = new TestProject
@@ -54,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
                 because: $"Microsoft.NET.SupportedTargetFrameworks.props should include an entry for {expectedTFM}");
         }
 
-        [Fact]
+        [TestMethod]
         public void TheSupportedTargetFrameworkListIsComposed()
         {
             var project = new TestProject

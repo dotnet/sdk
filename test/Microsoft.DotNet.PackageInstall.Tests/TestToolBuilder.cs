@@ -3,16 +3,8 @@
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
-    [CollectionDefinition(nameof(TestToolBuilderCollection))]
-    public class TestToolBuilderCollection : ICollectionFixture<TestToolBuilder>
-    {
-        // This class is intentionally left empty.
-    }
-
-
     //  This class is responsible for creating test dotnet tool packages.  We don't want every test to have to create it's own tool package, as that could slow things down quite a bit.
-    //  So this class handles creating each tool package once.  To use it, add it as a constructor parameter to your test class.  You will also need to add [Collection(nameof(TestToolBuilderCollection))]
-    //  to your test class to ensure that only one test at a time uses this class.  xUnit will give you an error if you forget to add the collection attribute but do add the constructor parameter.
+    //  So this class handles creating each tool package once.
     //
     //  The TestToolBuilder class uses a common folder to store all the tool package projects and their built nupkgs.  When CreateTestTool is called, it will compare the contents of the project
     //  in the common folder to the contents of the project that is being requested.  If there are any differences, it will re-create the project and build it again.  It will also delete the package from the
@@ -22,6 +14,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
     //  For local testing, you may need to delete the artifacts\tmp\Debug\testing\TestTools folder if the SDK changes in a way that affects the built package.
     public class TestToolBuilder
     {
+        public static readonly Lazy<TestToolBuilder> SharedInstance = new(() => new TestToolBuilder());
         public class TestToolSettings
         {
             public string ToolPackageId { get; set; } = "TestTool";

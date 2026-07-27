@@ -5,13 +5,10 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishIncrementally : SdkTest
     {
-        public GivenThatWeWantToPublishIncrementally(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_cleans_before_single_file_publish()
         {
             var testProject = new TestProject()
@@ -50,7 +47,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_between_renames()
         {
             var testProject = new TestProject()
@@ -95,7 +92,7 @@ namespace Microsoft.NET.Publish.Tests
                 expectedSingleExeFileExtensions.Select(ending => testProject.Name + ending));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_between_single_file_publishes()
         {
             var testProject = new TestProject()
@@ -134,7 +131,8 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append(testProject.Name + ".dll"), null);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/50784")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/50784")]
         public void It_cleans_before_trimmed_single_file_publish()
         {
             var testProject = new TestProject()
@@ -174,7 +172,8 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_cleans_for_mvc_projects()
         {
             // Create new mvc app from template
@@ -213,7 +212,7 @@ namespace Microsoft.NET.Publish.Tests
             Directory.Exists(Path.Combine(publishDir, "wwwroot"));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_with_custom_output_dir()
         {
             var testProject = new TestProject()
@@ -248,7 +247,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_with_multiple_output_dirs()
         {
             var testProject = new TestProject()
@@ -297,8 +296,8 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir2, expectedSingleExeFiles, expectedNonSingleExeFiles);
         }
 
-        [Theory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void GeneratePublishDependencyFile_runs_incrementally(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);

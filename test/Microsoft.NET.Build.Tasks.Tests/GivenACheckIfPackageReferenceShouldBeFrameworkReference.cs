@@ -5,9 +5,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenACheckIfPackageReferenceShouldBeFrameworkReference
     {
-        [Fact]
+        [TestMethod]
         public void MatchingPackage_ShouldRemoveAndAdd()
         {
             var task = new CheckIfPackageReferenceShouldBeFrameworkReference
@@ -27,7 +28,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ShouldAddFrameworkReference.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void FrameworkAlreadyExists_ShouldNotAdd()
         {
             var task = new CheckIfPackageReferenceShouldBeFrameworkReference
@@ -50,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ShouldAddFrameworkReference.Should().BeFalse("framework reference already exists");
         }
 
-        [Fact]
+        [TestMethod]
         public void NoMatch_ShouldDoNothing()
         {
             var task = new CheckIfPackageReferenceShouldBeFrameworkReference
@@ -70,7 +71,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ShouldAddFrameworkReference.Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyItemSpec_HandlesGracefully()
         {
             var task = new CheckIfPackageReferenceShouldBeFrameworkReference
@@ -90,7 +91,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ShouldAddFrameworkReference.Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyArrays_Succeeds()
         {
             var task = new CheckIfPackageReferenceShouldBeFrameworkReference
@@ -107,7 +108,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ShouldAddFrameworkReference.Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void RelativePathItemSpec_MatchesCorrectly()
         {
             const string pathLikeSpec = "some/path/Microsoft.AspNetCore.All";

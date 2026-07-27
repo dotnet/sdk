@@ -164,7 +164,7 @@ Examples:
       </trans-unit>
       <trans-unit id="CommandPrereleaseOptionDescription">
         <source>Allows prerelease packages to be installed.</source>
-        <target state="translated">Разрешает установку пакетов предварительного выпуска.</target>
+        <target state="translated">Разрешает установку пакетов предварительной версии.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandSpecIsNull">

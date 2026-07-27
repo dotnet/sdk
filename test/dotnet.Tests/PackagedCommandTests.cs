@@ -9,17 +9,19 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class PackagedCommandTests : SdkTest
     {
-        public PackagedCommandTests(ITestOutputHelper log) : base(log)
+        public PackagedCommandTests()
         {
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  ailed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), 
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("AppWithDirectAndToolDep")]
-        [InlineData("AppWithToolDependency")]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow("AppWithDirectAndToolDep")]
+        [DataRow("AppWithToolDependency")]
         public void TestProjectToolIsAvailableThroughDriver(string appName)
         {
             var testInstance = TestAssetsManager.CopyTestAsset(appName)
@@ -39,9 +41,10 @@ namespace Microsoft.DotNet.Tests
                      .And.Pass();
         }
 
-        [RequiresSpecificFrameworkTheory("netcoreapp1.1")]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp1.1")]
+        [DataRow(true)]
+        [DataRow(false)]
         public void IfPreviousVersionOfSharedFrameworkIsInstalled_ToolsTargetingItRun(bool toolPrefersCLIRuntime)
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithToolDependency", identifier: toolPrefersCLIRuntime ? "preferCLIRuntime" : "")
@@ -74,7 +77,8 @@ namespace Microsoft.DotNet.Tests
 
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp1.1")]
         public void IfAToolHasNotBeenRestoredForNetCoreApp2_0ItFallsBackToNetCoreApp1_x()
         {
             string toolName = "dotnet-portable-v1";
@@ -132,7 +136,8 @@ namespace Microsoft.DotNet.Tests
         }
 
         // Old .net tool test that doesn't work off Windows
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void CanInvokeToolWhosePackageNameIsDifferentFromDllName()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithDepOnToolWithOutputName")
@@ -152,7 +157,7 @@ namespace Microsoft.DotNet.Tests
                      .And.Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItShowsErrorWhenToolIsNotRestored()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithNonExistingToolDependency", testAssetSubdirectory: "NonRestoredTestProjects")
@@ -169,7 +174,8 @@ namespace Microsoft.DotNet.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void ItRunsToolRestoredToSpecificPackageDir()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("ToolWithRandomPackageName", testAssetSubdirectory: "NonRestoredTestProjects")
@@ -211,7 +217,8 @@ namespace Microsoft.DotNet.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //  Failed to load /private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, error: dlopen(/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib, 0x0001): tried: '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64')), '/System/Volumes/Preboot/Cryptexes/OS/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (no such file), '/private/tmp/helix/working/B3F609DC/p/d/shared/Microsoft.NETCore.App/9.0.0/libhostpolicy.dylib' (mach-o file, but is an incompatible architecture (have 'x86_64', need 'arm64'))
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void ToolsCanAccessDependencyContextProperly()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("DependencyContextFromTool")
@@ -227,7 +234,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void TestProjectDependencyIsNotAvailableThroughDriver()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("AppWithDirectDep")

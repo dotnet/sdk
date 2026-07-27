@@ -14,15 +14,24 @@ internal class NuGetCommand
 {
     public static int Run(string[] args, bool isFileBasedApp = false)
     {
+#if CLI_AOT
+        // The in-process NuGet runner relies on NuGet.CommandLine.XPlat, which isn't AOT-compatible,
+        // so AOT always forwards to the out-of-process NuGet CLI.
+        return Run(args, new NuGetCommandRunner());
+#else
         return Run(args, isFileBasedApp
             ? new InProcessNuGetCommandRunner(NuGetVirtualProjectBuilder.Instance)
             : new NuGetCommandRunner());
+#endif
     }
 
     public static int Run(ParseResult parseResult)
     {
         ICommandRunner runner;
 
+#if CLI_AOT
+        runner = new NuGetCommandRunner();
+#else
         if (parseResult.CommandResult.Command.Name == "why"
             && parseResult.CommandResult.Command.Arguments.FirstOrDefault() is Argument<string> pathArg
             && parseResult.GetValue(pathArg) is { } path
@@ -34,6 +43,7 @@ internal class NuGetCommand
         {
             runner = new NuGetCommandRunner();
         }
+#endif
 
         return Run(parseResult.GetArguments(), runner);
     }
@@ -65,6 +75,7 @@ internal class NuGetCommand
         }
     }
 
+#if !CLI_AOT
     private class InProcessNuGetCommandRunner(NuGetVirtualProjectBuilder virtualProjectBuilder) : ICommandRunner
     {
         public int Run(string[] args)
@@ -81,6 +92,7 @@ internal class NuGetCommand
             }
         }
     }
+#endif
 
     private static string GetDotnetPath()
     {

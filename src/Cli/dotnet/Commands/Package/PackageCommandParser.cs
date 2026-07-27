@@ -96,19 +96,19 @@ internal sealed class PackageCommandParser
         }
     }
 
-    internal static (string Path, AppKinds AllowedAppKinds) ProcessPathOptions(Option<string?> fileOption, Option<string?> projectOption, Argument<string>? projectOrFileArgument, ParseResult parseResult)
+    internal static (string Path, AppKinds AllowedAppKinds) ProcessPathOptions(Option<string?>? fileOption, Option<string?>? projectOption, Argument<string>? projectOrFileArgument, ParseResult parseResult)
     {
-        bool hasFileOption = parseResult.HasOption(fileOption);
-        bool hasProjectOption = parseResult.HasOption(projectOption);
+        bool hasFileOption = fileOption is not null && parseResult.HasOption(fileOption);
+        bool hasProjectOption = projectOption is not null && parseResult.HasOption(projectOption);
 
         return (hasFileOption, hasProjectOption) switch
         {
             (false, false) => projectOrFileArgument != null && parseResult.GetValue(projectOrFileArgument) is { } projectOrFile
                 ? (projectOrFile, AppKinds.Any)
                 : (Environment.CurrentDirectory, AppKinds.ProjectBased),
-            (true, false) => (parseResult.GetValue(fileOption)!, AppKinds.FileBased),
-            (false, true) => (parseResult.GetValue(projectOption)!, AppKinds.ProjectBased),
-            (true, true) => throw new Utils.GracefulException(CliCommandStrings.CannotCombineOptions, fileOption.Name, projectOption.Name),
+            (true, false) => (parseResult.GetValue(fileOption!)!, AppKinds.FileBased),
+            (false, true) => (parseResult.GetValue(projectOption!)!, AppKinds.ProjectBased),
+            (true, true) => throw new Utils.GracefulException(CliCommandStrings.CannotCombineOptions, fileOption!.Name, projectOption!.Name),
         };
     }
 }

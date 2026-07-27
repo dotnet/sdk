@@ -5,7 +5,10 @@
 
 using System.CommandLine;
 using Microsoft.Build.Evaluation;
+using Microsoft.DotNet.Cli.Commands.Package;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Reference.Remove;
 
@@ -13,11 +16,16 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
 {
     private readonly string _fileOrDirectory;
     private readonly IReadOnlyCollection<string> _arguments;
+    private readonly AppKinds _allowedAppKinds;
 
     public ReferenceRemoveCommand(ParseResult parseResult)
         : base(parseResult)
     {
-        _fileOrDirectory = Definition.GetFileOrDirectory(parseResult) ?? Directory.GetCurrentDirectory();
+        (_fileOrDirectory, _allowedAppKinds) = PackageCommandParser.ProcessPathOptions(
+            Definition.GetFileOption(),
+            Definition.GetProjectOption(),
+            Definition.GetProjectOrFileArgument(),
+            parseResult);
         _arguments = parseResult.GetValue(Definition.ProjectPathArgument).ToList().AsReadOnly();
 
         if (_arguments.Count == 0)
@@ -28,6 +36,16 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
 
     public override int Execute()
     {
+        if (_allowedAppKinds.HasFlag(AppKinds.FileBased) && VirtualProjectBuilder.IsValidEntryPointPath(_fileOrDirectory))
+        {
+            return ExecuteForFileBasedApp();
+        }
+
+        if (!_allowedAppKinds.HasFlag(AppKinds.ProjectBased))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, _fileOrDirectory);
+        }
+
         var msbuildProj = MsbuildProject.FromFileOrDirectory(new ProjectCollection(), _fileOrDirectory, false);
         var references = _arguments.Select(p =>
         {
@@ -50,6 +68,23 @@ internal sealed class ReferenceRemoveCommand : CommandBase<ReferenceRemoveComman
         if (numberOfRemovedReferences != 0)
         {
             msbuildProj.ProjectRootElement.Save();
+        }
+
+        return 0;
+    }
+
+    private int ExecuteForFileBasedApp()
+    {
+        if (!string.IsNullOrEmpty(_parseResult.GetValue(Definition.FrameworkOption)))
+        {
+            throw new GracefulException(CliCommandStrings.InvalidOptionForFileBasedApp, Definition.FrameworkOption.Name);
+        }
+
+        var editor = new FileBasedAppReferenceEditor(_fileOrDirectory);
+        int numberOfRemovedReferences = editor.RemoveReferences(_arguments);
+        if (numberOfRemovedReferences != 0)
+        {
+            editor.Save();
         }
 
         return 0;

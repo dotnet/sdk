@@ -6,16 +6,17 @@ using Microsoft.TemplateEngine.Authoring.CLI.Commands.Verify;
 
 namespace Microsoft.TemplateEngine.Authoring.CLI.UnitTests
 {
+    [TestClass]
     public class VerifyCommandArgsTests
     {
-        [Theory]
-        [InlineData(null, new string[] { })]
-        [InlineData(" ", new string[] { })]
-        [InlineData(" a b     c", new string[] { "a", "b", "c" })]
-        [InlineData(" abc   ", new string[] { "abc" })]
-        [InlineData("a \"b     c \"  d  ", new string[] { "a", "b     c ", "d" })]
-        [InlineData("aa \" bb cc \"dd", new string[] { "aa", " bb cc ", "dd" })]
-        [InlineData("aa q= 'bb cc'dd", new string[] { "aa", "q=", "bb cc", "dd" })]
+        [TestMethod]
+        [DataRow(null, new string[] { })]
+        [DataRow(" ", new string[] { })]
+        [DataRow(" a b     c", new string[] { "a", "b", "c" })]
+        [DataRow(" abc   ", new string[] { "abc" })]
+        [DataRow("a \"b     c \"  d  ", new string[] { "a", "b     c ", "d" })]
+        [DataRow("aa \" bb cc \"dd", new string[] { "aa", " bb cc ", "dd" })]
+        [DataRow("aa q= 'bb cc'dd", new string[] { "aa", "q=", "bb cc", "dd" })]
         public void OnTokenizeJoinedArgsResultIsExpected(string? input, IEnumerable<string> expectedOutput)
         {
             var result = VerifyCommandArgs.TokenizeJoinedArgs(input);

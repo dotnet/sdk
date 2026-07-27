@@ -161,9 +161,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         .AsReadOnly());
 
+        NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
+
         Builder = new VirtualProjectBuilder(entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
+#if !CLI_AOT
+    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
@@ -200,70 +205,65 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         else
         {
-            if (NoCache)
-            {
-                cache = ComputeCacheEntry();
-                cache?.CurrentEntry.BuildLevel = BuildLevel.All;
-                LastBuild = (BuildLevel.All, cache);
-            }
-            else
-            {
-                var buildLevel = GetBuildLevel(out cache);
-                cache?.CurrentEntry.BuildLevel = buildLevel;
-                LastBuild = (buildLevel, cache);
+            var buildLevel = GetBuildLevel(out cache);
+            cache?.CurrentEntry.BuildLevel = buildLevel;
+            LastBuild = (buildLevel, cache);
 
-                if (buildLevel is BuildLevel.None)
+            if (buildLevel is BuildLevel.None)
+            {
+                if (binaryLogger is not null)
                 {
+                    Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
+                }
+
+                // No rebuild, can reuse run properties.
+                cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
+
+                MarkArtifactsFolderUsed();
+                return 0;
+            }
+
+            if (buildLevel is BuildLevel.Csc)
+            {
+                Debug.Assert(cache is not null);
+
+                MarkBuildStart();
+
+                // Execute CSC.
+                int result = new CSharpCompilerCommand
+                {
+                    EntryPointFileFullPath = Builder.EntryPointFileFullPath,
+                    ArtifactsPath = Builder.ArtifactsPath,
+                    CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
+                    CscArguments = cache.PreviousEntry?.CscArguments ?? [],
+                    BuildResultFile = cache.PreviousEntry?.BuildResultFile,
+                }
+                .Execute(out bool fallbackToNormalBuild);
+
+                if (!fallbackToNormalBuild)
+                {
+                    if (result == 0)
+                    {
+                        ReuseInfoFromPreviousCacheEntry(cache);
+                        MarkBuildSuccess(cache);
+                    }
+
                     if (binaryLogger is not null)
                     {
-                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
+                        Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                     }
 
-                    // No rebuild, can reuse run properties.
-                    cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
-
-                    MarkArtifactsFolderUsed();
-                    return 0;
+                    return result;
                 }
 
-                if (buildLevel is BuildLevel.Csc)
-                {
-                    Debug.Assert(cache is not null);
+                Debug.Assert(result != 0);
 
-                    MarkBuildStart();
-
-                    // Execute CSC.
-                    int result = new CSharpCompilerCommand
-                    {
-                        EntryPointFileFullPath = Builder.EntryPointFileFullPath,
-                        ArtifactsPath = Builder.ArtifactsPath,
-                        CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
-                        CscArguments = cache.PreviousEntry?.CscArguments ?? [],
-                        BuildResultFile = cache.PreviousEntry?.BuildResultFile,
-                    }
-                    .Execute(out bool fallbackToNormalBuild);
-
-                    if (!fallbackToNormalBuild)
-                    {
-                        if (result == 0)
-                        {
-                            ReuseInfoFromPreviousCacheEntry(cache);
-                            MarkBuildSuccess(cache);
-                        }
-
-                        if (binaryLogger is not null)
-                        {
-                            Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
-                        }
-
-                        return result;
-                    }
-
-                    Debug.Assert(result != 0);
-                }
-
-                Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
+                buildLevel = BuildLevel.All;
+                cache.CurrentEntry.BuildLevel = buildLevel;
+                LastBuild = (buildLevel, cache);
             }
+
+            Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
 
             MarkBuildStart();
         }
@@ -312,7 +312,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                     CreateProjectInstance(projectCollection, addGlobalProperties: AddRestoreGlobalProperties(MSBuildArgs.RestoreGlobalProperties)),
                     targetsToBuild: ["Restore"],
                     hostServices: null,
-                    BuildRequestDataFlags.ClearCachesAfterBuild | BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
+                    // We don't include ClearCachesAfterBuild flag unlike MSBuild's implicit restore
+                    // to avoid evicting the virtual project asynchronously (https://github.com/dotnet/msbuild/issues/14148).
+                    // It shouldn't make a difference for us because the restore has distinct global properties, so all projects will be re-evaluated anyway.
+                    BuildRequestDataFlags.SkipNonexistentTargets | BuildRequestDataFlags.IgnoreMissingEmptyAndInvalidImports | BuildRequestDataFlags.FailOnUnresolvedSdk);
 
                 var restoreResult = BuildManager.DefaultBuildManager.BuildRequest(restoreRequest);
                 if (restoreResult.OverallResult != BuildResultCode.Success)
@@ -550,6 +553,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return true;
         }
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         void CollectAdditionalSources(CacheInfo cache, ProjectInstance projectInstance)
         {
             Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
@@ -698,6 +702,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
     }
+
+#endif
 
     /// <summary>
     /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
@@ -870,6 +876,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         cache.PreviousEntry = previousCacheEntry;
         var cacheEntry = cache.CurrentEntry;
 
+        if (previousCacheEntry.Run is { Command: { } previousRunCommand } &&
+            Path.IsPathFullyQualified(previousRunCommand) &&
+            !File.Exists(previousRunCommand))
+        {
+            Reporter.Verbose.WriteLine("Building because the run output is missing: " + previousRunCommand);
+            return true;
+        }
+
         // Check that versions match.
 
         if (previousCacheEntry.SdkVersion != cacheEntry.SdkVersion)
@@ -1028,7 +1042,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    public RunFileBuildCacheEntry? GetPreviousCacheEntry()
+    private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
         return DeserializeCacheEntry(Path.Join(Builder.ArtifactsPath, BuildSuccessCacheFileName));
     }
@@ -1042,8 +1056,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-    private BuildLevel GetBuildLevel(out CacheInfo? cache)
+    public BuildLevel GetBuildLevel(out CacheInfo? cache)
     {
+        if (NoCache)
+        {
+            Reporter.Verbose.WriteLine("Building because --no-cache was specified.");
+            cache = ComputeCacheEntry();
+            return BuildLevel.All;
+        }
+
         if (!NeedsToBuild(out cache))
         {
             Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + Builder.ArtifactsPath);
@@ -1172,11 +1193,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, addGlobalProperties: null);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, Action<IDictionary<string, string>>? addGlobalProperties)
     {
         Builder.CreateProjectInstance(
@@ -1202,6 +1225,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// The <see cref="ProjectRootElement"/>s are registered in the <paramref name="projectCollection"/>'s
     /// <c>ProjectRootElementCache</c> so MSBuild can resolve <c>&lt;ProjectReference&gt;</c> items to them.
     /// </summary>
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private void CreateReferencedVirtualProjects(
         ProjectCollection projectCollection,
         ImmutableArray<CSharpDirective> directives)
@@ -1383,13 +1407,4 @@ internal enum BuildLevel
     /// We need to invoke MSBuild to get up to date.
     /// </summary>
     All,
-}
-
-[Flags]
-internal enum AppKinds
-{
-    None = 0,
-    ProjectBased = 1 << 0,
-    FileBased = 1 << 1,
-    Any = ProjectBased | FileBased,
 }

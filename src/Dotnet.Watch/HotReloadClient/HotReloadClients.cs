@@ -29,7 +29,7 @@ namespace Microsoft.DotNet.HotReload;
 /// False to use the <paramref name="clients"/> to apply static asset updates.
 /// </param>
 internal sealed class HotReloadClients(
-    ImmutableArray<(HotReloadClient client, string name)> clients,
+    ImmutableArray<HotReloadClient> clients,
     AbstractBrowserRefreshServer? browserRefreshServer,
     bool useRefreshServerToApplyStaticAssets) : IDisposable
 {
@@ -38,7 +38,7 @@ internal sealed class HotReloadClients(
     /// </summary>
     public void Dispose()
     {
-        foreach (var (client, _) in clients)
+        foreach (var client in clients)
         {
             client.Dispose();
         }
@@ -57,6 +57,9 @@ internal sealed class HotReloadClients(
     public AbstractBrowserRefreshServer? BrowserRefreshServer
         => browserRefreshServer;
 
+    public ImmutableArray<HotReloadClient> Clients
+        => clients;
+
     /// <summary>
     /// Invoked when a rude edit is detected at runtime.
     /// May be invoked multiple times, by each client.
@@ -65,14 +68,14 @@ internal sealed class HotReloadClients(
     {
         add
         {
-            foreach (var (client, _) in clients)
+            foreach (var client in clients)
             {
                 client.OnRuntimeRudeEdit += value;
             }
         }
         remove
         {
-            foreach (var (client, _) in clients)
+            foreach (var client in clients)
             {
                 client.OnRuntimeRudeEdit -= value;
             }
@@ -81,7 +84,7 @@ internal sealed class HotReloadClients(
 
     internal void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
-        foreach (var (client, _) in clients)
+        foreach (var client in clients)
         {
             client.ConfigureLaunchEnvironment(environmentBuilder);
         }
@@ -92,7 +95,7 @@ internal sealed class HotReloadClients(
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     internal void InitiateConnection(CancellationToken cancellationToken)
     {
-        foreach (var (client, _) in clients)
+        foreach (var client in clients)
         {
             client.InitiateConnection(cancellationToken);
         }
@@ -101,7 +104,7 @@ internal sealed class HotReloadClients(
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     internal async ValueTask WaitForConnectionEstablishedAsync(CancellationToken cancellationToken)
     {
-        await Task.WhenAll(clients.Select(c => c.client.WaitForConnectionEstablishedAsync(cancellationToken)));
+        await Task.WhenAll(clients.Select(c => c.WaitForConnectionEstablishedAsync(cancellationToken)));
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
@@ -113,12 +116,12 @@ internal sealed class HotReloadClients(
             return [];
         }
 
-        if (clients is [var (singleClient, _)])
+        if (clients is [var singleClient])
         {
             return await singleClient.GetUpdateCapabilitiesAsync(cancellationToken);
         }
 
-        var results = await Task.WhenAll(clients.Select(c => c.client.GetUpdateCapabilitiesAsync(cancellationToken)));
+        var results = await Task.WhenAll(clients.Select(c => c.GetUpdateCapabilitiesAsync(cancellationToken)));
 
         // Allow updates that are supported by at least one process.
         // When applying changes we will filter updates applied to a specific process based on their required capabilities.
@@ -137,7 +140,7 @@ internal sealed class HotReloadClients(
         // An error is only reported if the delta application fails, which would be a bug either in the runtime (applying valid delta incorrectly),
         // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
 
-        var applyTasks = await Task.WhenAll(clients.Select(c => c.client.ApplyManagedCodeUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
+        var applyTasks = await Task.WhenAll(clients.Select(c => c.ApplyManagedCodeUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
 
         return CompleteApplyOperationAsync();
 
@@ -157,13 +160,13 @@ internal sealed class HotReloadClients(
         // shouldn't be called if there are no clients
         Debug.Assert(IsManagedAgentSupported);
 
-        if (clients is [var (singleClient, _)])
+        if (clients is [var singleClient])
         {
             await singleClient.InitialUpdatesAppliedAsync(cancellationToken);
         }
         else
         {
-            await Task.WhenAll(clients.Select(c => c.client.InitialUpdatesAppliedAsync(cancellationToken)));
+            await Task.WhenAll(clients.Select(c => c.InitialUpdatesAppliedAsync(cancellationToken)));
         }
     }
 
@@ -189,7 +192,7 @@ internal sealed class HotReloadClients(
             }
             catch (Exception e) when (e is not OperationCanceledException)
             {
-                clients.First().client.Logger.LogError("Failed to read file {FilePath}: {Message}", asset.FilePath, e.Message);
+                clients.First().Logger.LogError("Failed to read file {FilePath}: {Message}", asset.FilePath, e.Message);
                 continue;
             }
         }
@@ -204,7 +207,7 @@ internal sealed class HotReloadClients(
         Debug.Assert(IsManagedAgentSupported);
         Debug.Assert(!useRefreshServerToApplyStaticAssets);
 
-        var applyTasks = await Task.WhenAll(clients.Select(c => c.client.ApplyStaticAssetUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
+        var applyTasks = await Task.WhenAll(clients.Select(c => c.ApplyStaticAssetUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
 
         return Task.WhenAll(applyTasks);
     }

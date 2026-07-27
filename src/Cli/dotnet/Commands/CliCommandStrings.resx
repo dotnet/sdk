@@ -205,6 +205,10 @@
   <data name="CancellingTestSession" xml:space="preserve">
     <value>Canceling the test session...</value>
   </data>
+  <data name="PressCtrlCAgainToForceExit" xml:space="preserve">
+    <value>Press Ctrl+C again to force exit.</value>
+    <comment>Hint printed under the "Canceling the test session..." banner. Tells the user that pressing Ctrl+C a second time will immediately terminate the dotnet test process and any still-running test app child processes.</comment>
+  </data>
   <data name="CannotAnalyzeVSWorkloadBand" xml:space="preserve">
     <value>Workloads managed by Visual Studio must be uninstalled using the Visual Studio Installer. For the version of Visual Studio managing the SDK '{0}', we could not display workloads to uninstall. This is likely because '{0}' uses a different dotnet root path or custom user profile directory from the current running SDK.
 Paths searched: '{1}', '{2}'.</value>
@@ -449,6 +453,12 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
     <value>Specify either the project, solution, directory, or test modules option.</value>
   </data>
+  <data name="CmdListDevicesAndListTestsMutuallyExclusive" xml:space="preserve">
+    <value>The '--list-devices' and '--list-tests' options cannot be used together.</value>
+  </data>
+  <data name="CmdDeviceOptionsRequireProject" xml:space="preserve">
+    <value>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</value>
+  </data>
   <data name="CmdMultipleProjectOrSolutionFilesErrorDescription" xml:space="preserve">
     <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
   </data>
@@ -492,7 +502,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>NUMBER</value>
   </data>
   <data name="CmdOptionCannotBeUsedWithTestModulesDescription" xml:space="preserve">
-    <value>The options architecture, configuration, framework, operating system, and runtime cannot be used with '--test-modules' option.</value>
+    <value>The options architecture, configuration, framework, operating system, runtime, and use current runtime cannot be used with '--test-modules' option.</value>
   </data>
   <data name="CmdOutdatedDescription" xml:space="preserve">
     <value>Lists packages that have newer versions. Cannot be combined with '--deprecated' or '--vulnerable' options.</value>
@@ -1709,18 +1719,22 @@ The default is to publish a framework-dependent application.</value>
     <comment>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</comment>
   </data>
   <data name="WarningFileArgumentPassedToMSBuild" xml:space="preserve">
-    <value>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</value>
-    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</comment>
+    <value>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</value>
+    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</comment>
   </data>
   <data name="WarningCsFileArgumentPassedToMSBuild" xml:space="preserve">
-    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</value>
-    <comment>{0} is the .cs file path argument.</comment>
+    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</value>
+    <comment>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</comment>
   </data>
   <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>
   </data>
   <data name="RunCommandExceptionNoProjects" xml:space="preserve">
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
+  </data>
+  <data name="RunCommandWarningUnableToDetermineLoggerArguments" xml:space="preserve">
+    <value>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</value>
+    <comment>{Locked="--"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
     <value>Unable to proceed with project '{0}'.
@@ -1947,6 +1961,10 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="StandardOutput" xml:space="preserve">
     <value>Standard output</value>
+  </data>
+  <data name="TestApplicationOutputTruncated" xml:space="preserve">
+    <value>... output truncated, {0} lines omitted ...</value>
+    <comment>{0} is the number of output lines that were omitted from the summary.</comment>
   </data>
   <data name="StatusColumnHeader" xml:space="preserve">
     <value>Status</value>
@@ -2647,6 +2665,22 @@ Proceed?</value>
   <data name="MismatchingHandshakeInfo" xml:space="preserve">
     <value>A new handshake '{0}' was received for the test application that doesn't match the previous handshake '{1}'.</value>
   </data>
+  <data name="MismatchingHandshakeExecutionMode" xml:space="preserve">
+    <value>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</value>
+    <comment>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</comment>
+  </data>
+  <data name="MismatchingHandshakeHostType" xml:space="preserve">
+    <value>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</value>
+    <comment>{Locked="dotnet test"}</comment>
+  </data>
+  <data name="ArtifactPostProcessingFailed" xml:space="preserve">
+    <value>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</value>
+    <comment>{0} is the test application path. {1} is the failure reason.</comment>
+  </data>
+  <data name="ArtifactPostProcessingProcessFailed" xml:space="preserve">
+    <value>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</value>
+    <comment>{0} is the test application path. {1} is the process exit code.</comment>
+  </data>
   <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>
   </data>
@@ -2656,6 +2690,25 @@ Proceed?</value>
   <data name="DotnetTestMismatchingExecutionId" xml:space="preserve">
     <value>Received 'ExecutionId' of value '{0}' for message '{1}' while the 'ExecutionId' received of the handshake message was '{2}'.</value>
     <comment>{Locked="ExecutionId"}</comment>
+  </data>
+  <data name="DotnetTestMissingHandshakeProtocolVersions" xml:space="preserve">
+    <value>The handshake message from Microsoft.Testing.Platform did not provide the supported protocol versions. The SDK supports '{0}'.</value>
+  </data>
+  <data name="DotnetTestMissingRequiredMessageProperty" xml:space="preserve">
+    <value>The required property '{0}' was missing or empty in the message of type '{1}'.</value>
+  </data>
+  <data name="DotnetTestDuplicateHandshakeOnConnection" xml:space="preserve">
+    <value>Received more than one handshake message from Microsoft.Testing.Platform on the same pipe connection.</value>
+  </data>
+  <data name="UnknownSessionEventType" xml:space="preserve">
+    <value>Received an unknown session event type '{0}' from Microsoft.Testing.Platform.</value>
+  </data>
+  <data name="UnexpectedMessageWithoutTestHostHandshake" xml:space="preserve">
+    <value>Received a message of type '{0}' from Microsoft.Testing.Platform before the TestHost handshake completed.</value>
+  </data>
+  <data name="RunAsyncCalledMoreThanOnce" xml:space="preserve">
+    <value>'TestApplication.RunAsync' was already called on this instance and cannot be invoked more than once.</value>
+    <comment>{Locked="TestApplication.RunAsync"}</comment>
   </data>
   <data name="ErrorColon" xml:space="preserve">
     <value>error:</value>
@@ -2678,11 +2731,23 @@ Proceed?</value>
   <data name="DurationColon" xml:space="preserve">
     <value>duration:</value>
   </data>
+  <data name="HandshakeFailuresHeader" xml:space="preserve">
+    <value>Handshake failures:</value>
+    <comment>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</comment>
+  </data>
   <data name="WorkloadSetHasMissingManifests" xml:space="preserve">
     <value>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</value>
     <comment>{0} is the workload set version. {Locked="dotnet workload repair"}</comment>
   </data>
   <data name="CmdTestNoTestProjectsFound" xml:space="preserve">
     <value>No test projects were found.</value>
+  </data>
+  <data name="WorkloadSetVersionInPackageVersionFormat" xml:space="preserve">
+    <value>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</value>
+    <comment>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</comment>
+  </data>
+  <data name="WorkloadSetVersionSpecifiedInGlobalJson" xml:space="preserve">
+    <value> (Specified in '{0}')</value>
+    <comment>{0} is the path to the global.json file.</comment>
   </data>
 </root>

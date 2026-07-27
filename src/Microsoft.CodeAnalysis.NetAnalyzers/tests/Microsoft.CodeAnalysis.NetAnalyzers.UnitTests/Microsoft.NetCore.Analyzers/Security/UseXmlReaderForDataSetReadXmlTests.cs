@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseXmlReaderForDataSetReadXml,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseXmlReaderForDataSetReadXmlTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +46,7 @@ End Class",
             GetBasicResultAt(9, 9, "DataSet", "ReadXml"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithStreamAndXmlReadModeParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -64,7 +64,7 @@ class TestClass
             GetCSharpResultAt(10, 9, "DataSet", "ReadXml"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithStringParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,7 +81,7 @@ class TestClass
             GetCSharpResultAt(9, 9, "DataSet", "ReadXml"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithStringXmlReadModeParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -98,7 +98,7 @@ class TestClass
             GetCSharpResultAt(9, 9, "DataSet", "ReadXml"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -116,7 +116,7 @@ class TestClass
             GetCSharpResultAt(10, 9, "DataSet", "ReadXml"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithTextReaderAndXmlReadModeParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -134,7 +134,7 @@ class TestClass
             GetCSharpResultAt(10, 9, "DataSet", "ReadXml"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlSchemaWithStreamParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -152,7 +152,7 @@ class TestClass
             GetCSharpResultAt(10, 9, "DataSet", "ReadXmlSchema"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlSchemaWithStringParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -169,7 +169,7 @@ class TestClass
             GetCSharpResultAt(9, 9, "DataSet", "ReadXmlSchema"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlSchemaWithTextReaderParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -187,7 +187,7 @@ class TestClass
             GetCSharpResultAt(10, 9, "DataSet", "ReadXmlSchema"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -205,7 +205,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlWithXmlReaderAndXmlReadModeParametersNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -223,7 +223,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlSchemaWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -241,7 +241,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReadXmlSerializableWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -279,7 +279,7 @@ Class TestClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDerivedFromANormalClassNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -308,7 +308,7 @@ class SubTestClass : TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTwoLevelsOfInheritanceAndOverridesNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -337,7 +337,7 @@ class SubTestClass : TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalClassReadXmlWithXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

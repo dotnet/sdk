@@ -1,8 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumStorageShouldBeInt32Analyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumStorageShouldBeInt32Fixer>;
@@ -12,10 +11,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumStorageShouldBeInt32FixerTests
     {
         #region CSharpUnitTests
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
@@ -43,7 +43,7 @@ namespace Test
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"
@@ -74,7 +74,7 @@ namespace Test
 
         #region BasicUnitTests
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithNoTriviaAsync()
         {
             var code = @"
@@ -98,7 +98,7 @@ End Module
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_TestFixForEnumTypeIsLongWithTriviaAsync()
         {
             var code = @"

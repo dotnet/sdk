@@ -7,16 +7,14 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.ToolPack.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool : SdkTest
     {
-        public GivenThatWeWantToPublishWithGeneratePackageOnBuildAndPackAsTool(ITestOutputHelper log) : base(log)
-        { }
-
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
         public void It_publishes_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             Console.WriteLine(generatePackageOnBuild.ToString() + packAsTool.ToString());
@@ -40,11 +38,11 @@ namespace Microsoft.NET.ToolPack.Tests
                   .Pass();
         }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, false)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, false)]
+        [DataRow(true, true)]
         public void It_builds_with_GeneratePackageOnBuild_successfully(bool generatePackageOnBuild, bool packAsTool)
         {
             TestAsset testAsset = TestAssetsManager

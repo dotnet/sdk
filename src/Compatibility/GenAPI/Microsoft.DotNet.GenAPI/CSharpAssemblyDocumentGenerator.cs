@@ -16,6 +16,7 @@ using Microsoft.CodeAnalysis.Options;
 using Microsoft.CodeAnalysis.Simplification;
 using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Logging;
+using Microsoft.DotNet.GenAPI.SyntaxRewriter;
 
 namespace Microsoft.DotNet.GenAPI;
 
@@ -63,18 +64,13 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         IEnumerable<INamespaceSymbol> namespaceSymbols = EnumerateNamespaces(assemblySymbol).Where(_options.SymbolFilter.Include);
 
-        List<SyntaxNode> namespaceSyntaxNodes = [];
+        List<SyntaxNode> declarationSyntaxNodes = [];
         foreach (INamespaceSymbol namespaceSymbol in namespaceSymbols.Order())
         {
-            SyntaxNode? syntaxNode = Visit(namespaceSymbol);
-
-            if (syntaxNode is not null)
-            {
-                namespaceSyntaxNodes.Add(syntaxNode);
-            }
+            declarationSyntaxNodes.AddRange(Visit(namespaceSymbol));
         }
 
-        SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(namespaceSyntaxNodes);
+        SyntaxNode compilationUnit = _syntaxGenerator.CompilationUnit(declarationSyntaxNodes);
 
         if (_options.AdditionalAnnotations.Any())
         {
@@ -106,33 +102,51 @@ public sealed class CSharpAssemblyDocumentGenerator
         if (_options.ShouldFormat)
         {
             document = await Formatter.FormatAsync(document, DefineFormattingOptions()).ConfigureAwait(false);
+            SyntaxNode root = await document.GetSyntaxRootAsync().ConfigureAwait(false) ?? throw new InvalidOperationException(Resources.SyntaxNodeNotFound);
+            root = root.Rewrite(SingleLineStatementCSharpSyntaxRewriter.Singleton);
+            document = document.WithSyntaxRoot(root.Rewrite(MemberSpacingCSharpSyntaxRewriter.Singleton));
         }
 
         return document;
     }
 
-    private SyntaxNode? Visit(INamespaceSymbol namespaceSymbol)
+    private IEnumerable<SyntaxNode> Visit(INamespaceSymbol namespaceSymbol)
     {
+        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers()
+            .Where(_options.SymbolFilter.Include)
+            .Order();
+
+        if (namespaceSymbol.IsGlobalNamespace)
+        {
+            foreach (INamedTypeSymbol typeMember in typeMembers)
+            {
+                yield return CreateTypeDeclaration(typeMember);
+            }
+
+            yield break;
+        }
+
         SyntaxNode namespaceNode = _syntaxGenerator.NamespaceDeclaration(namespaceSymbol.ToDisplayString());
-
-        IEnumerable<INamedTypeSymbol> typeMembers = namespaceSymbol.GetTypeMembers().Where(_options.SymbolFilter.Include);
-        if (!typeMembers.Any())
+        bool hasTypeMembers = false;
+        foreach (INamedTypeSymbol typeMember in typeMembers)
         {
-            return null;
+            namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, CreateTypeDeclaration(typeMember));
+            hasTypeMembers = true;
         }
 
-        foreach (INamedTypeSymbol typeMember in typeMembers.Order())
+        if (hasTypeMembers)
         {
-            SyntaxNode typeDeclaration = _syntaxGenerator
-                .DeclarationExt(typeMember, _options.SymbolFilter)
-                .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeSymbolFilter);
-
-            typeDeclaration = Visit(typeDeclaration, typeMember);
-
-            namespaceNode = _syntaxGenerator.AddMembers(namespaceNode, typeDeclaration);
+            yield return namespaceNode;
         }
+    }
 
-        return namespaceNode;
+    private SyntaxNode CreateTypeDeclaration(INamedTypeSymbol typeMember)
+    {
+        SyntaxNode typeDeclaration = _syntaxGenerator
+            .DeclarationExt(typeMember, _options.SymbolFilter)
+            .AddMemberAttributes(_syntaxGenerator, typeMember, _options.AttributeSymbolFilter);
+
+        return Visit(typeDeclaration, typeMember);
     }
 
     // Name hiding through inheritance occurs when classes or structs redeclare names that were inherited from base classes. This type of name hiding takes one of the following forms:
@@ -183,7 +197,10 @@ public sealed class CSharpAssemblyDocumentGenerator
 
     private SyntaxNode Visit(SyntaxNode namedTypeNode, INamedTypeSymbol namedType)
     {
-        IEnumerable<ISymbol> members = namedType.GetMembers().Where(_options.SymbolFilter.Include);
+        INamedTypeSymbol[] extensionBlocks = [.. namedType.GetTypeMembers().Where(static type => string.IsNullOrEmpty(type.Name))];
+        IEnumerable<ISymbol> members = namedType.GetMembers()
+            .Where(_options.SymbolFilter.Include)
+            .Where(member => !IsExtensionBlockImplementation(member, extensionBlocks));
 
         // If it's a value type
         if (namedType.TypeKind == TypeKind.Struct)
@@ -213,9 +230,20 @@ public sealed class CSharpAssemblyDocumentGenerator
                 }
             }
 
-            // If the property is derived from an interface that was filtered out, we must not filter it out either.
+            // If the property is derived from an interface that was filtered out, we must filter it out as well.
             if (member is IPropertySymbol property && !property.ExplicitInterfaceImplementations.IsEmpty &&
-                property.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol)))
+                property.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol) ||
+                // if explicit interface implementation property has inaccessible type argument
+                m.ContainingType.HasInaccessibleTypeArgument(_options.SymbolFilter)))
+            {
+                continue;
+            }
+
+            // If the event is derived from an interface that was filtered out, we must filter it out as well.
+            if (member is IEventSymbol @event && !@event.ExplicitInterfaceImplementations.IsEmpty &&
+                @event.ExplicitInterfaceImplementations.Any(m => !_options.SymbolFilter.Include(m.ContainingSymbol) ||
+                // if explicit interface implementation event has inaccessible type argument
+                m.ContainingType.HasInaccessibleTypeArgument(_options.SymbolFilter)))
             {
                 continue;
             }
@@ -251,6 +279,129 @@ public sealed class CSharpAssemblyDocumentGenerator
 
         return namedTypeNode;
     }
+
+    private bool IsExtensionBlockImplementation(ISymbol member, IEnumerable<INamedTypeSymbol> extensionBlocks)
+    {
+        if (member is not IMethodSymbol implementation)
+        {
+            return false;
+        }
+
+        foreach (INamedTypeSymbol extensionBlock in extensionBlocks)
+        {
+            foreach (ISymbol extensionMember in extensionBlock.GetMembers())
+            {
+                if (extensionMember is IMethodSymbol extensionMethod &&
+                    IsMatchingExtensionMethod(implementation, extensionMethod, extensionBlock))
+                {
+                    return true;
+                }
+
+                if (extensionMember is IPropertySymbol extensionProperty &&
+                    IsMatchingExtensionPropertyAccessor(implementation, extensionProperty, extensionBlock, isSetter: false))
+                {
+                    return true;
+                }
+
+                if (extensionMember is IPropertySymbol propertyWithSetter &&
+                    IsMatchingExtensionPropertyAccessor(implementation, propertyWithSetter, extensionBlock, isSetter: true))
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private bool IsMatchingExtensionMethod(
+        IMethodSymbol implementation,
+        IMethodSymbol extensionMethod,
+        INamedTypeSymbol extensionBlock)
+    {
+        int receiverParameterCount = extensionMethod.IsStatic ? 0 : 1;
+        if (implementation.Name != extensionMethod.Name ||
+            implementation.Arity != extensionBlock.Arity + extensionMethod.Arity ||
+            implementation.Parameters.Length != extensionMethod.Parameters.Length + receiverParameterCount ||
+        !HasMatchingType(implementation.ReturnType, extensionMethod.ReturnType) ||
+        !HasMatchingReceiver(implementation, extensionBlock, receiverParameterCount))
+        {
+            return false;
+        }
+
+        return extensionMethod.Parameters
+            .Zip(implementation.Parameters.Skip(receiverParameterCount))
+            .All(static parameters => HasMatchingParameter(parameters.First, parameters.Second));
+    }
+
+    private bool IsMatchingExtensionPropertyAccessor(
+        IMethodSymbol implementation,
+        IPropertySymbol extensionProperty,
+        INamedTypeSymbol extensionBlock,
+        bool isSetter)
+    {
+        IMethodSymbol? accessor = isSetter ? extensionProperty.SetMethod : extensionProperty.GetMethod;
+        int receiverParameterCount = extensionProperty.IsStatic ? 0 : 1;
+        if (accessor is null ||
+            implementation.Name != accessor.Name ||
+            implementation.Arity != extensionBlock.Arity ||
+            implementation.Parameters.Length != receiverParameterCount + accessor.Parameters.Length ||
+            !HasMatchingReceiver(implementation, extensionBlock, receiverParameterCount))
+        {
+            return false;
+        }
+
+        bool hasMatchingParameters = accessor.Parameters
+            .Zip(implementation.Parameters.Skip(receiverParameterCount))
+            .All(static parameters => HasMatchingParameter(parameters.First, parameters.Second));
+
+        return hasMatchingParameters && (isSetter
+            ? implementation.ReturnsVoid
+            : HasMatchingType(implementation.ReturnType, extensionProperty.Type));
+    }
+
+    private bool HasMatchingReceiver(
+        IMethodSymbol implementation,
+        INamedTypeSymbol extensionBlock,
+        int receiverParameterCount)
+    {
+        if (receiverParameterCount == 0)
+        {
+            return true;
+        }
+
+        return _syntaxGenerator.Declaration(extensionBlock) is ExtensionBlockDeclarationSyntax { ParameterList.Parameters: [var receiver] } &&
+            receiver.Type is not null &&
+            GetRefKind(receiver) == implementation.Parameters[0].RefKind &&
+            SyntaxFactory.AreEquivalent(receiver.Type, _syntaxGenerator.TypeExpression(implementation.Parameters[0].Type));
+    }
+
+    private static RefKind GetRefKind(ParameterSyntax parameter)
+    {
+        if (parameter.Modifiers.Any(SyntaxKind.OutKeyword))
+        {
+            return RefKind.Out;
+        }
+
+        if (parameter.Modifiers.Any(SyntaxKind.InKeyword))
+        {
+            return RefKind.In;
+        }
+
+        if (parameter.Modifiers.Any(SyntaxKind.RefKeyword))
+        {
+            return parameter.Modifiers.Any(SyntaxKind.ReadOnlyKeyword) ? RefKind.RefReadOnly : RefKind.Ref;
+        }
+
+        return RefKind.None;
+    }
+
+    private static bool HasMatchingParameter(IParameterSymbol first, IParameterSymbol second) =>
+        first.RefKind == second.RefKind && HasMatchingType(first.Type, second.Type);
+
+    private static bool HasMatchingType(ITypeSymbol first, ITypeSymbol second) =>
+        SymbolEqualityComparer.Default.Equals(first, second) ||
+        first.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) == second.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
 
     private SyntaxNode GenerateAssemblyAttributes(IAssemblySymbol assembly, SyntaxNode compilationUnit)
     {

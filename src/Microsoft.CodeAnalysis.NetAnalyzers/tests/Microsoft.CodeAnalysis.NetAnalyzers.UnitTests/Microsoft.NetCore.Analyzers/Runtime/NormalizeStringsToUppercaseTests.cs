@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.NormalizeStringsToUppercaseAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpNormalizeStringsToUppercaseFixer>;
@@ -13,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class NormalizeStringsToUppercaseTests
     {
         #region No Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_ToUpperCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -83,7 +83,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_ToLowerCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -149,7 +149,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_ToUpperInvariantCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -181,7 +181,7 @@ End Class
 
         #region Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_ToLowerCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -211,7 +211,7 @@ End Class
             GetBasicDefaultResultAt(7, 27, "TestMethod", "ToLower", "ToUpperInvariant"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_ToLowerInvariantCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

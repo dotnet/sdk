@@ -1,17 +1,17 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseAsSpanInsteadOfRangeIndexerAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUseAsSpanInsteadOfRangeIndexerFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    public static partial class UseAsSpanInsteadOfRangeIndexerTests
+    [TestClass]
+    public partial class UseAsSpanInsteadOfRangeIndexerTests
     {
 #pragma warning disable CA1819
         public static object[][] ArrayElementTypes { get; } =
@@ -24,8 +24,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             };
 #pragma warning restore CA1819
 
-        [Fact]
-        public static async Task StringToStringLocalAsync()
+        [TestMethod]
+        public async Task StringToStringLocalAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -40,8 +40,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToStringReturnAsync()
+        [TestMethod]
+        public async Task StringToStringReturnAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -55,8 +55,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToStringParameterAsync()
+        [TestMethod]
+        public async Task StringToStringParameterAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -72,8 +72,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToSpanLocalAsync()
+        [TestMethod]
+        public async Task StringToSpanLocalAsync()
         {
             // This test is responsible for verifying the placeholders for string to ReadOnlySpan<char>.
             await TestCSAsync(@"
@@ -103,8 +103,8 @@ public class TestClass
                     WithArguments("AsSpan", "System.Range", "string"));
         }
 
-        [Fact]
-        public static async Task StringToSpanReturnAsync()
+        [TestMethod]
+        public async Task StringToSpanReturnAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -128,8 +128,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToSpanParameterAsync()
+        [TestMethod]
+        public async Task StringToSpanParameterAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -157,8 +157,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToSpanParameterMultipleTimesAsync()
+        [TestMethod]
+        public async Task StringToSpanParameterMultipleTimesAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -186,8 +186,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToSpanCastLocalAsync()
+        [TestMethod]
+        public async Task StringToSpanCastLocalAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -202,8 +202,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToSpanCastReturnAsync()
+        [TestMethod]
+        public async Task StringToSpanCastReturnAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -217,8 +217,8 @@ public class TestClass
 }");
         }
 
-        [Fact]
-        public static async Task StringToSpanCastParameterAsync()
+        [TestMethod]
+        public async Task StringToSpanCastParameterAsync()
         {
             await TestCSAsync(@"
 using System;
@@ -234,9 +234,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToArrayLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToArrayLocalAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -251,9 +251,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToArrayReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToArrayReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -267,9 +267,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToArrayParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToArrayParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -285,9 +285,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlySpanLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlySpanLocalAsync(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to ReadOnlySpan<T>.
             await TestCSAsync(@"
@@ -317,9 +317,9 @@ public class TestClass
                     WithArguments("AsSpan", "System.Range", typeName + "[]"));
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlySpanReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlySpanReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -343,9 +343,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlySpanParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlySpanParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -373,9 +373,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlySpanCastLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlySpanCastLocalAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -390,9 +390,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlySpanCastReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlySpanCastReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -406,9 +406,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlySpanCastParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlySpanCastParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -424,9 +424,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToSpanLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToSpanLocalAsync(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to Span<T>.
             await TestCSAsync(@"
@@ -456,9 +456,9 @@ public class TestClass
                     WithArguments("AsSpan", "System.Range", typeName + "[]"));
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToSpanReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToSpanReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -482,9 +482,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToSpanParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToSpanParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -512,9 +512,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToSpanCastLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToSpanCastLocalAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -529,9 +529,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToSpanCastReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToSpanCastReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -545,9 +545,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToSpanCastParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToSpanCastParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -563,9 +563,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlyMemoryLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlyMemoryLocalAsync(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to ReadOnlyMemory<T>.
             await TestCSAsync(@"
@@ -595,9 +595,9 @@ public class TestClass
                     WithArguments("AsMemory", "System.Range", typeName + "[]"));
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlyMemoryReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlyMemoryReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -621,9 +621,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlyMemoryParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlyMemoryParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -652,9 +652,9 @@ public class TestClass
                 );
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlyMemoryCastLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlyMemoryCastLocalAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -669,9 +669,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlyMemoryCastReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlyMemoryCastReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -685,9 +685,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToReadOnlyMemoryCastParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToReadOnlyMemoryCastParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -703,9 +703,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToMemoryLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToMemoryLocalAsync(string typeName)
         {
             // This test is responsible for verifying the placeholders for T[] to Memory<T>.
             await TestCSAsync(@"
@@ -735,9 +735,9 @@ public class TestClass
                     WithArguments("AsMemory", "System.Range", typeName + "[]"));
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToMemoryReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToMemoryReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -761,9 +761,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToMemoryParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToMemoryParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -791,9 +791,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToMemoryCastLocalAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToMemoryCastLocalAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -808,9 +808,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToMemoryCastReturnAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToMemoryCastReturnAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -824,9 +824,9 @@ public class TestClass
 }");
         }
 
-        [Theory]
-        [MemberData(nameof(ArrayElementTypes))]
-        public static async Task ArrayToMemoryCastParameterAsync(string typeName)
+        [TestMethod]
+        [DynamicData(nameof(ArrayElementTypes))]
+        public async Task ArrayToMemoryCastParameterAsync(string typeName)
         {
             await TestCSAsync(@"
 using System;
@@ -853,7 +853,7 @@ public class TestClass
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            return test.RunAsync(CancellationToken.None);
         }
 
         private static Task TestCSAsync(string source, params DiagnosticResult[] expected)
@@ -866,7 +866,7 @@ public class TestClass
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            return test.RunAsync(CancellationToken.None);
         }
     }
 }

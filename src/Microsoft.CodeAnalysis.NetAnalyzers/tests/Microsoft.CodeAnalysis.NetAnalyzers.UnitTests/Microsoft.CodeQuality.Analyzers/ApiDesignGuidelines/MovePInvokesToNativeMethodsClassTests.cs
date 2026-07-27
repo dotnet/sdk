@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MovePInvokesToNativeMethodsClassAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpMovePInvokesToNativeMethodsClassFixer>;
@@ -13,6 +12,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class MovePInvokesToNativeMethodsClassTests
     {
         #region Verifiers
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         #endregion
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ProperlyNamedClassCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -55,7 +55,7 @@ class UnsafeNativeMethods
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ProperlyNamedClassBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -81,7 +81,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ImproperlyNamedClassCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -110,7 +110,7 @@ class ThirdClass
             CSharpResult(16, 7));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ImproperlyNamedClassCSharpWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -136,7 +136,7 @@ class [|ThirdClass|]
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ImproperlyNamedClassBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -165,7 +165,7 @@ End Class
             BasicResult(16, 7));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ImproperlyNamedClassBasicWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -191,7 +191,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ClassesInNamespaceCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -215,7 +215,7 @@ namespace MyNamespace
             CSharpResult(12, 11));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060ClassesInNamespaceBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -238,7 +238,7 @@ End Namespace
             BasicResult(11, 11));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060NestedClassesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -256,7 +256,7 @@ class Outer
             CSharpResult(6, 11));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1060NestedClassesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

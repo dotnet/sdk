@@ -3,13 +3,10 @@
 
 namespace Microsoft.NET.Restore.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToRestoreProjectsWithPackageDowngrades : SdkTest
     {
-        public GivenThatWeWantToRestoreProjectsWithPackageDowngrades(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void DowngradeWarningsAreErrorsByDefault()
         {
             const string testProjectName = "ProjectWithDowngradeWarning";
@@ -39,7 +36,7 @@ namespace Microsoft.NET.Restore.Tests
                 .And.HaveStdOutContaining("NU1605");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIsPossibleToTurnOffDowngradeWarningsAsErrors()
         {
             const string testProjectName = "ProjectWithDowngradeWarning";

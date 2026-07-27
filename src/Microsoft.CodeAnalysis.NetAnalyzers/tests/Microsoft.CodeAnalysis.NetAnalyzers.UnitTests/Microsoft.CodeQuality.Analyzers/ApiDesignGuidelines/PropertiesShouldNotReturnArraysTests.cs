@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertiesShouldNotReturnArraysAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class PropertiesShouldNotReturnArraysTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpPropertiesShouldNotReturnArraysWarning1Async()
         {
             //Verify return type is array, warning...
@@ -31,7 +31,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
  ", CreateCSharpResult(5, 25));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning1Async()
         {
             //Verify if property is override, then no warning...
@@ -51,7 +51,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", CreateCSharpResult(4, 33));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning2Async()
         {
             //No warning if property definition has no outside visibility
@@ -69,7 +69,7 @@ public class Outer
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharpPropertiesShouldNotReturnArraysNoWarning3Async()
         {
             //Attributes can contain properties that return arrays
@@ -84,7 +84,7 @@ public class Outer
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicPropertiesShouldNotReturnArraysWarning1Async()
         {
             //Display warning for property return type is Array
@@ -99,7 +99,7 @@ public class Outer
     End Class", CreateBasicResult(4, 34));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicPropertiesShouldNotReturnArraysNoWarning1Async()
         {
             //No warning if property definition is override
@@ -122,7 +122,7 @@ public class Outer
 , CreateBasicResult(3, 46));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasicPropertiesShouldNotReturnArraysWarning2Async()
         {
             //No warning if property has no outside visibility

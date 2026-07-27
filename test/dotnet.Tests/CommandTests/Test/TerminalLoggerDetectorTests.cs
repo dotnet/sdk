@@ -5,18 +5,19 @@ using Microsoft.DotNet.Cli.Commands.Test;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class TerminalLoggerDetectorTests
     {
-        [Theory]
-        [InlineData(new[] { "-tl" }, "tl", null)]
-        [InlineData(new[] { "-tl:on" }, "tl", "on")]
-        [InlineData(new[] { "--tl:off" }, "tl", "off")]
-        [InlineData(new[] { "/tl:auto" }, "tl", "auto")]
-        [InlineData(new[] { "-TL:OFF" }, "tl", "OFF")]
-        [InlineData(new[] { "-terminallogger:on" }, "terminalLogger", "on")]
-        [InlineData(new[] { "--TerminalLogger:auto" }, "terminalLogger", "auto")]
-        [InlineData(new[] { "-ll:off" }, "ll", "off")]
-        [InlineData(new[] { "--livelogger:on" }, "livelogger", "on")]
+        [TestMethod]
+        [DataRow(new[] { "-tl" }, "tl", null)]
+        [DataRow(new[] { "-tl:on" }, "tl", "on")]
+        [DataRow(new[] { "--tl:off" }, "tl", "off")]
+        [DataRow(new[] { "/tl:auto" }, "tl", "auto")]
+        [DataRow(new[] { "-TL:OFF" }, "tl", "OFF")]
+        [DataRow(new[] { "-terminallogger:on" }, "terminalLogger", "on")]
+        [DataRow(new[] { "--TerminalLogger:auto" }, "terminalLogger", "auto")]
+        [DataRow(new[] { "-ll:off" }, "ll", "off")]
+        [DataRow(new[] { "--livelogger:on" }, "livelogger", "on")]
         public void TryFind_RecognizesTerminalLoggerSwitches(string[] tokens, string expectedName, string? expectedValue)
         {
             var result = TerminalLoggerDetector.TryFind(tokens, "tl", "terminalLogger", "ll", "livelogger");
@@ -26,13 +27,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.Value.Should().Be(expectedValue);
         }
 
-        [Theory]
-        [InlineData("-tlp:default=true")]
-        [InlineData("--tlp:default=auto")]
-        [InlineData("/tlp:DISABLENODEDISPLAY")]
-        [InlineData("-tlpwithnocolon")]
-        [InlineData("-tlasm")]
-        [InlineData("--llextra")]
+        [TestMethod]
+        [DataRow("-tlp:default=true")]
+        [DataRow("--tlp:default=auto")]
+        [DataRow("/tlp:DISABLENODEDISPLAY")]
+        [DataRow("-tlpwithnocolon")]
+        [DataRow("-tlasm")]
+        [DataRow("--llextra")]
         public void TryFind_DoesNotMatchTlpOrLookalikesWhenSearchingForTl(string token)
         {
             // Regression: before the fix, TryFind used StartsWith and would incorrectly match
@@ -44,10 +45,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.Should().BeNull();
         }
 
-        [Theory]
-        [InlineData(new[] { "-tlp:default=true" }, "tlp", "default=true")]
-        [InlineData(new[] { "--terminalLoggerParameters:default=auto" }, "terminalLoggerParameters", "default=auto")]
-        [InlineData(new[] { "/TLP:DISABLENODEDISPLAY" }, "tlp", "DISABLENODEDISPLAY")]
+        [TestMethod]
+        [DataRow(new[] { "-tlp:default=true" }, "tlp", "default=true")]
+        [DataRow(new[] { "--terminalLoggerParameters:default=auto" }, "terminalLoggerParameters", "default=auto")]
+        [DataRow(new[] { "/TLP:DISABLENODEDISPLAY" }, "tlp", "DISABLENODEDISPLAY")]
         public void TryFind_RecognizesTerminalLoggerParametersSwitches(string[] tokens, string expectedName, string? expectedValue)
         {
             var result = TerminalLoggerDetector.TryFind(tokens, "tlp", "terminalLoggerParameters");
@@ -57,7 +58,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.Value.Should().Be(expectedValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void TryFind_PrefersLongFormOverShortFormWhenBothPresent()
         {
             // Iteration order checks "--" before "-" so the long form wins when both are present.
@@ -68,7 +69,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.Value.Should().Be("off");
         }
 
-        [Fact]
+        [TestMethod]
         public void TryFind_ReturnsNullWhenNoMatch()
         {
             var result = TerminalLoggerDetector.TryFind(["--no-build", "-bl", "foo.csproj"], "tl", "terminalLogger");

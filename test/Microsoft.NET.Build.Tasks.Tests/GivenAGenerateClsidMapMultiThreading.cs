@@ -3,13 +3,13 @@
 
 using FluentAssertions;
 using Microsoft.Build.Framework;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGenerateClsidMapMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ItProducesSameErrorsInMultiProcessAndMultiThreadedEnvironments()
         {
             // In multi-process mode, each task runs in its own process where CWD == projectDir
@@ -67,7 +67,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItProducesSameClsidMapInMultiProcessAndMultiThreadedEnvironments()
         {
             // Same pattern but with a valid .NET assembly to test the success path.

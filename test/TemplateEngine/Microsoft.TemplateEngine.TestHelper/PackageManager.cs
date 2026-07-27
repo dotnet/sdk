@@ -195,7 +195,8 @@ namespace Microsoft.TemplateEngine.TestHelper
                 SourceRepository repository = Repository.Factory.GetCoreV3(source);
                 try
                 {
-                    resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken);
+                    resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken)
+                        ?? throw new InvalidOperationException($"The source '{source.Source}' does not provide {nameof(FindPackageByIdResource)}.");
                 }
                 catch (Exception e)
                 {
@@ -353,7 +354,8 @@ namespace Microsoft.TemplateEngine.TestHelper
                 {
                     _nugetLogger.LogDebug($"[NuGet Package Manager] Getting metadata for package {packageIdentifier} from source {source.Source}.");
                     SourceRepository repository = Repository.Factory.GetCoreV3(source);
-                    PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken);
+                    PackageMetadataResource resource = await repository.GetResourceAsync<PackageMetadataResource>(cancellationToken)
+                        ?? throw new InvalidOperationException($"The source '{source.Source}' does not provide {nameof(PackageMetadataResource)}.");
                     IEnumerable<IPackageSearchMetadata> foundPackages = await resource.GetMetadataAsync(
                         packageIdentifier,
                         includePrerelease: includePrerelease,
