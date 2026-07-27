@@ -17,11 +17,8 @@ Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectRootElement(System
 Microsoft.DotNet.FileBasedPrograms.IProjectCollection
 Microsoft.DotNet.FileBasedPrograms.IProjectInstance
 Microsoft.DotNet.FileBasedPrograms.IProjectInstance.ExpandString(string! value) -> string!
-Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetItems(string! itemType) -> System.Collections.Generic.IEnumerable<Microsoft.DotNet.FileBasedPrograms.IProjectItemInstance!>!
+Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetItemMetadataValues(string! itemType, System.Collections.Immutable.ImmutableArray<string!> metadataNames) -> System.Collections.Immutable.ImmutableArray<System.Collections.Immutable.ImmutableArray<string!>>
 Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetPropertyValue(string! propertyName) -> string!
-Microsoft.DotNet.FileBasedPrograms.IProjectItemInstance
-Microsoft.DotNet.FileBasedPrograms.IProjectItemInstance.GetMetadataValue(string! name) -> string!
-Microsoft.DotNet.FileBasedPrograms.IProjectItemInstance.ItemType.get -> string!
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.get -> string?
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.set -> void

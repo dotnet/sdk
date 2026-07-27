@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Runtime.CompilerServices;
 using System.Xml;
 
@@ -109,15 +110,10 @@ sealed file class ProjectInstance(Microsoft.Build.Execution.ProjectInstance inne
     }
 
     public Microsoft.Build.Execution.ProjectInstance Inner => inner;
-    public IEnumerable<IProjectItemInstance> GetItems(string itemType) => inner.GetItems(itemType).Select(i => new ProjectItemInstance(i));
+    public ImmutableArray<ImmutableArray<string>> GetItemMetadataValues(string itemType, ImmutableArray<string> metadataNames)
+        => inner.GetItems(itemType).Select(i => metadataNames.Select(n => i.GetMetadataValue(n)).ToImmutableArray()).ToImmutableArray();
     public string GetPropertyValue(string propertyName) => inner.GetPropertyValue(propertyName);
     public string ExpandString(string value) => inner.ExpandString(value);
-}
-
-sealed file class ProjectItemInstance(Microsoft.Build.Execution.ProjectItemInstance inner) : IProjectItemInstance
-{
-    public string GetMetadataValue(string name) => inner.GetMetadataValue(name);
-    public string ItemType => inner.ItemType;
 }
 
 sealed file class ProjectRootElement(Microsoft.Build.Construction.ProjectRootElement inner) : IProjectRootElement
