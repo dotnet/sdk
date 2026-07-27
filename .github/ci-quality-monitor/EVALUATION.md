@@ -5,15 +5,15 @@ evaluation points for the CI Quality Monitor. The collector reads build data
 from `dotnet/sdk` Azure DevOps while the staged workflow runs and previews any
 issue in `nagilson/sdk`.
 
-| Category | Build | Source | Verified evidence |
+| Scenario | Build | Source | Expected taxonomy and evidence |
 | --- | --- | --- | --- |
-| Pipeline YAML | [1521345](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1521345) | PR 55404 | Zero-duration build, no timeline, `Unexpected parameter 'useFullyQualifiedTestName'`. |
-| Setup/checkout | [1523420](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523420) | PR 55429 | Checkout failed across multiple jobs after `git fetch` exit 128. |
-| Restore/feed | [1523525](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523525) | PR 55431 | NuGet restore failed with HTTP 503; named tests also reported NU1301 against the dotnet6 feed. |
-| Compiler build break | [1525235](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525235) | PR 55339 | `CS0114` in `RunReadyToRunCompiler.TaskEnvironment` failed multiple legs before tests. |
-| Release build break | [1522972](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522972) | `release/8.0.4xx` | `MSB4018` SignToolTask failure; `sn.exe` had an exec-format error on Linux/macOS. Build [1522971](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522971) is the equivalent `release/8.0.1xx` case. |
-| Multiple named tests | [1525292](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525292) | `main` | Four named failures from Helix TRX; two package tests share an HTTP 503 mechanism. |
-| Helix hang/host crash | [1524763](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1524763) | PR 55431 | `BrowserDiagnostics` hung for 50 minutes, hang dumps were captured, and the host crashed with work-item exit 7. |
+| Pipeline YAML | [1521345](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1521345) | PR 55404 | `pipeline-validation / configuration-error`; `azure-validation` identifies the unexpected parameter. |
+| Setup/checkout | [1523420](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523420) | PR 55429 | `source-checkout / source-unavailable`; `azure-timeline` reports git fetch exit 128. |
+| Restore/feed | [1523525](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1523525) | PR 55431 | `dependency-restore / network-failure`; timeline and task log show HTTP 503. |
+| Compiler build break | [1525235](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525235) | PR 55339 | `compilation / compiler-error`; timeline and task log identify `CS0114`. |
+| Release build break | [1522972](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1522972) | `release/8.0.4xx` | `signing / tool-execution-error`; timeline and task log identify `SignToolTask` and `sn.exe`. |
+| Multiple named tests | [1525292](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1525292) | `main` | `test-execution / network-failure`; Helix TRX establishes shared HTTP 503 failures. |
+| Helix hang/host crash | [1524763](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1524763) | PR 55431 | `test-execution / timeout`; Helix console, process exit code, TRX, and dumps establish the hang. |
 
 Manual-dispatch the workflow with one build ID at a time and wait for that run
 to finish before starting the next. The workflow concurrency group permits one
@@ -29,14 +29,33 @@ node .github/ci-quality-monitor/evaluate-builds.mjs
 
 The command writes one dossier per build and `summary.json` under
 `artifacts/tmp/ci-quality-monitor/evaluations` and exits nonzero when an expected
-category is absent.
+phase, failure type, evidence source, or mechanism is absent.
 
-## Successful Fork Evaluation
+## Long-term Taxonomy Decision
 
-The final serial evaluation ran the corrected collector and native GitHub AW
-issue output against all seven scenarios. Each issue contains the selected build,
+Keep the three axes. They answer independent questions: `phase` locates the
+failed operation, `failureType` describes the causal mechanism, and
+`evidenceSources` records the observations supporting that conclusion.
+Actionability, ownership, priority, and `monitoringScope` remain policy metadata,
+not additional failure categories.
+
+Evidence sources are intentionally observation-dependent: the same mechanism may
+have a task log in one run and only timeline evidence in another. They are
+therefore required by scenario-specific evaluation where appropriate, but are
+excluded from stable failure fingerprints. Two production hardening items remain:
+move collector retrieval failures such as `evidence-unavailable` out of the
+mechanism axis, and measure `unknown-error`/`unknown` fallbacks before adding new
+named categories.
+
+## Taxonomy-v2 Fork Evaluation
+
+The current evaluation runs the three-axis collector and native GitHub AW issue
+output against all seven scenarios. Each issue contains the selected build,
 exact failure fingerprint, required evidence sections, bounded root cause
-analysis, and fork-evaluation labels.
+analysis, and fork-evaluation labels. The scored matrix and live replacement
+status are maintained in [CURRENT-STATUS.md](CURRENT-STATUS.md).
+
+## Superseded Taxonomy-v1 Attempts
 
 | Scenario | Workflow run | Evaluation issue |
 | --- | --- | --- |
