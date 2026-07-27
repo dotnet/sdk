@@ -8,6 +8,8 @@ parameters:
     runNativeAotCliTests: true
   - categoryName: AOT
     runAoTTests: true
+  - categoryName: FullFramework
+    testFullMSBuild: true
   # dotnet-aot is built with NativeAOT, which can cross-compile win-x64 -> win-arm64 (the MSVC arm64
   # linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is required).
   # This leg BUILDS on the win-x64 pool with /p:CrossBuild=true and produces the dotnet-aot .dll plus
@@ -20,23 +22,27 @@ parameters:
     runtimeIdentifier: win-arm64
     osProperties: /p:CrossBuild=true
     runTests: false
-  - categoryName: FullFramework
-    testFullMSBuild: true
   ### LINUX ###
   linuxJobParameterSets:
   - osProperties: $(linuxOsglibcProperties)
     runNativeAotCliTests: true
-  - targetArchitecture: arm64
-    runtimeIdentifier: linux-arm64
-    osProperties: $(linuxOsglibcProperties)
-    # Don't run the tests on arm64. Only perform the build itself.
-    runTests: false
   # The x64 AOT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
   # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
   # run the *.AoT.Tests.csproj test projects.
   - categoryName: AOT
     runAoTTests: true
     osProperties: $(linuxOsglibcProperties)
+  - categoryName: ContainerBased
+    container: azureLinux30Amd64
+    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
+    osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
+    # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
+    disableJob: true
+  - targetArchitecture: arm64
+    runtimeIdentifier: linux-arm64
+    osProperties: $(linuxOsglibcProperties)
+    # Don't run the tests on arm64. Only perform the build itself.
+    runTests: false
   # dotnet-aot is built with NativeAOT, which can cross-compile for linux-arm64 from an x64 host
   # given a cross toolchain and target sysroot. This leg therefore runs on the regular x64 Linux
   # pool inside the azurelinux cross-arm64 prereq container (which provides clang + the
@@ -49,12 +55,6 @@ parameters:
     runtimeIdentifier: linux-arm64
     osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
     runTests: false
-  - categoryName: ContainerBased
-    container: azureLinux30Amd64
-    helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
-    osProperties: /p:OSName=linux /p:BuildSdkDeb=true /p:BuildSdkRpm=true
-    # Helix is hanging on this job using the container. See: https://github.com/dotnet/dnceng/issues/6000
-    disableJob: true
   ### MACOS ###
   macOSJobParameterSets:
   - targetArchitecture: arm64
