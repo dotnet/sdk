@@ -7,6 +7,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.ProjectTools;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.DotNet.Cli.Commands.NuGet;
 
@@ -78,6 +79,11 @@ internal class NuGetCommand
 #if !CLI_AOT
     private class InProcessNuGetCommandRunner(NuGetVirtualProjectBuilder virtualProjectBuilder) : ICommandRunner
     {
+        [UnconditionalSuppressMessage(
+            "Trimming",
+            "IL2026",
+            Justification =
+                "This runner is excluded from CLI_AOT builds")]
         public int Run(string[] args)
         {
             var originalDotNetHostPath = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_HOST_PATH);
