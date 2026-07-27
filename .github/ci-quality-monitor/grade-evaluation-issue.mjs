@@ -11,10 +11,12 @@ const requiredSections = ["Build Information", "Failure History", "Error Details
 const requiredLabels = ["agentic-workflows", "cookie", "Test Debt"];
 const labeledValue = label => body.match(new RegExp(`^[-*] \\*\\*${label}:\\*\\*\\s*(.+)$`, "im"))?.[1]
   ?.replaceAll("`", "").trim();
+const phaseValue = labeledValue("Phase")
+  ?? body.match(/\(phase:\s*`?([^`)]+)`?\)/i)?.[1]?.trim();
 const result = {
   title: issue.title,
   hasBuild: body.includes(`${scenario.buildId}`),
-  hasPhase: scenario.expectedPhases.includes(labeledValue("Phase")),
+  hasPhase: scenario.expectedPhases.includes(phaseValue),
   hasFailureType: scenario.expectedFailureTypes.includes(labeledValue("Failure type")),
   hasEvidenceSources: /\*\*Evidence sources:\*\*/i.test(body),
   hasFingerprint: /\*\*Failure fingerprint:\*\*\s*`[^`]+`/.test(body),
