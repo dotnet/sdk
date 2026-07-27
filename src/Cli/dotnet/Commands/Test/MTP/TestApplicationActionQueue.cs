@@ -12,6 +12,7 @@ internal class TestApplicationActionQueue
 {
     private readonly Channel<ParallelizableTestModuleGroupWithSequentialInnerModules> _channel;
     private readonly Task[] _readers;
+    private readonly CancellationToken _cancellationToken;
 
     private int? _aggregateExitCode;
 
@@ -24,10 +25,13 @@ internal class TestApplicationActionQueue
         TerminalTestReporter output,
         Action<CommandLineOptionMessages> onHelpRequested,
         CtrlCCancellationManager ctrlC,
-        ArtifactPostProcessingManager artifactPostProcessingManager)
+        ArtifactPostProcessingManager artifactPostProcessingManager,
+        TestRunPolicy testRunPolicy,
+        CancellationToken cancellationToken)
     {
         _channel = Channel.CreateUnbounded<ParallelizableTestModuleGroupWithSequentialInnerModules>(new UnboundedChannelOptions { SingleReader = false, SingleWriter = false });
         _readers = new Task[degreeOfParallelism];
+        _cancellationToken = cancellationToken;
 
         for (int i = 0; i < degreeOfParallelism; i++)
         {
@@ -37,12 +41,18 @@ internal class TestApplicationActionQueue
                 output,
                 onHelpRequested,
                 ctrlC,
-                artifactPostProcessingManager));
+                artifactPostProcessingManager,
+                testRunPolicy));
         }
     }
 
     public void Enqueue(ParallelizableTestModuleGroupWithSequentialInnerModules testApplication)
     {
+        if (_cancellationToken.IsCancellationRequested)
+        {
+            return;
+        }
+
         if (!_channel.Writer.TryWrite(testApplication))
         {
             throw new InvalidOperationException($"Failed to write to channel for test application: {testApplication}");
@@ -67,15 +77,16 @@ internal class TestApplicationActionQueue
         TerminalTestReporter output,
         Action<CommandLineOptionMessages> onHelpRequested,
         CtrlCCancellationManager ctrlC,
-        ArtifactPostProcessingManager artifactPostProcessingManager)
+        ArtifactPostProcessingManager artifactPostProcessingManager,
+        TestRunPolicy testRunPolicy)
     {
         try
         {
-            await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(ctrlC.Token))
+            await foreach (var nonParallelizedGroup in _channel.Reader.ReadAllAsync(_cancellationToken))
             {
                 foreach (var module in nonParallelizedGroup)
                 {
-                    ctrlC.Token.ThrowIfCancellationRequested();
+                    _cancellationToken.ThrowIfCancellationRequested();
 
                     int result = ExitCode.GenericFailure;
                     var testApp = new TestApplication(
@@ -84,7 +95,8 @@ internal class TestApplicationActionQueue
                         testOptions,
                         output,
                         onHelpRequested,
-                        artifactPostProcessingManager);
+                        artifactPostProcessingManager,
+                        testRunPolicy: testRunPolicy);
                     try
                     {
                         using (testApp)
@@ -141,12 +153,11 @@ internal class TestApplicationActionQueue
             }
 
         }
-        catch (OperationCanceledException) when (ctrlC.Token.IsCancellationRequested)
+        catch (OperationCanceledException) when (_cancellationToken.IsCancellationRequested)
         {
-            // Stop scheduling new test apps once the user has pressed Ctrl+C the first time.
+            // Stop scheduling new test apps once cancellation is requested.
             // Already-running test apps are left alone so they can gracefully cancel themselves
-            // (and report final session state via IPC); a second Ctrl+C is what force-kills them
-            // via the CtrlCCancellationManager.
+            // and report final session state via IPC.
         }
     }
 
