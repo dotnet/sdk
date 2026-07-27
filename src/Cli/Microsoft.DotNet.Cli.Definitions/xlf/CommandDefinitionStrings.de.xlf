@@ -429,6 +429,11 @@ Dies entspricht dem Löschen von "project.assets.json".</target>
         <target state="translated">Deaktivieren Sie die ANSI-Ausgabe.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoArtifactPostProcessingDescription">
+        <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
+        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
         <source>Do not build the project before testing. Implies --no-restore.</source>
         <target state="translated">Erstellt das Projekt nicht vor dem Testen. Impliziert "--no-restore".</target>

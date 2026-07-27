@@ -44,13 +44,40 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
         mergedTrx.Descendants(ns + "Counters").Single().Attribute("total")!.Value.Should().Be("5");
     }
 
-    private CommandResult Run(string workingDirectory, string resultsDirectory)
-        => new DotnetTestCommand(Log, disableNewOutput: false)
+    [TestMethod]
+    public void MultiProjectRun_WithNoArtifactPostProcessing_KeepsOneReportPerTestApplication()
+    {
+        TestAsset testInstance = TestAssetsManager
+            .CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            .WithSource();
+        EnableTrxReport(testInstance.Path);
+        string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+        CommandResult result = Run(testInstance.Path, resultsDirectory, "--no-artifact-post-processing");
+
+        result.ExitCode.Should().Be(
+            ExitCodes.AtLeastOneTestFailed,
+            $"the test output was:{Environment.NewLine}{result.StdOut}{Environment.NewLine}{result.StdErr}");
+
+        string[] trxReports = Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories);
+        trxReports.Should().HaveCount(2, "no test application is relaunched to merge the reports");
+        trxReports.Should().NotContain(path => Path.GetFileName(path).StartsWith("merged-", StringComparison.Ordinal));
+    }
+
+    private CommandResult Run(string workingDirectory, string resultsDirectory, params string[] additionalArguments)
+    {
+        string[] arguments =
+        [
+            "--report-trx",
+            "--results-directory", resultsDirectory,
+            "--configuration", TestingConstants.Debug,
+            .. additionalArguments
+        ];
+
+        return new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(workingDirectory)
-            .Execute(
-                "--report-trx",
-                "--results-directory", resultsDirectory,
-                "--configuration", TestingConstants.Debug);
+            .Execute(arguments);
+    }
 
     private static string GetMergedTrxPath(CommandResult result)
     {

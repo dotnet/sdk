@@ -113,6 +113,12 @@ internal abstract partial class TestCommandDefinition
             Arity = ArgumentArity.Zero
         };
 
+        public readonly Option<bool> NoArtifactPostProcessingOption = new("--no-artifact-post-processing")
+        {
+            Description = CommandDefinitionStrings.CmdNoArtifactPostProcessingDescription,
+            Arity = ArgumentArity.Zero
+        };
+
         public readonly Option<OutputOptions> OutputOption = new("--output")
         {
             Description = CommandDefinitionStrings.CmdTestOutputDescription,
@@ -190,6 +196,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(UseCurrentRuntimeOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
+            Options.Add(NoArtifactPostProcessingOption);
             Options.Add(OutputOption);
             Options.Add(ListTestsOption);
             Options.Add(NoLaunchProfileOption);

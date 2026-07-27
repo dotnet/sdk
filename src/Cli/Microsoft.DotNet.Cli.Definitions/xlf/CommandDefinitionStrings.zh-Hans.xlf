@@ -429,6 +429,11 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">禁用 ANSI 输出。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoArtifactPostProcessingDescription">
+        <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
+        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
         <source>Do not build the project before testing. Implies --no-restore.</source>
         <target state="translated">测试之前不要生成项目。Implies --no-restore.</target>
