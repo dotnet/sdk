@@ -349,7 +349,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
             // Include only items we know are files.
             var mapping = fileBuilder.GetItemMapping(fileProjectInstance, VirtualProjectBuildingCommand.ThrowingReporter);
 
-            var items = mapping.SelectMany(e => fileProjectInstance.GetItems(e.ItemType));
+            var items = mapping.SelectMany(e => fileProjectInstance.Unwrap().GetItems(e.ItemType));
 
             var topLevelFileNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
