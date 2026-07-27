@@ -16,6 +16,7 @@ export async function getRecentlyTrackedFingerprints(repository, token, fetchImp
     if (!response.ok) throw new Error(`GET ${url} returned ${response.status} ${response.statusText}.`);
     const issues = await response.json();
     for (const issue of issues) {
+      if (`${issue.title ?? ""}`.startsWith("[Archived")) continue;
       for (const match of `${issue.body ?? ""}`.matchAll(FINGERPRINT_PATTERN)) fingerprints.add(match[1]);
     }
     if (issues.length < 100) break;

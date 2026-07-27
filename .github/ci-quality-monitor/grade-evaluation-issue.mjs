@@ -18,7 +18,8 @@ const result = {
   hasBuild: body.includes(`${scenario.buildId}`),
   hasPhase: scenario.expectedPhases.includes(phaseValue),
   hasFailureType: scenario.expectedFailureTypes.includes(labeledValue("Failure type")),
-  hasEvidenceSources: /\*\*Evidence sources:\*\*/i.test(body),
+  hasEvidenceSources: (scenario.expectedEvidenceSources ?? [])
+    .every(source => body.toLowerCase().includes(source.toLowerCase())),
   hasFingerprint: /\*\*Failure fingerprint:\*\*\s*`[^`]+`/.test(body),
   hasRequiredSections: requiredSections.every(section => new RegExp(`^## ${section}$`, "m").test(body)),
   hasRcaLabels: ["Observed", "Assessment", "Confidence", "Alternatives / Unknowns"]

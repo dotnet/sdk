@@ -24,7 +24,9 @@ function evaluateExample(example, dossier) {
   const minimum = example.minimumObservations ?? 1;
   const minimumTotalCandidates = example.minimumTotalCandidates ?? 1;
   const taxonomyMatches = candidates.filter(candidate => example.expectedPhases.includes(candidate.phase)
-    && example.expectedFailureTypes.includes(candidate.failureType));
+    && example.expectedFailureTypes.includes(candidate.failureType)
+    && (example.expectedEvidenceSources ?? [])
+      .every(source => candidate.evidenceSources?.includes(source)));
   const mechanismTerms = example.expectedMechanismIncludes ?? [];
   const componentTerm = example.expectedComponentIncludes?.toLowerCase();
   const exactMatches = taxonomyMatches.filter(candidate =>

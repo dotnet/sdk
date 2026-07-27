@@ -35,6 +35,7 @@ export {
 } from "./helix/parsing.mjs";
 export { selectUnprocessedFailures } from "./state.mjs";
 export { parseTestResultXml } from "./test-results.mjs";
+export { getArtifactEvidenceSources } from "./helix/client.mjs";
 export { getRecentlyTrackedFingerprints, suppressTrackedIssueCandidates } from "./issue-deduplication.mjs";
 export { selectEvaluationCandidates } from "./evaluation-scenario.mjs";
 

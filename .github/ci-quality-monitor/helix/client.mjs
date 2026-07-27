@@ -26,6 +26,13 @@ function selectArtifactLinks(files = []) {
     .map(file => ({ name: file.FileName, url: file.Uri }));
 }
 
+export function getArtifactEvidenceSources(files = []) {
+  const sources = [];
+  if (files.some(file => /\.(?:trx|xml)$/i.test(file.FileName))) sources.push("helix-trx");
+  if (files.some(file => /\.(?:dmp|core|crash)$/i.test(file.FileName))) sources.push("helix-dump");
+  return sources;
+}
+
 function createTestObservation(reference, test, testSummary) {
   const component = test.fullyQualifiedName || test.testName;
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
@@ -115,9 +122,15 @@ export class HelixEvidenceClient {
       ? causalConsoleLines
       : consoleText.split(/\r?\n/).filter(Boolean).slice(-8);
     const mechanism = mechanismLines.join("\n") || `Exit code ${workItem.ExitCode ?? reference.exitCode}`;
+    const artifacts = selectArtifactLinks(workItem.Files);
+    const evidenceSources = [...new Set([
+      ...classification.evidenceSources,
+      ...getArtifactEvidenceSources(workItem.Files)
+    ])];
     return [{
       kind: "helix-work-item",
       ...classification,
+      evidenceSources,
       component: reference.workItem,
       mechanism,
       fingerprint: createFailureFingerprint({
@@ -133,7 +146,7 @@ export class HelixEvidenceClient {
       testSummary: testResults.summary,
       consoleSummary,
       consoleUrl: workItem.ConsoleOutputUri,
-      artifacts: selectArtifactLinks(workItem.Files),
+      artifacts,
       unavailable
     }];
   }
