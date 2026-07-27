@@ -54,8 +54,10 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/Commands/Format @mwiemer-microsoft
-/test/dotnet-format.*Tests @mwiemer-microsoft
+/src/Cli/dotnet/Commands/Format @dotnet/roslyn-ide
+/src/Dotnet.Format @dotnet/roslyn-ide
+/test/dotnet-format.*Tests @dotnet/roslyn-ide
+/test/TestAssets/dotnet-format @dotnet/roslyn-ide
 
 # Area-NuGet
 /src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
@@ -116,10 +118,6 @@
 /src/Cli/Containers @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
-
-# Area-Format
-/src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
-/test/dotnet-format.*Tests @dotnet/roslyn-ide
 
 # Area-Microsoft.CodeAnalysis.NetAnalyzers
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
