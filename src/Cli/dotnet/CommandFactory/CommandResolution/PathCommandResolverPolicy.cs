@@ -7,7 +7,7 @@ namespace Microsoft.DotNet.CommandFactory
 {
     public class PathCommandResolverPolicy : ICommandResolverPolicy
     {
-        public CompositeCommandResolver CreateCommandResolver()
+        public CompositeCommandResolver CreateCommandResolver(string CurrentWorkingDirectory = null)
         {
             return Create();
         }

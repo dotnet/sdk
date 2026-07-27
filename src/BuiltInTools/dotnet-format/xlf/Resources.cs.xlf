@@ -377,11 +377,6 @@
         <target state="translated">Nepovedlo se najít MSBuild. Ujistěte se, že se sada .NET SDK nainstalovala pomocí oficiálního instalačního programu.</target>
         <note />
       </trans-unit>
-      <trans-unit id="Unable_to_locate_dotnet_CLI_Ensure_that_it_is_on_the_PATH">
-        <source>Unable to locate dotnet CLI. Ensure that it is on the PATH.</source>
-        <target state="translated">Nepovedlo se najít .NET CLI. Ujistěte se, že se nachází v proměnné PATH.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="Unable_to_organize_imports_for_0_The_document_is_too_complex">
         <source>Unable to organize imports for '{0}'. The document is too complex.</source>
         <target state="translated">Nepovedlo se uspořádat importy pro {0}. Dokument je příliš složitý.</target>

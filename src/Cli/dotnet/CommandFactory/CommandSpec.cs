@@ -6,8 +6,8 @@ namespace Microsoft.DotNet.CommandFactory
     public class CommandSpec
     {
         public CommandSpec(
-            string path,
-            string args,
+            string? path,
+            string? args,
             Dictionary<string, string> environmentVariables = null)
         {
             Path = path;

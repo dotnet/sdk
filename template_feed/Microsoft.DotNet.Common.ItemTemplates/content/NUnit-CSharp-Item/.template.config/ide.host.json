@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "icon": "ide/icon.ico",
+  "itemHierarchyPaths": ["Test"],
+  "appliesTo": "TestContainer|TestingPlatformServer",
+  "defaultItemExtension": "cs"
+}
