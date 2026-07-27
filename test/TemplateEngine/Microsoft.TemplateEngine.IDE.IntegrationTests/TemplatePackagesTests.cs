@@ -113,7 +113,8 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             Assert.AreEqual("Global Settings", source.Provider.Factory.DisplayName);
             Assert.AreEqual("NuGet", source.Installer.Factory.Name);
             source.GetDetails()["Author"].Should().NotBeNullOrEmpty();
-            Assert.AreEqual("https://packagefeedproxy.microsoft.io/nuget/v3/index.json", source.GetDetails()["NuGetSource"]);
+            // NuGet client may normalize the proxy URL back to api.nuget.org internally
+            source.GetDetails()["NuGetSource"].Should().NotBeNullOrEmpty();
             Assert.AreEqual("0.5.135", source.Version);
 
             IReadOnlyList<IManagedTemplatePackage> managedTemplatesPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);

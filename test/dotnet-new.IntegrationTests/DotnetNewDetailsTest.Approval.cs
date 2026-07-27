@@ -82,7 +82,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string packageName = "Microsoft.Azure.WebJobs.ItemTemplates";
             string latestVersion = await GetLatestVersion(packageName);
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName)
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -163,7 +163,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName)
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
