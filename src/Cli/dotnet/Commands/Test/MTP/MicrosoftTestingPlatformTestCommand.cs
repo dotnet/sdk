@@ -47,12 +47,24 @@ internal partial class MicrosoftTestingPlatformTestCommand
         {
             InitializeOutput(degreeOfParallelism, parseResult, testOptions);
 
-            actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
-            var testModulesFilterHandler = new TestModulesFilterHandler(actionQueue, _output);
+            var testModulesFilterHandler = new TestModulesFilterHandler(_output);
             if (!testModulesFilterHandler.RunWithTestModulesFilter(parseResult, buildOptions.PathOptions.TestModules))
             {
                 return ExitCode.GenericFailure;
             }
+
+            TestResultsDirectoryResolver resultsDirectoryResolver = TestResultsDirectoryResolver.Create(
+                buildOptions.PathOptions,
+                testModulesFilterHandler.EnumerateTestModules(),
+                Directory.GetCurrentDirectory());
+            actionQueue = new TestApplicationActionQueue(
+                degreeOfParallelism,
+                buildOptions,
+                testOptions,
+                resultsDirectoryResolver,
+                _output,
+                OnHelpRequested);
+            testModulesFilterHandler.EnqueueTestApplications(actionQueue);
         }
         else
         {
@@ -68,7 +80,17 @@ internal partial class MicrosoftTestingPlatformTestCommand
             // The constructor will do Task.Run calls matching the degree of parallelism, and if we did that before the build, that can
             // be slowing us down unnecessarily.
             // Alternatively, if we can enqueue right after every project evaluation without waiting all evaluations to be done, we can enqueue early.
-            actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, _output, OnHelpRequested);
+            TestResultsDirectoryResolver resultsDirectoryResolver = TestResultsDirectoryResolver.Create(
+                buildOptions.PathOptions,
+                msBuildHandler.EnumerateTestModules(),
+                Directory.GetCurrentDirectory());
+            actionQueue = new TestApplicationActionQueue(
+                degreeOfParallelism,
+                buildOptions,
+                testOptions,
+                resultsDirectoryResolver,
+                _output,
+                OnHelpRequested);
             msBuildHandler.EnqueueTestApplications(actionQueue);
         }
 
