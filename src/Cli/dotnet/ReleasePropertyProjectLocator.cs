@@ -64,7 +64,7 @@ internal sealed class ReleasePropertyProjectLocator(
         if (commandOptions.ConfigurationOption != null || globalProperties is not null && globalProperties.ContainsKey(MSBuildPropertyNames.CONFIGURATION))
             return new Dictionary<string, string>(1, StringComparer.OrdinalIgnoreCase) { [EnvironmentVariableNames.DISABLE_PUBLISH_AND_PACK_RELEASE] = "true" }.AsReadOnly(); // Don't throw error if publish* conflicts but global config specified.
 
-        EvaluationContext evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.SharedSDKCache);
+        EvaluationContext evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
         // Determine the project being acted upon
         ProjectInstance? project = GetTargetedProject(globalProperties, evaluationContext);
@@ -159,7 +159,6 @@ internal sealed class ReleasePropertyProjectLocator(
         List<ProjectInstance> configuredProjects = [];
         HashSet<string> configValues = [];
         object projectDataLock = new();
-        var solutionProjects = sln.SolutionProjects.AsEnumerable().ToList();
 
         if (string.Equals(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_LAZY_PUBLISH_AND_PACK_RELEASE_FOR_SOLUTIONS), "true", StringComparison.OrdinalIgnoreCase))
         {
@@ -167,41 +166,14 @@ internal sealed class ReleasePropertyProjectLocator(
             return GetSingleProjectFromSolution(sln, slnFullPath, globalProps, evaluationContext);
         }
 
-        int firstAnalyzableProjectIndex = -1;
-        for (int index = 0; index < solutionProjects.Count; index++)
+        Parallel.ForEach(sln.SolutionProjects.AsEnumerable(), (project, state) =>
         {
-            SolutionProjectModel project = solutionProjects[index];
-#pragma warning disable CS8604 // Possible null reference argument.
-            string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnFullPath));
-#pragma warning restore CS8604 // Possible null reference argument.
-            if (!IsUnanalyzableProjectInSolution(project, projectFullPath))
-            {
-                // Seed the shared SDK cache in solution order before the remaining projects evaluate in parallel.
-                firstAnalyzableProjectIndex = index;
-                EvaluateProject(projectFullPath);
-                break;
-            }
-        }
-
-        Parallel.For(0, solutionProjects.Count, index =>
-        {
-            if (index == firstAnalyzableProjectIndex)
-            {
-                return;
-            }
-
-            SolutionProjectModel project = solutionProjects[index];
 #pragma warning disable CS8604 // Possible null reference argument.
             string projectFullPath = Path.GetFullPath(project.FilePath, Path.GetDirectoryName(slnFullPath));
 #pragma warning restore CS8604 // Possible null reference argument.
             if (IsUnanalyzableProjectInSolution(project, projectFullPath))
                 return;
 
-            EvaluateProject(projectFullPath);
-        });
-
-        void EvaluateProject(string projectFullPath)
-        {
             var projectData = TryGetProjectInstance(projectFullPath, globalProps, evaluationContext);
             if (projectData == null)
             {
@@ -217,7 +189,7 @@ internal sealed class ReleasePropertyProjectLocator(
                     configValues.Add(pReleasePropertyValue.ToLower());
                 }
             }
-        }
+        });
 
         if (configuredProjects.Any() && configValues.Count > 1)
         {
