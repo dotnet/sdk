@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // deadlocks the app until its own timeout expires, which fails the run.
             string sentinelPath = Path.Combine(testInstance.Path, "live-output-observed.sentinel");
 
-            Exception? sentinelWriteFailure = null;
+            Exception? sentinelFailure = null;
             var command = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(SentinelPathEnvironmentVariable, sentinelPath);
@@ -44,7 +44,19 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Execute retries the command on transient failures without re-copying the asset, so
             // clear the sentinel on every attempt: a file left behind by an earlier attempt would
             // let the app proceed immediately and quietly void what this test is proving.
-            command.ProcessStartedHandler = _ => File.Delete(sentinelPath);
+            // This runs after the command's process has started but before it is registered with
+            // the process reaper, so an exception escaping here would leave that process orphaned.
+            command.ProcessStartedHandler = _ =>
+            {
+                try
+                {
+                    File.Delete(sentinelPath);
+                }
+                catch (Exception ex)
+                {
+                    sentinelFailure ??= ex;
+                }
+            };
             command.CommandOutputHandler = line =>
             {
                 if (line.Contains(StandardOutputMarker, StringComparison.Ordinal) && !File.Exists(sentinelPath))
@@ -58,14 +70,14 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                         // This runs on the only thread draining the command's standard output.
                         // Letting the exception escape would stop that drain and hang the run, so
                         // record it and let the assertion below report it.
-                        sentinelWriteFailure ??= ex;
+                        sentinelFailure ??= ex;
                     }
                 }
             };
 
             CommandResult result = command.Execute("-c", configuration);
 
-            sentinelWriteFailure.Should().BeNull("the sentinel file should be writable");
+            sentinelFailure.Should().BeNull("the sentinel file should be writable and deletable");
 
             // The run succeeds, so nothing replays the test app's output as part of a failure
             // report: the markers can only be present because they were forwarded as produced.
