@@ -51,7 +51,8 @@
       <TriggerPaths>
         src/Cli/dotnet/Commands/Format/**;
         src/Dotnet.Format/**;
-        test/dotnet-format.*/**
+        test/dotnet-format.*/**;
+        test/TestAssets/dotnet-format/**
       </TriggerPaths>
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>
