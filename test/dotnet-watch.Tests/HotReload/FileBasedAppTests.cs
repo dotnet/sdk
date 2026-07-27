@@ -60,7 +60,7 @@ public class FileBasedAppTests : DotNetWatchTestBase
 
         var entryPointFilePath = Path.Combine(testAsset.Path, "App.cs");
         File.WriteAllText(entryPointFilePath, """
-            #:property TargetFrameworks= net9.0; net10.0
+            #:property TargetFrameworks=net9.0;net10.0
             using System.Reflection;
             using System.Runtime.Versioning;
 

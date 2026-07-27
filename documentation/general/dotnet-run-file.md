@@ -179,6 +179,7 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 #:property TargetFramework=net11.0
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
+#:package Microsoft.Extensions.Logging@9.0.0 ExcludeAssets=runtime PrivateAssets=all
 #:project ../MyLibrary
 #:ref ../lib/lib.cs
 #:include ./**/*.cs
@@ -189,6 +190,18 @@ The value is required for `#:property`, optional for `#:package`/`#:sdk`, and di
 
 The name must be separated from the kind of the directive by whitespace
 and any leading and trailing white space is not considered part of the name and value.
+
+The remainder of a directive (after the kind) is split into whitespace-separated tokens.
+Whitespace inside a value is not allowed unless the value is enclosed in double quotes (`"`).
+The quotes are removed and the quoted text (which may contain whitespace) becomes part of the token,
+e.g., `#:property Description="Hello World"` sets the value to `Hello World`.
+Adjacent quoted and unquoted segments are concatenated (`a"b c"d` yields `ab cd`).
+It is an error if a quote is left unterminated.
+
+`#:package` and `#:project` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
+e.g., `#:package Microsoft.Extensions.Logging@9.0.0 ExcludeAssets=runtime PrivateAssets=all`.
+Each metadata name must be a valid XML element name; each metadata value can be quoted to contain whitespace.
+The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
 
 The directives are processed as follows:
 
@@ -201,6 +214,8 @@ The directives are processed as follows:
 
 - Each `#:package` is injected as `<PackageReference Include="{0}" Version="{1}">` (or without the `Version` attribute if it has no value) in an `<ItemGroup>`.
   It is an error if its name is empty (the value, i.e., package version, is allowed to be empty, but that results in empty `Version=""`).
+  Any trailing `Name=Value` metadata is injected as child elements, e.g.,
+  `<PackageReference Include="{0}" Version="{1}"><ExcludeAssets>runtime</ExcludeAssets></PackageReference>`.
 
   It is valid to have a `#:package` directive without a version.
   That's useful when central package management (CPM) is used.
@@ -208,6 +223,7 @@ The directives are processed as follows:
 
 - Each `#:project` is injected as `<ProjectReference Include="{0}" />` in an `<ItemGroup>`.
   It is an error if the value is empty.
+  Any trailing `Name=Value` metadata is injected as child elements of the `<ProjectReference>`.
   If the path points to an existing directory, a project file is found inside that directory and its path is used instead
   (because `ProjectReference` items don't support directory paths).
   An error is reported if zero or more than one projects are found in the directory, just like `dotnet reference add` would do.

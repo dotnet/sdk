@@ -158,8 +158,20 @@
     <value>Duplicate directives are not supported: {0}</value>
     <comment>{0} is the directive type and name.</comment>
   </data>
-  <data name="QuoteInDirective" xml:space="preserve">
-    <value>Directives currently cannot contain double quotes (").</value>
+  <data name="UnterminatedQuoteInDirective" xml:space="preserve">
+    <value>Unterminated double quote (") in directive.</value>
+  </data>
+  <data name="InvalidDirectiveMetadata" xml:space="preserve">
+    <value>Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</value>
+    <comment>{Locked="'Name=Value'"}{0} is the offending metadata text.</comment>
+  </data>
+  <data name="DirectiveMetadataInvalidName" xml:space="preserve">
+    <value>Invalid directive metadata name: {0}</value>
+    <comment>{0} is an inner exception message.</comment>
+  </data>
+  <data name="UnexpectedDirectiveText" xml:space="preserve">
+    <value>The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</value>
+    <comment>{0} is the directive kind like 'property' or 'sdk'.</comment>
   </data>
   <data name="InvalidProjectDirective" xml:space="preserve">
     <value>The '#:project' directive is invalid: {0}</value>

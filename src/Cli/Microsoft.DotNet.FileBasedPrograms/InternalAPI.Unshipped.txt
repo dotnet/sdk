@@ -25,6 +25,8 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named.Name.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named.Named(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Package(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo info) -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Metadata.get -> System.Collections.Immutable.ImmutableArray<(string! Name, string! Value)>
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Metadata.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Version.get -> string?
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Package.Version.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext
@@ -55,6 +57,8 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.EnsureProjectFilePath(Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ExpandedName.get -> string?
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.ExpandedName.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.Metadata.get -> System.Collections.Immutable.ImmutableArray<(string! Name, string! Value)>
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.Metadata.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind.Expanded = 1 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind.Final = 3 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Project.NameKind

@@ -2280,14 +2280,13 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:property Prop1 = One=a/b
-                #:property Prop2 = Two/a=b
-                #:sdk First @ 1.0=a/b
-                #:sdk Second @ 2.0/a=b
-                #:sdk Third @ 3.0=a/b
-                #:package P1 @ 1.0/a=b
-                #:package P2 @ 2.0/a=b
-                #:package P3@1.0 ab
+                #:property Prop1=One=a/b
+                #:property Prop2=Two/a=b
+                #:sdk First@1.0=a/b
+                #:sdk Second@2.0/a=b
+                #:sdk Third@3.0=a/b
+                #:package P1@1.0/a=b
+                #:package P2@2.0/a=b
                 """,
             expectedProject: $"""
                 <Project Sdk="First/1.0=a/b">
@@ -2309,13 +2308,174 @@ public sealed class DotnetProjectConvertTests : SdkTest
                   <ItemGroup>
                     <PackageReference Include="P1" Version="1.0/a=b" />
                     <PackageReference Include="P2" Version="2.0/a=b" />
-                    <PackageReference Include="P3" Version="1.0 ab" />
                   </ItemGroup>
 
                 </Project>
 
                 """,
             expectedCSharp: "");
+    }
+
+    [TestMethod]
+    public void Directives_WhitespaceRequiresQuoting()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property Prop = Value
+                #:sdk First @ 1.0
+                #:package P1 @ 1.0
+                #:package P2@1.0 ExtraToken
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, "property")),
+                (2, string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, "sdk")),
+                (3, string.Format(FileBasedProgramsResources.InvalidDirectiveMetadata, "@")),
+                (4, string.Format(FileBasedProgramsResources.InvalidDirectiveMetadata, "ExtraToken")),
+            ]);
+    }
+
+    [TestMethod]
+    public void Directives_PackageMetadata()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Microsoft.Build@18.0.2 ExcludeAssets=runtime PrivateAssets=all
+                #:package NoVersion IncludeAssets=build
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Microsoft.Build" Version="18.0.2">
+                      <ExcludeAssets>runtime</ExcludeAssets>
+                      <PrivateAssets>all</PrivateAssets>
+                    </PackageReference>
+                    <PackageReference Include="NoVersion">
+                      <IncludeAssets>build</IncludeAssets>
+                    </PackageReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
+    public void Directives_ProjectMetadata()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Lib.csproj"), """
+            <Project Sdk="Microsoft.NET.Sdk" />
+            """);
+
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:project Lib.csproj Private=false OutputItemType=Analyzer
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="Lib.csproj">
+                      <Private>false</Private>
+                      <OutputItemType>Analyzer</OutputItemType>
+                    </ProjectReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
+    public void Directives_Quoting()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property Description="Hello World"
+                #:package Foo@1.0.0 Note="see the docs"
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <Description>Hello World</Description>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Foo" Version="1.0.0">
+                      <Note>see the docs</Note>
+                    </PackageReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
+    public void Directives_UnterminatedQuote()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property Description="unterminated
+                """,
+            expectedErrors:
+            [
+                (1, FileBasedProgramsResources.UnterminatedQuoteInDirective),
+            ]);
+    }
+
+    [TestMethod]
+    public void Directives_InvalidMetadataName()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Foo@1.0.0 1Invalid=value
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, "Name cannot begin with the '1' character, hexadecimal value 0x31.")),
+            ]);
     }
 
     [TestMethod]
@@ -2460,13 +2620,10 @@ public sealed class DotnetProjectConvertTests : SdkTest
 
     [TestMethod]
     [DataRow("sdk", "@", "/")]
-    [DataRow("sdk", "@", " ")]
     [DataRow("sdk", "@", "=")]
     [DataRow("package", "@", "/")]
-    [DataRow("package", "@", " ")]
     [DataRow("package", "@", "=")]
     [DataRow("property", "=", "/")]
-    [DataRow("property", "=", " ")]
     [DataRow("property", "=", "@")]
     public void Directives_InvalidName(string directiveKind, string expectedSeparator, string actualSeparator)
     {
@@ -2487,15 +2644,13 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:property Prop=<test">
-                #:sdk <test"> @="<>te'st
-                #:package <te'st"> @="<>te'st
-                #:property Pro'p=Single'
-                #:property Prop2=\"Value\"
-                #:property Prop3='Value'
+                #:property Prop=<te'st>&x
+                #:sdk Name@<>te'st
+                #:package Pack@1.0 Meta=<a&b>
+                #:property Desc="a <b> c"
                 """,
             expectedProject: $"""
-                <Project Sdk="&lt;test&quot;&gt;/=&quot;&lt;&gt;te&apos;st">
+                <Project Sdk="Name/&lt;&gt;te&apos;st">
 
                   <PropertyGroup>
                     <OutputType>Exe</OutputType>
@@ -2504,30 +2659,20 @@ public sealed class DotnetProjectConvertTests : SdkTest
                     <Nullable>enable</Nullable>
                     <PublishAot>true</PublishAot>
                     <PackAsTool>true</PackAsTool>
-                    <Prop>&lt;test&quot;&gt;</Prop>
-                    <Prop2>\&quot;Value\&quot;</Prop2>
-                    <Prop3>&apos;Value&apos;</Prop3>
+                    <Prop>&lt;te&apos;st&gt;&amp;x</Prop>
+                    <Desc>a &lt;b&gt; c</Desc>
                   </PropertyGroup>
 
                   <ItemGroup>
-                    <PackageReference Include="&lt;te&apos;st&quot;&gt;" Version="=&quot;&lt;&gt;te&apos;st" />
+                    <PackageReference Include="Pack" Version="1.0">
+                      <Meta>&lt;a&amp;b&gt;</Meta>
+                    </PackageReference>
                   </ItemGroup>
 
                 </Project>
 
                 """,
-            expectedCSharp: """
-                #:property Pro'p=Single'
-
-                """,
-            expectedErrors:
-            [
-                (1, FileBasedProgramsResources.QuoteInDirective),
-                (2, FileBasedProgramsResources.QuoteInDirective),
-                (3, FileBasedProgramsResources.QuoteInDirective),
-                (4, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, "The ''' character, hexadecimal value 0x27, cannot be included in a name.")),
-                (5, FileBasedProgramsResources.QuoteInDirective),
-            ]);
+            expectedCSharp: "");
     }
 
     [TestMethod]
@@ -2538,7 +2683,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             baseDirectory: testInstance.Path,
             inputCSharp: """
                     #:   sdk   TestSdk
-                #:property Name  =  Value   
+                #:property Name=Value
                 #:property NugetPackageDescription="My package with spaces"
                  #  !  /test
                   #!  /program   x   
@@ -2555,7 +2700,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                     <PublishAot>true</PublishAot>
                     <PackAsTool>true</PackAsTool>
                     <Name>Value</Name>
-                    <NugetPackageDescription>&quot;My package with spaces&quot;</NugetPackageDescription>
+                    <NugetPackageDescription>My package with spaces</NugetPackageDescription>
                   </PropertyGroup>
 
                 </Project>
@@ -2565,11 +2710,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                  #  !  /test
                   #!  /program   x   
                  # :property Name=Value
-                """,
-            expectedErrors:
-            [
-                (3, FileBasedProgramsResources.QuoteInDirective),
-            ]);
+                """);
     }
 
     [TestMethod]

@@ -27,6 +27,11 @@
         <target state="translated">错误</target>
         <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
+      <trans-unit id="DirectiveMetadataInvalidName">
+        <source>Invalid directive metadata name: {0}</source>
+        <target state="new">Invalid directive metadata name: {0}</target>
+        <note>{0} is an inner exception message.</note>
+      </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0}</source>
         <target state="translated">不支持重复指令: {0}</target>
@@ -36,6 +41,11 @@
         <source>Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</source>
         <target state="translated">'{0}' 指令中的文件扩展名无法识别。当前仅识别以下扩展名: {1}</target>
         <note>{0} is the directive - '#:include' or '#:exclude'. {1} is a comma-separated list of file extensions, like: '.cs', '.resx'</note>
+      </trans-unit>
+      <trans-unit id="InvalidDirectiveMetadata">
+        <source>Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</source>
+        <target state="new">Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</target>
+        <note>{Locked="'Name=Value'"}{0} is the offending metadata text.</note>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
@@ -87,20 +97,25 @@
         <target state="translated">属性指令需要包含两个由 ‘=’ 分隔的部件，例如 '#:property PropertyName=PropertyValue'。</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
-      <trans-unit id="QuoteInDirective">
-        <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">指令当前不能包含双引号(")。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
         <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
         <target state="translated">基于文件的应用不支持静态图形还原。移除 '#:property'。</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
+      <trans-unit id="UnexpectedDirectiveText">
+        <source>The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</source>
+        <target state="new">The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</target>
+        <note>{0} is the directive kind like 'property' or 'sdk'.</note>
+      </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}'.</source>
         <target state="translated">无法识别的指令 ‘{0}’。</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
+      </trans-unit>
+      <trans-unit id="UnterminatedQuoteInDirective">
+        <source>Unterminated double quote (") in directive.</source>
+        <target state="new">Unterminated double quote (") in directive.</target>
+        <note />
       </trans-unit>
     </body>
   </file>

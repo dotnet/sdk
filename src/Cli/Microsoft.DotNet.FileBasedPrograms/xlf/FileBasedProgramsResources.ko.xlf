@@ -27,6 +27,11 @@
         <target state="translated">오류</target>
         <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
+      <trans-unit id="DirectiveMetadataInvalidName">
+        <source>Invalid directive metadata name: {0}</source>
+        <target state="new">Invalid directive metadata name: {0}</target>
+        <note>{0} is an inner exception message.</note>
+      </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0}</source>
         <target state="translated">중복 지시문은 지원되지 않습니다. {0}</target>
@@ -36,6 +41,11 @@
         <source>Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</source>
         <target state="translated">'{0}' 지시문에서 인식할 수 없는 파일 확장자입니다. 현재 인식되는 확장자는 다음과 같습니다. {1}.</target>
         <note>{0} is the directive - '#:include' or '#:exclude'. {1} is a comma-separated list of file extensions, like: '.cs', '.resx'</note>
+      </trans-unit>
+      <trans-unit id="InvalidDirectiveMetadata">
+        <source>Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</source>
+        <target state="new">Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</target>
+        <note>{Locked="'Name=Value'"}{0} is the offending metadata text.</note>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
@@ -87,20 +97,25 @@
         <target state="translated">property 지시문에는 '#:property PropertyName=PropertyValue'와 같이 '='로 구분된 두 부분이 있어야 합니다.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
-      <trans-unit id="QuoteInDirective">
-        <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">지시문은 현재 큰따옴표(")를 포함할 수 없습니다.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
         <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
         <target state="translated">정적 그래프 복원은 파일 기반 앱에서 지원되지 않습니다. '#:property'를 제거합니다.</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
+      <trans-unit id="UnexpectedDirectiveText">
+        <source>The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</source>
+        <target state="new">The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</target>
+        <note>{0} is the directive kind like 'property' or 'sdk'.</note>
+      </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}'.</source>
         <target state="translated">인식할 수 없는 지시문 '{0}'입니다.</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
+      </trans-unit>
+      <trans-unit id="UnterminatedQuoteInDirective">
+        <source>Unterminated double quote (") in directive.</source>
+        <target state="new">Unterminated double quote (") in directive.</target>
+        <note />
       </trans-unit>
     </body>
   </file>

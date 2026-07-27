@@ -27,6 +27,11 @@
         <target state="translated">error</target>
         <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
+      <trans-unit id="DirectiveMetadataInvalidName">
+        <source>Invalid directive metadata name: {0}</source>
+        <target state="new">Invalid directive metadata name: {0}</target>
+        <note>{0} is an inner exception message.</note>
+      </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0}</source>
         <target state="translated">No se admiten directivas duplicadas: {0}</target>
@@ -36,6 +41,11 @@
         <source>Unrecognized file extension in the '{0}' directive. Only these extensions are currently recognized: {1}</source>
         <target state="translated">Extensión de archivo no reconocida en la directiva ''{0}. Actualmente solo se reconocen estas extensiones: {1}</target>
         <note>{0} is the directive - '#:include' or '#:exclude'. {1} is a comma-separated list of file extensions, like: '.cs', '.resx'</note>
+      </trans-unit>
+      <trans-unit id="InvalidDirectiveMetadata">
+        <source>Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</source>
+        <target state="new">Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</target>
+        <note>{Locked="'Name=Value'"}{0} is the offending metadata text.</note>
       </trans-unit>
       <trans-unit id="InvalidDirectiveName">
         <source>The directive should contain a name without special characters and an optional value separated by '{1}' like '#:{0} Name{1}Value'.</source>
@@ -87,20 +97,25 @@
         <target state="translated">La directiva de propiedad debe tener dos partes separadas por "=", como "#:property PropertyName=PropertyValue".</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
-      <trans-unit id="QuoteInDirective">
-        <source>Directives currently cannot contain double quotes (").</source>
-        <target state="translated">Las directivas no pueden contener comillas dobles ("), por ahora.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="StaticGraphRestoreNotSupported">
         <source>Static graph restore is not supported for file-based apps. Remove the '#:property'.</source>
         <target state="translated">No se admite la restauración de gráficos estáticos para aplicaciones basadas en archivos. Elimine "#:property".</target>
         <note>{Locked="#:property"}</note>
       </trans-unit>
+      <trans-unit id="UnexpectedDirectiveText">
+        <source>The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</source>
+        <target state="new">The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</target>
+        <note>{0} is the directive kind like 'property' or 'sdk'.</note>
+      </trans-unit>
       <trans-unit id="UnrecognizedDirective">
         <source>Unrecognized directive '{0}'.</source>
         <target state="translated">Directiva no reconocida "{0}".</target>
         <note>{0} is the directive name like 'package' or 'sdk'.</note>
+      </trans-unit>
+      <trans-unit id="UnterminatedQuoteInDirective">
+        <source>Unterminated double quote (") in directive.</source>
+        <target state="new">Unterminated double quote (") in directive.</target>
+        <note />
       </trans-unit>
     </body>
   </file>

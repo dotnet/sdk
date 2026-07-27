@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -17,7 +18,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
 
     [TestMethod]
     [DataRow("#:package MyPackage@1.0.1")]
-    [DataRow("#:package   MyPackage @ abc")]
+    [DataRow("#:package   MyPackage@abc")]
     [DataRow("#:package MYPACKAGE")]
     public void ReplaceExisting(string inputLine)
     {
@@ -310,6 +311,26 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             // test
 
             /* test */Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
+    public void AddWithMetadataAndQuoting()
+    {
+        Verify(
+            """
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default)
+            {
+                Name = "MyPackage",
+                Version = "1.0.0",
+                Metadata = ImmutableArray.Create(("ExcludeAssets", "runtime"), ("Note", "with spaces")),
+            }),
+            """
+            #:package MyPackage@1.0.0 ExcludeAssets=runtime Note="with spaces"
+
+            Console.WriteLine();
             """));
     }
 
