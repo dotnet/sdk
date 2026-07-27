@@ -80,7 +80,16 @@ internal partial class MicrosoftTestingPlatformTestCommand
             ListTestsFormat: GetListTestsFormat(parseResult, definition));
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        using var testRunPolicy = new TestRunPolicy(
+            testOptions.IsDiscovery || testOptions.IsHelp
+                ? null
+                : parseResult.GetValue(definition.MaximumFailedTestsOption),
+            testOptions.IsDiscovery || testOptions.IsHelp
+                ? null
+                : parseResult.GetValue(definition.TimeoutOption),
+            onCancellation: _ => output.MarkCancelled());
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
+        using var queueCancellation = CancellationTokenSource.CreateLinkedTokenSource(ctrlC.Token, testRunPolicy.Token);
         var artifactPostProcessingManager = new ArtifactPostProcessingManager();
         int? exitCode = null;
         try
@@ -92,8 +101,20 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 output,
                 OnHelpRequested,
                 ctrlC,
-                artifactPostProcessingManager);
+                artifactPostProcessingManager,
+                testRunPolicy,
+                queueCancellation.Token);
             exitCode = testHandler.RunTestApplications(actionQueue);
+            TestRunCancellationReason cancellationReason = testRunPolicy.Complete();
+
+            if (cancellationReason == TestRunCancellationReason.MaximumFailedTests)
+            {
+                exitCode = ExitCode.TestExecutionStoppedForMaxFailedTests;
+            }
+            else if (cancellationReason == TestRunCancellationReason.Timeout)
+            {
+                exitCode = ExitCode.TestSessionAborted;
+            }
 
             if (!testOptions.IsHelp && !testOptions.IsDiscovery && !ctrlC.Token.IsCancellationRequested)
             {
