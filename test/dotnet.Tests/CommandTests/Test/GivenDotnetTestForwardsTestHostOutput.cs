@@ -36,18 +36,36 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // deadlocks the app until its own timeout expires, which fails the run.
             string sentinelPath = Path.Combine(testInstance.Path, "live-output-observed.sentinel");
 
+            Exception? sentinelWriteFailure = null;
             var command = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
                                     .WithEnvironmentVariable(SentinelPathEnvironmentVariable, sentinelPath);
+
+            // Execute retries the command on transient failures without re-copying the asset, so
+            // clear the sentinel on every attempt: a file left behind by an earlier attempt would
+            // let the app proceed immediately and quietly void what this test is proving.
+            command.ProcessStartedHandler = _ => File.Delete(sentinelPath);
             command.CommandOutputHandler = line =>
             {
                 if (line.Contains(StandardOutputMarker, StringComparison.Ordinal) && !File.Exists(sentinelPath))
                 {
-                    File.WriteAllText(sentinelPath, string.Empty);
+                    try
+                    {
+                        File.WriteAllText(sentinelPath, string.Empty);
+                    }
+                    catch (Exception ex)
+                    {
+                        // This runs on the only thread draining the command's standard output.
+                        // Letting the exception escape would stop that drain and hang the run, so
+                        // record it and let the assertion below report it.
+                        sentinelWriteFailure ??= ex;
+                    }
                 }
             };
 
             CommandResult result = command.Execute("-c", configuration);
+
+            sentinelWriteFailure.Should().BeNull("the sentinel file should be writable");
 
             // The run succeeds, so nothing replays the test app's output as part of a failure
             // report: the markers can only be present because they were forwarded as produced.
