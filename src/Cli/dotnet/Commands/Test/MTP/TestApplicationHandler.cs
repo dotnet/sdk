@@ -13,6 +13,7 @@ internal sealed class TestApplicationHandler
     private readonly TestOptions _options;
     private readonly ArtifactPostProcessingManager? _artifactPostProcessingManager;
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation;
+    private readonly TestRunPolicy? _testRunPolicy;
     private readonly Lock _lock = new();
     private readonly Dictionary<string, (int TestSessionStartCount, int TestSessionEndCount)> _testSessionEventCountPerSessionUid = new();
 
@@ -24,13 +25,15 @@ internal sealed class TestApplicationHandler
         TestModule module,
         TestOptions options,
         ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null)
+        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+        TestRunPolicy? testRunPolicy = null)
     {
         _output = output;
         _module = module;
         _options = options;
         _artifactPostProcessingManager = artifactPostProcessingManager;
         _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
+        _testRunPolicy = testRunPolicy;
     }
 
     /// <summary>
@@ -357,6 +360,8 @@ internal sealed class TestApplicationHandler
                 standardOutput: testResult.StandardOutput,
                 errorOutput: testResult.ErrorOutput);
         }
+
+        _testRunPolicy?.ReportFailedTests(testResultMessage.FailedTestMessages.Length);
     }
 
     internal void OnTestInProgressReceived(TestInProgressMessages testInProgressMessages)

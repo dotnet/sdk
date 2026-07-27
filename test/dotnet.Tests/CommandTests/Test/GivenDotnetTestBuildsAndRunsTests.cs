@@ -615,6 +615,32 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void RunMTPSolutionWithMaximumFailedTestsReturnsPolicyExitCode()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--maximum-failed-tests", "1");
+
+            result.ExitCode.Should().Be(ExitCodes.TestExecutionStoppedForMaxFailedTests);
+        }
+
+        [TestMethod]
+        public void RunMTPProjectWithGlobalTimeoutReturnsTestSessionAborted()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--timeout", "100ms");
+
+            result.ExitCode.Should().Be(ExitCodes.TestSessionAborted);
+        }
+
+        [TestMethod]
         public void RunMTPProjectThatCrashesWithExitCodeZero_ShouldFail()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())

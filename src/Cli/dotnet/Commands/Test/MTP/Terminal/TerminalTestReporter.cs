@@ -68,7 +68,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private int _buildErrorsCount;
 
-    private bool _wasCancelled;
+    private volatile bool _wasCancelled;
 
     public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
@@ -1102,6 +1102,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.AppendLine(CliCommandStrings.PressCtrlCAgainToForceExit);
             terminal.AppendLine();
         });
+    }
+
+    public void MarkCancelled()
+    {
+        _wasCancelled = true;
     }
 
     internal void TestDiscovered(
