@@ -12,21 +12,21 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Kind.get -> 
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.Kind.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExclude.KindToMSBuildString() -> string!
 Microsoft.DotNet.FileBasedPrograms.IBuildService
-Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectInstanceFromProjectRootElement(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectInstanceFromProjectRootElementAsync(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.IProjectInstance!>
 Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, string! entryPointFilePath) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
 Microsoft.DotNet.FileBasedPrograms.IProjectCollection
 Microsoft.DotNet.FileBasedPrograms.IProjectCollection.GlobalProperties.get -> System.Collections.Generic.IDictionary<string!, string!>!
 Microsoft.DotNet.FileBasedPrograms.IProjectInstance
-Microsoft.DotNet.FileBasedPrograms.IProjectInstance.ExpandString(string! value) -> string!
-Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetItemMetadataValues(string! itemType, System.Collections.Immutable.ImmutableArray<string!> metadataNames) -> System.Collections.Immutable.ImmutableArray<System.Collections.Immutable.ImmutableArray<string!>>
-Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetPropertyValue(string! propertyName) -> string!
+Microsoft.DotNet.FileBasedPrograms.IProjectInstance.ExpandStringAsync(string! value) -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetItemMetadataValuesAsync(string! itemType, System.Collections.Immutable.ImmutableArray<string!> metadataNames) -> System.Threading.Tasks.ValueTask<System.Collections.Immutable.ImmutableArray<System.Collections.Immutable.ImmutableArray<string!>>>
+Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetPropertyValueAsync(string! propertyName) -> System.Threading.Tasks.ValueTask<string!>
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.get -> string?
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.set -> void
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.GetRawXml() -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ArtifactsPath.get -> string!
-Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstance(Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError, out Microsoft.DotNet.FileBasedPrograms.IProjectInstance! project, out Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRootElement, out System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> evaluatedDirectives, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> directives = default(System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>), System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties = null, bool validateAllDirectives = false, System.Collections.Generic.HashSet<string!>? processedRefFiles = null) -> void
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstanceAsync(Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> directives = default(System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>), System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties = null, bool validateAllDirectives = false, System.Collections.Generic.HashSet<string!>? processedRefFiles = null) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result>
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.EntryPointFileFullPath.get -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.EntryPointSourceFile.get -> Microsoft.DotNet.FileBasedPrograms.SourceFile
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem
@@ -38,8 +38,14 @@ Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Inc
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.Include.init -> void
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.ItemType.get -> string!
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.ItemType.init -> void
-Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetItemMapping(Microsoft.DotNet.FileBasedPrograms.IProjectInstance! project, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetItemMappingAsync(Microsoft.DotNet.FileBasedPrograms.IProjectInstance! project, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError) -> System.Threading.Tasks.ValueTask<System.Collections.Immutable.ImmutableArray<(string! Extension, string! ItemType)>>
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.RequestedTargets.get -> string![]?
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result.EvaluatedDirectives.get -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result.Project.get -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result.ProjectRootElement.get -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result.Result() -> void
+Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.Result.Result(Microsoft.DotNet.FileBasedPrograms.IProjectInstance! project, Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRootElement, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!> evaluatedDirectives) -> void
 Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.VirtualProjectBuilder(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFileFullPath, string? targetFramework, string![]? requestedTargets = null, string? artifactsPath = null, Microsoft.CodeAnalysis.Text.SourceText? sourceText = null) -> void
 Microsoft.DotNet.Utilities.Extensions
 Microsoft.DotNet.Utilities.Sha256Hasher
@@ -53,7 +59,7 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind.Exclude 
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind.Include = 0 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.IncludeOrExcludeKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Info.get -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo
 override Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.GetHashCode() -> int
-static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstance(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFilePath, string! targetFramework, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Action<string!, int, string!>! errorReporter) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstanceAsync(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFilePath, string! targetFramework, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Action<string!, int, string!>! errorReporter) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.IProjectInstance!>
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.operator !=(Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem left, Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem.operator ==(Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem left, Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.ExplicitProjectItem right) -> bool
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetArtifactsPath(string! entryPointFileFullPath, string? dotNetSubdirectory = null) -> string!

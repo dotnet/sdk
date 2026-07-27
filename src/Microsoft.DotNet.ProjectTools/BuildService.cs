@@ -14,12 +14,12 @@ public sealed class BuildService : IBuildService
 
     private BuildService() { }
 
-    public IProjectInstance CreateProjectInstanceFromProjectRootElement(
+    public ValueTask<IProjectInstance> CreateProjectInstanceFromProjectRootElementAsync(
         IProjectRootElement projectRoot,
         IProjectCollection projectCollection,
         IDictionary<string, string>? additionalGlobalProperties)
     {
-        return ProjectInstance.FromProjectRootElement((ProjectRootElement)projectRoot, (ProjectCollection)projectCollection, additionalGlobalProperties);
+        return new(ProjectInstance.FromProjectRootElement((ProjectRootElement)projectRoot, (ProjectCollection)projectCollection, additionalGlobalProperties));
     }
 
     public IProjectRootElement CreateProjectRootElement(XmlReader xmlReader, IProjectCollection projectCollection, string entryPointFilePath)
@@ -110,10 +110,10 @@ sealed file class ProjectInstance(Microsoft.Build.Execution.ProjectInstance inne
     }
 
     public Microsoft.Build.Execution.ProjectInstance Inner => inner;
-    public ImmutableArray<ImmutableArray<string>> GetItemMetadataValues(string itemType, ImmutableArray<string> metadataNames)
-        => inner.GetItems(itemType).Select(i => metadataNames.Select(n => i.GetMetadataValue(n)).ToImmutableArray()).ToImmutableArray();
-    public string GetPropertyValue(string propertyName) => inner.GetPropertyValue(propertyName);
-    public string ExpandString(string value) => inner.ExpandString(value);
+    public ValueTask<ImmutableArray<ImmutableArray<string>>> GetItemMetadataValuesAsync(string itemType, ImmutableArray<string> metadataNames)
+        => new(inner.GetItems(itemType).Select(i => metadataNames.Select(n => i.GetMetadataValue(n)).ToImmutableArray()).ToImmutableArray());
+    public ValueTask<string> GetPropertyValueAsync(string propertyName) => new(inner.GetPropertyValue(propertyName));
+    public ValueTask<string> ExpandStringAsync(string value) => new(inner.ExpandString(value));
 }
 
 sealed file class ProjectRootElement(Microsoft.Build.Construction.ProjectRootElement inner) : IProjectRootElement

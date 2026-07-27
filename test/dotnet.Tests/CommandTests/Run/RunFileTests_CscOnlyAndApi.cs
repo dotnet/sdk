@@ -1774,7 +1774,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     }
 
     [TestMethod]
-    public void Api_VirtualProjectBuilder_CreateProjectRootElement_TargetFrameworkUnspecified()
+    public async Task Api_VirtualProjectBuilder_CreateProjectRootElement_TargetFrameworkUnspecified()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
@@ -1809,14 +1809,11 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
         using var projectCollection = new ProjectCollection();
         var virtualProjectBuilder = new VirtualProjectBuilder(BuildService.Instance, appPath, targetFramework: null);
-        virtualProjectBuilder.CreateProjectInstance(
+        var result = await virtualProjectBuilder.CreateProjectInstanceAsync(
             projectCollection.Wrap(),
-            VirtualProjectBuildingCommand.ThrowingReporter,
-            out var project,
-            out var projectRootElement,
-            evaluatedDirectives: out _);
+            VirtualProjectBuildingCommand.ThrowingReporter);
 
-        var xml = projectRootElement.GetRawXml();
+        var xml = result.ProjectRootElement.GetRawXml();
         Log.WriteLine(xml);
 
         xml.Should()
@@ -1827,10 +1824,10 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             // correct target framework is used
             .And.Contain("<TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>");
 
-        projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
+        result.ProjectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
 
         // TargetFramework can be evaluated.
-        project.GetPropertyValue("TargetFramework").Should().Be(ToolsetInfo.CurrentTargetFramework);
+        (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
     }
 
     [TestMethod, CombinatorialData]

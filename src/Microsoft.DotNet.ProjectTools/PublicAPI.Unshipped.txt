@@ -1,6 +1,6 @@
 #nullable enable
 Microsoft.DotNet.FileBasedPrograms.BuildService
-Microsoft.DotNet.FileBasedPrograms.BuildService.CreateProjectInstanceFromProjectRootElement(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.BuildService.CreateProjectInstanceFromProjectRootElementAsync(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.IProjectInstance!>
 Microsoft.DotNet.FileBasedPrograms.BuildService.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, string! entryPointFilePath) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
 Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions
 Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.Build.Evaluation.ProjectCollection!)
@@ -12,13 +12,13 @@ Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.Do
 Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!)
 Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.extension(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!).Unwrap() -> Microsoft.Build.Construction.ProjectRootElement!
 Microsoft.DotNet.FileBasedPrograms.IBuildService
-Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectInstanceFromProjectRootElement(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectInstanceFromProjectRootElementAsync(Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRoot, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Collections.Generic.IDictionary<string!, string!>? additionalGlobalProperties) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.IProjectInstance!>
 Microsoft.DotNet.FileBasedPrograms.IBuildService.CreateProjectRootElement(System.Xml.XmlReader! xmlReader, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, string! entryPointFilePath) -> Microsoft.DotNet.FileBasedPrograms.IProjectRootElement!
 Microsoft.DotNet.FileBasedPrograms.IProjectCollection
 Microsoft.DotNet.FileBasedPrograms.IProjectInstance
-Microsoft.DotNet.FileBasedPrograms.IProjectInstance.ExpandString(string! value) -> string!
-Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetItemMetadataValues(string! itemType, System.Collections.Immutable.ImmutableArray<string!> metadataNames) -> System.Collections.Immutable.ImmutableArray<System.Collections.Immutable.ImmutableArray<string!>>
-Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetPropertyValue(string! propertyName) -> string!
+Microsoft.DotNet.FileBasedPrograms.IProjectInstance.ExpandStringAsync(string! value) -> System.Threading.Tasks.ValueTask<string!>
+Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetItemMetadataValuesAsync(string! itemType, System.Collections.Immutable.ImmutableArray<string!> metadataNames) -> System.Threading.Tasks.ValueTask<System.Collections.Immutable.ImmutableArray<System.Collections.Immutable.ImmutableArray<string!>>>
+Microsoft.DotNet.FileBasedPrograms.IProjectInstance.GetPropertyValueAsync(string! propertyName) -> System.Threading.Tasks.ValueTask<string!>
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.get -> string?
 Microsoft.DotNet.FileBasedPrograms.IProjectRootElement.FullPath.set -> void
@@ -30,7 +30,7 @@ static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Unwrap(this Mic
 static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Unwrap(this Microsoft.DotNet.FileBasedPrograms.IProjectRootElement! projectRootElement) -> Microsoft.Build.Construction.ProjectRootElement!
 static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Wrap(this Microsoft.Build.Evaluation.ProjectCollection! projectCollection) -> Microsoft.DotNet.FileBasedPrograms.IProjectCollection!
 static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Wrap(this Microsoft.Build.Execution.ProjectInstance! projectInstance) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
-static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstance(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFilePath, string! targetFramework, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Action<string!, int, string!>! errorReporter) -> Microsoft.DotNet.FileBasedPrograms.IProjectInstance!
+static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstanceAsync(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFilePath, string! targetFramework, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Action<string!, int, string!>! errorReporter) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.IProjectInstance!>
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetPropertyFromSourceFile(string! sourceFilePath, string! propertyName) -> string?
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetVirtualProjectPath(string! entryPointFilePath) -> string!
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.IsValidEntryPointPath(string! entryPointFilePath) -> bool

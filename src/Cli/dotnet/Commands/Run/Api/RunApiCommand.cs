@@ -76,18 +76,15 @@ internal abstract class RunApiInput
 
             var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
 
-            builder.CreateProjectInstance(
+            var result = builder.CreateProjectInstanceAsync(
                 new ProjectCollection().Wrap(),
                 errorReporter,
-                project: out _,
-                out var projectRootElement,
-                out var evaluatedDirectives,
-                validateAllDirectives: true);
+                validateAllDirectives: true).AsTask().GetAwaiter().GetResult();
 
             var csprojWriter = new StringWriter();
             VirtualProjectBuilder.WriteProjectFile(
                 csprojWriter,
-                evaluatedDirectives,
+                result.EvaluatedDirectives,
                 VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
@@ -96,7 +93,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
-                ProjectPath = projectRootElement.FullPath!,
+                ProjectPath = result.ProjectRootElement.FullPath!,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }

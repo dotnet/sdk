@@ -554,7 +554,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             var entryPointFileDirectory = Path.GetDirectoryName(Builder.EntryPointFileFullPath);
             Debug.Assert(entryPointFileDirectory != null);
 
-            var mapping = Builder.GetItemMapping(projectInstance.Wrap(), ErrorReporters.IgnoringReporter);
+            var mapping = Builder.GetItemMappingAsync(projectInstance.Wrap(), ErrorReporters.IgnoringReporter).AsTask().GetAwaiter().GetResult();
             foreach (var entry in mapping)
             {
                 if (string.Equals(entry.ItemType, "None", StringComparison.OrdinalIgnoreCase))
@@ -1197,18 +1197,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         var projectCollectionWrapped = projectCollection.Wrap();
 
-        Builder.CreateProjectInstance(
+        var result = Builder.CreateProjectInstanceAsync(
             projectCollectionWrapped,
             ThrowingReporter,
-            out var project,
-            projectRootElement: out _,
-            out var evaluatedDirectives,
             Directives,
-            additionalGlobalProperties);
+            additionalGlobalProperties).AsTask().GetAwaiter().GetResult();
 
-        EvaluatedDirectives = evaluatedDirectives;
+        EvaluatedDirectives = result.EvaluatedDirectives;
 
-        return project.Unwrap();
+        return result.Project.Unwrap();
     }
 
     /// <summary>

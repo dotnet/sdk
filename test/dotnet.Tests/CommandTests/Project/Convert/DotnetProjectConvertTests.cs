@@ -3048,12 +3048,10 @@ public sealed class DotnetProjectConvertTests : SdkTest
         ImmutableArray<CSharpDirective> directives;
         if (evaluateDirectives)
         {
-            builder.CreateProjectInstance(
+            var result = builder.CreateProjectInstanceAsync(
                 new ProjectCollection().Wrap(),
-                errorReporter,
-                project: out _,
-                projectRootElement: out _,
-                out directives);
+                errorReporter).AsTask().GetAwaiter().GetResult();
+            directives = result.EvaluatedDirectives;
         }
         else
         {

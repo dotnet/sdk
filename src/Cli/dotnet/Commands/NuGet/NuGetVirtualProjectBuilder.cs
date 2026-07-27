@@ -31,14 +31,11 @@ internal sealed class NuGetVirtualProjectBuilder : IVirtualProjectBuilder
 
         var builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFilePath, VirtualProjectBuildingCommand.TargetFramework);
 
-        builder.CreateProjectInstance(
+        var result = builder.CreateProjectInstanceAsync(
             projectCollection.Wrap(),
-            ErrorReporters.IgnoringReporter,
-            project: out _,
-            out var projectRootElement,
-            evaluatedDirectives: out _);
+            ErrorReporters.IgnoringReporter).AsTask().GetAwaiter().GetResult();
 
-        return projectRootElement.Unwrap();
+        return result.ProjectRootElement.Unwrap();
     }
 
     [UnconditionalSuppressMessage("AOT", "IL3050:Calling members annotated with 'RequiresDynamicCodeAttribute' may break functionality when AOT compiling.", Justification = "Can't change the annotation on the NuGet-owned interface definition.")]
