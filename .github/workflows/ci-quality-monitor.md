@@ -131,10 +131,10 @@ jobs:
           elif [[ -n "$EVENT_HEAD_SHA" ]]; then
             args+=(--event-head-sha "$EVENT_HEAD_SHA")
           elif [[ "$GITHUB_REF_NAME" == "nagilson/ci-quality-monitor-live-evaluation" ]]; then
-            args+=(
-              --build-id "$(cat .github/ci-quality-monitor/evaluation-build-id.txt)"
-              --evaluation-catalog .github/ci-quality-monitor/evaluation-builds.json
-            )
+            args+=(--build-id "$(cat .github/ci-quality-monitor/evaluation-build-id.txt)")
+          fi
+          if [[ "$GITHUB_REF_NAME" == "nagilson/ci-quality-monitor-live-evaluation" ]]; then
+            args+=(--evaluation-catalog .github/ci-quality-monitor/evaluation-builds.json)
           fi
           if [[ -n "$MERGED_PR_NUMBER" ]]; then
             args+=(
