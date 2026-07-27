@@ -291,6 +291,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow(null, nameof(ResultsDirectoryLayout.Flat))]
+        [DataRow("flat", nameof(ResultsDirectoryLayout.Flat))]
+        [DataRow("per-module", nameof(ResultsDirectoryLayout.PerModule))]
+        public void MTPCommandParsesResultsDirectoryLayout(string? value, string expected)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = value is null
+                ? command.Parse([])
+                : command.Parse(["--results-directory-layout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MSBuildUtility.GetBuildOptions(parseResult).PathOptions.ResultsDirectoryLayout.ToString().Should().Be(expected);
+        }
+
+        [TestMethod]
+        public void MTPCommandRejectsInvalidResultsDirectoryLayout()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--results-directory-layout", "invalid"]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
         public void DllDetectionShouldExcludeRunArgumentsAndGlobalProperties()
         {
             var parseResult = Parser.Parse("""test -p:"RunConfig=abd.dll" -- RunConfig=abd.dll -p:"RunConfig=abd.dll" --results-directory hey.dll""");

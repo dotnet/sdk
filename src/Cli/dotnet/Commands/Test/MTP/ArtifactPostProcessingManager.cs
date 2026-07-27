@@ -102,6 +102,9 @@ internal sealed class ArtifactPostProcessingManager
                     job.Application.Module,
                     buildOptions,
                     toolOptions,
+                    // Post-processing merges artifacts across modules, so it keeps writing to the
+                    // shared results directory even when the run uses a per-module layout.
+                    TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, Directory.GetCurrentDirectory()),
                     output,
                     onHelpRequested: _ => { },
                     artifactPostProcessingManager: this,
