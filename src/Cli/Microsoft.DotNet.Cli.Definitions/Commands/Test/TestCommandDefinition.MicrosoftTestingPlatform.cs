@@ -183,6 +183,7 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            NoLogoOption.Aliases.Add("--no-banner");
             Options.Add(NoLogoOption);
             Options.Add(NoDependenciesOption);
             Options.Add(ArtifactsPathOption);
