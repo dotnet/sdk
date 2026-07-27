@@ -127,7 +127,7 @@ internal sealed class ProjectGraphFactory(
 
             var anyError = false;
 
-            var projectInstance = VirtualProjectBuilder.CreateProjectInstance(
+            var projectInstance = VirtualProjectBuilder.CreateProjectInstanceAsync(
                 BuildService.Instance,
                 entryPointFilePath,
                 virtualProjectTargetFramework,
@@ -136,7 +136,7 @@ internal sealed class ProjectGraphFactory(
                 {
                     anyError = true;
                     logger.LogError("{Path}({Line}): {Message}", path, line, message);
-                });
+                }).AsTask().GetAwaiter().GetResult();
 
             if (anyError)
             {
