@@ -8,6 +8,18 @@ parameters:
     runNativeAotCliTests: true
   - categoryName: AOT
     runAoTTests: true
+  # dotnet-aot is built with NativeAOT, which can cross-compile win-x64 -> win-arm64 (the MSVC arm64
+  # linker and the RID-specific ILCompiler package handle the cross-link; no sysroot is required).
+  # This leg BUILDS on the win-x64 pool with /p:CrossBuild=true and produces the dotnet-aot .dll plus
+  # its mstat/dgml size-analysis artifacts (that step is gated on the AOT category). It is build-only
+  # (runTests: false): there is no wired windows arm64 Helix queue yet, so running the *.AoT.Tests on
+  # arm64 hardware is a follow-up pending a windows.11.arm64 queue.
+  # The VS 2026 build image is required for the arm64 linker used by this cross-build.
+  - categoryName: AOT
+    targetArchitecture: arm64
+    runtimeIdentifier: win-arm64
+    osProperties: /p:CrossBuild=true
+    runTests: false
   - categoryName: FullFramework
     testFullMSBuild: true
   ### LINUX ###
@@ -21,11 +33,22 @@ parameters:
     runTests: false
   # The x64 AOT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
   # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
-  # run the *.AoT.Tests.csproj test projects. linux-arm64 AOT is covered by a separate cross-build
-  # leg (see .vsts-pr.yml / .vsts-ci.yml).
+  # run the *.AoT.Tests.csproj test projects.
   - categoryName: AOT
     runAoTTests: true
     osProperties: $(linuxOsglibcProperties)
+  # dotnet-aot is built with NativeAOT, which can cross-compile for linux-arm64 from an x64 host
+  # given a cross toolchain and target sysroot. This leg therefore runs on the regular x64 Linux
+  # pool inside the azurelinux cross-arm64 prereq container (which provides clang + the
+  # /crossrootfs/arm64 sysroot and sets ROOTFS_DIR) and passes /p:CrossBuild=true. Consistent with
+  # the other linux-arm64 legs, this only performs the build (the x64 AOT leg provides the running
+  # test coverage).
+  - categoryName: AOT
+    container: azureLinuxCrossArm64
+    targetArchitecture: arm64
+    runtimeIdentifier: linux-arm64
+    osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
+    runTests: false
   - categoryName: ContainerBased
     container: azureLinux30Amd64
     helixTargetContainer: $(helixTargetContainerPrefix)ubuntu-24.04-helix-amd64
@@ -37,6 +60,15 @@ parameters:
   - targetArchitecture: arm64
     runtimeIdentifier: osx-arm64
     runNativeAotCliTests: true
+  # dotnet-aot is built with NativeAOT, which can cross-compile osx-x64 -> osx-arm64 (clang/link on
+  # macOS are multi-target and need no extra sysroot). This leg BUILDS on the x64 macOS pool with
+  # /p:CrossBuild=true; because AOT tests are dispatched to Helix, the *.AoT.Tests still run on the
+  # osx.15.arm64 Helix queue, so there is no macOS AOT test-coverage loss.
+  - categoryName: AOT
+    runAoTTests: true
+    targetArchitecture: arm64
+    runtimeIdentifier: osx-arm64
+    osProperties: /p:CrossBuild=true
 
 jobs:
 ### ONELOCBUILD ###
