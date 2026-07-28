@@ -231,6 +231,22 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 .RunGeneratorsAndUpdateCompilation(compilation, out _, out _)
                 .GetRunResult().Results.Single();
 
+            var success = true;
+            foreach (var diagnostic in runResult.Diagnostics)
+            {
+                if (diagnostic.Severity == DiagnosticSeverity.Error)
+                {
+                    success = false;
+                }
+
+                Error.WriteLine(diagnostic.ToString());
+            }
+
+            if (!success)
+            {
+                return ExitCodeFailure;
+            }
+
             if (!RazorSourceGeneratorHostOutput.TryGet(runResult, out var razorResult))
             {
                 Error.WriteLine("The Razor source generator did not produce the expected host output.");

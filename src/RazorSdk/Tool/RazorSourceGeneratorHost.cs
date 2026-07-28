@@ -41,13 +41,16 @@ internal static class RazorSourceGeneratorHost
     {
         var globalOptions = new Dictionary<string, string>(StringComparer.Ordinal)
         {
-            ["build_property.RazorConfiguration"] = razorConfiguration,
-            ["build_property.RazorLangVersion"] = razorLanguageVersion,
-            ["build_property.RootNamespace"] = rootNamespace,
             ["build_property.SupportLocalizedComponentNames"] = Bool(supportLocalizedComponentNames),
             ["build_property.GenerateRazorMetadataSourceChecksumAttributes"] = Bool(generateMetadataSourceChecksumAttributes),
-            ["build_property.MSBuildProjectDirectory"] = projectDirectory,
         };
+
+        // Only surface values that were actually provided. An absent option must be absent from the
+        // analyzer config (so the generator applies its own default), not present with a null value.
+        AddIfPresent(globalOptions, "build_property.RazorConfiguration", razorConfiguration);
+        AddIfPresent(globalOptions, "build_property.RazorLangVersion", razorLanguageVersion);
+        AddIfPresent(globalOptions, "build_property.RootNamespace", rootNamespace);
+        AddIfPresent(globalOptions, "build_property.MSBuildProjectDirectory", projectDirectory);
 
         var fileOptions = new Dictionary<string, AnalyzerConfigOptions>(StringComparer.Ordinal);
         foreach (var file in files)
@@ -115,6 +118,14 @@ internal static class RazorSourceGeneratorHost
         => new(languageVersion);
 
     private static string Bool(bool value) => value ? "true" : "false";
+
+    private static void AddIfPresent(Dictionary<string, string> options, string key, string value)
+    {
+        if (!string.IsNullOrEmpty(value))
+        {
+            options[key] = value;
+        }
+    }
 }
 
 /// <summary>
