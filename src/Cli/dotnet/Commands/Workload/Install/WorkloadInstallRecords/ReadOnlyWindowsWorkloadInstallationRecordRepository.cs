@@ -40,30 +40,3 @@ internal sealed class ReadOnlyWindowsWorkloadInstallationRecordRepository : IWor
     public void DeleteWorkloadInstallationRecord(WorkloadId workloadId, SdkFeatureBand sdkFeatureBand)
         => throw new NotSupportedException();
 }
-
-#if NETCOREAPP
-[SupportedOSPlatform("windows")]
-#endif
-internal static class WindowsWorkloadInstallationRecordReader
-{
-    internal static IEnumerable<SdkFeatureBand> GetFeatureBandsWithInstallationRecords(RegistryKey baseKey, string basePath)
-    {
-        using RegistryKey? key = baseKey.OpenSubKey(basePath);
-
-        return key is null
-            ? Enumerable.Empty<SdkFeatureBand>()
-            : [.. (from string name in key.GetSubKeyNames()
-                   let subkey = key.OpenSubKey(name)
-                   where subkey is not null && subkey.GetSubKeyNames().Length > 0
-                   select new SdkFeatureBand(name))];
-    }
-
-    internal static IEnumerable<WorkloadId> GetInstalledWorkloads(
-        RegistryKey baseKey,
-        string basePath,
-        SdkFeatureBand sdkFeatureBand)
-    {
-        using RegistryKey? workloadKey = baseKey.OpenSubKey(Path.Combine(basePath, $"{sdkFeatureBand}"));
-        return workloadKey?.GetSubKeyNames().Select(id => new WorkloadId(id)).ToList() ?? Enumerable.Empty<WorkloadId>();
-    }
-}

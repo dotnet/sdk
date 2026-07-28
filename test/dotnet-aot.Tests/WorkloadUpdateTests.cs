@@ -38,7 +38,12 @@ public class WorkloadUpdateTests
     public async Task DueBackgroundUpdateDownloadsManifestAndWritesState()
     {
         using var testDirectory = new TestDirectory();
-        var downloader = CreateUpdater(testDirectory.Path, out WorkloadAdvertisingManifestUpdater updater, _ => null);
+        string userProfileDir = Path.Combine(testDirectory.Path, "new-user-profile");
+        var downloader = CreateUpdater(
+            testDirectory.Path,
+            out WorkloadAdvertisingManifestUpdater updater,
+            _ => null,
+            userProfileDir);
 
         await updater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
 
@@ -46,16 +51,16 @@ public class WorkloadUpdateTests
         Assert.AreEqual(1, downloader.Downloads);
         Assert.AreEqual(1, downloader.Extractions);
         Assert.AreEqual($"{ManifestId}.manifest-{s_featureBand}", downloader.LastPackageId?.ToString());
-        Assert.IsTrue(File.Exists(GetSentinelPath(testDirectory.Path)));
+        Assert.IsTrue(File.Exists(GetSentinelPath(userProfileDir)));
 
-        string updatesFile = WorkloadAdvertisingManifestUpdater.GetAdvertisingWorkloadsFilePath(testDirectory.Path, s_featureBand);
+        string updatesFile = WorkloadAdvertisingManifestUpdater.GetAdvertisingWorkloadsFilePath(userProfileDir, s_featureBand);
         Assert.IsTrue(File.Exists(updatesFile));
         Assert.AreSequenceEqual(
             Array.Empty<string>(),
             JsonSerializer.Deserialize(File.ReadAllText(updatesFile), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray)!);
 
         string advertisingManifest = Path.Combine(
-            testDirectory.Path, "sdk-advertising", s_featureBand.ToString(), ManifestId, "WorkloadManifest.json");
+            userProfileDir, "sdk-advertising", s_featureBand.ToString(), ManifestId, "WorkloadManifest.json");
         Assert.IsTrue(File.Exists(advertisingManifest));
     }
 
@@ -116,11 +121,12 @@ public class WorkloadUpdateTests
     private static RecordingNuGetPackageDownloader CreateUpdater(
         string testRoot,
         out WorkloadAdvertisingManifestUpdater updater,
-        Func<string, string?> getEnvironmentVariable)
+        Func<string, string?> getEnvironmentVariable,
+        string? userProfileDir = null)
     {
         Directory.CreateDirectory(testRoot);
         string installStateDirectory = Path.Combine(
-            testRoot,
+            userProfileDir ?? testRoot,
             "metadata",
             "workloads",
             RuntimeInformation.ProcessArchitecture.ToString(),

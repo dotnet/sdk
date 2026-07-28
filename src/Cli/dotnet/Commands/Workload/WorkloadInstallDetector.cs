@@ -71,38 +71,3 @@ internal static class WorkloadInstallDetector
             .Any();
     }
 }
-
-/// <summary>
-///  Builds a <see cref="FileBasedInstallationRecordRepository"/> for a given dotnet root without
-///  needing the full workload installer.
-///
-///  <para>
-///  Shared by <see cref="WorkloadInstallDetector"/> above and the CLI_AOT construction path of
-///  <see cref="WorkloadInfoHelper"/> (both already part of the NativeAOT closure via
-///  <c>AotSourceFiles.props</c>, so this factory lives in the same already-linked file rather than a
-///  new one), and reused by the managed-only lightweight background advertising-manifest-update
-///  construction path in <see cref="Install.WorkloadManifestUpdater"/>, so the file-based-vs-user-local
-///  layout logic is defined in exactly one place.
-///  </para>
-/// </summary>
-internal static class FileBasedWorkloadInstallationRecordRepositoryFactory
-{
-    /// <summary>
-    ///  Equivalent to <see cref="WorkloadFileBasedInstall.IsUserLocal(string, string)"/>, inlined here
-    ///  (like the call sites that used to duplicate this check) to avoid pulling in that type's
-    ///  workload-history (System.Text.Json) helpers, which are not needed for read-only record lookup.
-    /// </summary>
-    public static bool IsUserLocal(string dotnetDir, SdkFeatureBand sdkFeatureBand)
-        => dotnetDir is not null && File.Exists(Path.Combine(dotnetDir, "metadata", "workloads", sdkFeatureBand.ToString(), "userlocal"));
-
-    /// <summary>
-    ///  Constructs the file-based installation record repository for <paramref name="sdkFeatureBand"/>,
-    ///  choosing between the user-profile and dotnet-root metadata locations the same way
-    ///  <see cref="Install.FileBasedInstaller"/> does.
-    /// </summary>
-    public static FileBasedInstallationRecordRepository Create(string dotnetDir, SdkFeatureBand sdkFeatureBand, string userProfileDir)
-    {
-        var workloadRootDir = IsUserLocal(dotnetDir, sdkFeatureBand) ? userProfileDir : dotnetDir;
-        return new FileBasedInstallationRecordRepository(Path.Combine(workloadRootDir, "metadata", "workloads"));
-    }
-}

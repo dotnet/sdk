@@ -80,9 +80,11 @@ internal class WorkloadAdvertisingManifestUpdater(
     {
         if (!BackgroundUpdatesAreDisabled() &&
             AdManifestSentinelIsDueForUpdate() &&
-            UpdatedAdManifestPackagesExistAsync().GetAwaiter().GetResult())
+            await UpdatedAdManifestPackagesExistAsync().ConfigureAwait(false))
         {
-            await UpdateAdvertisingManifestsAsync(false, ShouldUseWorkloadSetMode(_sdkFeatureBand, _userProfileDir));
+            await UpdateAdvertisingManifestsAsync(
+                false,
+                ShouldUseWorkloadSetMode(_sdkFeatureBand, _userProfileDir)).ConfigureAwait(false);
             var sentinelPath = GetAdvertisingManifestSentinelPath(_sdkFeatureBand);
             if (File.Exists(sentinelPath))
             {
@@ -108,10 +110,7 @@ internal class WorkloadAdvertisingManifestUpdater(
         var updatableWorkloads = GetUpdatableWorkloadsToAdvertise(installedWorkloads);
         var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
         var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
-        if (Directory.Exists(Path.GetDirectoryName(filePath)))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
-        }
+        Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
         File.WriteAllText(filePath, jsonContent);
     }
 
