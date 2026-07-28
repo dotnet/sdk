@@ -55,7 +55,23 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             commandResult.Should().Pass();
 
-            return Verify(commandResult.StdOut);
+            return Verify(commandResult.StdOut)
+                .AddScrubber(output =>
+                {
+                    output.ScrubByRegex(@"Package version: .+", "Package version: %VERSION%");
+                    // Template list varies between package versions on the proxy feed;
+                    // keep only the header and scrub the table contents.
+                    int idx = output.ToString().IndexOf("   Templates:");
+                    if (idx >= 0)
+                    {
+                        int lineEnd = output.ToString().IndexOf('\n', idx);
+                        if (lineEnd >= 0)
+                        {
+                            output.Remove(lineEnd + 1, output.Length - lineEnd - 1);
+                            output.Append("      %TEMPLATES%");
+                        }
+                    }
+                });
         }
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
@@ -205,27 +221,35 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         private async Task<string> GetLatestVersion(string packageName)
         {
             using HttpClient client = new();
-            // Resolve the PackageBaseAddress endpoint from the V3 service index
+            // Resolve the SearchQueryService endpoint from the V3 service index
+            // This matches the resolution path that `dotnet new details` uses internally
             string indexJson = await client.GetStringAsync("https://packagefeedproxy.microsoft.io/nuget/v3/index.json");
             JObject index = JObject.Parse(indexJson);
-            JToken? packageBaseAddressResource = index["resources"]?
-                .FirstOrDefault(r => HasResourceType(r["@type"], "PackageBaseAddress"));
-            string? baseAddress = packageBaseAddressResource?["@id"]?.ToString().TrimEnd('/');
-            if (string.IsNullOrEmpty(baseAddress))
+            JToken? searchResource = index["resources"]?
+                .FirstOrDefault(r => HasResourceType(r["@type"], "SearchQueryService"));
+            string? searchBaseUrl = searchResource?["@id"]?.ToString().TrimEnd('/');
+            if (string.IsNullOrEmpty(searchBaseUrl))
             {
-                throw new InvalidOperationException("PackageBaseAddress resource was not found in the NuGet service index.");
+                throw new InvalidOperationException("SearchQueryService resource was not found in the NuGet service index.");
             }
 
-            string json = await client.GetStringAsync($"{baseAddress}/{packageName.ToLowerInvariant()}/index.json");
+            string json = await client.GetStringAsync(
+                $"{searchBaseUrl}?q={Uri.EscapeDataString(packageName)}&skip=0&take=1&prerelease=true&semVerLevel=2.0.0");
             JObject obj = JObject.Parse(json);
 
-            var versions = obj["versions"]?.ToObject<List<string>>();
-            if (versions == null || versions.Count == 0)
+            var data = obj["data"] as JArray;
+            if (data == null || data.Count == 0)
             {
-                throw new Exception("No versions found.");
+                throw new Exception($"Package '{packageName}' not found in search results.");
             }
 
-            return versions.Last();
+            string? version = data[0]?["version"]?.ToString();
+            if (string.IsNullOrEmpty(version))
+            {
+                throw new Exception($"No version found for package '{packageName}'.");
+            }
+
+            return version;
         }
 
         private static bool HasResourceType(JToken? resourceType, string typePrefix) =>
