@@ -61,11 +61,10 @@ namespace Microsoft.NET.Build.Tests
             string[] msbuildArgs = null,
             GetValuesCommand.ValueType valueType = GetValuesCommand.ValueType.Item,
             [CallerMemberName] string callingMethod = "",
-            Action<XDocument> projectChanges = null)
+            Action<XDocument> projectChanges = null,
+            string targetFramework = "netstandard2.0")
         {
             msbuildArgs = msbuildArgs ?? Array.Empty<string>();
-
-            string targetFramework = "netstandard2.0";
 
             var testAsset = testAssetsManager
                 .CopyTestAsset("AppWithLibraryFS", callingMethod)
@@ -223,6 +222,141 @@ namespace Microsoft.NET.Build.Tests
             var definedConstants = getValuesCommand.GetValues();
 
             definedConstants.Should().BeEquivalentTo(new[] { "DEBUG", "TRACE" }.Concat(expectedDefines).ToArray());
+        }
+
+        [TestMethod]
+        public void It_sets_SupportsHotReload_capability_for_net6_or_newer_under_dotnet_watch()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().Contain("SupportsHotReload");
+        }
+
+        [TestMethod]
+        public void It_sets_the_hot_reload_compiler_flag_under_dotnet_watch()
+        {
+            var otherFlags = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "OtherFlags",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
+                valueType: GetValuesCommand.ValueType.Property,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            string.Join(" ", otherFlags).Should().Contain("--test:HotReloadDeltas");
+        }
+
+        [TestMethod]
+        public void It_does_not_set_SupportsHotReload_capability_outside_dotnet_watch()
+        {
+            // ProjectCapabilities are read by other hosts such as Visual Studio, which has no
+            // F# Edit-and-Continue support, so the capability is only advertised when
+            // dotnet-watch sets DotNetWatchBuild=true (or a project opts in explicitly).
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().NotContain("SupportsHotReload");
+        }
+
+        [TestMethod]
+        public void It_does_not_set_the_hot_reload_compiler_flag_outside_dotnet_watch()
+        {
+            var otherFlags = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "OtherFlags",
+                valueType: GetValuesCommand.ValueType.Property,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                },
+                targetFramework: "net6.0");
+
+            string.Join(" ", otherFlags).Should().NotContain("--test:HotReloadDeltas");
+        }
+
+        [TestMethod]
+        public void It_sets_SupportsHotReload_capability_when_explicitly_opted_in()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                    project.Root.Descendants(ns + "PropertyGroup").First().Add(new XElement(ns + "SupportsHotReload", "true"));
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().Contain("SupportsHotReload");
+        }
+
+        [TestMethod]
+        public void It_does_not_set_SupportsHotReload_capability_for_pre_net6()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net5.0";
+                },
+                targetFramework: "net5.0");
+
+            projectCapabilities.Should().NotContain("SupportsHotReload");
+        }
+
+        [TestMethod]
+        public void It_respects_SupportsHotReload_false_override()
+        {
+            var projectCapabilities = GetValuesFromTestLibrary(
+                Log,
+                TestAssetsManager,
+                "ProjectCapability",
+                msbuildArgs: new[] { "/p:DotNetWatchBuild=true" },
+                valueType: GetValuesCommand.ValueType.Item,
+                projectChanges: project =>
+                {
+                    var ns = project.Root.Name.Namespace;
+                    project.Root.Descendants(ns + "TargetFramework").Single().Value = "net6.0";
+                    project.Root.Descendants(ns + "PropertyGroup").First().Add(new XElement(ns + "SupportsHotReload", "false"));
+                },
+                targetFramework: "net6.0");
+
+            projectCapabilities.Should().NotContain("SupportsHotReload");
         }
     }
 }
