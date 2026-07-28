@@ -234,7 +234,8 @@ public class TargetsTests
         var instance = project.CreateProjectInstance(ProjectInstanceSettings.None);
 
         instance.Build([ComputeContainerConfig], [logger]).Should().Be(shouldSucceed, String.Join(Environment.NewLine, logger.AllMessages));
-        instance.GetItems("ContainerAnnotation").Should().ContainSingle(annotation => annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
+        instance.GetItems("ContainerAnnotation").Should().ContainSingle(annotation =>
+            annotation.EvaluatedInclude == "example.com/annotation" && annotation.GetMetadata("Scope")!.EvaluatedValue == "Manifest");
         instance.GetPropertyValue("ContainerImageFormat").Should().Be(expectedFormat);
     }
 
