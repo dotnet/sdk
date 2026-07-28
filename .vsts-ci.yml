@@ -165,9 +165,9 @@ extends:
             # The tests acquire the templates' PackageReferences from NuGet, which allows them to be scanned by CG (component governance).
             # CG is only ran internally, so this job makes sense to only run alongside of the official jobs.
             - categoryName: TestTemplatesCG
+              testExecutionMode: local
               testProjects: $(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
-              testRunnerAdditionalArguments: -class Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
-              publishXunitResults: true
+              testFilter: FullyQualifiedName~Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
 
       ############### LINUX ###############
       - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
