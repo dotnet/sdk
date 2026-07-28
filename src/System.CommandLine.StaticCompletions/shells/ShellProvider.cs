@@ -30,11 +30,6 @@ public interface IShellProvider
     /// <param name="command"></param>
     /// <returns></returns>
     string GenerateCompletions(System.CommandLine.Command command);
-
-    /// <summary>
-    /// Filters option names to only those that are valid for use in this shell's completion script.
-    /// </summary>
-    IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names);
 }
 
 

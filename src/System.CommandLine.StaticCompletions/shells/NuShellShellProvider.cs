@@ -28,7 +28,4 @@ public class NushellShellProvider : IShellProvider
         """;
 
     public string GenerateCompletions(System.CommandLine.Command command) => _dynamicCompletionScript;
-
-    public IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
-        names.Where(n => n.StartsWith('-'));
 }

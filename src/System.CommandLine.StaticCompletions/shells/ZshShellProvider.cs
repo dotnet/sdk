@@ -20,9 +20,6 @@ public class ZshShellProvider : IShellProvider
     private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
         names.Where(n => n.StartsWith('-'));
 
-    IEnumerable<string> IShellProvider.SanitizeOptionNames(IEnumerable<string> names) =>
-        SanitizeOptionNames(names);
-
     public string GenerateCompletions(Command command)
     {
         var binaryName = command.Name;

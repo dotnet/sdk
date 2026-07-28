@@ -19,12 +19,6 @@ public class PowerShellShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
-    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
-        names.Where(n => n.StartsWith('-'));
-
-    IEnumerable<string> IShellProvider.SanitizeOptionNames(IEnumerable<string> names) =>
-        SanitizeOptionNames(names);
-
     public string GenerateCompletions(Command command)
     {
         var binaryName = command.Name;
@@ -102,7 +96,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
         }
 
         var verboseName = o.Name;
-        var names = SanitizeOptionNames(o.Names());
+        var names = o.Names();
         var helpText = SanitizeHelpDescription(o);
 
         // generate a completion recognizer for each alias, but have it's 'commit' value

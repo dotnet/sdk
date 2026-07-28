@@ -18,12 +18,6 @@ public class BashShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
-    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
-        names.Where(n => n.StartsWith('-'));
-
-    IEnumerable<string> IShellProvider.SanitizeOptionNames(IEnumerable<string> names) =>
-        SanitizeOptionNames(names);
-
     public string GenerateCompletions(Command command)
     {
         var initialFunctionName = command.FunctionName().MakeSafeFunctionName();
@@ -195,7 +189,7 @@ public class BashShellProvider : IShellProvider
     {
         // unlike the completion-options generation, for actually implementing suggestions we should be able to handle all of the options' aliases.
         // this ensures if the user manually enters an alias we can support that usage.
-        var optionNames = string.Join('|', SanitizeOptionNames(option.Names()));
+        var optionNames = string.Join('|', option.Names());
         if (string.IsNullOrEmpty(optionNames))
         {
             return null;
