@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.AvoidStringBuilderPInvokeParametersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public class AvoidStringBuilderPInvokeParametersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_CSAsync()
         {
             string source = @"
@@ -30,7 +30,7 @@ public class C
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringBuilderParameter_Diagnostics_CSAsync()
         {
             string source = @"
@@ -53,7 +53,7 @@ public class C
                 CSharpResult(2, "sb2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_VBAsync()
         {
             string source = @"
@@ -68,7 +68,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringBuilderParameter_Diagnostics_VBAsync()
         {
             string source = @"

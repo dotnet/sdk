@@ -359,6 +359,18 @@ public class CliSchemaTests : SdkTest
         }
       },
       "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        },
         "--framework": {
           "description": "Add the reference only when targeting a specific framework.",
           "hidden": false,
@@ -392,7 +404,21 @@ public class CliSchemaTests : SdkTest
     },
     "list": {
       "description": "List all project-to-project references of the project.",
-      "hidden": false
+      "hidden": false,
+      "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        }
+      }
     },
     "remove": {
       "description": "Remove a project-to-project reference from the project.",
@@ -410,6 +436,18 @@ public class CliSchemaTests : SdkTest
         }
       },
       "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        },
         "--framework": {
           "description": "Remove the reference only when targeting a specific framework.",
           "hidden": false,

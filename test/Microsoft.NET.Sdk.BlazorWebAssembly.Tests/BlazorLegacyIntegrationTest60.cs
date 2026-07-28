@@ -49,8 +49,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
         [RequiresMSBuildVersion("17.13")]
-        [Ignore("https://github.com/dotnet/sdk/issues/49925")] // https://github.com/dotnet/sdk/issues/44886
-        // https://github.com/dotnet/sdk/issues/42145
+        [Ignore("https://github.com/dotnet/sdk/issues/49925")] // https://github.com/dotnet/sdk/issues/44886, https://github.com/dotnet/sdk/issues/42145
         public void Publish60Hosted_Works()
         {
             // Arrange

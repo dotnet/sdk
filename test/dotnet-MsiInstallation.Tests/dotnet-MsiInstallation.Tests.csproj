@@ -38,14 +38,6 @@
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-  </ItemGroup>
-
   <!-- Remove ALL compile items and global usings added by test infrastructure (must be after Sdk.targets) -->
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="@(Compile)" />

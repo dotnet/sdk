@@ -11,7 +11,6 @@ using Microsoft.Win32;
 
 namespace Microsoft.DotNet.Cli.Workload.List.Tests
 {
-    [DoNotParallelize]
     [SupportedOSPlatform("windows")]
     [TestClass]
     public class GivenAnMsiInstallation : IDisposable

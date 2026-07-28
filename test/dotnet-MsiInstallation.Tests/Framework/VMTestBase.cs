@@ -9,7 +9,6 @@ using NuGet.Versioning;
 
 namespace Microsoft.DotNet.MsiInstallerTests.Framework
 {
-    [DoNotParallelize]
     public class VMTestBase : SdkTest, IDisposable
     {
         private VirtualMachine _vm;

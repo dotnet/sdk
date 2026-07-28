@@ -11,7 +11,8 @@
     <OutputPath>$(TestHostFolder)</OutputPath>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <MSTestParallelizeScope></MSTestParallelizeScope>
+    <!-- Tests rely on global process state, so run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
@@ -74,24 +75,7 @@
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
-    <!-- ComponentMocks is compiled against the old xUnit Microsoft.NET.TestFramework and needs it at
-         runtime. Reference it directly so it flows into the runtime closure (output + deps.json). It is
-         removed from the C# compiler references below to avoid CS0433 duplicate-type conflicts with
-         Microsoft.NET.TestFramework.MSTest, which link-shares the same runner-agnostic types. -->
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
-
-  <!-- Remove the old xUnit TestFramework from the C# compiler reference list (compile only) to avoid
-       CS0433 duplicate-type conflicts with Microsoft.NET.TestFramework.MSTest. The assembly remains in
-       the runtime closure so ComponentMocks can load it at runtime. -->
-  <Target Name="RemoveConflictingTestFrameworkReference"
-          AfterTargets="FindReferenceAssembliesForReferences"
-          BeforeTargets="CoreCompile">
-    <ItemGroup>
-      <ReferencePathWithRefAssemblies Remove="@(ReferencePathWithRefAssemblies)"
-                                      Condition="'%(Filename)' == 'Microsoft.NET.TestFramework' AND '%(Extension)' == '.dll'" />
-    </ItemGroup>
-  </Target>
 
   <ItemGroup>
     <PackageReference Include="Basic.CompilerLog.Util" />
@@ -109,12 +93,7 @@
 
   <!-- Global usings -->
   <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
     <Using Include="Microsoft.DotNet.Cli.Telemetry" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
     <Using Include="Combinatorial.MSTest" />
     <!-- Aliases -->
     <!-- Note: '%3C' is for '<' and '%3E' is for '>' -->

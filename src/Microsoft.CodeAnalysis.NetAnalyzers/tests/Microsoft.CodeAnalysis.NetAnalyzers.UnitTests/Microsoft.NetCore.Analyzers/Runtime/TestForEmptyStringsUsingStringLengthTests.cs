@@ -1,16 +1,16 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForEmptyStringsUsingStringLengthAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class TestForEmptyStringsUsingStringLengthTests
     {
         #region Helper methods
@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         #region Diagnostic tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820StaticEqualsTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -57,7 +57,7 @@ class C
                 CSharpResult(18, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820InstanceEqualsTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -85,7 +85,7 @@ class C
                 CSharpResult(16, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1820OperatorOverloadTestCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -111,7 +111,7 @@ class C
 
         #endregion
 
-        [Fact, WorkItem(1508, "https://github.com/dotnet/roslyn-analyzers/issues/1508")]
+        [TestMethod, WorkItem(1508, "https://github.com/dotnet/roslyn-analyzers/issues/1508")]
         public async Task CA1820_ExpressionTree_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

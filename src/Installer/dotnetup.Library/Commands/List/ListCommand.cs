@@ -16,15 +16,13 @@ internal class ListCommand : CommandBase
     private readonly string? _manifestPath;
     private readonly string? _installPath;
 
-    public ListCommand(ParseResult parseResult) : base(parseResult)
+    public ListCommand(ParseResult parseResult) : base(parseResult, "list")
     {
         _format = parseResult.GetValue(CommonOptions.FormatOption);
         _skipVerification = parseResult.GetValue(ListCommandParser.NoVerifyOption);
         _manifestPath = parseResult.GetValue(CommonOptions.ManifestPathOption);
         _installPath = parseResult.GetValue(CommonOptions.InstallPathOption);
     }
-
-    protected override string GetCommandName() => "list";
 
     protected override void ExecuteCore()
     {

@@ -1,7 +1,8 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
@@ -437,7 +438,6 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         [TestMethod]
-        [DoNotParallelize]
         public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectoryNotProcessCurrentDirectory()
         {
             var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(ComputeReferenceStaticWebAssetItemsTest), Guid.NewGuid().ToString("N"));

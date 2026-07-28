@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Utilities;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.NET.Sdk.Razor.Test
 {
     [TestClass]

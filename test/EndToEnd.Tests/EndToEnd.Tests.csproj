@@ -5,20 +5,13 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <!-- These tests rely on global process state, so run serially ([assembly: DoNotParallelize]). -->
-    <MSTestParallelizeScope></MSTestParallelizeScope>
+    <!-- These tests rely on global process state, so run serially. None makes MSTest.Sdk emit [assembly: DoNotParallelize]. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.NET.Sdk.WorkloadManifestReader\Microsoft.NET.Sdk.WorkloadManifestReader.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
 </Project>

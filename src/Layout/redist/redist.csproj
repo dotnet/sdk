@@ -66,6 +66,17 @@
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Tasks\Microsoft.NET.Build.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Tasks\Microsoft.NET.Build.Extensions.Tasks\Microsoft.NET.Build.Extensions.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" />
     <ProjectReference Include="..\..\Resolvers\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver\Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver.csproj" />
+
+    <!-- The outer (cross-targeting) build of these projects produces each SDK's content (Sdk\Sdk.props, Sdk\Sdk.targets
+         and targets\*) under artifacts\bin\$(Configuration)\Sdks\<SdkName>, which the PublishNetSdks target then copies
+         into the layout. These references provide the build-ordering edge so the content exists before that copy;
+         SkipGetTargetFrameworkProperties="true" is required so the outer build (which emits the content) is demanded,
+         not just an inner build. Without them, CopyAdditionalFilesToLayout can run after the copy and produce a layout
+         missing Sdk.props, which fails downstream restores with "Could not resolve SDK" (https://github.com/dotnet/sdk/issues/51530). -->
+    <ProjectReference Include="..\..\RazorSdk\Tasks\Microsoft.NET.Sdk.Razor.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="..\..\StaticWebAssetsSdk\Tasks\Microsoft.NET.Sdk.StaticWebAssets.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="..\..\BlazorWasmSdk\Tasks\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
+    <ProjectReference Include="..\..\WasmSdk\Tasks\Microsoft.NET.Sdk.WebAssembly.Tasks.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
     <ProjectReference Include="$(RepoRoot)src\Dotnet.Watch\dotnet-watch\dotnet-watch.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
     <ProjectReference Include="$(RepoRoot)src\Dotnet.Format\dotnet-format\dotnet-format.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
 
@@ -77,12 +88,12 @@
          race over shared bin\ and obj\ directories. This ProjectReference sequences the outer
          Build to complete before redist's GenerateSdkLayout target runs.
 
-         Conditioned on the same TargetRid prefix check as the PublishDotnetAot target itself;
+         Conditioned on the same check as the PublishDotnetAot target itself (_ShouldPublishDotnetAot);
          when NativeAOT publish doesn't run (e.g. source-build with TargetRid like centos.10-x64),
          pulling dotnet-aot.csproj into the restore graph would demand the ILCompiler RID-specific
          runtime pack, which isn't available from source-built feeds (NU1100). -->
     <ProjectReference Include="$(RepoRoot)src\Cli\dotnet-aot\dotnet-aot.csproj"
-                      Condition="'$(TargetRid)' == '$(HostRid)' and ($(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx')))"
+                      Condition="'$(_ShouldPublishDotnetAot)' == 'true'"
                       ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />
 
     <ProjectReference Include="$(RepoRoot)template_feed\*\*.csproj" ReferenceOutputAssembly="false" SkipGetTargetFrameworkProperties="true" Private="false" />

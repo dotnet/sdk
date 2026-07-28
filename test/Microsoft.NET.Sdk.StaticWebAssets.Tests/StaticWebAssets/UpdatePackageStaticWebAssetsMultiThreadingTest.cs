@@ -10,9 +10,6 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// This test mutates the process-wide current directory, so it must not run
-// concurrently with other tests under MSTest's method-level parallelization.
-[DoNotParallelize]
 [TestClass]
 public class UpdatePackageStaticWebAssetsMultiThreadingTest
 {

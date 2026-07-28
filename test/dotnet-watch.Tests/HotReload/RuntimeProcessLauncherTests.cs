@@ -13,8 +13,7 @@ public class RuntimeProcessLauncherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(TriggerEvent.RuntimeProcessLauncherCreated)]
-    [DataRow(TriggerEvent.WaitingForChanges)]
+    [CombinatorialData]
     public async Task UpdateAndRudeEdit(TriggerEvent trigger)
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", [trigger]);
@@ -174,8 +173,7 @@ public class RuntimeProcessLauncherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task UpdateAppliedToNewProcesses(bool sharedOutput)
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", [sharedOutput]);
@@ -275,9 +273,7 @@ public class RuntimeProcessLauncherTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(UpdateLocation.Dependency)]
-    [DataRow(UpdateLocation.TopLevel)]
-    [DataRow(UpdateLocation.TopFunction)]
+    [CombinatorialData]
     public async Task HostRestart(UpdateLocation updateLocation)
     {
         var testAsset = CopyTestAsset("WatchAppMultiProc", [updateLocation]);

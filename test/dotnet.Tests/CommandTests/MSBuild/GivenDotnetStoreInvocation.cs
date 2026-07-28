@@ -5,7 +5,6 @@ using Microsoft.DotNet.Cli.Commands.Tool.Store;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenDotnetStoreInvocation : SdkTest
     {

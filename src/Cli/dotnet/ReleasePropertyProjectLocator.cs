@@ -5,6 +5,7 @@ using System.Collections.ObjectModel;
 using System.CommandLine;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -241,7 +242,15 @@ internal sealed class ReleasePropertyProjectLocator(
     {
         try
         {
-            return new ProjectInstance(projectPath, globalProperties, "Current");
+            // Only evaluated property values (PublishRelease/PackRelease and FullPath) are read from the
+            // returned instance, never items or targets, so stop after the Properties pass instead of
+            // running a full evaluation (which additionally globs items and registers targets).
+            return ProjectInstance.FromFile(projectPath, new ProjectOptions
+            {
+                GlobalProperties = globalProperties,
+                ToolsVersion = "Current",
+                EvaluationStage = ProjectEvaluationStage.Properties,
+            });
         }
         catch (Exception e) // Catch failed file access, or invalid project files that cause errors when read into memory,
         {

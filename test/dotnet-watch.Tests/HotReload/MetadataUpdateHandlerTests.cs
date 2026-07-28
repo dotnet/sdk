@@ -41,8 +41,7 @@ public class MetadataUpdateHandlerTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task Exception(bool verbose)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: verbose.ToString())

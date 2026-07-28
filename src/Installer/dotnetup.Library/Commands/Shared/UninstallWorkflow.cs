@@ -155,7 +155,9 @@ internal class UninstallWorkflow
 
     /// <summary>
     /// Resolves the install path for uninstall using the same logic as the install command:
-    /// only use the configured path if it's a user install, otherwise fall back to default.
+    /// only use the configured path if it is a dotnetup-managed hive, otherwise fall back to
+    /// default. This prevents uninstall from targeting a dotnet that dotnetup does not own (e.g.
+    /// a system install or a hand-extracted dotnet that happens to win on PATH).
     /// </summary>
     internal static string ResolveInstallPath(string? explicitInstallPath, IDotnetEnvironmentManager dotnetEnvironment)
     {
@@ -165,7 +167,7 @@ internal class UninstallWorkflow
         }
 
         var configuredInstall = dotnetEnvironment.GetCurrentPathConfiguration();
-        if (configuredInstall is { InstallType: InstallType.User })
+        if (configuredInstall is { IsDotnetupHive: true })
         {
             return configuredInstall.Path;
         }

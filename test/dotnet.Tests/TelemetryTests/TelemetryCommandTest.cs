@@ -8,7 +8,6 @@ using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
-[DoNotParallelize]
 [TestClass]
 public class TelemetryCommandTests : SdkTest
 {

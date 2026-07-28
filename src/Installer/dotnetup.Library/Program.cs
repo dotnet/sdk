@@ -75,7 +75,7 @@ public class DotnetupProgram
         {
             TagRootForExitCode(rootOp, processExitCode);
             rootOp.Dispose(); // emit root event before flush
-            DisposeTelemetry();
+            FlushTelemetry(processExitCode);
         }
     }
 
@@ -105,17 +105,14 @@ public class DotnetupProgram
         return Parser.Invoke(args);
     }
 
-    private static void DisposeTelemetry()
+    private static void FlushTelemetry(int exitCode)
     {
         try
         {
             DotnetupTelemetry.Instance.WriteLogIfNecessary();
-            DotnetupTelemetry.Instance.Flush();
-
-            if (DotnetupTelemetry.Instance.IsOneAndDoneEnvironment)
-            {
-                DotnetupTelemetry.Instance.Dispose();
-            }
+            // Flush, never Dispose: process exit reclaims the providers, and Dispose
+            // would trigger the OTel LoggerProvider's unbounded Shutdown drain.
+            DotnetupTelemetry.Instance.Flush(exitCode);
         }
         catch
         {

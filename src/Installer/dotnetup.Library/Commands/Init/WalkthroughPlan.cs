@@ -12,11 +12,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// discards this plan and re-resolves each value through the step-by-step prompts.
 /// </summary>
 /// <param name="InstallRoot">The install root the environment is configured against.</param>
-/// <param name="PathPreference">The recommended path preference (mode).</param>
+/// <param name="AccessMode">The recommended access mode.</param>
 /// <param name="Migrations">The system installs eligible for migration under the recommended mode.</param>
 /// <param name="ChannelDisplay">Display information for the SDK channel line.</param>
 internal sealed record WalkthroughPlan(
     DotnetInstallRoot InstallRoot,
-    PathPreference PathPreference,
+    DotnetAccessMode AccessMode,
     List<MigrationWorkflow.MigrationSelection> Migrations,
     DefaultChannelDisplay ChannelDisplay);

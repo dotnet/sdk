@@ -227,6 +227,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine(MyLib.Greeter.Greet("World"));
             """);
@@ -289,6 +290,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "lib1.cs"), """
+            #!/usr/bin/env dotnet
             #:property OutputType=Library
             #:ref lib2.cs
             namespace Lib1;
@@ -299,6 +301,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib1.cs
             Console.WriteLine(Lib1.Facade.Get());
             """);
@@ -2210,6 +2213,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:ref lib/lib.cs
             Console.WriteLine(MyLib.Wrapper.GetMessage());
             """);

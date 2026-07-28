@@ -10,13 +10,13 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
     [TestClass]
     public class StaticWebAssetsCompressionIntegrationTest : AspNetSdkBaselineTest
     {
         [TestMethod]
+
         public void Build_Detects_PrecompressedAssets()
         {
             var expectedManifest = LoadBuildManifest();

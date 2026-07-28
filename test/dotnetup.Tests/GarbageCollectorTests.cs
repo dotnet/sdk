@@ -6,13 +6,13 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class GarbageCollectorTests
 {
-    [Fact]
+    [TestMethod]
     public void RemovesUnreferencedInstallationRecords()
     {
         using var testEnv = new TestEnvironment();
@@ -62,7 +62,7 @@ public class GarbageCollectorTests
         Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "10.0.103")).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void KeepsInstallationReferencedByMultipleSpecs()
     {
         using var testEnv = new TestEnvironment();
@@ -101,7 +101,7 @@ public class GarbageCollectorTests
         manifest.GetInstallations(installRoot).Should().ContainSingle();
     }
 
-    [Fact]
+    [TestMethod]
     public void KeepsStableAndPreviewInstallationsWhenLatestAndPreviewSpecsExist()
     {
         using var testEnv = new TestEnvironment();
@@ -150,7 +150,7 @@ public class GarbageCollectorTests
             .BeEquivalentTo(["10.0.100", "11.0.100-preview.1"]);
     }
 
-    [Fact]
+    [TestMethod]
     public void RemovesStaleGlobalJsonSpecs()
     {
         using var testEnv = new TestEnvironment();
@@ -186,7 +186,7 @@ public class GarbageCollectorTests
         deleted.Should().Contain("sdk/10.0.100");
     }
 
-    [Fact]
+    [TestMethod]
     public void VersionMatchingWorksForExplicitChannelPatterns()
     {
         using var testEnv = new TestEnvironment();

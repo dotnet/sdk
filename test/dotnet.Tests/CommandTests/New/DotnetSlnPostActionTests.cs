@@ -65,6 +65,30 @@ namespace Microsoft.DotNet.Cli.New.Tests
         }
 
         [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/49923
+        public void AddProjectToSolutionPostActionPrefersNearbySlnxOverDistantSln()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
+            EnsureParentDirectoriesExist(targetBasePath);
+
+            // Place a .sln in targetBasePath (acts as "parent" directory)
+            string parentSlnPath = Path.Combine(targetBasePath, "Parent.sln");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(parentSlnPath, string.Empty);
+
+            // Create a subdirectory and place .slnx there (the "output" directory)
+            string outputDir = Path.Combine(targetBasePath, "output");
+            _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(outputDir);
+            string slnxFileFullPath = Path.Combine(outputDir, "MySln.slnx");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnxFileFullPath, string.Empty);
+
+            // Should find the .slnx in the output directory, not the .sln in the parent
+            IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, outputDir);
+            Assert.ContainsSingle(solutionFiles);
+            Assert.AreEqual(slnxFileFullPath, solutionFiles[0]);
+        }
+
+        [TestMethod]
         public void AddProjectToSolutionPostActionFindsOneProjectToAdd()
         {
             string outputBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();

@@ -9,8 +9,7 @@ namespace Microsoft.DotNet.Watch.UnitTests;
 public class AutoRestartTests : DotNetWatchTestBase
 {
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task AutoRestartOnRudeEdit(bool nonInteractive)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: nonInteractive.ToString())
@@ -55,9 +54,8 @@ public class AutoRestartTests : DotNetWatchTestBase
     }
 
     [TestMethod]
+    [CombinatorialData]
     [Ignore("https://github.com/dotnet/sdk/issues/51469")]
-    [DataRow(true)]
-    [DataRow(false)]
     public async Task AutoRestartOnRuntimeRudeEdit(bool nonInteractive)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: nonInteractive.ToString())
@@ -163,8 +161,7 @@ public class AutoRestartTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task AutoRestartOnNoEffectEdit(bool nonInteractive)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: nonInteractive.ToString())

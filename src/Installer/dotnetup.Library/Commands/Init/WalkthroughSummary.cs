@@ -23,12 +23,12 @@ internal static class WalkthroughSummary
     /// Assumes the banner has already been written by the caller.
     /// </summary>
     /// <param name="plan">The recommended setup to display.</param>
-    /// <param name="configuredPreference">The currently configured path preference, or null when unconfigured.</param>
-    public static WalkthroughDecision Show(WalkthroughPlan plan, PathPreference? configuredPreference)
+    /// <param name="configuredAccessMode">The currently configured access mode, or null when unconfigured.</param>
+    public static WalkthroughDecision Show(WalkthroughPlan plan, DotnetAccessMode? configuredAccessMode)
     {
-        RenderSummaryBlock(plan, configuredPreference);
+        RenderSummaryBlock(plan, configuredAccessMode);
 
-        bool isConfigured = configuredPreference is not null;
+        bool isConfigured = configuredAccessMode is not null;
         IReadOnlyList<SummaryChoice> choices = BuildSummaryChoices(isConfigured);
         int defaultIndex = GetDefaultChoiceIndex(choices, isConfigured);
 
@@ -87,7 +87,7 @@ internal static class WalkthroughSummary
         return 0;
     }
 
-    private static void RenderSummaryBlock(WalkthroughPlan plan, PathPreference? configuredPreference)
+    private static void RenderSummaryBlock(WalkthroughPlan plan, DotnetAccessMode? configuredAccessMode)
     {
         SpectreAnsiConsole.MarkupLine(string.Format(
             CultureInfo.InvariantCulture,
@@ -96,7 +96,7 @@ internal static class WalkthroughSummary
         SpectreAnsiConsole.WriteLine();
 
         RenderChannelLine(plan.ChannelDisplay);
-        RenderModeLine(plan.PathPreference, configuredPreference);
+        RenderModeLine(plan.AccessMode, configuredAccessMode);
         RenderMigrationSummary(plan.Migrations);
 
         SpectreAnsiConsole.WriteLine();
@@ -122,16 +122,16 @@ internal static class WalkthroughSummary
     }
 
     private static void RenderModeLine(
-        PathPreference recommended,
-        PathPreference? configuredPreference)
+        DotnetAccessMode recommended,
+        DotnetAccessMode? configuredAccessMode)
     {
         string label = Strings.SummaryModeLabel.PadRight(LabelWidth);
-        string value = DotnetupTheme.Brand(PathPreferenceDisplay.GetNameWithSuggestedHint(recommended).EscapeMarkup());
-        string current = configuredPreference is { } pref
+        string value = DotnetupTheme.Brand(DotnetAccessModeDisplay.GetNameWithSuggestedHint(recommended).EscapeMarkup());
+        string current = configuredAccessMode is { } pref
             ? "  " + DotnetupTheme.Warning("(" + string.Format(
                 CultureInfo.InvariantCulture,
                 Strings.SummaryModeCurrent,
-                PathPreferenceDisplay.GetName(pref).EscapeMarkup()) + ")")
+                DotnetAccessModeDisplay.GetName(pref).EscapeMarkup()) + ")")
             : string.Empty;
 
         SpectreAnsiConsole.MarkupLine(label + value + current);

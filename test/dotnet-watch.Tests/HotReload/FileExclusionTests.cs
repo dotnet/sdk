@@ -15,22 +15,7 @@ public class FileExclusionTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true, true, DirectoryKind.Ordinary)]
-    [DataRow(true, true, DirectoryKind.Hidden)]
-    [DataRow(true, true, DirectoryKind.Bin)]
-    [DataRow(true, true, DirectoryKind.Obj)]
-    [DataRow(true, false, DirectoryKind.Ordinary)]
-    [DataRow(true, false, DirectoryKind.Hidden)]
-    [DataRow(true, false, DirectoryKind.Bin)]
-    [DataRow(true, false, DirectoryKind.Obj)]
-    [DataRow(false, true, DirectoryKind.Ordinary)]
-    [DataRow(false, true, DirectoryKind.Hidden)]
-    [DataRow(false, true, DirectoryKind.Bin)]
-    [DataRow(false, true, DirectoryKind.Obj)]
-    [DataRow(false, false, DirectoryKind.Ordinary)]
-    [DataRow(false, false, DirectoryKind.Hidden)]
-    [DataRow(false, false, DirectoryKind.Bin)]
-    [DataRow(false, false, DirectoryKind.Obj)]
+    [CombinatorialData]
     public async Task IgnoredChange(bool isExisting, bool isIncluded, DirectoryKind directoryKind)
     {
         var testAsset = CopyTestAsset("WatchNoDepsApp", [isExisting, isIncluded, directoryKind]);

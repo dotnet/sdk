@@ -392,7 +392,9 @@ public static class Program
                 buildCommand.GetOutputDirectory(targetFramework).FullName,
                 $"{proj.Name}.runtimeconfig.dev.json");
 
-            buildCommand.Execute().StdOut
+            // Disable Hot Reload runtime options (which are emitted to runtimeconfig.dev.json for net6.0+ in
+            // Debug builds) so this test verifies the probing-paths behavior that was removed after net6.0.
+            buildCommand.Execute("/p:EnableHotReloadInRuntimeConfigDevFile=false").StdOut
                         .Should()
                         .NotContain("NETSDK1048");
 

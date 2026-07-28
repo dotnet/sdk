@@ -10,7 +10,6 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
-    [DoNotParallelize]
     [TestClass]
     public class DotnetMsbuildInProcTests : SdkTest
     {

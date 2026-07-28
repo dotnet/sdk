@@ -6,30 +6,30 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Unit tests for runtime installation functionality. E2E tests are in DnupE2Etest.cs.
 /// </summary>
+[TestClass]
 public class RuntimeInstallTests
 {
     private readonly ITestOutputHelper _log;
 
-    public RuntimeInstallTests(ITestOutputHelper log)
+    public RuntimeInstallTests(TestContext testContext)
     {
-        _log = log;
+        _log = new TestContextOutputHelper(testContext);
     }
 
     #region Version Resolution Tests
 
-    [Theory]
-    [InlineData("latest", InstallComponent.Runtime)]
-    [InlineData("lts", InstallComponent.Runtime)]
-    [InlineData("9.0", InstallComponent.Runtime)]
-    [InlineData("latest", InstallComponent.ASPNETCore)]
-    [InlineData("9.0", InstallComponent.ASPNETCore)]
+    [TestMethod]
+    [DataRow("latest", InstallComponent.Runtime)]
+    [DataRow("lts", InstallComponent.Runtime)]
+    [DataRow("9.0", InstallComponent.Runtime)]
+    [DataRow("latest", InstallComponent.ASPNETCore)]
+    [DataRow("9.0", InstallComponent.ASPNETCore)]
     public void VersionResolution_ValidChannels_ReturnsVersion(string channel, InstallComponent component)
     {
         var version = new ChannelVersionResolver().GetLatestVersionForChannel(new UpdateChannel(channel), component);
@@ -38,10 +38,10 @@ public class RuntimeInstallTests
         version.Should().NotBeNull();
     }
 
-    [Theory]
-    [InlineData("9.0.1xx", InstallComponent.Runtime)]
-    [InlineData("9.0.1xx", InstallComponent.ASPNETCore)]
-    [InlineData("9.0.1xx", InstallComponent.WindowsDesktop)]
+    [TestMethod]
+    [DataRow("9.0.1xx", InstallComponent.Runtime)]
+    [DataRow("9.0.1xx", InstallComponent.ASPNETCore)]
+    [DataRow("9.0.1xx", InstallComponent.WindowsDesktop)]
     public void VersionResolution_FeatureBand_ReturnsNull(string featureBand, InstallComponent component)
     {
         var version = new ChannelVersionResolver().GetLatestVersionForChannel(new UpdateChannel(featureBand), component);
@@ -50,7 +50,7 @@ public class RuntimeInstallTests
         version.Should().BeNull("feature bands are SDK-specific");
     }
 
-    [Fact]
+    [TestMethod]
     public void VersionResolution_SdkAndRuntime_DifferentVersions()
     {
         var resolver = new ChannelVersionResolver();
@@ -67,23 +67,23 @@ public class RuntimeInstallTests
 
     #region Component Spec Parsing Tests
 
-    [Theory]
-    [InlineData(null, InstallComponent.Runtime, null)]
-    [InlineData("", InstallComponent.Runtime, null)]
-    [InlineData("10.0.1", InstallComponent.Runtime, "10.0.1")]
-    [InlineData("latest", InstallComponent.Runtime, "latest")]
-    [InlineData("9.0", InstallComponent.Runtime, "9.0")]
-    [InlineData("runtime@10.0.1", InstallComponent.Runtime, "10.0.1")]
-    [InlineData("runtime@latest", InstallComponent.Runtime, "latest")]
-    [InlineData("aspnetcore@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
-    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore, "9.0")]
-    [InlineData("ASPNETCORE@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
-    [InlineData("aspnet@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
-    [InlineData("aspnet@9.0", InstallComponent.ASPNETCore, "9.0")]
-    [InlineData("windowsdesktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
-    [InlineData("WindowsDesktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
-    [InlineData("desktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
-    [InlineData("desktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
+    [TestMethod]
+    [DataRow(null, InstallComponent.Runtime, null)]
+    [DataRow("", InstallComponent.Runtime, null)]
+    [DataRow("10.0.1", InstallComponent.Runtime, "10.0.1")]
+    [DataRow("latest", InstallComponent.Runtime, "latest")]
+    [DataRow("9.0", InstallComponent.Runtime, "9.0")]
+    [DataRow("runtime@10.0.1", InstallComponent.Runtime, "10.0.1")]
+    [DataRow("runtime@latest", InstallComponent.Runtime, "latest")]
+    [DataRow("aspnetcore@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [DataRow("aspnetcore@9.0", InstallComponent.ASPNETCore, "9.0")]
+    [DataRow("ASPNETCORE@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [DataRow("aspnet@10.0.1", InstallComponent.ASPNETCore, "10.0.1")]
+    [DataRow("aspnet@9.0", InstallComponent.ASPNETCore, "9.0")]
+    [DataRow("windowsdesktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
+    [DataRow("WindowsDesktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
+    [DataRow("desktop@10.0.1", InstallComponent.WindowsDesktop, "10.0.1")]
+    [DataRow("desktop@9.0", InstallComponent.WindowsDesktop, "9.0")]
     public void ComponentSpecParsing_ValidSpecs(string? spec, InstallComponent expectedComponent, string? expectedVersion)
     {
         var (component, version) = RuntimeInstallCommand.ParseComponentSpec(spec);
@@ -92,10 +92,10 @@ public class RuntimeInstallTests
         version.Should().Be(expectedVersion);
     }
 
-    [Theory]
-    [InlineData("invalid@10.0.1", "invalid")]
-    [InlineData("sdk@10.0.1", "sdk")]
-    [InlineData("unknown@latest", "unknown")]
+    [TestMethod]
+    [DataRow("invalid@10.0.1", "invalid")]
+    [DataRow("sdk@10.0.1", "sdk")]
+    [DataRow("unknown@latest", "unknown")]
     public void ComponentSpecParsing_InvalidComponent_ThrowsException(string spec, string invalidComponent)
     {
         var action = () => RuntimeInstallCommand.ParseComponentSpec(spec);
@@ -104,10 +104,10 @@ public class RuntimeInstallTests
             .WithMessage($"*{invalidComponent}*");
     }
 
-    [Theory]
-    [InlineData("aspnetcore@")]
-    [InlineData("runtime@")]
-    [InlineData("windowsdesktop@")]
+    [TestMethod]
+    [DataRow("aspnetcore@")]
+    [DataRow("runtime@")]
+    [DataRow("windowsdesktop@")]
     public void ComponentSpecParsing_MissingVersion_ThrowsException(string spec)
     {
         var action = () => RuntimeInstallCommand.ParseComponentSpec(spec);
@@ -120,7 +120,7 @@ public class RuntimeInstallTests
 
     #region Parser Tests
 
-    [Fact]
+    [TestMethod]
     public void Parser_RuntimeInstallWithoutArgs_NoErrors()
     {
         // Now valid - installs latest core runtime
@@ -128,23 +128,23 @@ public class RuntimeInstallTests
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("9.0")]
-    [InlineData("latest")]
-    [InlineData("10.0.1")]
-    [InlineData("aspnetcore@9.0")]
-    [InlineData("windowsdesktop@10.0.1")]
-    [InlineData("runtime@latest")]
+    [TestMethod]
+    [DataRow("9.0")]
+    [DataRow("latest")]
+    [DataRow("10.0.1")]
+    [DataRow("aspnetcore@9.0")]
+    [DataRow("windowsdesktop@10.0.1")]
+    [DataRow("runtime@latest")]
     public void Parser_RuntimeInstallWithValidComponentSpec_NoErrors(string componentSpec)
     {
         var parseResult = Parser.Parse(["runtime", "install", componentSpec]);
         parseResult.Errors.Should().BeEmpty();
     }
 
-    [Theory]
-    [InlineData("aspnetcore@9.0", "runtime@10.0")]
-    [InlineData("runtime@9.0", "aspnetcore@9.0", "windowsdesktop@9.0")]
-    [InlineData("9.0", "aspnetcore@10.0")]
+    [TestMethod]
+    [DataRow("aspnetcore@9.0", "runtime@10.0")]
+    [DataRow("runtime@9.0", "aspnetcore@9.0", "windowsdesktop@9.0")]
+    [DataRow("9.0", "aspnetcore@10.0")]
     public void Parser_RuntimeInstallWithMultipleSpecs_NoErrors(params string[] componentSpecs)
     {
         var args = new List<string> { "runtime", "install" };

@@ -8,7 +8,6 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Text.Json;

@@ -35,9 +35,17 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             bool enableNullable = false,
             byte[] publicKey = null,
             [CallerMemberName] string assemblyName = "",
-            bool allowUnsafe = false)
+            bool allowUnsafe = false,
+            bool usePreviewLanguageVersion = false)
         {
-            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(syntax, assemblyName, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
+            CSharpCompilation compilation = CreateCSharpCompilationFromSyntax(
+                syntax,
+                assemblyName,
+                enableNullable,
+                publicKey,
+                allowUnsafe,
+                diagnosticOptions,
+                usePreviewLanguageVersion);
 
             AssertNoDiagnostics(compilation);
 
@@ -87,10 +95,17 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             }
         }
 
-        private static CSharpCompilation CreateCSharpCompilationFromSyntax(string syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe, IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null)
+        private static CSharpCompilation CreateCSharpCompilationFromSyntax(
+            string syntax,
+            string name,
+            bool enableNullable,
+            byte[] publicKey,
+            bool allowUnsafe,
+            IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null,
+            bool usePreviewLanguageVersion = false)
         {
             CSharpCompilation compilation = CreateCSharpCompilation(name, enableNullable, publicKey, allowUnsafe, diagnosticOptions);
-            return compilation.AddSyntaxTrees(GetSyntaxTree(syntax));
+            return compilation.AddSyntaxTrees(GetSyntaxTree(syntax, usePreviewLanguageVersion));
         }
 
         private static CSharpCompilation CreateCSharpCompilationFromSyntax(IEnumerable<string> syntax, string name, bool enableNullable, byte[] publicKey, bool allowUnsafe)
@@ -100,7 +115,10 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Tests
             return compilation.AddSyntaxTrees(syntaxTrees);
         }
 
-        private static SyntaxTree GetSyntaxTree(string syntax) => CSharpSyntaxTree.ParseText(syntax, ParseOptions);
+        private static SyntaxTree GetSyntaxTree(string syntax, bool usePreviewLanguageVersion = false) =>
+            CSharpSyntaxTree.ParseText(
+                syntax,
+                usePreviewLanguageVersion ? ParseOptions.WithLanguageVersion(LanguageVersion.Preview) : ParseOptions);
 
         private static CSharpCompilation CreateCSharpCompilation(string name, bool enableNullable, byte[] publicKey, bool allowUnsafe, IEnumerable<KeyValuePair<string, ReportDiagnostic>> diagnosticOptions = null)
         {

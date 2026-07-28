@@ -64,6 +64,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <ProjectReference Include="..\Microsoft.DotNet.Cli.Telemetry\Microsoft.DotNet.Cli.Telemetry.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Configurer\Microsoft.DotNet.Configurer.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.InternalAbstractions\Microsoft.DotNet.InternalAbstractions.csproj" GlobalPropertiesToRemove="PublishDir" />
     <ProjectReference Include="..\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" GlobalPropertiesToRemove="PublishDir" />
@@ -88,11 +89,7 @@
     <PackageReference Include="System.CommandLine" />
     <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
     <PackageReference Include="System.ServiceProcess.ServiceController" />
-    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" Condition="'$(TargetOS)' == 'windows'">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBA. -->
-    <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
+    <PackageReference Include="Microsoft.Windows.CsWin32" IncludeAssets="runtime; build; native; contentfiles; analyzers; buildtransitive" PrivateAssets="all" Condition="'$(TargetOS)' == 'windows'" />
     <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
 
     <PackageReference Include="OpenTelemetry.Exporter.InMemory" />
@@ -114,6 +111,7 @@
     <InternalsVisibleTo Include="SDDLTests" />
     <InternalsVisibleTo Include="dotnet-watch" />
     <InternalsVisibleTo Include="dotnet-watch.Tests" />
+    <InternalsVisibleTo Include="dotnet.Tests" />
   </ItemGroup>
 
   <Target Name="LinkVSEmbeddableAssemblies" DependsOnTargets="ResolveReferences" AfterTargets="ResolveReferences">

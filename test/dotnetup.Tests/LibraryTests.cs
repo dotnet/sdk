@@ -14,24 +14,25 @@ using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class LibraryTests
 {
     ITestOutputHelper Log { get; }
 
-    public LibraryTests(ITestOutputHelper log)
+    public LibraryTests(TestContext testContext)
     {
-        Log = log;
+        Log = new TestContextOutputHelper(testContext);
     }
 
-    [Theory]
-    [InlineData("9", InstallComponent.SDK)]
-    [InlineData("latest", InstallComponent.SDK)]
-    [InlineData("lts", InstallComponent.SDK)]
-    [InlineData("preview", InstallComponent.SDK)]
-    [InlineData("9", InstallComponent.Runtime)]
-    [InlineData("latest", InstallComponent.Runtime)]
-    [InlineData("9", InstallComponent.ASPNETCore)]
-    [InlineData("latest", InstallComponent.ASPNETCore)]
+    [TestMethod]
+    [DataRow("9", InstallComponent.SDK)]
+    [DataRow("latest", InstallComponent.SDK)]
+    [DataRow("lts", InstallComponent.SDK)]
+    [DataRow("preview", InstallComponent.SDK)]
+    [DataRow("9", InstallComponent.Runtime)]
+    [DataRow("latest", InstallComponent.Runtime)]
+    [DataRow("9", InstallComponent.ASPNETCore)]
+    [DataRow("latest", InstallComponent.ASPNETCore)]
     public void LatestVersionForChannelCanBeInstalled(string channel, InstallComponent component)
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
@@ -51,7 +52,7 @@ public class LibraryTests
             latestVersion!);
     }
 
-    [Fact]
+    [TestMethod]
     public void TestGetSupportedChannels()
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
@@ -69,7 +70,7 @@ public class LibraryTests
 
     }
 
-    [Fact]
+    [TestMethod]
     public void MuxerIsUpdated_WhenInstallingNewerSdk()
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
@@ -132,7 +133,7 @@ public class LibraryTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void MuxerIsNotDowngraded_WhenInstallingOlderSdk()
     {
         var releaseInfoProvider = InstallerFactory.CreateReleaseInfoProvider();
@@ -238,7 +239,7 @@ public class LibraryTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void GlobalJsonInfo_SdkPath_ResolvesRelativeToDirectory()
     {
         // Regression test: SdkPath should resolve relative paths using the directory
@@ -268,7 +269,7 @@ public class LibraryTests
         sdkPath.Should().NotContain("global.json");
     }
 
-    [Fact]
+    [TestMethod]
     public void GlobalJsonInfo_SdkPath_ReturnsNullWhenNoPathsConfigured()
     {
         // Use a cross-platform absolute path (temp directory is always fully qualified)

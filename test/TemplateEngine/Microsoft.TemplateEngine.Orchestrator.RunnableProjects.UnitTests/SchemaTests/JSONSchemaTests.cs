@@ -8,17 +8,18 @@ using Microsoft.TemplateEngine.Tests;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.SchemaTests
 {
+    [TestClass]
     public class JSONSchemaTests : TestBase
     {
-        [Theory(DisplayName = nameof(IsJSONSchemaValid))]
-        [InlineData(@"SchemaTests/BasicTest.json")]
-        [InlineData(@"SchemaTests/GeneratorTest.json")]
-        [InlineData(@"SchemaTests/StarterWebTest.json")]
-        [InlineData(@"SchemaTests/PostActionTest.json")]
-        [InlineData(@"SchemaTests/SymbolsTest.json")]
-        [InlineData(@"SchemaTests/MultiValueChoiceTest.json")]
-        [InlineData(@"SchemaTests/ConstraintsTest.json")]
-        [InlineData(@"SchemaTests/ConditionalParametersTest.json")]
+        [TestMethod]
+        [DataRow(@"SchemaTests/BasicTest.json")]
+        [DataRow(@"SchemaTests/GeneratorTest.json")]
+        [DataRow(@"SchemaTests/StarterWebTest.json")]
+        [DataRow(@"SchemaTests/PostActionTest.json")]
+        [DataRow(@"SchemaTests/SymbolsTest.json")]
+        [DataRow(@"SchemaTests/MultiValueChoiceTest.json")]
+        [DataRow(@"SchemaTests/ConstraintsTest.json")]
+        [DataRow(@"SchemaTests/ConditionalParametersTest.json")]
         public void IsJSONSchemaValid(string testFile)
         {
             string schemaContent = File.ReadAllText(@"SchemaTests/template.json");
@@ -34,7 +35,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
                 .SelectMany(d => d.Errors!.Values)
                 .ToList() ?? new List<string>();
 
-            Assert.True(
+            Assert.IsTrue(
                 result.IsValid,
                 "The JSON file is not valid against the schema" +
                 Environment.NewLine +
@@ -55,8 +56,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
                 .Select(s => new object?[] { s });
         }
 
-        [Theory]
-        [MemberData(nameof(GetAllTemplates))]
+        [TestMethod]
+        [DynamicData(nameof(GetAllTemplates))]
         public void TestAllTestTemplatesHaveValidJson(string testTemplateName)
         {
             string testFile = Path.Combine(TestTemplatesLocation, testTemplateName, JsonLocation);
@@ -76,8 +77,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Schem
                 .Select(s => new object?[] { s });
         }
 
-        [Theory]
-        [MemberData(nameof(GetAllTemplateSamples))]
+        [TestMethod]
+        [DynamicData(nameof(GetAllTemplateSamples))]
         public void TestAllSampleTemplatesHaveValidJson(string testTemplateName)
         {
             string testFile = Path.Combine(SampleTemplatesLocation, testTemplateName, JsonLocation);

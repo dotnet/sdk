@@ -10,9 +10,10 @@ using TaskItem = Microsoft.Build.Utilities.TaskItem;
 
 namespace Microsoft.NET.Sdk.Razor.Test
 {
+    [TestClass]
     public class FindAssembliesWithReferencesToMultiThreadingTest
     {
-        [Fact]
+        [TestMethod]
         public void Execute_ResolvesRelativeAssemblyItemSpec_AgainstTaskEnvironmentProjectDirectory()
         {
             using var temp = new TempDirectory();
@@ -27,7 +28,7 @@ namespace Microsoft.NET.Sdk.Razor.Test
                 "the relative ItemSpec is absolutized against TaskEnvironment.ProjectDirectory where the file exists");
         }
 
-        [Fact]
+        [TestMethod]
         public void Execute_DoesNotResolveRelativeAssemblyItemSpec_AgainstProcessCurrentDirectory()
         {
             using var projectDir = new TempDirectory();

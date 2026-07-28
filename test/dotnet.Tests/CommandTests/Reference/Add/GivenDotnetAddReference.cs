@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Msbuild.Tests.Utilities;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Add.Reference.Tests
 {
@@ -19,10 +21,9 @@ Arguments:
 
 Options:
   -f, --framework <FRAMEWORK>  Add the reference only when targeting a specific framework.
-  --interactive                Allows the command to stop and wait for user input or action (for example to complete
-                               authentication). [default: False]
-  --project                    The project file to operate on. If a file is not specified, the command will search the
-                               current directory for one.
+  --interactive                Allows the command to stop and wait for user input or action (for example to complete authentication). [default: False]
+  --file <file>                The file-based app to operate on.
+  --project                    The project file to operate on. If a file is not specified, the command will search the current directory for one.
   -?, -h, --help               Show command line help.";
 
         private Func<string, string> AddCommandHelpText = (defaultVal) => $@"Description:
@@ -96,6 +97,28 @@ Commands:
             var ret = NewLib(dir, callingMethod: callingMethod, identifier: identifier);
             SetTargetFrameworks(ret, DefaultFrameworks);
             return ret;
+        }
+
+        private static string CreateFileBasedApp(string directory, string content = "Console.WriteLine();")
+        {
+            var appFile = Path.Join(directory, "Program.cs");
+            File.WriteAllText(appFile, content);
+            return appFile;
+        }
+
+        private static string CreateMinimalProject(string directory, string projectName)
+        {
+            var projectDirectory = Path.Join(directory, projectName);
+            Directory.CreateDirectory(projectDirectory);
+            var projectFile = Path.Join(projectDirectory, projectName + ".csproj");
+            File.WriteAllText(projectFile, $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+            return projectFile;
         }
 
         [TestMethod]
@@ -234,6 +257,176 @@ Commands:
         }
 
         [TestMethod]
+        public void ItAddsRefWithoutCondAndPrintsStatus_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "reference", "add", "Lib", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Lib"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Lib
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItAddsRefWithoutCondAndPrintsStatus_LegacyForm_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "add", "reference", "Lib", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Lib"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Lib
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItAddsFileBasedAppReferenceDirective_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+
+            new DotnetCommand(Log, "reference", "add", "Util.cs", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be($$"""
+                #:ref Util.cs
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void WhenFileBasedAppReferenceAlreadyExistsItDoesntDuplicate_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+            var contentBefore = File.ReadAllText(appFile);
+
+            new DotnetCommand(Log, "reference", "add", "Util.cs", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectAlreadyHasAreference, "Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be(contentBefore);
+        }
+
+        [TestMethod]
+        public void ItMatchesMSBuildPropertyRefDirectiveWhenAddingReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref $(MSBuildThisFileDirectory)Util.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+            var contentBefore = File.ReadAllText(appFile);
+
+            new DotnetCommand(Log, "reference", "add", "Util.cs", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectAlreadyHasAreference, "$(MSBuildThisFileDirectory)Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be(contentBefore);
+        }
+
+        [TestMethod]
+        public void ItPreservesMSBuildPropertyProjectDirectiveWhenAddingReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "add", "Other", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Other"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+                #:project Other
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItPreservesDirectoryProjectDirectiveWhenAddingReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project Lib
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "add", "Other", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ReferenceAddedToTheProject, "Other"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Lib
+                #:project Other
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
         public void ItAddsRefWithCondAndPrintsStatus()
         {
             var setup = Setup();
@@ -249,6 +442,69 @@ Commands:
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithConditionContaining(ConditionFrameworkNet451).Should().Be(condBefore + 1);
             csproj.NumberOfProjectReferencesWithIncludeAndConditionContaining(setup.ValidRefCsprojName, ConditionFrameworkNet451).Should().Be(1);
+        }
+
+        [TestMethod]
+        public void ItRejectsFrameworkOption_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var originalContent = """
+                Console.WriteLine();
+                """;
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "reference", "add", "Lib", "--file", "Program.cs", "--framework", ToolsetInfo.CurrentTargetFramework)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidOptionForFileBasedApp, "--framework"));
+
+            File.ReadAllText(appFile).Should().Be(originalContent);
+        }
+
+        [TestMethod]
+        public void ItRejectsProjectPathPassedToFileOption_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "reference", "add", "Lib", "--file", projectFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, projectFile));
+        }
+
+        [TestMethod]
+        public void ItRejectsProjectAndFileOptions_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "reference", "add", "Lib", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
+        }
+
+        [TestMethod]
+        public void ItRejectsProjectAndFileOptions_LegacyForm_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+            CreateMinimalProject(testInstance.Path, "Lib");
+
+            new DotnetCommand(Log, "add", "reference", "Lib", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
         }
 
         [TestMethod]
@@ -360,6 +616,26 @@ Commands:
             var csproj = lib.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore);
             csproj.NumberOfProjectReferencesWithIncludeContaining(setup.ValidRefCsprojName).Should().Be(1);
+        }
+
+        [TestMethod]
+        public void WhenRefWithNoCondAlreadyExistsItDoesntDuplicate_FileBasedApp()
+        {
+            var setup = Setup();
+            var appFile = CreateFileBasedApp(setup.TestRoot, """
+                #:project ValidRef/ValidRef.csproj
+
+                Console.WriteLine();
+                """);
+            var contentBefore = File.ReadAllText(appFile);
+
+            var cmd = new DotnetCommand(Log, "reference", "add", setup.ValidRefCsprojPath, "--file", appFile)
+                .WithWorkingDirectory(setup.TestRoot)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectAlreadyHasAreference, "ValidRef/ValidRef.csproj"));
+            File.ReadAllText(appFile).Should().Be(contentBefore);
         }
 
         [TestMethod]
@@ -515,6 +791,29 @@ Commands:
         }
 
         [TestMethod]
+        public void ItAddsMultipleRefsNoCondToTheSameItemGroup_FileBasedApp()
+        {
+            var outputText = $@"{string.Format(CliStrings.ReferenceAddedToTheProject, "Lib/Lib.csproj")}
+{string.Format(CliStrings.ReferenceAddedToTheProject, "ValidRef/ValidRef.csproj")}";
+
+            var setup = Setup();
+            var appFile = CreateFileBasedApp(setup.TestRoot);
+
+            var cmd = new DotnetCommand(Log, "reference", "add", setup.LibCsprojPath, setup.ValidRefCsprojPath, "--file", appFile)
+                .WithWorkingDirectory(setup.TestRoot)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Lib/Lib.csproj
+                #:project ValidRef/ValidRef.csproj
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
         public void ItAddsMultipleRefsWithCondToTheSameItemGroup()
         {
             string OutputText = $@"{string.Format(CliStrings.ReferenceAddedToTheProject, @"Lib\Lib.csproj")}
@@ -568,6 +867,22 @@ Commands:
         }
 
         [TestMethod]
+        public void WhenPassedReferenceDoesNotExistItShowsAnError_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path);
+            var contentBefore = File.ReadAllText(appFile);
+
+            var cmd = new DotnetCommand(Log, "reference", "add", "IDoNotExist.csproj", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindProjectOrDirectory, "IDoNotExist.csproj"));
+            File.ReadAllText(appFile).Should().Be(contentBefore);
+        }
+
+        [TestMethod]
         public void WhenPassedMultipleRefsAndOneOfthemDoesNotExistItCancelsWholeOperation()
         {
             var lib = NewLibWithFrameworks();
@@ -580,6 +895,22 @@ Commands:
             cmd.Should().Fail();
             cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindProjectOrDirectory, "IDoNotExist.csproj"));
             lib.CsProjContent().Should().BeEquivalentTo(contentBefore);
+        }
+
+        [TestMethod]
+        public void WhenPassedMultipleRefsAndOneOfthemDoesNotExistItCancelsWholeOperation_FileBasedApp()
+        {
+            var setup = Setup();
+            var appFile = CreateFileBasedApp(setup.TestRoot);
+            var contentBefore = File.ReadAllText(appFile);
+
+            var cmd = new DotnetCommand(Log, "reference", "add", setup.ValidRefCsprojPath, "IDoNotExist.csproj", "--file", appFile)
+                .WithWorkingDirectory(setup.TestRoot)
+                .Execute();
+
+            cmd.Should().Fail();
+            cmd.StdErr.Should().Be(string.Format(CliStrings.CouldNotFindProjectOrDirectory, "IDoNotExist.csproj"));
+            File.ReadAllText(appFile).Should().Be(contentBefore);
         }
 
         [TestMethod]
@@ -616,6 +947,27 @@ Commands:
             var csproj = proj.CsProj();
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore + 1);
             csproj.NumberOfProjectReferencesWithIncludeContaining(setup.ValidRefCsprojRelToOtherProjPath.Replace('/', '\\')).Should().Be(1);
+        }
+
+        [TestMethod]
+        public void WhenReferenceIsRelativeAndProjectIsNotInCurrentDirectoryReferencePathIsFixed_FileBasedApp()
+        {
+            var setup = Setup();
+            var appDirectory = Path.Join(setup.TestRoot, "App");
+            Directory.CreateDirectory(appDirectory);
+            var appFile = CreateFileBasedApp(appDirectory);
+
+            var cmd = new DotnetCommand(Log, "reference", "add", setup.ValidRefCsprojRelPath, "--file", appFile)
+                .WithWorkingDirectory(setup.TestRoot)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, "../ValidRef/ValidRef.csproj"));
+            File.ReadAllText(appFile).Should().Be("""
+                #:project ../ValidRef/ValidRef.csproj
+
+                Console.WriteLine();
+                """);
         }
 
         [TestMethod]
@@ -700,6 +1052,24 @@ Commands:
         }
 
         [TestMethod]
+        public void WhenIncompatibleFrameworkDetectedItPrintsError_FileBasedApp()
+        {
+            var setup = Setup();
+            var appFile = CreateFileBasedApp(setup.TestRoot);
+            var net45lib = new ProjDir(Path.Combine(setup.TestRoot, "Net45Lib"));
+            var sourceBefore = File.ReadAllText(appFile);
+
+            var cmd = new DotnetCommand(Log, "reference", "add", net45lib.CsProjPath, "--file", appFile)
+                .WithWorkingDirectory(setup.TestRoot)
+                .Execute();
+
+            cmd.Should().Fail();
+            cmd.StdErr.Should().MatchRegex(ProjectNotCompatibleErrorMessageRegEx);
+            cmd.StdErr.Should().MatchRegex($" - {ToolsetInfo.CurrentTargetFramework}");
+            File.ReadAllText(appFile).Should().Be(sourceBefore);
+        }
+
+        [TestMethod]
         public void WhenDirectoryContainingProjectIsGivenReferenceIsAdded()
         {
             var setup = Setup();
@@ -712,6 +1082,22 @@ Commands:
             result.Should().Pass();
             result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, @"ValidRef\ValidRef.csproj"));
             result.StdErr.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void WhenDirectoryContainingProjectIsGivenReferenceIsAdded_FileBasedApp()
+        {
+            var setup = Setup();
+            var appFile = CreateFileBasedApp(setup.TestRoot);
+
+            var result = new DotnetCommand(Log, "reference", "add", Path.GetDirectoryName(setup.ValidRefCsprojPath) ?? string.Empty, "--file", appFile)
+                .WithWorkingDirectory(setup.TestRoot)
+                .Execute();
+
+            result.Should().Pass();
+            result.StdOut.Should().Be(string.Format(CliStrings.ReferenceAddedToTheProject, "ValidRef"));
+            result.StdErr.Should().BeEmpty();
+            File.ReadAllText(appFile).Should().Contain("#:project ValidRef");
         }
 
         [TestMethod]

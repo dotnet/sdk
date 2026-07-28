@@ -19,15 +19,13 @@ internal class DotnetCommand : CommandBase
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
     private readonly string[] _forwardedArgs;
 
-    public DotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(parseResult)
+    public DotnetCommand(ParseResult parseResult, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(parseResult, "dotnet")
     {
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
 
         // Collect all unmatched/forwarded tokens after the "dotnet" or "do" subcommand.
         _forwardedArgs = [.. parseResult.UnmatchedTokens];
     }
-
-    protected override string GetCommandName() => "dotnet";
 
     protected override void ExecuteCore()
     {
@@ -59,13 +57,13 @@ internal class DotnetCommand : CommandBase
     }
 
     /// <summary>
-    /// Resolves the dotnet installation path using the same logic as other dotnetup commands:
-    /// configured install type (user install) falls back to the default install path.
+    /// Resolves the dotnet installation path: when the PATH-resolved install is a
+    /// dotnetup-managed hive, use it; otherwise fall back to the default install path.
     /// </summary>
     private string ResolveDotnetPath()
     {
         var configuredRoot = _dotnetEnvironment.GetCurrentPathConfiguration();
-        if (configuredRoot is not null && configuredRoot.InstallType == InstallType.User)
+        if (configuredRoot is { IsDotnetupHive: true })
         {
             return configuredRoot.Path;
         }

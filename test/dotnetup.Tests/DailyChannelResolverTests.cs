@@ -11,16 +11,16 @@ using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class DailyChannelResolverTests
 {
     private const string SampleArchiveUrl =
         "https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip";
 
-    [Fact]
+    [TestMethod]
     public void Resolve_RuntimeComponent_ReturnsRuntimeVersionNotSdkVersion()
     {
         // Test that we correctly handle differences between SDK and Runtime versions
@@ -47,7 +47,7 @@ public class DailyChannelResolverTests
         version!.ToString().Should().Be("10.0.10-servicing.26276.118");
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_StableRedirectTarget_ReturnsNull()
     {
         // If aka.ms is ever misconfigured to redirect a daily link to a stable
@@ -67,7 +67,7 @@ public class DailyChannelResolverTests
         version.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_ScopedDaily_ExtractsVersionFromRedirectTarget()
     {
         using var handler = new RedirectHandler(new Dictionary<string, string>
@@ -84,7 +84,7 @@ public class DailyChannelResolverTests
         version!.ToString().Should().Be("10.0.100-preview.4.25216.37");
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_BareMajorDaily_NormalizesToMajorMinor()
     {
         using var handler = new RedirectHandler(new Dictionary<string, string>
@@ -100,7 +100,7 @@ public class DailyChannelResolverTests
         version!.ToString().Should().Be("10.0.100-preview.4.25216.37");
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_FeatureBandDaily_PassesScopeThrough()
     {
         using var handler = new RedirectHandler(new Dictionary<string, string>
@@ -115,9 +115,9 @@ public class DailyChannelResolverTests
         version.Should().NotBeNull();
     }
 
-    [Theory]
-    [InlineData("11.0.1xx-preview.5-daily")]
-    [InlineData("11.0.1xx-preview5-daily")]
+    [TestMethod]
+    [DataRow("11.0.1xx-preview.5-daily")]
+    [DataRow("11.0.1xx-preview5-daily")]
     public void Resolve_PhaseQualifiedDaily_UsesDotlessAkaMsPath(string channelName)
     {
         // Both "preview.5" and "preview5" forms of the channel must resolve to the
@@ -138,10 +138,10 @@ public class DailyChannelResolverTests
         version!.ToString().Should().Be("11.0.100-preview.5.26302.115");
     }
 
-    [Theory]
-    [InlineData("11.0-preview.5-daily", InstallComponent.SDK)]
-    [InlineData("11.0-preview.5-daily", InstallComponent.Runtime)]
-    [InlineData("11.0-preview.5-daily", InstallComponent.ASPNETCore)]
+    [TestMethod]
+    [DataRow("11.0-preview.5-daily", InstallComponent.SDK)]
+    [DataRow("11.0-preview.5-daily", InstallComponent.Runtime)]
+    [DataRow("11.0-preview.5-daily", InstallComponent.ASPNETCore)]
     public void Resolve_MajorMinorPrereleaseDaily_InjectsDefaultFeatureBand(string channelName, InstallComponent component)
     {
         // aka.ms only publishes prerelease-qualified daily shortlinks under the SDK
@@ -168,7 +168,7 @@ public class DailyChannelResolverTests
         version!.Prerelease.Should().StartWith("preview.5");
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_AkaMsReturnsNotFound_ReturnsNull()
     {
         // Empty redirect map → handler returns 404 for every request.
@@ -181,16 +181,16 @@ public class DailyChannelResolverTests
         version.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_NonDailyChannel_Throws()
     {
         using var resolver = new DailyChannelResolver();
 
-        Assert.Throws<ArgumentException>(() =>
+        Assert.ThrowsExactly<ArgumentException>(() =>
             resolver.Resolve(new UpdateChannel("10.0"), InstallArchitecture.x64));
     }
 
-    [Fact]
+    [TestMethod]
     public void Resolve_HtmlContentResponse_ReturnsNull()
     {
         // If aka.ms changes its not-found fallback to a host other than bing.com (so
@@ -214,40 +214,40 @@ public class DailyChannelResolverTests
         version.Should().BeNull();
     }
 
-    [Theory]
-    [InlineData("text/html", true)]
-    [InlineData("text/HTML", true)] // case-insensitive
-    [InlineData("application/octet-stream", false)]
-    [InlineData("application/zip", false)]
-    [InlineData("application/x-gzip", false)]
-    [InlineData(null, false)] // missing Content-Type header — let other checks decide
-    [InlineData("", false)]
+    [TestMethod]
+    [DataRow("text/html", true)]
+    [DataRow("text/HTML", true)] // case-insensitive
+    [DataRow("application/octet-stream", false)]
+    [DataRow("application/zip", false)]
+    [DataRow("application/x-gzip", false)]
+    [DataRow(null, false)] // missing Content-Type header — let other checks decide
+    [DataRow("", false)]
     public void IsHtmlContent_RecognizesHtmlMediaType(string? mediaType, bool expected)
     {
         DailyChannelResolver.IsHtmlContent(mediaType).Should().Be(expected);
     }
 
-    [Theory]
+    [TestMethod]
     // Real aka.ms not-found redirect shape (observed against https://aka.ms/dotnet/12.0/daily/...):
-    [InlineData("https://www.bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-win-x64.zip", true)]
-    [InlineData("https://bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-linux-x64.tar.gz", true)]
+    [DataRow("https://www.bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-win-x64.zip", true)]
+    [DataRow("https://bing.com/?ref=aka&shorturl=dotnet/12.0/daily/dotnet-sdk-linux-x64.tar.gz", true)]
     // Case-insensitive host and query.
-    [InlineData("https://WWW.BING.COM/?REF=AKA&shorturl=dotnet/12.0/daily/dotnet-sdk-osx-arm64.tar.gz", true)]
+    [DataRow("https://WWW.BING.COM/?REF=AKA&shorturl=dotnet/12.0/daily/dotnet-sdk-osx-arm64.tar.gz", true)]
     // Plain bing.com without the ref=aka marker — could be a real user-facing redirect chain; don't treat as not-found.
-    [InlineData("https://www.bing.com/search?q=dotnet+sdk", false)]
-    [InlineData("https://www.bing.com/", false)]
+    [DataRow("https://www.bing.com/search?q=dotnet+sdk", false)]
+    [DataRow("https://www.bing.com/", false)]
     // Legitimate daily-build hosts: never match the not-found pattern.
-    [InlineData("https://ci.dot.net/public/Sdk/10.0.100/dotnet-sdk.zip", false)]
-    [InlineData("https://builds.dotnet.microsoft.com/sdk/10.0.100/dotnet-sdk.zip", false)]
+    [DataRow("https://ci.dot.net/public/Sdk/10.0.100/dotnet-sdk.zip", false)]
+    [DataRow("https://builds.dotnet.microsoft.com/sdk/10.0.100/dotnet-sdk.zip", false)]
     public void IsAkaMsShortlinkNotFound_RecognizesBingFallbackPattern(string url, bool expected)
     {
         DailyChannelResolver.IsAkaMsShortlinkNotFound(new Uri(url)).Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip", "10.0.100-preview.4.25216.37")]
-    [InlineData("https://builds.dotnet.microsoft.com/sdk/9.0.103/dotnet-sdk-9.0.103-win-x64.zip", "9.0.103")]
-    [InlineData("https://ci.dot.net/no-version-here/file.zip", null)]
+    [TestMethod]
+    [DataRow("https://ci.dot.net/public/Sdk/10.0.100-preview.4.25216.37/dotnet-sdk-10.0.100-preview.4.25216.37-win-x64.zip", "10.0.100-preview.4.25216.37")]
+    [DataRow("https://builds.dotnet.microsoft.com/sdk/9.0.103/dotnet-sdk-9.0.103-win-x64.zip", "9.0.103")]
+    [DataRow("https://ci.dot.net/no-version-here/file.zip", null)]
     public void ExtractVersionFromUrl_FindsFirstParseableSegment(string url, string? expected)
     {
         var version = DailyChannelResolver.ExtractVersionFromUrl(new Uri(url));

@@ -7,7 +7,6 @@ using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
-[DoNotParallelize]
 [TestClass]
 public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
 {

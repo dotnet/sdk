@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotExposeGenericLists,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotExposeGenericListsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1002_FieldsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -52,7 +52,7 @@ End Namespace",
                 GetBasicExpectedResult(10, 16, "List(Of Integer)", "Struct1.field"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1002_MethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -141,7 +141,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1002_PropertiesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -218,7 +218,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1002_ExtensionMethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -258,27 +258,27 @@ End Namespace
 ");
         }
 
-        [Theory]
+        [TestMethod]
         // General analyzer option
-        [InlineData("public", "dotnet_code_quality.api_surface = public")]
-        [InlineData("public", "dotnet_code_quality.api_surface = private, internal, public")]
-        [InlineData("public", "dotnet_code_quality.api_surface = all")]
-        [InlineData("protected", "dotnet_code_quality.api_surface = public")]
-        [InlineData("protected", "dotnet_code_quality.api_surface = private, internal, public")]
-        [InlineData("protected", "dotnet_code_quality.api_surface = all")]
-        [InlineData("internal", "dotnet_code_quality.api_surface = internal")]
-        [InlineData("internal", "dotnet_code_quality.api_surface = private, internal")]
-        [InlineData("internal", "dotnet_code_quality.api_surface = all")]
+        [DataRow("public", "dotnet_code_quality.api_surface = public")]
+        [DataRow("public", "dotnet_code_quality.api_surface = private, internal, public")]
+        [DataRow("public", "dotnet_code_quality.api_surface = all")]
+        [DataRow("protected", "dotnet_code_quality.api_surface = public")]
+        [DataRow("protected", "dotnet_code_quality.api_surface = private, internal, public")]
+        [DataRow("protected", "dotnet_code_quality.api_surface = all")]
+        [DataRow("internal", "dotnet_code_quality.api_surface = internal")]
+        [DataRow("internal", "dotnet_code_quality.api_surface = private, internal")]
+        [DataRow("internal", "dotnet_code_quality.api_surface = all")]
         // Specific analyzer option
-        [InlineData("internal", "dotnet_code_quality.CA1002.api_surface = all")]
-        [InlineData("internal", "dotnet_code_quality.Design.api_surface = all")]
+        [DataRow("internal", "dotnet_code_quality.CA1002.api_surface = all")]
+        [DataRow("internal", "dotnet_code_quality.Design.api_surface = all")]
         // General + Specific analyzer option
-        [InlineData("internal", @"dotnet_code_quality.api_surface = private
+        [DataRow("internal", @"dotnet_code_quality.api_surface = private
                                   dotnet_code_quality.CA1002.api_surface = all")]
         // Case-insensitive analyzer option
-        [InlineData("internal", "DOTNET_code_quality.CA1002.API_SURFACE = ALL")]
+        [DataRow("internal", "DOTNET_code_quality.CA1002.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [InlineData("internal", @"dotnet_code_quality.api_surface = all
+        [DataRow("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1002.api_surface_2 = private")]
         public async Task CSharp_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
@@ -303,33 +303,33 @@ public class OuterClass
 {editorConfigText}
 "), },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         // General analyzer option
-        [InlineData("Public", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private, Public")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private, Public")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = All")]
         // Specific analyzer option
-        [InlineData("Friend", "dotnet_code_quality.CA1002.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.Design.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.CA1002.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = Private
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = Private
                                 dotnet_code_quality.CA1002.api_surface = All")]
         // Case-insensitive analyzer option
-        [InlineData("Friend", "DOTNET_code_quality.CA1002.API_SURFACE = ALL")]
+        [DataRow("Friend", "DOTNET_code_quality.CA1002.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = All
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1002.api_surface_2 = Private")]
         public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
@@ -359,7 +359,7 @@ End Class"
 {editorConfigText}
 "), },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpExpectedResult(int line, int col, string returnTypeName, string typeDotMemberName)

@@ -19,6 +19,8 @@ namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Serializers;
  * TestSessionEventSerializer: 8
  * HandshakeMessageSerializer: 9
  * TestInProgressMessagesSerializer: 10
+ * AzureDevOpsLogMessageSerializer: 11
+ * DisplayMessageSerializer: 12
  */
 
 internal static class RegisterSerializers
@@ -33,5 +35,7 @@ internal static class RegisterSerializers
         namedPipeBase.RegisterSerializer(new TestSessionEventSerializer(), typeof(TestSessionEvent));
         namedPipeBase.RegisterSerializer(new HandshakeMessageSerializer(), typeof(HandshakeMessage));
         namedPipeBase.RegisterSerializer(new TestInProgressMessagesSerializer(), typeof(TestInProgressMessages));
+        namedPipeBase.RegisterSerializer(new AzureDevOpsLogMessageSerializer(), typeof(AzureDevOpsLogMessage));
+        namedPipeBase.RegisterSerializer(new DisplayMessageSerializer(), typeof(DisplayMessage));
     }
 }

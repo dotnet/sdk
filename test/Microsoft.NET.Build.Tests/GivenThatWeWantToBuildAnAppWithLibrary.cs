@@ -50,6 +50,7 @@ namespace Microsoft.NET.Build.Tests
                 $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
+                "TestApp.runtimeconfig.dev.json",
                 "TestLibrary.dll",
                 "TestLibrary.pdb",
             });
@@ -146,6 +147,7 @@ namespace Microsoft.NET.Build.Tests
                 $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
+                "TestApp.runtimeconfig.dev.json",
                 "TestLibrary.dll",
                 "TestLibrary.pdb"
             });

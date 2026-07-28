@@ -122,8 +122,12 @@
           SourceFiles="@(SdkOutputFile)"
           DestinationFiles="@(SdkOutputFile -> '$(IntermediateSdkInstallerOutputPath)sdk\$(Version)\%(RecursiveDir)%(Filename)%(Extension)')" />
 
-    <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME) -->
-    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(IntermediateSdkInstallerOutputPath)" />
+    <!-- Copy dnx script to root dotnet folder (which will map to DOTNETHOME).
+         Skipped on macOS: the sharedhost pkg (from dotnet/runtime) now installs dnx
+         at the same location, so shipping it here creates overlapping component packages. -->
+    <Copy SourceFiles="@(DnxShimSource)"
+          DestinationFolder="$(IntermediateSdkInstallerOutputPath)"
+          Condition="!$([MSBuild]::IsOSPlatform('OSX'))" />
   </Target>
 
 </Project>

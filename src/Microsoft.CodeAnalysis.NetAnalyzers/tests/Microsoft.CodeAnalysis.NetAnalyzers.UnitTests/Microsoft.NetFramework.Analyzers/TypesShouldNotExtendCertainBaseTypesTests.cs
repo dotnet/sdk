@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.TypesShouldNotExtendCertainBaseTypesAnalyzer,
     Microsoft.NetFramework.CSharp.Analyzers.CSharpTypesShouldNotExtendCertainBaseTypesFixer>;
@@ -15,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
+    [TestClass]
     public class TypesShouldNotExtendCertainBaseTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -29,7 +29,7 @@ class C : Attribute
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_ApplicationExceptionAsync()
         {
             var source = @"
@@ -47,7 +47,7 @@ public class C1 : ApplicationException
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_ApplicationException_InternalAsync()
         {
             var source = @"
@@ -61,7 +61,7 @@ class C1 : ApplicationException
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_XmlDocumentAsync()
         {
             var source = @"
@@ -79,7 +79,7 @@ public class C1 : XmlDocument
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_XmlDocument_InternalAsync()
         {
             var source = @"
@@ -93,7 +93,7 @@ class C1 : XmlDocument
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_CollectionAsync()
         {
             var source = @"
@@ -135,7 +135,7 @@ public class C6 : Stack
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_CSharp_Collection_InternalAsync()
         {
             var source = @"
@@ -171,7 +171,7 @@ public class C6
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -184,7 +184,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_ApplicationExceptionAsync()
         {
             var source = @"
@@ -204,7 +204,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_ApplicationException_InternalAsync()
         {
             var source = @"
@@ -220,7 +220,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_XmlDocumentAsync()
         {
             var source = @"
@@ -239,7 +239,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_XmlDocument_InternalAsync()
         {
             var source = @"
@@ -254,7 +254,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_CollectionAsync()
         {
             var source = @"
@@ -303,7 +303,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task TypesShouldNotExtendCertainBaseTypes_Basic_Collection_InternalAsync()
         {
             var source = @"

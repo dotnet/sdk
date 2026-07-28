@@ -876,6 +876,11 @@ The following are names of parameters or literal values and should not be transl
         <target state="translated">NETSDK1234: RoslynCompilerType Framework je zastaralý a v budoucí verzi se odebere. Další informace najdete tady: {0}.</target>
         <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
       </trans-unit>
+      <trans-unit id="RunCommandRequiresWindowsForNetFramework">
+        <source>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</source>
+        <target state="new">NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
+        <note>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</note>
+      </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>
         <target state="translated">NETSDK1231: Soubor {0} neexistuje. Ujistěte se prosím, že cesta ke grafu modulu runtime existuje.</target>

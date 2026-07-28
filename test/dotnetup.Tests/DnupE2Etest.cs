@@ -15,7 +15,6 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Install;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -23,7 +22,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// Tests for installing different .NET SDK versions using dotnetup.
 /// Each test run can happen in parallel with other tests in different collections.
 /// </summary>
-[Collection("DotnetupInstallCollection")]
+[TestClass]
 public class InstallEndToEndTests
 {
     /// <summary>
@@ -55,8 +54,8 @@ public class InstallEndToEndTests
         new object[] { "windowsdesktop@9.0", InstallComponent.WindowsDesktop },
     };
 
-    [Theory]
-    [MemberData(nameof(SdkChannels))]
+    [TestMethod]
+    [DynamicData(nameof(SdkChannels))]
     public void SdkInstall(string channel)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -101,8 +100,8 @@ public class InstallEndToEndTests
         }
     }
 
-    [Theory]
-    [MemberData(nameof(RuntimeChannels))]
+    [TestMethod]
+    [DynamicData(nameof(RuntimeChannels))]
     public void RuntimeInstall(string componentSpec, InstallComponent expectedComponent)
     {
         // Skip Windows Desktop on non-Windows
@@ -126,7 +125,7 @@ public class InstallEndToEndTests
         VerifyManifestContains(testEnv, expectedComponent);
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvScript_WorksWithSpecialCharactersInPath()
     {
         // Test that env scripts work correctly when the install path contains special characters
@@ -356,7 +355,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// version via aka.ms at test time so the test stays valid as builds roll over on
     /// ci.dot.net.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void SdkInstall_FullySpecifiedPreviewVersion_UsesBlobFeedFallback()
     {
         string? previewVersion = TryResolveCurrentDailyPreviewSdkVersion();
@@ -381,7 +380,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// daily prerelease version → DotnetArchiveDownloader pulls the matching archive
     /// from the blob feed → install completes and is recorded in the manifest.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void SdkInstall_DailyChannel()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -408,7 +407,7 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
     /// DailyChannelResolver resolves the SDK version and then tries to download a
     /// non-existent runtime archive from the blob feed.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void RuntimeInstall_DailyChannel()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -549,10 +548,10 @@ Write-Output ""DOTNET_ROOT=$env:DOTNET_ROOT""
 /// <summary>
 /// Tests that cover concurrent installs targeting the same install root and manifest.
 /// </summary>
-[Collection("DotnetupConcurrencyCollection")]
+[TestClass]
 public class ConcurrentInstallationTests
 {
-    [Fact]
+    [TestMethod]
     public async Task ConcurrentInstallsSerializeViaGlobalMutex()
     {
         const string channel = "9.0.103";
@@ -591,10 +590,10 @@ public class ConcurrentInstallationTests
 /// <summary>
 /// Tests for multi-channel SDK install support (concurrent downloads, single invocation).
 /// </summary>
-[Collection("DotnetupMultiSdkInstallCollection")]
+[TestClass]
 public class MultiChannelSdkInstallTests
 {
-    [Fact]
+    [TestMethod]
     public void SdkInstall_MultipleChannels_BothSucceed()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -623,7 +622,7 @@ public class MultiChannelSdkInstallTests
             "each channel should resolve to a different SDK version");
     }
 
-    [Fact]
+    [TestMethod]
     public void SdkInstall_MultipleChannels_OutputNotCorrupted()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -662,10 +661,10 @@ public class MultiChannelSdkInstallTests
 /// <summary>
 /// Tests that verify reuse behavior and error handling for dotnetup installations.
 /// </summary>
-[Collection("DotnetupReuseCollection")]
+[TestClass]
 public class ReuseAndErrorTests
 {
-    [Fact]
+    [TestMethod]
     public void RuntimeInstall_FeatureBand_ReturnsError()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -678,7 +677,7 @@ public class ReuseAndErrorTests
         output.Should().Contain("runtime installation", "should clarify this is a runtime-specific error");
     }
 
-    [Fact]
+    [TestMethod]
     public void RuntimeInstall_InvalidComponent_ReturnsError()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -690,14 +689,10 @@ public class ReuseAndErrorTests
         output.Should().Contain("Unknown component type", "should indicate invalid component type");
     }
 
-    [Fact]
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void RuntimeInstall_WindowsDesktop_OnNonWindows_ReturnsError()
     {
-        if (OperatingSystem.IsWindows())
-        {
-            return; // This test only applies to non-Windows platforms
-        }
-
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
         var args = DotnetupTestUtilities.BuildRuntimeArgumentsWithSpec("windowsdesktop@9.0", testEnv.InstallPath, testEnv.ManifestPath);
 
@@ -706,10 +701,10 @@ public class ReuseAndErrorTests
         output.Should().Contain("Windows Desktop Runtime is only available on Windows", "should explain Windows Desktop is Windows-only");
     }
 
-    [Theory]
-    [InlineData("runtime@9.0", InstallComponent.Runtime)] // SDK includes core runtime (using explicit "runtime@version" syntax)
-    [InlineData("aspnetcore@9.0", InstallComponent.ASPNETCore)] // SDK also includes aspnetcore runtime
-    [InlineData("windowsdesktop@9.0", InstallComponent.WindowsDesktop)] // SDK does include windowsdesktop (Windows only)
+    [TestMethod]
+    [DataRow("runtime@9.0", InstallComponent.Runtime)] // SDK includes core runtime (using explicit "runtime@version" syntax)
+    [DataRow("aspnetcore@9.0", InstallComponent.ASPNETCore)] // SDK also includes aspnetcore runtime
+    [DataRow("windowsdesktop@9.0", InstallComponent.WindowsDesktop)] // SDK does include windowsdesktop (Windows only)
     public void RuntimeInstall_AfterSdkInstall_BehavesCorrectly(string componentSpec, InstallComponent expectedComponent)
     {
         // Windows Desktop Runtime is only available on Windows - skip this test case on non-Windows
@@ -769,9 +764,9 @@ public class ReuseAndErrorTests
             "Runtime install should skip extracting subcomponents that were already laid down by the SDK install");
     }
 
-    [Theory]
-    [InlineData("sdk", "9.0")]
-    [InlineData("runtime@9.0", null)]
+    [TestMethod]
+    [DataRow("sdk", "9.0")]
+    [DataRow("runtime@9.0", null)]
     public void Install_ReusesExistingInstall(string componentType, string? channel)
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -813,10 +808,10 @@ public class ReuseAndErrorTests
 /// <summary>
 /// Tests for install/uninstall lifecycle, global.json-based installs, and manifest error handling.
 /// </summary>
-[Collection("DotnetupLifecycleCollection")]
+[TestClass]
 public class LifecycleEndToEndTests
 {
-    [Fact]
+    [TestMethod]
     public void InstallViaGlobalJson_SdkUsesGlobalJsonSource()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -906,7 +901,7 @@ public class LifecycleEndToEndTests
         output.Should().Contain("Explicit", "JSON list output should include Explicit source for runtime");
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallViaGlobalJson_PathsDirectsSdkToLocalDirectory()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -973,7 +968,7 @@ public class LifecycleEndToEndTests
             "SDK install spec should record the correct global.json path");
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallThenUninstall_FolderIsCleanedUp()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -1043,7 +1038,7 @@ public class LifecycleEndToEndTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void OutOfSupportManifestVersion_ReturnsError()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -1073,7 +1068,7 @@ public class LifecycleEndToEndTests
             "Error message should indicate the format is no longer supported");
     }
 
-    [Fact]
+    [TestMethod]
     public void SdkUninstall_DoesNotRemoveExplicitlyInstalledRuntime()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -1168,7 +1163,7 @@ public class LifecycleEndToEndTests
             "shared/Microsoft.NETCore.App directory should remain for explicitly installed runtime");
     }
 
-    [Fact]
+    [TestMethod]
     public void MultipleGlobalJson_UpdateRetainsOlderPinnedVersion()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();

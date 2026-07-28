@@ -90,7 +90,7 @@ public sealed class RunCommandTests : SdkTest
         };
 
         var runCommand = CreateRunCommand(projectPath);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
         Assert.AreEqual("executable", command.StartInfo.FileName);
         Assert.AreEqual(dir, command.StartInfo.WorkingDirectory);
@@ -115,7 +115,7 @@ public sealed class RunCommandTests : SdkTest
         };
 
         var runCommand = CreateRunCommand(projectPath, noLaunchProfileArguments: true);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
         Assert.AreEqual("", command.StartInfo.Arguments);
     }
@@ -138,7 +138,7 @@ public sealed class RunCommandTests : SdkTest
         };
 
         var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app 1", "app 2"]);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
         Assert.AreEqual("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
     }

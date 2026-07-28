@@ -8,7 +8,6 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -16,7 +15,6 @@ using Moq;
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [TestClass]
-
 public class UpdateExternallyDefinedStaticWebAssetsTest
 {
     [TestMethod]

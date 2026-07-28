@@ -44,6 +44,14 @@ internal static class SessionEventTypes
     internal const byte TestSessionEnd = 1;
 }
 
+internal static class DisplayMessageLevels
+{
+    // These values flow over IPC as a single byte and must stay stable.
+    internal const byte Information = 0;
+    internal const byte Warning = 1;
+    internal const byte Error = 2;
+}
+
 internal static class HandshakeMessagePropertyNames
 {
     internal const byte PID = 0;
@@ -64,6 +72,11 @@ internal static class HandshakeMessagePropertyNames
     // Optional property — older Microsoft.Testing.Platform versions don't send
     // it, in which case the SDK falls back to its previous (no-validation) behavior.
     internal const byte ExecutionMode = 10;
+
+    // Optional 1-based retry attempt number. Multiple test host instances, such as shards,
+    // can belong to the same attempt. Older hosts omit it, so the SDK retains instance-based
+    // retry inference as a compatibility fallback.
+    internal const byte AttemptNumber = 13;
 }
 
 internal static class HandshakeMessageExecutionModes
@@ -83,7 +96,10 @@ internal static class ProtocolConstants
     /// <summary>
     /// The protocol versions that are supported by the current SDK. Multiple versions can be present and be semicolon separated.
     /// </summary>
-    internal const string SupportedVersions = "1.0.0;1.1.0";
+    // 1.2.0 adds AzureDevOpsLogMessage (serializer id 11) forwarding; 1.3.0 adds DisplayMessage (serializer id 12) forwarding.
+    // NOTE: 1.4.0 (the reverse server-control pipe / server-initiated cancellation) is intentionally NOT advertised yet:
+    // it is a separate, larger feature that is out of scope here.
+    internal const string SupportedVersions = "1.0.0;1.1.0;1.2.0;1.3.0";
 }
 
 internal static class ProjectProperties

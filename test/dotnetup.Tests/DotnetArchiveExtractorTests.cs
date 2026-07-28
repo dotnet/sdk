@@ -11,24 +11,23 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 using Microsoft.NET.TestFramework;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 /// <summary>
 /// Tests for DotnetArchiveExtractor, particularly error handling scenarios.
 /// </summary>
-[Collection("ActivitySourceTests")]
+[TestClass]
 public class DotnetArchiveExtractorTests
 {
     private readonly ITestOutputHelper _log;
 
-    public DotnetArchiveExtractorTests(ITestOutputHelper log)
+    public DotnetArchiveExtractorTests(TestContext testContext)
     {
-        _log = log;
+        _log = new TestContextOutputHelper(testContext);
     }
 
-    [Fact]
+    [TestMethod]
     public void Prepare_DownloadFailure_ThrowsException()
     {
         // Arrange
@@ -54,7 +53,7 @@ public class DotnetArchiveExtractorTests
         using var extractor = new DotnetArchiveExtractor(request, version, releaseManifest, progressTarget, mockDownloader);
 
         // Act & Assert - Prepare wraps download failures in DotnetInstallException
-        var ex = Assert.Throws<DotnetInstallException>(() => extractor.Prepare());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => extractor.Prepare());
         _log.WriteLine($"Exception message: {ex.Message}");
         ex.Message.Should().Contain("Failed to download");
         ex.InnerException!.Message.Should().Contain("Network error");
@@ -64,7 +63,7 @@ public class DotnetArchiveExtractorTests
         mockDownloader.DownloadCalls[0].Version.Should().Be(version);
     }
 
-    [Fact]
+    [TestMethod]
     public void ExistingMuxer_IsPreserved_OnExtractionFailure()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -105,7 +104,7 @@ public class DotnetArchiveExtractorTests
         _log.WriteLine("Prepare completed successfully");
 
         // Commit should fail due to invalid archive, but muxer should be restored
-        var ex = Assert.ThrowsAny<Exception>(() => extractor.Commit());
+        var ex = Assert.Throws<Exception>(() => extractor.Commit());
         _log.WriteLine($"Commit failed as expected: {ex.Message}");
 
         // Verify the muxer was restored
@@ -113,7 +112,7 @@ public class DotnetArchiveExtractorTests
         File.ReadAllText(muxerPath).Should().Be(originalContent, "muxer content should be preserved");
     }
 
-    [Fact]
+    [TestMethod]
     public void Dispose_CleansUpTemporaryFiles()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -149,7 +148,7 @@ public class DotnetArchiveExtractorTests
         _log.WriteLine("Dispose cleaned up scratch directory successfully");
     }
 
-    [Fact]
+    [TestMethod]
     public void Prepare_RecordsCorrectDownloadParameters()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -211,7 +210,7 @@ public class DotnetArchiveExtractorTests
         }
     }
 
-    [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX)]
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
     public void ExtractTarContents_PreservesExecutePermission()
     {
         // Arrange — create a tar with an executable (755) and a non-executable (644) entry
@@ -254,7 +253,7 @@ public class DotnetArchiveExtractorTests
         readmeMode.Should().NotHaveFlag(UnixFileMode.UserExecute, "non-executable entry should not have UserExecute");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Linux | TestPlatforms.OSX)]
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
     public void ExtractTarContents_PreservesDirectoryPermissions()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -287,7 +286,7 @@ public class DotnetArchiveExtractorTests
         actualMode.Should().HaveFlag(UnixFileMode.UserWrite);
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtractTarContents_ExtractsContentCorrectly()
     {
         // Cross-platform test for content correctness
@@ -317,7 +316,7 @@ public class DotnetArchiveExtractorTests
         File.ReadAllText(nestedPath).Should().Be("content-of-sub/nested.txt");
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtractTarContents_SkipsExistingSubcomponents()
     {
         // Arrange — create a tar with files in two subcomponents
@@ -374,7 +373,7 @@ public class DotnetArchiveExtractorTests
         extractedEntries.Should().HaveCount(3);
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtractTarContents_RootLevelFilesAlwaysExtracted()
     {
         // Arrange — root-level files (not part of any subcomponent) should always be extracted
@@ -420,7 +419,7 @@ public class DotnetArchiveExtractorTests
             "files in existing subcomponents should be skipped");
     }
 
-    [Fact]
+    [TestMethod]
     public void Commit_ExtractsTarGzArchive_Correctly()
     {
         // Arrange — create a real tar.gz archive and verify the full Prepare → Commit path
@@ -461,7 +460,7 @@ public class DotnetArchiveExtractorTests
         File.ReadAllText(runtimeFile).Should().Be("runtime-content");
     }
 
-    [Fact]
+    [TestMethod]
     public void Commit_ExtractsTarGzArchive_WhenDecompressedTarPathAlreadyExists()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -505,7 +504,7 @@ public class DotnetArchiveExtractorTests
         File.ReadAllText(runtimeFile).Should().Be("runtime-content");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)]
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void Commit_ExtractsZipArchive_Correctly()
     {
         // Arrange — create a real zip archive and verify the full Prepare → Commit path

@@ -22,10 +22,14 @@ internal class InstallWorkflow
     private readonly InstallCommand _command;
     private readonly InstallPathResolver _installPathResolver;
 
+    private readonly Lazy<DotnetInstallRootConfiguration?> _currentInstallRoot;
+
     public InstallWorkflow(InstallCommand command)
     {
         _command = command;
         _installPathResolver = new InstallPathResolver(command.DotnetEnvironment);
+        _currentInstallRoot = new Lazy<DotnetInstallRootConfiguration?>(
+            command.DotnetEnvironment.GetCurrentPathConfiguration);
     }
 
     /// <summary>
@@ -126,7 +130,6 @@ internal class InstallWorkflow
             _command.InstallPath,
             _command.UpdateGlobalJson,
             Environment.CurrentDirectory);
-        var currentInstallRoot = _command.DotnetEnvironment.GetCurrentPathConfiguration();
 
         var pathResolution = _installPathResolver.Resolve(
             _command.InstallPath,
@@ -141,7 +144,7 @@ internal class InstallWorkflow
         var requests = new List<ResolvedInstallRequest>();
         foreach (var spec in componentSpecs)
         {
-            var resolved = ResolveSpec(spec, installRoot, globalJson, currentInstallRoot, pathResolution);
+            var resolved = ResolveSpec(spec, installRoot, globalJson, pathResolution);
             requests.Add(resolved);
         }
 
@@ -171,7 +174,7 @@ internal class InstallWorkflow
         return !migrateFromSystem &&
             interactive &&
             installPath is null &&
-            DotnetupConfig.ReadPathPreference() is null;
+            DotnetupConfig.ReadAccessMode() is null;
     }
 
     internal static bool ShouldPromptForStarterChannel(bool runOnboarding, MinimalInstallSpec[] componentSpecs)
@@ -191,7 +194,6 @@ internal class InstallWorkflow
         MinimalInstallSpec spec,
         DotnetInstallRoot installRoot,
         GlobalJsonInfo? globalJson,
-        DotnetInstallRootConfiguration? currentInstallRoot,
         InstallPathResolver.InstallPathResolutionResult pathResolution)
     {
         var component = spec.Component;
@@ -238,7 +240,7 @@ internal class InstallWorkflow
 
         RecordInstallTelemetry(
             component, explicitChannel,
-            _command.InstallPath, globalJson, currentInstallRoot,
+            _command.InstallPath, globalJson,
             pathResolution, channel, resolved);
 
         return resolved;
@@ -342,7 +344,6 @@ internal class InstallWorkflow
         string? requestedVersionOrChannel,
         string? explicitInstallPath,
         GlobalJsonInfo? globalJson,
-        DotnetInstallRootConfiguration? currentInstallRoot,
         InstallPathResolver.InstallPathResolutionResult pathResolution,
         string resolvedChannel,
         ResolvedInstallRequest resolved)
@@ -353,11 +354,13 @@ internal class InstallWorkflow
                 ? "default-globaljson"
                 : "default-latest";
 
+        var currentInstallRoot = _currentInstallRoot.Value;
+
         _command.SetCommandTag(TelemetryTagNames.InstallComponent, component.ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallRequestedVersion, VersionSanitizer.Sanitize(requestedVersionOrChannel));
         _command.SetCommandTag(TelemetryTagNames.InstallPathExplicit, (explicitInstallPath is not null).ToString());
         _command.SetCommandTag(TelemetryTagNames.InstallHasGlobalJson, (globalJson?.GlobalJsonPath is not null).ToString());
-        _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot?.InstallType.ToString() ?? "none");
+        _command.SetCommandTag(TelemetryTagNames.InstallExistingInstallType, currentInstallRoot is null ? "none" : InstallPathClassifier.ClassifyInstallPath(currentInstallRoot.Path));
         _command.SetCommandTag(TelemetryTagNames.InstallPathType, InstallPathClassifier.ClassifyInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource));
         _command.SetCommandTag(TelemetryTagNames.InstallPathSource, pathResolution.PathSource.ToString().ToLowerInvariant());
         _command.SetCommandTag(TelemetryTagNames.InstallResolvedVersion, resolved.ResolvedVersion.ToString());

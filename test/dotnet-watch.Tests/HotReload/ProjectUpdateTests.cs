@@ -50,8 +50,7 @@ public class ProjectUpdateTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task Update(bool isDirectoryProps)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps", identifier: isDirectoryProps.ToString())

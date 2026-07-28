@@ -8,7 +8,6 @@ using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.NET.TestFramework.Commands;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using System.IO.Compression;
 using System.Text.Json;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;

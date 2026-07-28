@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RethrowToPreserveStackDetailsFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.UnitTests.QualityGuidelines
 {
+    [TestClass]
     public class RethrowToPreserveStackDetailsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -65,7 +65,7 @@ class Program
     }
 }");
         }
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_RethrowExplicitlyToThrowImplicitlyAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(

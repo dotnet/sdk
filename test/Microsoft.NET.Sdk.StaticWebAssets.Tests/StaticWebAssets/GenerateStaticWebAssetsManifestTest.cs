@@ -8,7 +8,6 @@ using Microsoft.NET.TestFramework.Commands;
 using Microsoft.NET.TestFramework.Assertions;
 using Microsoft.NET.TestFramework.Utilities;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
 using Moq;

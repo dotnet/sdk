@@ -19,7 +19,6 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// <see cref="TaskEnvironment"/>. Tasks default to <see cref="TaskEnvironment.Fallback"/>
     /// which uses live process state, equivalent to the legacy single-threaded behavior.
     /// </summary>
-    [DoNotParallelize]
     [TestClass]
     public class GivenATaskEnvironmentDefault
     {

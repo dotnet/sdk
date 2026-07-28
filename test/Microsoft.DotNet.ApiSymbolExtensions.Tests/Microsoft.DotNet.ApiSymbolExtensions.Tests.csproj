@@ -10,12 +10,4 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
-  </ItemGroup>
-
 </Project>

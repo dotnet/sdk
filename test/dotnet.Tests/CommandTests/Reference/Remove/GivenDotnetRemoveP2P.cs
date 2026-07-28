@@ -3,7 +3,8 @@
 
 #nullable disable
 
-using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.FileBasedPrograms;
 using Msbuild.Tests.Utilities;
 
 namespace Microsoft.DotNet.Cli.Remove.Reference.Tests
@@ -128,6 +129,28 @@ Options:
             return ret;
         }
 
+        private static string CreateFileBasedApp(string directory, string content)
+        {
+            var appFile = Path.Join(directory, "Program.cs");
+            File.WriteAllText(appFile, content);
+            return appFile;
+        }
+
+        private static string CreateMinimalProject(string directory, string projectName)
+        {
+            var projectDirectory = Path.Join(directory, projectName);
+            Directory.CreateDirectory(projectDirectory);
+            var projectFile = Path.Join(projectDirectory, projectName + ".csproj");
+            File.WriteAllText(projectFile, $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+                    <PropertyGroup>
+                        <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    </PropertyGroup>
+                </Project>
+                """);
+            return projectFile;
+        }
+
         [TestMethod]
         [DataRow("--help")]
         [DataRow("-h")]
@@ -136,6 +159,35 @@ Options:
             var cmd = new RemoveReferenceCommand(Log).Execute(helpArg);
             cmd.Should().Pass();
             cmd.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized(HelpText(Directory.GetCurrentDirectory()));
+        }
+
+        [TestMethod]
+        public void ItRejectsProjectPathPassedToFileOption_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+
+            new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--file", projectFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.InvalidFilePath, projectFile));
+        }
+
+        [TestMethod]
+        public void ItRejectsProjectAndFileOptions_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                Console.WriteLine();
+                """);
+            var projectFile = CreateMinimalProject(testInstance.Path, "App");
+
+            new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--project", projectFile, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Fail()
+                .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--file", "--project"));
         }
 
         [TestMethod]
@@ -258,6 +310,151 @@ Options:
         }
 
         [TestMethod]
+        public void ItRemovesRefWithoutCondAndPrintsStatus_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project Lib/Lib.csproj
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "Lib/Lib.csproj"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItPreservesMSBuildPropertyProjectDirectiveWhenRemovingReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "remove", "Other/Other.csproj", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "Other/Other.csproj"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItRemovesMSBuildPropertyProjectDirectiveWhenRemovingReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project $(MSBuildThisFileDirectory)Lib/Lib.csproj
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(
+                    CliStrings.ProjectReferenceRemoved,
+                    "$(MSBuildThisFileDirectory)Lib/Lib.csproj"));
+
+            File.ReadAllText(appFile).Should().Be("""
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItRemovesFileBasedAppReferenceDirective_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref Util.cs
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+            CreateMinimalProject(testInstance.Path, "Other");
+
+            new DotnetCommand(Log, "reference", "remove", "Util.cs", "--file", "Program.cs")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be($$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItRemovesMSBuildPropertyRefDirectiveWhenRemovingReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref $(MSBuildThisFileDirectory)Util.cs
+                #:ref Other.cs
+
+                Console.WriteLine();
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Util.cs"), """
+                #:property OutputType=Library
+                public class Util { }
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Other.cs"), """
+                #:property OutputType=Library
+                public class Other { }
+                """);
+
+            new DotnetCommand(Log, "reference", "remove", "Util.cs", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining(string.Format(CliStrings.ProjectReferenceRemoved, "$(MSBuildThisFileDirectory)Util.cs"));
+
+            File.ReadAllText(appFile).Should().Be($$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref Other.cs
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
         public void ItRemovesRefWithCondAndPrintsStatus()
         {
             var setup = Setup();
@@ -311,6 +508,122 @@ Options:
             cmd.Should().Pass();
             cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceCouldNotBeFound, libref.CsProjPath));
             lib.CsProjContent().Should().BeEquivalentTo(csprojContentBefore);
+        }
+
+        [TestMethod]
+        public void WhenRefWithoutCondIsNotThereItPrintsMessage_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project Other/Other.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Other");
+            var contentBefore = File.ReadAllText(appFile);
+
+            var cmd = new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceCouldNotBeFound, "Lib/Lib.csproj"));
+            File.ReadAllText(appFile).Should().Be(contentBefore);
+        }
+
+        [TestMethod]
+        [DataRow("Missing")]
+        [DataRow("missing")]
+        public void ItRemovesProjectReferenceDirectiveWhenReferencedProjectDoesNotExist_FileBasedApp(string referenceArgument)
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project Missing
+
+                Console.WriteLine();
+                """);
+
+            var cmd = new DotnetCommand(Log, "reference", "remove", referenceArgument, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, "Missing"));
+            File.ReadAllText(appFile).Should().Be("""
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void ItPreservesFileBasedAppReferenceDirectiveWhenRemovingMissingProjectReference_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:project Missing
+                #:ref MissingRef
+
+                Console.WriteLine();
+                """);
+
+            var cmd = new DotnetCommand(Log, "reference", "remove", "Missing", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, "Missing"));
+            File.ReadAllText(appFile).Should().Be($$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref MissingRef
+
+                Console.WriteLine();
+                """);
+        }
+
+        [TestMethod]
+        public void WhenFileBasedAppReferenceWithoutExistingFileIsNotThereItPrintsMessage_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+
+                Console.WriteLine();
+                """);
+            var contentBefore = File.ReadAllText(appFile);
+
+            var cmd = new DotnetCommand(Log, "reference", "remove", "Missing.cs", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceCouldNotBeFound, "Missing.cs"));
+            File.ReadAllText(appFile).Should().Be(contentBefore);
+        }
+
+        [TestMethod]
+        [DataRow("Missing")]
+        [DataRow("missing")]
+        public void ItRemovesFileBasedAppReferenceDirectiveWhenReferencedFileDoesNotExist_FileBasedApp(string referenceArgument)
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, $$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+                #:ref Missing
+
+                Console.WriteLine();
+                """);
+
+            var cmd = new DotnetCommand(Log, "reference", "remove", referenceArgument, "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectReferenceRemoved, "Missing"));
+            File.ReadAllText(appFile).Should().Be($$"""
+                #:property {{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}}=true
+
+                Console.WriteLine();
+                """);
         }
 
         [TestMethod]
@@ -429,6 +742,30 @@ Options:
         }
 
         [TestMethod]
+        public void WhenDuplicateReferencesArePresentItRemovesThemAll_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project Lib/Lib.csproj
+                #:project Lib/Lib.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            var outputText = $@"{string.Format(CliStrings.ProjectReferenceRemoved, "Lib/Lib.csproj")}
+{string.Format(CliStrings.ProjectReferenceRemoved, "Lib/Lib.csproj")}";
+
+            var cmd = new DotnetCommand(Log, "reference", "remove", Path.GetFullPath("Lib/Lib.csproj", testInstance.Path), "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
+            File.ReadAllText(appFile).Should().NotContain("#:project");
+            File.ReadAllText(appFile).Should().Contain("Console.WriteLine();");
+        }
+
+        [TestMethod]
         public void WhenPassingRefWithRelPathItRemovesRefWithAbsolutePath()
         {
             var setup = Setup();
@@ -507,6 +844,31 @@ Options:
             csproj.NumberOfItemGroupsWithoutCondition().Should().Be(noCondBefore - 1);
             csproj.NumberOfProjectReferencesWithIncludeContaining(libref.Name).Should().Be(0);
             csproj.NumberOfProjectReferencesWithIncludeContaining(validref.Name).Should().Be(0);
+        }
+
+        [TestMethod]
+        public void WhenPassingMultipleReferencesItRemovesThemAll_FileBasedApp()
+        {
+            var testInstance = TestAssetsManager.CreateTestDirectory();
+            var appFile = CreateFileBasedApp(testInstance.Path, """
+                #:project Lib/Lib.csproj
+                #:project ValidRef/ValidRef.csproj
+
+                Console.WriteLine();
+                """);
+            CreateMinimalProject(testInstance.Path, "Lib");
+            CreateMinimalProject(testInstance.Path, "ValidRef");
+            var outputText = $@"{string.Format(CliStrings.ProjectReferenceRemoved, "Lib/Lib.csproj")}
+{string.Format(CliStrings.ProjectReferenceRemoved, "ValidRef/ValidRef.csproj")}";
+
+            var cmd = new DotnetCommand(Log, "reference", "remove", "Lib/Lib.csproj", "ValidRef/ValidRef.csproj", "--file", appFile)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute();
+
+            cmd.Should().Pass();
+            cmd.StdOut.Should().BeVisuallyEquivalentTo(outputText);
+            File.ReadAllText(appFile).Should().NotContain("#:project");
+            File.ReadAllText(appFile).Should().Contain("Console.WriteLine();");
         }
 
         [TestMethod]

@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsFixer>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UriParametersShouldNotBeStringsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1054NoWarningWithUrlNotStringTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -29,7 +29,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054WarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -42,7 +42,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1054CSharpResultAt(6, 42, "url", "A.Method(string)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054NoWarningWithUrlWithOverloadAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -56,7 +56,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
+        [TestMethod, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
         public async Task CA1054NoWarningWithUrlWithOverload_IdenticalTypeParametersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -81,7 +81,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
+        [TestMethod, WorkItem(1495, "https://github.com/dotnet/roslyn-analyzers/issues/1495")]
         public async Task CA1054WarningWithUrlWithOverload_DifferingTypeParametersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -107,7 +107,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             GetCA1054CSharpResultAt(11, 46, "url", "A.Method2<T>(string, B<T>)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054MultipleWarningWithUrlAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -121,7 +121,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
  , GetCA1054CSharpResultAt(6, 54, "url2", "A.Method(string, string)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054NoMultipleWarningWithUrlWithOverloadAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -137,7 +137,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054MultipleWarningWithUrlWithOverloadAsync()
         {
             // Following original FxCop implementation. but this seems strange.
@@ -154,7 +154,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         }
 
-        [Fact, WorkItem(6371, "https://github.com/dotnet/roslyn-analyzers/issues/6371")]
+        [TestMethod, WorkItem(6371, "https://github.com/dotnet/roslyn-analyzers/issues/6371")]
         public async Task CA1054NoWarningsForInterfaceImplementationsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -184,7 +184,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
  , GetCA1054CSharpResultAt(11, 28, "url", "IUrlInterface2.Method(string)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054NoWarningNotPublicAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -197,7 +197,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054NoWarningDerivedFromAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -210,7 +210,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
@@ -224,11 +224,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 ", GetCA1054BasicResultAt(5, 27, "firstUri", "A.Method(String)"));
         }
 
-        [Theory, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = Method")]
-        [InlineData("dotnet_code_quality.CA1054.excluded_symbol_names = Method")]
-        [InlineData("dotnet_code_quality.CA1054.excluded_symbol_names = Metho*")]
+        [TestMethod, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = Method")]
+        [DataRow("dotnet_code_quality.CA1054.excluded_symbol_names = Method")]
+        [DataRow("dotnet_code_quality.CA1054.excluded_symbol_names = Metho*")]
         public async Task CA1054_EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -258,7 +258,7 @@ public class A
                 csharpTest.ExpectedDiagnostics.Add(GetCA1054CSharpResultAt(6, 38, "url", "A.Method(string)"));
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -287,7 +287,7 @@ End Module"
                 basicTest.ExpectedDiagnostics.Add(GetCA1054BasicResultAt(5, 23, "url", "A.Method(String)"));
             }
 
-            await basicTest.RunAsync(TestContext.Current.CancellationToken);
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1054CSharpResultAt(int line, int column, params string[] args)

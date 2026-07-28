@@ -6,14 +6,12 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Uninstall;
 
-internal class RuntimeUninstallCommand(ParseResult result) : CommandBase(result)
+internal class RuntimeUninstallCommand(ParseResult result) : CommandBase(result, "runtime/uninstall")
 {
     private readonly string _componentSpec = result.GetValue(RuntimeUninstallCommandParser.ComponentSpecArgument)!;
     private readonly InstallSource _sourceFilter = result.GetValue(CommonOptions.SourceOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
-
-    protected override string GetCommandName() => "runtime/uninstall";
 
     protected override void ExecuteCore()
     {

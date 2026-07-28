@@ -82,7 +82,11 @@ public class SdkCheckCommand : CommandBase
 
     public static int Run(ParseResult parseResult)
     {
+#if CLI_AOT
+        return new SdkCheckCommand(parseResult, dotnetRoot: NativeEntryPoint.DotnetRoot).Execute();
+#else
         return new SdkCheckCommand(parseResult).Execute();
+#endif
     }
 }
 

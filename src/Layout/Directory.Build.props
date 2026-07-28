@@ -14,6 +14,55 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <!--
+      Whether to publish the dotnet-aot NativeAOT shared library (see the PublishDotnetAot target
+      in redist/targets/GenerateLayout.targets). This is shared by that target and by the
+      dotnet-aot.csproj ProjectReference in redist.csproj so the two stay in sync.
+
+      NativeAOT can produce the dotnet-aot library for the build host's operating system, either
+      natively (targeting the host architecture) or cross-compiling to another architecture of the
+      *same* OS. Cross-compilation across operating systems is not supported. We therefore publish
+      for supported win/linux/osx RIDs whenever the target OS equals the build host OS:
+        * native builds, where the target architecture matches the build host architecture
+          (TargetArchitecture == BuildArchitecture). We do not compare TargetRid == HostRid
+          directly: on Linux HostRid is the distro-specific RID (e.g. azurelinux.3-x64) while
+          TargetRid is the portable RID (e.g. linux-x64), so an exact comparison fails even for a
+          native build. TargetArchitecture vs BuildArchitecture is the canonical native-vs-cross
+          signal across all platforms.
+        * same-OS cross-arch builds, where NativeAOT targets a different architecture from the build
+          host (TargetArchitecture != BuildArchitecture). This is supported on all three operating
+          systems: win-x64 -> win-arm64 and osx-x64 -> osx-arm64 (clang/link are multi-target and
+          need no extra sysroot), and Linux via the azurelinux cross-prereq containers, which
+          provide a cross toolchain and target sysroot (CrossBuild=true with ROOTFS_DIR). The cross
+          inputs (CrossBuild/TargetArchitecture/TargetRid) are forwarded to the child dotnet-aot
+          Publish in GenerateLayout.targets; ROOTFS_DIR flows via the environment on Linux.
+    -->
+    <_DotnetAotTargetRidSupported Condition="$(TargetRid.StartsWith('win')) or $(TargetRid.StartsWith('linux')) or $(TargetRid.StartsWith('osx'))">true</_DotnetAotTargetRidSupported>
+
+    <!-- The target OS (from the TargetRid prefix) equals the build host OS. NativeAOT can only
+         target the host OS, so this is a prerequisite for both native and cross-arch publishing. -->
+    <_DotnetAotIsSameOSBuild Condition="$([MSBuild]::IsOSPlatform('WINDOWS')) and $(TargetRid.StartsWith('win'))">true</_DotnetAotIsSameOSBuild>
+    <_DotnetAotIsSameOSBuild Condition="$([MSBuild]::IsOSPlatform('OSX')) and $(TargetRid.StartsWith('osx'))">true</_DotnetAotIsSameOSBuild>
+    <_DotnetAotIsSameOSBuild Condition="$([MSBuild]::IsOSPlatform('LINUX')) and $(TargetRid.StartsWith('linux'))">true</_DotnetAotIsSameOSBuild>
+
+    <!-- Native: same OS and same architecture as the build host (and not an explicit cross-build).
+         linux-musl is excluded because its NativeAOT toolchain is not wired up here. -->
+    <_DotnetAotIsNativeBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' == '$(BuildArchitecture)' and '$(CrossBuild)' != 'true' and '$(DotNetBuildSourceOnly)' != 'true' and !$(TargetRid.StartsWith('linux-musl'))">true</_DotnetAotIsNativeBuild>
+
+    <!-- Cross: same OS but a different architecture from the build host. On Windows/macOS the cross
+         toolchain (MSVC arm64 linker / clang) is multi-target, so an architecture mismatch alone is
+         sufficient. On Linux a cross toolchain and target sysroot are required, so we only treat it
+         as a cross build when CrossBuild=true - which is set by the leg that runs inside the
+         azurelinux cross-prereq container (providing clang + the sysroot via ROOTFS_DIR). Without
+         that guard the regular linux-arm64 legs (e.g. TestBuild), which build on the x64 pool with
+         no arm64 sysroot, would try to cross-link and fail. -->
+    <_DotnetAotIsCrossBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' != '$(BuildArchitecture)' and '$(DotNetBuildSourceOnly)' != 'true' and !$(TargetRid.StartsWith('linux-musl')) and !($(TargetRid.StartsWith('linux')) and '$(CrossBuild)' != 'true')">true</_DotnetAotIsCrossBuild>
+
+    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == '' and '$(_DotnetAotTargetRidSupported)' == 'true' and ('$(_DotnetAotIsNativeBuild)' == 'true' or '$(_DotnetAotIsCrossBuild)' == 'true')">true</_ShouldPublishDotnetAot>
+    <_ShouldPublishDotnetAot Condition="'$(_ShouldPublishDotnetAot)' == ''">false</_ShouldPublishDotnetAot>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <ArchiveExtension>.tar.gz</ArchiveExtension>
     <ArchiveExtension Condition="$([MSBuild]::IsOSPlatform('WINDOWS'))">.zip</ArchiveExtension>
 
@@ -49,10 +98,12 @@
       )">true</SkipBuildingInstallers>
   </PropertyGroup>
 
+  <Import Project="$(RepositoryEngineeringDir)common\native\NativeAotSupported.props" />
+
   <PropertyGroup>
     <GenerateSdkBundleOnly Condition="'$(DotNetBuildPass)' == '3' and '$(OS)' == 'Windows_NT'">true</GenerateSdkBundleOnly>
     <BundleRuntimePacks Condition="'$(BundleRuntimePacks)' == '' and '$(DotNetBuildSourceOnly)' == 'true'">true</BundleRuntimePacks>
-    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true'">true</BundleNativeAotCompiler>
+    <BundleNativeAotCompiler Condition="'$(BundleNativeAotCompiler)' == '' and '$(DotNetBuildSourceOnly)' == 'true' and '$(DotNetBuildUseMonoRuntime)' != 'true' and '$(NativeAotSupported)' == 'true'">true</BundleNativeAotCompiler>
 
     <!-- Crossgen2 is not bundled by default on platforms where Microsoft provides a package on nuget.org,
          because it is large (100MB+). -->

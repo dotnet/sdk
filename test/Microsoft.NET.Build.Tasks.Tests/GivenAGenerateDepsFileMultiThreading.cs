@@ -12,7 +12,6 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    [DoNotParallelize]
     [TestClass]
     public class GivenAGenerateDepsFilePathResolution : IDisposable
     {

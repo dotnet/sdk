@@ -7,7 +7,8 @@
 # See run-aot-tests.ps1 for detailed documentation.
 #
 # Usage:
-#   ./run-aot-tests.sh [--configuration Debug|Release] [--rid <RID>] [--no-build]
+#   ./run-aot-tests.sh [--configuration Debug|Release] [--rid <RID>] [--no-build] \
+#                      [--trx] [--results-directory <DIR>]
 
 set -euo pipefail
 
@@ -19,12 +20,16 @@ TEST_PROJECT="$SCRIPT_DIR/dotnet-aot.Tests.csproj"
 CONFIGURATION="Debug"
 RID=""
 NO_BUILD=false
+TRX=false
+RESULTS_DIRECTORY=""
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --configuration|-c) CONFIGURATION="$2"; shift 2 ;;
         --rid|-r) RID="$2"; shift 2 ;;
         --no-build) NO_BUILD=true; shift ;;
+        --trx) TRX=true; shift ;;
+        --results-directory) RESULTS_DIRECTORY="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; exit 1 ;;
     esac
 done
@@ -87,8 +92,20 @@ echo "Running AOT tests..."
 echo ""
 
 chmod +x "$EXE_PATH"
+
+# When --trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
+# app, so it accepts the --report-trx options) so CI can publish the results.
+RUN_ARGS=()
+if [[ "$TRX" == true ]]; then
+    if [[ -z "$RESULTS_DIRECTORY" ]]; then
+        RESULTS_DIRECTORY="$REPO_ROOT/artifacts/TestResults/$CONFIGURATION"
+    fi
+    mkdir -p "$RESULTS_DIRECTORY"
+    RUN_ARGS+=(--report-trx --report-trx-filename dotnet-aot.Tests.trx --results-directory "$RESULTS_DIRECTORY")
+fi
+
 set +e
-"$EXE_PATH"
+"$EXE_PATH" ${RUN_ARGS[@]+"${RUN_ARGS[@]}"}
 TEST_EXIT=$?
 set -e
 

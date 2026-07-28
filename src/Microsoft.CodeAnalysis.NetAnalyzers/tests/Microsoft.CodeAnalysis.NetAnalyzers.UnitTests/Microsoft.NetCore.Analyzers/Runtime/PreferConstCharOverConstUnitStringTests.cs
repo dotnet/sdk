@@ -4,7 +4,6 @@
  
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferConstCharOverConstUnitStringAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.PreferConstCharOverConstUnitStringFixer>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class PreferConstCharOverConstUnitStringForStringBuilderAppendTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestRegularCaseAsync()
         {
             string csInput = @" 
@@ -83,7 +83,7 @@ End Module
             await VerifyVB.VerifyCodeFixAsync(vbInput, vbFix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMultipleDeclarationsAsync()
         {
             const string multipleDeclarations_cs = @" 
@@ -119,7 +119,7 @@ End Module
             await VerifyVB.VerifyCodeFixAsync(multipleDeclarations_vb, multipleDeclarations_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestClassFieldAsync()
         {
             const string classFieldInAppend_cs = @"
@@ -156,7 +156,7 @@ End Module
             await VerifyVB.VerifyCodeFixAsync(classFieldInAppend_vb, classFieldInAppend_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNullInitializerAsync()
         {
             const string nullInitializer_cs = @" 
@@ -192,7 +192,7 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(nullInitializer_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonUnitStringAsync()
         {
             const string nonUnitString_cs = @" 
@@ -228,7 +228,7 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(nonUnitString_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNoCallToStringAppendAsync()
         {
             const string noCallToStringAppend_cs = @" 
@@ -263,7 +263,7 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(noCallToStringAppend_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonConstUnitStringAsync()
         {
             const string nonConstUnitString_cs = @" 
@@ -300,7 +300,7 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(nonConstUnitString_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAppendLiteralWithFixAsync()
         {
             const string appendLiteralInput_cs = @" 
@@ -363,7 +363,7 @@ End Module
             await VerifyVB.VerifyCodeFixAsync(appendLiteralInput_vb, appendLiteralFix_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMethodCallInAppendAsync()
         {
             const string methodCallInAppend_cs = @" 
@@ -404,7 +404,7 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(methodCallInAppend_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMethodParameterInAppendAsync()
         {
             const string methodParameterInAppend = @"
@@ -439,9 +439,9 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(methodParameterInAppend_vb);
         }
 
-        [Theory]
-        [InlineData("ab")]
-        [InlineData("(string)null")]
+        [TestMethod]
+        [DataRow("ab")]
+        [DataRow("(string)null")]
         public async Task TestAppendLiteralAsync(string input)
         {
             string quotes = input == "(string)null" ? "" : "\"";
@@ -482,7 +482,7 @@ End Module
             await VerifyVB.VerifyAnalyzerAsync(methodParameterInAppend_vb);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInterpolatedStringAsync()
         {
             const string interpolatedString_cs = @"

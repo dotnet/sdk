@@ -11,7 +11,6 @@ using Microsoft.Build.Utilities;
 using Moq;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
     [TestClass]

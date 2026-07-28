@@ -16,11 +16,6 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
-[DoNotParallelize]
 [TestClass]
 public class MergeConfigurationPropertiesMultiThreadingTest
 {

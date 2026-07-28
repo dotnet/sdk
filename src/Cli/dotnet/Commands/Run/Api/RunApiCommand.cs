@@ -134,7 +134,7 @@ internal abstract class RunApiInput
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
             var result = runCommand.ReadLaunchProfileSettings();
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
             return new RunApiOutput.RunCommand
             {

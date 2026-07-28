@@ -97,15 +97,10 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-    [DataRow("--quiet", true)]
-    [DataRow("--quiet", false)]
-    [DataRow("--verbose", true)]
-    [DataRow("--verbose", false)]
-    [DataRow("--no-hot-reload", true)]
-    [DataRow("--no-hot-reload", false)]
-    [DataRow("--non-interactive", true)]
-    [DataRow("--non-interactive", false)]
-    public void WatchOptions_NotPassedThrough(string option, bool beforeCommand)
+    [CombinatorialData]
+    public void WatchOptions_NotPassedThrough(
+        [CombinatorialValues("--quiet", "--verbose", "--no-hot-reload", "--non-interactive")] string option,
+        bool beforeCommand)
     {
         var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
         Assert.AreEqual("test", options.Command.Name);
@@ -315,8 +310,7 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void OptionsSpecifiedBeforeOrAfterRun(bool afterRun)
     {
         var args = new[] { "--project", "P", "--framework", "F", "--property", "P1=V1", "--property", "P2=V2" };
@@ -344,22 +338,16 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
-    [DataRow(ArgPosition.Before, "--verbose")]
-    [DataRow(ArgPosition.Before, "--quiet")]
-    [DataRow(ArgPosition.Before, "--list")]
-    [DataRow(ArgPosition.Before, "--no-hot-reload")]
-    [DataRow(ArgPosition.Before, "--non-interactive")]
-    [DataRow(ArgPosition.After, "--verbose")]
-    [DataRow(ArgPosition.After, "--quiet")]
-    [DataRow(ArgPosition.After, "--list")]
-    [DataRow(ArgPosition.After, "--no-hot-reload")]
-    [DataRow(ArgPosition.After, "--non-interactive")]
-    [DataRow(ArgPosition.Both, "--verbose")]
-    [DataRow(ArgPosition.Both, "--quiet")]
-    [DataRow(ArgPosition.Both, "--list")]
-    [DataRow(ArgPosition.Both, "--no-hot-reload")]
-    [DataRow(ArgPosition.Both, "--non-interactive")]
-    public void OptionDuplicates_Allowed_Bool(ArgPosition position, string arg)
+    [CombinatorialData]
+    public void OptionDuplicates_Allowed_Bool(
+        ArgPosition position,
+        [CombinatorialValues(
+            "--verbose",
+            "--quiet",
+            "--list",
+            "--no-hot-reload",
+            "--non-interactive")]
+        string arg)
     {
         var args = new[] { arg };
 

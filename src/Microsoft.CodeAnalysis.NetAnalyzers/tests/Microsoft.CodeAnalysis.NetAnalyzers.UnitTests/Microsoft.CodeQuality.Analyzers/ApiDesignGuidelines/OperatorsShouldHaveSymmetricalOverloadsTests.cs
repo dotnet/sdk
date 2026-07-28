@@ -1,19 +1,19 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OperatorsShouldHaveSymmetricalOverloadsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OperatorsShouldHaveSymmetricalOverloadsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestMissingEqualityAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -24,7 +24,7 @@ public class A
                 GetCSharpResultAt(4, 32, "A", "==", "!="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestMissingInequalityAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -35,7 +35,7 @@ public class A
                 GetCSharpResultAt(4, 32, "A", "!=", "=="));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharpTestMissingEquality_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +60,7 @@ public class B
 ");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharpTestMissingInequality_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -84,7 +84,7 @@ public class B
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestBothEqualityOperatorsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -95,7 +95,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestMissingLessThanAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -106,7 +106,7 @@ public class A
                 GetCSharpResultAt(4, 32, "A", "<", ">"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestNotMissingLessThanAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -117,7 +117,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestMissingLessThanOrEqualToAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -128,7 +128,7 @@ public class A
                 GetCSharpResultAt(4, 32, "A", "<=", ">="));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestNotMissingLessThanOrEqualToAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -139,7 +139,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTestOperatorTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

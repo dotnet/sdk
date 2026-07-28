@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
+    <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

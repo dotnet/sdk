@@ -1,5 +1,8 @@
 <Project>
 
+  <!-- Apply the MSBuild thread-safe task analyzer to projects that set IsMSBuildTaskProject=true. -->
+  <Import Project="eng\MSBuildTaskAuthoringAnalyzer.props" />
+
   <PropertyGroup>
     <!--
       Disable nullable warnings when targeting anything other than our supported .NET core version(s).

@@ -298,7 +298,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 if (!string.IsNullOrEmpty(knownFrameworkReference.Profile))
                 {
-                    targetingPack.SetMetadata("Profile", knownFrameworkReference.Profile);
+                    targetingPack.SetMetadata(MetadataKeys.Profile, knownFrameworkReference.Profile);
                 }
 
                 //  Get the path of the targeting pack in the targeting pack root (e.g. dotnet/packs)
@@ -427,9 +427,11 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     TaskItem runtimeFramework = new(knownFrameworkReference.RuntimeFrameworkName);
 
+                    // NOTE: Any metadata added here must be part of the cache key in
+                    // ResolveTargetingPackAssets.
                     runtimeFramework.SetMetadata(MetadataKeys.Version, runtimeFrameworkVersion);
                     runtimeFramework.SetMetadata(MetadataKeys.FrameworkName, knownFrameworkReference.Name);
-                    runtimeFramework.SetMetadata("Profile", knownFrameworkReference.Profile);
+                    runtimeFramework.SetMetadata(MetadataKeys.Profile, knownFrameworkReference.Profile);
 
                     runtimeFrameworks.Add(runtimeFramework);
                     Log.LogMessage(MessageImportance.Low, $"Added runtime framework '{runtimeFramework.ItemSpec}@{runtimeFrameworkVersion}'");
@@ -1310,7 +1312,7 @@ namespace Microsoft.NET.Build.Tasks
             public bool RuntimePackAlwaysCopyLocal =>
                 _item.HasMetadataValue(MetadataKeys.RuntimePackAlwaysCopyLocal, "true");
 
-            public string Profile => _item.GetMetadata("Profile");
+            public string Profile => _item.GetMetadata(MetadataKeys.Profile);
 
             public NuGetFramework TargetFramework { get; }
 

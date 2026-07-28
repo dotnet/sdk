@@ -5,11 +5,10 @@
 
 namespace Microsoft.NET.Sdk.Razor.Tests
 {
+    [TestClass]
     public class BuildIntrospectionTest : AspNetSdkTest
     {
-        public BuildIntrospectionTest(ITestOutputHelper log) : base(log) { }
-
-        [Fact]
+        [TestMethod]
         public void RazorSdk_AddsCshtmlFilesToUpToDateCheckInput()
         {
             var testAsset = "RazorSimpleMvc";
@@ -23,7 +22,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining($"UpToDateCheckInput: {Path.Combine("Views", "_ViewStart.cshtml")}");
         }
 
-        [Fact]
+        [TestMethod]
         public void UpToDateReloadFileTypes_Default()
         {
             var testAsset = "RazorSimpleMvc";
@@ -36,7 +35,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("UpToDateReloadFileTypes: ;.cs;.razor;.resx;.cshtml");
         }
 
-        [Fact]
+        [TestMethod]
         public void UpToDateReloadFileTypes_WithRuntimeCompilation()
         {
             var testAsset = "RazorSimpleMvc";
@@ -58,7 +57,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("UpToDateReloadFileTypes: ;.cs;.razor;.resx;");
         }
 
-        [Fact]
+        [TestMethod]
         public void UpToDateReloadFileTypes_WithwWorkAroundRemoved()
         {
             var testAsset = "RazorSimpleMvc";
@@ -71,7 +70,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("UpToDateReloadFileTypes: ;.cs;.razor;.resx;.cshtml");
         }
 
-        [Fact]
+        [TestMethod]
         public void UpToDateReloadFileTypes_WithRuntimeCompilationAndWorkaroundRemoved()
         {
             var testAsset = "RazorSimpleMvc";
@@ -93,7 +92,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("UpToDateReloadFileTypes: ;.cs;.razor;.resx;");
         }
 
-        [Fact]
+        [TestMethod]
         public void IntrospectRazorSdkWatchItems()
         {
             var testAsset = "RazorComponentApp";
@@ -107,7 +106,7 @@ namespace Microsoft.NET.Sdk.Razor.Tests
                 .And.HaveStdOutContaining("Watch: Index.razor.css");
         }
 
-        [Fact]
+        [TestMethod]
         public void IntrospectRazorDesignTimeTargets()
         {
             var expected1 = Path.Combine("Components", "App.razor");

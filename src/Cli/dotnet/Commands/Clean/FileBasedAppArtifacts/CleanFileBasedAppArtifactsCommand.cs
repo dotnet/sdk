@@ -132,13 +132,10 @@ internal sealed class CleanFileBasedAppArtifactsCommand(ParseResult parseResult)
                     CleanFileBasedAppArtifactsCommandDefinition.AutomaticOptionName,
                 ]),
                 UseShellExecute = false,
-                RedirectStandardInput = true,
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
                 CreateNoWindow = true,
             };
 
-            Process.Start(startInfo);
+            _ = Process.StartAndForget(startInfo);
         }
     }
 

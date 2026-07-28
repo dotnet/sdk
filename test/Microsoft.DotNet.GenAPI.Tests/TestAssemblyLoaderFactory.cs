@@ -16,7 +16,8 @@ public class TestAssemblyLoaderFactory
         (string, string)[] assemblyTexts,
         bool respectInternals = false,
         bool allowUnsafe = false,
-        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null)
+        IEnumerable<KeyValuePair<string, ReportDiagnostic>>? diagnosticOptions = null,
+        bool usePreviewLanguageVersion = false)
     {
         if (assemblyTexts.Length == 0)
         {
@@ -32,7 +33,13 @@ public class TestAssemblyLoaderFactory
         foreach ((string assemblyName, string assemblyText) in assemblyTexts)
         {
             string actualAssemblyName = assemblyName.Replace(".dll", string.Empty);
-            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(assemblyText, diagnosticOptions, enableNullable: true, allowUnsafe: allowUnsafe, assemblyName: assemblyName);
+            using Stream assemblyStream = SymbolFactory.EmitAssemblyStreamFromSyntax(
+                assemblyText,
+                diagnosticOptions,
+                enableNullable: true,
+                allowUnsafe: allowUnsafe,
+                assemblyName: assemblyName,
+                usePreviewLanguageVersion: usePreviewLanguageVersion);
             if (loader.LoadAssembly(actualAssemblyName, assemblyStream) is IAssemblySymbol assemblySymbol)
             {
                 assemblySymbols.Add(actualAssemblyName, assemblySymbol);

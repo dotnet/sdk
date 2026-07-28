@@ -301,15 +301,10 @@
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" Returns="@(GeneratedContainer)" >
     <PropertyGroup>
-      <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
+      <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon publishing because all images are published in one tarball.-->
       <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
-      <!--We don't want to skip publishing individual images in case of local daemon podman because podman loads multi-arch tarball differently - only individual image for the current platform.-->
       <_SkipContainerPublishing>false</_SkipContainerPublishing>
-      <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or ( $(ContainerRegistry) == '' and ( $(LocalRegistry) == '' or $(LocalRegistry) == 'Docker' ) )">true</_SkipContainerPublishing>
-
-      <!--We want to skip CreateImageIndex task in case of local daemon podman because it is not supported.-->
-      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
-      <_SkipCreateImageIndex Condition="$(ContainerArchiveOutputPath) == '' and $(ContainerRegistry) == '' and $(LocalRegistry) == 'Podman'">true</_SkipCreateImageIndex>
+      <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or $(ContainerRegistry) == ''">true</_SkipContainerPublishing>
 
       <!-- Figure out what format the inner images should be coerced to -->
       <!-- If a user had an opinion, use that -->
@@ -354,7 +349,7 @@
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
 
-    <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
+    <CreateImageIndex
                       GeneratedContainers="@(GeneratedContainer)"
                       LocalRegistry="$(LocalRegistry)"
                       OutputRegistry="$(ContainerRegistry)"

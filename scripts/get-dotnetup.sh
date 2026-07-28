@@ -169,6 +169,32 @@ FILE_NAME="dotnetup-${RID}"
 DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"
 CHECKSUM_URL="${DOWNLOAD_URL}.sha512"
 
+# Map a 'channel' such as 'daily' to specific version url for the binary and its .sha512 to prevent release race condition mismatches
+resolve_final_url() {
+    local url="$1"
+    if [ "$DOWNLOADER" = "curl" ]; then
+        # --head resolves redirects without downloading the body.
+        curl --silent --show-error --location --head --output /dev/null \
+            --write-out '%{url_effective}' "$url" 2>/dev/null
+    elif [ "$DOWNLOADER" = "wget" ]; then
+        # wget lacks --write-out; --spider -S prints the redirect headers, whose final 'Location:' is the concrete build URL. tolower() keeps awk portable.
+        wget --spider -S "$url" 2>&1 \
+            | awk 'tolower($1) == "location:" { u = $2 } END { if (u != "") print u }'
+    fi
+    # An empty result falls back to the shortlink URLs below (previous behavior).
+}
+
+RESOLVED_URL="$(resolve_final_url "$DOWNLOAD_URL" || true)"
+if [ -n "$RESOLVED_URL" ] && [[ "$RESOLVED_URL" == *"/public/"* ]]; then
+    info "Resolved '${QUALITY}' to concrete build: $RESOLVED_URL"
+    DOWNLOAD_URL="$RESOLVED_URL"
+    # Checksums live under the sibling 'public-checksums' path. Use sed, not bash
+    # ${var/p/r}, since bash 3.2 (macOS) keeps the escaped backslashes literally.
+    CHECKSUM_URL="$(printf '%s' "$RESOLVED_URL" | sed 's#/public/#/public-checksums/#').sha512"
+else
+    gray "Could not resolve '${QUALITY}' shortlink to a concrete build; using shortlink URLs directly."
+fi
+
 INSTALLED_BINARY="${INSTALL_DIR}/dotnetup"
 
 TEMP_DIR=$(mktemp -d)

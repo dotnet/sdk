@@ -5,7 +5,6 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotMatchKeywordsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldNotMatchKeywordsFixer>;
@@ -19,9 +18,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     /// Contains those unit tests for the IdentifiersShouldNotMatchKeywords analyzer that
     /// pertain to the TypeRule, which applies to the names of types.
     /// </summary>
+    [TestClass]
     public class IdentifiersShouldNotMatchKeywordsTypeRuleTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -30,7 +30,7 @@ public class @class {}
                 GetCSharpResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "class", "class"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedPublicTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -40,7 +40,7 @@ End Class
                 GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -48,7 +48,7 @@ public class iNtErNaL {}
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedPublicTypeWithDifferentCasingAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -56,7 +56,7 @@ Public Class iNtErNaL
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedPublicTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -65,7 +65,7 @@ public struct aDdHaNdLeR {}
                 GetCSharpResultAt(2, 15, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "aDdHaNdLeR", "AddHandler"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedPublicTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -74,7 +74,7 @@ End Structure",
                 GetBasicResultAt(2, 18, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "aDdHaNdLeR", "AddHandler"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedInternalypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -82,7 +82,7 @@ internal class @class {}
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedInternalTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -91,7 +91,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForNonKeywordNamedPublicTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -99,7 +99,7 @@ public class classic {}
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForNonKeywordNamedPublicTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -108,7 +108,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicTypeInNamespaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -120,7 +120,7 @@ namespace N
                 GetCSharpResultAt(4, 17, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "enum", "enum"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedPublicTypeInNamespaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -133,7 +133,7 @@ End Namespace
                 GetBasicResultAt(3, 17, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Enum", "Enum"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -145,7 +145,7 @@ public class C
                 GetCSharpResultAt(4, 21, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "C.protected", "protected"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -157,11 +157,11 @@ End Class
                 GetBasicResultAt(3, 21, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "C.Protected", "Protected"));
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method, Property")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method, Property")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = Method")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = Method, Property")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method, Property")]
         public async Task UserOptionDoesNotIncludeNamedType_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -178,7 +178,7 @@ End Class
 {editorConfigText}
 ") },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -196,14 +196,14 @@ End Class",
 {editorConfigText}
 ") },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
         public async Task UserOptionIncludesNamedType_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -221,7 +221,7 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(1, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "class", "class"), },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -240,21 +240,21 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetBasicResultAt(2, 14, IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule, "Class", "Class"), },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         // Identical
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", true)]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", true)]
         // Different, intersection has 'NamedType'
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", true)]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "", true)] // Default has 'NamedType'
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = NamedType", true)]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", true)]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType", "", true)] // Default has 'NamedType'
         // Different, intersection does not have 'NamedType'
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = Property", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", "dotnet_code_quality.analyzed_symbol_kinds = Property", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method", "", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")] // Default has 'NamedType'
+        // MSTest has no per-row skip; row disabled (was xUnit InlineData Skip): [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property", "dotnet_code_quality.analyzed_symbol_kinds = Property", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
+        // MSTest has no per-row skip; row disabled (was xUnit InlineData Skip): [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method", "dotnet_code_quality.analyzed_symbol_kinds = Property", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")]
+        // MSTest has no per-row skip; row disabled (was xUnit InlineData Skip): [DataRow("dotnet_code_quality.analyzed_symbol_kinds = Method", "", false, Skip = "https://github.com/dotnet/roslyn-analyzers/issues/3494")] // Default has 'NamedType'
         public async Task TestConflictingAnalyzerOptionsForPartialsAsync(string editorConfigText1, string editorConfigText2, bool expectDiagnostic)
         {
             var csTest = new VerifyCS.Test
@@ -279,7 +279,7 @@ End Class",
                 csTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1/Test0.cs", 1, 22, 1, 28).WithSpan(@"/folder2/Test1.cs", 1, 22, 1, 28).WithArguments("class", "class"));
             }
 
-            await csTest.RunAsync(TestContext.Current.CancellationToken);
+            await csTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -307,7 +307,7 @@ End Class"),
                 vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(IdentifiersShouldNotMatchKeywordsAnalyzer.TypeRule).WithSpan(@"/folder1/Test0.vb", 2, 22, 2, 29).WithSpan(@"/folder2/Test1.vb", 2, 22, 2, 29).WithArguments("Class", "Class"));
             }
 
-            await vbTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, string arg1, string arg2)

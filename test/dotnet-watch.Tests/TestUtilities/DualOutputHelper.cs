@@ -8,13 +8,13 @@ using System.Runtime.CompilerServices;
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 /// <summary>
-/// Bridge adapter that implements both MSTest's <see cref="Microsoft.NET.TestFramework.ITestOutputHelper"/>
-/// and xunit's <see cref="Xunit.ITestOutputHelper"/>, enabling it to be passed to utilities that
-/// still expect the xunit type (WatchableApp, DebugTestOutputLogger) while also serving the MSTest-based
-/// utilities (TestConsole, TestReporter, DotnetCommand) in the test project.
+/// Adapter over <see cref="Microsoft.NET.TestFramework.ITestOutputHelper"/> that adds a
+/// <see cref="Log"/> helper and can be passed both to the SDK test framework utilities
+/// (TestConsole, TestReporter, DotnetCommand) and to the watch test utilities (WatchableApp,
+/// DebugTestOutputLogger).
 /// </summary>
 internal sealed class DualOutputHelper(MSTestFramework::Microsoft.NET.TestFramework.ITestOutputHelper inner)
-    : MSTestFramework::Microsoft.NET.TestFramework.ITestOutputHelper, Xunit.ITestOutputHelper
+    : MSTestFramework::Microsoft.NET.TestFramework.ITestOutputHelper
 {
     public string Output => inner.Output;
     public void Write(string message) => inner.Write(message);

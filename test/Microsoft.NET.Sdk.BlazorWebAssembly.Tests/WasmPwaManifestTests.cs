@@ -6,9 +6,9 @@
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using static Microsoft.NET.Sdk.BlazorWebAssembly.Tests.ServiceWorkerAssert;
+
+
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-
-
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
     [TestClass]

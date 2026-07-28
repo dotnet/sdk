@@ -1,4 +1,4 @@
-<Project Sdk="MSTest.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
@@ -9,6 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
+    <PackageId>testSdkBlazorWasmAoT</PackageId>
     <BuildHelixPayload Condition="'$(RunAoTTests)' != 'true'">false</BuildHelixPayload>
   </PropertyGroup>
 
@@ -50,11 +51,6 @@
     <PackageReference Include="Microsoft.Build.Framework" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
     <PackageReference Include="Moq" />
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
   <ItemGroup>
