@@ -204,9 +204,9 @@ public class ParserTests
     }
 
     [Theory]
-    [InlineData("1501/smth", "(MissingPortNumber, InvalidPortType)")]
-    [InlineData("1501\\tcp", "(MissingPortNumber, InvalidPortNumber)")]
-    [InlineData("not-a-number", "(MissingPortNumber, InvalidPortNumber)")]
+    [InlineData("1501/smth", "(InvalidPortType)")]
+    [InlineData("1501\\tcp", "(InvalidPortNumber)")]
+    [InlineData("not-a-number", "(InvalidPortNumber)")]
     public void CanHandleInvalidPorts(string portStr, string reason)
     {
         string errorMessage = $"Incorrectly formatted ports:{Environment.NewLine}\t{portStr}:\t{reason}{Environment.NewLine}";

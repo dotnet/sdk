@@ -77,6 +77,11 @@
         <target state="translated">'{0}' iş yükü bildirimi bağımlılığının '{1}' sürümü, '{3}' [{4}] bildirimi için gereken '{2}' sürümünden düşük</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestDoesNotExist">
+        <source>No manifest with ID {0} exists.</source>
+        <target state="translated">{0} kimliğine sahip bildirim yok.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
         <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload repair" may resolve this.</source>
         <target state="translated">{1} içinde belirtilen iş yükü bildirimi {0} bulunamadı. Çalışan "dotnet workload repair" bu sorunu çözebilir.</target>

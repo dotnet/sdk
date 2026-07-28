@@ -8,8 +8,8 @@
         <note />
       </trans-unit>
       <trans-unit id="CommandDescription">
-        <source>Run local tool.</source>
-        <target state="translated">Запуск локального средства.</target>
+        <source>Run a local tool. Note that this command cannot be used to run a global tool. </source>
+        <target state="translated">Запуск локального инструмента. Обратите внимание, что с помощью этой команды невозможно запустить глобальный инструмент. </target>
         <note />
       </trans-unit>
       <trans-unit id="CommandNameArgumentDescription">

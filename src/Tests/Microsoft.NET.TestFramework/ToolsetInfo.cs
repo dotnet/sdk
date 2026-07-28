@@ -412,16 +412,26 @@ namespace Microsoft.NET.TestFramework
             return !File.Exists(extensionsImportAfterPath);
         }
 
-        private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new Lazy<string>(() =>
+        private static string GetPackageVersion(string key)
         {
             Assembly assembly = Assembly.GetExecutingAssembly();
-            return assembly.GetCustomAttributes(true).OfType<AssemblyMetadataAttribute>().FirstOrDefault(a => a.Key == "NewtonsoftJsonPackageVersion").Value;
-        });
+            return assembly.GetCustomAttributes(true)
+                .OfType<AssemblyMetadataAttribute>()
+                .FirstOrDefault(a => a.Key == key)?.Value;
+        }
+
+        private static readonly Lazy<string> _NewtonsoftJsonPackageVersion = new Lazy<string>(() => GetPackageVersion( "NewtonsoftJsonPackageVersion"));
 
         public static string GetNewtonsoftJsonPackageVersion()
         {
             return _NewtonsoftJsonPackageVersion.Value;
         }
 
+        private static readonly Lazy<string> _SystemDataSqlClientPackageVersion = new(() => GetPackageVersion("SystemDataSqlClientPackageVersion"));
+
+        public static string GetSystemDataSqlClientPackageVersion()
+        {
+            return _SystemDataSqlClientPackageVersion.Value;
+        }
     }
 }

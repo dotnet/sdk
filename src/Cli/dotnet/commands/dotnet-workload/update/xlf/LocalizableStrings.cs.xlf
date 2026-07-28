@@ -7,6 +7,11 @@
         <target state="translated">Aktualizujte jenom manifesty reklamy.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">Možnosti {0} a {1} nelze použít společně.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Aktualizace všech nainstalovaných úloh.</target>
@@ -20,6 +25,11 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Aktualizuje úlohy na základě zadaného souboru definice vrácení zpět.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">Nenašla se žádná aktualizace úlohy.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -42,6 +52,11 @@
         <target state="translated">Aktualizace úlohy {0} neproběhla úspěšně z následujícího důvodu:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Aktualizace na soubor vrácení zpět není kompatibilní se sadami úloh. Instalace a aktualizace teď budou používat volné manifesty. Pokud chcete provést aktualizaci na konkrétní verzi úlohy, použijte možnost --version.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Úlohy se úspěšně aktualizovaly: {0}.</target>
@@ -60,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">Aktualizace úlohy se nepovedla: {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">Verze úlohy {0} nebyla nalezena.</target>
         <note />
       </trans-unit>
     </body>

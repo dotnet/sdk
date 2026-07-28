@@ -36,6 +36,11 @@ Aby uzyskać listę przeszukiwanych lokalizacji, określ opcję „-d” przed n
         <target state="translated">Istnieje wiele pozycji dla pakietów: {0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolMissingRollForward">
+        <source>Missing 'rollForward' entry.</source>
+        <target state="translated">Brak wpisu „rollForward”.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnexpectedTypeInJson">
         <source>Expected a {0} for property '{1}'.</source>
         <target state="translated">Oczekiwano wartości {0} dla właściwości „{1}”.</target>

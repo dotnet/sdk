@@ -6,9 +6,15 @@ using Microsoft.NET.Build.Containers.Resources;
 
 namespace Microsoft.NET.Build.Containers;
 
-public static class ContainerBuilder
+internal enum KnownImageFormats
 {
-    public static async Task<int> ContainerizeAsync(
+    OCI,
+    Docker
+}
+
+internal static class ContainerBuilder
+{
+    internal static async Task<int> ContainerizeAsync(
         DirectoryInfo publishDirectory,
         string workingDir,
         string baseRegistry,
@@ -31,6 +37,9 @@ public static class ContainerBuilder
         string localRegistry,
         string? containerUser,
         string? archiveOutputPath,
+        bool generateLabels,
+        bool generateDigestLabel,
+        KnownImageFormats? imageFormat,
         ILoggerFactory loggerFactory,
         CancellationToken cancellationToken)
     {
@@ -60,11 +69,12 @@ public static class ContainerBuilder
         {
             try
             {
+                var ridGraphPicker = new RidGraphManifestPicker(ridGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     baseImageName,
                     baseImageTag,
                     containerRuntimeIdentifier,
-                    ridGraphPath,
+                    ridGraphPicker,
                     cancellationToken).ConfigureAwait(false);
             }
             catch (RepositoryNotFoundException)
@@ -95,6 +105,15 @@ public static class ContainerBuilder
         logger.LogInformation(Strings.ContainerBuilder_StartBuildingImage, imageName, string.Join(",", imageName), sourceImageReference);
         cancellationToken.ThrowIfCancellationRequested();
 
+        // forcibly change the media type if required
+        imageBuilder.ManifestMediaType = imageFormat switch
+        {
+            null => imageBuilder.ManifestMediaType,
+            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+            _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+        };
+
         Layer newLayer = Layer.FromDirectory(publishDirectory.FullName, workingDir, imageBuilder.IsWindows, imageBuilder.ManifestMediaType);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(workingDir);
@@ -124,11 +143,20 @@ public static class ContainerBuilder
         }
         imageBuilder.SetEntrypointAndCmd(imageEntrypoint, imageCmd);
 
-        foreach (KeyValuePair<string, string> label in labels)
+        if (generateLabels)
         {
-            // labels are validated by System.CommandLine API
-            imageBuilder.AddLabel(label.Key, label.Value);
+            foreach (KeyValuePair<string, string> label in labels)
+            {
+                // labels are validated by System.CommandLine API
+                imageBuilder.AddLabel(label.Key, label.Value);
+            }
+
+            if (generateDigestLabel)
+            {
+                imageBuilder.AddBaseImageDigestLabel();
+            }
         }
+
         foreach (KeyValuePair<string, string> envVar in envVars)
         {
             imageBuilder.AddEnvironmentVariable(envVar.Key, envVar.Value);
@@ -186,6 +214,11 @@ public static class ContainerBuilder
         {
             await containerRegistry.LoadAsync(builtImage, sourceImageReference, destinationImageReference, cancellationToken).ConfigureAwait(false);
             logger.LogInformation(Strings.ContainerBuilder_ImageUploadedToLocalDaemon, destinationImageReference, containerRegistry);
+        }
+        catch (UnableToDownloadFromRepositoryException)
+        {
+            logger.LogError(Resource.FormatString(nameof(Strings.UnableToDownloadFromRepository)), sourceImageReference);
+            return 1;
         }
         catch (Exception ex)
         {

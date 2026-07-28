@@ -12,8 +12,11 @@ namespace Microsoft.NET.Build.Containers;
 /// <remarks>
 /// https://github.com/opencontainers/image-spec/blob/main/manifest.md
 /// </remarks>
-public readonly record struct ManifestV2
+public class ManifestV2
 {
+    [JsonIgnore]
+    public string? KnownDigest { get; set; }
+
     /// <summary>
     /// This REQUIRED property specifies the image manifest schema version.
     /// For this version of the specification, this MUST be 2 to ensure backward compatibility with older versions of Docker.
@@ -27,7 +30,7 @@ public readonly record struct ManifestV2
     /// When used, this field MUST contain the media type application/vnd.oci.image.manifest.v1+json. This field usage differs from the descriptor use of mediaType.
     /// </summary>
     [JsonPropertyName("mediaType")]
-    public required string MediaType { get; init; }
+    public string? MediaType { get; init; }
 
     /// <summary>
     /// This REQUIRED property references a configuration object for a container, by digest.
@@ -47,9 +50,9 @@ public readonly record struct ManifestV2
     /// <summary>
     /// Gets the digest for this manifest.
     /// </summary>
-    public string GetDigest() => DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
+    public string GetDigest() => KnownDigest ??= DigestUtils.GetDigest(JsonSerializer.SerializeToNode(this)?.ToJsonString() ?? string.Empty);
 }
 
 public record struct ManifestConfig(string mediaType, long size, string digest);
 
-public record struct ManifestLayer(string mediaType, long size, string digest, string[]? urls);
+public record struct ManifestLayer(string mediaType, long size, string digest, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)][field: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string[]? urls);

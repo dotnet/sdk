@@ -7,6 +7,11 @@
         <target state="translated">Atualizar somente manifestos de anúncio.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">Não é possível usar as opções {0} e {1} juntas.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Atualizar todas as cargas de trabalho instaladas.</target>
@@ -20,6 +25,11 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Atualizar cargas de trabalho com base no arquivo de definição de reversão especificado.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">Nenhuma atualização de carga de trabalho foi encontrada.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -42,6 +52,11 @@
         <target state="translated">Falha ao atualizar a carga de trabalho '{0}' devido ao seguinte motivo:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Atualizar em um arquivo de reversão não é compatível com os conjuntos de carga de trabalho. A instalação e a atualização agora usarão manifestos flexíveis. Para atualizar para uma versão de carga de trabalho específica, use --versão.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">Carga(s) de trabalho atualizada(s) com êxito: {0}.</target>
@@ -60,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">A atualização da carga de trabalho falhou: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">A versão da carga de trabalho {0} não foi encontrada.</target>
         <note />
       </trans-unit>
     </body>

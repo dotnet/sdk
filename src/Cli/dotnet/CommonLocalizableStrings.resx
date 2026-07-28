@@ -733,4 +733,7 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
   <data name="ArtifactsPathArgumentName" xml:space="preserve">
     <value>ARTIFACTS_DIR</value>
   </data>
+  <data name="ToolSettingsNotFound" xml:space="preserve">
+    <value>Tool settings file does not exist for the tool {0}.</value>
+  </data>
 </root>
