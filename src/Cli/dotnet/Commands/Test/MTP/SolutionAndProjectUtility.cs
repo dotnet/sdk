@@ -621,8 +621,10 @@ internal static class SolutionAndProjectUtility
                 var loggers = logger is null ? null : new[] { logger };
                 if (project.Targets.ContainsKey(Constants.DeployToDevice))
                 {
-                    // Create a fresh ProjectInstance for each build operation
-                    // to avoid accumulating state (existing item groups) from previous builds
+                    // Deploy on a fresh ProjectInstance to avoid accumulating state (existing item
+                    // groups) that would leak into the ComputeRunArguments build below, which has to
+                    // build the original instance since the run properties are read back from it.
+                    // Same reason as dotnet run, see RunCommandSelector.OpenProjectIfNeeded.
                     if (!project.DeepCopy().Build([Constants.DeployToDevice], loggers))
                     {
                         throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
