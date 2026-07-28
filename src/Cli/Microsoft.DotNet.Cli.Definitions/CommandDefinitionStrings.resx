@@ -494,6 +494,9 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdNoHttpCacheOptionDescription" xml:space="preserve">
     <value>Disable Http Caching for packages.</value>
   </data>
+  <data name="CmdNoArtifactPostProcessingDescription" xml:space="preserve">
+    <value>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</value>
+  </data>
   <data name="CmdNoProgressDescription" xml:space="preserve">
     <value>Disable progress reporting.</value>
   </data>

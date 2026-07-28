@@ -116,7 +116,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 exitCode = ExitCode.TestSessionAborted;
             }
 
-            if (!testOptions.IsHelp && !testOptions.IsDiscovery && !ctrlC.Token.IsCancellationRequested)
+            if (!testOptions.IsHelp
+                && !testOptions.IsDiscovery
+                && !parseResult.GetValue(definition.NoArtifactPostProcessingOption)
+                && !ctrlC.Token.IsCancellationRequested)
             {
                 artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
             }
