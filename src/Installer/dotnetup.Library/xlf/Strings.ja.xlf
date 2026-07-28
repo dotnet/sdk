@@ -391,6 +391,11 @@ Or open a new terminal.</target>
         <target state="new">Total</target>
         <note />
       </trans-unit>
+      <trans-unit id="MalformedGlobalJson">
+        <source>The global.json file '{0}' is malformed: {1}</source>
+        <target state="new">The global.json file '{0}' is malformed: {1}</target>
+        <note>{Locked="global.json"} {0} is the path to the malformed global.json file. {1} is a concise JSON parse failure message.</note>
+      </trans-unit>
       <trans-unit id="PathDescriptionEverywhere">
         <source>Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</source>
         <target state="new">Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</target>

@@ -459,6 +459,6 @@ Or open a new terminal.</value>
   </data>
   <data name="MalformedGlobalJson" xml:space="preserve">
     <value>The global.json file '{0}' is malformed: {1}</value>
-    <comment>{0} is the path to the malformed global.json file. {1} is a concise JSON parse failure message.</comment>
+    <comment>{Locked="global.json"} {0} is the path to the malformed global.json file. {1} is a concise JSON parse failure message.</comment>
   </data>
 </root>
