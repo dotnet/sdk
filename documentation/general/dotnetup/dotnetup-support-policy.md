@@ -47,8 +47,6 @@ If the `daily` build of `dotnetup` faces an issue, we do not guarantee any SLA o
 
 At our discretion, `daily` builds may be promoted to `preview` versions. We will closely monitor telemetry for potential bugs or regressions added between the `preview` and `daily` build before promoting a `daily` to a `preview` build. `preview` versions are not officially supported but they are offered for public testing ahead of a promotion to a `stable` release.
 
-The first `preview` version of `dotnetup` is targeted for release in `August 2026`.
-
 `preview` versions may be built off the top of `preview` or `lts/sts` versions of .NET.
 
 `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version. Regardless, we aim to publish breaking change notices for expected high-impact changes.
@@ -56,9 +54,7 @@ The first `preview` version of `dotnetup` is targeted for release in `August 202
 
 ### `Stable` Channel Versions
 
-Only the most recently published `stable` version of `dotnetup` is supported. Supported in this case means that `stable` versions receive security and bug fixes as patch versions. `daily` versions will eventually catch up with features added in `preview` versions.
-
-The `stable` version of `dotnetup` will release in `November 2026` aligning around the .NET 11 timeframe.
+Only the most recently published `stable` version of `dotnetup` is supported. Supported in this case means that `stable` versions receive security and bug fixes as patch versions. Every `stable` release begins as a `daily` build that is promoted to `preview` and then to `stable`; there is no separate feature stream that needs to "catch up."
 
 `dotnetup` versioning is inspired by [Semantic Versioning](https://semver.org/) but does not strictly implement it. Major, minor, and patch version components communicate the expected scope of a release, but they are not compatibility guarantees; more detail is provided below. Intentional breaking changes will be documented regardless of which version component changes. In general, we will provide both notice and backward compatibility for breaking changes when within reason.
 
@@ -88,9 +84,3 @@ When a new `stable` version of `dotnetup` is published, all previous versions im
 At this time, historical `stable` versions of `dotnetup` will remain available for download as official [dotnet releases](https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json) despite their lack of official support, much like historical .NET versions are available today.
 
 PSAs and CVEs are planned to be announced under the [same platform (dotnet release notes)](https://github.com/dotnet/core) used for dotnet releases today, following a similar convention. However, discussions and release tags will exist on the [.NET SDK repository](https://github.com/dotnet/sdk).
-
-### FAQ
-
-**How can I update to the latest `dotnetup` version?**
-
-Once `stable` releases are available, follow the [download instructions](README.md#download-dotnetup) and select the `stable` build quality. Pass `--quality stable` to `get-dotnetup.sh` or `-Quality stable` to `get-dotnetup.ps1`. Running either script without this option currently installs a `daily` build, which is available today but not supported.
