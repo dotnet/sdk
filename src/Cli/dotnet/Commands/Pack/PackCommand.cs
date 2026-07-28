@@ -145,6 +145,8 @@ public class PackCommand(
         }
 
         // Fallback to MSBuild-based packing
-        return FromParseResult(parseResult).Execute();
+        CommandBase command = FromParseResult(parseResult);
+        command.MSBuildSubmissionMetricCommandName = "pack";
+        return command.Execute();
     }
 }
