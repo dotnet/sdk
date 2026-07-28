@@ -619,10 +619,14 @@ internal static class SolutionAndProjectUtility
             lock (s_buildLock)
             {
                 var loggers = logger is null ? null : new[] { logger };
-                if (project.Targets.ContainsKey(Constants.DeployToDevice) &&
-                    !project.Build([Constants.DeployToDevice], loggers))
+                if (project.Targets.ContainsKey(Constants.DeployToDevice))
                 {
-                    throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    // Create a fresh ProjectInstance for each build operation
+                    // to avoid accumulating state (existing item groups) from previous builds
+                    if (!project.DeepCopy().Build([Constants.DeployToDevice], loggers))
+                    {
+                        throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    }
                 }
 
                 if (!project.Build(s_computeRunArgumentsTarget, loggers))
