@@ -11,6 +11,7 @@
     <InstallerPlatform Condition="'$(InstallerPlatform)' == ''">$(TargetArchitecture)</InstallerPlatform>
     <Platform>$(InstallerPlatform)</Platform>
     <PlatformName>$(InstallerPlatform)</PlatformName>
+    <HarvestDirectorySuppressSpecificWarnings>5149</HarvestDirectorySuppressSpecificWarnings>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(MSBuildProjectExtension)' == '.wixproj'">
