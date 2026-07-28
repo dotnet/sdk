@@ -125,8 +125,9 @@ public class WorkloadUpdateTests
         string? userProfileDir = null)
     {
         Directory.CreateDirectory(testRoot);
+        string effectiveUserProfileDir = userProfileDir ?? testRoot;
         string installStateDirectory = Path.Combine(
-            userProfileDir ?? testRoot,
+            effectiveUserProfileDir,
             "metadata",
             "workloads",
             RuntimeInformation.ProcessArchitecture.ToString(),
@@ -145,7 +146,7 @@ public class WorkloadUpdateTests
             new NullReporter(),
             resolver,
             downloader,
-            testRoot,
+            effectiveUserProfileDir,
             records,
             installer,
             getEnvironmentVariable: getEnvironmentVariable,
