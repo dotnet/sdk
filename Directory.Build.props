@@ -72,22 +72,10 @@
 
     <!-- https://github.com/dotnet/source-build/issues/4115. -->
     <PublishWindowsPdb>false</PublishWindowsPdb>
-
-    <!-- Enable NuGet Audit to check for security vulnerabilities -->
-    <NuGetAudit>true</NuGetAudit>
-    <NuGetAuditLevel>low</NuGetAuditLevel>
-    <NuGetAuditMode>all</NuGetAuditMode>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(IsTestProject)' == 'true'">
     <GenerateProgramFile>false</GenerateProgramFile>
-  </PropertyGroup>
-
-  <!-- Disable NuGet audit in official builds. MSBuild does not correctly handle
-       WarningsNotAsErrors for NuGet warnings (https://github.com/dotnet/msbuild/issues/10801),
-       so audit findings become errors via TreatWarningsAsErrors. -->
-  <PropertyGroup Condition="'$(OfficialBuild)' == 'true'">
-    <NuGetAudit>false</NuGetAudit>
   </PropertyGroup>
 
   <PropertyGroup>
