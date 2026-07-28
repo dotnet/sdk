@@ -57,16 +57,6 @@ variables:
 # Provides TSA variables for automatic bug reporting.
 - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
   - group: DotNet-CLI-SDLValidation-Params
-### LOCAL ONLY ###
-- name: _publishArgument
-  value: -publish
-- name: _signArgument
-  value: -sign
-- name: _officialBuildProperties
-  # The OfficialBuilder property is set to Microsoft for the official build only.
-  # This property is checked in Directory.Build.props and adds the MICROSOFT_ENABLE_TELEMETRY constant.
-  # This constant is used in CompileOptions.cs to set both TelemetryOptOutDefault and TelemetryOptOutDefaultString.
-  value: /p:DotNetPublishUsingPipelines=true /p:OfficialBuilder=Microsoft /p:OfficialBuildId=$(Build.BuildNumber)
 
 resources:
   repositories:
@@ -104,10 +94,9 @@ extends:
         enabled: true
       binskim:
         enabled: true
-      ${{ if or(eq(parameters.forceTestBuild, true), eq(variables['Build.Reason'], 'PullRequest'), eq(variables['runInCgMode'], 'true')) }}:
-        componentgovernance:
-          # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
-          ignoreDirectories: artifacts, .packages
+      componentgovernance:
+        # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
+        ignoreDirectories: artifacts, .packages
 
     stages:
     ############### BUILD STAGE ###############
