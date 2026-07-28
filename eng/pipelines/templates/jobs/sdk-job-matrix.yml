@@ -2,6 +2,7 @@ parameters:
   oneESCompat:
     templateFolderName: templates
   locBranch: ''
+  additionalWindowsJobParameterSets: []
   ### WINDOWS ###
   windowsJobParameterSets:
   - publishRetryConfig: true
@@ -85,6 +86,13 @@ jobs:
 # The parameters sent to this template are also passed to the job, which does include the os-specific jobParameterSets array, but that array itself isn't used in the job.
 - ${{ if eq(parameters.pool.os, 'windows') }}:
   - ${{ each jobParameters in parameters.windowsJobParameterSets }}:
+    - ${{ if not(jobParameters.disableJob) }}:
+      - template: /eng/pipelines/templates/jobs/sdk-build.yml
+        parameters:
+          ${{ insert }}: ${{ parameters }}
+          ${{ insert }}: ${{ jobParameters }}
+          platformName: Windows
+  - ${{ each jobParameters in parameters.additionalWindowsJobParameterSets }}:
     - ${{ if not(jobParameters.disableJob) }}:
       - template: /eng/pipelines/templates/jobs/sdk-build.yml
         parameters:
