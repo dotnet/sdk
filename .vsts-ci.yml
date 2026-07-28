@@ -180,6 +180,7 @@ extends:
       - stage: publish
         displayName: Publish
         dependsOn: []
+        condition: ne(variables['runInCompleteCgMode'], 'true')
         jobs:
         - template: /eng/common/templates-official/job/publish-build-assets.yml@self
           parameters:
