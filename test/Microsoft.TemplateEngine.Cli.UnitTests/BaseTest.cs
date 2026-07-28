@@ -28,7 +28,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
         /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
         /// </summary>
-        public static string RepoTemplatePackages { get; } = VerifyExists(Path.Combine(CodeBaseRoot, "template_feed"));
+        public static string RepoTemplatePackages { get; } = GetTemplatePackagesDirectory();
 
         /// <summary>
         /// Gets a path to the test template with a <paramref name="templateName"/> name.
@@ -51,6 +51,16 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests
                 Assert.Fail($"The folder '{folder}' does not exist.");
             }
             return folder;
+        }
+
+        private static string GetTemplatePackagesDirectory()
+        {
+            string? envDir = Environment.GetEnvironmentVariable("DOTNET_SDK_TEST_TEMPLATE_PACKAGES_DIRECTORY");
+            if (!string.IsNullOrEmpty(envDir))
+            {
+                return VerifyExists(envDir);
+            }
+            return VerifyExists(Path.Combine(CodeBaseRoot, "template_feed"));
         }
 
         private static string GetAndVerifyRepoRoot()
