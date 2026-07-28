@@ -9,6 +9,17 @@ namespace Microsoft.DotNet.Cli
 {
     internal static class WorkloadElevateCommandParser
     {
+        /// <summary>
+        /// Optional, hidden argument supplied by the unelevated client at server launch with the value of
+        /// the client's <see cref="System.IO.Path.GetTempPath"/>. Used by the elevated server to accept
+        /// IPC-supplied paths that originate from the client's temp directory when it differs from the
+        /// server's (e.g., over-the-shoulder UAC, custom TEMP env vars).
+        /// </summary>
+        public static readonly CliOption<string> ClientTempOption = new("--client-temp")
+        {
+            Hidden = true
+        };
+
         private static readonly CliCommand Command = ConstructCommand();
 
         public static CliCommand GetCommand()
@@ -22,6 +33,8 @@ namespace Microsoft.DotNet.Cli
             {
                 Hidden = true
             };
+
+            command.Options.Add(ClientTempOption);
 
             command.SetAction((parseResult) => new WorkloadElevateCommand(parseResult).Execute());
 

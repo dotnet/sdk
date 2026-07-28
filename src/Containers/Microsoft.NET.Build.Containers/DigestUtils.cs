@@ -37,4 +37,17 @@ internal sealed class DigestUtils
 
         return Convert.ToHexStringLower(hash);
     }
+
+    /// <summary>
+    /// Returns the encoded (hash) portion of a digest string as raw bytes.
+    /// </summary>
+    /// <remarks>
+    /// <c>GetEncodedValue("sha256:e3b0c4...")</c> returns the bytes for <c>"e3b0c4..."</c>.
+    /// </remarks>
+    internal static byte[] GetEncodedValue(string digest)
+    {
+        int separatorIndex = digest.IndexOf(':');
+        string encoded = separatorIndex >= 0 ? digest[(separatorIndex + 1)..] : digest;
+        return Convert.FromHexString(encoded);
+    }
 }
