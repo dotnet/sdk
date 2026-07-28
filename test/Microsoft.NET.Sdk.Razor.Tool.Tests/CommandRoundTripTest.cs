@@ -93,7 +93,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void DiscoverThenGenerate_WithSourceGenerator_ProducesEquivalentOutput()
         {
             // Arrange - find framework ref assemblies
@@ -103,8 +103,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var runtimeRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.NETCore.App.Ref");
             var aspnetRefDir = GetLatestRefPackDirectory(dotnetRoot, "Microsoft.AspNetCore.App.Ref");
 
-            Assert.True(Directory.Exists(runtimeRefDir), $"Runtime ref pack not found at {runtimeRefDir}");
-            Assert.True(Directory.Exists(aspnetRefDir), $"ASP.NET ref pack not found at {aspnetRefDir}");
+            Assert.IsTrue(Directory.Exists(runtimeRefDir), $"Runtime ref pack not found at {runtimeRefDir}");
+            Assert.IsTrue(Directory.Exists(aspnetRefDir), $"ASP.NET ref pack not found at {aspnetRefDir}");
 
             var assemblies = Directory.GetFiles(runtimeRefDir, "*.dll")
                 .Concat(Directory.GetFiles(aspnetRefDir, "*.dll"))
@@ -118,7 +118,7 @@ namespace Microsoft.NET.Sdk.Razor.Tool
                 // Discover via the hosted source generator.
                 var manifestPath = Path.Combine(tempDir, "manifest.json");
                 var discoverExitCode = RunDiscoverCommand(assemblies, tempDir, manifestPath, useSourceGenerator: true);
-                Assert.True(discoverExitCode == 0, $"Discover command failed with exit code {discoverExitCode}");
+                Assert.AreEqual(0, discoverExitCode, $"Discover command failed with exit code {discoverExitCode}");
                 Assert.Contains("Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper", File.ReadAllText(manifestPath));
 
                 var cshtmlPath = Path.Combine(tempDir, "TestView.cshtml");
@@ -153,8 +153,8 @@ namespace Microsoft.NET.Sdk.Razor.Tool
 
                 var generateExitCode = application.Execute(args.ToArray());
 
-                Assert.True(generateExitCode == 0, $"Generate command failed with exit code {generateExitCode}. Error: {errorWriter}");
-                Assert.True(File.Exists(outputPath), "Generated C# file was not created");
+                Assert.AreEqual(0, generateExitCode, $"Generate command failed with exit code {generateExitCode}. Error: {errorWriter}");
+                Assert.IsTrue(File.Exists(outputPath), "Generated C# file was not created");
                 Assert.Contains("global::Microsoft.AspNetCore.Mvc.TagHelpers.AnchorTagHelper", File.ReadAllText(outputPath));
             }
             finally
