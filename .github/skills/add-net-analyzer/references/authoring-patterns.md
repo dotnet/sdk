@@ -1,0 +1,326 @@
+# Writing an analyzer and code fixer
+
+Public `Microsoft.CodeAnalysis` APIs throughout. [In this repo](#in-this-repo) lists the
+local helpers that replace some of them.
+
+## Analyzer skeleton
+
+```csharp
+[DiagnosticAnalyzer(LanguageNames.CSharp, LanguageNames.VisualBasic)]
+public sealed class ExampleAnalyzer : DiagnosticAnalyzer
+{
+    internal static readonly DiagnosticDescriptor Rule = new(
+        id: "EXAMPLE0001",
+        title: ...,
+        messageFormat: ...,
+        category: ...,
+        defaultSeverity: DiagnosticSeverity.Info,
+        isEnabledByDefault: true);
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
+
+    public override void Initialize(AnalysisContext context)
+    {
+        context.EnableConcurrentExecution();
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
+        context.RegisterCompilationStartAction(OnCompilationStart);
+    }
+
+    private static void OnCompilationStart(CompilationStartAnalysisContext context)
+    {
+        if (context.Compilation.GetTypeByMetadataName("System.Span`1") is not { } spanType)
+        {
+            return;
+        }
+
+        context.RegisterOperationAction(ctx => Analyze(ctx, spanType), OperationKind.Invocation);
+    }
+}
+```
+
+Non-negotiable bits:
+
+- **No mutable state in analyzer fields.** One analyzer instance is reused across many
+  compilations, so a field written during analysis is a correctness bug, not just a leak.
+  Every field must be `const` or fully immutable data built at construction; everything
+  per-compilation is computed in the compilation-start action and passed to the nested
+  callbacks by closure or by a per-compilation state object.
+- **All symbol lookup happens once, in the compilation-start action**, and the analyzer
+  returns *without registering* the inner action when a required type is absent. That is
+  what keeps the analyzer free on compilations that can't possibly match. Never look a type
+  up per-node, and never register the inner action before the bail-out checks.
+- Build a **lookup**, not a list to scan. If the per-node action needs "which of these sets
+  does this symbol belong to", precompute the `IMethodSymbol` → kind dictionary at
+  compilation start so the node action is O(1); an `Any(set => set.Contains(symbol))` walk
+  runs on every single invocation in the compilation.
+- Prefer `IOperation` (`RegisterOperationAction`, `RegisterOperationBlockStartAction`) over
+  syntax actions: it is language-agnostic, so one implementation covers C# and VB and the
+  fixer usually follows for free.
+- **Match with a pattern, not a check-then-extract pair.**
+  `if (operation is IInvocationOperation { TargetMethod: { Name: "Slice" } method })` keeps
+  the matched shape and the data you need as one expression; a `Kind` test followed by a
+  cast and a property read is two things that have to stay in sync. Where the shape isn't
+  obvious, one comment giving the source it matches (`// span.Slice(0, n)`) beats a prose
+  description of it.
+- `RegisterSymbolStartAction` when the rule needs per-symbol state and a decision at symbol
+  end. A diagnostic reported from a compilation-end action needs
+  `WellKnownDiagnosticTags.CompilationEnd` on the descriptor, or the IDE will not surface
+  it correctly.
+
+## Choosing a severity
+
+The severity is a claim about the false-positive rate, not about how much you care. Unit
+tests prove the rule fires; they say nothing about that rate, so measure it against a large
+real codebase before proposing anything above `Hidden`.
+
+| Default severity | Enabled | Use when |
+|---|---|---|
+| `Error` | yes | Reserved. Effectively source-generator-only; needs owner sign-off. |
+| `Warning` | yes | Correctness, **no false positives**, users will almost always fix it. Breaks builds under `TreatWarningsAsErrors` — a high bar. |
+| `Info` | yes | **The default for a new rule.** No false positives, worth surfacing in the IDE, not worth enforcing in CI. |
+| `Hidden` | yes | Rule may have some false positives. Effectively off, but still reachable through bulk configuration. |
+| any | no | Opt-in only, by an explicit rule-ID severity entry. |
+
+## Code fixers
+
+- Export it: `[ExportCodeFixProvider(LanguageNames.CSharp), Shared]` with
+  `using System.Composition;`. A provider without `[Shared]` is constructed per request, or
+  fails composition outright depending on the host.
+- `equivalenceKey` must be a `nameof`, not a literal — it identifies the action for
+  fix-all and for the test harness.
+- **The fix title describes the action**, not the problem: *"Extract to a static readonly
+  field"*, not a restatement of the analyzer title. It is its own localizable string.
+- Build edits with `DocumentEditor` + `SyntaxGenerator` rather than raw `SyntaxFactory` —
+  it keeps a fixer language-agnostic and gives you a single changed document at the end.
+  It does **not** move trivia for you: when you replace a node, carry the original's trivia
+  across explicitly (`WithTriviaFrom`), or the user loses their comments.
+- **Parenthesize any expression you substitute into an arbitrary context**, then let the
+  simplifier drop the redundant parens. Replacing `And(y, z)` with `y & z` inside `x * …`
+  silently changes the meaning.
+- Do not offer a fix when applying it could change semantics; report the diagnostic without
+  one. Removing an unused parameter is the canonical example — it requires editing call
+  sites and can shift overload resolution.
+- A language-agnostic fixer gets VB for free — export it for both languages and add
+  mainline VB tests. If it needs language-specific syntax APIs, the VB fixer is optional.
+
+### The analyzer validates; the fixer transforms
+
+Every check that decides *whether the fix is possible* belongs in the analyzer. A fixer that
+declines because the code was never eligible is a broken pair — the user gets a lightbulb
+that does nothing. Split it so the semantic half is written once:
+
+```csharp
+// core: the semantics, shared by every language
+protected virtual bool IsCandidate(IInvocationOperation invocation) => ...;
+
+// C#: the syntax it needs, then defer
+protected override bool IsCandidate(IInvocationOperation invocation)
+{
+    if (invocation.Syntax is not InvocationExpressionSyntax)
+    {
+        return false;
+    }
+
+    return base.IsCandidate(invocation);
+}
+```
+
+Binding is not a shape guarantee — error recovery will happily bind an invocation with too
+few or too many arguments, so `symbol is not null` does not mean
+`invocation.Arguments.Length == 2`. Expose the check as a shared helper and call it from
+both the analyzer and the fixer. `Debug.Assert` is not that validation: everything that
+consumes a shipped analyzer runs release builds, so an assert catches nothing outside your
+own tests.
+
+This is not a licence to drop the fixer's own defensive checks. A fixer re-finds its nodes
+in the *current* document, which may have changed since the diagnostic was computed, so
+pattern-match what you find and `return` when it doesn't match. The distinction is that
+those guards handle a stale span, not an eligibility question the analyzer failed to
+answer.
+
+### Flowing data from the analyzer to the fixer
+
+Use `Diagnostic.Properties` (`ImmutableDictionary<string, string?>`), or additional
+`Location`s. **Not `CustomTags`** — tags describe the *rule*, not an individual report.
+
+```csharp
+// analyzer
+var properties = ImmutableDictionary<string, string?>.Empty.Add(ReplacementKey, replacement);
+context.ReportDiagnostic(Diagnostic.Create(Rule, location, properties, messageArgs));
+
+// fixer
+if (!diagnostic.Properties.TryGetValue(ReplacementKey, out string? replacement))
+{
+    return;
+}
+```
+
+Keep it small. The more the analyzer stores for the fixer, the more it holds alive; the
+fixer can usually recompute from the span the diagnostic already carries.
+
+### Fix-all
+
+`WellKnownFixAllProviders.BatchFixer` is the cheap default, and most fixers use it, but it
+is the *simplest* implementation rather than a good one. It runs every fix independently
+against the original document and merges the resulting edits. That means:
+
+- N independent forks, each running the code-action cleanup pass — slow.
+- Real **incorrectness** when fixes overlap or nest. For `Add(x, Add(y, z))` one fix wants
+  `x + Add(y, z)` and the other wants `Add(x, y + z)`; the merger silently drops the
+  conflicting change, so a fix is quietly omitted and another "fix all" pass is needed to
+  converge.
+
+If your diagnostics can nest, use `FixAllProvider.Create` and implement the pattern
+yourself:
+
+1. Fix all diagnostics in a document in a single callback.
+2. Order them by `Location.SourceSpan.Start` **descending**, so inner nodes are handled
+   before the outer nodes containing them. If two diagnostics can share a start — a chained
+   call reported at two different lengths — add a shorter-span-first tie-break, since a sort
+   on start alone leaves those in enumeration order.
+3. Apply each through `editor.ReplaceNode(node, (currentNode, generator) => ...)` — the
+   lambda overload, so outer rewrites observe the inner ones.
+
+The caveat inherited from `FixAllProvider.Create` is that the fix must stay within the
+document the diagnostic is in; anything cross-file needs a hand-written `FixAllProvider`.
+
+The `Microsoft.CodeAnalysis.Testing` harness exercises fix-all-in-document/project/solution
+separately from the iterative case, so a batch-fixer correctness bug shows up as
+`Expected '1' iterations but found '2' iterations` — that is a real bug, not a test
+artifact. Likewise a `CodeActionValidationMode` failure means your fix produced a tree that
+differs from what the compiler would parse from the same text; fix the fix, don't lower the
+mode.
+
+## Tests
+
+The `Microsoft.CodeAnalysis.Testing` harness (`CSharpAnalyzerTest<,>`,
+`CSharpCodeFixTest<,>`, and the VB equivalents) is the standard way to test both. It is
+test-framework agnostic; the snippet below omits the parameterized-test attribute your
+framework supplies.
+
+```csharp
+public Task Match_ReportsDiagnostic(string typeName)
+{
+    // lang=C#-test
+    string code = $$"""
+        public class C
+        {
+            public void M() => [|Target<{{typeName}}>()|];
+        }
+        """;
+
+    return new CSharpAnalyzerTest<ExampleAnalyzer, DefaultVerifier> { TestCode = code }.RunAsync();
+}
+```
+
+- **Use raw string literals for embedded sources.** Not for the escaping — for the
+  indentation. A `@"..."` source has to start at column 0, so it collides with the test
+  method's own indentation and becomes hard to scan. The `// lang=C#-test` comment gives
+  the IDE syntax colorization inside the literal.
+- Markup: `[|...|]` when the rule has a single ID; `{|EXAMPLE0001:...|}` when the file
+  exercises more than one ID or you need to be explicit. With a single rule, keep the ID
+  out of test *names* too. Use `Diagnostic(Rule).WithLocation(...).WithArguments(...)` only
+  when asserting message arguments.
+- **Collapse mechanical permutations into data rows.** When the scaffolding is identical
+  from test to test and only a type or method name varies, N near-identical test methods
+  are noise; the rows *are* the signal, lining the cases up where you can see at a glance
+  which are covered and which are missing. The limit: no logic in the test body driven by
+  the data — only when input and expected output are mechanically transformable.
+- **Group tests by behavior, not by language.** One test method per scenario covering both
+  C# and VB beats `#region C# Tests` / `#region VB Tests` blocks. Split a large rule's
+  tests across partial-class files by scenario rather than one enormous file.
+- **Use realistic scenarios** — call APIs that would actually accept the input you're
+  passing. A contrived call that couldn't compile in real code is a weak test.
+- **`LanguageVersion` and `ReferenceAssemblies` have defaults you will outgrow.** The
+  harness pins an older C# version than you probably expect, so a test source using newer
+  syntax must set it explicitly. The reference set likewise only carries the framework —
+  add the packages your scenario needs.
+- Cover both languages. C# gets full coverage; VB needs at least mainline positive and
+  negative cases, and full coverage if any syntax-specific code exists.
+- **When a fixer exists, write every test as a code-fix test.** A fix test with identical
+  input and expected output asserts "diagnostic but no fix offered" or "no diagnostic"; a
+  differing pair asserts both the diagnostic and the fix output. Don't split analyzer-only
+  and fixer-only test classes.
+- **Add trivia tests** — a source with comments and blank lines around the fixed node.
+- Negative tests are not optional — the false-positive cases you thought about during
+  design are the ones a reviewer will ask for. The ones that come up repeatedly for
+  invocation-shaped rules:
+  - **Nested occurrences** (`Add(x, Add(y, z))`) — this is what catches a broken fix-all.
+  - **Named and reordered arguments** (`Divide(right: y, left: x)`). `IOperation` exposes
+    arguments in *evaluation* order, which is syntactic order in C# but parameter order in
+    VB, so a fixer that indexes `Arguments[0]` positionally is wrong for one of them.
+  - **The match nested inside another expression** (`Console.WriteLine(X.Add(a, b))`) — so
+    you find the invocation node, not the enclosing argument node, and so you notice a
+    missing parenthesization.
+
+## Performance
+
+Analyzers run on every keystroke in the IDE and on every build, so small savings —
+allocations especially — add up. Beyond the usual (no LINQ or allocating closures on
+per-node paths, cheapest predicate first, don't re-query the semantic model for something
+the `IOperation` already carries):
+
+- **Cache negative results too.** If you look up whether a symbol carries an attribute,
+  cache the "no" as well, or every subsequent hit repeats the lookup.
+- **Hold as little state as possible.** Retained analysis results keep whole compilations
+  alive.
+- Don't compare symbols by `ToDisplayString()` or `Name`. It allocates, and it's wrong for
+  identity — use `SymbolEqualityComparer.Default`. Compare `OriginalDefinition` only when
+  you mean to ignore construction; it equates `List<int>.Add` with `List<string>.Add`.
+
+## In this repo
+
+`src/Microsoft.CodeAnalysis.NetAnalyzers` wraps several of the calls above; paths below are
+relative to it. Use the wrapper, not the raw API:
+
+| General API above | Use here instead |
+|---|---|
+| `new DiagnosticDescriptor(...)` | `DiagnosticDescriptorHelper.Create(...)` — derives the `learn.microsoft.com` help link from the lowercased ID and applies the telemetry/FxCop custom tags. |
+| `defaultSeverity` + `isEnabledByDefault` | `RuleLevel` (`src/Utilities/Compiler/RuleLevel.cs`). Its XML doc is the rubric reviewers apply; `IdeSuggestion` is the default for a new rule. |
+| `compilation.GetTypeByMetadataName(...)` | `WellKnownTypeProvider.GetOrCreate(compilation).GetOrCreateTypeByMetadataName(...)`, with the metadata name added to `src/Utilities/Compiler/WellKnownTypeNames.cs`. |
+| hand-rolled `FixAllProvider.Create` | Derive from [`OrderedCodeFixProvider`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers/OrderedCodeFixProvider.cs) — it seals `RegisterCodeFixesAsync` and sorts descending by span start; you supply `FixableDiagnosticIds`, `CodeActionTitle`, `CodeActionEquivalenceKey`, and `FixAllCoreAsync`. It has no same-start tie-break, so apply that yourself in `FixAllCoreAsync` if your diagnostics can share a start. |
+| manual parenthesizing | `Analyzer.Utilities.Extensions.SyntaxGeneratorExtensions.Parenthesize` — adds `Simplifier.Annotation` for you. C#-only (`src/Utilities/Compiler.CSharp/`); a VB fixer parenthesizes by hand. |
+| `HashSet<T>` / `Dictionary<K,V>` on hot paths | `src/Utilities/Compiler/PooledObjects/`. Must be freed on every path — prefer `using var x = PooledHashSet<T>.GetInstance();`. |
+| reading `AnalyzerConfigOptions` directly | `src/Utilities/Compiler/Options/` (`AnalyzerOptionsExtensions`, `EditorConfigOptionNames`), e.g. `context.Options.MatchesConfiguredVisibility(Rule, symbol, compilation)`. Reuse an existing option name before adding one, and document new ones in `docs/analyzer-configuration.md`. |
+
+`DiagnosticDescriptorHelper.Create` also requires `isPortedFxCopRule` and `isDataflowRule`;
+a new rule passes `false` for both. `isDataflowRule: true` is for rules built on the
+flow-analysis framework in `src/Utilities/FlowAnalysis/` — they ship `Disabled` because
+flow analysis costs far more than an `IOperation` walk, and writing one is a separate
+undertaking covered by
+[`docs/writing-dataflow-analysis-based-analyzers.md`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/writing-dataflow-analysis-based-analyzers.md).
+The helper also takes `isReportedAtCompilationEnd`, which applies the compilation-end tag
+for you.
+
+**Tests are MSTest**, not xUnit (`[TestMethod]`, `[DataRow]`, `[DynamicData]`), and go
+through per-file verifier aliases over `Test.Utilities` rather than the raw harness types:
+
+```csharp
+using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
+    Microsoft.NetCore.Analyzers.<Category>.<Name>Analyzer,
+    Microsoft.NetCore.CSharp.Analyzers.<Category>.CSharp<Name>Fixer>;
+```
+
+which is what supplies `VerifyCS.VerifyAnalyzerAsync` / `VerifyCodeFixAsync`.
+`ReferenceAssemblies` defaults to `AdditionalMetadataReferences.Default`; pick the member
+carrying the packages your scenario needs. `LanguageVersion` defaults to `CSharp7_3` in
+`CSharpCodeFixVerifier.Test` — raw string literals in the *test file* are fine, that's the
+test project's own language version.
+
+**Validating against a real codebase**: the analyzers ship inside the SDK layout now, so
+point the target repo at a locally built SDK or overwrite
+`<dotnet-root>/sdk/<version>/Sdks/Microsoft.NET.Sdk/analyzers/` — not the NuGet cache.
+
+## Further reading
+
+In-repo docs under `src/Microsoft.CodeAnalysis.NetAnalyzers/docs/`, each worth reading only
+when it applies:
+[`netcore-getting-started.md`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/netcore-getting-started.md)
+(definition of done, validating against a real codebase, debugging in VS),
+[`guidelines-for-new-rules.md`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/guidelines-for-new-rules.md)
+(proposal and documentation requirements),
+[`analyzer-configuration.md`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/analyzer-configuration.md)
+(long; the `.editorconfig` option catalog — grep it for a specific option rather than
+reading it through), and
+[`writing-dataflow-analysis-based-analyzers.md`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/writing-dataflow-analysis-based-analyzers.md)
+(only if your rule needs the dataflow framework).
