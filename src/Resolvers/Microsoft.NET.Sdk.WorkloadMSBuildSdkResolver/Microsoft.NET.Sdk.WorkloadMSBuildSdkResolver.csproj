@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(ResolverTargetFramework)</TargetFrameworks>
+    <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
 

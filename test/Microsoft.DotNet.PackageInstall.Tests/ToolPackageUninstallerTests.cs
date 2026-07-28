@@ -106,7 +106,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 var toolPackageStore = new ToolPackageStoreAndQuery(root);
                 store = toolPackageStore;
                 storeQuery = toolPackageStore;
-                var testRuntimeJsonPath = Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
+                var testRuntimeJsonPath = Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "RuntimeIdentifierGraph.json");
                 downloader = new ToolPackageDownloader(store, testRuntimeJsonPath);
                 uninstaller = new ToolPackageUninstaller(store);
             }

@@ -17,7 +17,7 @@ Usage:
   dotnet remove <PROJECT | FILE> reference <PROJECT_PATH>... [options]
 
 Arguments:
-  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+  <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
   <PROJECT_PATH>    The paths to the referenced projects to remove.
 
 Options:
@@ -31,7 +31,7 @@ Options:
       dotnet remove <PROJECT | FILE> [command] [options]
     
     Arguments:
-      <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtility.EnsureTrailingSlash(defaultVal)}]
+      <PROJECT | FILE>  The project file or C# file-based app to operate on. If a file is not specified, the command will search the current directory for a project file. [default: {PathUtilities.EnsureTrailingSlash(defaultVal)}]
     
     Options:
       -?, -h, --help    Show command line help.
@@ -580,6 +580,23 @@ Options:
             result.Should().Fail();
             result.StdOut.Should().BeVisuallyEquivalentToIfNotLocalized("");
             result.StdErr.Should().Be(string.Format(CliStrings.MoreThanOneProjectInDirectory, Path.Combine(setup.TestRoot, reference)));
+        }
+
+        [Fact]
+        public void WhenNoProjectIsSpecifiedItUsesCurrentDirectory()
+        {
+            var setup = Setup();
+            var lib = NewLibWithFrameworks(dir: setup.TestRoot);
+            var libref = AddLibRef(setup, lib);
+
+            // Reproduces: dotnet reference remove ../Lib/Lib.csproj
+            // where the current directory contains a project (no --project argument needed)
+            var result = new DotnetCommand(Log, "reference", "remove")
+                    .WithWorkingDirectory(lib.Path)
+                    .Execute(libref.CsProjPath);
+
+            result.Should().Pass();
+            result.StdErr.Should().BeEmpty();
         }
     }
 }

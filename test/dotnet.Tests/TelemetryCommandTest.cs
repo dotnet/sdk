@@ -6,6 +6,7 @@
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Tests
 {

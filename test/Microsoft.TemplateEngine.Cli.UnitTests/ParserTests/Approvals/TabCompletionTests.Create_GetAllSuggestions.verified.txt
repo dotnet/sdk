@@ -119,6 +119,13 @@
     Documentation: Create an empty solution containing no projects
   },
   {
+    Label: slnf,
+    Kind: Value,
+    SortText: slnf,
+    InsertText: slnf,
+    Documentation: Create a solution filter file that references a parent solution
+  },
+  {
     Label: tool-manifest,
     Kind: Value,
     SortText: tool-manifest,
@@ -138,6 +145,13 @@
     SortText: xunit,
     InsertText: xunit,
     Documentation: A project that contains xUnit.net tests that can run on .NET on Windows, Linux and macOS
+  },
+  {
+    Label: --diagnostics,
+    Kind: Keyword,
+    SortText: --diagnostics,
+    InsertText: --diagnostics,
+    Detail: Enables diagnostic output.
   },
   {
     Label: --dry-run,
@@ -182,6 +196,20 @@
     Detail: The project that should be used for context evaluation.
   },
   {
+    Label: --verbosity,
+    Kind: Keyword,
+    SortText: --verbosity,
+    InsertText: --verbosity,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
+  },
+  {
+    Label: -d,
+    Kind: Keyword,
+    SortText: -d,
+    InsertText: -d,
+    Detail: Enables diagnostic output.
+  },
+  {
     Label: -n,
     Kind: Keyword,
     SortText: -n,
@@ -194,5 +222,12 @@
     SortText: -o,
     InsertText: -o,
     Detail: Location to place the generated output.
+  },
+  {
+    Label: -v,
+    Kind: Keyword,
+    SortText: -v,
+    InsertText: -v,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
   }
 ]

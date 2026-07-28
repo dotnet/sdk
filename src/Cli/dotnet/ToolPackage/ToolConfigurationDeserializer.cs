@@ -71,7 +71,7 @@ internal static class ToolConfigurationDeserializer
             .AsReadOnly();
 
         //  Also error out if there are no RID-specific packages and the runner is empty
-        if (string.IsNullOrEmpty(runner) && !ridSpecificPackages.Any())
+        if (string.IsNullOrEmpty(runner) && (ridSpecificPackages == null || !ridSpecificPackages.Any()))
         {
             throw new ToolConfigurationException(
                 string.Format(

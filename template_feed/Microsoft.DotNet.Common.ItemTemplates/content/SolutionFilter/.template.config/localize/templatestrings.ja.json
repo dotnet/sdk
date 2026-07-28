@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "ソリューション フィルター ファイル",
+  "description": "親ソリューションを参照するソリューション フィルター ファイルを作成する",
+  "symbols/ParentSolution/displayName": "親ソリューション ファイル",
+  "symbols/ParentSolution/description": "このフィルターが参照する親ソリューション ファイル (sln または slnx) (既定値: .slnx 拡張子を持つ同じ名前)。"
+}

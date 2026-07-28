@@ -122,7 +122,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
                 LicenseUrl = metadata.LicenseUrl;
                 License = metadata.LicenseMetadata?.License;
                 Identity = metadata.Identity;
-                LicenseExpression = metadata.LicenseMetadata?.LicenseExpression.ToString();
+                LicenseExpression = metadata.LicenseMetadata?.LicenseExpression?.ToString();
                 PackageVersion = metadata.Identity.Version;
 
                 Source = packageSource;

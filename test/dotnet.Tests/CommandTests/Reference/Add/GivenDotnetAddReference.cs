@@ -714,6 +714,22 @@ Commands:
         }
 
         [Fact]
+        public void WhenNoProjectIsSpecifiedItUsesCurrentDirectory()
+        {
+            var setup = Setup();
+            var lib = NewLibWithFrameworks(dir: setup.TestRoot);
+
+            // Reproduces: dotnet reference add ../ValidRef/ValidRef.csproj
+            // where the current directory contains a project (no --project argument needed)
+            var result = new DotnetCommand(Log, "reference", "add")
+                    .WithWorkingDirectory(lib.Path)
+                    .Execute(setup.ValidRefCsprojPath);
+
+            result.Should().Pass();
+            result.StdErr.Should().BeEmpty();
+        }
+
+        [Fact]
         public void WhenDirectoryContainsNoProjectsItCancelsWholeOperation()
         {
             var setup = Setup();

@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
         <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <target state="translated">A versão do conjunto de cargas de trabalho {0} tem manifestos ausentes, provavelmente removidos pelo gerenciamento de pacotes. Execute "dotnet workload repair" para corrigir isso.</target>
         <note>{Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">

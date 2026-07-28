@@ -2,6 +2,7 @@
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 
 using System;
+using System.Linq;
 
 namespace MSBuildTestApp
 {
@@ -9,8 +10,11 @@ namespace MSBuildTestApp
     {
         public static void Main(string[] args)
         {
-            var value = Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE");
-            Console.WriteLine($"DOTNET_LAUNCH_PROFILE=<<<{value}>>>");
+            Console.WriteLine($"DOTNET_LAUNCH_PROFILE=<<<{Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")}>>>");
+            Console.WriteLine($"TEST_VAR1=<<<{Environment.GetEnvironmentVariable("TEST_VAR1")}>>>");
+            Console.WriteLine($"TEST_VAR2=<<<{Environment.GetEnvironmentVariable("TEST_VAR2")}>>>");
+            Console.WriteLine($"TEST_VAR3=<<<{Environment.GetEnvironmentVariable("TEST_VAR3")}>>>");
+            Console.WriteLine($"ARGS={string.Join(",", args)}");
         }
     }
 }

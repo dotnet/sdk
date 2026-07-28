@@ -1,15 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.Build.Graph;
-
 namespace Microsoft.DotNet.Watch.UnitTests;
 
 internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRuntimeProcessLauncher
 {
     public class Factory(Action<TestRuntimeProcessLauncher>? initialize = null) : IRuntimeProcessLauncherFactory
     {
-        public IRuntimeProcessLauncher TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
+        public IRuntimeProcessLauncher Create(ProjectLauncher projectLauncher)
         {
             var service = new TestRuntimeProcessLauncher(projectLauncher);
             initialize?.Invoke(service);
@@ -32,5 +30,42 @@ internal class TestRuntimeProcessLauncher(ProjectLauncher projectLauncher) : IRu
     {
         TerminateLaunchedProcessesImpl?.Invoke();
         return ValueTask.CompletedTask;
+    }
+
+    public async Task<RunningProject> Launch(string projectPath, string workingDirectory, CancellationToken cancellationToken)
+    {
+        var projectOptions = new ProjectOptions()
+        {
+            IsMainProject = false,
+            Representation = new ProjectRepresentation(projectPath, entryPointFilePath: null),
+            WorkingDirectory = workingDirectory,
+            Command = "run",
+            CommandArguments = ["--project", projectPath],
+            LaunchEnvironmentVariables = [],
+            LaunchProfileName = default,
+        };
+
+        RunningProject? runningProject = null;
+        RestartOperation? startOp = null;
+        startOp = new RestartOperation(async cancellationToken =>
+        {
+            Assert.NotNull(startOp);
+
+            runningProject = await ProjectLauncher.TryLaunchProcessAsync(
+                projectOptions,
+                onOutput: null,
+                onExit: null,
+                restartOperation: startOp,
+                cancellationToken);
+
+            Assert.NotNull(runningProject);
+
+            await runningProject.Clients.WaitForConnectionEstablishedAsync(cancellationToken);
+        });
+
+        await startOp(cancellationToken);
+
+        Assert.NotNull(runningProject);
+        return runningProject;
     }
 }

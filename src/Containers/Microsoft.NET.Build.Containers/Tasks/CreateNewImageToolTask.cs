@@ -5,6 +5,7 @@ using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.Resources;
+using Microsoft.NET.Sdk.Common;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
@@ -63,8 +64,8 @@ public partial class CreateNewImage : ToolTask, ICancelableTask
     /// <returns></returns>
     protected override ProcessStartInfo GetProcessStartInfo(string pathToTool, string commandLineCommands, string responseFileSwitch)
     {
-        VSHostObject hostObj = new(HostObject as System.Collections.Generic.IEnumerable<ITaskItem>);
-        if (hostObj.ExtractCredentials(out string user, out string pass, (string s) => Log.LogWarning(s)))
+        VSHostObject hostObj = new(HostObject, Log);
+        if (hostObj.TryGetCredentials() is (string user, string pass))
         {
             extractionInfo = (true, user, pass);
         }

@@ -471,12 +471,12 @@ namespace Microsoft.DotNet.ShellShim.Tests
             if (Environment.Is64BitProcess)
             {
                 processStartInfo.EnvironmentVariables["DOTNET_ROOT"] =
-                    TestContext.Current.ToolsetUnderTest.DotNetRoot;
+                    SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             }
             else
             {
                 processStartInfo.EnvironmentVariables["DOTNET_ROOT(x86)"] =
-                    TestContext.Current.ToolsetUnderTest.DotNetRoot;
+                    SdkTestContext.Current.ToolsetUnderTest.DotNetRoot;
             }
 
             processStartInfo.ExecuteAndCaptureOutput(out var stdOut, out var stdErr);
@@ -489,7 +489,7 @@ namespace Microsoft.DotNet.ShellShim.Tests
         private static string GetAppHostTemplateFromStage2()
         {
             var stage2AppHostTemplateDirectory =
-                Path.Combine(TestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "AppHostTemplate");
+                Path.Combine(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest, "AppHostTemplate");
             return stage2AppHostTemplateDirectory;
         }
 

@@ -47,7 +47,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
                 .WithSource();
 
             new DotnetBuildCommand(Log, testInstance.Path)
-                .Execute("--no-restore", "--nologo", "/t:PrintMessage")
+                .Execute("--no-restore", "--no-logo", "/t:PrintMessage")
                 .Should()
                 .Pass()
                 .And
@@ -176,11 +176,11 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             var cmd = new DotnetBuildCommand(Log)
                .WithWorkingDirectory(testInstance.Path)
-               .Execute("--nologo");
+               .Execute("--no-logo");
 
             cmd.Should().Pass();
 
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 cmd.Should().NotHaveStdOutContaining("Copyright (C) Microsoft Corporation. All rights reserved.");
             }
@@ -341,7 +341,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: compilerApiVersion);
 
-            NuGetConfigWriter.Write(testAsset.Path, TestContext.Current.TestPackages);
+            NuGetConfigWriter.Write(testAsset.Path, SdkTestContext.Current.TestPackages);
 
             var command = new GetValuesCommand(testAsset,
                 "Analyzer",
@@ -378,7 +378,7 @@ namespace Microsoft.DotNet.Cli.Build.Tests
 
         static readonly List<string?> nugetRoots = new()
         {
-            TestContext.Current.NuGetCachePath,
+            SdkTestContext.Current.NuGetCachePath,
             Path.Combine(CliFolderPathCalculator.DotnetHomePath, ".dotnet", "NuGetFallbackFolder")
         };
 
