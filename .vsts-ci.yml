@@ -1,4 +1,10 @@
-# Pipeline: https://dev.azure.com/dnceng/internal/_build?definitionId=286
+# This yml is used by these pipelines:
+# - dotnet-sdk-official-ci
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=286
+#   Triggers: CI batch and weekly schedule (complete CG scan)
+# - dotnet-sdk-unofficial-ci
+#   https://dev.azure.com/dnceng/internal/_build?definitionId=1472
+#   Triggers: PR
 
 trigger:
   batch: true
