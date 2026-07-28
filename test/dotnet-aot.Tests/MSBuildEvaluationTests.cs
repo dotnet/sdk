@@ -288,6 +288,50 @@ public class MSBuildEvaluationTests
     }
 
     [TestMethod]
+    public void ProjectCompletionsEvaluateCurrentProject()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-pack-completion-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "TestProject.csproj");
+        string previousCurrentDirectory = Directory.GetCurrentDirectory();
+        string? previousDotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <Configurations>CustomDebug;CustomRelease</Configurations>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        try
+        {
+            Directory.SetCurrentDirectory(testDirectory);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", "test-dotnet-host");
+            MSBuildSdkResolverRegistration.Register();
+
+            string[] completions = [.. Parser.Parse("pack --configuration ").GetCompletions().Select(item => item.Label)];
+            string[] targetFrameworks = [.. CliCompletion.TargetFrameworksFromProjectFile(null!).Select(item => item.Label)];
+
+            completions.Should().Equal("CustomDebug", "CustomRelease");
+            targetFrameworks.Should().Equal("net11.0");
+            Assert.AreEqual("test-dotnet-host", Environment.GetEnvironmentVariable("DOTNET_HOST_PATH"));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousCurrentDirectory);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", previousDotnetHostPath);
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
     public void VirtualFileProjectCanBeEvaluated()
     {
         string sdkDirectory = GetRequiredSdkDirectory();
