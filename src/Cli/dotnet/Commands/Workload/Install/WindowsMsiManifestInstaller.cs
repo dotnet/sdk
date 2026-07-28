@@ -94,12 +94,12 @@ internal class WindowsMsiManifestInstaller(
             {
                 Directory.Delete(targetPath, true);
             }
+            Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
 
             string extractedManifestPath = Path.Combine(extractionPath, "data", "extractedManifest");
             if (Directory.Exists(extractedManifestPath))
             {
                 log?.LogMessage($"ExtractManifestAsync: Copying manifest from '{extractionPath}' to '{targetPath}'");
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath)!);
                 FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(extractedManifestPath, targetPath));
             }
             else

@@ -29,7 +29,8 @@
     <EnableTrimAnalyzer>false</EnableTrimAnalyzer>
   </PropertyGroup>
 
-  <!-- Shared AOT source files (Parser, option actions, EnvironmentVariableNames) -->
+  <!-- Shared AOT dependencies and source files. -->
+  <Import Project="..\..\src\Cli\dotnet-aot\AotDependencies.props" />
   <Import Project="..\..\src\Cli\dotnet-aot\AotSourceFiles.props" />
 
   <!-- NativeEntryPoint for ExecuteCore tests (ManagedHost is stubbed in TestManagedHost.cs) -->
