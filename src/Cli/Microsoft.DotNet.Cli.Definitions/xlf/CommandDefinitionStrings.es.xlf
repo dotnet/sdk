@@ -1318,6 +1318,11 @@ Si el comando se especifica sin el argumento, muestra todos los paquetes de plan
         <target state="translated">Permite instalar paquetes de plantillas desde los orígenes especificados, incluso si invalidarían un paquete de plantillas de otro origen.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Permite que el comando se detenga y espere la entrada o acción del usuario (por ejemplo, para autenticarse).</target>

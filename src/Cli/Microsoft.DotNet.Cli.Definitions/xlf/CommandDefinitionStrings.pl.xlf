@@ -1318,6 +1318,11 @@ Jeśli polecenie zostanie określone bez argumentu, zostanie wyświetlona lista 
         <target state="translated">Umożliwia instalowanie pakietów szablonów z określonych źródeł, nawet jeśli zastąpiłyby one pakiet szablonów z innego źródła.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Zezwala poleceniu na zatrzymanie działania i zaczekanie na wprowadzenie danych lub wykonanie akcji przez użytkownika (na przykład ukończenie uwierzytelniania).</target>

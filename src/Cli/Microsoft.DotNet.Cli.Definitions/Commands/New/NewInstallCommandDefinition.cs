@@ -15,6 +15,7 @@ public sealed class NewInstallCommandDefinition : Command
     public readonly Option<bool> ForceOption = CreateForceOption();
     public readonly Option<bool> InteractiveOption;
     public readonly Option<string[]> AddSourceOption;
+    public readonly Option<bool> PrereleaseOption = CreatePrereleaseOption();
 
     public NewInstallCommandDefinition(NewCommandDefinition parent, bool isLegacy)
         : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_Install_Description)
@@ -38,6 +39,10 @@ public sealed class NewInstallCommandDefinition : Command
         Options.Add(InteractiveOption);
         Options.Add(AddSourceOption);
         Options.Add(ForceOption);
+        if (!isLegacy)
+        {
+            Options.Add(PrereleaseOption);
+        }
 
         this.AddNoLegacyUsageValidators(isLegacy ? [InteractiveOption.Name, AddSourceOption.Name] : []);
     }
@@ -50,4 +55,10 @@ public sealed class NewInstallCommandDefinition : Command
 
     public static Option<bool> CreateForceOption()
         => SharedOptionsFactory.CreateForceOption().WithDescription(CommandDefinitionStrings.Option_Install_Force);
+
+    public static Option<bool> CreatePrereleaseOption() => new("--prerelease")
+    {
+        Arity = new ArgumentArity(0, 1),
+        Description = CommandDefinitionStrings.Option_Install_Prerelease
+    };
 }

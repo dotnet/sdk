@@ -1318,6 +1318,11 @@ Eğer komut bağımsız değişken olmadan belirtilirse yüklü tüm şablon pak
         <target state="translated">Belirtilen kaynaklardan şablon paketlerinin yüklenmesine, başka bir kaynağa ait şablon paketini geçersiz kılsalar bile izin verir.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Komutun durup kullanıcı girişini veya eylemini (örneğin, kimlik doğrulamasının tamamlanmasını) beklemesine izin verir .</target>

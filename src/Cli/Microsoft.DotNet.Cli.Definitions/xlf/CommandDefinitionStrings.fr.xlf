@@ -1318,6 +1318,11 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
         <target state="translated">Permet d’installer des packages de modèles à partir des sources spécifiées, même si elles remplaceraient un package de modèle à partir d’une autre source.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Permet à la commande de s'arrêter et d'attendre une entrée ou une action de l'utilisateur (par exemple pour effectuer une authentification).</target>

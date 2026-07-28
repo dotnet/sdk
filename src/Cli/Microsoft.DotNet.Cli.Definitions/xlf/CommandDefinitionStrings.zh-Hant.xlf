@@ -1318,6 +1318,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">允許從指定的來源安裝範本套件，即使它們會覆寫來自其他來源的範本套件。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">允許命令停止並等候使用者輸入或動作 (例如: 完成驗證)。</target>
