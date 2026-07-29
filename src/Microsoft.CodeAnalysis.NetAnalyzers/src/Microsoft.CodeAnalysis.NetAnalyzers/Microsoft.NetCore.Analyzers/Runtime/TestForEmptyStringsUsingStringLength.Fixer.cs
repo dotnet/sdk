@@ -19,6 +19,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// </summary>
     public abstract class TestForEmptyStringsUsingStringLengthFixer : CodeFixProvider
     {
+        private const string TestForEmptyStringCorrectlyUsingIsNullOrEmpty = nameof(TestForEmptyStringCorrectlyUsingIsNullOrEmpty);
+        private const string TestForEmptyStringCorrectlyUsingStringLength = nameof(TestForEmptyStringCorrectlyUsingStringLength);
+
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(TestForEmptyStringsUsingStringLengthAnalyzer.RuleId);
 
         public sealed override FixAllProvider GetFixAllProvider()
@@ -46,13 +49,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 var methodInvocationAction = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthMessage,
                     async ct => await ConvertToMethodInvocationAsync(context, resolution).ConfigureAwait(false),
-                    equivalenceKey: "TestForEmptyStringCorrectlyUsingIsNullOrEmpty");
+                    equivalenceKey: nameof(TestForEmptyStringCorrectlyUsingIsNullOrEmpty));
 
                 context.RegisterCodeFix(methodInvocationAction, context.Diagnostics);
 
                 var stringLengthAction = CodeAction.Create(MicrosoftNetCoreAnalyzersResources.TestForEmptyStringsUsingStringLengthMessage,
                     async ct => await ConvertToStringLengthComparisonAsync(context, resolution).ConfigureAwait(false),
-                    equivalenceKey: "TestForEmptyStringCorrectlyUsingStringLength");
+                    equivalenceKey: nameof(TestForEmptyStringCorrectlyUsingStringLength));
 
                 context.RegisterCodeFix(stringLengthAction, context.Diagnostics);
             }
