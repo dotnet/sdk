@@ -235,7 +235,9 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 if (method.Name == nameof(Stopwatch.GetTimestamp) &&
                     method.IsStatic &&
                     method.Parameters.IsEmpty &&
-                    method.ContainingType?.ToDisplayString() == "System.Diagnostics.Stopwatch")
+                    SymbolEqualityComparer.Default.Equals(
+                        method.ContainingType,
+                        WellKnownTypeProvider.GetOrCreate(invocationOperation.SemanticModel!.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemDiagnosticsStopwatch)))
                 {
                     return true;
                 }

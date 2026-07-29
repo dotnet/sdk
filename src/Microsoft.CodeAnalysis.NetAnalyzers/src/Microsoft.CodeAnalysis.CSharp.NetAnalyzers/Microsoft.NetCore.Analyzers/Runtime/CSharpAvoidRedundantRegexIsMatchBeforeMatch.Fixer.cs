@@ -329,7 +329,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             }
 
             var typeInfo = model.GetTypeInfo(typeSyntax, cancellationToken);
-            var matchType = model.Compilation.GetTypeByMetadataName("System.Text.RegularExpressions.Match");
+            var matchType = WellKnownTypeProvider.GetOrCreate(model.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemTextRegularExpressionsMatch);
             return typeInfo.Type is not null &&
                    matchType is not null &&
                    SymbolEqualityComparer.Default.Equals(typeInfo.Type, matchType);

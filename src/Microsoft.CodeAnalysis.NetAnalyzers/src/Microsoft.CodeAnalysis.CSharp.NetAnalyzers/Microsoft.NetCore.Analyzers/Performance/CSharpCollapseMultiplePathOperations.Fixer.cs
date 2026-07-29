@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 
             if (node is not InvocationExpressionSyntax invocation ||
                 await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false) is not { } semanticModel ||
-                semanticModel.Compilation.GetTypeByMetadataName(WellKnownTypeNames.SystemIOPath) is not { } pathType)
+                WellKnownTypeProvider.GetOrCreate(semanticModel.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOPath) is not { } pathType)
             {
                 return;
             }
