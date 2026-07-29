@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         {
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode node = root.FindNode(context.Span);
+            SyntaxNode? node = root.FindNode(context.Span);
             node = generator.GetDeclaration(node);
             if (node == null)
             {
@@ -43,8 +43,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static async Task<Document> AddSerializableAttributeAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(
-                editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute)));
+            if (!editor.SemanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute, out INamedTypeSymbol? serializableAttributeType))
+            {
+                return document;
+            }
+
+            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(serializableAttributeType));
             editor.AddAttribute(node, attr);
             return editor.GetChangedDocument();
         }

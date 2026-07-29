@@ -75,10 +75,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         private static IEnumerable<SyntaxNode> GetInvertedStatements(
             SyntaxGenerator generator, IMethodSymbol containingOperator, Compilation compilation)
         {
-            yield return GetInvertedStatement(generator, containingOperator, compilation);
+            if (GetInvertedStatement(generator, containingOperator, compilation) is SyntaxNode statement)
+            {
+                yield return statement;
+            }
         }
 
-        private static SyntaxNode GetInvertedStatement(
+        private static SyntaxNode? GetInvertedStatement(
             SyntaxGenerator generator, IMethodSymbol containingOperator, Compilation compilation)
         {
             if (containingOperator.Name == WellKnownMemberNames.EqualityOperatorName)

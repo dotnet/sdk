@@ -26,7 +26,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            SyntaxNode typeDeclaration = root.FindNode(context.Span);
+            SyntaxNode? typeDeclaration = root.FindNode(context.Span);
             typeDeclaration = SyntaxGenerator.GetGenerator(context.Document).GetDeclaration(typeDeclaration);
             if (typeDeclaration == null)
             {

@@ -425,14 +425,21 @@ namespace Analyzer.Utilities
         public static IEnumerable<SyntaxNode> DefaultMethodBody(
             this SyntaxGenerator generator, Compilation compilation)
         {
-            yield return DefaultMethodStatement(generator, compilation);
+            if (DefaultMethodStatement(generator, compilation) is SyntaxNode statement)
+            {
+                yield return statement;
+            }
         }
 
-        public static SyntaxNode DefaultMethodStatement(this SyntaxGenerator generator, Compilation compilation)
+        public static SyntaxNode? DefaultMethodStatement(this SyntaxGenerator generator, Compilation compilation)
         {
+            if (!compilation.TryGetOrCreateTypeByMetadataName(SystemNotImplementedExceptionTypeName, out INamedTypeSymbol? notImplementedExceptionType))
+            {
+                return null;
+            }
+
             return generator.ThrowStatement(generator.ObjectCreationExpression(
-                generator.TypeExpression(
-                    compilation.GetOrCreateTypeByMetadataName(SystemNotImplementedExceptionTypeName))));
+                generator.TypeExpression(notImplementedExceptionType)));
         }
 
         public static SyntaxNode? TryGetContainingDeclaration(this SyntaxGenerator generator, SyntaxNode? node, DeclarationKind kind)

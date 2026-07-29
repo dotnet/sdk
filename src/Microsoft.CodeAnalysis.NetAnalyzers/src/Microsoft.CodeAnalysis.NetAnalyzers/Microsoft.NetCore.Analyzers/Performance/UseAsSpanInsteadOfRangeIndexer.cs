@@ -131,7 +131,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                             return;
                         }
 
-                        IEnumerator<IOperation> enumerator = operationContext.Operation.Children.GetEnumerator();
+                        IOperation.OperationList.Enumerator enumerator = operationContext.Operation.ChildOperations.GetEnumerator();
 
                         if (!enumerator.MoveNext())
                         {
