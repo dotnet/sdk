@@ -16,7 +16,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IList<string> _additionalSources = new[] { "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" };
-        private readonly IList<string> _vulnerabilitySources = new[] { "https://data.nuget.org/v3/index.json" };
+        private readonly IList<string> _vulnerabilitySources = new[] { "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" };
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
@@ -150,7 +150,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             // Getting this version of the package as it has known vulnerabilities
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
 
-            // add api.nuget.org for vulnerability metadata (registration blobs include vulnerability data)
+            // use proxy feed for vulnerability metadata (mirrored registration blobs include vulnerability data)
             var exception = await Assert.ThrowsExactlyAsync<VulnerablePackageException>(() => packageManager.DownloadPackageAsync(
                 installPath,
                 "System.Text.Json",
@@ -172,7 +172,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             // Getting this version of the package as it has known vulnerabilities
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
 
-            // add api.nuget.org for vulnerability metadata (registration blobs include vulnerability data)
+            // use proxy feed for vulnerability metadata (mirrored registration blobs include vulnerability data)
             var result = await packageManager.DownloadPackageAsync(
                 installPath,
                 "System.Text.Json",
