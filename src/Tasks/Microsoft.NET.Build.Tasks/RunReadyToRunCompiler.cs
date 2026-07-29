@@ -11,10 +11,6 @@ namespace Microsoft.NET.Build.Tasks
     [MSBuildMultiThreadableTask]
     public class RunReadyToRunCompiler : ToolTask, IMultiThreadableTask
     {
-#if NETFRAMEWORK
-        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
-#endif
-
         public ITaskItem CrossgenTool { get; set; }
         public ITaskItem Crossgen2Tool { get; set; }
 
@@ -76,39 +72,6 @@ namespace Microsoft.NET.Build.Tasks
         }
 
         protected override string GenerateFullPathToTool() => TaskEnvironment.GetAbsolutePath(ToolName);
-
-#if NETFRAMEWORK
-        protected override System.Diagnostics.ProcessStartInfo GetProcessStartInfo(
-            string pathToTool,
-            string commandLineCommands,
-            string responseFileSwitch)
-        {
-            System.Diagnostics.ProcessStartInfo startInfo = base.GetProcessStartInfo(
-                pathToTool,
-                commandLineCommands,
-                responseFileSwitch);
-            System.Diagnostics.ProcessStartInfo environmentStartInfo = TaskEnvironment.GetProcessStartInfo();
-
-            // The minimum .NET Framework ToolTask predates TaskEnvironment and starts with process-global state.
-            startInfo.WorkingDirectory = environmentStartInfo.WorkingDirectory;
-            startInfo.EnvironmentVariables.Clear();
-            foreach (string key in environmentStartInfo.EnvironmentVariables.Keys)
-            {
-                startInfo.EnvironmentVariables[key] = environmentStartInfo.EnvironmentVariables[key];
-            }
-
-            if (EnvironmentVariables != null)
-            {
-                foreach (string variable in EnvironmentVariables)
-                {
-                    string[] nameValuePair = variable.Split(['='], 2);
-                    startInfo.EnvironmentVariables[nameValuePair[0]] = nameValuePair[1];
-                }
-            }
-
-            return startInfo;
-        }
-#endif
 
         private string DiaSymReader => CrossgenTool.GetMetadata(MetadataKeys.DiaSymReader);
 
