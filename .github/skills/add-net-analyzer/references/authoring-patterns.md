@@ -198,6 +198,14 @@ artifact. Likewise a `CodeActionValidationMode` failure means your fix produced 
 differs from what the compiler would parse from the same text; fix the fix, don't lower the
 mode.
 
+If you have a correct `FixAllProvider` and *still* see that iteration failure, suspect the
+rewrite itself. Removing several nodes from one `SeparatedSyntaxList` by chaining
+`.Remove(node)` silently no-ops after the first call: `Remove` returns a new list whose
+surviving nodes are re-created, so a later `Remove` passed an original node reference no
+longer finds it. Collect the indices and `RemoveAt` in descending order instead. The same
+hazard applies to any rewrite that holds node references across an edit — re-find or
+re-index rather than reusing them.
+
 ## Tests
 
 The `Microsoft.CodeAnalysis.Testing` harness (`CSharpAnalyzerTest<,>`,
