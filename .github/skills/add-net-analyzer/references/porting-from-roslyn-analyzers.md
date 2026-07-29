@@ -43,18 +43,13 @@ test project to land in.
 
 ## What reliably breaks on a straight copy
 
-- **Tests are MSTest here, xUnit upstream:**
-
-  | xUnit | MSTest here |
-  |---|---|
-  | `[Fact]` | `[TestMethod]` |
-  | `[Theory]` + `[InlineData(...)]` | `[TestMethod]` + `[DataRow(...)]` |
-  | `[Theory]` + `[MemberData(nameof(X))]` | `[TestMethod]` + `[DynamicData(nameof(X))]` |
-  | class with no attribute | `[TestClass]` on the class |
-  | `Assert.Equal/True/Throws` | `Assert.AreEqual/IsTrue/ThrowsExactly` |
-  | `Assert.Equal` on a sequence | `CollectionAssert.AreEqual` — MSTest's `AreEqual` uses `EqualityComparer<T>.Default`, so it compares arrays by reference where xUnit compares element-wise |
-  | `xunit.TheoryData<...>` | `Test.Utilities.TheoryData<...>` (shim, up to 4 type args) |
-  | `[Fact(Skip = "...")]` | `[Ignore("https://github.com/dotnet/sdk/issues/N")]` |
+- **Tests are MSTest here, xUnit upstream.** The
+  [`migrate-xunit-to-mstest`](../../migrate-xunit-to-mstest/SKILL.md) skill carries the
+  attribute, assertion, and lifecycle mapping — load it rather than re-deriving one. Two
+  things it cannot know about this repo: `xunit.TheoryData<...>` maps to the
+  `Test.Utilities.TheoryData<...>` shim (up to 4 type args, already an
+  `IEnumerable<object[]>` for `[DynamicData]`) rather than to a hand-written sequence, and
+  a skipped test cites an issue — `[TestMethod]` + `[Ignore("https://github.com/dotnet/sdk/issues/N")]`.
 
 - **Rule IDs drift.** The ID the upstream PR used is very likely taken now. Re-allocate
   with `scripts/NextDiagnosticId.cs` and rename every occurrence — analyzer,
