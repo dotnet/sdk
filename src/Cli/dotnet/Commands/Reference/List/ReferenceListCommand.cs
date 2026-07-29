@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
@@ -49,7 +50,11 @@ internal class ReferenceListCommand : CommandBase<ListReferenceCommandDefinition
             return 0;
         }
 
-        ProjectInstance projectInstance = new(msbuildProj.ProjectRootElement);
+        // Only ProjectReference items (and no targets) are read below, so stop after the Items pass
+        // instead of running a full evaluation.
+        ProjectInstance projectInstance = ProjectInstance.FromProjectRootElement(
+            msbuildProj.ProjectRootElement,
+            new ProjectOptions { EvaluationStage = ProjectEvaluationStage.Items });
         Reporter.Output.WriteLine($"{CliStrings.ProjectReferenceOneOrMore}");
         Reporter.Output.WriteLine(new string('-', CliStrings.ProjectReferenceOneOrMore.Length));
         foreach (var item in projectInstance.GetItems("ProjectReference"))

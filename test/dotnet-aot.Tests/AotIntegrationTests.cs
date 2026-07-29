@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 /// </summary>
 [TestCategory("AOT")]
 [TestClass]
-public class AotIntegrationTests
+public partial class AotIntegrationTests
 {
     public TestContext TestContext { get; set; } = null!;
 
@@ -72,7 +72,9 @@ public class AotIntegrationTests
         }
         else
         {
-            psi.Environment.Remove("DOTNET_CLI_ENABLEAOT");
+            // The AOT fast path is enabled by default, so explicitly disable it (rather than just
+            // removing the variable) to exercise the managed-fallback behavior.
+            psi.Environment["DOTNET_CLI_ENABLEAOT"] = "false";
         }
 
         if (extraEnv is not null)
@@ -163,7 +165,12 @@ public class AotIntegrationTests
         Directory.CreateDirectory(sdkSubDir);
         try
         {
+            // These are synthetic sentinel values; only their end-to-end appearance in --version matters.
+            const string expectedVersion = "11.0.100-preview.7.12345.67";
             File.Copy(aotSource, Path.Combine(sdkSubDir, aotLib));
+            File.WriteAllLines(
+                Path.Combine(sdkSubDir, ".version"),
+                ["0123456789abcdef", expectedVersion]);
 
             var env = new Dictionary<string, string> { ["DOTNET_AOT_SDK_DIR"] = sdkSubDir };
             if (selfLocate)
@@ -187,6 +194,10 @@ public class AotIntegrationTests
 
             Assert.IsTrue(basePathReferencesSdkDir,
                 $"--info Base Path did not reference the resolved SDK directory '{sdkSubDir}'. Output:\n{stdout}");
+
+            var (versionExitCode, versionOutput, _) = RunDn(["--version"], enableAot: true, extraEnv: env);
+            Assert.AreEqual(0, versionExitCode);
+            Assert.AreEqual(expectedVersion, versionOutput.Trim());
         }
         finally
         {
@@ -237,11 +248,11 @@ public class AotIntegrationTests
     }
 
     [TestMethod]
-    public void Version_WithoutEnableAot_StillWorks()
+    public void Version_WithAotDisabled_StillWorks()
     {
         SkipIfDnUnavailable();
 
-        // Without DOTNET_CLI_ENABLEAOT, everything goes through managed fallback
+        // With DOTNET_CLI_ENABLEAOT disabled, everything goes through managed fallback
         var (exitCode, stdout, stderr) = RunDn(["--version"], enableAot: false);
 
         // Managed fallback requires dotnet.dll + all dependencies in the layout.
@@ -257,7 +268,7 @@ public class AotIntegrationTests
     }
 
     [TestMethod]
-    public void Info_WithoutEnableAot_ShowsFullInfo()
+    public void Info_WithAotDisabled_ShowsFullInfo()
     {
         SkipIfDnUnavailable();
 

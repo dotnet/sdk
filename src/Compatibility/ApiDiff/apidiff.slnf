@@ -5,7 +5,7 @@
       "src\\Compatibility\\ApiDiff\\Microsoft.DotNet.ApiDiff\\Microsoft.DotNet.ApiDiff.csproj",
       "src\\Compatibility\\ApiDiff\\Microsoft.DotNet.ApiDiff.Tool\\Microsoft.DotNet.ApiDiff.Tool.csproj",
       "src\\Compatibility\\Microsoft.DotNet.ApiSymbolExtensions\\Microsoft.DotNet.ApiSymbolExtensions.csproj",
-      "test\\Microsoft.DotNet.ApiDiff.Tests\\Microsoft.DotNet.ApiDiff.Tests.csproj"
+      "test\\Compatibility\\ApiDiff\\Microsoft.DotNet.ApiDiff.Tests\\Microsoft.DotNet.ApiDiff.Tests.csproj"
     ]
   }
 }

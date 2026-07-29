@@ -4,65 +4,37 @@
 #nullable disable
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.DotNet.Cli.Commands.Workload.Install.WorkloadInstallRecords;
-using Microsoft.DotNet.Cli.Commands.Workload.List;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.InternalAbstractions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
-using NuGet.Packaging;
-using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Install;
 
-internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
+/// <summary>
+///  Shared background advertising-manifest entry points used by both the managed and Native AOT CLI.
+///  The managed <see cref="IWorkloadManifestUpdater"/> implementation is in the managed-only partial.
+/// </summary>
+internal partial class WorkloadManifestUpdater
 {
     public static readonly string WorkloadSetManifestId = "Microsoft.NET.Workloads";
 
-    private readonly IReporter _reporter;
-    private readonly IWorkloadResolver _workloadResolver;
-    private readonly INuGetPackageDownloader _nugetPackageDownloader;
-    private readonly SdkFeatureBand _sdkFeatureBand;
-    private readonly string _userProfileDir;
-    private readonly PackageSourceLocation _packageSourceLocation;
-    private readonly Func<string, string> _getEnvironmentVariable;
-    private readonly IWorkloadInstallationRecordRepository _workloadRecordRepo;
-    private readonly IWorkloadManifestInstaller _workloadManifestInstaller;
-    private readonly bool _displayManifestUpdates;
-
-    public WorkloadManifestUpdater(IReporter reporter,
-        IWorkloadResolver workloadResolver,
-        INuGetPackageDownloader nugetPackageDownloader,
-        string userProfileDir,
-        IWorkloadInstallationRecordRepository workloadRecordRepo,
-        IWorkloadManifestInstaller workloadManifestInstaller,
-        PackageSourceLocation packageSourceLocation = null,
-        Func<string, string> getEnvironmentVariable = null,
-        bool displayManifestUpdates = true,
-        SdkFeatureBand? sdkFeatureBand = null)
-    {
-        _reporter = reporter;
-        _workloadResolver = workloadResolver;
-        _userProfileDir = userProfileDir;
-        _nugetPackageDownloader = nugetPackageDownloader;
-        _sdkFeatureBand = sdkFeatureBand ?? new SdkFeatureBand(_workloadResolver.GetSdkFeatureBand());
-        _packageSourceLocation = packageSourceLocation;
-        _getEnvironmentVariable = getEnvironmentVariable ?? Environment.GetEnvironmentVariable;
-        _workloadRecordRepo = workloadRecordRepo;
-        _workloadManifestInstaller = workloadManifestInstaller;
-        _displayManifestUpdates = displayManifestUpdates;
-    }
-
-    private static WorkloadManifestUpdater GetInstance(string userProfileDir)
+    /// <summary>
+    ///  Builds the narrow set of dependencies the background advertising-manifest update needs, without
+    ///  going through <see cref="WorkloadInstallerFactory"/> (i.e. without constructing the full
+    ///  <see cref="FileBasedInstaller"/>/<see cref="NetSdkMsiInstallerClient"/> installer or, on Windows,
+    ///  any elevated MSI IPC).
+    /// </summary>
+    private static WorkloadAdvertisingManifestUpdater GetAdvertisingUpdaterInstance(string userProfileDir)
     {
         var reporter = new NullReporter();
         var dotnetPath = Path.GetDirectoryName(Environment.ProcessPath);
         var sdkVersion = Product.Version;
+        var sdkFeatureBand = new SdkFeatureBand(sdkVersion);
         var workloadManifestProvider = new SdkDirectoryWorkloadManifestProvider(dotnetPath, sdkVersion, userProfileDir, SdkDirectoryWorkloadManifestProvider.GetGlobalJsonPath(Environment.CurrentDirectory));
         var workloadResolver = WorkloadResolver.Create(workloadManifestProvider, dotnetPath, sdkVersion, userProfileDir);
         var tempPackagesDir = new DirectoryPath(TemporaryDirectory.CreateSubdirectory());
@@ -76,40 +48,37 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
             verifySignatures,
             reporter: reporter);
 
-        var installer = WorkloadInstallerFactory.GetWorkloadInstaller(
-            reporter,
-            new SdkFeatureBand(sdkVersion),
-            workloadResolver,
-            VerbosityOptions.normal,
-            userProfileDir,
-            verifyMsiSignature: false);
+        IWorkloadManifestInstaller manifestInstaller;
+        IWorkloadInstallationRecordRepository workloadRecordRepo;
 
-        var workloadRecordRepo = installer.GetWorkloadInstallationRecordRepository();
-
-        return new WorkloadManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, installer);
-    }
-
-    public async Task UpdateAdvertisingManifestsAsync(bool includePreviews, bool useWorkloadSets = false, DirectoryPath? offlineCache = null)
-    {
-        if (useWorkloadSets)
+        if (WorkloadInstallType.GetWorkloadInstallType(sdkFeatureBand, dotnetPath) == InstallType.Msi)
         {
-            await UpdateManifestWithVersionAsync("Microsoft.NET.Workloads", includePreviews, _sdkFeatureBand, null, offlineCache);
+#if !TARGET_WINDOWS
+            throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
+#else
+            if (!OperatingSystem.IsWindows())
+            {
+                throw new InvalidOperationException(CliCommandStrings.OSDoesNotSupportMsi);
+            }
+
+            manifestInstaller = WindowsMsiManifestInstaller.CreateForAdvertisingManifestUpdates(nugetPackageDownloader, out workloadRecordRepo);
+#endif
         }
         else
         {
-            // this updates all the manifests
-            var manifests = _workloadResolver.GetInstalledManifests();
-            await Task.WhenAll(manifests.Select(manifest => UpdateAdvertisingManifestAsync(manifest, includePreviews, offlineCache))).ConfigureAwait(false);
-            WriteUpdatableWorkloadsFile();
+            manifestInstaller = new FileBasedManifestInstaller(nugetPackageDownloader, tempPackagesDir);
+            workloadRecordRepo = FileBasedWorkloadInstallationRecordRepositoryFactory.Create(dotnetPath, sdkFeatureBand, userProfileDir);
         }
+
+        return new WorkloadAdvertisingManifestUpdater(reporter, workloadResolver, nugetPackageDownloader, userProfileDir, workloadRecordRepo, manifestInstaller, sdkFeatureBand: sdkFeatureBand);
     }
 
     public static async Task BackgroundUpdateAdvertisingManifestsAsync(string userProfileDir)
     {
         try
         {
-            var manifestUpdater = GetInstance(userProfileDir);
-            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+            var advertisingUpdater = GetAdvertisingUpdaterInstance(userProfileDir);
+            await advertisingUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
         }
         catch (Exception)
         {
@@ -117,53 +86,8 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
     }
 
-    public async Task BackgroundUpdateAdvertisingManifestsWhenRequiredAsync()
-    {
-        if (!BackgroundUpdatesAreDisabled() &&
-            AdManifestSentinelIsDueForUpdate() &&
-            UpdatedAdManifestPackagesExistAsync().GetAwaiter().GetResult())
-        {
-            await UpdateAdvertisingManifestsAsync(false, ShouldUseWorkloadSetMode(_sdkFeatureBand, _userProfileDir));
-            var sentinelPath = GetAdvertisingManifestSentinelPath(_sdkFeatureBand);
-            if (File.Exists(sentinelPath))
-            {
-                File.SetLastAccessTime(sentinelPath, DateTime.Now);
-            }
-            else
-            {
-                File.Create(sentinelPath).Close();
-            }
-        }
-    }
-
     public static bool ShouldUseWorkloadSetMode(SdkFeatureBand sdkFeatureBand, string dotnetDir)
-    {
-        string path = Path.Combine(WorkloadInstallType.GetInstallStateFolder(sdkFeatureBand, dotnetDir), "default.json");
-        var installStateContents = File.Exists(path) ? InstallStateContents.FromString(File.ReadAllText(path)) : new InstallStateContents();
-        return installStateContents.ShouldUseWorkloadSets();
-    }
-
-    private void WriteUpdatableWorkloadsFile()
-    {
-        var installedWorkloads = _workloadRecordRepo.GetInstalledWorkloads(_sdkFeatureBand);
-        var updatableWorkloads = GetUpdatableWorkloadsToAdvertise(installedWorkloads);
-        var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
-        var jsonContent = JsonSerializer.Serialize(updatableWorkloads.Select(workload => workload.ToString()).ToArray(), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
-        if (Directory.Exists(Path.GetDirectoryName(filePath)))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-        }
-        File.WriteAllText(filePath, jsonContent);
-    }
-
-    public void DeleteUpdatableWorkloadsFile()
-    {
-        var filePath = GetAdvertisingWorkloadsFilePath(_sdkFeatureBand);
-        if (File.Exists(filePath))
-        {
-            File.Delete(filePath);
-        }
-    }
+        => WorkloadAdvertisingManifestUpdater.ShouldUseWorkloadSetMode(sdkFeatureBand, dotnetDir);
 
     public static void AdvertiseWorkloadUpdates()
     {
@@ -171,7 +95,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         {
             var backgroundUpdatesDisabled = bool.TryParse(Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE), out var disableEnvVar) && disableEnvVar;
             SdkFeatureBand featureBand = new(Product.Version);
-            var adUpdatesFile = GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
+            var adUpdatesFile = WorkloadAdvertisingManifestUpdater.GetAdvertisingWorkloadsFilePath(CliFolderPathCalculator.DotnetUserProfileFolderPath, featureBand);
             if (!backgroundUpdatesDisabled && File.Exists(adUpdatesFile))
             {
                 var updatableWorkloads = JsonSerializer.Deserialize(File.ReadAllText(adUpdatesFile), WorkloadManifestUpdaterJsonSerializerContext.Default.StringArray);
@@ -188,6 +112,7 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
         }
     }
 
+<<<<<<< HEAD
     public string GetAdvertisedWorkloadSetVersion()
     {
         var advertisedPath = GetAdvertisingManifestPath(_sdkFeatureBand, new ManifestId(WorkloadSetManifestId));
@@ -544,7 +469,6 @@ internal class WorkloadManifestUpdater : IWorkloadManifestUpdater
     private string GetAdvertisingManifestPath(SdkFeatureBand featureBand, ManifestId manifestId) => Path.Combine(_userProfileDir, "sdk-advertising", featureBand.ToString(), manifestId.ToString());
 
     private record ManifestVersionWithBand(ManifestVersion Version, SdkFeatureBand Band);
+=======
+>>>>>>> origin/main
 }
-
-[JsonSerializable(typeof(string[]))]
-internal partial class WorkloadManifestUpdaterJsonSerializerContext : JsonSerializerContext;

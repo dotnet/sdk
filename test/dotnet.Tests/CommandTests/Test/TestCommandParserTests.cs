@@ -92,6 +92,61 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [DataRow("--no-logo")]
+        [DataRow("--nologo")]
+        [DataRow("-nologo")]
+        [DataRow("/nologo")]
+        [DataRow("--no-banner")]
+        public void MTPCommandTranslatesNoLogoOptionToNoBanner(string optionAlias)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([optionAlias]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain("--no-banner");
+            buildOptions.MSBuildArgs.Should().NotContain(optionAlias);
+        }
+
+        [TestMethod]
+        public void MTPCommandDoesNotDuplicateNoBannerOption()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--nologo", "--no-banner"]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+        }
+
+        [TestMethod]
+        public void MTPCommandHonorsDotnetNoLogoEnvironmentVariable()
+        {
+            string? previousValue = Environment.GetEnvironmentVariable("DOTNET_NOLOGO");
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "true");
+                var enabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var enabledBuildOptions = MSBuildUtility.GetBuildOptions(enabledCommand.Parse([]));
+
+                enabledBuildOptions.TestApplicationArguments.Should().ContainSingle("--no-banner");
+
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", "false");
+                var disabledCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+                var disabledBuildOptions = MSBuildUtility.GetBuildOptions(disabledCommand.Parse([]));
+
+                disabledBuildOptions.TestApplicationArguments.Should().NotContain("--no-banner");
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_NOLOGO", previousValue);
+            }
+        }
+
+        [TestMethod]
         [DataRow("--use-current-runtime")]
         [DataRow("--ucr")]
         public void MTPCommandForwardsUseCurrentRuntimeOption(string optionAlias)
@@ -102,6 +157,137 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             forwarded.Should().Contain("--property:UseCurrentRuntimeIdentifier=True",
                 $"{optionAlias} should be forwarded to MSBuild as UseCurrentRuntimeIdentifier=True so restore and build target the current runtime.");
+        }
+
+        [TestMethod]
+        public void MTPCommandParsesGlobalMaximumFailedTests()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--maximum-failed-tests", "5"]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("--maximum-failed-tests=5")]
+        [DataRow("--maximum-failed-tests:5")]
+        public void MTPCommandParsesInlineGlobalMaximumFailedTests(string argument)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([argument]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+        }
+
+        [TestMethod]
+        [DataRow("0")]
+        [DataRow("-1")]
+        public void MTPCommandRejectsNonPositiveGlobalMaximumFailedTests(string value)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--maximum-failed-tests", value]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("500ms", 500.0)]
+        [DataRow("2s", 2_000.0)]
+        [DataRow("1.5m", 90_000.0)]
+        public void MTPCommandParsesGlobalTimeout(string value, double expectedMilliseconds)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--timeout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.TimeoutOption)!.Value.TotalMilliseconds.Should().Be(expectedMilliseconds);
+            parseResult.UnmatchedTokens.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow("--timeout=2s")]
+        [DataRow("--timeout:2s")]
+        public void MTPCommandParsesInlineGlobalTimeout(string argument)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([argument]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.TimeoutOption).Should().Be(TimeSpan.FromSeconds(2));
+        }
+
+        [TestMethod]
+        [DataRow("200")]
+        [DataRow("0s")]
+        [DataRow("-1s")]
+        [DataRow("50d")]
+        [DataRow("invalid")]
+        public void MTPCommandRejectsInvalidGlobalTimeout(string value)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--timeout", value]);
+
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        public void MTPCommandForwardsPolicyOptionsAfterSeparator()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse([
+                "--maximum-failed-tests", "5",
+                "--timeout", "1m",
+                "--",
+                "--maximum-failed-tests", "2",
+                "--timeout", "10s"]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.GetValue(command.MaximumFailedTestsOption).Should().Be(5);
+            parseResult.GetValue(command.TimeoutOption).Should().Be(TimeSpan.FromMinutes(1));
+            parseResult.UnmatchedTokens.Should().Equal(
+                "--maximum-failed-tests", "2",
+                "--timeout", "10s");
+        }
+
+        [TestMethod]
+        [DataRow("text")]
+        [DataRow("json")]
+        public void MTPCommandAcceptsListTestsFormatValue(string format)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", format]);
+
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.HasOption(command.ListTestsOption).Should().BeTrue();
+            parseResult.GetValue(command.ListTestsOption).Should().Be(format);
+        }
+
+        [TestMethod]
+        public void MTPCommandAcceptsBareListTestsWithoutValue()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", "-c", "Release"]);
+
+            // A bare '--list-tests' (followed by another option) has no value; discovery defaults to text.
+            parseResult.Errors.Should().BeEmpty();
+            parseResult.HasOption(command.ListTestsOption).Should().BeTrue();
+            parseResult.GetValue(command.ListTestsOption).Should().BeNull();
+        }
+
+        [TestMethod]
+        [DataRow("foo")]
+        [DataRow("JSON")]
+        [DataRow("TEXT")]
+        public void MTPCommandRejectsInvalidListTestsFormatValue(string format)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--list-tests", format]);
+
+            // Accepted values are constrained to the lowercase 'text'/'json' keys matching MTP.
+            parseResult.Errors.Should().NotBeEmpty();
         }
 
         [TestMethod]

@@ -161,7 +161,7 @@ internal abstract class SimpleTerminal : ITerminal
         // nop
     }
 
-    // TODO: Refactor NonAnsiTerminal and AnsiTerminal such that we don't need StartUpdate/StopUpdate.
+    // NonAnsiTerminal and AnsiTerminal could be refactored such that we don't need StartUpdate/StopUpdate.
     // It's much better if we use lock C# keyword instead of manually calling Monitor.Enter/Exit
     // Using lock also ensures we don't accidentally have `await`s in between that could cause Exit to be on a different thread.
     public void StartUpdate()

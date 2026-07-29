@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
 [TestClass]
-public class AotParserTests
+public partial class AotParserTests
 {
     // File-based app detection (GetFileBasedAppEntryPointToken -> VirtualProjectBuilder.IsValidEntryPointPath)
     // pulls in the Microsoft.Build assembly, which cannot be loaded into a NativeAOT image, so the call
@@ -231,6 +231,35 @@ public class AotParserTests
         var exception = RecordException(() => Parser.Invoke(result));
 
         Assert.IsNull(exception);
+    }
+
+    [TestMethod]
+    [DataRow("new")]
+    [DataRow("new --help")]
+    [DataRow("new console --help")]
+    [DataRow("new list --help")]
+    [DataRow("new install --help")]
+    public void InvokeNewHelp_FallsBackToManaged(string commandLine)
+    {
+        // The managed CLI replaces `new` with a template-engine-backed command whose help is
+        // generated dynamically (template short-name/args usage line, Arguments section, per-template
+        // options). The AOT definition has no static equivalent, so help for the `new` subtree must
+        // defer to the managed CLI rather than render the incomplete static help.
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    [DataRow("test")]
+    [DataRow("test --help")]
+    public void InvokeTestHelp_FallsBackToManaged(string commandLine)
+    {
+        // In Microsoft.Testing.Platform mode the managed CLI builds the test project and forwards
+        // `--help` to the test application, which contributes the "Extension Options:" section and
+        // per-extension options. The AOT definition cannot reproduce that, so help for the `test`
+        // subtree must defer to the managed CLI. (Bare `test` also requires MSBuild and falls back.)
+        var result = Parser.Parse(commandLine.Split(' '));
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
     }
 
     [TestMethod]
