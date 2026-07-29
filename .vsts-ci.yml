@@ -138,7 +138,7 @@ extends:
             additionalWindowsJobParameterSets:
             # Note: This job is only used to allow the test templates to be built locally on the agent as opposed to Helix.
             # The tests acquire the templates' PackageReferences from NuGet, which allows them to be scanned by CG (component governance).
-            # CG is only ran internally, so this job runs only in CG mode.
+            # CG is only run internally, so this job runs only in CG mode.
             - categoryName: TestTemplatesCG
               runTests: true
               testExecutionMode: local
