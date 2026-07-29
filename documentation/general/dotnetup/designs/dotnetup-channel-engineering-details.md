@@ -23,8 +23,11 @@ It will be easier to document breaking changes for the `stable` version if we do
 
 ### `Stable` Channel Versions
 
-Every `stable` release begins as a `daily` build that is promoted to `preview` and then to `stable`.
-We should provide both notice and backward compatibility for breaking changes when within reason.
+Every `stable` release begins as a `daily` build that is promoted to `preview` and then to `stable`. We should provide both notice and backward compatibility for breaking changes when within reason.
 
 `stable` builds will be built off of `stable` .NET Runtimes, and thus be in a separate, stable branch.
 The first runtime supporting a `stable` build will be `.NET 11`.
+
+### Patches
+
+A patch update to the embedded runtime causes a patch update to `dotnetup`.
