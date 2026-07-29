@@ -38,13 +38,13 @@ variables:
 resources:
   containers:
   - container: azureLinux30Amd64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-build-amd64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-build-amd64
   # Cross-compilation prereq image (clang + /crossrootfs/arm64 sysroot) used by the Linux arm64
-  # AoT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
+  # AOT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
   # provides the native toolchain + sysroot and sets ROOTFS_DIR, and the leg passes
   # /p:CrossBuild=true so ILC emits --sysroot/--target.
   - container: azureLinuxCrossArm64
-    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net10.0-cross-arm64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-arm64
     env:
       ROOTFS_DIR: /crossrootfs/arm64
 
@@ -61,7 +61,7 @@ stages:
     parameters:
       pool:
         name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals windows.vs2022.amd64.open
+        demands: ImageOverride -equals windows.vs2026.amd64.open
         os: windows
       helixTargetQueue: windows.amd64.vs2026.pre.scout.open
 
@@ -74,30 +74,6 @@ stages:
         os: linux
       helixTargetQueue: ubuntu.2204.amd64.open
 
-  ### AoT (linux-arm64 cross-build) ###
-  # dotnet-aot is built with NativeAOT, which can cross-compile for linux-arm64 from an x64 host
-  # given a cross toolchain and target sysroot. This leg therefore runs on the regular x64 Linux
-  # pool inside the azurelinux cross-arm64 prereq container (which provides clang + the
-  # /crossrootfs/arm64 sysroot and sets ROOTFS_DIR) and passes /p:CrossBuild=true. Consistent with
-  # the other linux-arm64 legs, this only performs the build (the x64 AoT leg provides the running
-  # test coverage).
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-    parameters:
-      pool:
-        name: $(DncEngPublicBuildPool)
-        demands: ImageOverride -equals build.azurelinux.3.amd64.open
-        os: linux
-      helixTargetQueue: ubuntu.2204.amd64.open
-      timeoutInMinutes: 90
-      linuxJobParameterSets:
-      - categoryName: AoT
-        container: azureLinuxCrossArm64
-        runAoTTests: true
-        targetArchitecture: arm64
-        runtimeIdentifier: linux-arm64
-        osProperties: $(linuxOsglibcProperties) /p:CrossBuild=true
-        runTests: false
-
   ############### MACOS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
     parameters:
@@ -106,19 +82,6 @@ stages:
         vmImage: macOS-latest
         os: macOS
       helixTargetQueue: osx.15.arm64.open
-  ### AoT (native arm64) ###
-  - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
-    parameters:
-      pool:
-        name: Azure Pipelines
-        vmImage: macOS-15-arm64
-        os: macOS
-      helixTargetQueue: osx.15.arm64.open
-      macOSJobParameterSets:
-      - categoryName: AoT
-        runAoTTests: true
-        targetArchitecture: arm64
-        runtimeIdentifier: osx-arm64
   ### x64 (CI only) ###
   - ${{ if ne(variables['Build.Reason'], 'PullRequest') }}:
     - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml
@@ -129,8 +92,5 @@ stages:
           os: macOS
         helixTargetQueue: osx.15.amd64.open
         macOSJobParameterSets:
-        - categoryName: TestBuild
-          runtimeIdentifier: osx-x64
+        - runtimeIdentifier: osx-x64
 
-  ############### DOTNET-FORMAT ###############
-  - template: /eng/dotnet-format/dotnet-format-integration.yml

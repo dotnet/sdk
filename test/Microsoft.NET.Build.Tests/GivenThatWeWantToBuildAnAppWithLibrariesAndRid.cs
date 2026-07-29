@@ -103,6 +103,7 @@ namespace Microsoft.NET.Build.Tests
                 "App.pdb",
                 "App.deps.json",
                 "App.runtimeconfig.json",
+                "App.runtimeconfig.dev.json",
                 "LibraryWithoutRid.dll",
                 "LibraryWithoutRid.pdb",
                 "LibraryWithRid.dll",

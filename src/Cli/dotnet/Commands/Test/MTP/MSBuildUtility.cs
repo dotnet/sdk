@@ -4,6 +4,7 @@
 using System.Collections.Concurrent;
 using System.CommandLine;
 using System.Runtime.CompilerServices;
+using Microsoft.Build.Definition;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -21,15 +22,16 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal static class MSBuildUtility
 {
-    private const string dotnetTestVerb = "dotnet-test";
-
     // Related: https://github.com/dotnet/msbuild/pull/7992
     // Related: https://github.com/dotnet/msbuild/issues/12711
     [UnsafeAccessor(UnsafeAccessorKind.Method, Name = "ProjectShouldBuild")]
     static extern bool ProjectShouldBuild(SolutionFile solutionFile, string projectFile);
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(string solutionFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(
+        string solutionFilePath,
+        BuildOptions buildOptions,
+        FacadeLogger? logger)
     {
         int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
@@ -68,27 +70,30 @@ internal static class MSBuildUtility
             .Where(p => p.Item1.IncludeInBuild)
             .Select(p => (p.AbsolutePath, (string?)p.Item1.ConfigurationName, (string?)p.Item1.PlatformName));
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
-
         using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions);
-        logger?.ReallyShutdown();
+        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger);
         collection.UnloadAllProjects();
 
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(string projectFilePath, BuildOptions buildOptions)
+    public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(
+        string projectFilePath,
+        BuildOptions buildOptions,
+        FacadeLogger? logger)
     {
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
-        var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(projectFilePath, buildOptions);
+        var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
+            projectFilePath,
+            buildOptions,
+            logger: logger);
 
         if (deviceSelection is not null)
         {
-            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection);
+            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, logger);
         }
 
         int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
@@ -98,14 +103,11 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
-        FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], dotnetTestVerb);
-
         var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, configuration: null, platform: null);
-        logger?.ReallyShutdown();
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, logger, configuration: null, platform: null);
         collection.UnloadAllProjects();
         return (projects, buildExitCode);
     }
@@ -119,6 +121,7 @@ internal static class MSBuildUtility
         string projectFilePath,
         BuildOptions buildOptions,
         SolutionAndProjectUtility.DeviceSelectionResult deviceSelection,
+        FacadeLogger? logger,
         string? configuration = null,
         string? platform = null)
     {
@@ -164,8 +167,6 @@ internal static class MSBuildUtility
                 return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), exitCode);
             }
 
-            FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. perTfmBuildOptions.MSBuildArgs], dotnetTestVerb);
-
             var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(perTfmBuildOptions.MSBuildArgs);
 
             using var collection = new ProjectCollection(
@@ -174,8 +175,7 @@ internal static class MSBuildUtility
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
             IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
-                projectFilePath, collection, evaluationContext, perTfmBuildOptions, configuration, platform);
-            logger?.ReallyShutdown();
+                projectFilePath, collection, evaluationContext, perTfmBuildOptions, logger, configuration, platform);
 
             allGroups.AddRange(modules);
         }
@@ -209,6 +209,11 @@ internal static class MSBuildUtility
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
         LoggerUtility.SeparateLoggerArguments(parseResult.UnmatchedTokens, out var loggerArgs, out var otherArgs);
+
+        if (parseResult.GetValue(definition.NoLogoOption) && !otherArgs.Contains("--no-banner"))
+        {
+            otherArgs = otherArgs.Add("--no-banner");
+        }
 
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(ref otherArgs);
 
@@ -260,7 +265,8 @@ internal static class MSBuildUtility
             otherArgs,
             msbuildArgs,
             Device: parseResult.GetValue(definition.DeviceOption),
-            ListDevices: parseResult.GetValue(definition.ListDevicesOption));
+            ListDevices: parseResult.GetValue(definition.ListDevicesOption),
+            EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
     }
 
     private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ref ImmutableArray<string> otherArgs)
@@ -291,10 +297,12 @@ internal static class MSBuildUtility
                     throw new GracefulException(CliCommandStrings.TestCommandUseSolution);
                 }
             }
-            else if ((token.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".vbproj", StringComparison.OrdinalIgnoreCase) ||
-                     token.EndsWith(".fsproj", StringComparison.OrdinalIgnoreCase)) && File.Exists(token))
+            else if (Path.GetExtension(token).EndsWith("proj", StringComparison.OrdinalIgnoreCase) && File.Exists(token))
             {
+                // Any MSBuild project extension ending in "proj" (.csproj, .vbproj, .fsproj, and traversal
+                // container projects such as dirs.proj / *.proj). This mirrors ValidateProjectOrSolutionPath,
+                // which accepts any "*proj" extension. Recognizing it here ensures the project path is not
+                // accidentally forwarded to the test application as an argument.
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;
@@ -339,6 +347,7 @@ internal static class MSBuildUtility
         return (positionalProjectOrSolution, positionalTestModules);
     }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     private static int BuildOrRestoreProjectOrSolution(string filePath, BuildOptions buildOptions)
     {
         if (buildOptions.HasNoBuild)
@@ -361,7 +370,37 @@ internal static class MSBuildUtility
             CommonOptions.CreateVerbosityOption(),
             CommonOptions.CreateNoLogoOption());
 
-        return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+        string? envPropsFile = null;
+        try
+        {
+            if (buildOptions.EnvironmentVariables.Count > 0 &&
+                Path.GetExtension(filePath).EndsWith("proj", StringComparison.OrdinalIgnoreCase))
+            {
+                var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(parsedMSBuildArgs);
+                using var collection = new ProjectCollection(globalProperties);
+                var project = ProjectInstance.FromFile(filePath, new ProjectOptions
+                {
+                    GlobalProperties = globalProperties,
+                    ProjectCollection = collection,
+                });
+
+                if (EnvironmentVariablesToMSBuild.HasRuntimeEnvironmentVariableSupport(project))
+                {
+                    envPropsFile = EnvironmentVariablesToMSBuild.CreatePropsFile(
+                        filePath,
+                        buildOptions.EnvironmentVariables,
+                        "dotnet-test-env.props",
+                        project.GetPropertyValue(Constants.IntermediateOutputPath));
+                    parsedMSBuildArgs = EnvironmentVariablesToMSBuild.AddPropsFileToArgs(parsedMSBuildArgs, envPropsFile);
+                }
+            }
+
+            return new RestoringCommand(parsedMSBuildArgs, buildOptions.HasNoRestore).Execute();
+        }
+        finally
+        {
+            EnvironmentVariablesToMSBuild.DeletePropsFile(envPropsFile);
+        }
     }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
@@ -369,7 +408,8 @@ internal static class MSBuildUtility
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
-        BuildOptions buildOptions)
+        BuildOptions buildOptions,
+        FacadeLogger? logger)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         var nonDeviceProjects = new List<(string ProjectFilePath, string? Configuration, string? Platform)>();
@@ -378,11 +418,22 @@ internal static class MSBuildUtility
         // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
         foreach (var project in projects)
         {
-            var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(project.ProjectFilePath, buildOptions, projectCollection, evaluationContext);
+            var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
+                project.ProjectFilePath,
+                buildOptions,
+                projectCollection,
+                evaluationContext,
+                logger);
 
             if (deviceSelection is not null)
             {
-                var (modules, exitCode) = BuildPerTfmWithDevices(project.ProjectFilePath, buildOptions, deviceSelection, project.Configuration, project.Platform);
+                var (modules, exitCode) = BuildPerTfmWithDevices(
+                    project.ProjectFilePath,
+                    buildOptions,
+                    deviceSelection,
+                    logger,
+                    project.Configuration,
+                    project.Platform);
                 if (exitCode != 0)
                 {
                     return (allProjects, exitCode);
@@ -400,6 +451,7 @@ internal static class MSBuildUtility
         }
 
         // Phase 2: Handle non-device projects in parallel (existing behavior).
+        var gracefulExceptions = new ConcurrentQueue<GracefulException>();
         Parallel.ForEach(
             nonDeviceProjects,
             // We don't use --max-parallel-test-modules here.
@@ -407,12 +459,24 @@ internal static class MSBuildUtility
             new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
             (project) =>
             {
-                IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, project.Configuration, project.Platform);
-                foreach (var projectMetadata in projectsMetadata)
+                try
                 {
-                    allProjects.Add(projectMetadata);
+                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, logger, project.Configuration, project.Platform);
+                    foreach (var projectMetadata in projectsMetadata)
+                    {
+                        allProjects.Add(projectMetadata);
+                    }
+                }
+                catch (GracefulException ex)
+                {
+                    gracefulExceptions.Enqueue(ex);
                 }
             });
+
+        if (gracefulExceptions.TryDequeue(out GracefulException? gracefulException))
+        {
+            throw gracefulException;
+        }
 
         return (allProjects, 0);
     }

@@ -488,7 +488,7 @@ public class RunCommand
             // This avoids invalidating incremental builds for projects that don't consume the items.
             // Use IntermediateOutputPath from earlier project evaluation (via RunCommandSelector), defaulting to "obj" if not available.
             string? envPropsFile = hasRuntimeEnvironmentVariableSupport
-                ? EnvironmentVariablesToMSBuild.CreatePropsFile(ProjectFileFullPath, EnvironmentVariables, intermediateOutputPath)
+                ? EnvironmentVariablesToMSBuild.CreatePropsFile(ProjectFileFullPath, EnvironmentVariables, "dotnet-run-env.props", intermediateOutputPath)
                 : null;
             try
             {
@@ -690,6 +690,7 @@ public class RunCommand
             return command;
         }
 
+        [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
         static bool InvokeRunArgumentsTarget(ProjectInstance project, bool noBuild, FacadeLogger? binaryLogger, MSBuildArgs buildArgs, IReadOnlyDictionary<string, string> environmentVariables)
         {
             // Only add environment variables as MSBuild items if the project has opted in via capability

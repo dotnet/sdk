@@ -119,31 +119,31 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return matchingLine;
         }
 
-        public Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        public async Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
         {
             LogWaitingForOutput(text, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => line.Contains(text));
+            var line = await Process.GetRequiredOutputLineAsync(line => line.Contains(text));
             LogFoundOutput(text, testPath, testLine);
             return line;
         }
 
-        public Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string? projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string? testPath = null)
+        public async Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string? projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string? testPath = null)
         {
             var pattern = GetPattern(descriptor, projectDisplay, out var patternDisplay);
 
             LogWaitingForOutput(patternDisplay, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
+            var line = await Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
             LogFoundOutput(patternDisplay, testPath, testLine);
 
             return line;
         }
 
-        public Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        public async Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
         {
             var patternDisplay = pattern.ToString();
 
             LogWaitingForOutput(patternDisplay, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
+            var line = await Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
             LogFoundOutput(patternDisplay, testPath, testLine);
 
             return line;

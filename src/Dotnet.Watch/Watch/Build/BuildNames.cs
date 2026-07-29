@@ -29,6 +29,7 @@ internal static class PropertyNames
     public const string DebugSymbols = nameof(DebugSymbols);
     public const string PublishTrimmed = nameof(PublishTrimmed);
     public const string PublishAot = nameof(PublishAot);
+    public const string EnableHotReloadInRuntimeConfigDevFile = nameof(EnableHotReloadInRuntimeConfigDevFile);
 }
 
 internal static class ItemNames

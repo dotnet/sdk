@@ -82,6 +82,7 @@ namespace Microsoft.NET.Build.Tests
                     outputFiles.Add("AllResourcesInSatellite.dll");
                     outputFiles.Add("AllResourcesInSatellite.deps.json");
                     outputFiles.Add("AllResourcesInSatellite.runtimeconfig.json");
+                    outputFiles.Add("AllResourcesInSatellite.runtimeconfig.dev.json");
                     command = new DotnetCommand(log, Path.Combine(outputDirectory.FullName, "AllResourcesInSatellite.dll"));
                 }
 

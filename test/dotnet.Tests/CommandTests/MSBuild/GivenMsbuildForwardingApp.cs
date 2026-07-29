@@ -95,5 +95,48 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath)
                 .GetProcessStartInfo().WorkingDirectory.Should().Be("");
         }
+
+        [TestMethod]
+        public void ItEnablesMSBuildServerByDefault()
+        {
+            //  The SDK enables the MSBuild server by default. Only assert this when the ambient environment
+            //  hasn't already expressed an opinion via MSBUILDUSESERVER or DOTNET_CLI_USE_MSBUILD_SERVER.
+            if (Environment.GetEnvironmentVariable("MSBUILDUSESERVER") != null ||
+                Environment.GetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER") != null)
+            {
+                return;
+            }
+
+            var msbuildPath = "<msbuildpath>";
+            var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
+            startInfo.Environment["MSBUILDUSESERVER"].Should().Be("1");
+        }
+
+        [TestMethod]
+        [DoNotParallelize]
+        [DataRow(null, "0")]
+        [DataRow("", "0")]
+        [DataRow("0", "0")]
+        [DataRow("1", "1")]
+        public void ItUsesCliServerSettingUnlessMSBuildServerSettingIsExplicit(string msbuildUseServer, string expected)
+        {
+            string originalUseMSBuildServer = Environment.GetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER");
+            string originalMSBuildUseServer = Environment.GetEnvironmentVariable("MSBUILDUSESERVER");
+
+            try
+            {
+                Environment.SetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", "false");
+                Environment.SetEnvironmentVariable("MSBUILDUSESERVER", msbuildUseServer);
+
+                var msbuildPath = "<msbuildpath>";
+                var startInfo = new MSBuildForwardingApp(new string[0], msbuildPath).GetProcessStartInfo();
+                startInfo.Environment["MSBUILDUSESERVER"].Should().Be(expected);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("DOTNET_CLI_USE_MSBUILD_SERVER", originalUseMSBuildServer);
+                Environment.SetEnvironmentVariable("MSBUILDUSESERVER", originalMSBuildUseServer);
+            }
+        }
     }
 }

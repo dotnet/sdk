@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  detection runs without NuGet, MSBuild, or installer-IPC dependencies.
 /// </summary>
 [TestClass]
-public class WorkloadInstallDetectorTests
+public partial class WorkloadInstallDetectorTests
 {
     private static string CurrentFeatureBand => new SdkFeatureBand(Product.Version).ToString();
 
@@ -98,7 +98,7 @@ public class WorkloadInstallDetectorTests
                 Assert.IsNotNull(recordKey);
             }
 
-            var repository = new RegistryWorkloadInstallationRecordRepository(Registry.CurrentUser, basePath);
+            var repository = new ReadOnlyWindowsWorkloadInstallationRecordRepository(Registry.CurrentUser, basePath);
 
             var installed = repository.GetInstalledWorkloads(featureBand).ToList();
             Assert.HasCount(1, installed);
