@@ -9,7 +9,7 @@ The support policy of `dotnetup` versions is not defined here. The [.NET Support
 
 ### Channels
 
-The term `channel` in this document refers to three different `dotnetup` version schemas, each with different criteria. Use this document to decide which version of `dotnetup` you'd like to use. `channel` may also refer to the .NET SDK or .NET Runtime version subscribed to by `dotnetup`, which is better outlined in [README.md].
+The term `channel` in this document refers to three different `dotnetup` version schemas, each with different criteria. Use this document to decide which version of `dotnetup` you'd like to use. `channel` may also refer to the .NET SDK or .NET Runtime version subscribed to by `dotnetup`, which is better outlined in [README.md](README.md).
 
 Unlike the .NET SDK, `dotnetup` is a tip-only product, meaning only the latest version per supported `channel` will be maintained. `dotnetup` is versioned into three separate `channels` that outline the quality-bar for each new version release for that channel.
 
