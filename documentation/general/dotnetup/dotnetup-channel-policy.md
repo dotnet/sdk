@@ -22,10 +22,6 @@ Fixes and updates are only provided for the latest `stable` channel's version.  
 - `preview`
 - `stable`
 
-### Supported Platforms and Shells
-
-The latest `stable` version of `dotnetup` is supported on Windows, macOS, and Linux versions supported by its embedded .NET Runtime. See the [.NET supported operating system policy](https://github.com/dotnet/core/blob/main/os-lifecycle-policy.md) for the applicable operating system support policies of the .NET Runtime.
-
 ### `Daily` Channel Versions
 
 `daily` builds of `dotnetup` will be fresh out of `CI`, much like the `daily` or sometimes tokened `nightly` builds of the .NET SDK.
