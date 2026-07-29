@@ -73,8 +73,11 @@ The two things reviewers reject on:
   syntax has the shape you expect, and a fixer that declines because the code was never
   eligible leaves the user with a lightbulb that does nothing. (Its own defensive checks
   against a stale span stay.)
-- **Fix-all.** `WellKnownFixAllProviders.BatchFixer` produces a wrong tree when diagnostics
-  overlap or nest. If yours can, fix the whole document in one pass, inside-out.
+- **Fix-all.** `WellKnownFixAllProviders.BatchFixer` merges edits as text spans, so it drops
+  fixes that overlap, nest, or insert at the same position — the last covers any fixer that
+  *adds* a member or argument. If yours can do that, fix the whole document in one pass,
+  inside-out. Measure rather than assume, in both directions: a passing multi-diagnostic
+  test is indistinguishable from one where fix-all never ran.
 - **A fix must produce compiling code**, on every shape it offers itself on — not just on
   the shapes the tests cover. If a rewrite is only valid in some contexts, the fixer
   declines in the rest; report the diagnostic without a fix rather than emitting a build

@@ -165,13 +165,23 @@ is the *simplest* implementation rather than a good one. It runs every fix indep
 against the original document and merges the resulting edits. That means:
 
 - N independent forks, each running the code-action cleanup pass — slow.
-- Real **incorrectness** when fixes overlap or nest. For `Add(x, Add(y, z))` one fix wants
-  `x + Add(y, z)` and the other wants `Add(x, y + z)`; the merger silently drops the
-  conflicting change, so a fix is quietly omitted and another "fix all" pass is needed to
-  converge.
+- Real **incorrectness**, but not everywhere. Merging happens at the *text* level, through
+  an interval tree of `TextChange`s, so the question is whether the edits conflict as spans
+  — not whether the diagnostics share a parent node. Two fixes that delete or replace
+  *distinct* children of one node merge cleanly. What conflicts:
+  - **Nested or overlapping rewrites.** For `Add(x, Add(y, z))` one fix wants
+    `x + Add(y, z)` and the other `Add(x, y + z)`; the spans overlap.
+  - **The same node rewritten into two different shapes** — one overload added per pass.
+  - **Two insertions at the same position.** An empty span cannot overlap anything, so
+    these are easy to miss, but the merger rejects them as ambiguous: it cannot know which
+    order you meant. This is the usual reason a fixer that *adds* a member, overload, or
+    argument fixes only one diagnostic per pass.
 
-If your diagnostics can nest, use `FixAllProvider.Create` and implement the pattern
-yourself:
+  And the loss is per-fix, not per-edit: one conflicting hunk discards **every** change
+  that fix made to the document.
+
+If your diagnostics can conflict this way, use `FixAllProvider.Create` and implement the
+pattern yourself:
 
 1. Fix all diagnostics in a document in a single callback.
 2. Order them by `Location.SourceSpan.Start` **descending**, so inner nodes are handled
@@ -197,6 +207,11 @@ separately from the iterative case, so a batch-fixer correctness bug shows up as
 artifact. Likewise a `CodeActionValidationMode` failure means your fix produced a tree that
 differs from what the compiler would parse from the same text; fix the fix, don't lower the
 mode.
+
+A multi-diagnostic test that *passes* proves nothing on its own, because "fix-all converged
+in one pass" and "fix-all never ran" look identical from the outside. Before concluding a
+fixer is fine, run the positive control: set `NumberOfFixAllIterations = 2` against the
+unchanged fixer and confirm it fails with `Expected '2' iterations but found '1'`.
 
 If you have a correct `FixAllProvider` and *still* see that iteration failure, suspect the
 rewrite itself. Removing several nodes from one `SeparatedSyntaxList` by chaining
