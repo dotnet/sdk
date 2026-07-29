@@ -10,7 +10,7 @@ Here, **we outline how `dotnetup` is versioned to help you decide which `channel
 
 The term `channel` in this document refers to three different `dotnetup` version schemas, each with different criteria that outline a quality-bar for a new version to be released under a respective `channel`.
 
-`channel` may also refer to the .NET SDK or .NET Runtime version subscribed to by `dotnetup`, which is better outlined in [README.md](README.md#step-1-choose-a-channel).
+`channel` may also refer to the .NET SDK or .NET Runtime version subscribed to by `dotnetup`, which is better outlined in [the getting started documentation](README.md#step-1-choose-a-channel).
 
 `dotnetup` is a standalone tool with a lifecycle that is independent of the .NET SDK lifecycle.
 `dotnetup` releases in three channels:
