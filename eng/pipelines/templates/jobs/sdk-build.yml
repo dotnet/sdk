@@ -165,7 +165,7 @@ jobs:
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
         - powershell: eng/common/build.ps1
-            -test -ci -prepareMachine -nativeToolsOnMachine
+            -restore -test -ci -prepareMachine -nativeToolsOnMachine
             -configuration $(buildConfiguration)
             -binaryLogName ${{ parameters.categoryName }}Tests.binlog
             /p:Projects=\`"${{ replace(parameters.testProjects, ';', '`;') }}\`"
@@ -175,6 +175,7 @@ jobs:
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
             /p:EnableHelixJobMonitor=true
             /p:SkippedTestScopes="$(SkippedTestScopes)"
+            /p:Restore=false
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
@@ -188,7 +189,7 @@ jobs:
         # The /p:CustomHelixTargetQueue syntax is: <queue-name>@<container-url>
         # For the Helix containers, see the 'simpleTags' arrays here: https://github.com/dotnet/versions/blob/main/build-info/docker/image-info.dotnet-dotnet-buildtools-prereqs-docker-main.json
         - script: eng/common/build.sh
-            -test -ci -prepareMachine
+            -restore -test -ci -prepareMachine
             -configuration $(buildConfiguration)
             --binaryLogName ${{ parameters.categoryName }}Tests.binlog
             '/p:Projects="${{ parameters.testProjects }}"'
@@ -200,6 +201,7 @@ jobs:
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
             /p:EnableHelixJobMonitor=true
             /p:SkippedTestScopes="$(SkippedTestScopes)"
+            /p:Restore=false
           displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
