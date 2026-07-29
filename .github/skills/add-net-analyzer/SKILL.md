@@ -74,7 +74,11 @@ The two things reviewers reject on:
   eligible leaves the user with a lightbulb that does nothing. (Its own defensive checks
   against a stale span stay.)
 - **Fix-all.** `WellKnownFixAllProviders.BatchFixer` produces a wrong tree when diagnostics
-  overlap or nest. If yours can, derive from `OrderedCodeFixProvider`.
+  overlap or nest. If yours can, fix the whole document in one pass, inside-out.
+- **A fix must produce compiling code**, on every shape it offers itself on — not just on
+  the shapes the tests cover. If a rewrite is only valid in some contexts, the fixer
+  declines in the rest; report the diagnostic without a fix rather than emitting a build
+  break. Narrowing the tests to the safe shapes hides the bug instead of fixing it.
 
 ## 4. Add the strings
 
@@ -90,10 +94,13 @@ field"), not the problem the analyzer reports. Terms that must not be translated
 `<comment>{Locked="static readonly"}</comment>`; multiple terms are adjacent braces with no
 separator.
 
-Then regenerate the 13 `.xlf` files in the `xlf/` subfolder beside it:
+Then regenerate the 13 `.xlf` files in the `xlf/` subfolder beside it. Run the target
+against the project that owns the resx — passing `/t:UpdateXlf` to `build.cmd` fails with
+`MSB4057`, because Arcade applies the target to its own `Build.proj` rather than to the
+projects being built:
 
 ```powershell
-./build.cmd -projects src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.CodeAnalysis.NetAnalyzers.slnx -c Debug /t:UpdateXlf
+./.dotnet/dotnet msbuild src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.CodeAnalysis.NetAnalyzers.csproj /t:UpdateXlf
 ```
 
 ## 5. Record the rule in release tracking
@@ -182,8 +189,8 @@ reverted. Say so in the PR description, then open the docs PR.
 - [ ] `.resx` edited and `.xlf` regenerated via `/t:UpdateXlf` — neither hand-edited.
 - [ ] Regenerated `.md` / `.sarif.template` / `RulesMissingDocumentation.md` committed.
 - [ ] Targeted test run passes, covering VB and the negative cases.
-- [ ] Fix-all handles nesting (`OrderedCodeFixProvider`, not the batch fixer), if the
-      diagnostic can overlap or nest.
+- [ ] Fix-all handles nesting (not the batch fixer), if the diagnostic can overlap or nest.
+- [ ] Every shape the fix offers itself on produces compiling code.
 - [ ] Rule run against a real codebase and hits triaged, at `IdeSuggestion` or stronger.
 - [ ] `dotnet/docs` PR opened, or explicitly committed to in the PR description.
 

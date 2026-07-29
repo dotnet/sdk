@@ -29,8 +29,9 @@ Paths are relative to `src/Microsoft.CodeAnalysis.NetAnalyzers`.
 ```
 
 `./build.sh` on Linux/macOS. Do **not** pass `-restore`/`-build` alongside `-projects` —
-the driver already implies them and the combination fails. Append `/t:UpdateXlf` to the
-build to regenerate `.xlf` files after a `.resx` change.
+the driver already implies them and the combination fails. To regenerate `.xlf` after a
+`.resx` change, run `/t:UpdateXlf` against the project that owns the resx; passing it to
+`build.cmd` fails with `MSB4057`, as Arcade routes the target to its own `Build.proj`.
 
 ## Conventions & gotchas
 
