@@ -1,4 +1,6 @@
-#### Version Intent
+#### Dotnetup Version Engineering Details
+
+While [dotnetup-version-policy.md] outlines what each `channel` of `dotnetup` means for customers in terms of breaking change notices, this document outlines how each version will be used by our engineering team, and abstractly how we will promote from one version to another. The actual release process from version to version is defined elsewhere.
 
 ### `Daily` Channel Versions
 
