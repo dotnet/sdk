@@ -5,10 +5,13 @@
 `dotnetup` refers exclusively to the standalone, self-contained tool for developers that helps them manage and acquire .NET.
 `dotnetup` is a fast-moving CLI that is still changing and evolving.
 
-Looking for the support policy for the .NET Platform? See the [.NET Support Policy](https://dotnet.microsoft.com/platform/support/policy) page.
-`dotnetup`'s official support policy document is still underway; here, we aim to communicate version intent to allow users to pick which version of `dotnetup` to use.
+The support policy of `dotnetup` versions is not defined here. The [.NET Support Policy](https://dotnet.microsoft.com/platform/support/policy) page will contain `dotnetup`'s official policy if it is available.
 
-Unlike the .NET SDK, `dotnetup` is a tip-only product. It is versioned into three separate `channels` that outline the quality-bar for each new version release for that channel.
+### Channels
+
+The term `channel` in this document refers to three different `dotnetup` version schemas, each with different criteria. Use this document to decide which version of `dotnetup` you'd like to use. `channel` may also refer to the .NET SDK or .NET Runtime version subscribed to by `dotnetup`, which is better outlined in [README.md].
+
+Unlike the .NET SDK, `dotnetup` is a tip-only product, meaning only the latest version per supported `channel` will be maintained. `dotnetup` is versioned into three separate `channels` that outline the quality-bar for each new version release for that channel.
 
 Fixes and updates are only provided for the latest `stable` channel's version.  When a new `stable` version is published, it immediately supersedes the previous `stable` version. `daily` and `preview` channel versions may receive updates but have a lower bar and are not recommended for use in production. This policy may change as the product matures or when an official support policy page supersedes this document.
 
