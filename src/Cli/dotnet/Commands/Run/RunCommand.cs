@@ -196,6 +196,13 @@ public class RunCommand
 
                 Reporter.Verbose.WriteLine("Checking changes for run properties");
                 var buildLevel = projectBuilder.GetBuildLevel(out var cache);
+                if (cache?.PreviousEntry is { BuildLevel: BuildLevel.Csc, Run: null } &&
+                    FileBasedAppRunPlan.GetMissingCscBuiltProgramLaunchArtifact(
+                        EntryPointFileFullPath,
+                        projectBuilder.Builder.ArtifactsPath) is { } missingArtifact)
+                {
+                    throw new GracefulException(CliCommandStrings.CmdNonExistentFileErrorDescription, missingArtifact);
+                }
                 projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
                 cachedRunProperties = buildLevel != BuildLevel.All ? cache?.PreviousEntry?.Run : null;
             }
@@ -677,7 +684,7 @@ public class RunCommand
         static ICommand CreateCommandForCscBuiltProgram(string entryPointFileFullPath, string[] args)
         {
             var artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
-            var exePath = Path.Join(artifactsPath, "bin", "debug", Path.GetFileNameWithoutExtension(entryPointFileFullPath) + FileNameSuffixes.CurrentPlatform.Exe);
+            var exePath = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath).AppHost;
             var commandSpec = new CommandSpec(path: exePath, args: ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(args));
             var command = CommandFactoryUsingResolver.Create(commandSpec);
 

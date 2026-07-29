@@ -183,7 +183,6 @@ sealed class VirtualProjectBuilder
             return true;
         }
 
-        // Check if the first two characters are #!
         try
         {
             using var stream = File.OpenRead(entryPointFilePath);

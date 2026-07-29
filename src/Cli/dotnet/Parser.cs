@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.NuGet;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Sdk;
 using Microsoft.DotNet.Cli.Commands.Solution;
 using Microsoft.DotNet.Cli.Commands.Test;
@@ -48,7 +49,6 @@ using Microsoft.DotNet.Cli.Commands.Project;
 using Microsoft.DotNet.Cli.Commands.Publish;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Restore;
-using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Run.Api;
 using Microsoft.DotNet.Cli.Commands.Tool.Store;
 using Microsoft.DotNet.Cli.Commands.Workload;
@@ -223,6 +223,10 @@ public static class Parser
         // `tool uninstall`, `tool run`, and `tool search`, and falls back to the managed CLI for the
         // global/tool-path variants and for install/update/restore/execute.
         ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
+
+        // Narrow file-based run fast path: explicit, positional, and shorthand invocations can
+        // launch complete synthetic output or a validated cached run contract. Other shapes fall back.
+        AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);

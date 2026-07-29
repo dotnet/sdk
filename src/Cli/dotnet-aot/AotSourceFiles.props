@@ -132,6 +132,28 @@
     <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" Link="Resources\Strings.resx" GenerateSource="true" Namespace="Microsoft.NET.Build.Tasks" />
   </ItemGroup>
 
+  <!-- File-based run cache and launch contracts shared with the managed CLI. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunCommand.cs" Link="Commands\Run\AotRunCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunArguments.cs" Link="Commands\Run\AotRunArguments.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunInvocation.cs" Link="Commands\Run\AotRunInvocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\BuildLevel.cs" Link="Commands\Run\BuildLevel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppCacheInfo.cs" Link="Commands\Run\FileBasedAppCacheInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppDirectiveInfo.cs" Link="Commands\Run\FileBasedAppDirectiveInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppDirectiveProbe.cs" Link="Commands\Run\FileBasedAppDirectiveProbe.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppDirectiveProbeResult.cs" Link="Commands\Run\FileBasedAppDirectiveProbeResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppLaunchInfo.cs" Link="Commands\Run\FileBasedAppLaunchInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlan.cs" Link="Commands\Run\FileBasedAppRunPlan.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlanInputs.cs" Link="Commands\Run\FileBasedAppRunPlanInputs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\LaunchProfileReadResult.cs" Link="Commands\Run\LaunchProfileReadResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunDecisionReason.cs" Link="Commands\Run\RunDecisionReason.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunFileBuildCacheEntry.cs" Link="Commands\Run\RunFileBuildCacheEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunFileBuildCacheJsonSerializerContext.cs" Link="Commands\Run\RunFileBuildCacheJsonSerializerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunPlan.cs" Link="Commands\Run\RunPlan.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunProperties.cs" Link="Commands\Run\RunProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunTier.cs" Link="Commands\Run\RunTier.cs" />
+  </ItemGroup>
+
   <!--
     Workload reporting for the info command: WorkloadInfoHelper.GetWorkloadsVersion() and
     ShowWorkloadsInfo(). Under CLI_AOT, WorkloadInfoHelper builds the installation-record repository
