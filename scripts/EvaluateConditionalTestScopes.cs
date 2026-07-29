@@ -286,6 +286,7 @@ static string? GetArg(string name)
 static bool ValidateConfiguration(string repoRoot, List<XElement> scopes, string[] globalTriggerPaths)
 {
     var errors = new List<string>();
+    var scopeNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
     foreach (var scope in scopes)
     {
@@ -294,6 +295,11 @@ static bool ValidateConfiguration(string repoRoot, List<XElement> scopes, string
         {
             errors.Add("ConditionalTestScope is missing a name (Include attribute).");
             continue;
+        }
+
+        if (!scopeNames.Add(scopeName))
+        {
+            errors.Add($"Conditional test scope name '{scopeName}' is duplicated. Scope names must be unique (case-insensitive).");
         }
 
         var triggerPaths = (scope.Element("TriggerPaths")?.Value ?? "")

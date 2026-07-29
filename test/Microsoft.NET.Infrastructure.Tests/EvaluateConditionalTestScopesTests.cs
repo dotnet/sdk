@@ -284,6 +284,42 @@ public class EvaluateConditionalTestScopesTests : SdkTest
     }
 
     [TestMethod]
+    public async Task ListTestProjects_DuplicateScopeNames_ReturnsClearError()
+    {
+        var props = """
+            <Project>
+              <ItemGroup>
+                <ConditionalTestScope Include="TestScope">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/*.csproj</TestProjects>
+                  <TriggerPaths>src/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+                <ConditionalTestScope Include="testscope">
+                  <Mechanism>project</Mechanism>
+                  <TestProjects>test/*.csproj</TestProjects>
+                  <TriggerPaths>src/**</TriggerPaths>
+                  <RunAlways>CI</RunAlways>
+                </ConditionalTestScope>
+              </ItemGroup>
+            </Project>
+            """;
+
+        using var repo = new TestRepo(props, "src", "test");
+
+        var result = await RunScript(
+            repo.Root,
+            targetBranch: null,
+            buildReason: "PullRequest",
+            listTestProjects: "TestScope");
+
+        Assert.AreNotEqual(0, result.ExitCode);
+        Assert.Contains(
+            "Conditional test scope name 'testscope' is duplicated. Scope names must be unique (case-insensitive).",
+            result.StdOut);
+    }
+
+    [TestMethod]
     public async Task Validation_MissingMechanism_ReturnsError()
     {
         var props = """
