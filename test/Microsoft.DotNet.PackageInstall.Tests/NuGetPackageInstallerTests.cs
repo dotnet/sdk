@@ -97,8 +97,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [TestMethod]
         public async Task GivenAFailedSourceItShouldIncludeSourceInError()
         {
-            const string source = "https://nonexist.nuget.source/F/nonexist/api/v3/index.json";
-
+            const string source = "https://example.invalid/F/nonexist/api/v3/index.json";
             Func<Task> downloadAction = () =>
                 _installer.DownloadPackageAsync(
                     TestPackageId,
