@@ -50,6 +50,12 @@
       Overwrite="true" />
   </Target>
 
+  <Target Name="_FailComputeRunArguments"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(FailComputeRunArguments)' == 'true'">
+    <Error Text="ComputeRunArguments failed as requested." />
+  </Target>
+
   <Target Name="_LogRuntimeEnvironmentVariableDuringBuild"
           BeforeTargets="_MTPBuild"
           Condition="'@(RuntimeEnvironmentVariable)' != ''">
