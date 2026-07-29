@@ -18,13 +18,10 @@ Unlike the .NET SDK, `dotnetup` is a tip-only product. Fixes and updates are onl
 - `preview`
 - `stable`
 
-Each channel's intent is outlined below.
-
 ### Supported Platforms and Shells
 
 The latest `stable` version of `dotnetup` is supported on Windows, macOS, and Linux versions supported by its embedded .NET Runtime. See the [.NET supported operating system policy](https://github.com/dotnet/core/blob/main/os-lifecycle-policy.md) for the applicable operating system lifecycle rules.
 
-Shell integration, including profile modification and environment-script generation, is supported for Bash (`bash`), Z shell (`zsh`), fish (`fish`), and Windows PowerShell (`powershell`) alongside PowerShell Core (`pwsh`). Other shells are not yet supported for shell integration.
 
 ### `Daily` Channel Versions
 
