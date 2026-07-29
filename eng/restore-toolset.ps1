@@ -8,10 +8,6 @@ function InitializeCustomSDKToolset {
         Write-Host "INFO: Tests will run against full MSBuild in $env:DOTNET_SDK_TEST_MSBUILD_PATH"
     }
 
-    if (-not $restore) {
-        return
-    }
-
     # The following frameworks and tools are used only for testing.
     # Do not attempt to install them when building in the VMR.
     if ($fromVmr) {
@@ -321,6 +317,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
     }
 }
 
-InitializeCustomSDKToolset
-
-CleanOutStage0ToolsetsAndRuntimes
+if ($restore) {
+    InitializeCustomSDKToolset
+    CleanOutStage0ToolsetsAndRuntimes
+}

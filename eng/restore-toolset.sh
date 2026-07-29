@@ -4,10 +4,6 @@
 . "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/dotnetup-shared.sh"
 
 function InitializeCustomSDKToolset {
-  if [[ "$restore" != true ]]; then
-    return
-  fi
-
   # The following frameworks and tools are used only for testing.
   # Do not attempt to install them when building in the VMR.
   if [[ $from_vmr == true ]]; then
@@ -290,6 +286,7 @@ function CleanOutStage0ToolsetsAndRuntimes {
   fi
 }
 
-InitializeCustomSDKToolset
-
-CleanOutStage0ToolsetsAndRuntimes
+if [[ "$restore" == true ]]; then
+  InitializeCustomSDKToolset
+  CleanOutStage0ToolsetsAndRuntimes
+fi
