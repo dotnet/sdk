@@ -177,7 +177,10 @@ Each `CA####` is auto-assigned the help link
 backed by `ca####.md` in
 [`dotnet/docs`](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules).
 A docs PR is required **within one week** of the rule merging, or the implementation may be
-reverted. Say so in the PR description, then open the docs PR.
+reverted. Say so in the PR description, then open the docs PR. Nothing in the build checks
+that the page exists — `RulesMissingDocumentation.md` is generated with the link check
+disabled and stays empty — so the docs PR is the only thing standing between the rule and a
+dead help link in every user's IDE.
 
 ## Checklist
 
@@ -187,7 +190,7 @@ reverted. Say so in the PR description, then open the docs PR.
 - [ ] `AnalyzerReleases.Unshipped.md` row added, its `Documentation` link matching the row's
       own ID in lowercase.
 - [ ] `.resx` edited and `.xlf` regenerated via `/t:UpdateXlf` — neither hand-edited.
-- [ ] Regenerated `.md` / `.sarif.template` / `RulesMissingDocumentation.md` committed.
+- [ ] Regenerated `.md` / `.sarif.template` committed.
 - [ ] Targeted test run passes, covering VB and the negative cases.
 - [ ] Fix-all handles nesting (not the batch fixer), if the diagnostic can overlap or nest.
 - [ ] Every shape the fix offers itself on produces compiling code.

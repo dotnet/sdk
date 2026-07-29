@@ -54,10 +54,12 @@ the driver already implies them and the combination fails. To regenerate `.xlf` 
   (`src/Utilities/Compiler/RuleLevel.cs`) is the severity knob; its XML doc is the
   rubric reviewers apply.
 - **Building rewrites committed files.** `GenerateAnalyzerConfigAndDocumentationFiles` in
-  the Package project regenerates `src/Microsoft.CodeAnalysis.NetAnalyzers.md`,
-  `src/Microsoft.CodeAnalysis.NetAnalyzers.sarif.template`, and
-  `src/RulesMissingDocumentation.md`. CI runs the same generator in validate-only mode and
-  fails when they're stale — commit whatever the local build produces.
+  the Package project regenerates `src/Microsoft.CodeAnalysis.NetAnalyzers.md` and
+  `src/Microsoft.CodeAnalysis.NetAnalyzers.sarif.template`. CI runs the same generator in
+  validate-only mode and fails when they're stale — commit whatever the local build
+  produces. It also owns `src/RulesMissingDocumentation.md`, but that file stays empty in
+  practice: the help-link check is skipped whenever the generator runs offline, and the
+  product build forces offline on. Nothing verifies that a rule's help page exists.
 - **Nullable reference warnings are errors** in the analyzer source projects. The unit-test
   project sets `<Nullable>disable</Nullable>`.
 - Pooled collections from `src/Utilities/Compiler/PooledObjects/` must be returned on every
