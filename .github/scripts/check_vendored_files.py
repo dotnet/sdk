@@ -13,8 +13,9 @@ Modes:
 
 The check mode is idempotent: existing issues are matched by label
 `area-vendored-sync` plus a hidden HTML marker in the body of the form
-`<!-- vendored-sync:id=<entry-id>:<source-index> -->`. Issues are additionally
-labelled `Area-dotnet test (MTP)` for area triage.
+`<!-- vendored-sync:id=<entry-id>:<source-index> -->`. Issues additionally carry
+the area labels resolved for the entry (manifest `default_area_labels`, or the
+entry's own `area_labels` override) so they land in the right triage queue.
 
 See eng/vendored-files.md for the manifest schema and reconciliation workflow.
 """
@@ -39,10 +40,6 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "eng" / "vendored-files.json"
 ISSUE_LABEL = "area-vendored-sync"
-# Every entry in the manifest is 'dotnet test' <-> Microsoft.Testing.Platform shared
-# source, so drift issues are also routed to the MTP area label for triage.
-AREA_LABEL = "Area-dotnet test (MTP)"
-ISSUE_LABELS = [ISSUE_LABEL, AREA_LABEL]
 ISSUE_REPO = os.environ.get("VENDORED_SYNC_REPO", "dotnet/sdk")
 MAX_DIFF_LINES = 300
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -77,21 +74,29 @@ class Entry:
     local_path: str
     notes: str
     sources: list[Source]
+    area_labels: list[str]
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any]) -> "Entry":
+    def from_dict(cls, d: dict[str, Any], default_area_labels: list[str]) -> "Entry":
         return cls(
             id=d["id"],
             local_path=d["local_path"],
             notes=d.get("notes", ""),
             sources=[Source.from_dict(s) for s in d["sources"]],
+            area_labels=list(d.get("area_labels", default_area_labels)),
         )
+
+    @property
+    def issue_labels(self) -> list[str]:
+        """Labels applied to this entry's drift issues, sync label first."""
+        return [ISSUE_LABEL, *self.area_labels]
 
 
 def load_manifest() -> list[Entry]:
     with MANIFEST_PATH.open("r", encoding="utf-8") as f:
         data = json.load(f)
-    return [Entry.from_dict(e) for e in data["entries"]]
+    default_area_labels = data.get("default_area_labels", [])
+    return [Entry.from_dict(e, default_area_labels) for e in data["entries"]]
 
 
 # ---------- validation ----------
@@ -113,6 +118,11 @@ def validate(entries: list[Entry]) -> int:
 
         if not entry.sources:
             errors.append(f"{entry.id}: must declare at least one source.")
+
+        if not all(isinstance(label, str) and label.strip() for label in entry.area_labels):
+            errors.append(f"{entry.id}: area_labels must contain only non-empty strings.")
+        if ISSUE_LABEL in entry.area_labels:
+            errors.append(f"{entry.id}: area_labels must not repeat '{ISSUE_LABEL}'.")
 
         for index, source in enumerate(entry.sources):
             tag = f"{entry.id}#sources[{index}]"
@@ -409,12 +419,13 @@ def find_existing_issue(marker: str) -> dict[str, Any] | None:
     return None
 
 
-def ensure_label() -> None:
+def ensure_label(entries: list[Entry]) -> None:
     """Ensure the labels applied to drift issues exist.
 
     The sync label is owned by this workflow, so it is force-created (idempotent
-    and self-healing). The area label is owned by the repo's regular triage
-    taxonomy, so it is only created when missing and never overwritten.
+    and self-healing). Area labels come from the manifest and are owned by the
+    repo's regular triage taxonomy, so they are only created when missing and
+    never overwritten.
     """
     _gh([
         "label", "create", ISSUE_LABEL,
@@ -423,12 +434,8 @@ def ensure_label() -> None:
         "--color", "fbca04",
         "--force",
     ])
-    _gh([
-        "label", "create", AREA_LABEL,
-        "--repo", ISSUE_REPO,
-        "--description", "Issues related to 'dotnet test' with Microsoft.Testing.Platform",
-        "--color", "d4c5f9",
-    ])
+    for label in sorted({label for entry in entries for label in entry.area_labels}):
+        _gh(["label", "create", label, "--repo", ISSUE_REPO])
 
 
 _STATUS_TITLES = {
@@ -438,16 +445,16 @@ _STATUS_TITLES = {
 }
 
 
-def _label_flags() -> list[str]:
+def _label_flags(labels: list[str]) -> list[str]:
     flags: list[str] = []
-    for label in ISSUE_LABELS:
+    for label in labels:
         flags += ["--label", label]
     return flags
 
 
-def _missing_labels(issue: dict[str, Any]) -> list[str]:
+def _missing_labels(issue: dict[str, Any], labels: list[str]) -> list[str]:
     present = {(item.get("name") or "") for item in (issue.get("labels") or [])}
-    return [label for label in ISSUE_LABELS if label not in present]
+    return [label for label in labels if label not in present]
 
 
 def upsert_issue(result: DriftResult, dry_run: bool) -> None:
@@ -455,11 +462,12 @@ def upsert_issue(result: DriftResult, dry_run: bool) -> None:
     body = _render_issue_body(result)
     status_text = _STATUS_TITLES.get(result.status, result.status)
     title = f"[vendored-sync] {result.entry.id}: {status_text} (#{result.source_index})"
+    labels = result.entry.issue_labels
 
     if dry_run:
         print(f"\n--- would create/update issue ({result.entry.id}#{result.source_index}) ---")
         print(f"title: {title}")
-        print(f"labels: {', '.join(ISSUE_LABELS)}")
+        print(f"labels: {', '.join(labels)}")
         print(body[:2000])
         print("---")
         return
@@ -470,7 +478,7 @@ def upsert_issue(result: DriftResult, dry_run: bool) -> None:
             "issue", "create",
             "--repo", ISSUE_REPO,
             "--title", title,
-            *_label_flags(),
+            *_label_flags(labels),
             "--body-file", "-",
         ], input_data=body)
         if rc != 0:
@@ -479,8 +487,8 @@ def upsert_issue(result: DriftResult, dry_run: bool) -> None:
             print(f"Created issue for {result.entry.id}#{result.source_index}: {out.strip()}")
         return
 
-    # Issues opened before a label was added to ISSUE_LABELS are backfilled here.
-    missing = _missing_labels(existing)
+    # Issues opened before the entry's label set changed are backfilled here.
+    missing = _missing_labels(existing, labels)
     if missing:
         rc, _, err = _gh([
             "issue", "edit", str(existing["number"]),
@@ -523,7 +531,7 @@ def cmd_check(args: argparse.Namespace) -> int:
         return 1
 
     if not args.dry_run:
-        ensure_label()
+        ensure_label(entries)
 
     drift_count = 0
     error_count = 0

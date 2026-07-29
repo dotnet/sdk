@@ -1,5 +1,7 @@
 {
   "$comment": "Manifest of source files copied (vendored) from other repositories into dotnet/sdk. See eng/vendored-files.md. These files are the 'dotnet test' <-> Microsoft.Testing.Platform shared source (wire contract + terminal reporter); the source of truth is microsoft/testfx, which enumerates the same set via DotnetTestProtocolContract.props and TerminalReporterContract.props.",
+  "$comment_labels": "Area labels applied to drift issues in addition to 'area-vendored-sync'. Every entry below is 'dotnet test'/MTP source, so the default covers them all. A future entry vendored from a different upstream for a different area must set its own 'area_labels' so it is not misrouted to MTP triage.",
+  "default_area_labels": ["Area-dotnet test (MTP)"],
   "entries": [
     {
       "id": "dotnet-test-wire-contract-fieldids",
