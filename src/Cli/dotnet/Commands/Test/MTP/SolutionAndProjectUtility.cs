@@ -621,10 +621,16 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                if (project.Targets.ContainsKey(Constants.DeployToDevice) &&
-                    !project.Build([Constants.DeployToDevice], CreateBuildLoggers(msbuildArgs, logger)))
+                if (project.Targets.ContainsKey(Constants.DeployToDevice))
                 {
-                    throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    // Deploy on a fresh ProjectInstance to avoid accumulating state (existing item
+                    // groups) that would leak into the ComputeRunArguments build below, which has to
+                    // build the original instance since the run properties are read back from it.
+                    // Same reason as dotnet run, see RunCommandSelector.OpenProjectIfNeeded.
+                    if (!project.DeepCopy().Build([Constants.DeployToDevice], CreateBuildLoggers(msbuildArgs, logger)))
+                    {
+                        throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    }
                 }
 
                 if (!project.Build(s_computeRunArgumentsTarget, CreateBuildLoggers(msbuildArgs, logger)))
