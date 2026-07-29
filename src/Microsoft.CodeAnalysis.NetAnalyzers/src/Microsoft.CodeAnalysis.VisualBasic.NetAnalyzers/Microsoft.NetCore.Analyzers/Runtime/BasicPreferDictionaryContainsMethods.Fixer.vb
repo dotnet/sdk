@@ -4,13 +4,14 @@ Imports Microsoft.NetCore.Analyzers.Runtime
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports System.Composition
 Imports System.Threading
 Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.NetCore.Analyzers
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
-    <ExportCodeFixProvider(LanguageNames.VisualBasic)>
+    <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Public NotInheritable Class BasicPreferDictionaryContainsMethodsFixer : Inherits PreferDictionaryContainsMethodsFixer
 
         Public Overrides Async Function RegisterCodeFixesAsync(context As CodeFixContext) As Task

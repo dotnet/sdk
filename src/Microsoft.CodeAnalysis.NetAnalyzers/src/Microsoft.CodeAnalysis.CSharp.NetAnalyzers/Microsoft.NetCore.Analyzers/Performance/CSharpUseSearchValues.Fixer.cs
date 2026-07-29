@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Composition;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -17,7 +18,7 @@ using Microsoft.NetCore.Analyzers.Performance;
 namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 {
     /// <inheritdoc/>
-    [ExportCodeFixProvider(LanguageNames.CSharp)]
+    [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpUseSearchValuesFixer : UseSearchValuesFixer
     {
         protected override async ValueTask<(SyntaxNode TypeDeclaration, INamedTypeSymbol? TypeSymbol, bool IsRealType)> GetTypeSymbolAsync(SemanticModel semanticModel, SyntaxNode node, CancellationToken cancellationToken)

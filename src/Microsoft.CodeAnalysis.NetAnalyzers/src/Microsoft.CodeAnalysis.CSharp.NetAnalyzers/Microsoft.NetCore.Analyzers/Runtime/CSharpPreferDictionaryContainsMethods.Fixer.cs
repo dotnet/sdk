@@ -5,6 +5,7 @@ using Microsoft.NetCore.Analyzers.Runtime;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using System.Composition;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.CodeAnalysis.Editing;
@@ -15,7 +16,7 @@ using Analyzer.Utilities;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
-    [ExportCodeFixProvider(LanguageNames.CSharp)]
+    [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpPreferDictionaryContainsMethodsFixer : PreferDictionaryContainsMethodsFixer
     {
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
