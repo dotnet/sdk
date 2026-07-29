@@ -1,6 +1,6 @@
 ---
 emoji: 🧵
-name: "Parallel-safety audit on PR (on open / sync)"
+name: "Parallel-safety audit on PR (on open / ready for review)"
 description: >-
   Automatically audits the MSTest tests changed by a non-draft PR for
   parallel-safety when the change touches `test/**`, or the repository-root

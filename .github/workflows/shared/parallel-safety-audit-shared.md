@@ -201,7 +201,6 @@ steps:
       : > "$RANGES_OUT"
       printf '%s\n' "$PR_NUMBER" > "$OUT_DIR/pr-number.txt"
       printf '%s\n' "$AUDIT_MODE" > "$OUT_DIR/audit-mode.txt"
-
       # `test/TestAssets/` and `test/TestPackages/` are test *inputs*, not test code:
       # they are sample projects and packages that the SDK's tests copy to a scratch
       # directory and build with the product SDK. Their sources are never compiled
@@ -220,6 +219,13 @@ steps:
       # of step with GitHub's own PR delta. Normalize to the merge-base first.
       MERGE_BASE=$(git merge-base "$BASE_SHA" "$HEAD_SHA")
       echo "Base tip $BASE_SHA; merge-base $MERGE_BASE; head $HEAD_SHA"
+      # The agent is told to `git diff` the removed side of deletion-only hunks and
+      # of deleted files, so it needs the exact revisions this extraction used. A
+      # bare `git diff` in the checked-out tree compares against the index and
+      # prints nothing, and gh-aw's later `Checkout PR branch` step re-fetches
+      # shallowly, so a guessed `origin/<base>...HEAD` is not reliable either.
+      printf '%s\n' "$MERGE_BASE" > "$OUT_DIR/merge-base.txt"
+      printf '%s\n' "$HEAD_SHA" > "$OUT_DIR/head-sha.txt"
 
       git diff --name-only --diff-filter=AMR "$MERGE_BASE" "$HEAD_SHA" \
         -- 'test/' "$EXCLUDE_ASSETS" "$EXCLUDE_PACKAGES" \
@@ -343,13 +349,6 @@ steps:
         echo
         echo "PR #$PR_NUMBER (mode: $AUDIT_MODE) — changed test files: $TEST_COUNT, changed src files: $SRC_COUNT, parallelization-config files: $CONFIG_COUNT"
       } >> "$GITHUB_STEP_SUMMARY"
-
-      # Consumed by the agent job's own later steps only — never by the prompt.
-      if [[ "$TEST_COUNT" -gt 0 || "$CONFIG_COUNT" -gt 0 ]]; then
-        echo "has_changed_tests=true" >> "$GITHUB_OUTPUT"
-      else
-        echo "has_changed_tests=false" >> "$GITHUB_OUTPUT"
-      fi
 ---
 
 # Parallel-safety audit
@@ -404,6 +403,17 @@ explaining that and stop. Never guess the PR number or invent a file list.
 - **`audit-mode.txt`** — `automatic` for a `pull_request` run, `command` for a
   `/parallel-audit` invocation. This decides whether you may stay silent; see the
   output section.
+- **`merge-base.txt`** and **`head-sha.txt`** — the exact revisions the extraction
+  diffed. **Always pass both to `git diff`.** Your working directory is checked out
+  at the PR head with a clean tree, so a bare `git diff <path>` compares against the
+  index and prints nothing. Use:
+
+  ```bash
+  AUDIT_BASE=$(cat /tmp/gh-aw/parallel-safety-audit/merge-base.txt)
+  AUDIT_HEAD=$(cat /tmp/gh-aw/parallel-safety-audit/head-sha.txt)
+  git diff "$AUDIT_BASE" "$AUDIT_HEAD" -- <path>      # both sides of a change
+  git show "$AUDIT_BASE:<path>"                        # a file as it was before
+  ```
 - **`changed-test-files.txt`** — one repo-relative `.cs`
   path per line, under `test/`. These are your primary audit surface.
   `test/TestAssets/` and `test/TestPackages/` are **excluded by construction**:
@@ -418,8 +428,9 @@ explaining that and stop. Never guess the PR number or invent a file list.
 
   **Deletions appear as single-line anchors.** A hunk that only removes lines has
   no HEAD-side content, so it is recorded as a one-line range at the preceding
-  line. Treat those as first-class PR changes, not noise: **run `git diff` on the
-  file and read the removed side**. Deleting a `[ResourceLock]`, a
+  line. Treat those as first-class PR changes, not noise: **run
+  `git diff "$AUDIT_BASE" "$AUDIT_HEAD" -- <path>` and read the removed side**.
+  Deleting a `[ResourceLock]`, a
   `[DoNotParallelize]`, a `finally` block that restored an environment variable
   or culture, or a cleanup that deleted a shared file *introduces* the hazard just
   as surely as adding a mutation does, and must be reported as a **primary**
@@ -442,6 +453,13 @@ out repository, which is your current working directory.
 If **both** `changed-test-files.txt` and `changed-config-files.txt` are empty,
 follow the "nothing to audit" rule in the wrapper output section — which posts
 nothing on an automatic run — and stop.
+
+Note the corollary of that rule while you work: on an **automatic** run, findings
+against an assembly whose scope is `off` (or that is not an MSTest suite) are
+**readiness-only** and never on their own justify a comment. If Step 0 resolves
+every assembly you are auditing to `off` and this PR did not change any
+parallelization setting, you can stop early and `noop` rather than writing up a
+report nobody asked for.
 
 - **Parallelization-state changes** at
   `/tmp/gh-aw/parallel-safety-audit/changed-config-files.txt` — every file this PR touched
@@ -483,7 +501,9 @@ nothing on an automatic run — and stop.
 
   **This list includes deleted
   files** — a path here may no longer exist on HEAD, so inspect it with
-  `git diff`, not by reading it. Removing an opt-out (a `.runsettings` setting
+  `git diff "$AUDIT_BASE" "$AUDIT_HEAD" -- <path>` (or
+  `git show "$AUDIT_BASE:<path>"`), not by reading it. Removing an opt-out (a
+  `.runsettings` setting
   `DisableParallelization`, `MSTestParallelizeScope=None`, a
   `parallelism:enabled: false`) **enables** parallelism exactly as adding an
   opt-in does; treat it identically. If the change **enables** parallelism or
@@ -1002,15 +1022,23 @@ race.
 
 **Decide first whether to comment at all.** This audit runs automatically on most
 test-touching PRs in a repository where the default is `MSTestParallelizeScope=None`,
-so a "nothing to flag" comment on every one of them is pure noise. Apply this rule:
+so a "nothing to flag" comment — or a readiness lecture about a suite that does not
+run in parallel — on every one of them is pure noise. The rule below applies to an
+**automatic** run (`/tmp/gh-aw/parallel-safety-audit/audit-mode.txt` contains
+`automatic`); the `/parallel-audit` command always answers.
 
-- **Post a comment** when you have at least one finding to report, **or** when this
-  PR changed an assembly's parallelization state (`changed-config-files.txt` is
-  non-empty and the change really enables, disables or widens parallelism).
+- **Post a comment** when you have at least one finding that is **live** — that is,
+  a finding against an assembly whose resolved scope is `ClassLevel` or
+  `MethodLevel` — **or** when this PR changed an assembly's parallelization state
+  (`/tmp/gh-aw/parallel-safety-audit/changed-config-files.txt` is non-empty and the
+  change really enables, disables or widens parallelism).
 - **Otherwise call `noop`** with a one-line status such as
-  `"No parallel-safety findings for PR #N (Foo.Tests: scope=off)."` and post
-  **nothing**. That covers an empty audit surface, a surface of only non-test code,
-  and a clean audit.
+  `"No live parallel-safety findings for PR #N (Foo.Tests: scope=off, 3 readiness items)."`
+  and post **nothing**. That covers an empty audit surface, a surface of only
+  non-test code, a clean audit, and — importantly — an audit whose findings are all
+  **readiness-only** because every assembly it touched has parallelization `off` or
+  is not an MSTest suite. Readiness advice about a suite that does not run in
+  parallel is not worth interrupting a PR for; it is what `/parallel-audit` is for.
 - **Exception — the `/parallel-audit` command.** When
   `/tmp/gh-aw/parallel-safety-audit/audit-mode.txt` contains `command`, a human explicitly
   asked for this audit, so always post a comment, using the "nothing to audit"
