@@ -238,7 +238,7 @@ internal static class SolutionAndProjectUtility
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         BuildOptions buildOptions,
-        FacadeLogger? logger,
+        TestBuildSession buildSession,
         string? configuration,
         string? platform,
         HashSet<string>? visitedTraversalProjects = null)
@@ -269,7 +269,7 @@ internal static class SolutionAndProjectUtility
                     continue;
                 }
 
-                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, logger, reference.Configuration, reference.Platform, visitedTraversalProjects));
+                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, buildSession, reference.Configuration, reference.Platform, visitedTraversalProjects));
             }
 
             return projects;
@@ -282,7 +282,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+            if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
@@ -310,7 +310,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
@@ -324,7 +324,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
                     {
                         innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
@@ -534,7 +534,7 @@ internal static class SolutionAndProjectUtility
     private static TestModule? GetModuleFromProject(
         ProjectInstance project,
         BuildOptions buildOptions,
-        FacadeLogger? logger)
+        TestBuildSession buildSession)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -555,7 +555,7 @@ internal static class SolutionAndProjectUtility
         {
             runProperties = DeployAndGetRunProperties(
                 project,
-                logger,
+                buildSession,
                 buildOptions.EnvironmentVariables,
                 out runtimeEnvironmentVariables);
 
@@ -602,7 +602,7 @@ internal static class SolutionAndProjectUtility
         [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
         static RunProperties DeployAndGetRunProperties(
             ProjectInstance project,
-            FacadeLogger? logger,
+            TestBuildSession buildSession,
             IReadOnlyDictionary<string, string> environmentVariables,
             out IReadOnlyDictionary<string, string> runtimeEnvironmentVariables)
         {
@@ -612,20 +612,18 @@ internal static class SolutionAndProjectUtility
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
-            // Build API cannot be called in parallel, even if the projects are different.
-            // Otherwise, BuildManager in MSBuild will fail:
-            // System.InvalidOperationException: The operation cannot be completed because a build is already in progress.
-            // NOTE: BuildManager is singleton.
+            // The MSBuild build APIs cannot be called in parallel, even for different projects:
+            // BuildManager throws "The operation cannot be completed because a build is already in progress."
+            // Every project of the run shares the same build session, so the requests are serialized here.
             lock (s_buildLock)
             {
-                var loggers = logger is null ? null : new[] { logger };
                 if (project.Targets.ContainsKey(Constants.DeployToDevice) &&
-                    !project.Build([Constants.DeployToDevice], loggers))
+                    !buildSession.Build(project, [Constants.DeployToDevice]))
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
                 }
 
-                if (!project.Build(s_computeRunArgumentsTarget, loggers))
+                if (!buildSession.Build(project, s_computeRunArgumentsTarget))
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
                 }

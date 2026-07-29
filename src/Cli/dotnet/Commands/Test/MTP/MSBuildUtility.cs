@@ -72,7 +72,8 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger);
+        using var buildSession = new TestBuildSession(collection, logger);
+        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger, buildSession);
         collection.UnloadAllProjects();
 
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
@@ -107,7 +108,8 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, logger, configuration: null, platform: null);
+        using var buildSession = new TestBuildSession(collection, logger);
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, buildSession, configuration: null, platform: null);
         collection.UnloadAllProjects();
         return (projects, buildExitCode);
     }
@@ -174,8 +176,9 @@ internal static class MSBuildUtility
                 logger is null ? null : [logger],
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+            using var buildSession = new TestBuildSession(collection, logger);
             IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
-                projectFilePath, collection, evaluationContext, perTfmBuildOptions, logger, configuration, platform);
+                projectFilePath, collection, evaluationContext, perTfmBuildOptions, buildSession, configuration, platform);
 
             allGroups.AddRange(modules);
         }
@@ -409,7 +412,8 @@ internal static class MSBuildUtility
         EvaluationContext evaluationContext,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
         BuildOptions buildOptions,
-        FacadeLogger? logger)
+        FacadeLogger? logger,
+        TestBuildSession buildSession)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         var nonDeviceProjects = new List<(string ProjectFilePath, string? Configuration, string? Platform)>();
@@ -461,7 +465,7 @@ internal static class MSBuildUtility
             {
                 try
                 {
-                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, logger, project.Configuration, project.Platform);
+                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, buildSession, project.Configuration, project.Platform);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);
