@@ -57,7 +57,8 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
         public void NestedSpansSortInnermostFirst()
         {
             //  Replacing an enclosing node discards the editor's tracking of everything inside it, so a
-            //  document whose spans nest has to be fixed innermost-first rather than in source order.
+            //  document whose spans nest has to be fixed innermost-first rather than in source order. The
+            //  diagnostic at 50 encloses nothing and is enclosed by nothing, and reverses with the rest.
             ImmutableArray<Diagnostic> diagnostics = ImmutableArray.Create(
                 DiagnosticAt(10, 30),
                 DiagnosticAt(15, 10),

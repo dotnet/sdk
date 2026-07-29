@@ -206,9 +206,11 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
         /// Orders a document's diagnostics so that each fix sees the edits made by the fixes before it.
         /// </summary>
         /// <remarks>
-        /// Source order, as Roslyn's own fixers use, except that nested spans order innermost-first: an
-        /// enclosing replacement discards the tracking of everything inside it, so the inner fix has to run
-        /// first.
+        /// Ascending by span start, as Roslyn's own fixers use. A single nested pair reverses the whole
+        /// document rather than only that pair: an enclosing replacement discards the editor's tracking of
+        /// everything inside it, so the inner fix has to run first, and the fixes neither of them encloses
+        /// are indifferent to which end the pass starts from. Roslyn's forking provider reverses the same
+        /// way, by draining a stack it filled in source order.
         /// </remarks>
         internal static IEnumerable<Diagnostic> Order(ImmutableArray<Diagnostic> diagnostics)
         {
