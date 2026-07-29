@@ -92,6 +92,10 @@ The collector models each observation on independent axes:
 This keeps transport failures independent from the build step that encountered
 them and keeps observation provenance independent from both. Artifact download
 cascades and generic Helix monitor parents are context only.
+The complete vocabulary and definitions are maintained in the
+[workflow design's Failure Taxonomy](../workflows/ci-quality-monitor.README.md#failure-taxonomy);
+the examples below and in the evaluation catalog demonstrate combinations of
+those independent axes rather than defining the vocabulary.
 Each failure also exposes `issueCandidates`, the actionable observations from
 the selected current build. Related-build observations are recurrence context
 and cannot directly anchor an issue. Non-actionable current observations are

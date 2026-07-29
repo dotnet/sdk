@@ -210,6 +210,58 @@ restore and inside test wrappers; those observations can form one incident when
 the endpoint and stable mechanism match. A compiler diagnostic and a timeout
 remain separate even when both happen under a build stage.
 
+### Phases
+
+`phase` identifies the operation that was active when the failure surfaced. It
+does not identify the cause and does not by itself determine issue boundaries.
+The current collector emits the following values:
+
+| Phase | Meaning |
+| --- | --- |
+| `pipeline-scheduling` | GitHub and Azure build history indicate that an expected pipeline run was not queued. |
+| `pipeline-validation` | Azure rejected the pipeline definition or expanded YAML before execution began. |
+| `pipeline-startup` | Azure created a failed build record without validation diagnostics or executable timeline records. |
+| `source-checkout` | Repository fetch, checkout, or source availability failed. |
+| `environment-setup` | Agent, container, tool acquisition, installation, or other prerequisite setup failed. |
+| `dependency-restore` | NuGet restore, package resolution, feed access, or package policy evaluation failed. |
+| `compilation` | Compiler, MSBuild, SDK build task, or another build operation failed. |
+| `signing` | Signing or signature-tool execution failed. |
+| `artifact-transfer` | A produced or required build artifact could not be found or transferred. This is normally cascade context rather than an actionable root. |
+| `test-orchestration` | Test dispatch or a parent Helix-monitor operation reported a downstream failure. This is normally context when a specific child failure exists. |
+| `test-execution` | A test assertion, test-host failure, timeout, crash, or execution-time dependency failure surfaced while tests were running. |
+| `test-post-processing` | Tests completed, but result processing or harness shutdown subsequently failed. |
+| `unknown` | Available evidence cannot locate the failed operation more precisely. This fallback must not be promoted to a specific phase by inference. |
+
+### Failure Types
+
+`failureType` describes the observed mechanism independently of where it
+surfaced. The current collector emits the following values:
+
+| Failure type | Meaning |
+| --- | --- |
+| `missing-execution` | An expected pipeline or execution record is absent. Heartbeat observations become actionable only after the configured consecutive-miss policy. |
+| `configuration-error` | Invalid pipeline, YAML, template, or configuration input prevented normal execution. |
+| `source-unavailable` | Required repository content or a source ref could not be fetched or found. |
+| `authentication-failure` | Credentials were missing, rejected, forbidden, or unauthorized. |
+| `network-failure` | A remote dependency failed through throttling, service unavailability, connection failure, or another transport error. |
+| `package-policy-error` | Restore was blocked by package policy, such as a reported vulnerability. |
+| `package-resolution-error` | NuGet or restore could not resolve or retrieve required packages for a reason not classified more specifically. |
+| `compiler-error` | A C# compiler diagnostic caused compilation to fail. |
+| `build-task-error` | An MSBuild, NETSDK, or other build-task diagnostic failed the build without a more specific mechanism classification. |
+| `tool-execution-error` | A required setup, signing, or build tool failed to execute successfully. |
+| `test-assertion` | Structured test results contain one or more named failed tests. |
+| `timeout` | Test execution exceeded its allowed duration or a watchdog identified a hang. |
+| `process-crash` | A test host or related process crashed, asserted, overflowed its stack, or produced crash evidence. |
+| `process-termination` | A process ended through an external or otherwise unexplained termination code without evidence sufficient to classify a crash or timeout. |
+| `harness-error` | Tests completed, but the test harness or post-processing path failed afterward. |
+| `infrastructure-unavailable` | Required test infrastructure, machine capacity, device, or agent connection was unavailable. |
+| `artifact-missing` | A required artifact was absent. The collector normally treats this as a downstream cascade rather than an actionable root. |
+| `downstream-failure` | A parent orchestration task reports failure because a more specific child operation failed. The collector treats it as context. |
+| `evidence-unavailable` | Evidence retrieval itself failed, so the underlying build or test mechanism is not established. This is non-actionable. |
+| `unknown-error` | The operation failed, but available evidence does not support a more specific mechanism. |
+
+### Examples
+
 | Example | Phase | Failure type | Evidence sources |
 | --- | --- | --- | --- |
 | YAML pre-flight [1521345](https://dev.azure.com/dnceng-public/public/_build/results?buildId=1521345) | `pipeline-validation` | `configuration-error` | Azure validation |
