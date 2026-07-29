@@ -22,7 +22,6 @@ Unlike the .NET SDK, `dotnetup` is a tip-only product. Fixes and updates are onl
 
 The latest `stable` version of `dotnetup` is supported on Windows, macOS, and Linux versions supported by its embedded .NET Runtime. See the [.NET supported operating system policy](https://github.com/dotnet/core/blob/main/os-lifecycle-policy.md) for the applicable operating system lifecycle rules.
 
-
 ### `Daily` Channel Versions
 
 `daily` builds of `dotnetup` will be fresh out of `CI`, much like the `daily` or `nightly` builds of the .NET SDK.
@@ -60,13 +59,9 @@ The first runtime supporting a `stable` build will be `.NET 11`.
 
 `stable` versions of `dotnetup` follow the [.NET Runtime servicing policy](https://dotnet.microsoft.com/platform/support/policy/dotnet-core#servicing). When a .NET Runtime servicing release updates the runtime embedded in `dotnetup`, the corresponding `dotnetup` release may be published up to three days later. The current `stable` version of `dotnetup` remains supported during this publication window.
 
-#### Major `stable` Release
+# Semantic Versioning
 
-Major releases may include new features and functionality, new public APIs, bug fixes, and intentional [breaking changes](https://learn.microsoft.com/dotnet/core/compatibility/breaking-changes).
-
-#### Minor `stable` Release
-
-Minor releases may include new features, functionality, APIs, or bug fixes, but their scope will be generally smaller than that of major releases.
+`dotnetup` follows [semver v2.0.0](https://semver.org/spec/v2.0.0.html).
 
 #### Patches & Servicing
 
