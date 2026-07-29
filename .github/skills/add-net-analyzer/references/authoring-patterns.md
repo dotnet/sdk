@@ -256,6 +256,13 @@ public Task Match_ReportsDiagnostic(string typeName)
   input and expected output asserts "diagnostic but no fix offered" or "no diagnostic"; a
   differing pair asserts both the diagnostic and the fix output. Don't split analyzer-only
   and fixer-only test classes.
+- **Enumerate the contexts where the rewrite is *invalid*, and pin each with a no-fix
+  test.** The harness compiles the fixed output, but that only proves the shapes you thought
+  to write down compile — its strictness is not coverage. Work out what the new form cannot
+  do that the old one could: a conversion the old type had, a ref struct in an expression
+  tree or held across an `await`, an overload that only binds the original type. If every
+  fix test happens to use `var` or discard the result, that is the eligibility gap showing
+  rather than a coincidence.
 - **Add trivia tests** — a source with comments and blank lines around the fixed node.
 - Negative tests are not optional — the false-positive cases you thought about during
   design are the ones a reviewer will ask for. The ones that come up repeatedly for
