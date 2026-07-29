@@ -37,7 +37,7 @@ We do not recommend using `daily` builds in production. They have no guarantees,
 
 `preview` versions are not officially supported but they are offered for public testing ahead of a promotion to a `stable` release. At our discretion, `daily` builds will be promoted to `preview` versions.
 
-Breaking change notices may be published in the [.NET Docs](https://github.com/dotnet/docs) if we expect high impacts. However, `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version.
+Breaking change notices may be published in the [.NET Docs](https://github.com/dotnet/docs) if we expect high impact. However, `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version.
 
 ### `Stable` Channel Versions
 
