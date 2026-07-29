@@ -1,6 +1,6 @@
 #### Dotnetup Version Engineering Details
 
-While [dotnetup-channel-policy.md](../dotnetup-channel-policy.md) outlines what each `channel` of `dotnetup` means for customers in terms of breaking change notices, this document outlines how each version will be used by our engineering team, and abstractly how we will promote from one version to another. The actual release process from version to version is defined elsewhere.
+While [dotnetup-channel-policy.md](../dotnetup-channel-policy.md) outlines what each `channel` of `dotnetup` means for customers to help them decide which `channel` of `dotnetup` to subscribe to, this document outlines how each version will be used by our engineering team, and abstractly what our intent is per version. The actual release process from version to version is defined elsewhere, see https://github.com/dotnet/sdk/pull/54735.
 
 ### `Daily` Channel Versions
 
@@ -25,7 +25,8 @@ It will be easier to document breaking changes for the `stable` version if we do
 
 Every `stable` release begins as a `daily` build that is promoted to `preview` and then to `stable`. We should provide both notice and backward compatibility for breaking changes when within reason.
 
-`stable` builds will be built off of `stable` .NET Runtimes, and thus be in a separate, stable branch.
+`stable` builds will be built off of `stable` .NET Runtimes, and thus be in a separate, stable branch. This means we have a large time window (Feb-Aug during the GA and until the RC build of a new .NET Major) where the `stable` version of `dotnetup` may lag behind `preview` versions and is best maintained with a separate branch, aka the `release/stable/dotnetup` branch. Codeflow between the `daily` and `preview` branch to the `stable` branch will not be automated.
+
 The first runtime supporting a `stable` build will be `.NET 11`.
 
 ### Patches
