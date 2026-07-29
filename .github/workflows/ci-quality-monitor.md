@@ -182,7 +182,6 @@ tools:
     min-integrity: none
 
 safe-outputs:
-  staged: ${{ github.ref_name != 'nagilson/ci-quality-monitor-live-evaluation' }}
   report-failure-as-issue: false
   missing-tool:
     create-issue: false
