@@ -8,10 +8,11 @@
 Looking for the support policy for the .NET Platform? See the [.NET Support Policy](https://dotnet.microsoft.com/platform/support/policy) page.
 `dotnetup`'s official support policy document is still underway; here, we aim to communicate version intent to allow users to pick which version of `dotnetup` to use.
 
-Unlike the .NET SDK, `dotnetup` is a tip-only product. Fixes and updates are only provided for the latest `stable` version.  When a new `stable` version is published, it immediately supersedes the previous `stable` version. `daily` and `preview` versions may recieve updates but have a lower quality bar and are not recommended for use in production. This policy may change as the product matures or when an official support policy page supersedes this document.
+Unlike the .NET SDK, `dotnetup` is a tip-only product. It is versioned into three separate `channels` that outline the quality-bar for each new version release for that channel.
+
+Fixes and updates are only provided for the latest `stable` channel's version.  When a new `stable` version is published, it immediately supersedes the previous `stable` version. `daily` and `preview` channel versions may receive updates but have a lower bar and are not recommended for use in production. This policy may change as the product matures or when an official support policy page supersedes this document.
 
 `dotnetup` is a standalone tool with a lifecycle that is independent of the .NET SDK lifecycle.
-
 `dotnetup` releases in three channels:
 
 - `daily`
@@ -24,20 +25,18 @@ The latest `stable` version of `dotnetup` is supported on Windows, macOS, and Li
 
 ### `Daily` Channel Versions
 
-`daily` builds of `dotnetup` will be fresh out of `CI`, much like the `daily` or `nightly` builds of the .NET SDK.
-We do not recommend using `daily` builds in production. They have no guarantees and no support.
+`daily` builds of `dotnetup` will be fresh out of `CI`, much like the `daily` or sometimes tokened `nightly` builds of the .NET SDK.
+We do not recommend using `daily` builds in production. They have no guarantees, no fix timelines, and no support.
 
 Multiple `daily` builds may be published in one day.
-
 Features may be added, changed, or removed without notice. Breaking changes may be added with or without documentation or notice.
 
-If the `daily` build of `dotnetup` faces an issue, we do not guarantee any SLA or fix timeline.
 
 ### `Preview` Channel Versions
 
 At our discretion, `daily` builds may be promoted to `preview` versions. `preview` versions are not officially supported but they are offered for public testing ahead of a promotion to a `stable` release.
 
-`preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version. Regardless, we aim to publish breaking change notices for expected high-impact changes.
+Breaking change notices may be published in the [.NET Docs](https://github.com/dotnet/docs) if we expect they may have high impact. However, `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version.
 
 ### `Stable` Channel Versions
 

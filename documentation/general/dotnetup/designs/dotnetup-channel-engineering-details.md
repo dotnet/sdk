@@ -17,6 +17,8 @@ We may implement backward compatibility for breaking changes even in `daily` bui
 We will closely monitor telemetry for potential bugs or regressions added between the `preview` and `daily` build before promoting a `daily` to a `preview` build.
 `preview` versions may be built off the top of `preview` or `lts/sts` versions of .NET.
 
+It will be easier to document breaking changes for the `stable` version if we document them at `preview` time, so we should aim to write breaking change notices. We don't do this for `daily` versions considering they may change rapidly/multiple times before their changes make it to a `stable` version.
+
 .NET teams may use `preview` versions in their own build infrastructure. This allows us to catch problems early by dogfooding our own product.
 
 ### `Stable` Channel Versions
