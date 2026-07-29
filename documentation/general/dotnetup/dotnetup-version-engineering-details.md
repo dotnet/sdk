@@ -5,7 +5,8 @@
 `daily` versions are meant for our own engineering and testing.
 
 The `main` branch of the .NET SDK will be a first party consumer of `dotnetup` `daily` builds.
-Each `dotnetup` branch will use its implementation of `dotnetup` to build itself to prevent a `daily` dotnetup bug from blocking the build of a fix to a `daily` `dotnetup` version.
+
+Each `dotnetup` branch will use a `preview` implementation of `dotnetup` to acquire the .NET SDK needed to build itself and then that `branch` of `dotnetup` itself to acquire any tooling (runtimes/sdks) to build the .NET SDK on that branch containing `dotnetup`. This prevents a `daily` dotnetup bug from blocking the build of a fix to a `daily` `dotnetup` version.
 
 We may implement backward compatibility for breaking changes even in `daily` builds at our discretion but in general should avoid doing so.
 
