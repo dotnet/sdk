@@ -167,8 +167,7 @@ against the original document and merges the resulting edits. That means:
 - N independent forks, each running the code-action cleanup pass — slow.
 - Real **incorrectness**, but not everywhere. Merging happens at the *text* level, through
   an interval tree of `TextChange`s, so the question is whether the edits conflict as spans
-  — not whether the diagnostics share a parent node. Two fixes that delete or replace
-  *distinct* children of one node merge cleanly. What conflicts:
+  — not whether the diagnostics share a parent node. What conflicts:
   - **Nested or overlapping rewrites.** For `Add(x, Add(y, z))` one fix wants
     `x + Add(y, z)` and the other `Add(x, y + z)`; the spans overlap.
   - **The same node rewritten into two different shapes** — one overload added per pass.
@@ -179,6 +178,14 @@ against the original document and merges the resulting edits. That means:
 
   And the loss is per-fix, not per-edit: one conflicting hunk discards **every** change
   that fix made to the document.
+
+  What the merger sees is the *diff* between the original and fixed documents, not the edit
+  you made. Those are not the same span: the code-action cleanup pass can reflow a region
+  wider than the edit, so two rewrites that look disjoint still collide. Measured example —
+  a fixer whose fix is a single `RemoveNode` merges 33 diagnostics cleanly when they are all
+  field initializers, and fails at 18 once two property initializers are in the mix. The
+  shape of the fix does not tell you the width of the diff, so treat the list above as
+  *where to look first*, never as a substitute for the test below.
 
 If your diagnostics can conflict this way, use `FixAllProvider.Create` and implement the
 pattern yourself:
@@ -212,6 +219,10 @@ A multi-diagnostic test that *passes* proves nothing on its own, because "fix-al
 in one pass" and "fix-all never ran" look identical from the outside. Before concluding a
 fixer is fine, run the positive control: set `NumberOfFixAllIterations = 2` against the
 unchanged fixer and confirm it fails with `Expected '2' iterations but found '1'`.
+
+A test that *fails* needs reading for the same reason. Confirm the message is an iteration
+count and not a content mismatch: a verbatim string literal written with `\n` into a repo
+whose `.cs` files are CRLF produces a diff that reads exactly like a fix-all bug.
 
 If you have a correct `FixAllProvider` and *still* see that iteration failure, suspect the
 rewrite itself. Removing several nodes from one `SeparatedSyntaxList` by chaining
