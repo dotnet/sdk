@@ -142,6 +142,28 @@ Is this a PR build?
 - **Non-PR builds**: `RunAlways=CI` ensures no scopes are skipped on `main` / release
   branches.
 
+### Use a scope for targeted local tests
+
+Agents and contributors should use the same `TestProjects` mappings for local targeted
+validation rather than maintaining a second area-to-project list. Expand a configured
+scope into concrete project paths with:
+
+```shell
+./.dotnet/dotnet run scripts/EvaluateConditionalTestScopes.cs -- \
+  --repo-root . \
+  --list-test-projects TemplateEngine
+```
+
+The command writes one repo-relative `Targeted test project:` line for each project
+matched by the scope's `TestProjects` globs. Run those projects individually so a
+failure identifies the affected project. The `targeted-test` agent skill provides the
+runner and fallback mappings for change areas that do not yet have a
+`ConditionalTestScope`.
+
+If a changed file matches `GlobalTriggerPaths`, do not use an individual conditional
+scope to claim complete coverage: PR validation deliberately runs all tests for those
+shared changes.
+
 ## Adding a new scope
 
 1. Add a `<ConditionalTestScope>` item in `test/ConditionalTests.props`.

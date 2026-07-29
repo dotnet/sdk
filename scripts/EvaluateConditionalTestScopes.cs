@@ -3,14 +3,18 @@
 
 #:property RollForward=LatestMajor
 
-// Evaluates which conditional test scopes should be skipped based on changed files and build context.
-// Reads test/ConditionalTests.props and outputs a semicolon-separated list of skipped scope names.
+// Evaluates conditional test scopes from test/ConditionalTests.props.
+// It can output either the scopes to skip based on changed files and build context or the concrete
+// test projects in one configured scope for targeted local validation.
 //
 // Usage:
 //   dotnet run EvaluateConditionalTestScopes.cs -- --repo-root <path> [--target-branch <branch>] [--build-reason <reason>] [--output-variable <name>]
+//   dotnet run EvaluateConditionalTestScopes.cs -- --repo-root <path> --list-test-projects <scope>
 //
 // When --target-branch is not provided, no scopes are skipped (safe default for local dev).
 // Changed files are determined via `git diff --name-only --no-renames origin/<target-branch>...HEAD`.
+// --list-test-projects expands the configured TestProjects globs and writes one repo-relative
+// "Targeted test project:" line per concrete project without evaluating the git diff.
 //
 // Output variable format (set via ##vso when running in Azure Pipelines):
 //   - Empty string: no scopes skipped, all tests run.
@@ -29,6 +33,7 @@ var targetBranch = GetArg("--target-branch");
 var buildReason = GetArg("--build-reason") ?? "";
 var repoRoot = GetArg("--repo-root");
 var outputVariable = GetArg("--output-variable");
+var listTestProjects = GetArg("--list-test-projects");
 
 if (string.IsNullOrEmpty(repoRoot) || !Directory.Exists(repoRoot))
 {
@@ -56,6 +61,43 @@ var globalTriggerPaths = (doc.Descendants("GlobalTriggerPaths").FirstOrDefault()
 if (!ValidateConfiguration(repoRoot, scopes, globalTriggerPaths))
 {
     return 1;
+}
+
+if (!string.IsNullOrEmpty(listTestProjects))
+{
+    var scope = scopes.SingleOrDefault(
+        scope => string.Equals(
+            scope.Attribute("Include")?.Value,
+            listTestProjects,
+            StringComparison.OrdinalIgnoreCase));
+    if (scope is null)
+    {
+        Console.Error.WriteLine($"Error: Conditional test scope '{listTestProjects}' was not found.");
+        return 1;
+    }
+
+    var testProjectPatterns = (scope.Element("TestProjects")?.Value ?? "")
+        .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    var testProjects = Directory
+        .EnumerateFiles(repoRoot, "*.csproj", SearchOption.AllDirectories)
+        .Select(path => Path.GetRelativePath(repoRoot, path).Replace('\\', '/'))
+        .Where(path => testProjectPatterns.Any(pattern => GlobMatches(path, pattern.Replace('\\', '/'))))
+        .Distinct(StringComparer.OrdinalIgnoreCase)
+        .Order(StringComparer.OrdinalIgnoreCase)
+        .ToList();
+
+    if (testProjects.Count == 0)
+    {
+        Console.Error.WriteLine($"Error: Conditional test scope '{listTestProjects}' did not match any test projects.");
+        return 1;
+    }
+
+    foreach (var testProject in testProjects)
+    {
+        Console.WriteLine($"Targeted test project: {testProject}");
+    }
+
+    return 0;
 }
 
 bool isCI = buildReason is not "" and not "PullRequest";
