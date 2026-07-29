@@ -1,7 +1,11 @@
 # Writing an analyzer and code fixer
 
-Public `Microsoft.CodeAnalysis` APIs throughout. [In this repo](#in-this-repo) lists the
-local helpers that replace some of them.
+Public `Microsoft.CodeAnalysis` APIs throughout, so the shapes transfer to any analyzer
+repo. **[In this repo](#in-this-repo) replaces several of them** — in the skeleton below
+alone, `new DiagnosticDescriptor(...)` by `DiagnosticDescriptorHelper.Create(...)`,
+`defaultSeverity` + `isEnabledByDefault` by `RuleLevel`, and
+`compilation.GetTypeByMetadataName(...)` by `WellKnownTypeProvider`. Read that section
+before copying from here.
 
 ## Analyzer skeleton
 
