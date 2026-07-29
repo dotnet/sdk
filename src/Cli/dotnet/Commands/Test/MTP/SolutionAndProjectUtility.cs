@@ -619,10 +619,16 @@ internal static class SolutionAndProjectUtility
             lock (s_buildLock)
             {
                 var loggers = logger is null ? null : new[] { logger };
-                if (project.Targets.ContainsKey(Constants.DeployToDevice) &&
-                    !project.Build([Constants.DeployToDevice], loggers))
+                if (project.Targets.ContainsKey(Constants.DeployToDevice))
                 {
-                    throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    // Deploy on a fresh ProjectInstance to avoid accumulating state (existing item
+                    // groups) that would leak into the ComputeRunArguments build below, which has to
+                    // build the original instance since the run properties are read back from it.
+                    // Same reason as dotnet run, see RunCommandSelector.OpenProjectIfNeeded.
+                    if (!project.DeepCopy().Build([Constants.DeployToDevice], loggers))
+                    {
+                        throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    }
                 }
 
                 if (!project.Build(s_computeRunArgumentsTarget, loggers))
