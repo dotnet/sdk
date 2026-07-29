@@ -12,12 +12,14 @@ description: >-
 # (PAT pool, Copilot engine, gh-proxy tooling).
 #
 # Triggers:
-# - pull_request `opened` / `reopened` / `ready_for_review` — initial audit
-#   on the PR's first appearance as a non-draft.
-# - pull_request `synchronize` — re-audit when new commits are pushed so the
-#   comment stays current. Combined with `paths` so we only fire when test
-#   files change, and with `concurrency.cancel-in-progress` so
-#   superseded runs are cancelled.
+# - pull_request `opened` / `reopened` / `ready_for_review` — audit on the PR's
+#   first appearance as a non-draft.
+#
+# `synchronize` is deliberately NOT included. dotnet/sdk merges ~10 PRs a day and
+# roughly 60% of them touch `test/**`; re-auditing on every push would multiply
+# that by the commits per PR and burn a pooled Copilot PAT each time, for a report
+# that rarely changes between pushes. Use `/parallel-audit` (see
+# `parallel-safety-audit-command.md`) to refresh the comment on demand.
 #
 # NOTE: the trigger filters on `test/**` **only**, not `src/**`. gh-aw ORs the
 # `paths` entries, so listing `src/**` would fire a full audit on every
@@ -25,6 +27,11 @@ description: >-
 # PR that changes both a test and production code still matches `test/**` and
 # still gets the changed-`src/` list (the extraction step diffs `src/`
 # regardless of what triggered the run), so read-set analysis is unaffected.
+#
+# `paths` cannot be paired with `paths-ignore` for the same event, so
+# `test/TestAssets/**` and `test/TestPackages/**` (test *inputs*, not test code)
+# cannot be filtered out here; the extraction step excludes them instead, and the
+# agent posts nothing when that leaves an empty audit surface.
 #
 # The repository-root `Directory.Build.props` / `.targets` and
 # `Directory.Packages.props` are listed as individual files because
@@ -40,18 +47,24 @@ description: >-
 # every `pull_request` invocation.
 on:
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review]
+    types: [opened, reopened, ready_for_review]
     paths:
       - "test/**"
       - "Directory.Build.props"
       - "Directory.Build.targets"
       - "Directory.Packages.props"
 
-# Skip forks (they cannot reach the PAT-pool environment), draft PRs, and
-# OneLocBuild localization check-in PRs (authored by dotnet-bot) — only run for
-# human-authored PRs in a reviewable state.
+# Skip:
+# - forks of this repository (`repository.fork` describes the *base* repo, so this
+#   only stops the workflow running in someone's fork of dotnet/sdk);
+# - pull requests from a forked head repository. GitHub does not expose secrets or
+#   environments to `pull_request` runs from forks, so the `copilot-pat-pool`
+#   environment would yield no PAT and every such run would fail. Maintainers can
+#   still audit a fork PR with `/parallel-audit`, which dispatches on the base repo;
+# - draft PRs and OneLocBuild localization check-in PRs (authored by dotnet-bot).
 if: >
   github.event.repository.fork == false
+  && github.event.pull_request.head.repo.full_name == github.repository
   && github.event.pull_request.draft == false
   && !(
     github.event.pull_request.user.login == 'dotnet-bot'
@@ -83,10 +96,10 @@ engine:
   env:
     COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
-# This workflow fires on every PR open / reopen / ready-for-review and on every
-# push (`synchronize`) that touches `test/**`, which in this repository is a
-# high-frequency trigger. Raise the daily budget above the enterprise default of
-# 5K so a busy day of PR pushes does not silently skip audits.
+# This workflow fires once per PR open / reopen / ready-for-review that touches
+# `test/**`. dotnet/sdk sees roughly 10 PRs a day and about 60% of them touch
+# tests, so budget for ~10 audits a day plus on-demand `/parallel-audit` runs —
+# above the enterprise default of 5K credits.
 max-daily-ai-credits: 20K
 
 safe-outputs:

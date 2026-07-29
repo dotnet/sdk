@@ -11,10 +11,14 @@ namespace Microsoft.NET.Build.Containers.UnitTests
 {
     [TestClass]
     // Mutates process-global environment variables (registry credentials, REGISTRY_AUTH_FILE) and
-    // exercises AuthHandshakeMessageHandler's process-wide static credential cache, which is keyed
-    // by registry name and shared by every test in this class. A [ResourceLock] on the environment
-    // variables would not cover that cache, and these tests are order-dependent through it, so the
-    // whole class stays out of method-level parallelization.
+    // shares AuthHandshakeMessageHandler's process-wide static credential cache, which is keyed by
+    // registry name — the same TestRegistryName for every test here. A [ResourceLock] (even with a
+    // custom key for the cache) would serialize these tests but cannot reset that cache between
+    // them, and the cache is private with no way to clear it, so the tests remain order-dependent:
+    // once one test caches an Authorization header for TestRegistryName, later ones reuse it and
+    // skip the handshake. Keeping the class out of method-level parallelization preserves the order
+    // they were written to run in. Making these tests independent means giving each data row its
+    // own registry name, which is tracked separately.
     [DoNotParallelize]
     public class AuthHandshakeMessageHandlerTests
     {
@@ -180,7 +184,7 @@ namespace Microsoft.NET.Build.Containers.UnitTests
             {
                 "auths": {
                     "{{TestRegistryName}}": {
-                        "identitytoken": {{identityToken}},
+                        "identitytoken": "{{identityToken}}",
                         "auth": "{{GetUserPasswordBase64("__", "__")}}"
                     }
                 }

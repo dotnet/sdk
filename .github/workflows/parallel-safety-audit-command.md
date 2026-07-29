@@ -9,11 +9,12 @@ description: >-
 # microsoft/testfx#10252) and adapted to this repository's gh-aw conventions
 # (PAT pool, Copilot engine, gh-proxy tooling).
 #
-# The automatic on-open / on-synchronize variant lives in
-# `parallel-safety-audit.md`. They must remain separate workflows because
-# mixing `slash_command` with other triggers makes gh-aw's activation gate
-# always require a command-position match, silently skipping the agent on every
-# non-comment event.
+# The automatic on-open / on-ready-for-review variant lives in
+# `parallel-safety-audit.md`; it deliberately does not re-run on push, so this
+# command is how you refresh a stale audit. They must remain separate workflows
+# because mixing `slash_command` with other triggers makes gh-aw's activation
+# gate always require a command-position match, silently skipping the agent on
+# every non-comment event.
 on:
   slash_command:
     name: parallel-audit

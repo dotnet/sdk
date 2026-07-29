@@ -1,11 +1,31 @@
 ---
 # Shared frontmatter and prompt body for the parallel-safety audit workflows.
 #
-# Ported from microsoft/testfx (.github/workflows/shared/parallel-safety-audit-shared.md,
-# microsoft/testfx#10252) and adapted to dotnet/sdk: this repository's test tree
-# layout, its MSTest.Sdk opt-in model, the `MSTestParallelizeScope` default in
-# `test/Directory.Build.props`, and the fact that the parallel-safety analyzers
-# (MSTEST0073-MSTEST0077) already ship in the MSTest version this repo consumes.
+# UPSTREAM: ported from microsoft/testfx
+# `.github/workflows/shared/parallel-safety-audit-shared.md`, added by
+# microsoft/testfx#10252 at commit 7c5348a4. When picking up upstream fixes, diff
+# against that path in microsoft/testfx and re-apply the dotnet/sdk adaptations
+# listed below rather than copying the file wholesale; bump the commit recorded
+# here when you do.
+#
+# dotnet/sdk adaptations (keep these when syncing):
+#   - gh-aw plumbing per this repo's conventions lives in the two consumers
+#     (PAT-pool import, `engine: copilot`, `cli-proxy` + `github: mode: gh-proxy`).
+#   - `test/TestAssets/` and `test/TestPackages/` are excluded from the audit
+#     surface: they are test inputs, not test code.
+#   - The opt-in model described in Step 0 is `MSTestParallelizeScope` +
+#     `test/Directory.Build.props`, not a hand-written `[assembly: Parallelize]`.
+#   - MSTEST0074-0077 are described as shipping rules that are build errors here
+#     (`MSTestAnalysisMode=Recommended` + `TreatWarningsAsErrors`), not as
+#     in-flight work.
+#   - Repository-specific fixture guidance (`SdkTest`, `TestAssetsManager`
+#     `identifier:`, `TestCommand.WithEnvironmentVariable`).
+#   - On an automatic run the agent stays silent unless it has something to say.
+#
+# The prompt deliberately tells the agent to re-verify repository facts (which
+# projects opt in, which properties are set, which MSTest version is pinned)
+# against the files at HEAD instead of trusting this text, so that it degrades
+# to "check for yourself" rather than to a confident falsehood as the repo moves.
 #
 # Two consumers import this file:
 #   - parallel-safety-audit.md          → runs automatically on PRs that touch
@@ -80,6 +100,20 @@ safe-outputs:
 # this in bash (not in the agent) so the agent works from an auditable list, not
 # a hallucinated one. Deciding which methods are *tests* and which call sites are
 # *unsafe* is left to the agent — that judgment is the whole point of the audit.
+#
+# IMPORTANT: everything these steps produce for the agent is written to FIXED
+# PATHS under `/tmp/gh-aw/parallel-safety-audit/`, and the prompt below hard-codes
+# those paths. Two constraints drive that choice:
+#   - Do NOT surface them to the prompt with `${{ steps.<id>.outputs.* }}`: gh-aw
+#     renders the prompt in the `activation` job, while these steps run later in
+#     the `agent` job, so such an expression is never resolved and the agent would
+#     be handed the literal `${{ … }}` text. Step outputs are still written to
+#     `$GITHUB_OUTPUT` because later steps *in this job* (the checkout) legitimately
+#     consume them.
+#   - Do NOT write them into `$GITHUB_WORKSPACE`: gh-aw runs its own
+#     `Checkout PR branch` step after ours, and the files would also show up in the
+#     working tree the agent inspects. `/tmp/gh-aw` is created by gh-aw before our
+#     steps and is explicitly mounted into the agent sandbox (`--add-dir`).
 steps:
   - name: Resolve PR base and head
     id: resolve
@@ -98,6 +132,7 @@ steps:
           BASE_SHA="$EVENT_PR_BASE_SHA"
           HEAD_SHA="$EVENT_PR_HEAD_SHA"
           PR_NUMBER="$EVENT_PR_NUMBER"
+          MODE="automatic"
           ;;
         issue_comment|workflow_dispatch)
           # The centralized /parallel-audit slash command dispatches this workflow
@@ -116,6 +151,7 @@ steps:
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json baseRefOid,headRefOid)
           BASE_SHA=$(printf '%s' "$PR_JSON" | jq -r '.baseRefOid')
           HEAD_SHA=$(printf '%s' "$PR_JSON" | jq -r '.headRefOid')
+          MODE="command"
           ;;
         *)
           echo "Unsupported event: $EVENT_NAME" >&2
@@ -125,6 +161,7 @@ steps:
       echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
       echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
       echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
+      echo "mode=$MODE" >> "$GITHUB_OUTPUT"
 
   - name: Checkout PR head with full history
     uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -143,18 +180,27 @@ steps:
     env:
       BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
       HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
+      PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
+      AUDIT_MODE: ${{ steps.resolve.outputs.mode }}
     run: |
       set -euo pipefail
-      TEST_OUT="$RUNNER_TEMP/changed-test-files.txt"
-      SRC_OUT="$RUNNER_TEMP/changed-src-files.txt"
-      CONFIG_OUT="$RUNNER_TEMP/changed-config-files.txt"
+      # Fixed, prompt-visible location. See the note above the `steps:` block for
+      # why these must not be passed to the prompt as step outputs, and why they
+      # do not live in the workspace.
+      OUT_DIR="/tmp/gh-aw/parallel-safety-audit"
+      mkdir -p "$OUT_DIR"
+      TEST_OUT="$OUT_DIR/changed-test-files.txt"
+      SRC_OUT="$OUT_DIR/changed-src-files.txt"
+      CONFIG_OUT="$OUT_DIR/changed-config-files.txt"
+      RANGES_OUT="$OUT_DIR/changed-test-regions.tsv"
       CS_CANDIDATES="$RUNNER_TEMP/changed-cs-candidates.txt"
-      RANGES_OUT="$RUNNER_TEMP/changed-test-regions.tsv"
       : > "$TEST_OUT"
       : > "$SRC_OUT"
       : > "$CONFIG_OUT"
       : > "$CS_CANDIDATES"
       : > "$RANGES_OUT"
+      printf '%s\n' "$PR_NUMBER" > "$OUT_DIR/pr-number.txt"
+      printf '%s\n' "$AUDIT_MODE" > "$OUT_DIR/audit-mode.txt"
 
       # `test/TestAssets/` and `test/TestPackages/` are test *inputs*, not test code:
       # they are sample projects and packages that the SDK's tests copy to a scratch
@@ -292,19 +338,18 @@ steps:
       SRC_COUNT=$(wc -l < "$SRC_OUT" | tr -d ' ')
       CONFIG_COUNT=$(wc -l < "$CONFIG_OUT" | tr -d ' ')
       echo "Changed test files: $TEST_COUNT; changed src files: $SRC_COUNT; changed config files: $CONFIG_COUNT"
+      {
+        echo "### 🧵 Parallel-safety audit inputs"
+        echo
+        echo "PR #$PR_NUMBER (mode: $AUDIT_MODE) — changed test files: $TEST_COUNT, changed src files: $SRC_COUNT, parallelization-config files: $CONFIG_COUNT"
+      } >> "$GITHUB_STEP_SUMMARY"
 
+      # Consumed by the agent job's own later steps only — never by the prompt.
       if [[ "$TEST_COUNT" -gt 0 || "$CONFIG_COUNT" -gt 0 ]]; then
         echo "has_changed_tests=true" >> "$GITHUB_OUTPUT"
       else
         echo "has_changed_tests=false" >> "$GITHUB_OUTPUT"
       fi
-      echo "test_count=$TEST_COUNT" >> "$GITHUB_OUTPUT"
-      echo "src_count=$SRC_COUNT" >> "$GITHUB_OUTPUT"
-      echo "config_count=$CONFIG_COUNT" >> "$GITHUB_OUTPUT"
-      echo "test_files_path=$TEST_OUT" >> "$GITHUB_OUTPUT"
-      echo "src_files_path=$SRC_OUT" >> "$GITHUB_OUTPUT"
-      echo "config_files_path=$CONFIG_OUT" >> "$GITHUB_OUTPUT"
-      echo "test_regions_path=$RANGES_OUT" >> "$GITHUB_OUTPUT"
 ---
 
 # Parallel-safety audit
@@ -337,18 +382,35 @@ sibling skill in one clause and move on — do not restate its analysis.
 
 ## Workflow wrapper — what you are auditing
 
-A deterministic pre-step has produced these lists for pull request
-#${{ steps.resolve.outputs.pr_number }} of ${{ github.repository }}:
+A deterministic pre-step has written your inputs to fixed files under
+`/tmp/gh-aw/parallel-safety-audit/` for ${{ github.repository }}. **Start by
+reading them** — they are the only source of truth for what this PR changed, and
+no count or path is inlined into this prompt:
 
-- **Changed test files** (${{ steps.extract.outputs.test_count }}) at
-  `${{ steps.extract.outputs.test_files_path }}` — one repo-relative `.cs` path
-  per line, under `test/`. These are your primary audit surface.
+```bash
+ls -l /tmp/gh-aw/parallel-safety-audit/
+cat /tmp/gh-aw/parallel-safety-audit/pr-number.txt      # the PR you are auditing
+cat /tmp/gh-aw/parallel-safety-audit/audit-mode.txt     # "automatic" or "command"
+wc -l /tmp/gh-aw/parallel-safety-audit/changed-test-files.txt \
+      /tmp/gh-aw/parallel-safety-audit/changed-src-files.txt \
+      /tmp/gh-aw/parallel-safety-audit/changed-config-files.txt
+```
+
+If that directory does not exist, the extraction step did not run: call `noop`
+explaining that and stop. Never guess the PR number or invent a file list.
+
+- **`pr-number.txt`** — the pull request number. Every safe-output call must use
+  it explicitly (see the output section).
+- **`audit-mode.txt`** — `automatic` for a `pull_request` run, `command` for a
+  `/parallel-audit` invocation. This decides whether you may stay silent; see the
+  output section.
+- **`changed-test-files.txt`** — one repo-relative `.cs`
+  path per line, under `test/`. These are your primary audit surface.
   `test/TestAssets/` and `test/TestPackages/` are **excluded by construction**:
   those trees are sample projects the SDK's tests copy to a scratch directory and
   build with the product SDK, never compiled into a test assembly. If a finding
   seems to live there, you are looking at test *input*, not test code — drop it.
-- **Changed test line ranges** at
-  `${{ steps.extract.outputs.test_regions_path }}` — tab-separated
+- **`changed-test-regions.tsv`** — tab-separated
   `path<TAB>start-end,start-end` giving the **HEAD-side** lines this PR added or
   modified in each changed test file. A finding is a **primary** finding only when
   the unsafe call site falls inside one of these ranges (or inside a test method
@@ -367,20 +429,22 @@ A deterministic pre-step has produced these lists for pull request
   changed range is *pre-existing*: report it at most as **context / Info** ("this
   file already contains …"), never as though the PR introduced it. A one-line edit
   must not light up every legacy method in the file.
-- **Changed source files** (${{ steps.extract.outputs.src_count }}) at
-  `${{ steps.extract.outputs.src_files_path }}` — one path per line, under
+- **`changed-src-files.txt`** — one path per line, under
   `src/`. Treat this as a *hint*, not a boundary, for the category-C read-vs-write
   coverage-gap check: the production code a changed test exercises may live in a
   file this PR never touched. Follow the call graph **from each changed test into
   the production methods it invokes** and analyse their read set regardless of
   whether the owning file appears in this list.
 
-If **both** the changed-test-files and changed-config-files lists are empty
-(`${{ steps.extract.outputs.has_changed_tests }}` is `false`), post the
-"nothing to audit" fallback comment (see the wrapper output section) and stop.
+All paths inside those files are repo-relative; resolve them against the checked
+out repository, which is your current working directory.
 
-- **Parallelization-state changes** (${{ steps.extract.outputs.config_count }}) at
-  `${{ steps.extract.outputs.config_files_path }}` — every file this PR touched
+If **both** `changed-test-files.txt` and `changed-config-files.txt` are empty,
+follow the "nothing to audit" rule in the wrapper output section — which posts
+nothing on an automatic run — and stop.
+
+- **Parallelization-state changes** at
+  `/tmp/gh-aw/parallel-safety-audit/changed-config-files.txt` — every file this PR touched
   that can change an assembly's parallelization state: `.runsettings`,
   `testconfig.json`, `.csproj` / `.props` / `.targets` under `test/`, **and** any
   `.cs` file whose diff adds or removes an `[assembly: Parallelize]` /
@@ -463,11 +527,11 @@ in). Never report it as a live MSTest race. Then, for MSTest suites, resolve:
 1. **Opt-in?** The normal opt-in in this repository is the **`MSTestParallelizeScope`
    MSBuild property**, not a hand-written attribute.
    `test/Directory.Build.props` sets `MSTestParallelizeScope=None` for every
-   MSTest.Sdk project, and individual test `.csproj` files override it (for example
-   `Microsoft.NET.Build.Containers.UnitTests` uses `MethodLevel`;
-   `dotnet-watch.Tests` and `Microsoft.NET.Build.Tests` use `ClassLevel`). Resolve
-   the property for the owning project, then check every other source of the
-   effective setting — any one of them can contradict it:
+   MSTest.Sdk project, and a small number of individual test `.csproj` files override
+   it. **Do not assume which ones — read the owning project and
+   `test/Directory.Build.props` at HEAD**; the set changes over time. Resolve the
+   property for the owning project, then check every other source of the effective
+   setting — any one of them can contradict it:
    - **MSBuild** — `MSTestParallelizeScope` / `MSTestParallelizeWorkers` in the
      `.csproj`, in `test/Directory.Build.props`, or in props imported by the
      project. MSTest.Sdk turns these into a real `[assembly: Parallelize(...)]` /
@@ -508,14 +572,16 @@ in). Never report it as a live MSTest race. Then, for MSTest suites, resolve:
    (`UndeclaredProcessGlobalStateMutationAnalyzer`), **MSTEST0075**
    (`CurrentDirectoryMutationUnderParallelizationAnalyzer`), **MSTEST0076**
    (`CultureMutationUnderParallelizationAnalyzer`) and **MSTEST0077**
-   (`SharedFileSystemPathInTestAnalyzer`) **ship in the MSTest version this
-   repository consumes** (`MSTestPackageVersion` in `eng/Version.Details.props`).
+   (`SharedFileSystemPathInTestAnalyzer`) ship in the MSTest version this
+   repository consumes. Confirm the pinned version in
+   `eng/Version.Details.props` (`MSTestPackageVersion`) rather than assuming;
+   if it predates those rules, treat them as unavailable.
    They are `Info` by default, but `test/Directory.Build.props` sets
    `MSTestAnalysisMode=Recommended`, which promotes info-severity MSTest rules to
    **warnings**, and the repository root `Directory.Build.props` sets
    `TreatWarningsAsErrors=True` — so where these rules are in scope they are
    **build errors**, and the compiler, not this audit, is the thing that catches
-   them.
+   them. Verify both properties still hold at HEAD before relying on that claim.
 
    MSTEST0074-0077 fire **only** where the opt-in is visible to the *compiler*: an
    `[assembly: Parallelize]` attribute — **including the one the
@@ -685,9 +751,15 @@ dependency.
   cross-test channel.
 - Registry writes; `AppContext.SetSwitch(...)`; `AppDomain.CurrentDomain.SetData(...)`.
 
-→ **Fix:** `[ResourceLock(WellKnownResources.EnvironmentVariables |
-CurrentDirectory | Console)]` or a narrow custom key (see granularity rule
-below).
+→ **Fix:** one `[ResourceLock]` per resource, or a narrow custom key (see the
+granularity rule below). `WellKnownResources` members are `const string`, not
+`[Flags]` values, and `ResourceLockAttribute` takes a single resource — so stack
+the attribute rather than combining keys with `|`:
+
+```csharp
+[ResourceLock(WellKnownResources.EnvironmentVariables)]
+[ResourceLock(WellKnownResources.CurrentDirectory)]
+```
 
 **A lock alone is only half the fix — it must be paired with restoration.** A
 resource lock is released when the scheduling **chunk** ends, so it prevents
@@ -928,11 +1000,29 @@ race.
 
 ## Workflow wrapper — output
 
-Post **exactly one** `add-comment`, **targeting the resolved pull request
-`${{ steps.resolve.outputs.pr_number }}` explicitly**. This workflow uses
-`target: "*"`, so there is no implicit "triggering PR" — pass the number on the
-safe-output call. That matters most for the `/parallel-audit` command variant,
-whose runtime event is `workflow_dispatch` and has no PR context at all.
+**Decide first whether to comment at all.** This audit runs automatically on most
+test-touching PRs in a repository where the default is `MSTestParallelizeScope=None`,
+so a "nothing to flag" comment on every one of them is pure noise. Apply this rule:
+
+- **Post a comment** when you have at least one finding to report, **or** when this
+  PR changed an assembly's parallelization state (`changed-config-files.txt` is
+  non-empty and the change really enables, disables or widens parallelism).
+- **Otherwise call `noop`** with a one-line status such as
+  `"No parallel-safety findings for PR #N (Foo.Tests: scope=off)."` and post
+  **nothing**. That covers an empty audit surface, a surface of only non-test code,
+  and a clean audit.
+- **Exception — the `/parallel-audit` command.** When
+  `/tmp/gh-aw/parallel-safety-audit/audit-mode.txt` contains `command`, a human explicitly
+  asked for this audit, so always post a comment, using the "nothing to audit"
+  form below when there is nothing to report. Silence would look like a broken
+  command.
+
+When you do comment, post **exactly one** `add-comment`, **targeting the pull
+request number read from `/tmp/gh-aw/parallel-safety-audit/pr-number.txt` explicitly**. This
+workflow uses `target: "*"`, so there is no implicit "triggering PR" — pass the
+number on the safe-output call. That matters most for the `/parallel-audit`
+command variant, whose runtime event is `workflow_dispatch` and has no PR context
+at all.
 Structure:
 
 ```markdown
@@ -1004,8 +1094,9 @@ test method, **no changed lifecycle member (`[TestInitialize]`,
 `[ClassInitialize]`, `[AssemblyInitialize]`, constructor / `Dispose`, …), no
 changed class- or assembly-level `[ResourceLock]` / `[DoNotParallelize]` /
 `[Parallelize]` declaration, no changed fixture field or helper**, and no
-assembly whose parallelization configuration this PR changed — post this short
-comment instead:
+assembly whose parallelization configuration this PR changed — then, **for an
+automatic `pull_request` run, call `noop` and post nothing**. Only for a
+`/parallel-audit` invocation post this short comment instead:
 
 ```markdown
 ### 🧵 Parallel-safety audit — PR #<number>
@@ -1021,6 +1112,7 @@ Audited `<assembly>` at scope `<off | ClassLevel | MethodLevel>`, workers `<N | 
 <sub>Re-run with `/parallel-audit`.</sub>
 ```
 
-After the single `add-comment`, call `noop` with a brief status such as
+After the single `add-comment` — or instead of it, when the rule above says not to
+comment — call `noop` with a brief status such as
 `"Posted parallel-safety audit for PR #N (scope=<...>, F findings)."` and stop.
 Do not call any other tools.
