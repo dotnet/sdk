@@ -80,7 +80,7 @@ For every `(entry, source)` pair the workflow:
 3. Otherwise fetches the baseline content (via the blobs API, robust to
    force-pushes) and the current content (via `raw.githubusercontent.com`),
    computes a unified diff, and opens/updates a tracking issue labelled
-   `area-vendored-sync` containing:
+   `area-vendored-sync` and `Area-dotnet test (MTP)` containing:
    - links to the upstream file history, baseline blob, current blob, and the
      whole-repo compare URL,
    - the upstream-only diff (truncated at 300 lines),

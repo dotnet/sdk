@@ -13,7 +13,8 @@ Modes:
 
 The check mode is idempotent: existing issues are matched by label
 `area-vendored-sync` plus a hidden HTML marker in the body of the form
-`<!-- vendored-sync:id=<entry-id>:<source-index> -->`.
+`<!-- vendored-sync:id=<entry-id>:<source-index> -->`. Issues are additionally
+labelled `Area-dotnet test (MTP)` for area triage.
 
 See eng/vendored-files.md for the manifest schema and reconciliation workflow.
 """
@@ -38,6 +39,10 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "eng" / "vendored-files.json"
 ISSUE_LABEL = "area-vendored-sync"
+# Every entry in the manifest is 'dotnet test' <-> Microsoft.Testing.Platform shared
+# source, so drift issues are also routed to the MTP area label for triage.
+AREA_LABEL = "Area-dotnet test (MTP)"
+ISSUE_LABELS = [ISSUE_LABEL, AREA_LABEL]
 ISSUE_REPO = os.environ.get("VENDORED_SYNC_REPO", "dotnet/sdk")
 MAX_DIFF_LINES = 300
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -384,7 +389,7 @@ def _list_open_sync_issues() -> list[dict[str, Any]]:
         "--label", ISSUE_LABEL,
         "--state", "open",
         "--limit", "200",
-        "--json", "number,title,body",
+        "--json", "number,title,body,labels",
     ])
     if rc != 0:
         print(f"gh issue list failed: {err}", file=sys.stderr)
@@ -405,13 +410,24 @@ def find_existing_issue(marker: str) -> dict[str, Any] | None:
 
 
 def ensure_label() -> None:
-    """Ensure the sync label exists. `gh label create --force` is idempotent."""
+    """Ensure the labels applied to drift issues exist.
+
+    The sync label is owned by this workflow, so it is force-created (idempotent
+    and self-healing). The area label is owned by the repo's regular triage
+    taxonomy, so it is only created when missing and never overwritten.
+    """
     _gh([
         "label", "create", ISSUE_LABEL,
         "--repo", ISSUE_REPO,
         "--description", "Drift detected between a vendored source file and its upstream copy",
         "--color", "fbca04",
         "--force",
+    ])
+    _gh([
+        "label", "create", AREA_LABEL,
+        "--repo", ISSUE_REPO,
+        "--description", "Issues related to 'dotnet test' with Microsoft.Testing.Platform",
+        "--color", "d4c5f9",
     ])
 
 
@@ -420,6 +436,18 @@ _STATUS_TITLES = {
     "missing": "upstream path missing",
     "error": "drift check error",
 }
+
+
+def _label_flags() -> list[str]:
+    flags: list[str] = []
+    for label in ISSUE_LABELS:
+        flags += ["--label", label]
+    return flags
+
+
+def _missing_labels(issue: dict[str, Any]) -> list[str]:
+    present = {(item.get("name") or "") for item in (issue.get("labels") or [])}
+    return [label for label in ISSUE_LABELS if label not in present]
 
 
 def upsert_issue(result: DriftResult, dry_run: bool) -> None:
@@ -431,6 +459,7 @@ def upsert_issue(result: DriftResult, dry_run: bool) -> None:
     if dry_run:
         print(f"\n--- would create/update issue ({result.entry.id}#{result.source_index}) ---")
         print(f"title: {title}")
+        print(f"labels: {', '.join(ISSUE_LABELS)}")
         print(body[:2000])
         print("---")
         return
@@ -441,7 +470,7 @@ def upsert_issue(result: DriftResult, dry_run: bool) -> None:
             "issue", "create",
             "--repo", ISSUE_REPO,
             "--title", title,
-            "--label", ISSUE_LABEL,
+            *_label_flags(),
             "--body-file", "-",
         ], input_data=body)
         if rc != 0:
@@ -449,6 +478,19 @@ def upsert_issue(result: DriftResult, dry_run: bool) -> None:
         else:
             print(f"Created issue for {result.entry.id}#{result.source_index}: {out.strip()}")
         return
+
+    # Issues opened before a label was added to ISSUE_LABELS are backfilled here.
+    missing = _missing_labels(existing)
+    if missing:
+        rc, _, err = _gh([
+            "issue", "edit", str(existing["number"]),
+            "--repo", ISSUE_REPO,
+            *[arg for label in missing for arg in ("--add-label", label)],
+        ])
+        if rc != 0:
+            print(f"Failed to add labels to issue #{existing['number']}: {err}", file=sys.stderr)
+        else:
+            print(f"Added labels to issue #{existing['number']}: {', '.join(missing)}")
 
     if (existing.get("body") or "").strip() == body.strip():
         print(f"Issue #{existing['number']} already up to date for {result.entry.id}#{result.source_index}.")
