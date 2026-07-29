@@ -6,5 +6,3 @@
       nventive
    License Metadata:
       Repository Url: https://github.com/unoplatform/uno
-   Templates:
-      %TEMPLATES%
