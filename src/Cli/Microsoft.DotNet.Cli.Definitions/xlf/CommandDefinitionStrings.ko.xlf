@@ -439,6 +439,11 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">ANSI 출력을 비활성화합니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoArtifactPostProcessingDescription">
+        <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
+        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
         <source>Do not build the project before testing. Implies --no-restore.</source>
         <target state="translated">테스트하기 전에 프로젝트를 빌드하지 않습니다. 복원 없음을 의미합니다.</target>
