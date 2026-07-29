@@ -180,7 +180,8 @@ Each `CA####` is auto-assigned the help link
 backed by `ca####.md` in
 [`dotnet/docs`](https://github.com/dotnet/docs/tree/main/docs/fundamentals/code-analysis/quality-rules).
 A docs PR is required **within one week** of the rule merging, or the implementation may be
-reverted. Say so in the PR description, then open the docs PR. Nothing in the build checks
+reverted — a condition of the rule landing, not an optional follow-up. Raise it with the
+user as outstanding work and leave the opening to them. Nothing in the build checks
 that the page exists — `RulesMissingDocumentation.md` is generated with the link check
 disabled and stays empty — so the docs PR is the only thing standing between the rule and a
 dead help link in every user's IDE.
@@ -198,5 +199,5 @@ dead help link in every user's IDE.
 - [ ] Fix-all handles nesting (not the batch fixer), if the diagnostic can overlap or nest.
 - [ ] Every shape the fix offers itself on produces compiling code.
 - [ ] Rule run against a real codebase and hits triaged, at `IdeSuggestion` or stronger.
-- [ ] `dotnet/docs` PR opened, or explicitly committed to in the PR description.
+- [ ] `dotnet/docs` PR raised with the user as a condition of merging.
 
