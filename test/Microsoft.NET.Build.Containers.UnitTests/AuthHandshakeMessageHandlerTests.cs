@@ -10,8 +10,11 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace Microsoft.NET.Build.Containers.UnitTests
 {
     [TestClass]
-    // Mutates process-global environment variables (registry credentials, REGISTRY_AUTH_FILE),
-    // so it must not run concurrently with other tests under method-level parallelization.
+    // Mutates process-global environment variables (registry credentials, REGISTRY_AUTH_FILE) and
+    // exercises AuthHandshakeMessageHandler's process-wide static credential cache, which is keyed
+    // by registry name and shared by every test in this class. A [ResourceLock] on the environment
+    // variables would not cover that cache, and these tests are order-dependent through it, so the
+    // whole class stays out of method-level parallelization.
     [DoNotParallelize]
     public class AuthHandshakeMessageHandlerTests
     {
