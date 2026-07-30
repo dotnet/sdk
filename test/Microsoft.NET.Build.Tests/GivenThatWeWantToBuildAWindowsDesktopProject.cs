@@ -896,7 +896,8 @@ namespace Microsoft.NET.Build.Tests
         // When UseArtifactsOutput=true, IntermediateOutputPath is moved outside the project directory.
         // The _FixGeneratedXbfFilesLink target should set Link metadata on _GeneratedXbfFiles items
         // to preserve subdirectory paths in resources.pri (e.g., "Resources\Styles.xbf" not "Styles.xbf").
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void ItSetsCorrectLinkMetadataOnGeneratedXbfFilesWhenUsingArtifactsOutput()
         {
             const string targetFramework = "net10.0-windows10.0.26100.0";
