@@ -125,8 +125,8 @@ mcp-servers:
 # Custom job that reuses the binlogs from the failed Azure DevOps build instead
 # of rebuilding. It resolves the ADO build id (from the check details URL or
 # the dispatch input), verifies the PR targets an in-scope base branch,
-# downloads every `Logs_Build_*` artifact, extracts each leg's `*.binlog`, and
-# uploads them for the agent job.
+# downloads every `<Leg>_Logs_Attempt<N>` artifact, extracts each leg's
+# `*.binlog`, and uploads them for the agent job.
 jobs:
   fetch-binlog:
     name: Fetch binlogs (Azure Pipelines)
