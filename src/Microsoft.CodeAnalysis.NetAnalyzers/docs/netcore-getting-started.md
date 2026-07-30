@@ -48,7 +48,7 @@ the driver already implies them and the combination fails. Output lands in
   - Fix-all is part of the fixer. `WellKnownFixAllProviders.BatchFixer` applies every fix
     against the original document and merges the results, which produces a wrong tree when
     diagnostics overlap or nest. Derive from
-    [`OrderedCodeFixProvider`](../src/Microsoft.CodeAnalysis.NetAnalyzers/OrderedCodeFixProvider.cs)
+    [`SyntaxEditorBasedCodeFixProvider`](../src/Microsoft.CodeAnalysis.NetAnalyzers/SyntaxEditorBasedCodeFixProvider.cs)
     instead, and cover the nested case in tests.
 - Run the analyzer locally against `dotnet/runtime` and `dotnet/roslyn` ([instructions](#validating-against-a-real-codebase)).
   - Review each of the failures in those repositories and determine the course of action for each.

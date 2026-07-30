@@ -221,8 +221,9 @@ against the original document and merges the resulting edits. That means:
   shape of the fix does not tell you the width of the diff, so treat the list above as
   *where to look first*, never as a substitute for the test below.
 
-If your diagnostics can conflict this way, use `FixAllProvider.Create` and implement the
-pattern yourself:
+If your diagnostics can conflict this way, use `FixAllProvider.Create` to route the whole
+document through one `SyntaxEditor`. Check [In this repo](#in-this-repo) before hand-rolling
+it — there is a base class that packages this:
 
 1. Fix all diagnostics in a document in a single callback.
 2. Order them by `Location.SourceSpan.Start` **descending**, so inner nodes are handled
@@ -232,15 +233,17 @@ pattern yourself:
 3. Apply each through `editor.ReplaceNode(node, (currentNode, generator) => ...)` — the
    lambda overload, so outer rewrites observe the inner ones.
 
-The caveat inherited from `FixAllProvider.Create` is that the fix must stay within the
-document the diagnostic is in; anything cross-file needs a hand-written `FixAllProvider`.
+Two caveats come with `FixAllProvider.Create`: the fix must stay within the document the
+diagnostic is in — anything cross-file needs a hand-written `FixAllProvider` — and it does
+not filter by `FixAllContext.CodeActionEquivalenceKey` the way the batch fixer does, so a
+fixer registering more than one action has to skip the diagnostics its action does not cover.
 
 A shared base class that packages this is worth reaching for, but check how it registers
 before you derive from one. If its `RegisterCodeFixesAsync` is sealed and offers the action
 for every diagnostic in `context.Diagnostics`, it is only suitable when *every* diagnostic
 the rule reports is fixable. A rule whose single ID also covers shapes the fixer cannot
-handle needs conditional registration, so it has to register the fix itself and use
-`FixAllProvider.Create` directly — otherwise it surfaces a lightbulb that does nothing.
+handle needs conditional registration, and a base that forecloses it surfaces a lightbulb
+that does nothing.
 
 The `Microsoft.CodeAnalysis.Testing` harness exercises fix-all-in-document/project/solution
 separately from the iterative case, so a batch-fixer correctness bug shows up as
@@ -380,7 +383,7 @@ relative to it. Use the wrapper, not the raw API:
 | `defaultSeverity` + `isEnabledByDefault` | `RuleLevel` (`src/Utilities/Compiler/RuleLevel.cs`). Its XML doc is the rubric reviewers apply; `IdeSuggestion` is the default for a new rule. |
 | `compilation.GetTypeByMetadataName(...)` | `WellKnownTypeProvider.GetOrCreate(compilation).GetOrCreateTypeByMetadataName(...)`, with the metadata name added to `src/Utilities/Compiler/WellKnownTypeNames.cs`. |
 | `arguments[i]` to reach parameter `i` | `arguments.GetArgumentForParameterAtIndex(i)` (`src/Utilities/Compiler/Extensions/IOperationExtensions.cs`) — matches on `Parameter.Ordinal`, so it survives named and reordered arguments. Use the `Try` overload where the parameter may not be matched. |
-| hand-rolled `FixAllProvider.Create` | Derive from [`OrderedCodeFixProvider`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers/OrderedCodeFixProvider.cs) — it seals `RegisterCodeFixesAsync` and sorts descending by span start; you supply `FixableDiagnosticIds`, `CodeActionTitle`, `CodeActionEquivalenceKey`, and `FixAllCoreAsync`. It has no same-start tie-break, so apply that yourself in `FixAllCoreAsync` if your diagnostics can share a start. Its sealed registration is unconditional, so it does not fit a rule that also reports shapes the fixer cannot handle. |
+| hand-rolled `FixAllProvider.Create` | Derive from [`SyntaxEditorBasedCodeFixProvider`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers/SyntaxEditorBasedCodeFixProvider.cs) — you supply `FixableDiagnosticIds`, an `ApplyFixAsync` holding the whole fix, and a `RegisterCodeFixesAsync` calling `RegisterCodeFix(context, title, equivalenceKey)`. A single invocation and a fix-all pass both run `ApplyFixAsync` into one `SyntaxEditor`, ordered for you. Registration stays yours, so a rule that also reports shapes the fixer cannot handle can still register conditionally. A fixer that cannot take the base class calls [`SyntaxEditorFixAllProvider.Create`](../../../../src/Microsoft.CodeAnalysis.NetAnalyzers/src/Microsoft.CodeAnalysis.NetAnalyzers/SyntaxEditorFixAllProvider.cs) itself; its `TState` overload is where you honor `CodeActionEquivalenceKey`. |
 | manual parenthesizing | `Analyzer.Utilities.Extensions.SyntaxGeneratorExtensions.Parenthesize` — applies `Simplifier.Annotation` for you. C#-only (`src/Utilities/Compiler.CSharp/`); a VB fixer parenthesizes by hand. |
 | `HashSet<T>` / `Dictionary<K,V>` on hot paths | `src/Utilities/Compiler/PooledObjects/`. Must be freed on every path — prefer `using var x = PooledHashSet<T>.GetInstance();`. |
 | reading `AnalyzerConfigOptions` directly | `src/Utilities/Compiler/Options/` (`AnalyzerOptionsExtensions`, `EditorConfigOptionNames`), e.g. `context.Options.MatchesConfiguredVisibility(Rule, symbol, compilation)`. Reuse an existing option name before adding one, and document new ones in `docs/analyzer-configuration.md`. |
