@@ -129,7 +129,7 @@ internal sealed class PersistentStorageTelemetryUploader
                 // Network and storage failures are normally transient. Stop this pass and let the
                 // caller back off before trying the blob again rather than moving immediately to
                 // the rest of the backlog.
-                Debug.Fail(e.ToString());
+                Debug.WriteLine($"Telemetry upload failed: {e}");
                 shouldBackOff = true;
             }
             finally

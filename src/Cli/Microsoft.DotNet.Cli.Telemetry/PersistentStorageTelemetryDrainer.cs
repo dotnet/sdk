@@ -112,7 +112,7 @@ public static class PersistentStorageTelemetryDrainer
         catch (Exception e)
         {
             // Absolutely never surface telemetry errors to the host.
-            Debug.Fail(e.ToString());
+            Debug.WriteLine($"Telemetry drainer failed: {e}");
         }
         finally
         {
@@ -176,7 +176,7 @@ public static class PersistentStorageTelemetryDrainer
             catch (Exception e)
             {
                 // The drainer must never surface errors. Stop on unexpected failure.
-                Debug.Fail(e.ToString());
+                Debug.WriteLine($"Telemetry drain pass failed: {e}");
                 break;
             }
 
