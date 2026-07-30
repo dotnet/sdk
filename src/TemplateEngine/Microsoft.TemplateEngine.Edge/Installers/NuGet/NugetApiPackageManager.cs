@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
         /// </summary>
         /// <param name="downloadPath">path to download to.</param>
         /// <param name="identifier">NuGet package identifier.</param>
-        /// <param name="version">The version to download. If empty, the latest stable version will be downloaded. If stable version is not available, the latest preview will be downloaded.</param>
+        /// <param name="version">The version to download. If empty, the latest stable version will be downloaded (or the latest absolute version when <paramref name="includePrerelease"/> is true). If stable version is not available, the latest preview will be downloaded.</param>
         /// <param name="additionalSources">Additional NuGet feeds to use (in addition to default feeds configured for current directory).</param>
         /// <param name="force">If true, overwriting existing package is allowed.</param>
         /// <param name="includePrerelease">If true, prerelease versions are considered when no version is specified.</param>
