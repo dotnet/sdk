@@ -1,4 +1,4 @@
-# `dotnetup` `daily`, `preview`, and `stable` Channel Definitions
+# `dotnetup` Release Channel Definitions
 
 ## Overview
 
