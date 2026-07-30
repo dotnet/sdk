@@ -12,7 +12,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         protected const string TryGetValue = nameof(TryGetValue);
         protected const string TryAdd = nameof(TryAdd);
 
-        public override ImmutableArray<string> FixableDiagnosticIds => ImmutableArray.Create(
+        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(
             PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId,
             PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId
         );
