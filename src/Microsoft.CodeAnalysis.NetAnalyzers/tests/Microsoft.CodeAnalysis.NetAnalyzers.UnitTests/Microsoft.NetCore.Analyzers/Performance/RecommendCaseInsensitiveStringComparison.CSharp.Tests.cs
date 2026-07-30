@@ -432,6 +432,44 @@ class C
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public Task NestedDiagnostics_CSharp_FixAllRewritesBoth()
+        {
+            string originalCode = @"using System;
+class C
+{
+    void M()
+    {
+        string a = ""aBc"";
+        string b = ""bc"";
+        string c = ""c"";
+        var result = a.ToLower().StartsWith(b.ToLower().IndexOf(c) > 0 ? ""x"" : ""y"");
+    }
+}";
+            string fixedCode = @"using System;
+class C
+{
+    void M()
+    {
+        string a = ""aBc"";
+        string b = ""bc"";
+        string c = ""c"";
+        var result = a.StartsWith(b.IndexOf(c, StringComparison.CurrentCultureIgnoreCase) > 0 ? ""x"" : ""y"", StringComparison.CurrentCultureIgnoreCase);
+    }
+}";
+            return new VerifyCS.Test
+            {
+                TestCode = originalCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(RecommendCaseInsensitiveStringComparisonAnalyzer.RecommendCaseInsensitiveStringComparisonRule).WithSpan(9, 22, 9, 84).WithArguments("string.StartsWith(string)"),
+                    VerifyCS.Diagnostic(RecommendCaseInsensitiveStringComparisonAnalyzer.RecommendCaseInsensitiveStringComparisonRule).WithSpan(9, 45, 9, 67).WithArguments("string.IndexOf(string)")
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
         private async Task VerifyNoDiagnosticCSharpAsync(string originalSource)
         {
             VerifyCS.Test test = new()

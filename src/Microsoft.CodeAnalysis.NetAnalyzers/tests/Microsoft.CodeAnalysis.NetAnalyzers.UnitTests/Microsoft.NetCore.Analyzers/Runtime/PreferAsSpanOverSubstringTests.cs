@@ -818,6 +818,82 @@ public class C
         }
 
         [TestMethod]
+        public Task SystemNamespace_IsAddedOnce_WhenTwoViolationsAreFixed_CSAsync()
+        {
+            string receiver = CS.Usings + @"
+public class C
+{
+    public static void Consume(string text) { }
+    public static void Consume(Roschar span) { }
+}";
+            string testCode = CS.WithBody(
+                WithKey(@"C.Consume(foo.Substring(1))", 0) + ';' + Environment.NewLine +
+                WithKey(@"C.Consume(foo.Substring(2))", 1) + ';',
+                includeUsings: false);
+            string fixedCode = CS.WithBody(
+                @"C.Consume(foo.AsSpan(1));" + Environment.NewLine +
+                @"C.Consume(foo.AsSpan(2));",
+                includeUsings: true);
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode, receiver },
+                    ExpectedDiagnostics = { CS.DiagnosticAt(0), CS.DiagnosticAt(1) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode, receiver }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task SystemNamespace_IsAddedOnce_WhenTwoViolationsAreFixed_VBAsync()
+        {
+            string receiver = CS.Usings + @"
+public class C
+{
+    public static void Consume(string text) { }
+    public static void Consume(Roschar span) { }
+}";
+            string testCode = VB.WithBody(
+                WithKey(@"C.Consume(foo.Substring(1))", 0) + Environment.NewLine +
+                WithKey(@"C.Consume(foo.Substring(2))", 1),
+                includeImports: false);
+            string fixedCode = VB.WithBody(
+                @"C.Consume(foo.AsSpan(1))" + Environment.NewLine +
+                @"C.Consume(foo.AsSpan(2))",
+                includeImports: true);
+            var receiverProject = new ProjectState("Receiver", LanguageNames.CSharp, "receiver", "cs")
+            {
+                Sources = { receiver }
+            };
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { receiverProject.Name, receiverProject } },
+                    AdditionalProjectReferences = { receiverProject.Name },
+                    ExpectedDiagnostics = { VB.DiagnosticAt(0), VB.DiagnosticAt(1) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    AdditionalProjects = { { receiverProject.Name, receiverProject } },
+                    AdditionalProjectReferences = { receiverProject.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         public Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VBAsync()
         {
             string receiver = CS.Usings + @"

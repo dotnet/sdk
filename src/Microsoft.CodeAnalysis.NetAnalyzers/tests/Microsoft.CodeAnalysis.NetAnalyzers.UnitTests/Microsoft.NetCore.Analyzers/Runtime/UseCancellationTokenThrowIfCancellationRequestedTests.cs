@@ -83,6 +83,62 @@ if ({0})
             return test.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public Task NestedChecks_AreAllReportedAndFixed_CSAsync()
+        {
+            string testStatements = @"{|#0:if (token.IsCancellationRequested)
+    throw new OperationCanceledException();
+else
+{
+    {|#1:if (token.IsCancellationRequested)
+        throw new OperationCanceledException();|}
+    Console.WriteLine();
+}|}";
+            string fixedStatements = @"token.ThrowIfCancellationRequested();
+token.ThrowIfCancellationRequested();
+Console.WriteLine();";
+
+            var test = new VerifyCS.Test
+            {
+                TestCode = CS.CreateBlock(testStatements),
+                FixedCode = CS.CreateBlock(fixedStatements),
+                ExpectedDiagnostics = { CS.DiagnosticAt(0), CS.DiagnosticAt(1) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                //  The outer fix rewrites the region the inner one sits in, so whichever provider applies them
+                //  has to discard one and pick it up on a second pass.
+                NumberOfFixAllIterations = 2,
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task NestedChecks_AreAllReportedAndFixed_VBAsync()
+        {
+            string testStatements = @"{|#0:If token.IsCancellationRequested Then
+    Throw New OperationCanceledException()
+Else
+    {|#1:If token.IsCancellationRequested Then
+        Throw New OperationCanceledException()
+    End If|}
+    Console.WriteLine()
+End If|}";
+            string fixedStatements = @"token.ThrowIfCancellationRequested()
+token.ThrowIfCancellationRequested()
+Console.WriteLine()";
+
+            var test = new VerifyVB.Test
+            {
+                TestCode = VB.CreateBlock(testStatements),
+                FixedCode = VB.CreateBlock(fixedStatements),
+                ExpectedDiagnostics = { VB.DiagnosticAt(0), VB.DiagnosticAt(1) },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                //  The outer fix rewrites the region the inner one sits in, so whichever provider applies them
+                //  has to discard one and pick it up on a second pass.
+                NumberOfFixAllIterations = 2,
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
         public static IEnumerable<object[]> Data_SimpleAffirmativeCheck_ReportedAndFixed_VB
         {
             get
