@@ -174,22 +174,10 @@ internal static class AotRunCommand
             }
         }
 
-        if (profileResult.Profile is ProjectLaunchProfile { ApplicationUrl.Length: > 0 } projectProfile)
-        {
-            launchEnvironment["ASPNETCORE_URLS"] = projectProfile.ApplicationUrl;
-        }
-        if (profileResult.Profile is { } profile)
-        {
-            launchEnvironment["DOTNET_LAUNCH_PROFILE"] = profile.LaunchProfileName;
-            foreach ((string name, string value) in profile.EnvironmentVariables)
-            {
-                launchEnvironment[name] = value;
-            }
-        }
-        foreach ((string name, string value) in environmentVariables)
-        {
-            launchEnvironment[name] = value;
-        }
+        CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            profileResult.Profile,
+            environmentVariables,
+            (name, value) => launchEnvironment[name] = value);
 
         foreach (string message in planMessages)
         {
@@ -252,24 +240,14 @@ internal static class AotRunCommand
         RunCommandDefinition definition,
         string entryPointFileFullPath)
     {
-        if (parseResult.HasOption(definition.NoLaunchProfileOption))
-        {
-            return new LaunchProfileReadResult(Profile: null, Messages: []);
-        }
-
         var messages = new List<(string Message, bool IsError)>();
         string? launchProfile = parseResult.GetValue(definition.LaunchProfileOption);
-        string? path = LaunchSettings.TryFindLaunchSettingsFile(
+        LaunchProfileParseResult result = CommonRunHelpers.ReadLaunchProfile(
             entryPointFileFullPath,
             launchProfile,
+            parseResult.HasOption(definition.NoLaunchProfileOption),
+            reportUsingLaunchSettings: true,
             (message, isError) => messages.Add((message, isError)));
-        if (path is null)
-        {
-            return new LaunchProfileReadResult(Profile: null, messages);
-        }
-
-        messages.Add((string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, path), IsError: true));
-        LaunchProfileParseResult result = LaunchSettings.ReadProfileSettingsFromFile(path, launchProfile);
         if (result.FailureReason is not null)
         {
             messages.Add((string.Format(
@@ -401,22 +379,16 @@ internal static class AotRunCommand
     }
 
     private static bool HasUnsupportedOptions(ParseResult parseResult, RunCommandDefinition definition)
-        => parseResult.HasOption(definition.ConfigurationOption) ||
-            parseResult.HasOption(definition.FrameworkOption) ||
-            parseResult.HasOption(definition.ProjectOption) ||
-            parseResult.HasOption(definition.PropertyOption) ||
-            parseResult.HasOption(definition.DeviceOption) ||
-            parseResult.HasOption(definition.ListDevicesOption) ||
-            parseResult.HasOption(definition.NoCacheOption) ||
-            parseResult.HasOption(definition.SelfContainedOption) ||
-            parseResult.HasOption(definition.NoSelfContainedOption) ||
-            parseResult.HasOption(definition.InteractiveOption) ||
-            parseResult.HasOption(definition.VerbosityOption) ||
-            parseResult.HasOption(definition.DisableBuildServersOption) ||
-            parseResult.HasOption(definition.ArtifactsPathOption) ||
-            parseResult.HasOption(definition.TargetPlatformOptions.RuntimeOption) ||
-            parseResult.HasOption(definition.TargetPlatformOptions.ArchitectureOption) ||
-            parseResult.HasOption(definition.TargetPlatformOptions.OperatingSystemOption);
+        => parseResult.CommandResult.Children
+            .OfType<OptionResult>()
+            .Any(optionResult =>
+                !optionResult.Implicit
+                && optionResult.Option != definition.FileOption
+                && optionResult.Option != definition.LaunchProfileOption
+                && optionResult.Option != definition.NoLaunchProfileOption
+                && optionResult.Option != definition.NoBuildOption
+                && optionResult.Option != definition.NoRestoreOption
+                && optionResult.Option != definition.EnvOption);
 
 }
 #endif

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -347,6 +348,37 @@ public class AotRunCommandTests
                 "--no-launch-profile",
                 "--configuration", "Release",
             ]);
+
+            Assert.Throws<CommandNotAvailableInAotException>(() =>
+                AotRunCommand.Execute(parseResult, static _ => throw new InvalidOperationException("Launcher should not be called.")));
+
+            Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
+    /// <summary>Verifies that a newly added explicit run option defaults to managed fallback.</summary>
+    [TestMethod]
+    public void ExplicitOptionOutsideAllowlistFallsBackBeforePlanning()
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            DateTime oldArtifactsTime = DateTime.UtcNow.AddDays(-1);
+            Directory.SetLastWriteTimeUtc(fixture.ArtifactsPath, oldArtifactsTime);
+            var definition = new RunCommandDefinition();
+            var futureOption = new Option<bool>("--future-option");
+            definition.Options.Add(futureOption);
+            var parseResult = definition.Parse([
+                "--file", fixture.EntryPointPath,
+                "--no-build",
+                "--no-launch-profile",
+                "--future-option",
+            ]);
+            Assert.IsEmpty(parseResult.Errors);
 
             Assert.Throws<CommandNotAvailableInAotException>(() =>
                 AotRunCommand.Execute(parseResult, static _ => throw new InvalidOperationException("Launcher should not be called.")));

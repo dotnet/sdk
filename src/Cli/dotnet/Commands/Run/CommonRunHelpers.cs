@@ -2,9 +2,13 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
+/// <summary>
+/// Provides behavior shared by managed and Native AOT implementations of the <c>run</c> command.
+/// </summary>
 internal static class CommonRunHelpers
 {
     /// <summary>
@@ -34,6 +38,75 @@ internal static class CommonRunHelpers
         else
         {
             return msbuildArgs;
+        }
+    }
+
+    /// <summary>
+    /// Finds and parses the selected launch profile.
+    /// </summary>
+    /// <param name="projectOrEntryPointFilePath">The project or entry-point path, or <see langword="null"/> when launch-settings discovery is unavailable.</param>
+    /// <param name="launchProfile">The requested launch-profile name.</param>
+    /// <param name="noLaunchProfile">Whether launch profiles are disabled.</param>
+    /// <param name="reportUsingLaunchSettings">Whether to report the selected launch-settings file.</param>
+    /// <param name="report">Receives launch-settings diagnostics and whether each belongs on the error channel.</param>
+    /// <returns>The parsed launch profile or its failure reason.</returns>
+    public static LaunchProfileParseResult ReadLaunchProfile(
+        string? projectOrEntryPointFilePath,
+        string? launchProfile,
+        bool noLaunchProfile,
+        bool reportUsingLaunchSettings,
+        Action<string, bool> report)
+    {
+        if (noLaunchProfile || projectOrEntryPointFilePath is null)
+        {
+            return LaunchProfileParseResult.Success(model: null);
+        }
+
+        string? launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
+            projectOrEntryPointFilePath,
+            launchProfile,
+            report);
+        if (launchSettingsPath is null)
+        {
+            return LaunchProfileParseResult.Success(model: null);
+        }
+
+        if (reportUsingLaunchSettings)
+        {
+            report(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath), true);
+        }
+
+        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile);
+    }
+
+    /// <summary>
+    /// Applies launch-profile environment variables followed by command-line or evaluated overrides.
+    /// </summary>
+    /// <param name="launchProfile">The selected launch profile.</param>
+    /// <param name="environmentVariables">Environment variables that override profile values.</param>
+    /// <param name="apply">Applies one environment variable to the launch.</param>
+    public static void ApplyLaunchEnvironmentVariables(
+        LaunchProfile? launchProfile,
+        IReadOnlyDictionary<string, string> environmentVariables,
+        Action<string, string?> apply)
+    {
+        if (launchProfile is ProjectLaunchProfile { ApplicationUrl.Length: > 0 } projectProfile)
+        {
+            apply("ASPNETCORE_URLS", projectProfile.ApplicationUrl);
+        }
+
+        if (launchProfile is not null)
+        {
+            apply("DOTNET_LAUNCH_PROFILE", launchProfile.LaunchProfileName);
+            foreach ((string name, string value) in launchProfile.EnvironmentVariables)
+            {
+                apply(name, value);
+            }
+        }
+
+        foreach ((string name, string value) in environmentVariables)
+        {
+            apply(name, value);
         }
     }
 

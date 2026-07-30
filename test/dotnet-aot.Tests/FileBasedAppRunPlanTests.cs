@@ -239,6 +239,67 @@ public class FileBasedAppRunPlanTests
         }
     }
 
+    /// <summary>Verifies that no-build synthetic validation checks the final target of an entry-point symbolic link.</summary>
+    [TestMethod]
+    public void AnalyzeNoBuildSyntheticChecksSymbolicLinkTargetTimestamp()
+    {
+        string testDirectory = CreateTestDirectory();
+        try
+        {
+            string targetPath = Path.Join(testDirectory, "Original.cs");
+            string entryPointPath = Path.Join(testDirectory, "Program.cs");
+            string artifactsPath = Path.Join(testDirectory, "artifacts");
+            Directory.CreateDirectory(artifactsPath);
+            File.WriteAllText(targetPath, "Console.WriteLine(42);");
+            try
+            {
+                File.CreateSymbolicLink(entryPointPath, targetPath);
+            }
+            catch (Exception exception) when (
+                OperatingSystem.IsWindows() &&
+                exception is IOException or UnauthorizedAccessException)
+            {
+                Assert.Inconclusive($"Symbolic links are unavailable: {exception.Message}");
+            }
+            var previousEntry = new RunFileBuildCacheEntry
+            {
+                BuildLevel = BuildLevel.Csc,
+                SdkVersion = "11.0.100-test",
+                RuntimeVersion = "11.0.0-test",
+            };
+            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
+            using (var stream = File.Create(successCachePath))
+            {
+                JsonSerializer.Serialize(stream, previousEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
+            foreach (string path in new[] { launchArtifacts.AppHost, launchArtifacts.Assembly, launchArtifacts.RuntimeConfig })
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+                File.WriteAllText(path, string.Empty);
+            }
+
+            DateTime buildTimeUtc = DateTime.UtcNow.AddSeconds(2);
+            File.SetLastWriteTimeUtc(successCachePath, buildTimeUtc);
+            File.WriteAllText(targetPath, "#:package Example@1.0.0\nConsole.WriteLine(42);");
+            File.SetLastWriteTimeUtc(targetPath, buildTimeUtc.AddSeconds(1));
+
+            RunPlan plan = FileBasedAppRunPlan.AnalyzeNoBuildSynthetic(
+                entryPointPath,
+                artifactsPath,
+                static () => FileBasedAppDirectiveProbeResult.Unknown,
+                static _ => { });
+
+            Assert.AreEqual(RunTier.ManagedFallback, plan.Tier);
+            Assert.AreEqual(RunDecisionReason.DirectiveProbeUnknown, plan.Reason);
+            Assert.IsNull(plan.Launch);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
     /// <summary>Verifies that a valid authoritative cache returns its serialized run properties.</summary>
     [TestMethod]
     public void AnalyzeCachedLaunchReturnsValidatedRunProperties()

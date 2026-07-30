@@ -112,7 +112,7 @@ internal static class FileBasedAppRunPlan
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
-        var entryPointFile = new FileInfo(entryPointFileFullPath);
+        FileSystemInfo entryPointFile = ResolveLinkTargetOrSelf(new FileInfo(entryPointFileFullPath));
         if (!entryPointFile.Exists)
         {
             report("Deferring to the managed CLI because the entry point file is missing.");

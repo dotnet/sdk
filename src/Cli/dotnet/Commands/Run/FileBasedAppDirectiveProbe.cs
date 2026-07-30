@@ -6,8 +6,12 @@ using System.Security;
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
 /// <summary>
-/// Conservatively proves the absence of file-directive byte sequences without loading Roslyn.
+/// Conservatively proves the absence of file-directive byte sequences without rooting or invoking the Roslyn parser.
 /// </summary>
+/// <remarks>
+/// The launch-only path needs only a one-way proof that application directives are absent.
+/// Ambiguous input and source changes observed during the scan defer to the managed CLI.
+/// </remarks>
 internal static class FileBasedAppDirectiveProbe
 {
     private const int BufferSize = 512;

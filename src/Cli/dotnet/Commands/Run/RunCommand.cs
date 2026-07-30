@@ -411,67 +411,21 @@ public class RunCommand
         var command = CommandFactoryUsingResolver.Create(commandSpec)
             .WorkingDirectory(workingDirectory);
 
-        SetEnvironmentVariables(command, launchSettings, EnvironmentVariables);
+        CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            launchSettings,
+            EnvironmentVariables,
+            (name, value) => command.EnvironmentVariable(name, value));
 
         return command;
     }
 
-    private void SetEnvironmentVariables(ICommand command, LaunchProfile? launchSettings, IReadOnlyDictionary<string, string> environmentVariables)
-    {
-        // Handle Project-specific settings
-        if (launchSettings is ProjectLaunchProfile projectSettings)
-        {
-            if (!string.IsNullOrEmpty(projectSettings.ApplicationUrl))
-            {
-                command.EnvironmentVariable("ASPNETCORE_URLS", projectSettings.ApplicationUrl);
-            }
-        }
-
-        if (launchSettings != null)
-        {
-            command.EnvironmentVariable("DOTNET_LAUNCH_PROFILE", launchSettings.LaunchProfileName);
-
-            foreach (var entry in launchSettings.EnvironmentVariables)
-            {
-                command.EnvironmentVariable(entry.Key, entry.Value);
-            }
-        }
-
-        // Env variables specified on command line (or, for opted-in projects, the final
-        // @(RuntimeEnvironmentVariable) item group after ComputeRunArguments) override those
-        // specified in the launch profile:
-        foreach (var (name, value) in environmentVariables)
-        {
-            command.EnvironmentVariable(name, value);
-        }
-    }
-
     internal LaunchProfileParseResult ReadLaunchProfileSettings()
-    {
-        if (NoLaunchProfile)
-        {
-            return LaunchProfileParseResult.Success(model: null);
-        }
-
-        var launchSettingsPath = ReadCodeFromStdin
-            ? null
-            : LaunchSettings.TryFindLaunchSettingsFile(
-                projectOrEntryPointFilePath: ProjectFileFullPath ?? EntryPointFileFullPath!,
-                launchProfile: LaunchProfile,
-                static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
-
-        if (launchSettingsPath is null)
-        {
-            return LaunchProfileParseResult.Success(model: null);
-        }
-
-        if (!RunCommandVerbosity.IsQuiet())
-        {
-            Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
-        }
-
-        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, LaunchProfile);
-    }
+        => CommonRunHelpers.ReadLaunchProfile(
+            ReadCodeFromStdin ? null : ProjectFileFullPath ?? EntryPointFileFullPath!,
+            LaunchProfile,
+            NoLaunchProfile,
+            reportUsingLaunchSettings: !RunCommandVerbosity.IsQuiet(),
+            static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
 
     private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder, string? intermediateOutputPath, bool hasRuntimeEnvironmentVariableSupport)
     {
@@ -615,7 +569,10 @@ public class RunCommand
             }
         }
 
-        SetEnvironmentVariables(command, launchSettings, runtimeEnvironmentVariables);
+        CommonRunHelpers.ApplyLaunchEnvironmentVariables(
+            launchSettings,
+            runtimeEnvironmentVariables,
+            (name, value) => command.EnvironmentVariable(name, value));
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {

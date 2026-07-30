@@ -4,29 +4,41 @@
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
 /// <summary>
-/// Holds current and previous cache state used while planning a file-based application build or launch.
+/// Holds cache state needed while computing the current entry and selecting later build or launch stages.
 /// </summary>
 internal sealed class FileBasedAppCacheInfo
 {
-    /// <summary>Gets the entry-point file metadata.</summary>
+    /// <summary>Gets the entry-point file used when comparing source metadata with cache timestamps.</summary>
     public required FileInfo EntryPointFile { get; init; }
 
-    /// <summary>Gets or sets whether deserialization of the previous cache entry has already been attempted.</summary>
+    /// <summary>
+    /// If <see cref="PreviousEntry"/> is <see langword="null"/> and this is
+    /// <see langword="true"/>, the previous entry could not be deserialized,
+    /// so deserialization should not be attempted again.
+    /// </summary>
     public bool TriedDeserializingPreviousEntry { get; set; }
 
-    /// <summary>Gets or sets the previous successful cache entry.</summary>
+    /// <summary>Gets or sets the previous successfully deserialized cache entry.</summary>
     public RunFileBuildCacheEntry? PreviousEntry { get; set; }
 
-    /// <summary>Gets the cache entry being computed for the current invocation.</summary>
+    /// <summary>Gets the cache entry assembled from the current invocation inputs.</summary>
     public required RunFileBuildCacheEntry CurrentEntry { get; init; }
 
-    /// <summary>Gets or sets an implicit file whose presence requires MSBuild.</summary>
+    /// <summary>
+    /// Gets or sets the first current implicit build file whose presence requires MSBuild.
+    /// </summary>
     public string? ExampleMSBuildFile { get; set; }
 
-    /// <summary>Gets or sets whether existing direct-compilation auxiliary files remain reusable.</summary>
+    /// <summary>
+    /// Gets or sets whether auxiliary direct-compilation files remain reusable after initial cache validation.
+    /// SDK or runtime version changes, for example, set this to <see langword="false"/>.
+    /// </summary>
     public bool InitialCanReuseAuxiliaryFiles { get; set; } = true;
 
-    /// <summary>Gets or sets whether direct compilation can replay arguments from the previous build.</summary>
+    /// <summary>
+    /// Gets or sets whether the current source change can replay compiler arguments from the previous build.
+    /// This value is set while determining whether a build is needed.
+    /// </summary>
     public bool CanUseCscViaPreviousArguments { get; set; }
 
     /// <summary>
