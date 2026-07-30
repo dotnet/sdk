@@ -48,7 +48,7 @@ internal sealed class PersistentStorageTelemetryUploader
     public async Task<TelemetryDrainResult> DrainAsync(CancellationToken cancellationToken)
     {
         var processed = 0;
-        var forwardProgress = 0;
+        var deletedBlobCount = 0;
         var shouldBackOff = false;
         TimeSpan? retryAfter = null;
         // Retriable remainders from partially-accepted uploads. Persisted AFTER the enumeration
@@ -136,7 +136,7 @@ internal sealed class PersistentStorageTelemetryUploader
             {
                 if (deleted)
                 {
-                    forwardProgress++;
+                    deletedBlobCount++;
                 }
                 else if (leased)
                 {
@@ -161,6 +161,6 @@ internal sealed class PersistentStorageTelemetryUploader
             }
         }
 
-        return new TelemetryDrainResult(forwardProgress, shouldBackOff, retryAfter);
+        return new TelemetryDrainResult(deletedBlobCount, shouldBackOff, retryAfter);
     }
 }

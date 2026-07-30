@@ -76,7 +76,7 @@ internal sealed class HttpTelemetryUploadTransport : ITelemetryUploadTransport
         }
 
         return GetRetryAfter(response) is { } retryAfter
-            ? TelemetryUploadResult.RejectedAfter(retryAfter)
+            ? TelemetryUploadResult.RejectedRetryAfter(retryAfter)
             : TelemetryUploadResult.Rejected;
     }
 

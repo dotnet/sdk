@@ -58,7 +58,7 @@ internal readonly struct TelemetryUploadResult
 
     public static TelemetryUploadResult PermanentlyRejected { get; } = new(TelemetryUploadOutcome.PermanentlyRejected, null, null);
 
-    public static TelemetryUploadResult RejectedAfter(TimeSpan retryAfter)
+    public static TelemetryUploadResult RejectedRetryAfter(TimeSpan retryAfter)
         => new(TelemetryUploadOutcome.Rejected, null, retryAfter);
 
     public static TelemetryUploadResult PartiallyAccepted(byte[] retryPayload, TimeSpan? retryAfter = null)
@@ -70,14 +70,18 @@ internal readonly struct TelemetryUploadResult
 /// </summary>
 internal readonly struct TelemetryDrainResult
 {
-    public TelemetryDrainResult(int forwardProgress, bool shouldBackOff, TimeSpan? retryAfter)
+    public TelemetryDrainResult(int deletedBlobCount, bool shouldBackOff, TimeSpan? retryAfter)
     {
-        ForwardProgress = forwardProgress;
+        DeletedBlobCount = deletedBlobCount;
         ShouldBackOff = shouldBackOff;
         RetryAfter = retryAfter;
     }
 
-    public int ForwardProgress { get; }
+    /// <summary>
+    /// The number of source blobs removed from storage because they were uploaded, permanently
+    /// rejected, or unreadable. A positive value means the pass reduced the stored backlog.
+    /// </summary>
+    public int DeletedBlobCount { get; }
 
     public bool ShouldBackOff { get; }
 

@@ -138,7 +138,7 @@ public class PersistentStorageTelemetryUploaderTests
         var first = new FakeBlob([1, 2, 3]);
         var second = new FakeBlob([4, 5, 6]);
         var storage = new FakeBlobStorage(first, second);
-        var transport = new FakeTransport(TelemetryUploadResult.RejectedAfter(expectedDelay));
+        var transport = new FakeTransport(TelemetryUploadResult.RejectedRetryAfter(expectedDelay));
         var uploader = new PersistentStorageTelemetryUploader(storage, transport);
 
         var result = await uploader.DrainAsync(CancellationToken.None);
@@ -146,7 +146,7 @@ public class PersistentStorageTelemetryUploaderTests
         transport.UploadCount.Should().Be(1, "the service has already asked this pass to retry later");
         first.Released.Should().BeTrue();
         second.Leased.Should().BeFalse();
-        result.ForwardProgress.Should().Be(0);
+        result.DeletedBlobCount.Should().Be(0);
         result.ShouldBackOff.Should().BeTrue();
         result.RetryAfter.Should().Be(expectedDelay);
     }
@@ -163,7 +163,7 @@ public class PersistentStorageTelemetryUploaderTests
 
         first.Released.Should().BeTrue();
         second.Leased.Should().BeFalse();
-        result.ForwardProgress.Should().Be(0);
+        result.DeletedBlobCount.Should().Be(0);
         result.ShouldBackOff.Should().BeTrue();
         result.RetryAfter.Should().BeNull();
     }

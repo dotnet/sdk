@@ -164,7 +164,7 @@ public static class PersistentStorageTelemetryDrainer
                 break;
             }
 
-            if (result.ForwardProgress == 0 && !result.ShouldBackOff)
+            if (result.DeletedBlobCount == 0 && !result.ShouldBackOff)
             {
                 // No forward progress: the storage is drained, or all remaining blobs are
                 // leased by another process or were rejected. Either way, stop.

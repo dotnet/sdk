@@ -15,7 +15,7 @@ public class PersistentStorageTelemetryDrainerTests
         var transport = new FakeTransport(
             TelemetryUploadResult.Rejected,
             TelemetryUploadResult.Rejected,
-            TelemetryUploadResult.RejectedAfter(TimeSpan.FromSeconds(7)),
+            TelemetryUploadResult.RejectedRetryAfter(TimeSpan.FromSeconds(7)),
             TelemetryUploadResult.Accepted);
         var uploader = new PersistentStorageTelemetryUploader(storage, transport);
         var clock = new FakeTimeProvider();
