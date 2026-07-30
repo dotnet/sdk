@@ -553,7 +553,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
