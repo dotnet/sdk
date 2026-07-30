@@ -88,14 +88,16 @@ jobs:
     name: Fetch binlogs (Azure Pipelines)
     # Cheap pre-gate. This job is a dependency of gh-aw's `pre_activation`, so it
     # runs BEFORE the role / command-position check. Without a guard it would
-    # download hundreds of MB of binlogs on *every* comment in the repository.
-    # Narrow it to PR comments that actually mention the command; `pre_activation`
-    # still performs the authoritative role + command-position check, and
-    # `activation` additionally requires `binlog-found == 'true'`, so this is a
-    # cost gate only -- never the security boundary.
+    # download hundreds of MB of binlogs on *every* comment in the repository,
+    # which any public commenter could trigger repeatedly. Mirror the same
+    # trusted-author predicate `pre_activation` uses so an untrusted commenter
+    # cannot force the download at all. `pre_activation` remains the
+    # authoritative role + command-position check, and `activation` additionally
+    # requires `binlog-found == 'true'`.
     if: >-
       github.event.repository.fork == false &&
       github.event.issue.pull_request &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
       contains(github.event.comment.body, '/analyze-build-failure')
     runs-on: ubuntu-latest
     timeout-minutes: 15
