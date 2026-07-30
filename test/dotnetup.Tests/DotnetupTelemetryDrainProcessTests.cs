@@ -54,11 +54,20 @@ public class DotnetupTelemetryDrainProcessTests
     }
 
     [TestMethod]
-    public void TryRunAsDrainer_ReturnsFalse_WhenDrainModeUnset()
+    public void TryRunAsDrainer_ReturnsFalse_WhenDrainCommandIsAbsent()
     {
-        // Unit tests never run with DOTNETUP_TELEMETRY_DRAIN=1, so this must be a no-op fast path
-        // that neither drains nor throws.
-        var ranAsDrainer = DotnetupTelemetryDrainProcess.TryRunAsDrainer(out var exitCode);
+        var ranAsDrainer = DotnetupTelemetryDrainProcess.TryRunAsDrainer([], out var exitCode);
+
+        Assert.IsFalse(ranAsDrainer);
+        Assert.AreEqual(0, exitCode);
+    }
+
+    [TestMethod]
+    public void TryRunAsDrainer_ReturnsFalse_WhenDrainCommandHasAdditionalArguments()
+    {
+        var ranAsDrainer = DotnetupTelemetryDrainProcess.TryRunAsDrainer(
+            [Constants.Telemetry.DrainCommand, "--help"],
+            out var exitCode);
 
         Assert.IsFalse(ranAsDrainer);
         Assert.AreEqual(0, exitCode);

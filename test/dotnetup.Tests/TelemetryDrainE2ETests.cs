@@ -24,9 +24,7 @@ public class TelemetryDrainE2ETests
         fixtureExitCode.Should().Be(0, fixtureOutput);
         environment.TelemetryBlobPaths.Should().NotBeEmpty(
             "the real persistent exporter should write the telemetry fixture");
-        environment.EnvironmentVariables[Constants.Telemetry.DrainModeEnvVar] = "1";
-
-        (int exitCode, string output) = environment.RunDotnetup([]);
+        (int exitCode, string output) = environment.RunDotnetup([Constants.Telemetry.DrainCommand]);
 
         exitCode.Should().Be(0, output);
         await server.WaitForRequestAsync(s_timeout);

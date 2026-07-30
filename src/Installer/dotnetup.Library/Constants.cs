@@ -79,9 +79,9 @@ internal static class Constants
         public const string ShutdownTimeoutOverrideEnvVar = "DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS";
 
         /// <summary>
-        /// A conditional telling dotnetup to focus on flushing telemetry as a detached process rather than execute as dotnetup.
+        /// Internal argument that launches dotnetup's detached telemetry drainer fast path.
         /// </summary>
-        public const string DrainModeEnvVar = "DOTNETUP_TELEMETRY_DRAIN";
+        public const string DrainCommand = "--drain-telemetry";
 
         internal const string E2EConnectionStringEnvVar = "DOTNET_CLI_TELEMETRY_E2E_CONNECTION_STRING";
         internal const string TestShutdownBudgetPathEnvVar = "DOTNET_TESTHOOK_DOTNETUP_TELEMETRY_SHUTDOWN_BUDGET_PATH";

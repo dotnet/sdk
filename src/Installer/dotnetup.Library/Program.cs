@@ -20,7 +20,7 @@ public class DotnetupProgram
     {
         // Detached telemetry-drainer fast path: deliver previously-persisted telemetry and exit,
         // before any other work. See DotnetupTelemetryDrainProcess for the full delivery model.
-        if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(out var drainExitCode))
+        if (DotnetupTelemetryDrainProcess.TryRunAsDrainer(args, out var drainExitCode))
         {
             return drainExitCode;
         }

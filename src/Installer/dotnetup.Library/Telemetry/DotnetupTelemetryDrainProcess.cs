@@ -17,17 +17,17 @@ internal static class DotnetupTelemetryDrainProcess
     private static readonly TimeSpan s_drainerLifetime = TimeSpan.FromMinutes(3);
 
     /// <summary>
-    /// When this process was launched as a detached drainer (<see cref="Constants.Telemetry.DrainModeEnvVar"/>
-    /// == <c>1</c>), best-effort drains persisted telemetry to Azure Monitor and returns
+    /// When this process was launched with the internal <see cref="Constants.Telemetry.DrainCommand"/>
+    /// argument, best-effort drains persisted telemetry to Azure Monitor and returns
     /// <see langword="true"/> with exit code <c>0</c>. Drain failures are intentionally swallowed
     /// because telemetry delivery must not affect the host process. Otherwise returns
     /// <see langword="false"/> and does nothing.
     /// </summary>
-    public static bool TryRunAsDrainer(out int exitCode)
+    public static bool TryRunAsDrainer(string[] args, out int exitCode)
     {
         exitCode = 0;
 
-        if (!string.Equals(Environment.GetEnvironmentVariable(Constants.Telemetry.DrainModeEnvVar), "1", StringComparison.Ordinal))
+        if (args.Length != 1 || !string.Equals(args[0], Constants.Telemetry.DrainCommand, StringComparison.Ordinal))
         {
             return false;
         }
@@ -82,7 +82,7 @@ internal static class DotnetupTelemetryDrainProcess
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
             };
-            startInfo.Environment[Constants.Telemetry.DrainModeEnvVar] = "1";
+            startInfo.ArgumentList.Add(Constants.Telemetry.DrainCommand);
 
             using var _ = Process.Start(startInfo);
         }
