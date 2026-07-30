@@ -80,6 +80,37 @@ public class PersistentStorageTelemetryDrainerTests
     }
 
     [TestMethod]
+    public async Task RunCoreAsync_DrainsBacklogBeforePostDrainGracePeriod()
+    {
+        var storage = new FakeBlobStorage(new FakeBlob([1]), new FakeBlob([2]));
+        var transport = new FakeTransport(
+            TelemetryUploadResult.Accepted,
+            TelemetryUploadResult.Accepted);
+        var uploader = new PersistentStorageTelemetryUploader(storage, transport, maxBlobsPerDrain: 1);
+        var clock = new FakeTimeProvider();
+        var delays = new RecordingDelay(clock);
+
+        await PersistentStorageTelemetryDrainer.RunCoreAsync(
+            uploader,
+            Timeout.InfiniteTimeSpan,
+            CancellationToken.None,
+            delays.DelayAsync,
+            clock,
+            new FixedRandom(0.5));
+
+        transport.UploadCount.Should().Be(2);
+        delays.RequestedDelays.Should().Equal(TimeSpan.FromMilliseconds(500));
+    }
+
+    [TestMethod]
+    public void ClampToSupportedTimerDelay_ClampsRuntimeUnsupportedDurations()
+    {
+        var delay = PersistentStorageTelemetryDrainer.ClampToSupportedTimerDelay(TimeSpan.FromDays(50));
+
+        delay.Should().Be(TimeSpan.FromMilliseconds(uint.MaxValue - 1));
+    }
+
+    [TestMethod]
     public void TryAcquireDirectoryLock_AllowsOnlyOneActiveDrainer()
     {
         var directory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("N"));

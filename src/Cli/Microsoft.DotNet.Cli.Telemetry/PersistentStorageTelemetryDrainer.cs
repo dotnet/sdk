@@ -26,10 +26,10 @@ namespace Microsoft.DotNet.Cli.Telemetry;
 /// </summary>
 public static class PersistentStorageTelemetryDrainer
 {
-    // Brief pause between drain passes so that concurrent CLI invocations have a chance to persist
-    // new blobs (which this same drainer then delivers) and so a transient rejection does not spin
-    // the loop. Kept short because the loop already exits as soon as a pass makes no progress.
-    private static readonly TimeSpan s_interPassDelay = TimeSpan.FromMilliseconds(500);
+    // After draining all currently visible blobs, briefly wait and check once more. A concurrent
+    // CLI may have persisted telemetry while its own detached drainer exited because this process
+    // held the directory lock. This grace period catches that handoff without delaying each batch.
+    private static readonly TimeSpan s_postDrainGracePeriod = TimeSpan.FromMilliseconds(500);
     // Azure Monitor's production storage transmitter uses randomized exponential backoff with a
     // 10-second floor. The one-minute fallback cap matches Azure.Core and keeps retries useful
     // within this short-lived drainer's bounded lifetime. Server Retry-After remains authoritative.
@@ -38,9 +38,10 @@ public static class PersistentStorageTelemetryDrainer
     private static readonly TimeSpan s_initialRetryDelay = TimeSpan.FromSeconds(10);
     private static readonly TimeSpan s_maxRetryDelay = TimeSpan.FromMinutes(1);
 
-    // Task.Delay and CancellationTokenSource.CancelAfter reject larger positive delays. This is a
-    // runtime API bound, not a retry-policy duration.
-    private static readonly TimeSpan s_maxTaskDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
+    // Task.Delay and CancellationTokenSource.CancelAfter reject larger positive delays. This
+    // approximately 49.7-day value is only a runtime API bound for external Retry-After values
+    // and unbounded drainer mode; it is not a retry or blob-retention policy.
+    private static readonly TimeSpan s_maxSupportedTimerDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 
     // Name of the exclusive-share lock file that single-instances the drainer per storage directory.
     private const string LockFileName = ".drain.lock";
@@ -98,7 +99,7 @@ public static class PersistentStorageTelemetryDrainer
             using var lifetimeCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
             if (maxLifetime > TimeSpan.Zero)
             {
-                lifetimeCts.CancelAfter(GetBoundedTaskDelay(maxLifetime));
+                lifetimeCts.CancelAfter(ClampToSupportedTimerDelay(maxLifetime));
             }
 
             await RunCoreAsync(
@@ -130,7 +131,7 @@ public static class PersistentStorageTelemetryDrainer
     {
         if (serverRetryAfter is { } requestedDelay)
         {
-            return GetBoundedTaskDelay(requestedDelay);
+            return ClampToSupportedTimerDelay(requestedDelay);
         }
 
         var exponent = Math.Clamp(consecutiveRetryPasses - 1, 0, 30);
@@ -142,8 +143,8 @@ public static class PersistentStorageTelemetryDrainer
         return TimeSpan.FromMilliseconds(jitteredDelayMilliseconds);
     }
 
-    internal static TimeSpan GetBoundedTaskDelay(TimeSpan delay)
-        => delay > s_maxTaskDelay ? s_maxTaskDelay : delay;
+    internal static TimeSpan ClampToSupportedTimerDelay(TimeSpan delay)
+        => delay > s_maxSupportedTimerDelay ? s_maxSupportedTimerDelay : delay;
 
     internal static async Task RunCoreAsync(
         PersistentStorageTelemetryUploader uploader,
@@ -155,6 +156,7 @@ public static class PersistentStorageTelemetryDrainer
     {
         var startTimestamp = timeProvider.GetTimestamp();
         var consecutiveRetryPasses = 0;
+        var postDrainGraceCheckPending = false;
 
         while (!cancellationToken.IsCancellationRequested)
         {
@@ -182,16 +184,30 @@ public static class PersistentStorageTelemetryDrainer
 
             if (result.DeletedBlobCount == 0 && !result.ShouldBackOff)
             {
-                // No forward progress: the storage is drained, or all remaining blobs are
-                // leased by another process or were rejected. Either way, stop.
-                break;
+                if (!postDrainGraceCheckPending)
+                {
+                    // No forward progress: the storage is drained, or all remaining blobs are
+                    // leased by another process or were rejected. Either way, stop.
+                    break;
+                }
+
+                postDrainGraceCheckPending = false;
             }
 
-            var delay = s_interPassDelay;
+            var delay = s_postDrainGracePeriod;
             if (result.ShouldBackOff)
             {
+                postDrainGraceCheckPending = false;
                 consecutiveRetryPasses++;
                 delay = GetRetryDelay(consecutiveRetryPasses, result.RetryAfter, random);
+            }
+            else if (result.DeletedBlobCount > 0)
+            {
+                // Drain the existing backlog without pausing between bounded batches. Once no
+                // blobs remain, the next iteration applies one grace period and checks again.
+                postDrainGraceCheckPending = true;
+                consecutiveRetryPasses = 0;
+                continue;
             }
             else
             {
