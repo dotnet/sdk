@@ -3,11 +3,12 @@
 
 #nullable disable
 
+using Microsoft.NET.Publish.Tests;
 using Newtonsoft.Json.Linq;
+using static Microsoft.NET.ILLink.Tests.ILLinkTestUtils;
 using static Microsoft.NET.Publish.Tests.PublishTestUtils;
-using static Microsoft.NET.Publish.Tests.ILLinkTestUtils;
 
-namespace Microsoft.NET.Publish.Tests
+namespace Microsoft.NET.ILLink.Tests
 {
     // this test class is split up arbitrarily so Helix can run tests in multiple workitems
     [TestClass]
