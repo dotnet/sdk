@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.NetCore.Analyzers;
 using Microsoft.NetCore.Analyzers.Runtime;
 
@@ -39,93 +39,122 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
     /// </code>
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public sealed class CSharpAvoidRedundantRegexIsMatchBeforeMatchFixer : CodeFixProvider
+    public sealed class CSharpAvoidRedundantRegexIsMatchBeforeMatchFixer : SyntaxEditorBasedCodeFixProvider
     {
+        private const string EquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.AvoidRedundantRegexIsMatchBeforeMatchFix);
+
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(AvoidRedundantRegexIsMatchBeforeMatch.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
-
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            var diagnostic = context.Diagnostics[0];
-
             Document doc = context.Document;
             SyntaxNode root = await doc.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SemanticModel model = await doc.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
+
+            if (TryGetFix(root, model, context.Diagnostics[0], context.CancellationToken, out _))
+            {
+                RegisterCodeFix(context, MicrosoftNetCoreAnalyzersResources.AvoidRedundantRegexIsMatchBeforeMatchFix, EquivalenceKey);
+            }
+        }
+
+        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+
+            if (!TryGetFix(editor.OriginalRoot, model, diagnostic, cancellationToken, out Fix fix))
+            {
+                return;
+            }
+
+            // A Match invocation cannot contain a guarded if statement, so a second diagnostic can never
+            // nest inside this one and the nodes edited below are always disjoint from another fix's.
+            editor.ReplaceNode(fix.IfStatement.Condition, BuildIsPatternCondition(fix.IfStatement, fix.MatchCallExpression, fix.VariableName));
+            editor.RemoveNode(fix.StatementToRemove);
+
+            if (fix.PreDeclaration is not null)
+            {
+                editor.RemoveNode(fix.PreDeclaration);
+            }
+        }
+
+        private static bool TryGetFix(SyntaxNode root, SemanticModel model, Diagnostic diagnostic, CancellationToken cancellationToken, out Fix fix)
+        {
+            fix = default;
 
             // Require C# 8.0+ for property patterns (is { Success: true } m)
             if (root.SyntaxTree.Options is CSharpParseOptions parseOptions &&
                 parseOptions.LanguageVersion < LanguageVersion.CSharp8)
             {
-                return;
+                return false;
             }
 
             // Find the IsMatch invocation from the primary diagnostic location.
-            if (root.FindNode(context.Span, getInnermostNodeForTie: true) is not SyntaxNode isMatchNode)
+            if (root.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is not SyntaxNode isMatchNode)
             {
-                return;
+                return false;
             }
 
             // Find the Match invocation from the additional location.
             if (diagnostic.AdditionalLocations.Count < 1)
             {
-                return;
+                return false;
             }
 
             var matchLocation = diagnostic.AdditionalLocations[0];
             if (root.FindNode(matchLocation.SourceSpan, getInnermostNodeForTie: true) is not SyntaxNode matchNode)
             {
-                return;
+                return false;
             }
 
             // The IsMatch call must be the condition of an if statement.
             var ifStatement = isMatchNode.FirstAncestorOrSelf<IfStatementSyntax>();
             if (ifStatement is null)
             {
-                return;
+                return false;
             }
-
-            SemanticModel model = await doc.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
 
             // Path 1: Match m = Regex.Match(...); — local declaration in if body
             var matchDeclarationStatement = matchNode.FirstAncestorOrSelf<LocalDeclarationStatementSyntax>();
             if (matchDeclarationStatement is not null)
             {
-                TryRegisterDeclarationFix(context, diagnostic, doc, model, ifStatement, matchDeclarationStatement, matchNode);
-                return;
+                return TryGetDeclarationFix(model, ifStatement, matchDeclarationStatement, matchNode, cancellationToken, out fix);
             }
 
             // Path 2: m = Regex.Match(...); — assignment to pre-declared variable
             var assignmentExpression = matchNode.FirstAncestorOrSelf<AssignmentExpressionSyntax>();
             if (assignmentExpression is not null)
             {
-                TryRegisterAssignmentFix(context, diagnostic, doc, model, ifStatement, assignmentExpression, matchNode);
+                return TryGetAssignmentFix(model, ifStatement, assignmentExpression, matchNode, cancellationToken, out fix);
             }
+
+            return false;
         }
 
         /// <summary>
         /// Path 1: The Match result is assigned via a local declaration in the if body:
         /// <c>Match m = Regex.Match(...);</c>
         /// </summary>
-        private static void TryRegisterDeclarationFix(
-            CodeFixContext context,
-            Diagnostic diagnostic,
-            Document doc,
+        private static bool TryGetDeclarationFix(
             SemanticModel model,
             IfStatementSyntax ifStatement,
             LocalDeclarationStatementSyntax matchDeclarationStatement,
-            SyntaxNode matchNode)
+            SyntaxNode matchNode,
+            CancellationToken cancellationToken,
+            out Fix fix)
         {
+            fix = default;
+
             var declaration = matchDeclarationStatement.Declaration;
             if (declaration.Variables.Count != 1)
             {
-                return;
+                return false;
             }
 
             var declarator = declaration.Variables[0];
             if (declarator.Initializer?.Value is null)
             {
-                return;
+                return false;
             }
 
             // Verify the initializer is exactly the Match invocation reported by the analyzer
@@ -133,16 +162,16 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             // expression (e.g., SomeMethod(Regex.Match(...))), the fix would change semantics.
             if (!IsMatchNode(declarator.Initializer.Value, matchNode))
             {
-                return;
+                return false;
             }
 
             // Only apply fixer when the declared type is 'var' or exactly
             // System.Text.RegularExpressions.Match. If the user wrote a wider type
             // (e.g., Group, Capture, object), the pattern variable would change
             // the static type and could alter overload resolution.
-            if (!IsVarOrMatchType(declaration.Type, model, context.CancellationToken))
+            if (!IsVarOrMatchType(declaration.Type, model, cancellationToken))
             {
-                return;
+                return false;
             }
 
             string variableName = declarator.Identifier.ValueText;
@@ -155,22 +184,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 var firstStatement = block.Statements.FirstOrDefault();
                 if (firstStatement != matchDeclarationStatement)
                 {
-                    return;
+                    return false;
                 }
             }
 
             if (!PassesNameConflictChecks(ifStatement, variableName))
             {
-                return;
+                return false;
             }
 
-            string title = MicrosoftNetCoreAnalyzersResources.AvoidRedundantRegexIsMatchBeforeMatchFix;
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title,
-                    createChangedDocument: ct => ApplyDeclarationFixAsync(doc, ifStatement, matchDeclarationStatement, variableName, ct),
-                    equivalenceKey: title),
-                diagnostic);
+            fix = Fix.Declaration(ifStatement, matchDeclarationStatement, variableName);
+            return true;
         }
 
         /// <summary>
@@ -180,45 +204,46 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         /// Only applies when the pre-existing declaration is immediately before the if
         /// and the variable is not referenced after the if statement.
         /// </summary>
-        private static void TryRegisterAssignmentFix(
-            CodeFixContext context,
-            Diagnostic diagnostic,
-            Document doc,
+        private static bool TryGetAssignmentFix(
             SemanticModel model,
             IfStatementSyntax ifStatement,
             AssignmentExpressionSyntax assignmentExpression,
-            SyntaxNode matchNode)
+            SyntaxNode matchNode,
+            CancellationToken cancellationToken,
+            out Fix fix)
         {
+            fix = default;
+
             // The left side must be a simple identifier (the variable being assigned).
             if (assignmentExpression.Left is not IdentifierNameSyntax identName)
             {
-                return;
+                return false;
             }
 
             // Verify the right side is exactly the Match invocation.
             if (!IsMatchNode(assignmentExpression.Right, matchNode))
             {
-                return;
+                return false;
             }
 
             // The assignment must be in an expression statement.
             var assignmentStatement = assignmentExpression.FirstAncestorOrSelf<ExpressionStatementSyntax>();
             if (assignmentStatement is null)
             {
-                return;
+                return false;
             }
 
             // The assignment statement must be the first statement in a block body.
             if (ifStatement.Statement is not BlockSyntax block ||
                 block.Statements.FirstOrDefault() != assignmentStatement)
             {
-                return;
+                return false;
             }
 
             // The if must be inside a block so we can find the preceding declaration.
             if (ifStatement.Parent is not BlockSyntax parentBlock)
             {
-                return;
+                return false;
             }
 
             string variableName = identName.Identifier.ValueText;
@@ -227,23 +252,23 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             int ifIndex = parentBlock.Statements.IndexOf(ifStatement);
             if (ifIndex <= 0)
             {
-                return;
+                return false;
             }
 
             if (parentBlock.Statements[ifIndex - 1] is not LocalDeclarationStatementSyntax preDecl)
             {
-                return;
+                return false;
             }
 
             if (preDecl.Declaration.Variables.Count != 1)
             {
-                return;
+                return false;
             }
 
             var preVar = preDecl.Declaration.Variables[0];
             if (preVar.Identifier.ValueText != variableName)
             {
-                return;
+                return false;
             }
 
             // The pre-existing declaration must have no initializer, or be initialized
@@ -263,14 +288,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
                 if (!acceptable)
                 {
-                    return;
+                    return false;
                 }
             }
 
             // Verify the declared type is 'var' or exactly Match.
-            if (!IsVarOrMatchType(preDecl.Declaration.Type, model, context.CancellationToken))
+            if (!IsVarOrMatchType(preDecl.Declaration.Type, model, cancellationToken))
             {
-                return;
+                return false;
             }
 
             // The variable must not be referenced in any statement after the if
@@ -279,21 +304,16 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             if (IsVariableReferencedAfterIf(parentBlock, ifIndex, variableName) ||
                 IsVariableReferencedInElse(ifStatement, variableName))
             {
-                return;
+                return false;
             }
 
             if (!PassesNameConflictChecks(ifStatement, variableName))
             {
-                return;
+                return false;
             }
 
-            string title = MicrosoftNetCoreAnalyzersResources.AvoidRedundantRegexIsMatchBeforeMatchFix;
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title,
-                    createChangedDocument: ct => ApplyAssignmentFixAsync(doc, ifStatement, preDecl, assignmentStatement, variableName, ct),
-                    equivalenceKey: title),
-                diagnostic);
+            fix = Fix.Assignment(ifStatement, preDecl, assignmentStatement, variableName);
+            return true;
         }
 
         /// <summary>
@@ -425,47 +445,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Applies the fix for Path 1 (local declaration in if body).
-        /// </summary>
-        private static async Task<Document> ApplyDeclarationFixAsync(
-            Document document,
-            IfStatementSyntax ifStatement,
-            LocalDeclarationStatementSyntax matchDeclarationStatement,
-            string variableName,
-            CancellationToken cancellationToken)
-        {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            var matchCallExpression = matchDeclarationStatement.Declaration.Variables[0].Initializer!.Value;
-
-            editor.ReplaceNode(ifStatement.Condition, BuildIsPatternCondition(ifStatement, matchCallExpression, variableName));
-            editor.RemoveNode(matchDeclarationStatement);
-
-            return editor.GetChangedDocument();
-        }
-
-        /// <summary>
-        /// Applies the fix for Path 2 (assignment to pre-declared variable).
-        /// </summary>
-        private static async Task<Document> ApplyAssignmentFixAsync(
-            Document document,
-            IfStatementSyntax ifStatement,
-            LocalDeclarationStatementSyntax preDeclaration,
-            ExpressionStatementSyntax assignmentStatement,
-            string variableName,
-            CancellationToken cancellationToken)
-        {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            var assignmentExpr = (AssignmentExpressionSyntax)assignmentStatement.Expression;
-            var matchCallExpression = assignmentExpr.Right;
-
-            editor.ReplaceNode(ifStatement.Condition, BuildIsPatternCondition(ifStatement, matchCallExpression, variableName));
-            editor.RemoveNode(assignmentStatement);
-            editor.RemoveNode(preDeclaration);
-
-            return editor.GetChangedDocument();
         }
 
         /// <summary>
@@ -627,6 +606,46 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             }
 
             return false;
+        }
+
+        /// <summary>
+        /// The nodes a single fix rewrites, resolved before any edit is made so that the same code
+        /// gates a single invocation and every diagnostic of a fix-all pass.
+        /// </summary>
+        private readonly struct Fix
+        {
+            private Fix(
+                IfStatementSyntax ifStatement,
+                ExpressionSyntax matchCallExpression,
+                string variableName,
+                StatementSyntax statementToRemove,
+                LocalDeclarationStatementSyntax? preDeclaration)
+            {
+                IfStatement = ifStatement;
+                MatchCallExpression = matchCallExpression;
+                VariableName = variableName;
+                StatementToRemove = statementToRemove;
+                PreDeclaration = preDeclaration;
+            }
+
+            public IfStatementSyntax IfStatement { get; }
+
+            public ExpressionSyntax MatchCallExpression { get; }
+
+            public string VariableName { get; }
+
+            public StatementSyntax StatementToRemove { get; }
+
+            /// <summary>
+            /// The pre-existing declaration of <see cref="VariableName"/>, which only Path 2 removes.
+            /// </summary>
+            public LocalDeclarationStatementSyntax? PreDeclaration { get; }
+
+            public static Fix Declaration(IfStatementSyntax ifStatement, LocalDeclarationStatementSyntax matchDeclarationStatement, string variableName)
+                => new(ifStatement, matchDeclarationStatement.Declaration.Variables[0].Initializer!.Value, variableName, matchDeclarationStatement, preDeclaration: null);
+
+            public static Fix Assignment(IfStatementSyntax ifStatement, LocalDeclarationStatementSyntax preDeclaration, ExpressionStatementSyntax assignmentStatement, string variableName)
+                => new(ifStatement, ((AssignmentExpressionSyntax)assignmentStatement.Expression).Right, variableName, assignmentStatement, preDeclaration);
         }
     }
 }
