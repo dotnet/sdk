@@ -607,7 +607,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         [DataRow("--verbosity:minimal")]
         [DataRow("--verbosity:normal")]
         [DataRow("--verbosity:detailed")]
-        public void HideManifestUpdatesWhenVerbosityIsMinimalOrNormal(string verbosityFlag)
+        public void HideManifestUpdatesWhenVerbosityIsNonDiagnostic(string verbosityFlag)
         {
             var command = new DotnetCommand(Log);
             command
