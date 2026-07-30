@@ -115,10 +115,11 @@ but tracks as `Disabled`:
 | `IdeHidden_BulkConfigurable` | `Hidden` |
 | `Disabled`, `CandidateForRemoval` | `Disabled` |
 
-The `Documentation` link is the **lowercased** ID and must match the rule ID in the same
-row. Nothing validates it, so a row copy-pasted from the one above — carrying that rule's ID
-or a stray capital — silently ships a link to the wrong page. Check it by eye; wrong links
-are already in these files.
+The `Documentation` link must carry the same rule ID as the row it sits on, lowercased to
+match the help link `DiagnosticDescriptorHelper` derives for the descriptor. Nothing
+validates this, and a row copy-pasted from the one above keeps *that* rule's ID, quietly
+pointing readers at a different rule — check it by eye. The page itself 404s until your
+docs PR lands, which is expected; don't paper over it by linking an existing rule's page.
 
 Rows move to `AnalyzerReleases.Shipped.md` at release time — don't move them yourself.
 
