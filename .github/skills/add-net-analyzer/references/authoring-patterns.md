@@ -120,10 +120,14 @@ it is wrong, so measure that against a large real codebase before proposing anyt
   the fix may still change semantics, but it must say so — suffix the action with
   `(may change semantics)`, and offer the semantics-preserving fix alongside it when both
   readings are reasonable. The failure mode is a title that reads as pure cleanup.
-- **The fix must produce compiling code on every shape it offers itself on**, not just the
-  shapes the tests cover. Where a rewrite is only valid in some contexts the fixer declines
-  in the rest, and the diagnostic stands on its own. Narrowing the tests to the safe shapes
-  hides the bug instead of fixing it.
+- **Make a reasonable effort to produce valid output.** If the fix can reach a correct form with
+  the information it has, it should; most rewrites have one clear target and should generate
+  valid code for the shapes they handle. That does not mean the fixed document must always
+  compile — the original code may already be broken, or further user edits may still be
+  required, and neither is a reason to decline. A fixer that never produces correct code in any
+  shape is probably not worth offering; one that falls short in some edge cases is still
+  valuable. The failure mode is withholding a useful fix because it cannot guarantee
+  compilation.
 - Where the fixer *is* language-agnostic, VB is cheap — export it for both languages and add
   mainline VB tests. If it needs language-specific syntax APIs, the VB fixer is optional.
 
@@ -279,7 +283,7 @@ It is test-framework agnostic; the snippet below omits the parameterized-test at
 your framework supplies.
 
 ```csharp
-public Task Match_ReportsDiagnostic(string typeName)
+public async Task Match_ReportsDiagnostic(string typeName)
 {
     // lang=C#-test
     string code = $$"""
@@ -289,7 +293,7 @@ public Task Match_ReportsDiagnostic(string typeName)
         }
         """;
 
-    return VerifyCS.VerifyAnalyzerAsync(code);
+    await VerifyCS.VerifyAnalyzerAsync(code);
 }
 ```
 
