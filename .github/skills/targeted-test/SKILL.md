@@ -69,6 +69,10 @@ entries for areas that are now configured, and update entries when test-project 
 changes. Do not duplicate configured mappings here; add or change them in the props file
 so local agent selection and PR filtering stay aligned.
 
+Also revisit this table when adding a test project for a substantive new area. Prefer a
+`ConditionalTestScope` when reliable trigger paths can be defined. When the area is too
+broad for practical conditional filtering, add its primary test project to this table.
+
 ## Make the product output current
 
 Tests exercise the SDK under `artifacts/bin/redist/<Configuration>/dotnet`, not only
