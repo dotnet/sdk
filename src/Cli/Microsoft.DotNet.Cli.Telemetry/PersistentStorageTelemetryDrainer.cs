@@ -30,8 +30,16 @@ public static class PersistentStorageTelemetryDrainer
     // new blobs (which this same drainer then delivers) and so a transient rejection does not spin
     // the loop. Kept short because the loop already exits as soon as a pass makes no progress.
     private static readonly TimeSpan s_interPassDelay = TimeSpan.FromMilliseconds(500);
-    private static readonly TimeSpan s_initialRetryDelay = TimeSpan.FromSeconds(1);
-    private static readonly TimeSpan s_maxRetryDelay = TimeSpan.FromSeconds(30);
+    // Azure Monitor's production storage transmitter uses randomized exponential backoff with a
+    // 10-second floor. The one-minute fallback cap matches Azure.Core and keeps retries useful
+    // within this short-lived drainer's bounded lifetime. Server Retry-After remains authoritative.
+    // https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/monitor/Azure.Monitor.OpenTelemetry.Exporter/src/Internals/TransmissionStateManager.cs
+    // https://github.com/Azure/azure-sdk-for-net/blob/main/sdk/core/Azure.Core/src/RetryOptions.cs
+    private static readonly TimeSpan s_initialRetryDelay = TimeSpan.FromSeconds(10);
+    private static readonly TimeSpan s_maxRetryDelay = TimeSpan.FromMinutes(1);
+
+    // Task.Delay and CancellationTokenSource.CancelAfter reject larger positive delays. This is a
+    // runtime API bound, not a retry-policy duration.
     private static readonly TimeSpan s_maxTaskDelay = TimeSpan.FromMilliseconds(uint.MaxValue - 1);
 
     // Name of the exclusive-share lock file that single-instances the drainer per storage directory.
@@ -98,7 +106,8 @@ public static class PersistentStorageTelemetryDrainer
                 maxLifetime,
                 lifetimeCts.Token,
                 static (delay, token) => Task.Delay(delay, token),
-                TimeProvider.System).ConfigureAwait(false);
+                TimeProvider.System,
+                Random.Shared).ConfigureAwait(false);
         }
         catch (Exception e)
         {
@@ -114,17 +123,23 @@ public static class PersistentStorageTelemetryDrainer
         }
     }
 
-    internal static TimeSpan GetRetryDelay(int consecutiveRetryPasses, TimeSpan? serverRetryAfter)
+    internal static TimeSpan GetRetryDelay(
+        int consecutiveRetryPasses,
+        TimeSpan? serverRetryAfter,
+        Random random)
     {
         if (serverRetryAfter is { } requestedDelay)
         {
-            return GetBoundedTaskDelay(
-                requestedDelay < s_initialRetryDelay ? s_initialRetryDelay : requestedDelay);
+            return GetBoundedTaskDelay(requestedDelay);
         }
 
         var exponent = Math.Clamp(consecutiveRetryPasses - 1, 0, 30);
-        var delayMilliseconds = s_initialRetryDelay.TotalMilliseconds * Math.Pow(2, exponent);
-        return TimeSpan.FromMilliseconds(Math.Min(delayMilliseconds, s_maxRetryDelay.TotalMilliseconds));
+        var exponentialCeilingMilliseconds = Math.Min(
+            s_initialRetryDelay.TotalMilliseconds * Math.Pow(2, exponent),
+            s_maxRetryDelay.TotalMilliseconds);
+        var jitteredDelayMilliseconds = s_initialRetryDelay.TotalMilliseconds
+            + (random.NextDouble() * (exponentialCeilingMilliseconds - s_initialRetryDelay.TotalMilliseconds));
+        return TimeSpan.FromMilliseconds(jitteredDelayMilliseconds);
     }
 
     internal static TimeSpan GetBoundedTaskDelay(TimeSpan delay)
@@ -135,7 +150,8 @@ public static class PersistentStorageTelemetryDrainer
         TimeSpan maxLifetime,
         CancellationToken cancellationToken,
         Func<TimeSpan, CancellationToken, Task> delayAsync,
-        TimeProvider timeProvider)
+        TimeProvider timeProvider,
+        Random random)
     {
         var startTimestamp = timeProvider.GetTimestamp();
         var consecutiveRetryPasses = 0;
@@ -175,7 +191,7 @@ public static class PersistentStorageTelemetryDrainer
             if (result.ShouldBackOff)
             {
                 consecutiveRetryPasses++;
-                delay = GetRetryDelay(consecutiveRetryPasses, result.RetryAfter);
+                delay = GetRetryDelay(consecutiveRetryPasses, result.RetryAfter, random);
             }
             else
             {
@@ -187,6 +203,13 @@ public static class PersistentStorageTelemetryDrainer
             {
                 if (remainingDelay <= TimeSpan.Zero)
                 {
+                    break;
+                }
+
+                if (result.RetryAfter >= remainingDelay)
+                {
+                    // The server has asked us to wait beyond this process's useful lifetime. Leave
+                    // the blob persisted for a future drainer rather than sleeping until shutdown.
                     break;
                 }
 

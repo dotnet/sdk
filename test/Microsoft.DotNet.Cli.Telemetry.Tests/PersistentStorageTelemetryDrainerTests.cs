@@ -26,11 +26,12 @@ public class PersistentStorageTelemetryDrainerTests
             Timeout.InfiniteTimeSpan,
             CancellationToken.None,
             delays.DelayAsync,
-            clock);
+            clock,
+            new FixedRandom(0.5));
 
         delays.RequestedDelays.Should().Equal(
-            TimeSpan.FromSeconds(1),
-            TimeSpan.FromSeconds(2),
+            TimeSpan.FromSeconds(10),
+            TimeSpan.FromSeconds(15),
             TimeSpan.FromSeconds(7),
             TimeSpan.FromMilliseconds(500));
         transport.UploadCount.Should().Be(4);
@@ -50,10 +51,32 @@ public class PersistentStorageTelemetryDrainerTests
             TimeSpan.FromMilliseconds(1_500),
             CancellationToken.None,
             delays.DelayAsync,
-            clock);
+            clock,
+            new FixedRandom(0.5));
 
-        delays.RequestedDelays.Should().Equal(TimeSpan.FromSeconds(1), TimeSpan.FromMilliseconds(500));
-        transport.UploadCount.Should().Be(2);
+        delays.RequestedDelays.Should().Equal(TimeSpan.FromMilliseconds(1_500));
+        transport.UploadCount.Should().Be(1);
+    }
+
+    [TestMethod]
+    public async Task RunCoreAsync_ExitsWhenRetryAfterExceedsRemainingLifetime()
+    {
+        var storage = new FakeBlobStorage(new FakeBlob([1]));
+        var transport = new FakeTransport(TelemetryUploadResult.RejectedRetryAfter(TimeSpan.FromMinutes(5)));
+        var uploader = new PersistentStorageTelemetryUploader(storage, transport);
+        var clock = new FakeTimeProvider();
+        var delays = new RecordingDelay(clock);
+
+        await PersistentStorageTelemetryDrainer.RunCoreAsync(
+            uploader,
+            TimeSpan.FromMinutes(3),
+            CancellationToken.None,
+            delays.DelayAsync,
+            clock,
+            new FixedRandom(0.5));
+
+        delays.RequestedDelays.Should().BeEmpty();
+        transport.UploadCount.Should().Be(1);
     }
 
     [TestMethod]
@@ -97,6 +120,11 @@ public class PersistentStorageTelemetryDrainerTests
         public override long GetTimestamp() => _timestamp;
 
         public void Advance(TimeSpan delay) => _timestamp += delay.Ticks;
+    }
+
+    private sealed class FixedRandom(double value) : Random
+    {
+        public override double NextDouble() => value;
     }
 
     private sealed class FakeBlobStorage(params FakeBlob[] blobs) : ITelemetryBlobStorage
