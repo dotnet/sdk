@@ -38,11 +38,12 @@ project separately with the runner below. If a changed file matches
 `GlobalTriggerPaths`, the conditional system cannot safely narrow the suite; use broader
 validation instead.
 
-## Fall back for unscoped areas
+## Fall back for common unscoped areas
 
 When no `ConditionalTestScope` covers the changed paths, start with the project that
 owns the changed behavior. If a change crosses areas, run each relevant project
-separately so a failure identifies the affected area.
+separately so a failure identifies the affected area. This table is intentionally
+limited to common areas rather than being an exhaustive test-project catalog.
 
 | Change area | Primary test project |
 | --- | --- |
@@ -63,8 +64,10 @@ separately so a failure identifies the affected area.
 | Blazor WebAssembly SDK | `test/Microsoft.NET.Sdk.BlazorWebAssembly.Tests/Microsoft.NET.Sdk.BlazorWebAssembly.Tests.csproj` |
 
 Keep this fallback table limited to areas not represented in
-`test/ConditionalTests.props`. Add or change configured mappings there so local agent
-selection and PR filtering stay aligned.
+`test/ConditionalTests.props`. Whenever that file changes, reconcile this table: remove
+entries for areas that are now configured, and update entries when test-project ownership
+changes. Do not duplicate configured mappings here; add or change them in the props file
+so local agent selection and PR filtering stay aligned.
 
 ## Make the product output current
 

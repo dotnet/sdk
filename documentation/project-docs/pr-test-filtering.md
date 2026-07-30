@@ -167,8 +167,11 @@ shared changes.
 ## Adding a new scope
 
 1. Add a `<ConditionalTestScope>` item in `test/ConditionalTests.props`.
-2. That's it — the evaluation script and `UnitTests.proj` are generic and require no
-   per-scope changes.
+2. Reconcile the fallback table in the `targeted-test` agent skill. Remove an entry when
+   the new scope now covers that area, or update it if test-project ownership changed.
+   Do not copy configured mappings into the fallback table.
+3. The evaluation script and `UnitTests.proj` are generic and require no per-scope
+   changes.
 
 Example:
 
@@ -229,8 +232,9 @@ too coarse, it can be tuned later — see [Future enhancements](#future-enhancem
 ## Design principles
 
 - **Single source of truth**: `test/ConditionalTests.props` defines everything about a
-  scope — trigger paths, projects, and conditions. Adding or removing a scope is a
-  one-file change.
+  scope — trigger paths, projects, and conditions. The `targeted-test` skill reads these
+  mappings directly; its separate fallback table contains only common unscoped areas and
+  must be reconciled when scopes or test-project ownership change.
 - **Safe by default**: when in doubt, tests run. The system only skips tests when it has
   positive evidence that no relevant files changed.
 - **No extra build legs**: filtering happens within the existing build/test pipeline.
