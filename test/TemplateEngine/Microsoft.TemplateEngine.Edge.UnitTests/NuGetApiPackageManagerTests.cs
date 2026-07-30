@@ -16,7 +16,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IList<string> _additionalSources = new[] { "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" };
-        private readonly IList<string> _vulnerabilitySources = new[] { "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" };
+        // Vulnerability metadata is only available in nuget.org registration blobs (read-only); the proxy does not mirror it.
+        private readonly IList<string> _vulnerabilitySources = new[] { "https://api.nuget.org/v3/index.json" };
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
@@ -150,7 +151,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             // Getting this version of the package as it has known vulnerabilities
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
 
-            // use proxy feed for vulnerability metadata (mirrored registration blobs include vulnerability data)
+            // use nuget.org for vulnerability metadata (read-only; proxy does not include vulnerability data in registrations)
             var exception = await Assert.ThrowsExactlyAsync<VulnerablePackageException>(() => packageManager.DownloadPackageAsync(
                 installPath,
                 "System.Text.Json",
@@ -172,8 +173,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             // Getting this version of the package as it has known vulnerabilities
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
 
-            // use proxy feed for vulnerability metadata (mirrored registration blobs include vulnerability data)
-            var result = await packageManager.DownloadPackageAsync(
+            // use nuget.org for vulnerability metadata (read-only; proxy does not include vulnerability data in registrations) = await packageManager.DownloadPackageAsync(
                 installPath,
                 "System.Text.Json",
                 "8.0.4",
