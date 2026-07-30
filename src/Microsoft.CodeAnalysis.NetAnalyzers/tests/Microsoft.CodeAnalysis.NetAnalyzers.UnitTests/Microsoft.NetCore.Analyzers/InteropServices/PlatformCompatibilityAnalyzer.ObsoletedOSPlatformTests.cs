@@ -14,6 +14,44 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
     [TestClass]
     public partial class PlatformCompatabilityAnalyzerTests
     {
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardSuppressedByCallsite()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+using Mock;
+
+[assembly: SupportedOSPlatform(""macos15.0"")]
+
+partial class TestType
+{
+    void DoSomething()
+    {
+        if (IsAtLeastXcode11)
+        {
+            Console.WriteLine(NewApi);
+        }
+        else
+        {
+            Console.WriteLine(OldApi);
+        }
+    }
+
+    [SupportedOSPlatform(""macos12.0"")]
+    public ulong? NewApi { get; private set; }
+
+    [SupportedOSPlatform(""macos11.0"")]
+    [ObsoletedOSPlatform(""macos12.0"")]
+    public ulong? OldApi { get; private set; }
+
+    [SupportedOSPlatformGuard(""macos15.0"")]
+    internal static bool IsAtLeastXcode11 => true;
+}" + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         [TestMethod]
         public async Task ObsoletedMethodsCalledWarns()
         {

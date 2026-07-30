@@ -492,6 +492,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 SmallDictionary<string, Versions>? originalCsAttributes,
                 SmallDictionary<string, Versions> originalAttributes)
             {
+                // A conjunction of negated guards can exclude every platform supported by the call site.
+                if (IsUnreachableByCallsite(value.AnalysisValues, originalCsAttributes))
+                {
+                    return true;
+                }
+
                 // 'GlobalFlowStateAnalysisValueSet.AnalysisValues' represent the && of values.
                 foreach (var analysisValue in value.AnalysisValues)
                 {
@@ -595,7 +601,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             // it is checking one exact platform, other unsupported should be suppressed
                             RemoveUnsupportsOnDifferentPlatforms(attributes, info.PlatformName);
-                            csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, null);
+                            if (IsPlatformSupportSuppressedByCallsite(info, attributes, originalAttributes, originalCsAttributes))
+                            {
+                                RemoveOtherSupportsOnDifferentPlatforms(attributes, info.PlatformName);
+                            }
+                            else
+                            {
+                                csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, null);
+                            }
                         }
                     }
                 }
@@ -656,10 +669,47 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return true;
             }
 
+            static bool IsUnreachableByCallsite(
+                ImmutableHashSet<IAbstractAnalysisValue> analysisValues,
+                SmallDictionary<string, Versions>? callsiteAttributes)
+            {
+                if (callsiteAttributes == null || callsiteAttributes.IsEmpty ||
+                    callsiteAttributes.Values.Any(attributes => !AllowList(attributes)))
+                {
+                    return false;
+                }
+
+                foreach (var (platformName, attributes) in callsiteAttributes)
+                {
+                    if (attributes.SupportedFirst == null ||
+                        !analysisValues.OfType<PlatformMethodValue>().Any(value =>
+                            value.Negated &&
+                            value.PlatformName.Equals(platformName, StringComparison.OrdinalIgnoreCase) &&
+                            attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version)))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
             static bool IsPlatformSupportWasSuppresed(PlatformMethodValue parentValue, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> originalAttributes)
                 => !parentValue.Negated && !attributes.ContainsKey(parentValue.PlatformName) &&
                     originalAttributes.TryGetValue(parentValue.PlatformName, out Versions? version) &&
                     parentValue.Version.IsGreaterThanOrEqualTo(version.SupportedFirst);
+
+            static bool IsPlatformSupportSuppressedByCallsite(
+                PlatformMethodValue value,
+                SmallDictionary<string, Versions> attributes,
+                SmallDictionary<string, Versions> originalAttributes,
+                SmallDictionary<string, Versions>? callsiteAttributes)
+                => !attributes.ContainsKey(value.PlatformName) &&
+                    originalAttributes.TryGetValue(value.PlatformName, out Versions? originalVersion) &&
+                    originalVersion.SupportedFirst != null &&
+                    callsiteAttributes != null &&
+                    callsiteAttributes.TryGetValue(value.PlatformName, out Versions? callsiteVersion) &&
+                    callsiteVersion.SupportedFirst.IsGreaterThanOrEqualTo(originalVersion.SupportedFirst);
 
             static bool IsOnlySupportNeedsGuard(string platformName, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> csAttributes)
                  => csAttributes.TryGetValue(platformName, out var versions) &&
