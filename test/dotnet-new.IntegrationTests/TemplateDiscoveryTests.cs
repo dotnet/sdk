@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.TestFramework;
 using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -17,7 +16,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _templateDiscoveryTool = templateDiscoveryTool;
         }
 
-        [PlatformSpecificFact(TestPlatforms.All, TestArchitectures.X64)]
+        [PlatformSpecificFact(TestPlatforms.Any, TestArchitectures.X64)]
         public async Task CanRunDiscoveryTool()
         {
             string testDir = CreateTemporaryFolder();
