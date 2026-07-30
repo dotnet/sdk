@@ -1939,6 +1939,98 @@ namespace UnitTests {
             return VerifyCS.VerifyCodeFixAsync(code, result, fixedCode);
         }
 
+        [TestMethod]
+        public Task NestedGuards_CSharp_FixAllIntroducesDistinctLocals()
+        {
+            string testCode = CreateCSharpCode(@"
+            string key = ""key"";
+            if ({|#0:parameter.ContainsKey(key)|})
+            {
+                if ({|#2:memberField.ContainsKey(key)|})
+                {
+                    Console.WriteLine({|#3:memberField[key]|});
+                }
+
+                Console.WriteLine({|#1:parameter[key]|});
+            }
+
+            return 0;");
+
+            string fixedCode = CreateCSharpCode(@"
+            string key = ""key"";
+            if (parameter.TryGetValue(key, out int value))
+            {
+                if (memberField.TryGetValue(key, out int value1))
+                {
+                    Console.WriteLine(value1);
+                }
+
+                Console.WriteLine(value);
+            }
+
+            return 0;");
+
+            return new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1),
+                    VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(2).WithLocation(3)
+                },
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task NestedGuards_VisualBasic_FixAllIntroducesDistinctLocals()
+        {
+            string testCode = CreateVbCode(@"
+            Dim key As String = ""key""
+
+            If {|#0:parameter.ContainsKey(key)|} Then
+
+                If {|#2:memberField.ContainsKey(key)|} Then
+                    Console.WriteLine({|#3:memberField(key)|})
+                End If
+
+                Console.WriteLine({|#1:parameter(key)|})
+            End If
+
+            Return 0");
+
+            string fixedCode = CreateVbCode(@"
+            Dim key As String = ""key""
+
+            Dim value As Integer = Nothing
+            If parameter.TryGetValue(key, value) Then
+
+                Dim value1 As Integer = Nothing
+                If memberField.TryGetValue(key, value1) Then
+                    Console.WriteLine(value1)
+                End If
+
+                Console.WriteLine(value)
+            End If
+
+            Return 0");
+
+            return new VerifyVB.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(0).WithLocation(1),
+                    VerifyVB.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueDiagnostic).WithLocation(2).WithLocation(3)
+                },
+                DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId }
+            }.RunAsync(CancellationToken.None);
+        }
+
         private static string CreateCSharpCode(string content)
         {
             return string.Format(CultureInfo.InvariantCulture, CSharpTemplate, content);

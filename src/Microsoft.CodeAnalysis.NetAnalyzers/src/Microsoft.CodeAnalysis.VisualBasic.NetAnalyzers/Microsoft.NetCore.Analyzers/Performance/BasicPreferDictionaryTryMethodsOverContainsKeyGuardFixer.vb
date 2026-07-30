@@ -4,7 +4,6 @@ Imports System.Composition
 Imports System.Threading
 Imports Analyzer.Utilities
 Imports Microsoft.CodeAnalysis
-Imports Microsoft.CodeAnalysis.CodeActions
 Imports Microsoft.CodeAnalysis.CodeFixes
 Imports Microsoft.CodeAnalysis.Editing
 Imports Microsoft.CodeAnalysis.VisualBasic
@@ -18,30 +17,53 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
 
         Public Overrides Async Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
             Dim diagnostic = context.Diagnostics.FirstOrDefault()
-            If diagnostic Is Nothing OrElse diagnostic.AdditionalLocations.Count < 0 Then
+            If diagnostic Is Nothing OrElse diagnostic.AdditionalLocations.Count = 0 Then
                 Return
             End If
 
             Dim document = context.Document
             Dim root = Await document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(False)
 
-            Dim containsKeyInvocation = TryCast(root.FindNode(context.Span), InvocationExpressionSyntax)
-            Dim containsKeyAccess = TryCast(containsKeyInvocation?.Expression, MemberAccessExpressionSyntax)
-            If containsKeyInvocation Is Nothing OrElse containsKeyAccess Is Nothing Then
-                Return
+            If diagnostic.Id = PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId Then
+                Dim semanticModel = Await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(False)
+                If GetTryGetValueFix(diagnostic, root, semanticModel) IsNot Nothing Then
+                    RegisterCodeFix(context, PreferDictionaryTryGetValueCodeFixTitle, TryGetValueEquivalenceKey)
+                End If
+            ElseIf GetTryAddFix(diagnostic, root) IsNot Nothing Then
+                RegisterCodeFix(context, PreferDictionaryTryAddValueCodeFixTitle, TryAddEquivalenceKey)
             End If
-
-            Dim action = If(diagnostic.Id = PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId,
-                            Await GetTryGetValueActionAsync(root, diagnostic, document, containsKeyAccess, containsKeyInvocation, context.CancellationToken).ConfigureAwait(False),
-                            GetTryAddAction(root, diagnostic, document, containsKeyAccess, containsKeyInvocation))
-            If action Is Nothing Then
-                Return
-            End If
-
-            context.RegisterCodeFix(action, context.Diagnostics)
         End Function
 
-        Private Shared Async Function GetTryGetValueActionAsync(root As SyntaxNode, diagnostic As Diagnostic, document As Document, containsKeyAccess As MemberAccessExpressionSyntax, containsKeyInvocation As InvocationExpressionSyntax, cancellationToken As CancellationToken) As Task(Of CodeAction)
+        Protected Overrides Async Function ApplyFixAsync(document As Document, diagnostic As Diagnostic, editor As SyntaxEditor, state As FixAllState, cancellationToken As CancellationToken) As Task
+            If diagnostic.Id = PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId Then
+                If state.EquivalenceKey IsNot Nothing AndAlso state.EquivalenceKey <> TryGetValueEquivalenceKey Then
+                    Return
+                End If
+
+                Dim semanticModel = Await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(False)
+                Dim fix = GetTryGetValueFix(diagnostic, editor.OriginalRoot, semanticModel)
+                If fix IsNot Nothing Then
+                    ApplyTryGetValueFix(editor, semanticModel, state, fix, cancellationToken)
+                End If
+            Else
+                If state.EquivalenceKey IsNot Nothing AndAlso state.EquivalenceKey <> TryAddEquivalenceKey Then
+                    Return
+                End If
+
+                Dim fix = GetTryAddFix(diagnostic, editor.OriginalRoot)
+                If fix IsNot Nothing Then
+                    ApplyTryAddFix(editor, fix)
+                End If
+            End If
+        End Function
+
+        Private Shared Function GetTryGetValueFix(diagnostic As Diagnostic, root As SyntaxNode, semanticModel As SemanticModel) As TryGetValueFix
+            Dim containsKeyInvocation = TryCast(root.FindNode(diagnostic.Location.SourceSpan), InvocationExpressionSyntax)
+            Dim containsKeyAccess = TryCast(containsKeyInvocation?.Expression, MemberAccessExpressionSyntax)
+            If containsKeyInvocation Is Nothing OrElse containsKeyAccess Is Nothing Then
+                Return Nothing
+            End If
+
             Dim dictionaryAccessors As New List(Of SyntaxNode)
             Dim addStatementNode As ExecutableStatementSyntax = Nothing
             Dim changedValueNode As SyntaxNode = Nothing
@@ -106,132 +128,204 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Performance
                 Return Nothing
             End If
 
-            Dim semanticModel = Await document.GetSemanticModelAsync(cancellationToken).
-                    ConfigureAwait(False)
-            Dim dictionaryValueType = GetDictionaryValueType(semanticModel, containsKeyAccess.Expression)
+            ' The value assignment is inserted before the statement the guard belongs to, so the fix only
+            ' applies to a shape that has one.
+            Dim anchor As SyntaxNode = containsKeyAccess.FirstAncestorOrSelf(Of MultiLineIfBlockSyntax)
+            If anchor Is Nothing Then
+                anchor = containsKeyAccess.FirstAncestorOrSelf(Of SingleLineIfStatementSyntax)
+            End If
 
-            Dim replaceFunction =
-                    Async Function(ct As CancellationToken) As Task(Of Document)
-                        Dim editor = Await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(False)
-                        Dim generator = editor.Generator
+            If anchor Is Nothing Then
+                ' For ternary expressions, we need to add the value assignment before the parent of
+                ' the expression, since the ternary expression is not an alone-standing expression.
+                anchor = containsKeyAccess.FirstAncestorOrSelf(Of TernaryConditionalExpressionSyntax)?.Parent
+            End If
 
-                        Dim identifierName = DirectCast(If(variableName Is Nothing,
-                                                           generator.FirstUnusedIdentifierName(semanticModel,
-                                                                                               containsKeyAccess.SpanStart,
-                                                                                               Value),
-                                                           generator.IdentifierName(variableName)),
-                                                        IdentifierNameSyntax)
-                        Dim tryGetValueAccess = generator.MemberAccessExpression(containsKeyAccess.Expression,
-                                                                                 TryGetValue)
-                        Dim keyArgument = containsKeyInvocation.ArgumentList.Arguments.FirstOrDefault()
-                        Dim valueAssignment =
-                                generator.LocalDeclarationStatement(dictionaryValueType,
-                                                                    identifierName.Identifier.ValueText,
-                                                                    generator.DefaultExpression(dictionaryValueType)).
-                                WithLeadingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed).
-                                WithoutTrailingTrivia()
-                        Dim tryGetValueInvocation = generator.InvocationExpression(tryGetValueAccess,
-                                                                                   keyArgument,
-                                                                                   generator.Argument(identifierName))
+            If anchor Is Nothing Then
+                Return Nothing
+            End If
 
-#Disable Warning IDE0270 ' Use coalesce expression - suppressed for readability
-                        Dim ifStatement As SyntaxNode = containsKeyAccess.FirstAncestorOrSelf(Of MultiLineIfBlockSyntax)
-                        If ifStatement Is Nothing Then
-                            ifStatement = containsKeyAccess.FirstAncestorOrSelf(Of SingleLineIfStatementSyntax)
-                        End If
-#Enable Warning IDE0270 ' Use coalesce expression
-
-                        If ifStatement Is Nothing Then
-                            ' For ternary expressions, we need to add the value assignment before the parent of
-                            ' the expression, since the ternary expression is not an alone-standing expression.
-                            ifStatement = containsKeyAccess.FirstAncestorOrSelf(Of TernaryConditionalExpressionSyntax)?.Parent
-                        End If
-
-                        If Not ifStatement.HasLeadingTrivia OrElse
-                           Not ifStatement.GetLeadingTrivia().Any(Function(t) t.RawKind = SyntaxKind.EndOfLineTrivia) Then
-                            valueAssignment = valueAssignment.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
-                        End If
-
-                        editor.InsertBefore(ifStatement, valueAssignment)
-                        editor.ReplaceNode(containsKeyInvocation, tryGetValueInvocation)
-
-                        If addStatementNode IsNot Nothing Then
-                            Dim newValueAssignment As SyntaxNode = generator.ExpressionStatement(
-                                generator.AssignmentStatement(identifierName, changedValueNode)).
-                                    WithTrailingTrivia(SyntaxFactory.ElasticMarker)
-                            editor.InsertBefore(addStatementNode, newValueAssignment)
-                            editor.ReplaceNode(changedValueNode, identifierName)
-                        End If
-
-                        For Each dictionaryAccess In dictionaryAccessors
-                            editor.ReplaceNode(dictionaryAccess, identifierName)
-                        Next
-
-                        If localDeclarationStatement IsNot Nothing Then
-                            If variableDeclarator Is Nothing Then
-                                editor.RemoveNode(localDeclarationStatement)
-                            Else
-                                editor.RemoveNode(variableDeclarator)
-                            End If
-                        End If
-
-                        Return editor.GetChangedDocument()
-                    End Function
-
-            Return CodeAction.Create(PreferDictionaryTryGetValueCodeFixTitle, replaceFunction, PreferDictionaryTryGetValueCodeFixTitle)
+            Return New TryGetValueFix(containsKeyInvocation, containsKeyAccess, anchor, dictionaryAccessors,
+                                      addStatementNode, changedValueNode, variableName, localDeclarationStatement,
+                                      variableDeclarator, GetDictionaryValueType(semanticModel, containsKeyAccess.Expression))
         End Function
 
-        Private Shared Function GetTryAddAction(root As SyntaxNode, diagnostic As Diagnostic, document As Document, containsKeyAccess As MemberAccessExpressionSyntax, containsKeyInvocation As InvocationExpressionSyntax) As CodeAction
-            Dim dictionaryAddLocation = diagnostic.AdditionalLocations(0)
-            Dim dictionaryAddInvocation = TryCast(root.FindNode(dictionaryAddLocation.SourceSpan, getInnermostNodeForTie:=True), InvocationExpressionSyntax)
-            Dim replaceFunction = Async Function(ct As CancellationToken) As Task(Of Document)
-                                      Dim editor = Await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(False)
-                                      Dim generator = editor.Generator
+        Private Shared Sub ApplyTryGetValueFix(editor As SyntaxEditor, semanticModel As SemanticModel, state As FixAllState, fix As TryGetValueFix, cancellationToken As CancellationToken)
+            Dim generator = editor.Generator
 
-                                      Dim tryAddValueAccess = generator.MemberAccessExpression(containsKeyAccess.Expression, TryAdd)
-                                      Dim dictionaryAddArguments = dictionaryAddInvocation.ArgumentList.Arguments
-                                      Dim tryAddInvocation = generator.InvocationExpression(tryAddValueAccess, dictionaryAddArguments(0), dictionaryAddArguments(1))
+            Dim position = fix.ContainsKeyAccess.SpanStart
+            Dim identifierName = DirectCast(If(fix.VariableName Is Nothing,
+                                               generator.FirstUnusedIdentifierName(semanticModel,
+                                                                                   position,
+                                                                                   Value,
+                                                                                   reservedNames:=state.GetReservedNames(semanticModel, position, cancellationToken)),
+                                               generator.IdentifierName(fix.VariableName)),
+                                            IdentifierNameSyntax)
+            state.RecordIntroducedName(semanticModel, position, identifierName.Identifier.ValueText, cancellationToken)
 
-                                      Dim ifStatement = containsKeyInvocation.AncestorsAndSelf().OfType(Of MultiLineIfBlockSyntax).FirstOrDefault()
-                                      If ifStatement Is Nothing Then
-                                          Return editor.OriginalDocument
-                                      End If
+            Dim tryGetValueAccess = generator.MemberAccessExpression(fix.ContainsKeyAccess.Expression,
+                                                                     TryGetValue)
+            Dim keyArgument = fix.ContainsKeyInvocation.ArgumentList.Arguments.FirstOrDefault()
+            Dim valueAssignment =
+                    generator.LocalDeclarationStatement(fix.DictionaryValueType,
+                                                        identifierName.Identifier.ValueText,
+                                                        generator.DefaultExpression(fix.DictionaryValueType)).
+                    WithLeadingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed).
+                    WithoutTrailingTrivia()
+            Dim tryGetValueInvocation = generator.InvocationExpression(tryGetValueAccess,
+                                                                       keyArgument,
+                                                                       generator.Argument(identifierName))
 
-                                      Dim unary = TryCast(ifStatement.IfStatement.Condition, UnaryExpressionSyntax)
-                                      If unary IsNot Nothing And unary.IsKind(SyntaxKind.NotExpression) Then
-                                          If ifStatement.Statements.Count = 1 Then
-                                              If ifStatement.ElseBlock Is Nothing Then
-                                                  Dim invocationWithTrivia = tryAddInvocation.WithTriviaFrom(ifStatement)
-                                                  editor.ReplaceNode(ifStatement, generator.ExpressionStatement(invocationWithTrivia))
-                                              Else
-                                                  Dim newIf = ifStatement.WithStatements(ifStatement.ElseBlock.Statements).
-                                                          WithElseBlock(Nothing).
-                                                          WithIfStatement(ifStatement.IfStatement.ReplaceNode(containsKeyInvocation, tryAddInvocation))
-                                                  editor.ReplaceNode(ifStatement, newIf)
-                                              End If
-                                          Else
-                                              editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)
-                                              editor.ReplaceNode(unary, tryAddInvocation)
-                                          End If
-                                      ElseIf ifStatement.IfStatement.Condition.IsKind(SyntaxKind.InvocationExpression) And ifStatement.ElseBlock IsNot Nothing Then
-                                          Dim negatedTryAddInvocation = generator.LogicalNotExpression(tryAddInvocation)
-                                          editor.ReplaceNode(containsKeyInvocation, negatedTryAddInvocation)
-                                          If ifStatement.ElseBlock.Statements.Count = 1 Then
-                                              editor.RemoveNode(ifStatement.ElseBlock, SyntaxRemoveOptions.KeepNoTrivia)
-                                          Else
-                                              editor.RemoveNode(dictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)
-                                          End If
-                                      End If
+            If Not fix.ValueAssignmentAnchor.HasLeadingTrivia OrElse
+               Not fix.ValueAssignmentAnchor.GetLeadingTrivia().Any(Function(t) t.RawKind = SyntaxKind.EndOfLineTrivia) Then
+                valueAssignment = valueAssignment.WithTrailingTrivia(SyntaxFactory.ElasticCarriageReturnLineFeed)
+            End If
 
-                                      Return editor.GetChangedDocument()
-                                  End Function
+            editor.InsertBefore(fix.ValueAssignmentAnchor, valueAssignment)
+            editor.ReplaceNode(fix.ContainsKeyInvocation, tryGetValueInvocation)
 
-            Return CodeAction.Create(PreferDictionaryTryAddValueCodeFixTitle, replaceFunction, PreferDictionaryTryAddValueCodeFixTitle)
+            If fix.AddStatementNode IsNot Nothing Then
+                Dim newValueAssignment As SyntaxNode = generator.ExpressionStatement(
+                    generator.AssignmentStatement(identifierName, fix.ChangedValueNode)).
+                        WithTrailingTrivia(SyntaxFactory.ElasticMarker)
+                editor.InsertBefore(fix.AddStatementNode, newValueAssignment)
+                editor.ReplaceNode(fix.ChangedValueNode, identifierName)
+            End If
+
+            For Each dictionaryAccess In fix.DictionaryAccessors
+                editor.ReplaceNode(dictionaryAccess, identifierName)
+            Next
+
+            If fix.LocalDeclarationStatement IsNot Nothing Then
+                If fix.VariableDeclarator Is Nothing Then
+                    editor.RemoveNode(fix.LocalDeclarationStatement)
+                Else
+                    editor.RemoveNode(fix.VariableDeclarator)
+                End If
+            End If
+        End Sub
+
+        Private Shared Function GetTryAddFix(diagnostic As Diagnostic, root As SyntaxNode) As TryAddFix
+            Dim containsKeyInvocation = TryCast(root.FindNode(diagnostic.Location.SourceSpan), InvocationExpressionSyntax)
+            Dim containsKeyAccess = TryCast(containsKeyInvocation?.Expression, MemberAccessExpressionSyntax)
+            If containsKeyInvocation Is Nothing OrElse containsKeyAccess Is Nothing Then
+                Return Nothing
+            End If
+
+            Dim dictionaryAddInvocation = TryCast(root.FindNode(diagnostic.AdditionalLocations(0).SourceSpan, getInnermostNodeForTie:=True), InvocationExpressionSyntax)
+            If dictionaryAddInvocation Is Nothing Then
+                Return Nothing
+            End If
+
+            Dim ifStatement = containsKeyInvocation.AncestorsAndSelf().OfType(Of MultiLineIfBlockSyntax).FirstOrDefault()
+            If ifStatement Is Nothing Then
+                Return Nothing
+            End If
+
+            Return New TryAddFix(containsKeyInvocation, containsKeyAccess, dictionaryAddInvocation, ifStatement)
         End Function
+
+        Private Shared Sub ApplyTryAddFix(editor As SyntaxEditor, fix As TryAddFix)
+            Dim generator = editor.Generator
+
+            Dim tryAddValueAccess = generator.MemberAccessExpression(fix.ContainsKeyAccess.Expression, TryAdd)
+            Dim dictionaryAddArguments = fix.DictionaryAddInvocation.ArgumentList.Arguments
+            Dim tryAddInvocation = generator.InvocationExpression(tryAddValueAccess, dictionaryAddArguments(0), dictionaryAddArguments(1))
+            Dim ifStatement = fix.IfStatement
+
+            Dim unary = TryCast(ifStatement.IfStatement.Condition, UnaryExpressionSyntax)
+            If unary IsNot Nothing And unary.IsKind(SyntaxKind.NotExpression) Then
+                If ifStatement.Statements.Count = 1 Then
+                    If ifStatement.ElseBlock Is Nothing Then
+                        Dim invocationWithTrivia = tryAddInvocation.WithTriviaFrom(ifStatement)
+                        editor.ReplaceNode(ifStatement, generator.ExpressionStatement(invocationWithTrivia))
+                    Else
+                        Dim newIf = ifStatement.WithStatements(ifStatement.ElseBlock.Statements).
+                                WithElseBlock(Nothing).
+                                WithIfStatement(ifStatement.IfStatement.ReplaceNode(fix.ContainsKeyInvocation, tryAddInvocation))
+                        editor.ReplaceNode(ifStatement, newIf)
+                    End If
+                Else
+                    editor.RemoveNode(fix.DictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)
+                    editor.ReplaceNode(unary, tryAddInvocation)
+                End If
+            ElseIf ifStatement.IfStatement.Condition.IsKind(SyntaxKind.InvocationExpression) And ifStatement.ElseBlock IsNot Nothing Then
+                Dim negatedTryAddInvocation = generator.LogicalNotExpression(tryAddInvocation)
+                editor.ReplaceNode(fix.ContainsKeyInvocation, negatedTryAddInvocation)
+                If ifStatement.ElseBlock.Statements.Count = 1 Then
+                    editor.RemoveNode(ifStatement.ElseBlock, SyntaxRemoveOptions.KeepNoTrivia)
+                Else
+                    editor.RemoveNode(fix.DictionaryAddInvocation.Parent, SyntaxRemoveOptions.KeepNoTrivia)
+                End If
+            End If
+        End Sub
 
         Private Shared Function GetDictionaryValueType(semanticModel As SemanticModel, dictionary As SyntaxNode) As ITypeSymbol
             Dim type = DirectCast(semanticModel.GetTypeInfo(dictionary).Type, INamedTypeSymbol)
             Return type.TypeArguments(1)
         End Function
+
+        Private NotInheritable Class TryGetValueFix
+            Public Sub New(containsKeyInvocation As InvocationExpressionSyntax, containsKeyAccess As MemberAccessExpressionSyntax,
+                           valueAssignmentAnchor As SyntaxNode, dictionaryAccessors As List(Of SyntaxNode),
+                           addStatementNode As ExecutableStatementSyntax, changedValueNode As SyntaxNode, variableName As String,
+                           localDeclarationStatement As LocalDeclarationStatementSyntax, variableDeclarator As VariableDeclaratorSyntax,
+                           dictionaryValueType As ITypeSymbol)
+                Me.ContainsKeyInvocation = containsKeyInvocation
+                Me.ContainsKeyAccess = containsKeyAccess
+                Me.ValueAssignmentAnchor = valueAssignmentAnchor
+                Me.DictionaryAccessors = dictionaryAccessors
+                Me.AddStatementNode = addStatementNode
+                Me.ChangedValueNode = changedValueNode
+                Me.VariableName = variableName
+                Me.LocalDeclarationStatement = localDeclarationStatement
+                Me.VariableDeclarator = variableDeclarator
+                Me.DictionaryValueType = dictionaryValueType
+            End Sub
+
+            Public ReadOnly Property ContainsKeyInvocation As InvocationExpressionSyntax
+
+            Public ReadOnly Property ContainsKeyAccess As MemberAccessExpressionSyntax
+
+            ''' <summary>
+            ''' The statement the declaration of the value local is inserted before.
+            ''' </summary>
+            Public ReadOnly Property ValueAssignmentAnchor As SyntaxNode
+
+            Public ReadOnly Property DictionaryAccessors As List(Of SyntaxNode)
+
+            Public ReadOnly Property AddStatementNode As ExecutableStatementSyntax
+
+            Public ReadOnly Property ChangedValueNode As SyntaxNode
+
+            ''' <summary>
+            ''' The name of the local the value is already read into, or Nothing when the fix has to introduce one.
+            ''' </summary>
+            Public ReadOnly Property VariableName As String
+
+            Public ReadOnly Property LocalDeclarationStatement As LocalDeclarationStatementSyntax
+
+            Public ReadOnly Property VariableDeclarator As VariableDeclaratorSyntax
+
+            Public ReadOnly Property DictionaryValueType As ITypeSymbol
+        End Class
+
+        Private NotInheritable Class TryAddFix
+            Public Sub New(containsKeyInvocation As InvocationExpressionSyntax, containsKeyAccess As MemberAccessExpressionSyntax,
+                           dictionaryAddInvocation As InvocationExpressionSyntax, ifStatement As MultiLineIfBlockSyntax)
+                Me.ContainsKeyInvocation = containsKeyInvocation
+                Me.ContainsKeyAccess = containsKeyAccess
+                Me.DictionaryAddInvocation = dictionaryAddInvocation
+                Me.IfStatement = ifStatement
+            End Sub
+
+            Public ReadOnly Property ContainsKeyInvocation As InvocationExpressionSyntax
+
+            Public ReadOnly Property ContainsKeyAccess As MemberAccessExpressionSyntax
+
+            Public ReadOnly Property DictionaryAddInvocation As InvocationExpressionSyntax
+
+            Public ReadOnly Property IfStatement As MultiLineIfBlockSyntax
+        End Class
     End Class
 End Namespace

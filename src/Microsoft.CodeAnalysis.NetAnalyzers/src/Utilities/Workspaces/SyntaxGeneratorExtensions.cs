@@ -465,30 +465,45 @@ namespace Analyzer.Utilities
         /// <param name="position">The position in the code.</param>
         /// <param name="baseName">The base name to use.</param>
         /// <param name="maxTries">Maximum number of tries.</param>
+        /// <param name="reservedNames">
+        /// Names claimed by an edit that has not been applied yet, and so is still invisible to
+        /// <paramref name="semanticModel"/>.
+        /// </param>
         /// <returns>
         /// A <see cref="SyntaxNode"/> representing an unused identifier name.
         /// This can be either the base name itself or a variation of it with a number appended to make it unique.
         /// </returns>
-        public static SyntaxNode FirstUnusedIdentifierName(this SyntaxGenerator generator, SemanticModel semanticModel, int position, string baseName, int maxTries = int.MaxValue)
+        public static SyntaxNode FirstUnusedIdentifierName(this SyntaxGenerator generator, SemanticModel semanticModel, int position, string baseName, int maxTries = int.MaxValue, ISet<string>? reservedNames = null)
         {
             var identifierName = generator.IdentifierName(baseName);
 
-            if (semanticModel.GetSpeculativeSymbolInfo(position, identifierName, SpeculativeBindingOption.BindAsExpression).Symbol is null)
+            if (IsUnused(baseName, identifierName))
             {
                 return identifierName;
             }
 
             for (int i = 1; i < maxTries; i++)
             {
-                identifierName = generator.IdentifierName($"{baseName}{i}");
+                var candidate = $"{baseName}{i}";
+                identifierName = generator.IdentifierName(candidate);
 
-                if (semanticModel.GetSpeculativeSymbolInfo(position, identifierName, SpeculativeBindingOption.BindAsExpression).Symbol is null)
+                if (IsUnused(candidate, identifierName))
                 {
                     break;
                 }
             }
 
             return identifierName;
+
+            bool IsUnused(string candidate, SyntaxNode candidateName)
+            {
+                if (reservedNames is not null && reservedNames.Contains(candidate))
+                {
+                    return false;
+                }
+
+                return semanticModel.GetSpeculativeSymbolInfo(position, candidateName, SpeculativeBindingOption.BindAsExpression).Symbol is null;
+            }
         }
     }
 }
