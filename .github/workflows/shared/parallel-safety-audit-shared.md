@@ -1,5 +1,5 @@
 ---
-# Shared frontmatter and prompt body for the parallel-safety audit workflows.
+# Shared frontmatter and prompt body for the parallel-safety audit workflow.
 #
 # UPSTREAM: ported from microsoft/testfx
 # `.github/workflows/shared/parallel-safety-audit-shared.md`, added by
@@ -9,8 +9,13 @@
 # here when you do.
 #
 # dotnet/sdk adaptations (keep these when syncing):
-#   - gh-aw plumbing per this repo's conventions lives in the two consumers
+#   - gh-aw plumbing per this repo's conventions lives in the consumer
 #     (PAT-pool import, `engine: copilot`, `cli-proxy` + `github: mode: gh-proxy`).
+#   - Upstream's automatic `pull_request` variant is deliberately NOT ported: the
+#     `copilot-pat-pool` environment is restricted to protected branches, so a PR
+#     run is rejected before any step executes. See the long comment in
+#     `parallel-safety-audit-command.md`. The audit is maintainer-invoked only, so
+#     it always answers - there is no "stay silent" path to maintain.
 #   - `test/TestAssets/` and `test/TestPackages/` are excluded from the audit
 #     surface: they are test inputs, not test code.
 #   - The opt-in model described in Step 0 is `MSTestParallelizeScope` +
@@ -20,29 +25,18 @@
 #     in-flight work.
 #   - Repository-specific fixture guidance (`SdkTest`, `TestAssetsManager`
 #     `identifier:`, `TestCommand.WithEnvironmentVariable`).
-#   - On an automatic run the agent stays silent unless it has something to say.
 #
 # The prompt deliberately tells the agent to re-verify repository facts (which
 # projects opt in, which properties are set, which MSTest version is pinned)
 # against the files at HEAD instead of trusting this text, so that it degrades
 # to "check for yourself" rather than to a confident falsehood as the repo moves.
 #
-# Two consumers import this file:
-#   - parallel-safety-audit.md          → runs automatically on PRs that touch
-#                                          test/**
-#   - parallel-safety-audit-command.md  → runs on the /parallel-audit slash command
-#
-# Both consumers contribute their own trigger configuration (`on:`), the PAT-pool
-# import and `engine:` block this repository requires, and their own
-# `safe-outputs.noop` block (kept in each consumer until the gh-aw import merge
-# fully preserves `report-as-issue: false`). Everything else — tools,
-# permissions, network, the deterministic pre-extraction steps, and the agent
-# prompt — lives here so the two variants cannot drift.
-#
-# Splitting the workflow was necessary because mixing `slash_command` with any
-# other trigger in a single gh-aw workflow makes the activation gate require a
-# command-position match on *every* event, which silently skips the agent on
-# every `pull_request` invocation.
+# This file is imported by `parallel-safety-audit-command.md`, which contributes
+# the trigger configuration (`on:`), the PAT-pool import and `engine:` block this
+# repository requires, and its own `safe-outputs.noop` block (kept there until the
+# gh-aw import merge fully preserves `report-as-issue: false`). Everything else -
+# tools, permissions, network, the deterministic pre-extraction steps, and the
+# agent prompt - lives here.
 
 description: >-
   Audits the MSTest tests changed in a pull request for parallel-safety: process-
@@ -119,26 +113,18 @@ steps:
     id: resolve
     env:
       EVENT_NAME: ${{ github.event_name }}
-      EVENT_PR_BASE_SHA: ${{ github.event.pull_request.base.sha }}
-      EVENT_PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
-      EVENT_PR_NUMBER: ${{ github.event.pull_request.number }}
       EVENT_ISSUE_NUMBER: ${{ github.event.issue.number }}
       EVENT_DISPATCH_PR_NUMBER: ${{ fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number }}
       GH_TOKEN: ${{ github.token }}
     run: |
       set -euo pipefail
       case "$EVENT_NAME" in
-        pull_request)
-          BASE_SHA="$EVENT_PR_BASE_SHA"
-          HEAD_SHA="$EVENT_PR_HEAD_SHA"
-          PR_NUMBER="$EVENT_PR_NUMBER"
-          MODE="automatic"
-          ;;
         issue_comment|workflow_dispatch)
-          # The centralized /parallel-audit slash command dispatches this workflow
-          # as `workflow_dispatch`, carrying the PR number in aw_context.item_number
-          # rather than github.event.issue.number. Resolve from whichever the event
-          # provides so the command actually reaches checkout instead of exiting here.
+          # The /parallel-audit slash command normally arrives as `issue_comment`.
+          # A repository-wide command router would instead dispatch this workflow as
+          # `workflow_dispatch`, carrying the PR number in aw_context.item_number
+          # rather than github.event.issue.number; resolve from whichever the event
+          # provides so either wiring reaches checkout instead of exiting here.
           if [[ "$EVENT_NAME" == "workflow_dispatch" ]]; then
             PR_NUMBER="$EVENT_DISPATCH_PR_NUMBER"
           else
@@ -151,9 +137,10 @@ steps:
           PR_JSON=$(gh pr view "$PR_NUMBER" --repo "$GITHUB_REPOSITORY" --json baseRefOid,headRefOid)
           BASE_SHA=$(printf '%s' "$PR_JSON" | jq -r '.baseRefOid')
           HEAD_SHA=$(printf '%s' "$PR_JSON" | jq -r '.headRefOid')
-          MODE="command"
           ;;
         *)
+          # Notably `pull_request`: see parallel-safety-audit-command.md for why this
+          # audit cannot run on that event under the copilot-pat-pool environment.
           echo "Unsupported event: $EVENT_NAME" >&2
           exit 1
           ;;
@@ -161,7 +148,6 @@ steps:
       echo "base_sha=$BASE_SHA" >> "$GITHUB_OUTPUT"
       echo "head_sha=$HEAD_SHA" >> "$GITHUB_OUTPUT"
       echo "pr_number=$PR_NUMBER" >> "$GITHUB_OUTPUT"
-      echo "mode=$MODE" >> "$GITHUB_OUTPUT"
 
   - name: Checkout PR head with full history
     uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
@@ -181,7 +167,6 @@ steps:
       BASE_SHA: ${{ steps.resolve.outputs.base_sha }}
       HEAD_SHA: ${{ steps.resolve.outputs.head_sha }}
       PR_NUMBER: ${{ steps.resolve.outputs.pr_number }}
-      AUDIT_MODE: ${{ steps.resolve.outputs.mode }}
     run: |
       set -euo pipefail
       # Fixed, prompt-visible location. See the note above the `steps:` block for
@@ -200,7 +185,6 @@ steps:
       : > "$CS_CANDIDATES"
       : > "$RANGES_OUT"
       printf '%s\n' "$PR_NUMBER" > "$OUT_DIR/pr-number.txt"
-      printf '%s\n' "$AUDIT_MODE" > "$OUT_DIR/audit-mode.txt"
       # `test/TestAssets/` and `test/TestPackages/` are test *inputs*, not test code:
       # they are sample projects and packages that the SDK's tests copy to a scratch
       # directory and build with the product SDK. Their sources are never compiled
@@ -347,7 +331,7 @@ steps:
       {
         echo "### 🧵 Parallel-safety audit inputs"
         echo
-        echo "PR #$PR_NUMBER (mode: $AUDIT_MODE) — changed test files: $TEST_COUNT, changed src files: $SRC_COUNT, parallelization-config files: $CONFIG_COUNT"
+        echo "PR #$PR_NUMBER — changed test files: $TEST_COUNT, changed src files: $SRC_COUNT, parallelization-config files: $CONFIG_COUNT"
       } >> "$GITHUB_STEP_SUMMARY"
 ---
 
@@ -389,7 +373,6 @@ no count or path is inlined into this prompt:
 ```bash
 ls -l /tmp/gh-aw/parallel-safety-audit/
 cat /tmp/gh-aw/parallel-safety-audit/pr-number.txt      # the PR you are auditing
-cat /tmp/gh-aw/parallel-safety-audit/audit-mode.txt     # "automatic" or "command"
 wc -l /tmp/gh-aw/parallel-safety-audit/changed-test-files.txt \
       /tmp/gh-aw/parallel-safety-audit/changed-src-files.txt \
       /tmp/gh-aw/parallel-safety-audit/changed-config-files.txt
@@ -400,9 +383,6 @@ explaining that and stop. Never guess the PR number or invent a file list.
 
 - **`pr-number.txt`** — the pull request number. Every safe-output call must use
   it explicitly (see the output section).
-- **`audit-mode.txt`** — `automatic` for a `pull_request` run, `command` for a
-  `/parallel-audit` invocation. This decides whether you may stay silent; see the
-  output section.
 - **`merge-base.txt`** and **`head-sha.txt`** — the exact revisions the extraction
   diffed. **Always pass both to `git diff`.** Your working directory is checked out
   at the PR head with a clean tree, so a bare `git diff <path>` compares against the
@@ -451,15 +431,7 @@ All paths inside those files are repo-relative; resolve them against the checked
 out repository, which is your current working directory.
 
 If **both** `changed-test-files.txt` and `changed-config-files.txt` are empty,
-follow the "nothing to audit" rule in the wrapper output section — which posts
-nothing on an automatic run — and stop.
-
-Note the corollary of that rule while you work: on an **automatic** run, findings
-against an assembly whose scope is `off` (or that is not an MSTest suite) are
-**readiness-only** and never on their own justify a comment. If Step 0 resolves
-every assembly you are auditing to `off` and this PR did not change any
-parallelization setting, you can stop early and `noop` rather than writing up a
-report nobody asked for.
+post the "nothing to audit" comment from the wrapper output section and stop.
 
 - **Parallelization-state changes** at
   `/tmp/gh-aw/parallel-safety-audit/changed-config-files.txt` — every file this PR touched
@@ -1020,37 +992,14 @@ race.
 
 ## Workflow wrapper — output
 
-**Decide first whether to comment at all.** This audit runs automatically on most
-test-touching PRs in a repository where the default is `MSTestParallelizeScope=None`,
-so a "nothing to flag" comment — or a readiness lecture about a suite that does not
-run in parallel — on every one of them is pure noise. The rule below applies to an
-**automatic** run (`/tmp/gh-aw/parallel-safety-audit/audit-mode.txt` contains
-`automatic`); the `/parallel-audit` command always answers.
+A human explicitly asked for this audit by commenting `/parallel-audit`, so
+**always answer** — use the "nothing to audit" form below when you have nothing to
+report. Silence would look like a broken command.
 
-- **Post a comment** when you have at least one finding that is **live** — that is,
-  a finding against an assembly whose resolved scope is `ClassLevel` or
-  `MethodLevel` — **or** when this PR changed an assembly's parallelization state
-  (`/tmp/gh-aw/parallel-safety-audit/changed-config-files.txt` is non-empty and the
-  change really enables, disables or widens parallelism).
-- **Otherwise call `noop`** with a one-line status such as
-  `"No live parallel-safety findings for PR #N (Foo.Tests: scope=off, 3 readiness items)."`
-  and post **nothing**. That covers an empty audit surface, a surface of only
-  non-test code, a clean audit, and — importantly — an audit whose findings are all
-  **readiness-only** because every assembly it touched has parallelization `off` or
-  is not an MSTest suite. Readiness advice about a suite that does not run in
-  parallel is not worth interrupting a PR for; it is what `/parallel-audit` is for.
-- **Exception — the `/parallel-audit` command.** When
-  `/tmp/gh-aw/parallel-safety-audit/audit-mode.txt` contains `command`, a human explicitly
-  asked for this audit, so always post a comment, using the "nothing to audit"
-  form below when there is nothing to report. Silence would look like a broken
-  command.
-
-When you do comment, post **exactly one** `add-comment`, **targeting the pull
+Post **exactly one** `add-comment`, **targeting the pull
 request number read from `/tmp/gh-aw/parallel-safety-audit/pr-number.txt` explicitly**. This
 workflow uses `target: "*"`, so there is no implicit "triggering PR" — pass the
-number on the safe-output call. That matters most for the `/parallel-audit`
-command variant, whose runtime event is `workflow_dispatch` and has no PR context
-at all.
+number on the safe-output call.
 Structure:
 
 ```markdown
@@ -1122,9 +1071,8 @@ test method, **no changed lifecycle member (`[TestInitialize]`,
 `[ClassInitialize]`, `[AssemblyInitialize]`, constructor / `Dispose`, …), no
 changed class- or assembly-level `[ResourceLock]` / `[DoNotParallelize]` /
 `[Parallelize]` declaration, no changed fixture field or helper**, and no
-assembly whose parallelization configuration this PR changed — then, **for an
-automatic `pull_request` run, call `noop` and post nothing**. Only for a
-`/parallel-audit` invocation post this short comment instead:
+assembly whose parallelization configuration this PR changed — post this short
+comment instead:
 
 ```markdown
 ### 🧵 Parallel-safety audit — PR #<number>
@@ -1140,7 +1088,6 @@ Audited `<assembly>` at scope `<off | ClassLevel | MethodLevel>`, workers `<N | 
 <sub>Re-run with `/parallel-audit`.</sub>
 ```
 
-After the single `add-comment` — or instead of it, when the rule above says not to
-comment — call `noop` with a brief status such as
+After the single `add-comment`, call `noop` with a brief status such as
 `"Posted parallel-safety audit for PR #N (scope=<...>, F findings)."` and stop.
 Do not call any other tools.

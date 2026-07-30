@@ -1,28 +1,48 @@
 ---
 emoji: 🧵
-name: "Parallel-safety audit on PR (command)"
+name: "Parallel-safety audit on PR"
 description: >-
-  Re-audits the changed MSTest tests of a pull request for parallel-safety when
+  Audits the changed MSTest tests of a pull request for parallel-safety when
   a maintainer comments `/parallel-audit`.
 
 # Ported from microsoft/testfx (.github/workflows/parallel-safety-audit-command.md,
 # microsoft/testfx#10252) and adapted to this repository's gh-aw conventions
 # (PAT pool, Copilot engine, gh-proxy tooling).
 #
-# The automatic on-open / on-ready-for-review variant lives in
-# `parallel-safety-audit.md`; it deliberately does not re-run on push, so this
-# command is how you refresh a stale audit. They must remain separate workflows
-# because mixing `slash_command` with other triggers makes gh-aw's activation
-# gate always require a command-position match, silently skipping the agent on
-# every non-comment event.
+# WHY THERE IS NO AUTOMATIC `pull_request` VARIANT.
+# Upstream pairs this command with a workflow that audits every PR on open. That
+# cannot work in a dotnet org repository. Every job of a PAT-pool workflow runs in
+# the `copilot-pat-pool` environment, which is deliberately restricted to the
+# repository's protected branches (see `shared/pat_pool.README.md`, "Environment").
+# A `pull_request` run happens on `refs/pull/<n>/merge`, so GitHub rejects the
+# deployment before any step executes:
+#
+#   Branch "refs/pull/<n>/merge" is not allowed to deploy to copilot-pat-pool
+#   due to environment protection rules.
+#
+# The only way to get a protected-branch ref for a PR event is `pull_request_target`,
+# which would hand a privileged token and the PAT pool to a job that checks out
+# untrusted PR head code and runs an agent over it. That is not a trade worth making
+# for an advisory audit, so the audit is maintainer-invoked only. Revisit if the PAT
+# pool is retired once org-level billing lands.
+#
+# `strategy: centralized` is NOT used: it compiles the workflow down to a bare
+# `workflow_dispatch` and relies on a repository-wide command router
+# (`agentic_commands.yml`) to detect the comment and dispatch it. This repository has
+# no such router, so a centralized command would never fire. The default
+# (decentralized) strategy compiles to a real `issue_comment` trigger, matching
+# `add-tactics-template-on-comment.md`.
 on:
   slash_command:
     name: parallel-audit
     events: [pull_request_comment]
-    strategy: centralized
   roles: [admin, maintainer, write]
   reaction: "eyes"
 
+# Only stops the workflow running inside a fork of this repository. Auditing a PR
+# that originates from a fork is supported and intentional: a maintainer has to ask
+# for it, and the pooled PAT carries only Copilot-requests read permission, so the
+# agent's sole write capability is the `add-comment` safe output.
 if: "github.event.repository.fork == false"
 
 permissions:
