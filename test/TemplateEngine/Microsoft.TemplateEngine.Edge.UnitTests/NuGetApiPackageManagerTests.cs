@@ -17,7 +17,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IList<string> _additionalSources = new[] { "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" };
         // Vulnerability metadata is only available in nuget.org registration blobs (read-only); the proxy does not mirror it.
-        private readonly IList<string> _vulnerabilitySources = new[] { "https://api.nuget.org/v3/index.json" };
+        private readonly IList<string> _vulnerabilitySources = new[] { "https://data.nuget.org/v3/index.json" };
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
