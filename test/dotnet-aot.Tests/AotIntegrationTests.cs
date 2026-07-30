@@ -165,7 +165,12 @@ public partial class AotIntegrationTests
         Directory.CreateDirectory(sdkSubDir);
         try
         {
+            // These are synthetic sentinel values; only their end-to-end appearance in --version matters.
+            const string expectedVersion = "11.0.100-preview.7.12345.67";
             File.Copy(aotSource, Path.Combine(sdkSubDir, aotLib));
+            File.WriteAllLines(
+                Path.Combine(sdkSubDir, ".version"),
+                ["0123456789abcdef", expectedVersion]);
 
             var env = new Dictionary<string, string> { ["DOTNET_AOT_SDK_DIR"] = sdkSubDir };
             if (selfLocate)
@@ -189,6 +194,10 @@ public partial class AotIntegrationTests
 
             Assert.IsTrue(basePathReferencesSdkDir,
                 $"--info Base Path did not reference the resolved SDK directory '{sdkSubDir}'. Output:\n{stdout}");
+
+            var (versionExitCode, versionOutput, _) = RunDn(["--version"], enableAot: true, extraEnv: env);
+            Assert.AreEqual(0, versionExitCode);
+            Assert.AreEqual(expectedVersion, versionOutput.Trim());
         }
         finally
         {

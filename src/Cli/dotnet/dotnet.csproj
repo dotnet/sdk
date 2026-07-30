@@ -35,7 +35,7 @@
     <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\WorkloadFileBasedInstall.cs" LinkBase="Common" />
-    <Compile Include="$(RepoRoot)src\Common\WorkloadSetVersion.cs" LinkBase="Common" />
+
     <Compile Include="$(RepoRoot)src\Common\NuGetUtils.NuGet.cs" LinkBase="Common" />
     <Compile Include="$(RepoRoot)src\Common\SdkVulnerabilityCacheReader.cs" LinkBase="Common" />
   </ItemGroup>
@@ -52,6 +52,7 @@
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.InstallRecords.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerClient.PackGroup.cs" />
     <Compile Remove="Commands\Workload\Install\NetSdkMsiInstallerServer.cs" />
+    <Compile Remove="Commands\Workload\Install\WindowsMsiManifestInstaller.cs" />
     <Compile Remove="Commands\Workload\Install\WorkloadInstallRecords\RegistryWorkloadInstallationRecordRepository.cs" />
     <Compile Remove="Commands\Workload\SignCheck_Windows.cs" />
   </ItemGroup>

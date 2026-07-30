@@ -80,12 +80,49 @@ internal partial class MicrosoftTestingPlatformTestCommand
             ListTestsFormat: GetListTestsFormat(parseResult, definition));
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        using var testRunPolicy = new TestRunPolicy(
+            testOptions.IsDiscovery || testOptions.IsHelp
+                ? null
+                : parseResult.GetValue(definition.MaximumFailedTestsOption),
+            testOptions.IsDiscovery || testOptions.IsHelp
+                ? null
+                : parseResult.GetValue(definition.TimeoutOption),
+            onCancellation: _ => output.MarkCancelled());
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
+        using var queueCancellation = CancellationTokenSource.CreateLinkedTokenSource(ctrlC.Token, testRunPolicy.Token);
+        var artifactPostProcessingManager = new ArtifactPostProcessingManager();
         int? exitCode = null;
         try
         {
-            var actionQueue = new TestApplicationActionQueue(degreeOfParallelism, buildOptions, testOptions, output, OnHelpRequested, ctrlC);
+            var actionQueue = new TestApplicationActionQueue(
+                degreeOfParallelism,
+                buildOptions,
+                testOptions,
+                output,
+                OnHelpRequested,
+                ctrlC,
+                artifactPostProcessingManager,
+                testRunPolicy,
+                queueCancellation.Token);
             exitCode = testHandler.RunTestApplications(actionQueue);
+            TestRunCancellationReason cancellationReason = testRunPolicy.Complete();
+
+            if (cancellationReason == TestRunCancellationReason.MaximumFailedTests)
+            {
+                exitCode = ExitCode.TestExecutionStoppedForMaxFailedTests;
+            }
+            else if (cancellationReason == TestRunCancellationReason.Timeout)
+            {
+                exitCode = ExitCode.TestSessionAborted;
+            }
+
+            if (!testOptions.IsHelp
+                && !testOptions.IsDiscovery
+                && !parseResult.GetValue(definition.NoArtifactPostProcessingOption)
+                && !ctrlC.Token.IsCancellationRequested)
+            {
+                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
+            }
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
             if (exitCode == ExitCode.Success && output.HasHandshakeFailure)
