@@ -40,7 +40,8 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="DeployToDevice">
+  <!-- ResolveFrameworkReferences mimics Android -->
+  <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
     <Message Text="DeployToDevice: Deployed $(TargetFramework) to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" />
     <Message Text="DeployToDevice: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
     <Error Condition="'$(FailDeployToDevice)' == 'true'" Text="DeployToDevice failed as requested." />
@@ -72,5 +73,10 @@
           Condition="'@(RuntimeEnvironmentVariable)' != ''">
     <Message Text="ComputeRunArguments: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
   </Target>
+  <!-- Unlike dotnet run, dotnet test builds DeployToDevice first and ComputeRunArguments second,
+       so ResolveFrameworkReferences has to run in the second build too to mimic Android. -->
+  <Target Name="_ComputeRunArgumentsDependsOnResolveFrameworkReferences"
+          BeforeTargets="ComputeRunArguments"
+          DependsOnTargets="ResolveFrameworkReferences" />
 
 </Project>

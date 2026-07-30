@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -112,7 +111,7 @@ internal sealed class ArtifactPostProcessingManager
 
                 if (invocation.FailureMessage is { } failureMessage)
                 {
-                    output.WriteWarningMessage(string.Format(
+                    ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                         CultureInfo.CurrentCulture,
                         CliCommandStrings.ArtifactPostProcessingFailed,
                         job.Application.Module.TargetPath,
@@ -120,21 +119,21 @@ internal sealed class ArtifactPostProcessingManager
                 }
                 else if (exitCode != ExitCode.Success)
                 {
-                    output.WriteWarningMessage(string.Format(
+                    ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                         CultureInfo.CurrentCulture,
                         CliCommandStrings.ArtifactPostProcessingProcessFailed,
                         job.Application.Module.TargetPath,
                         exitCode));
                 }
             }
-            catch (Exception ex) when (ex is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or Win32Exception
-                or NotSupportedException
-                or TimeoutException)
+            catch (Exception ex)
             {
-                output.WriteWarningMessage(string.Format(
+                // Post-processing is a best-effort convenience on top of a completed test run: the
+                // original artifacts are always still on disk and still reported, so no failure here
+                // may escape and turn a finished run into a CLI crash with a different exit code.
+                Logger.LogTrace($"Artifact post-processing with '{job.Application.Module.TargetPath}' failed: {ex}");
+
+                ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                     CultureInfo.CurrentCulture,
                     CliCommandStrings.ArtifactPostProcessingFailed,
                     job.Application.Module.TargetPath,
@@ -155,6 +154,24 @@ internal sealed class ArtifactPostProcessingManager
                 }
             }
         }
+    }
+
+    /// <summary>
+    /// Reports a post-processing failure, unless the user cancelled the run. Cancellation kills the
+    /// post-processing process the same way it kills a test application, so the resulting failure is
+    /// the cancellation the user asked for rather than a post-processing problem worth reporting.
+    /// </summary>
+    internal static void ReportFailureUnlessCancelled(
+        TerminalTestReporter output,
+        CtrlCCancellationManager ctrlC,
+        string message)
+    {
+        if (ctrlC.Token.IsCancellationRequested)
+        {
+            return;
+        }
+
+        output.WriteWarningMessage(message);
     }
 
     internal IReadOnlyList<ArtifactPostProcessingApplication> SnapshotApplications()

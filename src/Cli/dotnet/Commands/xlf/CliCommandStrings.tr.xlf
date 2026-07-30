@@ -4090,6 +4090,16 @@ Bir değeri görüntülemek için, bir değer sağlamadan ilgili komut satırı 
         <target state="translated">{1} konumunda belirtilen {0} iş yükü sürümü bulunamadı. Bu iş yükü sürümünü yüklemek için "dotnet workload restore" komutunu çalıştırın.</target>
         <note>{Locked="dotnet workload restore"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadSetVersionInPackageVersionFormat">
+        <source>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</source>
+        <target state="new">'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</target>
+        <note>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</note>
+      </trans-unit>
+      <trans-unit id="WorkloadSetVersionSpecifiedInGlobalJson">
+        <source> (Specified in '{0}')</source>
+        <target state="new"> (Specified in '{0}')</target>
+        <note>{0} is the path to the global.json file.</note>
+      </trans-unit>
       <trans-unit id="WorkloadSetVersionOptionDescription">
         <source>A workload version to display or one or more workloads and their versions joined by the '@' character.</source>
         <target state="translated">Görüntülenecek bir iş yükü sürümü veya bir veya daha fazla iş yükü ve bunların '@' karakteriyle birleştirilen sürümleri.</target>

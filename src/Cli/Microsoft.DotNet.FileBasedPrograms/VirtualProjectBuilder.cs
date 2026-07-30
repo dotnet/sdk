@@ -1,43 +1,43 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable enable
+
+using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
+using System.Linq;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading.Tasks;
 using System.Xml;
-#if !CLI_AOT
-using Microsoft.Build.Construction;
-using Microsoft.Build.Definition;
-using Microsoft.Build.Evaluation;
-using Microsoft.Build.Execution;
-#endif
 using Microsoft.CodeAnalysis.Text;
-using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.Utilities;
 
-namespace Microsoft.DotNet.ProjectTools;
+namespace Microsoft.DotNet.FileBasedPrograms;
 
-public sealed class VirtualProjectBuilder
+#if FILE_BASED_PROGRAMS_PUBLIC
+public
+#else
+internal
+#endif
+sealed class VirtualProjectBuilder
 {
-
     internal readonly record struct ExplicitProjectItem(string ItemType, string Include);
 
     internal const string FromIncludeDirectiveMetadataName = "FileBasedProgramsFromIncludeDirective";
 
-    private readonly IEnumerable<(string name, string value)> _defaultProperties;
+    internal const string FromRefDirectiveMetadataName = "FileBasedProgramsFromRefDirective";
+
+    private readonly IBuildService _buildService;
+
+    private readonly string? _targetFramework;
 
     private (ImmutableArray<CSharpDirective> Original, ImmutableArray<CSharpDirective> Evaluated)? _evaluatedDirectives;
-
-    /// <summary>
-    /// Prevents the virtual project's <see cref="ProjectRootElement"/> from being garbage collected
-    /// when MSBuild's <see cref="ProjectRootElementCache"/> demotes it to a weak reference
-    /// (which can happen when many SDK import files fill the cache during NuGet restore).
-    /// Without this, nested <c>&lt;MSBuild&gt;</c> tasks that re-evaluate the project with different properties
-    /// would fail to find the <see cref="ProjectRootElement"/> in the cache and try to load it from disk,
-    /// resulting in MSB4025 because the virtual project file does not exist on disk.
-    /// </summary>
-    private ProjectRootElement? _projectRootElement;
 
     internal string EntryPointFileFullPath { get; }
 
@@ -60,18 +60,20 @@ public sealed class VirtualProjectBuilder
     internal string[]? RequestedTargets { get; }
 
     internal VirtualProjectBuilder(
+        IBuildService buildService,
         string entryPointFileFullPath,
-        string targetFramework,
+        string? targetFramework,
         string[]? requestedTargets = null,
         string? artifactsPath = null,
         SourceText? sourceText = null)
     {
-        Debug.Assert(Path.IsPathFullyQualified(entryPointFileFullPath));
+        Debug.Assert(ExternalHelpers.IsPathFullyQualified(entryPointFileFullPath));
 
+        _buildService = buildService;
         EntryPointFileFullPath = entryPointFileFullPath;
         RequestedTargets = requestedTargets;
         ArtifactsPath = artifactsPath;
-        _defaultProperties = GetDefaultProperties(targetFramework);
+        _targetFramework = targetFramework;
 
         if (sourceText != null)
         {
@@ -82,24 +84,31 @@ public sealed class VirtualProjectBuilder
     /// <remarks>
     /// Kept in sync with the default <c>dotnet new console</c> project file (enforced by <c>DotnetProjectConvertTests.SameAsTemplate</c>).
     /// </remarks>
-    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string targetFramework) =>
+    internal static IEnumerable<(string name, string value)> GetDefaultProperties(string? targetFramework)
+    {
+        yield return ("OutputType", "Exe");
+        if (targetFramework != null) yield return ("TargetFramework", targetFramework);
+        yield return ("ImplicitUsings", "enable");
+        yield return ("Nullable", "enable");
+        yield return ("PublishAot", "true");
+        yield return ("PackAsTool", "true");
+    }
+
+    internal static IEnumerable<KeyValuePair<string, string>> GetGlobalBuildProperties() =>
     [
-        ("OutputType", "Exe"),
-        ("TargetFramework", targetFramework),
-        ("ImplicitUsings", "enable"),
-        ("Nullable", "enable"),
-        ("PublishAot", "true"),
-        ("PackAsTool", "true"),
+        // See https://github.com/dotnet/msbuild/blob/main/documentation/specs/build-nonexistent-projects-by-default.md.
+        new KeyValuePair<string, string>("_BuildNonexistentProjectsByDefault", bool.TrueString),
+        new KeyValuePair<string, string>("RestoreUseSkipNonexistentTargets", bool.FalseString),
     ];
 
-    internal static string GetArtifactsPath(string entryPointFileFullPath)
+    internal static string GetArtifactsPath(string entryPointFileFullPath, string? dotNetSubdirectory = null)
     {
         // Include entry point file name so the directory name is not completely opaque.
         string fileName = Path.GetFileNameWithoutExtension(entryPointFileFullPath);
         string hash = Sha256Hasher.HashWithNormalizedCasing(entryPointFileFullPath);
         string directoryName = $"{fileName}-{hash}";
 
-        return GetTempSubpath(directoryName);
+        return GetTempSubpath(name: directoryName, dotNetSubdirectory: dotNetSubdirectory);
     }
 
     private const string CsprojExtension = ".csproj";
@@ -139,7 +148,7 @@ public sealed class VirtualProjectBuilder
     /// <summary>
     /// Obtains a temporary subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/</c>.
     /// </summary>
-    internal static string GetTempSubdirectory()
+    internal static string GetTempSubdirectory(string? dotNetSubdirectory = null)
     {
         // We want a location where permissions are expected to be restricted to the current user.
         string directory = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
@@ -148,20 +157,19 @@ public sealed class VirtualProjectBuilder
 
         if (string.IsNullOrEmpty(directory))
         {
-            throw new InvalidOperationException(Resources.EmptyTempPath);
+            throw new InvalidOperationException(FileBasedProgramsResources.EmptyTempPath);
         }
 
-        return Path.Join(directory, "dotnet", "runfile");
+        return Path.Combine(directory, "dotnet", dotNetSubdirectory ?? "runfile");
     }
 
     /// <summary>
     /// Obtains a specific temporary path in a subdirectory for file-based app artifacts, e.g., <c>/tmp/dotnet/runfile/{name}</c>.
     /// </summary>
-    internal static string GetTempSubpath(string name)
+    internal static string GetTempSubpath(string name, string? dotNetSubdirectory = null)
     {
-        return Path.Join(GetTempSubdirectory(), name);
+        return Path.Combine(GetTempSubdirectory(dotNetSubdirectory), name);
     }
-
 
     public static bool IsValidEntryPointPath(string entryPointFilePath)
     {
@@ -202,9 +210,8 @@ public sealed class VirtualProjectBuilder
     /// <c>#:include</c>/<c>#:exclude</c> have their <see cref="CSharpDirective.IncludeOrExclude.ItemType"/> determined
     /// and relative paths resolved relative to their containing file.
     /// </remarks>
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    private ImmutableArray<CSharpDirective> EvaluateDirectives(
-        ProjectInstance project,
+    private async ValueTask<ImmutableArray<CSharpDirective>> EvaluateDirectivesAsync(
+        IProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
@@ -222,27 +229,27 @@ public sealed class VirtualProjectBuilder
             switch (directive)
             {
                 case CSharpDirective.Project projectDirective:
-                    projectDirective = projectDirective.WithName(project.ExpandString(projectDirective.Name), CSharpDirective.Project.NameKind.Expanded);
+                    projectDirective = projectDirective.WithName(await project.ExpandStringAsync(projectDirective.Name).ConfigureAwait(false), CSharpDirective.Project.NameKind.Expanded);
                     projectDirective = projectDirective.EnsureProjectFilePath(reportError);
 
                     builder.Add(projectDirective);
                     break;
 
                 case CSharpDirective.Ref refDirective:
-                    refDirective = refDirective.WithName(project.ExpandString(refDirective.Name), CSharpDirective.Ref.NameKind.Expanded);
+                    refDirective = refDirective.WithName(await project.ExpandStringAsync(refDirective.Name).ConfigureAwait(false), CSharpDirective.Ref.NameKind.Expanded);
                     refDirective = refDirective.EnsureResolvedPath(reportError);
 
                     builder.Add(refDirective);
                     break;
 
                 case CSharpDirective.IncludeOrExclude includeOrExcludeDirective:
-                    var expandedPath = project.ExpandString(includeOrExcludeDirective.Name);
-                    var fullPath = Path.GetFullPath(path: expandedPath, basePath: Path.GetDirectoryName(includeOrExcludeDirective.Info.SourceFile.Path)!);
+                    var expandedPath = await project.ExpandStringAsync(includeOrExcludeDirective.Name).ConfigureAwait(false);
+                    var fullPath = Path.GetFullPath(Path.Combine(Path.GetDirectoryName(includeOrExcludeDirective.Info.SourceFile.Path)!, expandedPath));
                     includeOrExcludeDirective = includeOrExcludeDirective.WithName(fullPath);
 
                     if (mapping.IsDefault)
                     {
-                        mapping = GetItemMapping(project, reportError);
+                        mapping = await GetItemMappingAsync(project, reportError).ConfigureAwait(false);
                     }
 
                     includeOrExcludeDirective = includeOrExcludeDirective.WithDeterminedItemType(reportError, mapping);
@@ -259,45 +266,52 @@ public sealed class VirtualProjectBuilder
         return builder.DrainToImmutable();
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    internal ImmutableArray<(string Extension, string ItemType)> GetItemMapping(ProjectInstance project, ErrorReporter reportError)
+    internal async ValueTask<ImmutableArray<(string Extension, string ItemType)>> GetItemMappingAsync(IProjectInstance project, ErrorReporter reportError)
     {
         return CSharpDirective.IncludeOrExclude.ParseMapping(
-            project.GetPropertyValue(CSharpDirective.IncludeOrExclude.MappingPropertyName),
+            await project.GetPropertyValueAsync(CSharpDirective.IncludeOrExclude.MappingPropertyName).ConfigureAwait(false),
             EntryPointSourceFile,
             reportError);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    public static ProjectInstance CreateProjectInstance(
+    public static async ValueTask<IProjectInstance> CreateProjectInstanceAsync(
+        IBuildService buildService,
         string entryPointFilePath,
         string targetFramework,
-        ProjectCollection projectCollection,
+        IProjectCollection projectCollection,
         Action<string, int, string> errorReporter)
     {
-        var builder = new VirtualProjectBuilder(entryPointFilePath, targetFramework);
+        var builder = new VirtualProjectBuilder(buildService, entryPointFilePath, targetFramework);
 
-        builder.CreateProjectInstance(
+        var result = await builder.CreateProjectInstanceAsync(
             projectCollection,
-            (text, path, textSpan, message, _) => errorReporter(path, text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1, message),
-            out var projectInstance,
-            projectRootElement: out _,
-            evaluatedDirectives: out _);
+            (text, path, textSpan, message, _) => errorReporter(path, text.Lines.GetLinePositionSpan(textSpan).Start.Line + 1, message)).ConfigureAwait(false);
 
-        return projectInstance;
+        return result.Project;
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    internal void CreateProjectInstance(
-        ProjectCollection projectCollection,
-        ErrorReporter reportError,
-        out ProjectInstance project,
-        out ProjectRootElement projectRootElement,
-        out ImmutableArray<CSharpDirective> evaluatedDirectives,
-        ImmutableArray<CSharpDirective> directives = default,
-        Action<IDictionary<string, string>>? addGlobalProperties = null,
-        bool validateAllDirectives = false)
+    internal readonly struct Result(
+        IProjectInstance project,
+        IProjectRootElement projectRootElement,
+        ImmutableArray<CSharpDirective> evaluatedDirectives)
     {
+        public IProjectInstance Project { get; } = project;
+        public IProjectRootElement ProjectRootElement { get; } = projectRootElement;
+        public ImmutableArray<CSharpDirective> EvaluatedDirectives { get; } = evaluatedDirectives;
+    }
+
+    internal async ValueTask<Result> CreateProjectInstanceAsync(
+        IProjectCollection projectCollection,
+        ErrorReporter reportError,
+        ImmutableArray<CSharpDirective> directives = default,
+        IDictionary<string, string>? additionalGlobalProperties = null,
+        bool validateAllDirectives = false,
+        HashSet<string>? processedRefFiles = null)
+    {
+        IProjectInstance project;
+        IProjectRootElement projectRootElement;
+        ImmutableArray<CSharpDirective> evaluatedDirectives;
+
         var directivesOriginal = directives;
 
         if (directives.IsDefault)
@@ -305,7 +319,7 @@ public sealed class VirtualProjectBuilder
             directives = FileLevelDirectiveHelpers.FindDirectives(EntryPointSourceFile, validateAllDirectives, reportError, checkDuplicates: false);
         }
 
-        (string ProjectFileText, ProjectInstance ProjectInstance, ProjectRootElement ProjectRootElement)? lastProject = null;
+        (string ProjectFileText, IProjectInstance ProjectInstance, IProjectRootElement ProjectRootElement)? lastProject = null;
 
         // If we evaluated directives previously (e.g., during restore), reuse them.
         // We don't use the additional properties from `addGlobalProperties`
@@ -314,153 +328,157 @@ public sealed class VirtualProjectBuilder
             cached.Original == directivesOriginal)
         {
             evaluatedDirectives = cached.Evaluated;
-            (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
+            (project, projectRootElement) = await CreateProjectInstanceNoEvaluation(
                 projectCollection,
                 evaluatedDirectives,
-                addGlobalProperties);
-
-            CheckDirectives(project, evaluatedDirectives, reportError);
-
-            return;
+                additionalGlobalProperties).ConfigureAwait(false);
         }
-
-        var entryPointDirectory = Path.GetDirectoryName(EntryPointFileFullPath)!;
-        var seenFiles = new HashSet<string>(1, StringComparer.Ordinal) { EntryPointFileFullPath };
-        var filesToProcess = new Queue<string>();
-        var evaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>();
-        var deduplicator = new DirectiveDeduplicator();
-
-        do
+        else
         {
-            var directivesForEvaluation = DeduplicateSdkDirectives(directives);
+            var entryPointDirectory = Path.GetDirectoryName(EntryPointFileFullPath)!;
+            var seenFiles = new HashSet<string>(StringComparer.Ordinal) { EntryPointFileFullPath };
+            var filesToProcess = new Queue<string>();
+            var evaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>();
+            var deduplicator = new DirectiveDeduplicator();
 
-            // Create a project with properties from #:property directives so they can be expanded inside EvaluateDirectives.
-            (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
-                projectCollection,
-                [.. evaluatedDirectiveBuilder, .. directivesForEvaluation],
-                addGlobalProperties);
-
-            // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
-            var fileEvaluatedDirectives = EvaluateDirectives(project, directivesForEvaluation, reportError);
-
-            // Detect duplicate directives across all files on evaluated directives. EvaluateDirectives only expands
-            // #:project, #:ref, #:include, and #:exclude; #:property and #:package values are still unevaluated here.
-            var deduplicatedFileEvaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>(fileEvaluatedDirectives.Length);
-            foreach (var directive in fileEvaluatedDirectives)
+            do
             {
-                if (directive is CSharpDirective.Sdk)
-                {
-                    deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
-                    continue;
-                }
+                var directivesForEvaluation = DeduplicateSdkDirectives(directives);
 
-                if (directive is CSharpDirective.Named named)
-                {
-                    deduplicator.CheckDirective(named, reportError, out bool shouldKeep);
-                    if (!shouldKeep)
-                    {
-                        continue;
-                    }
-                }
-
-                deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
-            }
-
-            fileEvaluatedDirectives = deduplicatedFileEvaluatedDirectiveBuilder.DrainToImmutable();
-
-            evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
-
-            if (fileEvaluatedDirectives != directives)
-            {
-                // This project will contain items from #:include/#:exclude directives which we will traverse recursively.
-                (project, projectRootElement) = CreateProjectInstanceNoEvaluation(
+                // Create a project with properties from #:property directives so they can be expanded inside EvaluateDirectives.
+                (project, projectRootElement) = await CreateProjectInstanceNoEvaluation(
                     projectCollection,
-                    evaluatedDirectiveBuilder.ToImmutable(),
-                    addGlobalProperties);
-            }
+                    [.. evaluatedDirectiveBuilder, .. directivesForEvaluation],
+                    additionalGlobalProperties).ConfigureAwait(false);
 
-            var compileItems = project.GetItems("Compile");
-            foreach (var compileItem in compileItems)
-            {
-                var compilePath = Path.GetFullPath(
-                    path: compileItem.GetMetadataValue("FullPath"),
-                    basePath: entryPointDirectory);
-                if (seenFiles.Add(compilePath))
+                // Evaluate directives, e.g., determine item types for #:include/#:exclude from their file extension.
+                var fileEvaluatedDirectives = await EvaluateDirectivesAsync(project, directivesForEvaluation, reportError).ConfigureAwait(false);
+
+                // Detect duplicate directives across all files on evaluated directives. EvaluateDirectives only expands
+                // #:project, #:ref, #:include, and #:exclude; #:property and #:package values are still unevaluated here.
+                var deduplicatedFileEvaluatedDirectiveBuilder = ImmutableArray.CreateBuilder<CSharpDirective>(fileEvaluatedDirectives.Length);
+                foreach (var directive in fileEvaluatedDirectives)
                 {
-                    filesToProcess.Enqueue(compilePath);
-                }
-            }
-        }
-        while (TryGetNextFileToProcess());
-
-        evaluatedDirectives = evaluatedDirectiveBuilder.ToImmutable();
-        _evaluatedDirectives = (directivesOriginal, evaluatedDirectives);
-
-        CheckDirectives(project, evaluatedDirectives, reportError);
-
-        bool TryGetNextFileToProcess()
-        {
-            while (filesToProcess.TryDequeue(out var filePath))
-            {
-                if (!File.Exists(filePath))
-                {
-                    reportError(EntryPointSourceFile.Text, EntryPointSourceFile.Path, default, string.Format(Resources.IncludedFileNotFound, filePath));
-                    continue;
-                }
-
-                var sourceFile = SourceFile.Load(filePath);
-                directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, validateAllDirectives, reportError, checkDuplicates: false);
-                return true;
-            }
-
-            return false;
-        }
-
-        // #:sdk directives become Sdk.props/Sdk.targets imports when creating the temporary project used for
-        // directive evaluation, so identical duplicates must be removed before that project is created.
-        ImmutableArray<CSharpDirective> DeduplicateSdkDirectives(ImmutableArray<CSharpDirective> directives)
-        {
-            if (!directives.Any(static directive => directive is CSharpDirective.Sdk))
-            {
-                return directives;
-            }
-
-            var builder = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
-            var changed = false;
-
-            foreach (var directive in directives)
-            {
-                if (directive is CSharpDirective.Sdk sdk)
-                {
-                    deduplicator.CheckDirective(sdk, reportError, out bool shouldKeep);
-                    if (!shouldKeep)
+                    if (directive is CSharpDirective.Sdk)
                     {
-                        changed = true;
+                        deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
                         continue;
                     }
+
+                    if (directive is CSharpDirective.Named named)
+                    {
+                        deduplicator.CheckDirective(named, reportError, out bool shouldKeep);
+                        if (!shouldKeep)
+                        {
+                            continue;
+                        }
+                    }
+
+                    deduplicatedFileEvaluatedDirectiveBuilder.Add(directive);
                 }
 
-                builder.Add(directive);
+                fileEvaluatedDirectives = deduplicatedFileEvaluatedDirectiveBuilder.DrainToImmutable();
+
+                evaluatedDirectiveBuilder.AddRange(fileEvaluatedDirectives);
+
+                if (fileEvaluatedDirectives != directives)
+                {
+                    // This project will contain items from #:include/#:exclude directives which we will traverse recursively.
+                    (project, projectRootElement) = await CreateProjectInstanceNoEvaluation(
+                        projectCollection,
+                        evaluatedDirectiveBuilder.ToImmutable(),
+                        additionalGlobalProperties).ConfigureAwait(false);
+                }
+
+                var compileItems = await project.GetItemMetadataValuesAsync("Compile", ["FullPath"]).ConfigureAwait(false);
+                foreach (var compileItem in compileItems)
+                {
+                    Debug.Assert(compileItem.Length == 1);
+                    var fullPath = compileItem[0];
+                    var compilePath = Path.GetFullPath(Path.Combine(
+                        entryPointDirectory,
+                        fullPath));
+                    if (seenFiles.Add(compilePath))
+                    {
+                        filesToProcess.Enqueue(compilePath);
+                    }
+                }
+            }
+            while (TryGetNextFileToProcess());
+
+            evaluatedDirectives = evaluatedDirectiveBuilder.ToImmutable();
+            _evaluatedDirectives = (directivesOriginal, evaluatedDirectives);
+
+            bool TryGetNextFileToProcess()
+            {
+                while (filesToProcess.Count != 0)
+                {
+                    var filePath = filesToProcess.Dequeue();
+                    if (!File.Exists(filePath))
+                    {
+                        reportError(EntryPointSourceFile.Text, EntryPointSourceFile.Path, default, string.Format(FileBasedProgramsResources.IncludedFileNotFound, filePath));
+                        continue;
+                    }
+
+                    var sourceFile = SourceFile.Load(filePath);
+                    directives = FileLevelDirectiveHelpers.FindDirectives(sourceFile, validateAllDirectives, reportError, checkDuplicates: false);
+                    return true;
+                }
+
+                return false;
             }
 
-            return changed ? builder.DrainToImmutable() : directives;
+            // #:sdk directives become Sdk.props/Sdk.targets imports when creating the temporary project used for
+            // directive evaluation, so identical duplicates must be removed before that project is created.
+            ImmutableArray<CSharpDirective> DeduplicateSdkDirectives(ImmutableArray<CSharpDirective> directives)
+            {
+                if (!directives.Any(static directive => directive is CSharpDirective.Sdk))
+                {
+                    return directives;
+                }
+
+                var builder = ImmutableArray.CreateBuilder<CSharpDirective>(directives.Length);
+                var changed = false;
+
+                foreach (var directive in directives)
+                {
+                    if (directive is CSharpDirective.Sdk sdk)
+                    {
+                        deduplicator.CheckDirective(sdk, reportError, out bool shouldKeep);
+                        if (!shouldKeep)
+                        {
+                            changed = true;
+                            continue;
+                        }
+                    }
+
+                    builder.Add(directive);
+                }
+
+                return changed ? builder.DrainToImmutable() : directives;
+            }
         }
 
-        (ProjectInstance, ProjectRootElement) CreateProjectInstanceNoEvaluation(
-            ProjectCollection projectCollection,
+        await CheckDirectivesAsync(project, evaluatedDirectives, reportError).ConfigureAwait(false);
+        await CreateReferencedVirtualProjectsAsync(projectCollection, evaluatedDirectives, reportError, validateAllDirectives, processedRefFiles).ConfigureAwait(false);
+
+        return new Result(project, projectRootElement, evaluatedDirectives);
+
+        async ValueTask<(IProjectInstance, IProjectRootElement)> CreateProjectInstanceNoEvaluation(
+            IProjectCollection projectCollection,
             ImmutableArray<CSharpDirective> directives,
-            Action<IDictionary<string, string>>? addGlobalProperties = null)
+            IDictionary<string, string>? additionalGlobalProperties = null)
         {
             var projectFileWriter = new StringWriter();
 
             WriteProjectFile(
                 projectFileWriter,
                 directives,
-                _defaultProperties,
+                GetDefaultProperties(_targetFramework),
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
                 artifactsPath: ArtifactsPath,
-                includeRuntimeConfigInformation: RequestedTargets?.ContainsAny("Publish", "Pack") != true);
+                includeRuntimeConfigInformation: RequestedTargets?.Any(static t => t is "Publish" or "Pack") != true);
 
             var projectFileText = projectFileWriter.ToString();
 
@@ -472,54 +490,83 @@ public sealed class VirtualProjectBuilder
 
             var projectRoot = CreateProjectRootElement(projectFileText, projectCollection);
 
-            var globalProperties = projectCollection.GlobalProperties;
-            if (addGlobalProperties is not null)
-            {
-                globalProperties = new Dictionary<string, string>(projectCollection.GlobalProperties, StringComparer.OrdinalIgnoreCase);
-                addGlobalProperties(globalProperties);
-            }
-
-            var project = ProjectInstance.FromProjectRootElement(projectRoot, new ProjectOptions
-            {
-                ProjectCollection = projectCollection,
-                GlobalProperties = globalProperties,
-            });
+            var project = await _buildService.CreateProjectInstanceFromProjectRootElementAsync(projectRoot, projectCollection, additionalGlobalProperties).ConfigureAwait(false);
 
             lastProject = (projectFileText, project, projectRoot);
 
             return (project, projectRoot);
 
-            ProjectRootElement CreateProjectRootElement(string projectFileText, ProjectCollection projectCollection)
+            IProjectRootElement CreateProjectRootElement(string projectFileText, IProjectCollection projectCollection)
             {
                 using var reader = new StringReader(projectFileText);
                 using var xmlReader = XmlReader.Create(reader);
-                var projectRoot = ProjectRootElement.Create(xmlReader, projectCollection);
+                var projectRoot = _buildService.CreateProjectRootElement(xmlReader, projectCollection, EntryPointFileFullPath);
                 projectRoot.FullPath = GetVirtualProjectPath(EntryPointFileFullPath);
-                _projectRootElement = projectRoot;
                 return projectRoot;
             }
         }
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-    private void CheckDirectives(
-        ProjectInstance project,
+    /// <summary>
+    /// Recursively creates virtual <see cref="IProjectRootElement"/>s for all <c>#:ref</c> directives
+    /// so MSBuild can resolve <c>&lt;ProjectReference&gt;</c> items to them.
+    /// </summary>
+    private async ValueTask CreateReferencedVirtualProjectsAsync(
+        IProjectCollection projectCollection,
+        ImmutableArray<CSharpDirective> directives,
+        ErrorReporter reportError,
+        bool validateAllDirectives,
+        HashSet<string>? processedFiles)
+    {
+        if (!directives.Any(static d => d is CSharpDirective.Ref))
+        {
+            return;
+        }
+
+        processedFiles ??= new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        processedFiles.Add(EntryPointFileFullPath);
+
+        foreach (var refDirective in directives.OfType<CSharpDirective.Ref>())
+        {
+            Debug.Assert(refDirective.ResolvedPath is not null);
+
+            if (refDirective.ResolvedPath is not { } resolvedPath)
+            {
+                continue;
+            }
+
+            if (!processedFiles.Add(resolvedPath))
+            {
+                continue;
+            }
+
+            var refBuilder = new VirtualProjectBuilder(_buildService, resolvedPath, _targetFramework);
+            await refBuilder.CreateProjectInstanceAsync(
+                projectCollection,
+                reportError,
+                validateAllDirectives: validateAllDirectives,
+                processedRefFiles: processedFiles).ConfigureAwait(false);
+        }
+    }
+
+    private async ValueTask CheckDirectivesAsync(
+        IProjectInstance project,
         ImmutableArray<CSharpDirective> directives,
         ErrorReporter reportError)
     {
-        bool? refEnabled = null;
+        var refEnabled = new StrongBox<bool?>();
 
         foreach (var directive in directives)
         {
             if (directive is CSharpDirective.Ref)
             {
-                CheckFlagEnabled(ref refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive);
+                await CheckFlagEnabledAsync(refEnabled, CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, directive).ConfigureAwait(false);
             }
         }
 
-        void CheckFlagEnabled(ref bool? flag, string flagName, CSharpDirective directive)
+        async ValueTask CheckFlagEnabledAsync(StrongBox<bool?> flag, string flagName, CSharpDirective directive)
         {
-            bool value = flag ??= MSBuildUtilities.ConvertStringToBool(project.GetPropertyValue(flagName));
+            bool value = flag.Value ??= MSBuildUtilities.ConvertStringToBool(await project.GetPropertyValueAsync(flagName).ConfigureAwait(false));
 
             if (!value)
             {
@@ -527,7 +574,7 @@ public sealed class VirtualProjectBuilder
                     directive.Info.SourceFile.Text,
                     directive.Info.SourceFile.Path,
                     directive.Info.Span,
-                    string.Format(Resources.ExperimentalFeatureDisabled, flagName));
+                    string.Format(FileBasedProgramsResources.ExperimentalFeatureDisabled, flagName));
             }
         }
     }
@@ -706,6 +753,14 @@ public sealed class VirtualProjectBuilder
                         """);
                 }
             }
+            // Some hosts (like MSBuildWorkspace) don't provide a default TargetFramework
+            // and instead want to use the TargetFramework that's default corresponding to the imported SDK props.
+            else if (!defaultProperties.Any(p => p.name == "TargetFramework"))
+            {
+                writer.WriteLine("""
+                        <TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>
+                    """);
+            }
 
             // Write custom properties.
             foreach (var property in propertyDirectives)
@@ -848,7 +903,7 @@ public sealed class VirtualProjectBuilder
                 {
                     var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
                     writer.WriteLine($"""
-                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" />
+                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" {FromRefDirectiveMetadataName}="{EscapeValue(refDirective.ResolvedPath)}" />
                         """);
                 }
 
