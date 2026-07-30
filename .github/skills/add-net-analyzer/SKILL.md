@@ -57,31 +57,14 @@ the fixer in `<Name>.Fixer.cs` beside it. Derive C#/VB types only where you genu
 syntax; those go at the same relative path inside
 `$NA/src/Microsoft.CodeAnalysis.CSharp.NetAnalyzers/` or `…VisualBasic.NetAnalyzers/`. The
 folder is the *rule group's* category — the `category:` you report can differ, and comes
-from the `DiagnosticCategory` constants, never a raw string. The decisions that are yours
+from the `DiagnosticCategory` constants, never a raw string. Decisions that are yours
 rather than pattern-matching an existing rule:
 
-- **`RuleLevel`** — `IdeSuggestion` unless you have a reason. Everything at `IdeSuggestion`
-  or stronger is required to have **no false positives**; `IdeHidden_BulkConfigurable` is
-  the first level that tolerates any, and `BuildWarning` additionally breaks builds under
-  `TreatWarningsAsErrors`.
-- **Whether to ship a fixer at all** — if applying it could change semantics, report the
-  diagnostic without one.
-
-The two things reviewers reject on:
-
-- **The analyzer owns the eligibility decision.** Binding a symbol does not guarantee the
-  syntax has the shape you expect, and a fixer that declines because the code was never
-  eligible leaves the user with a lightbulb that does nothing. (Its own defensive checks
-  against a stale span stay.)
-- **Fix-all.** `WellKnownFixAllProviders.BatchFixer` merges edits as text spans, so it drops
-  fixes that overlap, nest, or insert at the same position — the last covers any fixer that
-  *adds* a member or argument. If yours can do that, fix the whole document in one pass,
-  inside-out. Measure rather than assume, in both directions: a passing multi-diagnostic
-  test is indistinguishable from one where fix-all never ran.
-- **A fix must produce compiling code**, on every shape it offers itself on — not just on
-  the shapes the tests cover. If a rewrite is only valid in some contexts, the fixer
-  declines in the rest; report the diagnostic without a fix rather than emitting a build
-  break. Narrowing the tests to the safe shapes hides the bug instead of fixing it.
+- **`RuleLevel`** — `IdeSuggestion` unless you have a reason. `IdeHidden_BulkConfigurable`
+  is the first level that tolerates any false positives, and `BuildWarning` additionally
+  breaks builds under `TreatWarningsAsErrors`.
+- **Whether the fix preserves semantics** — preserve them where doing so is trivial; where
+  it is not, the fix may still change them but must say so (`(may change semantics)`).
 
 ## 4. Add the strings
 
@@ -147,7 +130,7 @@ mirroring the analyzer's folder. Full conventions are in
 [`references/authoring-patterns.md`](references/authoring-patterns.md); the coverage bar:
 
 - C# fully; VB at least mainline positive and negative, fully if any VB-specific code
-  exists. Group by behavior and cover both languages in one test method.
+  exists. Split by both behavior and language — a separate test method per language.
 - When a fixer exists, write *every* test as a code-fix test, and include a trivia case.
   If the diagnostic can nest, add a nested case — that is what catches a broken fix-all.
 - The negative cases you reasoned about while designing. Reviewers will ask for them.
@@ -166,8 +149,8 @@ Linux/macOS; never pass `-restore`/`-build` alongside `-projects`.
 
 ## 8. Validate the rule against real code
 
-Unit tests prove the rule fires; they don't tell you the false-positive rate, and that is
-what decides the `RuleLevel`. Every level from `IdeSuggestion` up requires **no false
+Unit tests prove the rule fires; they say nothing about how often it is wrong, and that is
+the gate on `RuleLevel`. Every level from `IdeSuggestion` up requires **no false
 positives**, so before proposing one, run the built analyzer over a large real codebase
 (`dotnet/runtime`, `dotnet/roslyn`) and triage every hit. Report the result in the PR.
 [`docs/netcore-getting-started.md`](../../../src/Microsoft.CodeAnalysis.NetAnalyzers/docs/netcore-getting-started.md)
@@ -196,6 +179,8 @@ dead help link in every user's IDE.
 - [ ] `.resx` edited and `.xlf` regenerated via `/t:UpdateXlf` — neither hand-edited.
 - [ ] Regenerated `.md` / `.sarif.template` committed.
 - [ ] Targeted test run passes, covering VB and the negative cases.
+- [ ] Analyzer not narrowed to what the fixer handles, and no fix registered that leaves the
+      document unchanged.
 - [ ] Fix-all handles nesting (not the batch fixer), if the diagnostic can overlap or nest.
 - [ ] Every shape the fix offers itself on produces compiling code.
 - [ ] Rule run against a real codebase and hits triaged, at `IdeSuggestion` or stronger.
