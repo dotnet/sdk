@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
@@ -19,11 +20,8 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId,
                 DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId);
 
-        public override FixAllProvider GetFixAllProvider()
-        {
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
-        }
+        public sealed override FixAllProvider GetFixAllProvider()
+            => SyntaxEditorFixAllProvider.Create<string?>(context => context.CodeActionEquivalenceKey, ApplyFixAsync);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -39,25 +37,70 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             foreach (Diagnostic diagnostic in context.Diagnostics)
             {
-                if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
+                if (GetEquivalenceKey(diagnostic) is not string equivalenceKey)
                 {
-                    context.RegisterCodeFix(
-                        CodeAction.Create(
-                            MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation,
-                            async ct => await ImplementInterfacesOnDynamicCastableImplementationAsync(root, declaration, context.Document, generator, ct).ConfigureAwait(false),
-                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)),
-                        diagnostic);
+                    continue;
                 }
-                else if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId
-                    && diagnostic.Properties.ContainsKey(DynamicInterfaceCastableImplementationAnalyzer.NonStaticMemberIsMethodKey))
-                {
-                    context.RegisterCodeFix(
-                        CodeAction.Create(
-                            MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic,
-                            async ct => await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, context.Document, ct).ConfigureAwait(false),
-                            equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic)),
-                        diagnostic);
-                }
+
+                ImmutableArray<Diagnostic> diagnostics = ImmutableArray.Create(diagnostic);
+                Document document = context.Document;
+
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        GetTitle(equivalenceKey),
+                        cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
+                            document,
+                            diagnostics,
+                            (doc, diag, editor, token) => ApplyFixAsync(doc, diag, editor, equivalenceKey, token),
+                            cancellationToken),
+                        equivalenceKey),
+                    diagnostic);
+            }
+        }
+
+        private static string? GetEquivalenceKey(Diagnostic diagnostic)
+        {
+            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.InterfaceMembersMissingImplementationRuleId)
+            {
+                return nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation);
+            }
+
+            if (diagnostic.Id == DynamicInterfaceCastableImplementationAnalyzer.MembersDeclaredOnImplementationTypeMustBeStaticRuleId
+                && diagnostic.Properties.ContainsKey(DynamicInterfaceCastableImplementationAnalyzer.NonStaticMemberIsMethodKey))
+            {
+                return nameof(MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic);
+            }
+
+            return null;
+        }
+
+        private static string GetTitle(string equivalenceKey)
+            => equivalenceKey == nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation)
+                ? MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation
+                : MicrosoftNetCoreAnalyzersResources.MakeMethodDeclaredOnImplementationTypeStatic;
+
+        private async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, string? equivalenceKey, CancellationToken cancellationToken)
+        {
+            if (GetEquivalenceKey(diagnostic) is not string key
+                || (equivalenceKey is not null && key != equivalenceKey))
+            {
+                return;
+            }
+
+            SyntaxNode enclosingNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true);
+            SyntaxNode declaration = SyntaxGenerator.GetGenerator(document).GetDeclaration(enclosingNode);
+            if (declaration == null || !CodeFixSupportsDeclaration(declaration))
+            {
+                return;
+            }
+
+            if (key == nameof(MicrosoftNetCoreAnalyzersResources.ImplementInterfacesOnDynamicCastableImplementation))
+            {
+                await ImplementInterfacesOnDynamicCastableImplementationAsync(declaration, document, editor, cancellationToken).ConfigureAwait(false);
+            }
+            else
+            {
+                await MakeMemberDeclaredOnImplementationTypeStaticAsync(declaration, document, editor, cancellationToken).ConfigureAwait(false);
             }
         }
 
@@ -68,16 +111,16 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         protected abstract bool CodeFixSupportsDeclaration(SyntaxNode declaration);
 
-        protected abstract Task<Document> ImplementInterfacesOnDynamicCastableImplementationAsync(
-            SyntaxNode root,
+        protected abstract Task ImplementInterfacesOnDynamicCastableImplementationAsync(
             SyntaxNode declaration,
             Document document,
-            SyntaxGenerator generator,
+            SyntaxEditor editor,
             CancellationToken cancellationToken);
 
-        protected abstract Task<Document> MakeMemberDeclaredOnImplementationTypeStaticAsync(
+        protected abstract Task MakeMemberDeclaredOnImplementationTypeStaticAsync(
             SyntaxNode declaration,
             Document document,
+            SyntaxEditor editor,
             CancellationToken cancellationToken);
     }
 }

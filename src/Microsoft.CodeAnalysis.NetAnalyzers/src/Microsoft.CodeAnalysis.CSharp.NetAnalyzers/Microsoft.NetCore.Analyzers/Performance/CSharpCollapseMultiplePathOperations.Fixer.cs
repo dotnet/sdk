@@ -3,24 +3,23 @@
 
 using System.Collections.Immutable;
 using System.Composition;
+using System.Linq;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.NetCore.Analyzers;
 using Microsoft.NetCore.Analyzers.Performance;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Performance
 {
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public sealed class CSharpCollapseMultiplePathOperationsFixer : CodeFixProvider
+    public sealed class CSharpCollapseMultiplePathOperationsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(CollapseMultiplePathOperationsAnalyzer.RuleId);
-
-        public override FixAllProvider GetFixAllProvider()
-            => WellKnownFixAllProviders.BatchFixer;
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -29,9 +28,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
             var root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             var node = root.FindNode(context.Span, getInnermostNodeForTie: true);
 
-            if (node is not InvocationExpressionSyntax invocation ||
+            if (node is not InvocationExpressionSyntax ||
                 await document.GetSemanticModelAsync(context.CancellationToken).ConfigureAwait(false) is not { } semanticModel ||
-                WellKnownTypeProvider.GetOrCreate(semanticModel.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOPath) is not { } pathType)
+                WellKnownTypeProvider.GetOrCreate(semanticModel.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOPath) is null)
             {
                 return;
             }
@@ -42,30 +41,40 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 methodName = "Path";
             }
 
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    string.Format(MicrosoftNetCoreAnalyzersResources.CollapseMultiplePathOperationsCodeFixTitle, methodName),
-                    createChangedDocument: cancellationToken => CollapsePathOperationAsync(document, root, invocation, pathType, semanticModel, cancellationToken),
-                    equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.CollapseMultiplePathOperationsCodeFixTitle)),
-                diagnostic);
+            RegisterCodeFix(
+                context,
+                string.Format(MicrosoftNetCoreAnalyzersResources.CollapseMultiplePathOperationsCodeFixTitle, methodName),
+                nameof(MicrosoftNetCoreAnalyzersResources.CollapseMultiplePathOperationsCodeFixTitle));
         }
 
-        private static Task<Document> CollapsePathOperationAsync(Document document, SyntaxNode root, InvocationExpressionSyntax invocation, INamedTypeSymbol pathType, SemanticModel semanticModel, CancellationToken cancellationToken)
+        protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
+            if (editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan, getInnermostNodeForTie: true) is not InvocationExpressionSyntax invocation ||
+                await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false) is not { } semanticModel ||
+                WellKnownTypeProvider.GetOrCreate(semanticModel.Compilation).GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIOPath) is not { } pathType)
+            {
+                return;
+            }
+
             // Collect all arguments by recursively unwrapping nested Path.Combine/Join calls
             var allArguments = CollectAllArguments(invocation, pathType, semanticModel);
 
-            // Create new argument list with all collected arguments
-            var newArgumentList = SyntaxFactory.ArgumentList(
-                SyntaxFactory.SeparatedList(allArguments));
+            foreach (var argument in allArguments)
+            {
+                editor.TrackNode(argument);
+            }
 
-            // Create the new invocation with all arguments
-            var newInvocation = invocation.WithArgumentList(newArgumentList)
-                .WithTriviaFrom(invocation);
+            editor.ReplaceNode(invocation, (currentNode, _) =>
+            {
+                var current = (InvocationExpressionSyntax)currentNode;
 
-            var newRoot = root.ReplaceNode(invocation, newInvocation);
+                // Create new argument list with all collected arguments, as any fix inside them left them
+                var newArgumentList = SyntaxFactory.ArgumentList(
+                    SyntaxFactory.SeparatedList(allArguments.Select(argument => current.GetCurrentNode(argument) ?? argument)));
 
-            return Task.FromResult(document.WithSyntaxRoot(newRoot));
+                return current.WithArgumentList(newArgumentList)
+                    .WithTriviaFrom(current);
+            });
         }
 
         private static ArgumentSyntax[] CollectAllArguments(InvocationExpressionSyntax invocation, INamedTypeSymbol pathType, SemanticModel semanticModel)

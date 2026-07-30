@@ -12,9 +12,9 @@ using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -24,36 +24,26 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// CA2226: Operators should have symmetrical overloads
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class OperatorsShouldHaveSymmetricalOverloadsFixer : CodeFixProvider
+    public sealed class OperatorsShouldHaveSymmetricalOverloadsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OperatorsShouldHaveSymmetricalOverloadsAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
-        }
-
         public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    MicrosoftCodeQualityAnalyzersResources.Generate_missing_operators,
-                    c => CreateChangedDocumentAsync(context, c),
-                    nameof(Generate_missing_operators)),
-                context.Diagnostics);
-            return Task.FromResult(true);
+            RegisterCodeFix(context, Generate_missing_operators, nameof(Generate_missing_operators));
+            return Task.CompletedTask;
         }
 
-        private static async Task<Document> CreateChangedDocumentAsync(
-            CodeFixContext context, CancellationToken cancellationToken)
+        protected sealed override async Task ApplyFixAsync(
+            Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            var document = context.Document;
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            var semanticModel = editor.SemanticModel;
-            var root = await semanticModel.SyntaxTree.GetRootAsync(cancellationToken).ConfigureAwait(false);
-            var operatorNode = root.FindNode(context.Diagnostics.First().Location.SourceSpan);
+            var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            var operatorNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
 
-            var containingOperator = (IMethodSymbol)semanticModel.GetDeclaredSymbol(operatorNode, cancellationToken)!;
+            if (semanticModel.GetDeclaredSymbol(operatorNode, cancellationToken) is not IMethodSymbol containingOperator)
+            {
+                return;
+            }
 
             Debug.Assert(containingOperator.IsUserDefinedOperator());
 
@@ -69,7 +59,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             operatorNode = operatorNode.AncestorsAndSelf().First(a => a.RawKind == newOperator.RawKind);
 
             editor.InsertAfter(operatorNode, newOperator);
-            return editor.GetChangedDocument();
         }
 
         private static IEnumerable<SyntaxNode> GetInvertedStatements(

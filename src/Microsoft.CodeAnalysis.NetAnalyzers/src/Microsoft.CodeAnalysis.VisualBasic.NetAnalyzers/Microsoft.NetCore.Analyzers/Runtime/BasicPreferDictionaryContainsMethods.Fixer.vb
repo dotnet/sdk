@@ -1,68 +1,47 @@
 ﻿' Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
-Imports Microsoft.NetCore.Analyzers.Runtime
+Imports System.Composition
 Imports Microsoft.CodeAnalysis
 Imports Microsoft.CodeAnalysis.CodeFixes
-Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
-Imports System.Composition
-Imports System.Threading
 Imports Microsoft.CodeAnalysis.Editing
-Imports Microsoft.CodeAnalysis.CodeActions
-Imports Microsoft.NetCore.Analyzers
+Imports Microsoft.CodeAnalysis.VisualBasic.Syntax
+Imports Microsoft.NetCore.Analyzers.Runtime
 
 Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
     <ExportCodeFixProvider(LanguageNames.VisualBasic), [Shared]>
     Public NotInheritable Class BasicPreferDictionaryContainsMethodsFixer : Inherits PreferDictionaryContainsMethodsFixer
 
-        Public Overrides Async Function RegisterCodeFixesAsync(context As CodeFixContext) As Task
-            Dim doc = context.Document
-            Dim root = Await doc.GetSyntaxRootAsync().ConfigureAwait(False)
+        Protected Overrides Function GetPropertyName(invocation As SyntaxNode) As String
+            Dim keysOrValuesMember = GetKeysOrValuesMemberAccess(invocation)
+            If keysOrValuesMember Is Nothing Then
+                Return Nothing
+            End If
 
-            Dim invocation = TryCast(root.FindNode(context.Span), InvocationExpressionSyntax)
+            Return keysOrValuesMember.Name.Identifier.ValueText
+        End Function
+
+        Protected Overrides Function Rewrite(invocation As SyntaxNode, methodName As String, generator As SyntaxGenerator) As SyntaxNode
+            Dim keysOrValuesMember = GetKeysOrValuesMemberAccess(invocation)
+            If keysOrValuesMember Is Nothing Then
+                Return Nothing
+            End If
+
+            Dim containsMemberExpression = generator.MemberAccessExpression(keysOrValuesMember.Expression, methodName)
+            Return generator.InvocationExpression(containsMemberExpression, DirectCast(invocation, InvocationExpressionSyntax).ArgumentList.Arguments)
+        End Function
+
+        Private Shared Function GetKeysOrValuesMemberAccess(node As SyntaxNode) As MemberAccessExpressionSyntax
+            Dim invocation = TryCast(node, InvocationExpressionSyntax)
             If invocation Is Nothing Then
-                Return
+                Return Nothing
             End If
 
             Dim containsMemberAccess = TryCast(invocation.Expression, MemberAccessExpressionSyntax)
             If containsMemberAccess Is Nothing Then
-                Return
+                Return Nothing
             End If
 
-            Dim keysOrValuesMember = TryCast(containsMemberAccess.Expression, MemberAccessExpressionSyntax)
-            If keysOrValuesMember Is Nothing Then
-                Return
-            End If
-
-            If keysOrValuesMember.Name.Identifier.ValueText = PreferDictionaryContainsMethods.KeysPropertyName Then
-                Dim ReplaceWithContainsKey =
-                    Async Function(ct As CancellationToken) As Task(Of Document)
-                        Dim editor = Await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(False)
-                        Dim containsKeyMemberExpression = editor.Generator.MemberAccessExpression(keysOrValuesMember.Expression, PreferDictionaryContainsMethods.ContainsKeyMethodName)
-                        Dim newInvocation = editor.Generator.InvocationExpression(containsKeyMemberExpression, invocation.ArgumentList.Arguments)
-                        editor.ReplaceNode(invocation, newInvocation)
-
-                        Return editor.GetChangedDocument()
-                    End Function
-
-                Dim codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsKeyCodeFixTitle
-                Dim action = CodeAction.Create(codeFixTitle, ReplaceWithContainsKey, codeFixTitle)
-                context.RegisterCodeFix(action, context.Diagnostics)
-
-            ElseIf keysOrValuesMember.Name.Identifier.ValueText = PreferDictionaryContainsMethods.ValuesPropertyName Then
-                Dim ReplaceWithContainsValue =
-                    Async Function(ct As CancellationToken) As Task(Of Document)
-                        Dim editor = Await DocumentEditor.CreateAsync(doc, ct).ConfigureAwait(False)
-                        Dim containsValueMemberExpression = editor.Generator.MemberAccessExpression(keysOrValuesMember.Expression, PreferDictionaryContainsMethods.ContainsValueMethodName)
-                        Dim newInvocation = editor.Generator.InvocationExpression(containsValueMemberExpression, invocation.ArgumentList.Arguments)
-                        editor.ReplaceNode(invocation, newInvocation)
-
-                        Return editor.GetChangedDocument()
-                    End Function
-
-                Dim codeFixTitle = MicrosoftNetCoreAnalyzersResources.PreferDictionaryContainsValueCodeFixTitle
-                Dim action = CodeAction.Create(codeFixTitle, ReplaceWithContainsValue, codeFixTitle)
-                context.RegisterCodeFix(action, context.Diagnostics)
-            End If
+            Return TryCast(containsMemberAccess.Expression, MemberAccessExpressionSyntax)
         End Function
     End Class
 End Namespace

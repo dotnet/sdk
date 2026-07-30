@@ -3,12 +3,12 @@
 
 using System.Collections.Immutable;
 using System.Composition;
+using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -16,37 +16,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     /// CA1813: Avoid unsealed attributes
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public class AvoidUnsealedAttributesFixer : CodeFixProvider
+    public class AvoidUnsealedAttributesFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AvoidUnsealedAttributesAnalyzer.RuleId);
 
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode node = root.FindNode(context.Span);
+            string title = MicrosoftNetCoreAnalyzersResources.AvoidUnsealedAttributesMessage;
+            RegisterCodeFix(context, title, title);
+            return Task.CompletedTask;
+        }
+
+        protected override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
+            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
             SyntaxNode declaration = editor.Generator.GetDeclaration(node);
 
             if (declaration != null)
             {
-                string title = MicrosoftNetCoreAnalyzersResources.AvoidUnsealedAttributesMessage;
-                context.RegisterCodeFix(CodeAction.Create(title,
-                    async ct => await MakeSealedAsync(editor, declaration).ConfigureAwait(false),
-                    equivalenceKey: title),
-                    context.Diagnostics);
+                DeclarationModifiers modifiers = editor.Generator.GetModifiers(declaration);
+                editor.SetModifiers(declaration, modifiers + DeclarationModifiers.Sealed);
             }
-        }
 
-        private static Task<Document> MakeSealedAsync(DocumentEditor editor, SyntaxNode declaration)
-        {
-            DeclarationModifiers modifiers = editor.Generator.GetModifiers(declaration);
-            editor.SetModifiers(declaration, modifiers + DeclarationModifiers.Sealed);
-            return Task.FromResult(editor.GetChangedDocument());
-        }
-
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
+            return Task.CompletedTask;
         }
     }
 }

@@ -4737,6 +4737,69 @@ End Class
 
         #endregion
 
+        [TestMethod]
+        public Task CS_Diagnostic_NestedInvocations_FixAllForwardsBothAsync()
+        {
+            string originalCode = @"
+using System.Threading;
+class C
+{
+    void M(CancellationToken ct)
+    {
+        [|Outer|]([|Inner|]());
+    }
+    int Inner(CancellationToken c = default) => 1;
+    int Outer(int value, CancellationToken c = default) => 1;
+}
+            ";
+            string fixedCode = @"
+using System.Threading;
+class C
+{
+    void M(CancellationToken ct)
+    {
+        Outer(Inner(ct), ct);
+    }
+    int Inner(CancellationToken c = default) => 1;
+    int Outer(int value, CancellationToken c = default) => 1;
+}
+            ";
+            return VerifyCS.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
+
+        [TestMethod]
+        public Task VB_Diagnostic_NestedInvocations_FixAllForwardsBothAsync()
+        {
+            string originalCode = @"
+Imports System.Threading
+Class C
+    Private Sub M(ByVal ct As CancellationToken)
+        [|Outer|]([|Inner|]())
+    End Sub
+    Private Function Inner(ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+    Private Function Outer(ByVal value As Integer, ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+End Class
+            ";
+            string fixedCode = @"
+Imports System.Threading
+Class C
+    Private Sub M(ByVal ct As CancellationToken)
+        Outer(Inner(ct), ct)
+    End Sub
+    Private Function Inner(ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+    Private Function Outer(ByVal value As Integer, ByVal Optional c As CancellationToken = Nothing) As Integer
+        Return 1
+    End Function
+End Class
+            ";
+            return VerifyVB.VerifyCodeFixAsync(originalCode, fixedCode);
+        }
         #region Helpers
 
         private static async Task CS8VerifyCodeFixAsync(string originalCode, string fixedCode)

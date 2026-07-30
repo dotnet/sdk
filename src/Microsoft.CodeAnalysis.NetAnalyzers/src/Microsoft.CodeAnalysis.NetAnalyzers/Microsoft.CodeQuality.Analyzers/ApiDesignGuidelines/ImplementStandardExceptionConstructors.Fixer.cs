@@ -3,17 +3,15 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.CodeActions;
 using Analyzer.Utilities;
 using System.Composition;
-using System.Collections.Generic;
 using Analyzer.Utilities.Extensions;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -31,88 +29,74 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     ///     Sub New(message As String, innerException As Exception)
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class ImplementStandardExceptionConstructorsFixer : CodeFixProvider
+    public sealed class ImplementStandardExceptionConstructorsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ImplementStandardExceptionConstructorsAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            // Fixes all occurrences within within Document, Project, or Solution
-            return WellKnownFixAllProviders.BatchFixer;
-        }
-
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             string title = MicrosoftCodeQualityAnalyzersResources.ImplementStandardExceptionConstructorsTitle;
 
-            // Get syntax root node
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-
-            // Register fixer - pass in the collection of diagnostics, since there could be more than one for this diagnostic due to more than one of the required constructors missing
-            context.RegisterCodeFix(CodeAction.Create(title, c => AddConstructorsAsync(context.Document, context.Diagnostics, root, c), equivalenceKey: title), context.Diagnostics.First());
+            // One diagnostic is reported per missing constructor, all at the same location, so the fix has to
+            // run for every one of them rather than only the first.
+            RegisterCodeFix(context, title, title);
+            return Task.CompletedTask;
         }
 
-        private static async Task<Document> AddConstructorsAsync(Document document, IEnumerable<Diagnostic> diagnostics, SyntaxNode root, CancellationToken cancellationToken)
+        protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
-            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            SyntaxNode targetNode = generator.GetDeclaration(node, DeclarationKind.Class);
 
-            CodeAnalysis.Text.TextSpan diagnosticSpan = diagnostics.First().Location.SourceSpan; // All the diagnostics are reported at the same location -- the name of the declared class -- so it doesn't matter which one we pick
-            SyntaxNode node = root.FindNode(diagnosticSpan);
-            SyntaxNode targetNode = editor.Generator.GetDeclaration(node, DeclarationKind.Class);
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             if (model.GetDeclaredSymbol(targetNode, cancellationToken) is not INamedTypeSymbol typeSymbol)
             {
-                return document;
+                return;
             }
 
-            foreach (Diagnostic diagnostic in diagnostics)
+            var missingCtorSignature = (ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature)Enum.Parse(typeof(ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature), diagnostic.Properties["Signature"]);
+
+            switch (missingCtorSignature)
             {
-                var missingCtorSignature = (ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature)Enum.Parse(typeof(ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature), diagnostic.Properties["Signature"]);
-
-                switch (missingCtorSignature)
-                {
-                    case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithNoParameter:
-                        // Add missing CtorWithNoParameter
-                        SyntaxNode newConstructorNode1 = generator.ConstructorDeclaration(typeSymbol.Name, accessibility: Accessibility.Public);
-                        editor.AddMember(targetNode, newConstructorNode1);
-                        break;
-                    case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithStringParameter:
-                        // Add missing CtorWithStringParameter
-                        SyntaxNode newConstructorNode2 = generator.ConstructorDeclaration(
-                                                    containingTypeName: typeSymbol.Name,
-                                                    parameters: new[]
-                                                    {
-                                                    generator.ParameterDeclaration("message", generator.TypeExpression(editor.SemanticModel.Compilation.GetSpecialType(SpecialType.System_String)))
-                                                    },
-                                                    accessibility: Accessibility.Public,
-                                                    baseConstructorArguments: new[]
-                                                    {
-                                                    generator.Argument(generator.IdentifierName("message"))
-                                                    });
-                        editor.AddMember(targetNode, newConstructorNode2);
-                        break;
-                    case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithStringAndExceptionParameters:
-                        // Add missing CtorWithStringAndExceptionParameters
-                        SyntaxNode newConstructorNode3 = generator.ConstructorDeclaration(
-                                                    containingTypeName: typeSymbol.Name,
-                                                    parameters: new[]
-                                                    {
-                                                    generator.ParameterDeclaration("message", generator.TypeExpression(editor.SemanticModel.Compilation.GetSpecialType(SpecialType.System_String))),
-                                                    generator.ParameterDeclaration("innerException", generator.TypeExpression(editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException)))
-                                                    },
-                                                    accessibility: Accessibility.Public,
-                                                    baseConstructorArguments: new[]
-                                                    {
-                                                    generator.Argument(generator.IdentifierName("message")),
-                                                    generator.Argument(generator.IdentifierName("innerException"))
-                                                    });
-                        editor.AddMember(targetNode, newConstructorNode3);
-                        break;
-                }
+                case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithNoParameter:
+                    // Add missing CtorWithNoParameter
+                    SyntaxNode newConstructorNode1 = generator.ConstructorDeclaration(typeSymbol.Name, accessibility: Accessibility.Public);
+                    editor.AddMember(targetNode, newConstructorNode1);
+                    break;
+                case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithStringParameter:
+                    // Add missing CtorWithStringParameter
+                    SyntaxNode newConstructorNode2 = generator.ConstructorDeclaration(
+                                                containingTypeName: typeSymbol.Name,
+                                                parameters: new[]
+                                                {
+                                                generator.ParameterDeclaration("message", generator.TypeExpression(model.Compilation.GetSpecialType(SpecialType.System_String)))
+                                                },
+                                                accessibility: Accessibility.Public,
+                                                baseConstructorArguments: new[]
+                                                {
+                                                generator.Argument(generator.IdentifierName("message"))
+                                                });
+                    editor.AddMember(targetNode, newConstructorNode2);
+                    break;
+                case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithStringAndExceptionParameters:
+                    // Add missing CtorWithStringAndExceptionParameters
+                    SyntaxNode newConstructorNode3 = generator.ConstructorDeclaration(
+                                                containingTypeName: typeSymbol.Name,
+                                                parameters: new[]
+                                                {
+                                                generator.ParameterDeclaration("message", generator.TypeExpression(model.Compilation.GetSpecialType(SpecialType.System_String))),
+                                                generator.ParameterDeclaration("innerException", generator.TypeExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException)))
+                                                },
+                                                accessibility: Accessibility.Public,
+                                                baseConstructorArguments: new[]
+                                                {
+                                                generator.Argument(generator.IdentifierName("message")),
+                                                generator.Argument(generator.IdentifierName("innerException"))
+                                                });
+                    editor.AddMember(targetNode, newConstructorNode3);
+                    break;
             }
-
-            return editor.GetChangedDocument();
         }
     }
 }

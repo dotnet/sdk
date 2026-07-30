@@ -321,5 +321,69 @@ public class MyCollection {
 
             return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
+
+        [TestMethod]
+        public Task CS_NestedAny_FixAllRewritesBothAsync()
+        {
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Tests {
+    public bool M(int[] outer, int[] inner) {
+        return {|#0:({|#1:inner.Any()|} ? outer : inner).Any()|};
+    }
+}";
+            const string fixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Tests {
+    public bool M(int[] outer, int[] inner) {
+        return (inner.Length != 0 ? outer : inner).Length != 0;
+    }
+}";
+
+            return VerifyCS.VerifyCodeFixAsync(
+                code,
+                new[]
+                {
+                    ExpectedDiagnostic,
+                    new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(1),
+                },
+                fixedCode);
+        }
+
+        [TestMethod]
+        public Task VB_NestedAny_FixAllRewritesBothAsync()
+        {
+            const string code = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class Tests
+    Public Function M(outer As Integer(), inner As Integer()) As Boolean
+        Return {|#0:If({|#1:inner.Any()|}, outer, inner).Any()|}
+    End Function
+End Class";
+            const string fixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class Tests
+    Public Function M(outer As Integer(), inner As Integer()) As Boolean
+        Return If(inner.Length <> 0, outer, inner).Length <> 0
+    End Function
+End Class";
+
+            return VerifyVB.VerifyCodeFixAsync(
+                code,
+                new[]
+                {
+                    ExpectedDiagnostic,
+                    new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(1),
+                },
+                fixedCode);
+        }
     }
 }

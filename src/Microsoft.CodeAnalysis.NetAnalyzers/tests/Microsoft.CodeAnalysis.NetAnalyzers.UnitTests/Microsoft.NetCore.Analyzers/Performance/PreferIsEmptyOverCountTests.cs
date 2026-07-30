@@ -440,6 +440,44 @@ VerifyCS.Diagnostic(UseCountProperlyAnalyzer.s_rule_CA1836).WithLocation(4, 31),
 }");
 
         [TestMethod]
+        public Task CSharpTest_NestedCount_FixAllRewritesBothAsync()
+            => VerifyCS.VerifyCodeFixAsync(
+@"class C
+{
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> Pick(bool condition) => _dictionary;
+    public bool Test() => {|CA1836:Pick({|CA1836:_dictionary.Count == 0|}).Count == 0|};
+}",
+@"class C
+{
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> _dictionary;
+    private System.Collections.Concurrent.ConcurrentDictionary<string, int> Pick(bool condition) => _dictionary;
+    public bool Test() => Pick(_dictionary.IsEmpty).IsEmpty;
+}");
+
+        [TestMethod]
+        public Task BasicTest_NestedCount_FixAllRewritesBothAsync()
+            => VerifyVB.VerifyCodeFixAsync(
+@"Class C
+    Private _dictionary As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+    Private Function Pick(condition As Boolean) As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+        Return _dictionary
+    End Function
+    Public Function Test() As Boolean
+        Return {|CA1836:Pick({|CA1836:_dictionary.Count = 0|}).Count = 0|}
+    End Function
+End Class",
+@"Class C
+    Private _dictionary As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+    Private Function Pick(condition As Boolean) As System.Collections.Concurrent.ConcurrentDictionary(Of String, Integer)
+        Return _dictionary
+    End Function
+    Public Function Test() As Boolean
+        Return Pick(_dictionary.IsEmpty).IsEmpty
+    End Function
+End Class");
+
+        [TestMethod]
         [DataRow("System.ReadOnlyMemory")]
         [DataRow("System.ReadOnlySpan")]
         [DataRow("System.Memory")]

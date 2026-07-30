@@ -12,6 +12,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -20,68 +21,115 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(DefineAccessorsForAttributeArgumentsAnalyzer.RuleId);
 
+        // The rule reports three different problems and offers a different action for each, so the fix-all
+        // pass has to be told which one the user picked - DocumentBasedFixAllProvider hands over every
+        // diagnostic it collected without filtering by the equivalence key.
+        public override FixAllProvider GetFixAllProvider()
+            => SyntaxEditorFixAllProvider.Create<string?>(
+                static fixAllContext => fixAllContext.CodeActionEquivalenceKey,
+                ApplyFixAsync);
+
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode node = root.FindNode(context.Span);
+            Document document = context.Document;
+            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(document);
+            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            foreach (var diagnostic in context.Diagnostics)
+            foreach (Diagnostic diagnostic in context.Diagnostics)
             {
-                if (diagnostic.Properties.TryGetValue("case", out var fixCase))
+                SyntaxNode node = root.FindNode(diagnostic.Location.SourceSpan);
+                string? title = GetTitle(diagnostic);
+
+                // Offer nothing where the fix cannot reach the declaration the diagnostic named, rather than
+                // registering an action that produces an unchanged document.
+                if (title == null || GetNodeToFix(generator, node, diagnostic) == null)
                 {
-                    string title;
-                    switch (fixCase)
-                    {
-                        case DefineAccessorsForAttributeArgumentsAnalyzer.AddAccessorCase:
-                            SyntaxNode parameter = generator.GetDeclaration(node, DeclarationKind.Parameter);
-                            if (parameter != null)
-                            {
-                                title = MicrosoftCodeQualityAnalyzersResources.CreatePropertyAccessorForParameter;
-                                context.RegisterCodeFix(CodeAction.Create(title,
-                                                             async ct => await AddAccessorAsync(context.Document, parameter, ct).ConfigureAwait(false),
-                                                             equivalenceKey: title),
-                                                        diagnostic);
-                            }
-
-                            return;
-
-                        case DefineAccessorsForAttributeArgumentsAnalyzer.MakePublicCase:
-                            SyntaxNode property = generator.GetDeclaration(node, DeclarationKind.Property);
-                            if (property != null)
-                            {
-                                title = MicrosoftCodeQualityAnalyzersResources.MakeGetterPublic;
-                                context.RegisterCodeFix(CodeAction.Create(title,
-                                                                 async ct => await MakePublicAsync(context.Document, node, property, ct).ConfigureAwait(false),
-                                                                 equivalenceKey: title),
-                                                        diagnostic);
-                            }
-
-                            return;
-
-                        case DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterCase:
-                            title = MicrosoftCodeQualityAnalyzersResources.MakeSetterNonPublic;
-                            context.RegisterCodeFix(CodeAction.Create(title,
-                                                         async ct => await RemoveSetterAsync(context.Document, node, ct).ConfigureAwait(false),
-                                                         equivalenceKey: title),
-                                                    diagnostic);
-                            return;
-
-                        default:
-                            return;
-                    }
+                    continue;
                 }
+
+                ImmutableArray<Diagnostic> diagnostics = ImmutableArray.Create(diagnostic);
+                context.RegisterCodeFix(
+                    CodeAction.Create(
+                        title,
+                        cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
+                            document,
+                            diagnostics,
+                            (doc, d, editor, token) => ApplyFixAsync(doc, d, editor, title, token),
+                            cancellationToken),
+                        equivalenceKey: title),
+                    diagnostic);
             }
         }
 
-        private static async Task<Document> AddAccessorAsync(Document document, SyntaxNode parameter, CancellationToken cancellationToken)
+        private static string? GetTitle(Diagnostic diagnostic)
         {
-            SymbolEditor symbolEditor = SymbolEditor.Create(document);
+            if (!diagnostic.Properties.TryGetValue("case", out string? fixCase))
+            {
+                return null;
+            }
+
+            return fixCase switch
+            {
+                DefineAccessorsForAttributeArgumentsAnalyzer.AddAccessorCase => MicrosoftCodeQualityAnalyzersResources.CreatePropertyAccessorForParameter,
+                DefineAccessorsForAttributeArgumentsAnalyzer.MakePublicCase => MicrosoftCodeQualityAnalyzersResources.MakeGetterPublic,
+                DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterCase => MicrosoftCodeQualityAnalyzersResources.MakeSetterNonPublic,
+                _ => null,
+            };
+        }
+
+        private static SyntaxNode? GetNodeToFix(SyntaxGenerator generator, SyntaxNode node, Diagnostic diagnostic)
+        {
+            if (!diagnostic.Properties.TryGetValue("case", out string? fixCase))
+            {
+                return null;
+            }
+
+            return fixCase switch
+            {
+                DefineAccessorsForAttributeArgumentsAnalyzer.AddAccessorCase => generator.GetDeclaration(node, DeclarationKind.Parameter),
+                DefineAccessorsForAttributeArgumentsAnalyzer.MakePublicCase => generator.GetDeclaration(node, DeclarationKind.Property),
+                DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterCase => node,
+                _ => null,
+            };
+        }
+
+        private static async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, string? equivalenceKey, CancellationToken cancellationToken)
+        {
+            if (GetTitle(diagnostic) != equivalenceKey)
+            {
+                return;
+            }
+
+            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            SyntaxNode? nodeToFix = GetNodeToFix(editor.Generator, node, diagnostic);
+            if (nodeToFix == null)
+            {
+                return;
+            }
+
+            switch (diagnostic.Properties["case"])
+            {
+                case DefineAccessorsForAttributeArgumentsAnalyzer.AddAccessorCase:
+                    await AddAccessorAsync(document, nodeToFix, editor, cancellationToken).ConfigureAwait(false);
+                    break;
+
+                case DefineAccessorsForAttributeArgumentsAnalyzer.MakePublicCase:
+                    MakePublic(node, nodeToFix, editor);
+                    break;
+
+                case DefineAccessorsForAttributeArgumentsAnalyzer.RemoveSetterCase:
+                    editor.SetAccessibility(nodeToFix, Accessibility.Internal);
+                    break;
+            }
+        }
+
+        private static async Task AddAccessorAsync(Document document, SyntaxNode parameter, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
             SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
             if (model.GetDeclaredSymbol(parameter, cancellationToken) is not IParameterSymbol parameterSymbol)
             {
-                return document;
+                return;
             }
 
             // Make the first character uppercase since we are generating a property.
@@ -93,37 +141,43 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             // Add a new property
             if (propertySymbol == null)
             {
-                await symbolEditor.EditOneDeclarationAsync(typeSymbol,
-                                                           parameter.GetLocation(), // edit the partial declaration that has this parameter symbol.
-                                                           (editor, typeDeclaration) =>
-                                                           {
-                                                               SyntaxNode newProperty = editor.Generator.PropertyDeclaration(propName,
-                                                                                                                      editor.Generator.TypeExpression(parameterSymbol.Type),
-                                                                                                                      Accessibility.Public,
-                                                                                                                      DeclarationModifiers.ReadOnly);
-                                                               newProperty = editor.Generator.WithGetAccessorStatements(newProperty, null);
-                                                               editor.AddMember(typeDeclaration, newProperty);
-                                                           },
-                                                           cancellationToken).ConfigureAwait(false);
+                // Add it to the declaration that has this parameter, since a partial type can be declared
+                // across several documents and the editor only edits this one.
+                SyntaxNode typeDeclaration = editor.Generator.GetDeclaration(parameter, DeclarationKind.Class);
+                if (typeDeclaration == null)
+                {
+                    return;
+                }
+
+                SyntaxNode newProperty = editor.Generator.PropertyDeclaration(propName,
+                                                                              editor.Generator.TypeExpression(parameterSymbol.Type),
+                                                                              Accessibility.Public,
+                                                                              DeclarationModifiers.ReadOnly);
+                newProperty = editor.Generator.WithGetAccessorStatements(newProperty, null);
+                editor.AddMember(typeDeclaration, newProperty);
             }
             else
             {
-                await symbolEditor.EditOneDeclarationAsync(propertySymbol,
-                                                          (editor, propertyDeclaration) =>
-                                                          {
-                                                              editor.SetGetAccessorStatements(propertyDeclaration, editor.Generator.DefaultMethodBody(model.Compilation));
-                                                              editor.SetModifiers(propertyDeclaration, editor.Generator.GetModifiers(propertyDeclaration) - DeclarationModifiers.WriteOnly);
-                                                          },
-                                                          cancellationToken).ConfigureAwait(false);
-            }
+                SyntaxReference? reference = propertySymbol.DeclaringSyntaxReferences.FirstOrDefault(r => r.SyntaxTree == editor.OriginalRoot.SyntaxTree);
+                if (reference == null)
+                {
+                    return;
+                }
 
-            return symbolEditor.GetChangedDocuments().First();
+                SyntaxNode propertyDeclaration = editor.Generator.GetDeclaration(await reference.GetSyntaxAsync(cancellationToken).ConfigureAwait(false), DeclarationKind.Property);
+                if (propertyDeclaration == null)
+                {
+                    return;
+                }
+
+                editor.SetGetAccessorStatements(propertyDeclaration, editor.Generator.DefaultMethodBody(model.Compilation));
+                editor.SetModifiers(propertyDeclaration, editor.Generator.GetModifiers(propertyDeclaration) - DeclarationModifiers.WriteOnly);
+            }
         }
 
-        private static async Task<Document> MakePublicAsync(Document document, SyntaxNode getMethod, SyntaxNode property, CancellationToken cancellationToken)
+        private static void MakePublic(SyntaxNode getMethod, SyntaxNode property, SyntaxEditor editor)
         {
             // Clear the accessibility on the getter.
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             editor.SetAccessibility(getMethod, Accessibility.NotApplicable);
 
             // If the containing property is not public, make it so
@@ -144,20 +198,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     }
                 }
             }
-
-            return editor.GetChangedDocument();
-        }
-
-        private static async Task<Document> RemoveSetterAsync(Document document, SyntaxNode setMethod, CancellationToken cancellationToken)
-        {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            editor.SetAccessibility(setMethod, Accessibility.Internal);
-            return editor.GetChangedDocument();
-        }
-
-        public override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
         }
     }
 }

@@ -867,6 +867,97 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             return VerifyVisualBasicAsync(code, fixedCode);
         }
 
+        [TestMethod]
+        public Task CS_NestedCalls_FixAllRewritesBoth()
+        {
+            const string code = """
+                                using System;
+                                using System.Threading;
+
+                                class Test
+                                {
+                                    void M(ref int arg, ref int value)
+                                    {
+                                        {|#0:Thread.VolatileWrite(ref arg, {|#1:Thread.VolatileRead(ref value)|})|};
+                                    }
+                                }
+                                """;
+            const string fixedCode = """
+                                     using System;
+                                     using System.Threading;
+
+                                     class Test
+                                     {
+                                         void M(ref int arg, ref int value)
+                                         {
+                                             Volatile.Write(ref arg, Volatile.Read(ref value));
+                                         }
+                                     }
+                                     """;
+
+            return new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { code, CsharpSystemThreadingThread }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode, CsharpSystemThreadingThread }
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(0),
+                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(1)
+                },
+                LanguageVersion = LanguageVersion.CSharp8,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task VB_NestedCalls_FixAllRewritesBoth()
+        {
+            const string code = """
+                                Imports System
+                                Imports System.Threading
+
+                                Class Test
+                                    Sub M(arg As Integer, value As Integer)
+                                        {|#0:Thread.VolatileWrite(arg, {|#1:Thread.VolatileRead(value)|})|}
+                                    End Sub
+                                End Class
+                                """;
+            const string fixedCode = """
+                                     Imports System
+                                     Imports System.Threading
+
+                                     Class Test
+                                         Sub M(arg As Integer, value As Integer)
+                                             Volatile.Write(arg, Volatile.Read(value))
+                                         End Sub
+                                     End Class
+                                     """;
+
+            return new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { code, VisualBasicSystemThreadingThread }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode, VisualBasicSystemThreadingThread }
+                },
+                ExpectedDiagnostics =
+                {
+                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(0),
+                    new DiagnosticResult("SYSLIB0054", DiagnosticSeverity.Warning).WithLocation(1)
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            }.RunAsync(CancellationToken.None);
+        }
+
         private static Task VerifyCsharpAsync(string code, string fixedCode)
         {
             return new VerifyCS.Test

@@ -757,6 +757,94 @@ class Test
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public Task TwoNonNullable_FixAllRemovesBoth_Diagnostic()
+        {
+            const string code = @"
+using System;
+
+class Test
+{
+    public void M(int x, Guid y)
+    {
+        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+        {|#1:ArgumentNullException.ThrowIfNull(y)|};
+        Console.WriteLine(x);
+    }
+}";
+            const string fixedCode = @"
+using System;
+
+class Test
+{
+    public void M(int x, Guid y)
+    {
+        Console.WriteLine(x);
+    }
+}";
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NonNullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNonNullableValueDiagnostic).WithLocation(1),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
+        {
+            const string code = @"
+using System;
+
+class Test
+{
+    public void M(int? x, Guid? y)
+    {
+        {|#0:ArgumentNullException.ThrowIfNull(x)|};
+        {|#1:ArgumentNullException.ThrowIfNull(y)|};
+        Console.WriteLine(x);
+    }
+}";
+            const string fixedCode = @"
+using System;
+
+class Test
+{
+    public void M(int? x, Guid? y)
+    {
+        if (!x.HasValue)
+        {
+            throw new ArgumentNullException(nameof(x));
+        }
+
+        if (!y.HasValue)
+        {
+            throw new ArgumentNullException(nameof(y));
+        }
+
+        Console.WriteLine(x);
+    }
+}";
+
+            return new VerifyCS.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNullableStructDiagnostic).WithLocation(1),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
         #endregion
 
         #region No diagnostic
@@ -1425,6 +1513,84 @@ End Class";
                 TestCode = code,
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { NonNullableDiagnosticResult },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task Vb_TwoNonNullable_FixAllRemovesBoth_Diagnostic()
+        {
+            const string code = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32, y As Guid)
+        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+        {|#1:ArgumentNullException.ThrowIfNull(y)|}
+        Console.WriteLine(x)
+    End Sub
+End Class";
+            const string fixedCode = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32, y As Guid)
+        Console.WriteLine(x)
+    End Sub
+End Class";
+
+            return new VerifyVB.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NonNullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNonNullableValueDiagnostic).WithLocation(1),
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task Vb_TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
+        {
+            const string code = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32?, y As Guid?)
+        {|#0:ArgumentNullException.ThrowIfNull(x)|}
+        {|#1:ArgumentNullException.ThrowIfNull(y)|}
+        Console.WriteLine(x)
+    End Sub
+End Class";
+            const string fixedCode = @"
+Imports System
+
+Public Class Test
+    Public Sub Run(x As Int32?, y As Guid?)
+        If Not x.HasValue Then
+            Throw New ArgumentNullException(NameOf(x))
+        End If
+
+        If Not y.HasValue Then
+            Throw New ArgumentNullException(NameOf(y))
+        End If
+
+        Console.WriteLine(x)
+    End Sub
+End Class";
+
+            return new VerifyVB.Test
+            {
+                TestCode = code,
+                FixedCode = fixedCode,
+                ExpectedDiagnostics =
+                {
+                    NullableDiagnosticResult,
+                    new DiagnosticResult(DoNotPassNonNullableValueToArgumentNullExceptionThrowIfNull.DoNotPassNullableStructDiagnostic).WithLocation(1),
+                },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
             }.RunAsync(CancellationToken.None);
         }

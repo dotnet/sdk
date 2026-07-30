@@ -743,6 +743,60 @@ End Class
         }
 
         [TestMethod]
+        public Task CS_NestedCount_FixAllRewritesBothAsync()
+            => new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public int M(List<List<int>> lists)
+    {
+        return {|CA1829:lists[{|CA1829:lists.Count()|}].Count()|};
+    }
+}",
+                FixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public int M(List<List<int>> lists)
+    {
+        return lists[lists.Count].Count;
+    }
+}",
+            }.RunAsync(CancellationToken.None);
+
+        [TestMethod]
+        public Task VB_NestedCount_FixAllRewritesBothAsync()
+            => new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Function M(items As Integer()()) As Integer
+        Return {|CA1829:items({|CA1829:items.Count()|}).Count()|}
+    End Function
+End Class
+",
+                FixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Function M(items As Integer()()) As Integer
+        Return items(items.Length).Length
+    End Function
+End Class
+",
+            }.RunAsync(CancellationToken.None);
+
+        [TestMethod]
         public async Task CA1827_CA1829_ExpressionTree_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
