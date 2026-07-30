@@ -173,7 +173,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             // Getting this version of the package as it has known vulnerabilities
             NuGetApiPackageManager packageManager = new NuGetApiPackageManager(engineEnvironmentSettings);
 
-            // use nuget.org for vulnerability metadata (read-only; proxy does not include vulnerability data in registrations) = await packageManager.DownloadPackageAsync(
+            // use nuget.org for vulnerability metadata (read-only; proxy does not include vulnerability data in registrations)
+            var result = await packageManager.DownloadPackageAsync(
                 installPath,
                 "System.Text.Json",
                 "8.0.4",
