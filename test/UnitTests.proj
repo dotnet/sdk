@@ -31,6 +31,12 @@
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SdkCustomXUnitProject Remove="dotnet-MsiInstallation.Tests\**\*" />
 
+    <!-- dotnet-format unit tests are run under the DOTNET_FORMAT pipeline section. -->
+    <SDKCustomXUnitProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
+
+    <!-- ApiCompat integration tests are only run with TestFullMSBuild=true (see below). -->
+    <SDKCustomXUnitProject Remove="Microsoft.DotNet.ApiCompat.IntegrationTests\Microsoft.DotNet.ApiCompat.IntegrationTests.csproj" />
+
     <!-- .NET Framework only test projects are added manually below. -->
     <SDKCustomXUnitProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
   </ItemGroup>
