@@ -865,6 +865,44 @@ public class C
                 GetCSharpResult(12, 15, 12, 95));
         }
 
+
+        [TestMethod]
+        public Task CS_Fixer_NestedInvocations_FixAllConvertsBothAsync()
+        {
+            string originalSource = @"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+public class C
+{
+    public async void M(FileStream s, byte[] buffer)
+    {
+        await s.ReadAsync(buffer, 0, await s.ReadAsync(buffer, 0, buffer.Length));
+    }
+}
+";
+            string fixedSource = @"
+using System;
+using System.IO;
+using System.Threading.Tasks;
+
+public class C
+{
+    public async void M(FileStream s, byte[] buffer)
+    {
+        await s.ReadAsync(buffer.AsMemory(0, await s.ReadAsync(buffer)));
+    }
+}
+";
+
+            return CSharpVerifyExpectedCodeFixDiagnosticsAsync(
+                originalSource,
+                fixedSource,
+                GetCSharpResult(10, 15, 10, 82),
+                GetCSharpResult(10, 44, 10, 81));
+        }
+
         #endregion
 
         #region VB - Diagnostic
@@ -1176,6 +1214,44 @@ End Class
             ";
 
             return VisualBasicVerifyExpectedCodeFixDiagnosticsAsync(originalSource, fixedSource, GetVisualBasicResult(9, 19, 14, 18));
+        }
+
+
+        [TestMethod]
+        public Task VB_Fixer_NestedInvocations_FixAllConvertsBothAsync()
+        {
+            string originalSource = @"
+Imports System
+Imports System.IO
+Imports System.Threading
+Public Module C
+    Public Async Sub M()
+        Using s As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {}
+            Await s.ReadAsync(buffer, 0, Await s.ReadAsync(buffer, 0, buffer.Length))
+        End Using
+    End Sub
+End Module
+";
+            string fixedSource = @"
+Imports System
+Imports System.IO
+Imports System.Threading
+Public Module C
+    Public Async Sub M()
+        Using s As FileStream = File.Open(""file.txt"", FileMode.Open)
+            Dim buffer As Byte() = New Byte(s.Length - 1) {}
+            Await s.ReadAsync(buffer.AsMemory(0, Await s.ReadAsync(buffer)))
+        End Using
+    End Sub
+End Module
+";
+
+            return VisualBasicVerifyExpectedCodeFixDiagnosticsAsync(
+                originalSource,
+                fixedSource,
+                GetVisualBasicResult(9, 19, 9, 86),
+                GetVisualBasicResult(9, 48, 9, 85));
         }
 
         #endregion
