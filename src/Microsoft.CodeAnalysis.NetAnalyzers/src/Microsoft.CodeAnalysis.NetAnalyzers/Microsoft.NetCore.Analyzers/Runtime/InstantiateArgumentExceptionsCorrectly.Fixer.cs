@@ -13,6 +13,7 @@ using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Operations;
 using Analyzer.Utilities;
+using Analyzer.Utilities.Extensions;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
@@ -75,17 +76,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static async Task<Document> SwapArgumentsOrderAsync(Document document, IObjectCreationOperation creation, int paramPosition, int argumentCount, CancellationToken token)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, token).ConfigureAwait(false);
-            SyntaxNode parameter = AddNameOfIfLiteral(creation.Arguments[paramPosition].Value, editor.Generator);
+            SyntaxNode parameter = AddNameOfIfLiteral(creation.Arguments.GetArgumentForParameterAtIndex(paramPosition).Value, editor.Generator);
             SyntaxNode newCreation;
             if (argumentCount == 2)
             {
                 if (paramPosition == 0)
                 {
-                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, creation.Arguments[1].Syntax, parameter);
+                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, ExpressionForParameter(creation, 1), parameter);
                 }
                 else
                 {
-                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, parameter, creation.Arguments[0].Syntax);
+                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, parameter, ExpressionForParameter(creation, 0));
                 }
             }
             else
@@ -93,11 +94,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 Debug.Assert(argumentCount == 3);
                 if (paramPosition == 0)
                 {
-                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, creation.Arguments[1].Syntax, parameter, creation.Arguments[2].Syntax);
+                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, ExpressionForParameter(creation, 1), parameter, ExpressionForParameter(creation, 2));
                 }
                 else
                 {
-                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, parameter, creation.Arguments[1].Syntax, creation.Arguments[0].Syntax);
+                    newCreation = editor.Generator.ObjectCreationExpression(creation.Type, parameter, ExpressionForParameter(creation, 1), ExpressionForParameter(creation, 0));
                 }
             }
 
@@ -108,11 +109,19 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         private static async Task<Document> AddNullMessageToArgumentListAsync(Document document, IObjectCreationOperation creation, CancellationToken token)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, token).ConfigureAwait(false);
-            SyntaxNode argument = AddNameOfIfLiteral(creation.Arguments[0].Value, editor.Generator);
+            SyntaxNode argument = AddNameOfIfLiteral(creation.Arguments.GetArgumentForParameterAtIndex(0).Value, editor.Generator);
             SyntaxNode newCreation = editor.Generator.ObjectCreationExpression(creation.Type, editor.Generator.Argument(editor.Generator.NullLiteralExpression()), argument);
             editor.ReplaceNode(creation.Syntax, newCreation);
             return editor.GetChangedDocument();
         }
+
+        /// <remarks>
+        /// The rewritten argument list is positional, so the value is taken without the enclosing
+        /// argument: carrying a named argument's syntax into a different position would either name
+        /// the wrong parameter or fail to compile.
+        /// </remarks>
+        private static SyntaxNode ExpressionForParameter(IObjectCreationOperation creation, int parameterIndex)
+            => creation.Arguments.GetArgumentForParameterAtIndex(parameterIndex).Value.Syntax;
 
         private static SyntaxNode AddNameOfIfLiteral(IOperation expression, SyntaxGenerator generator)
         {

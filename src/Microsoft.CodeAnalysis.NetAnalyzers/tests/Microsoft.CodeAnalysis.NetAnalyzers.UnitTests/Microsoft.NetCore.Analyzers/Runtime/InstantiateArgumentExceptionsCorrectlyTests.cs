@@ -175,6 +175,44 @@ End Class");
         }
 
         [TestMethod]
+        public async Task ArgumentException_NamedArgumentsOutOfOrder_CSharp_WarnsAndCodeFixesWithNameOfAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                public class Class
+                {
+                    public void Test(string first)
+                    {
+                        throw new System.ArgumentException(paramName: ""first is incorrect"", message: ""first"");
+                    }
+                }",
+                GetCSharpIncorrectMessageExpectedResult(6, 31, "Test", "first", "message", "ArgumentException"), @"
+                public class Class
+                {
+                    public void Test(string first)
+                    {
+                        throw new System.ArgumentException(""first is incorrect"", nameof(first));
+                    }
+                }");
+        }
+
+        [TestMethod]
+        public async Task ArgumentException_NamedArgumentsOutOfOrder_Basic_WarnsAndCodeFixesWithNameOfAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class [MyClass]
+    Public Sub Test(first As String)
+        Throw New System.ArgumentException(paramName:=""first is incorrect"", message:=""first"")
+    End Sub
+End Class",
+                GetBasicIncorrectMessageExpectedResult(4, 15, "Test", "first", "message", "ArgumentException"), @"
+Public Class [MyClass]
+    Public Sub Test(first As String)
+        Throw New System.ArgumentException(""first is incorrect"", NameOf(first))
+    End Sub
+End Class");
+        }
+
+        [TestMethod]
         public async Task ArgumentException_ParameterWithNameofAsMessage_WarnsAndCodeFixesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
