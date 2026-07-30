@@ -32,9 +32,9 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public static string DotnetNewTestTemplatePackageProjectPath { get; } = VerifyFileExists(Path.Combine(DotnetNewTestAssets, "Microsoft.TemplateEngine.TestTemplates.csproj"));
 
         /// <summary>
-        /// Gets a path to the repo root folder.
+        /// Gets a path to the repo root folder (may be null when running in Helix).
         /// </summary>
-        public static string CodeBaseRoot { get; } = GetAndVerifyRepoRoot();
+        public static string? CodeBaseRoot { get; } = GetRepoRoot();
 
         /// <summary>
         /// Gets a path to the template packages maintained in the repo (/template_feed).
@@ -183,19 +183,20 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 return VerifyExists(envDir);
             }
+            if (CodeBaseRoot is null)
+            {
+                Assert.Fail("The repo root could not be determined and DOTNET_SDK_TEST_TEMPLATE_PACKAGES_DIRECTORY is not set.");
+            }
             return VerifyExists(Path.Combine(CodeBaseRoot, "template_feed"));
         }
 
-        private static string GetAndVerifyRepoRoot()
+        private static string? GetRepoRoot()
         {
             string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
-            if (!Directory.Exists(repoRoot))
+            if (!Directory.Exists(repoRoot) || !File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
             {
-                Assert.Fail($"The repo root cannot be evaluated.");
-            }
-            if (!File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
-            {
-                Assert.Fail($"The repo root doesn't contain 'sdk.slnx'.");
+                // Running in Helix or another environment where the full repo isn't available.
+                return null;
             }
             return repoRoot;
         }
