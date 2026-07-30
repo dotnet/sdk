@@ -52,6 +52,45 @@ partial class TestType
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardsPartiallySuppressedByCallsite()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+using Mock;
+
+[assembly: SupportedOSPlatform(""ios13.0"")]
+[assembly: SupportedOSPlatform(""maccatalyst13.0"")]
+[assembly: SupportedOSPlatform(""macos14.0"")]
+[assembly: SupportedOSPlatform(""tvos13.0"")]
+
+partial class TestType
+{
+    void DoSomething()
+    {
+        if (!IsAtLeastXcode13)
+        {
+            Console.WriteLine(OldApi);
+        }
+    }
+
+    [ObsoletedOSPlatform(""ios15.0"")]
+    [ObsoletedOSPlatform(""maccatalyst15.0"")]
+    [ObsoletedOSPlatform(""macos12.0"")]
+    [ObsoletedOSPlatform(""tvos15.0"")]
+    public ulong? OldApi { get; private set; }
+
+    [SupportedOSPlatformGuard(""ios15.0"")]
+    [SupportedOSPlatformGuard(""maccatalyst13.0"")]
+    [SupportedOSPlatformGuard(""macos14.0"")]
+    [SupportedOSPlatformGuard(""tvos15.0"")]
+    internal static bool IsAtLeastXcode13 => true;
+}" + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         [TestMethod]
         public async Task ObsoletedMethodsCalledWarns()
         {

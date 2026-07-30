@@ -492,17 +492,18 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 SmallDictionary<string, Versions>? originalCsAttributes,
                 SmallDictionary<string, Versions> originalAttributes)
             {
-                // A conjunction of negated guards can exclude every platform supported by the call site.
-                if (IsUnreachableByCallsite(value.AnalysisValues, originalCsAttributes))
-                {
-                    return true;
-                }
-
                 // 'GlobalFlowStateAnalysisValueSet.AnalysisValues' represent the && of values.
                 foreach (var analysisValue in value.AnalysisValues)
                 {
                     if (analysisValue is PlatformMethodValue info)
                     {
+                        // A negated guard can exclude this platform entirely at the call site's minimum version.
+                        if (info.Negated && IsPlatformExcludedByCallsite(info, originalCsAttributes))
+                        {
+                            attributes.Remove(info.PlatformName);
+                            continue;
+                        }
+
                         if (attributes.TryGetValue(info.PlatformName, out var attribute))
                         {
                             if (info.Negated)
@@ -669,30 +670,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return true;
             }
 
-            static bool IsUnreachableByCallsite(
-                ImmutableHashSet<IAbstractAnalysisValue> analysisValues,
+            static bool IsPlatformExcludedByCallsite(
+                PlatformMethodValue value,
                 SmallDictionary<string, Versions>? callsiteAttributes)
-            {
-                if (callsiteAttributes == null || callsiteAttributes.IsEmpty ||
-                    callsiteAttributes.Values.Any(attributes => !AllowList(attributes)))
-                {
-                    return false;
-                }
-
-                foreach (var (platformName, attributes) in callsiteAttributes)
-                {
-                    if (attributes.SupportedFirst == null ||
-                        !analysisValues.OfType<PlatformMethodValue>().Any(value =>
-                            value.Negated &&
-                            value.PlatformName.Equals(platformName, StringComparison.OrdinalIgnoreCase) &&
-                            attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version)))
-                    {
-                        return false;
-                    }
-                }
-
-                return true;
-            }
+                => callsiteAttributes != null &&
+                    callsiteAttributes.Values.All(AllowList) &&
+                    callsiteAttributes.TryGetValue(value.PlatformName, out Versions? attributes) &&
+                    attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version);
 
             static bool IsPlatformSupportWasSuppresed(PlatformMethodValue parentValue, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> originalAttributes)
                 => !parentValue.Negated && !attributes.ContainsKey(parentValue.PlatformName) &&
