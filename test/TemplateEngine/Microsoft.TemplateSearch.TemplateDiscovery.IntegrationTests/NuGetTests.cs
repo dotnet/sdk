@@ -45,7 +45,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 Assert.AreEqual("Microsoft.DotNet.Common.ProjectTemplates.5.0", packageInfo.Name);
                 Assert.IsNotEmpty(packageInfo.Version);
                 // Proxy feed may not return accurate download counts
-                Assert.IsGreaterThanOrEqual(0, packageInfo.TotalDownloads);
+                packageInfo.TotalDownloads.Should().BeGreaterThanOrEqualTo(0); // proxy may return 0
                 // Proxy feed may not return Reserved/Owners metadata
                 packageInfo.Description.Should().NotBeNullOrEmpty();
             }
