@@ -207,7 +207,14 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
-            _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
+            var capturedOutput = stdOutBuilder.GetCapturedOutput();
+            var capturedError = stdErrBuilder.GetCapturedOutput();
+            _handler.OnTestProcessExited(
+                exitCode,
+                capturedOutput.Output,
+                capturedError.Output,
+                capturedOutput.WasStreamedLive,
+                capturedError.WasStreamedLive);
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -680,7 +687,7 @@ internal sealed class TestApplication(
     private void OnDisplayMessage(DisplayMessage displayMessage)
         => _handler.OnDisplayMessageReceived(displayMessage);
 
-    private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
+    internal sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {
         private readonly object _lock = new();
         private readonly Queue<string> _lines = [];
@@ -688,56 +695,73 @@ internal sealed class TestApplication(
 
         public void AddLine(string line, bool? liveOutputStreamingState)
         {
-            string? outputToWrite = null;
+            // The write happens while the lock is held on purpose. Releasing it first lets this
+            // reader thread and the protocol-negotiation flush race, which can put a later line on
+            // the terminal ahead of the buffered lines that precede it. Live output is the only
+            // copy the user gets, so its order has to match the order the test process produced it
+            // in. Nothing reached from writeOutput takes this lock back, so holding it is safe.
             lock (_lock)
             {
                 _lines.Enqueue(line);
-                if (liveOutputStreamingState == true)
+                if (liveOutputStreamingState != true)
                 {
-                    if (_liveStreamingEnabled)
-                    {
-                        outputToWrite = line + Environment.NewLine;
-                    }
-                    else
-                    {
-                        _liveStreamingEnabled = true;
-                        outputToWrite = JoinLinesWithTrailingNewLine(_lines);
-                    }
-
-                    TrimToBoundedTail();
+                    return;
                 }
-            }
 
-            if (outputToWrite is not null)
-            {
+                string outputToWrite;
+                if (_liveStreamingEnabled)
+                {
+                    outputToWrite = line + Environment.NewLine;
+                }
+                else
+                {
+                    _liveStreamingEnabled = true;
+                    outputToWrite = JoinLinesWithTrailingNewLine(_lines);
+                }
+
+                TrimToBoundedTail();
                 writeOutput(outputToWrite);
             }
         }
 
         public void FlushBufferedOutputIfLiveStreamingEnabled(bool? liveOutputStreamingState)
         {
-            string? outputToWrite = null;
             lock (_lock)
             {
-                if (liveOutputStreamingState == true && !_liveStreamingEnabled)
+                if (liveOutputStreamingState != true || _liveStreamingEnabled)
                 {
-                    _liveStreamingEnabled = true;
-                    outputToWrite = JoinLinesWithTrailingNewLine(_lines);
-                    TrimToBoundedTail();
+                    return;
                 }
-            }
 
-            if (!string.IsNullOrEmpty(outputToWrite))
-            {
-                writeOutput(outputToWrite);
+                _liveStreamingEnabled = true;
+                string outputToWrite = JoinLinesWithTrailingNewLine(_lines);
+                TrimToBoundedTail();
+
+                if (outputToWrite.Length > 0)
+                {
+                    writeOutput(outputToWrite);
+                }
             }
         }
 
-        public string GetOutput()
+        /// <summary>
+        /// Returns the captured tail of the stream, together with whether that content already
+        /// reached the terminal as live output.
+        /// </summary>
+        /// <remarks>
+        /// Both values are read under the same lock so callers cannot pair output with a stale
+        /// streaming state. <see cref="WasStreamedLive"/> is <see langword="true"/> only once live
+        /// streaming actually engaged for this stream; when it does, everything buffered so far is
+        /// flushed in the same step, so the whole capture - including lines later evicted by
+        /// <see cref="TrimToBoundedTail"/> - has been shown. Callers must therefore not replay the
+        /// output on the terminal in that case, while diagnostics that only record it (trace
+        /// logging) still want the full text.
+        /// </remarks>
+        public (string Output, bool WasStreamedLive) GetCapturedOutput()
         {
             lock (_lock)
             {
-                return string.Join(Environment.NewLine, _lines);
+                return (string.Join(Environment.NewLine, _lines), _liveStreamingEnabled);
             }
         }
 

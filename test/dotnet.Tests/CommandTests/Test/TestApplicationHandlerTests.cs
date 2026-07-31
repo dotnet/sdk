@@ -383,6 +383,104 @@ public class TestApplicationHandlerTests : IDisposable
         reporter.HasHandshakeFailure.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Regression test for https://github.com/dotnet/sdk/issues/55549. Output that was streamed to the
+    /// terminal while the test process was running must not be replayed by the non-zero exit code
+    /// summary — doing so printed every captured line twice for any failing run.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WhenOutputWasStreamedLive_DoesNotReplayItInTheExitCodeSummary()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnHandshakeReceived(BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run), gotSupportedVersion: true)
+            .Should().BeTrue();
+
+        handler.OnTestProcessExited(
+            exitCode: 1,
+            outputData: "streamed-stdout-line",
+            errorData: "streamed-stderr-line",
+            outputAlreadyStreamedLive: true,
+            errorAlreadyStreamedLive: true);
+
+        // The run went through the normal completion summary (not the handshake-failure path), and that
+        // summary reported the exit code without repeating the output that is already on screen.
+        reporter.HasHandshakeFailure.Should().BeFalse();
+
+        string rendered = console.GetOutput();
+        rendered.Should().NotContain("streamed-stdout-line");
+        rendered.Should().NotContain("streamed-stderr-line");
+    }
+
+    /// <summary>
+    /// The other side of <see cref="OnTestProcessExited_WhenOutputWasStreamedLive_DoesNotReplayItInTheExitCodeSummary"/>:
+    /// hosts that never stream (Microsoft.Testing.Platform versions below protocol 1.1.0) rely on the
+    /// summary as the only place their output is shown, so it must still be printed there.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WhenOutputWasNotStreamedLive_StillReportsItInTheExitCodeSummary()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnHandshakeReceived(BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run), gotSupportedVersion: true)
+            .Should().BeTrue();
+
+        handler.OnTestProcessExited(
+            exitCode: 1,
+            outputData: "buffered-stdout-line",
+            errorData: "buffered-stderr-line");
+
+        string rendered = console.GetOutput();
+        rendered.Should().Contain("buffered-stdout-line");
+        rendered.Should().Contain("buffered-stderr-line");
+    }
+
+    /// <summary>
+    /// The handshake-failure path shares the same replay problem: a controller-only handshake that
+    /// negotiated protocol 1.1.0 has already streamed the process output.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WhenOutputWasStreamedLiveAndHandshakeFailed_DoesNotReplayItButStillReportsTheAssembly()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnTestProcessExited(
+            exitCode: 1,
+            outputData: "streamed-stdout-line",
+            errorData: "streamed-stderr-line",
+            outputAlreadyStreamedLive: true,
+            errorAlreadyStreamedLive: true);
+
+        reporter.HasHandshakeFailure.Should().BeTrue();
+
+        string rendered = console.GetOutput();
+        rendered.Should().NotContain("streamed-stdout-line");
+        rendered.Should().NotContain("streamed-stderr-line");
+        rendered.Should().Contain(TargetPath, "the failing assembly still has to be identified");
+    }
+
+    /// <summary>
+    /// Artifact post-processing writes the captured output straight back to the terminal instead of going
+    /// through a summary, so it needs the same guard.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WhenArtifactPostProcessingAndOutputWasStreamedLive_DoesNotReplayIt()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingInvocation: new ArtifactPostProcessingInvocation("manifest.json"));
+
+        handler.OnTestProcessExited(
+            exitCode: 0,
+            outputData: "streamed-stdout-line",
+            errorData: "streamed-stderr-line",
+            outputAlreadyStreamedLive: true,
+            errorAlreadyStreamedLive: true);
+
+        console.GetOutput().Should().NotContain("streamed-stdout-line").And.NotContain("streamed-stderr-line");
+    }
+
     private const string TargetPath = "/repo/bin/Debug/net9.0/MyTest.dll";
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";

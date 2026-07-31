@@ -613,12 +613,22 @@ internal sealed class TestApplicationHandler
         }
     }
 
-    internal void OnTestProcessExited(int exitCode, string outputData, string errorData)
+    internal void OnTestProcessExited(int exitCode, string outputData, string errorData, bool outputAlreadyStreamedLive = false, bool errorAlreadyStreamedLive = false)
     {
+        // Output that was streamed to the terminal as the test process produced it is already on
+        // screen, so the summaries below must not replay it - doing so printed every captured line
+        // twice for any run that ended with a non-zero exit code (https://github.com/dotnet/sdk/issues/55549).
+        // When live streaming never engaged (older Microsoft.Testing.Platform versions that don't
+        // negotiate protocol 1.1.0, or a process that failed before the handshake) these summaries
+        // remain the only place the output is shown, so it is still passed through. Trace logging
+        // always receives the full captured text regardless.
+        string summaryOutputData = outputAlreadyStreamedLive ? string.Empty : outputData;
+        string summaryErrorData = errorAlreadyStreamedLive ? string.Empty : errorData;
+
         if (_options.IsArtifactPostProcessing)
         {
-            WriteMessage(outputData);
-            WriteMessage(errorData);
+            WriteMessage(summaryOutputData);
+            WriteMessage(summaryErrorData);
             LogTestProcessExit(exitCode, outputData, errorData);
             return;
         }
@@ -627,11 +637,11 @@ internal sealed class TestApplicationHandler
         {
             // If we received a handshake from TestHostController but not from TestHost,
             // call HandshakeFailure instead of AssemblyRunCompleted
-            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, outputData, errorData);
+            _output.AssemblyRunCompleted(_handshakeInfo.Value.ExecutionId, exitCode, summaryOutputData, summaryErrorData);
         }
         else
         {
-            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, outputData, errorData);
+            _output.HandshakeFailure(_module.TargetPath ?? _module.ProjectFullPath ?? string.Empty, _module.TargetFramework, exitCode, summaryOutputData, summaryErrorData);
         }
 
         LogTestProcessExit(exitCode, outputData, errorData);
