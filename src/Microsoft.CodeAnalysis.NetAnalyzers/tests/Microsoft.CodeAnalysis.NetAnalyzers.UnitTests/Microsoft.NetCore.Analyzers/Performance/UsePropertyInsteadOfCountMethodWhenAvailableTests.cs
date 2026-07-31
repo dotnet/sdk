@@ -848,7 +848,7 @@ class C
                 extensionsSource: null);
 
         [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/3700"), WorkItem(3700, "https://github.com/dotnet/roslyn-analyzers/issues/3700")]
-        public Task NonZeroEqualsCount_WithoutPredicate_FixedAsync()
+        public async Task NonZeroEqualsCount_WithoutPredicate_FixedAsync()
             => await VerifyAsync(
                 methodName: SourceProvider.MemberName,
                 testSource: SourceProvider.GetCodeWithExpression(

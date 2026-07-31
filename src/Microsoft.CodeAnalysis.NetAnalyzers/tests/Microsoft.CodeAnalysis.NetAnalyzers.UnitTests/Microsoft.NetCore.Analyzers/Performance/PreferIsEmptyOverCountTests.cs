@@ -171,7 +171,7 @@ End Class
         [DataRow("(_concurrent.Count) > (0)", "Not _concurrent.IsEmpty")]
         // TODO: Reduce suggested fix to avoid special casing here.
         [DataRow("((_concurrent).Count) > (0)", "Not (_concurrent).IsEmpty")]
-        public Task BasicTestFixOnParenthesesAsync(string condition, string expectedFix)
+        public async Task BasicTestFixOnParenthesesAsync(string condition, string expectedFix)
         {
             string input = string.Format(CultureInfo.InvariantCulture, vbSnippet, condition);
             string fix = string.Format(CultureInfo.InvariantCulture, vbSnippet, expectedFix);
@@ -283,7 +283,7 @@ End Class");
         [TestMethod, Ignore("Removed default support for all types but this scenario can be useful for .editorconfig")]
         [DataRow(false)]
         [DataRow(true)]
-        public Task CSharpTestIsEmptyGetter_NoDiagnosisAsync(bool useThis)
+        public async Task CSharpTestIsEmptyGetter_NoDiagnosisAsync(bool useThis)
             => await VerifyCS.VerifyAnalyzerAsync(
 $@"class MyIntList
 {{
@@ -300,7 +300,7 @@ $@"class MyIntList
         [TestMethod, Ignore("Removed default support for all types but this scenario can be useful for .editorconfig")]
         [DataRow(false)]
         [DataRow(true)]
-        public Task BasicTestIsEmptyGetter_NoDiagnosisAsync(bool useMe)
+        public async Task BasicTestIsEmptyGetter_NoDiagnosisAsync(bool useMe)
             => await VerifyVB.VerifyAnalyzerAsync(
 $@"Class MyIntList
     Private _list As System.Collections.Generic.List(Of Integer)
