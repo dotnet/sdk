@@ -258,7 +258,7 @@ public class MyCollection {
         }
 
         [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
-        public Task WhenInExpressionTree_NoDiagnostic()
+        public async Task WhenInExpressionTree_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -282,7 +282,7 @@ public class MyCollection {
         }
 
         [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
-        public Task WhenInFunc_Diagnostic()
+        public async Task WhenInFunc_Diagnostic()
         {
             const string code = """
                                 using System;

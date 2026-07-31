@@ -373,7 +373,7 @@ class C
         }
 
         [TestMethod, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
-        public Task Net48_Contains_NoDiagnostic()
+        public async Task Net48_Contains_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -398,7 +398,7 @@ class C
         [TestMethod, WorkItem(7053, "https://github.com/dotnet/roslyn-analyzers/issues/7053")]
         [DataRow("StartsWith")]
         [DataRow("IndexOf")]
-        public Task Net48_Diagnostic(string method)
+        public async Task Net48_Diagnostic(string method)
         {
             var code = $$"""
                          using System;

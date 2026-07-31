@@ -1787,7 +1787,7 @@ namespace UnitTests {
         }
 
         [TestMethod, WorkItem(7217, "https://github.com/dotnet/roslyn-analyzers/issues/7217")]
-        public Task WhenIndexerInIndirectContainsKeyClause_NoDiagnostic()
+        public async Task WhenIndexerInIndirectContainsKeyClause_NoDiagnostic()
         {
             const string code = """
                                 using System.Collections.Generic;
@@ -1823,7 +1823,7 @@ namespace UnitTests {
         }
 
         [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenDifferentPropertyInstanceContainingDictionary_NoDiagnostic()
+        public async Task WhenDifferentPropertyInstanceContainingDictionary_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -1847,7 +1847,7 @@ namespace UnitTests {
         }
 
         [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenDifferentFieldInstanceContainingDictionary_NoDiagnostic()
+        public async Task WhenDifferentFieldInstanceContainingDictionary_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -1871,7 +1871,7 @@ namespace UnitTests {
         }
 
         [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenDifferentLocalInstancesContainingDictionary_NoDiagnostic()
+        public async Task WhenDifferentLocalInstancesContainingDictionary_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -1896,7 +1896,7 @@ namespace UnitTests {
         }
 
         [TestMethod, WorkItem(7295, "https://github.com/dotnet/roslyn-analyzers/issues/7295")]
-        public Task WhenReferencingSameInstanceWithThisQualifier_Diagnostic()
+        public async Task WhenReferencingSameInstanceWithThisQualifier_Diagnostic()
         {
             const string code = """
                                 using System;

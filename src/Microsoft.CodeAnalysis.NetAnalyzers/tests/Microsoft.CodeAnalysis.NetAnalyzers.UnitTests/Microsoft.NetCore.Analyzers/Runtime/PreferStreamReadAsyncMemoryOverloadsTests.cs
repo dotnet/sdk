@@ -579,7 +579,7 @@ class C
         }
 
         [TestMethod, OSCondition(OperatingSystems.Windows)] // https://github.com/dotnet/roslyn/issues/65081
-        public Task CS_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
+        public async Task CS_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
         {
             string originalCode = @"
 using System.IO;
@@ -663,7 +663,7 @@ class C
         public async Task CS_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_WithConfigureAwaitAsync(string originalArgs, string fixedArgs) =>
             await CS_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_InternalAsync(originalArgs, fixedArgs, isEmptyConfigureAwait: false);
 
-        private Task CS_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_InternalAsync(string originalArgs, string fixedArgs, bool isEmptyConfigureAwait)
+        private async Task CS_Fixer_Diagnostic_AwaitInvocationPassedAsArgument_InternalAsync(string originalArgs, string fixedArgs, bool isEmptyConfigureAwait)
         {
             string originalSource = @"
 using System;
@@ -930,7 +930,7 @@ End Module
         }
 
         [TestMethod, OSCondition(OperatingSystems.Windows)] // https://github.com/dotnet/roslyn/issues/65081
-        public Task VB_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
+        public async Task VB_Fixer_Diagnostic_EnsureSystemNamespaceAutoAddedAsync()
         {
             string originalCode = @"
 Imports System.IO

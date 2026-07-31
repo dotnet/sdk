@@ -958,7 +958,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        private static Task VerifyCsharpAsync(string code, string fixedCode)
+        private static async Task VerifyCsharpAsync(string code, string fixedCode)
         {
             await new VerifyCS.Test
             {
@@ -979,7 +979,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
             }.RunAsync(CancellationToken.None);
         }
 
-        private static Task VerifyVisualBasicAsync(string code, string fixedCode)
+        private static async Task VerifyVisualBasicAsync(string code, string fixedCode)
         {
             await new VerifyVB.Test
             {
