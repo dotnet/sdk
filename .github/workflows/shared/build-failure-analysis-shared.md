@@ -28,7 +28,7 @@ of read-only `shell` commands (including `cat`).
 1. Read the agent-context environment variables: `GH_AW_BUILD_OUTCOME`,
    `GH_AW_BINLOG_LIST`, `GH_AW_BINLOG_DIR`, `GH_AW_BINLOG_PATH`,
    `GH_AW_BINLOG_HOST_PATH`, `GH_AW_PR_NUMBER`, `GH_AW_PR_HEAD_SHA`,
-   `GH_AW_PR_MERGE_SHA`, `GH_AW_WORKSPACE`.
+   `GH_AW_PR_MERGE_SHA`, `GH_AW_WORKSPACE`, `GH_AW_MISSING_LEGS`.
 
 2. If `GH_AW_BUILD_OUTCOME == 'success'`, the build did not actually fail —
    there is nothing to analyze. Call `noop` with the message
@@ -50,6 +50,13 @@ of read-only `shell` commands (including `cat`).
      which is **out of scope**. This workflow analyses build failures only, so
      **post nothing**: call `noop` with a short reason and stop. Do **not**
      post a summary comment and do **not** invent fixes.
+   - `GH_AW_MISSING_LEGS` lists build legs that **failed but published no
+     logs**, so no binlog exists for them. It is normally empty. When it is
+     non-empty you are working from an incomplete picture: the legs you can see
+     may be clean while the failure lives in a leg you cannot see. In that case
+     do **not** report the failure as non-build — say which legs are missing.
+     Name them in your `noop` reason when you have no other evidence, or call
+     them out in the summary comment when you do.
    - Post exactly one summary via `add_comment` and any inline
      `suggestion` blocks via `create_pull_request_review_comment`, **targeting
      the pull request `GH_AW_PR_NUMBER` explicitly** (these workflows use
