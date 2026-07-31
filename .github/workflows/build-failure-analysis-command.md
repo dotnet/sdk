@@ -118,11 +118,15 @@ jobs:
       # `author_association` in the job-level `if:` cannot tell an org member
       # with read-only access apart from a maintainer, so resolve the real
       # repository permission here — before any download — and match it against
-      # the same `roles: [admin, maintainer, write]` this command declares. The
-      # legacy `.permission` field collapses maintain -> write and triage ->
-      # read, so `admin|write` is exactly "has push access". On any API failure
-      # `gh` emits an error document rather than a role name, which falls into
-      # the deny branch; failing closed is the safe direction for a pre-gate.
+      # the same `roles: [admin, maintainer, write]` this command declares.
+      # Check `role_name` and `permission` together: `role_name` reports the
+      # precise role (so `maintain` and `triage` stay distinct) while
+      # `permission` is the coarse legacy field, and a custom org role reports a
+      # non-standard name in `role_name` while still showing its push access in
+      # `permission`. Accepting the union of the two covers every shape without
+      # depending on which field carries the role. On any API failure `gh` emits
+      # an error document that has neither field, so the check falls into the
+      # deny branch; failing closed is the safe direction for a pre-gate.
       - name: Verify the commenter has write access
         id: perm
         if: github.event_name == 'issue_comment'
@@ -131,17 +135,21 @@ jobs:
           COMMENTER: ${{ github.event.comment.user.login }}
         run: |
           set +e
-          perm=$(gh api "repos/${GITHUB_REPOSITORY}/collaborators/${COMMENTER}/permission" --jq '.permission' 2>/dev/null)
-          case "${perm}" in
-            admin|write)
-              echo "'${COMMENTER}' has '${perm}' access to ${GITHUB_REPOSITORY}; proceeding."
-              echo "authorized=true" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              echo "::warning::'${COMMENTER}' does not have write access to ${GITHUB_REPOSITORY}; skipping the binlog download."
-              echo "authorized=false" >> "$GITHUB_OUTPUT"
-              ;;
-          esac
+          resp=$(gh api "repos/${GITHUB_REPOSITORY}/collaborators/${COMMENTER}/permission" 2>/dev/null)
+          role=$(printf '%s' "${resp}" | jq -r '.role_name // empty' 2>/dev/null)
+          perm=$(printf '%s' "${resp}" | jq -r '.permission // empty' 2>/dev/null)
+          authorized=false
+          for r in "${role}" "${perm}"; do
+            case "${r}" in
+              admin|maintain|maintainer|write) authorized=true ;;
+            esac
+          done
+          if [ "${authorized}" = "true" ]; then
+            echo "'${COMMENTER}' has '${role:-${perm}}' access to ${GITHUB_REPOSITORY}; proceeding."
+          else
+            echo "::warning::'${COMMENTER}' does not have write access to ${GITHUB_REPOSITORY} (resolved role '${role:-none}'); skipping the binlog download."
+          fi
+          echo "authorized=${authorized}" >> "$GITHUB_OUTPUT"
 
       - name: Download binlogs from the PR's latest failed Azure Pipelines build
         id: fetch
