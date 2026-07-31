@@ -285,16 +285,14 @@ jobs:
           HEAD_SHA="${CURRENT_HEAD}"
           echo "Analyzing build ${BUILD_ID} at PR head revision '${HEAD_SHA}'."
 
-          # --- 5. Download every <Leg>_Logs_Attempt<N> artifact and extract binlogs ---
-          # The SDK pipeline publishes one logs artifact per build leg, named
-          # `<Leg>_Logs_Attempt<N>` (e.g. `Windows_x64_Logs_Attempt1`,
-          # `Linux_arm64_AOT_Logs_Attempt1`), each containing that leg's
-          # `log/<Configuration>/*.binlog`. A retried leg adds an `Attempt2`
-          # artifact, which is matched too.
-          # The SDK pipeline publishes one logs artifact per build leg, but the
+          # --- 5. Download every logs artifact and extract binlogs ---
+          # The SDK pipeline publishes one logs artifact per build leg, each
+          # holding that leg's `log/<Configuration>/*.binlog`, but the artifact
           # NAME depends on the target branch even though the definition id is
           # the same (101):
-          #   * `main`      -> `<Leg>_Logs_Attempt<N>` (e.g. `Windows_x64_Logs_Attempt1`)
+          #   * `main`      -> `<Leg>_Logs_Attempt<N>` (e.g. `Windows_x64_Logs_Attempt1`,
+          #                    `Linux_arm64_AOT_Logs_Attempt1`; a retried leg adds
+          #                    an `Attempt2` artifact, which is matched too)
           #   * `release/*` -> `<Leg>` (e.g. `TestBuild_linux_x64`, `AoT_macOS_x64`)
           # Both carry the same `log/<Configuration>/*.binlog` tree inside, so
           # only the match differs. Matching just the `main` shape would make the
