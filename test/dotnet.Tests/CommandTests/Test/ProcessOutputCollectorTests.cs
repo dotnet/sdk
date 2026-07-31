@@ -32,10 +32,7 @@ public class ProcessOutputCollectorTests
         collector.AddLine("second", liveOutputStreamingState: null);
 
         written.Should().BeEmpty();
-
-        (string output, bool wasStreamedLive) = collector.GetCapturedOutput();
-        wasStreamedLive.Should().BeFalse();
-        output.Should().Be($"first{Environment.NewLine}second");
+        collector.GetOutputToReport().Should().Be($"first{Environment.NewLine}second");
     }
 
     /// <summary>
@@ -51,18 +48,15 @@ public class ProcessOutputCollectorTests
         collector.AddLine("first", liveOutputStreamingState: false);
 
         written.Should().BeEmpty();
-
-        (string output, bool wasStreamedLive) = collector.GetCapturedOutput();
-        wasStreamedLive.Should().BeFalse();
-        output.Should().Be("first");
+        collector.GetOutputToReport().Should().Be("first");
     }
 
     /// <summary>
     /// Once streaming engages the whole buffer is flushed, so every line the process produced has been
-    /// shown and the capture must be reported as already streamed.
+    /// shown and nothing is left for the caller to report.
     /// </summary>
     [TestMethod]
-    public void AddLine_WhenStreamingEngages_FlushesTheBufferOnceAndReportsCaptureAsStreamed()
+    public void AddLine_WhenStreamingEngages_FlushesTheBufferOnceAndReportsNothing()
     {
         var written = new List<string>();
         var collector = new TestApplication.ProcessOutputCollector(TailLineCount, written.Add);
@@ -74,7 +68,7 @@ public class ProcessOutputCollectorTests
         string.Concat(written).Should().Be(
             $"buffered-before-handshake{Environment.NewLine}first-streamed{Environment.NewLine}second-streamed{Environment.NewLine}");
 
-        collector.GetCapturedOutput().WasStreamedLive.Should().BeTrue();
+        collector.GetOutputToReport().Should().BeEmpty();
     }
 
     /// <summary>
@@ -94,7 +88,7 @@ public class ProcessOutputCollectorTests
         collector.FlushBufferedOutputIfLiveStreamingEnabled(liveOutputStreamingState: true);
 
         written.Should().ContainSingle().Which.Should().Be($"buffered-before-handshake{Environment.NewLine}");
-        collector.GetCapturedOutput().WasStreamedLive.Should().BeTrue();
+        collector.GetOutputToReport().Should().BeEmpty();
     }
 
     /// <summary>
@@ -110,12 +104,15 @@ public class ProcessOutputCollectorTests
         collector.FlushBufferedOutputIfLiveStreamingEnabled(liveOutputStreamingState: true);
 
         written.Should().BeEmpty();
-        collector.GetCapturedOutput().WasStreamedLive.Should().BeTrue();
+
+        collector.AddLine("produced-after-the-flush", liveOutputStreamingState: true);
+        string.Concat(written).Should().Be($"produced-after-the-flush{Environment.NewLine}");
+        collector.GetOutputToReport().Should().BeEmpty();
     }
 
     /// <summary>
     /// The capture is trimmed to a bounded tail once streaming engages, so it is a strict subset of what
-    /// was already shown. That is exactly why the summary must not replay it.
+    /// was already shown. That is exactly why there is nothing left to report.
     /// </summary>
     [TestMethod]
     public void AddLine_WhenStreaming_KeepsOnlyTheBoundedTailButStreamsEveryLine()
@@ -133,9 +130,7 @@ public class ProcessOutputCollectorTests
             string.Concat(written).Should().Contain($"line{i}");
         }
 
-        (string output, bool wasStreamedLive) = collector.GetCapturedOutput();
-        wasStreamedLive.Should().BeTrue();
-        output.Should().Be($"line3{Environment.NewLine}line4{Environment.NewLine}line5");
+        collector.GetOutputToReport().Should().BeEmpty();
     }
 
     /// <summary>
@@ -158,7 +153,7 @@ public class ProcessOutputCollectorTests
         string.Concat(written).Should().Be(
             $"sampled-before-negotiation{Environment.NewLine}sampled-as-non-streaming{Environment.NewLine}");
 
-        collector.GetCapturedOutput().WasStreamedLive.Should().BeTrue();
+        collector.GetOutputToReport().Should().BeEmpty();
     }
 
     /// <summary>
@@ -232,7 +227,7 @@ public class ProcessOutputCollectorTests
     /// then block behind an in-flight write.
     /// </summary>
     [TestMethod]
-    public void GetCapturedOutput_WhileALineIsBeingWritten_DoesNotWaitForTheWriteToComplete()
+    public void GetOutputToReport_WhileALineIsBeingWritten_DoesNotWaitForTheWriteToComplete()
     {
         TestApplication.ProcessOutputCollector? collector = null;
 
@@ -262,8 +257,7 @@ public class ProcessOutputCollectorTests
             // up as a failed join here. Reading on this thread instead would deadlock until the callback's
             // own timeout released it, and the test would then still pass - just far more slowly.
             string? output = null;
-            bool wasStreamedLive = false;
-            var captureThread = new Thread(() => (output, wasStreamedLive) = collector.GetCapturedOutput())
+            var captureThread = new Thread(() => output = collector.GetOutputToReport())
             {
                 // Background so a thread left blocked by a regression cannot keep the test host alive.
                 IsBackground = true,
@@ -273,8 +267,7 @@ public class ProcessOutputCollectorTests
             captureThread.Join(TimeSpan.FromSeconds(15))
                 .Should().BeTrue("reading the capture must not wait for an in-flight terminal write");
 
-            output.Should().Be("blocked-line");
-            wasStreamedLive.Should().BeTrue();
+            output.Should().BeEmpty("the line being written is already reaching the terminal");
         }
         finally
         {

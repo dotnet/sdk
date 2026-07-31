@@ -207,14 +207,7 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
-            var capturedOutput = stdOutBuilder.GetCapturedOutput();
-            var capturedError = stdErrBuilder.GetCapturedOutput();
-            _handler.OnTestProcessExited(
-                exitCode,
-                capturedOutput.Output,
-                capturedError.Output,
-                capturedOutput.WasStreamedLive,
-                capturedError.WasStreamedLive);
+            _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutputToReport(), stdErrBuilder.GetOutputToReport());
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -761,23 +754,22 @@ internal sealed class TestApplication(
         }
 
         /// <summary>
-        /// Returns the captured tail of the stream, together with whether that content already
-        /// reached the terminal as live output.
+        /// Returns the captured tail of the stream for the caller to report, or an empty string when
+        /// that content already reached the terminal as live output.
         /// </summary>
         /// <remarks>
-        /// Both values are read under the same lock so callers cannot pair output with a stale
-        /// streaming state. <c>WasStreamedLive</c> is <see langword="true"/> only once live
-        /// streaming actually engaged for this stream; when it does, everything buffered so far is
-        /// flushed in the same step, so the whole capture - including lines later evicted by
-        /// <see cref="TrimToBoundedTail"/> - has been shown. Callers must therefore not replay the
-        /// output on the terminal in that case, while diagnostics that only record it (trace
-        /// logging) still want the full text.
+        /// Live streaming engages only once for a stream, and everything buffered up to that point is
+        /// flushed in the same step, so from then on the whole capture - including lines later evicted
+        /// by <see cref="TrimToBoundedTail"/> - has been shown. Reporting it again would print it twice
+        /// (https://github.com/dotnet/sdk/issues/55549). Until streaming engages the capture is the only
+        /// copy there is, so it is returned in full: older Microsoft.Testing.Platform versions that
+        /// don't negotiate protocol 1.1.0, and processes that fail before the handshake, depend on it.
         /// </remarks>
-        public (string Output, bool WasStreamedLive) GetCapturedOutput()
+        public string GetOutputToReport()
         {
             lock (_lock)
             {
-                return (string.Join(Environment.NewLine, _lines), _liveStreamingEnabled);
+                return _liveStreamingEnabled ? string.Empty : string.Join(Environment.NewLine, _lines);
             }
         }
 
