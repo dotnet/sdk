@@ -148,7 +148,7 @@ whose tests all passed still reports success even if merging failed.
 | Knob | Effect |
 |---|---|
 | `--no-artifact-post-processing` | Skip post-processing entirely. Each test application's artifacts are listed individually, one per module. |
-| `DOTNET_CLI_TEST_ARTIFACT_POST_PROCESSING_TIMEOUT_SECONDS` | Override the default 15-minute bound on a single merge host. `0` removes the bound (useful for attaching a debugger to a merge host). An absent, non-numeric, or negative value keeps the default. |
+| `DOTNET_CLI_TEST_ARTIFACT_POST_PROCESSING_TIMEOUT_SECONDS` | Override the default 15-minute bound on a single merge host. `0` removes the bound (useful for attaching a debugger to a merge host), as does any value large enough that the runtime could not wait on it (above roughly 49.7 days). An absent, non-numeric, or negative value keeps the default. |
 | `--results-directory` | Determines the output directory recorded in the manifest (see [Where the merged artifact lands](#where-the-merged-artifact-lands)). It is not passed to the merge host on the command line — the merged output location travels in the manifest so the SDK keeps control of it even when it has to be derived. |
 | `--config-file` | Forwarded to the merge host, so it resolves and enables the same extensions as the test run. |
 | `--diagnostic-output-directory` | Forwarded to the merge host, so its diagnostic logs land beside the run's. |

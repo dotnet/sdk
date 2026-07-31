@@ -173,15 +173,18 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
             .. additionalArguments
         ];
 
-        return new DotnetTestCommand(Log, disableNewOutput: false)
-            .WithWorkingDirectory(workingDirectory)
-            // This test suite itself runs under Microsoft.Testing.Platform, so its process already
-            // carries an execution id. A test application only generates its own when the variable is
-            // unset, so without this the applications launched by the inner 'dotnet test' would adopt
-            // this harness's id and every invocation would look like the same execution. Clearing it
-            // restores what a normal 'dotnet test' sees: one fresh execution id per invocation.
-            .WithEnvironmentVariable("TESTINGPLATFORM_DOTNETTEST_EXECUTIONID", string.Empty)
-            .Execute(arguments);
+        Microsoft.NET.TestFramework.Commands.TestCommand command = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(workingDirectory);
+
+        // This test suite itself runs under Microsoft.Testing.Platform, so its process already
+        // carries an execution id. A test application only generates its own when the variable is
+        // unset, so without this the applications launched by the inner 'dotnet test' would adopt
+        // this harness's id and every invocation would look like the same execution. Removing it
+        // from the child environment restores what a normal 'dotnet test' sees: one fresh execution
+        // id per invocation.
+        command.EnvironmentToRemove.Add("TESTINGPLATFORM_DOTNETTEST_EXECUTIONID");
+
+        return command.Execute(arguments);
     }
 
     private static string GetMergedTrxPath(CommandResult result)

@@ -201,6 +201,7 @@ public class ArtifactPostProcessingManagerTests
     [TestMethod]
     [DataRow("4294968")]
     [DataRow("2147483647")]
+    [DataRow("9999999999")]
     public void ParseArtifactPostProcessingTimeout_ValueTooLargeToWaitOn_RemovesTheBound(string configuredTimeout)
     {
         // Task.WaitAsync throws for a timeout above ~49.7 days instead of waiting, which would fail

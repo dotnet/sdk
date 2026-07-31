@@ -415,7 +415,11 @@ internal sealed class TestApplication(
 
     internal static TimeSpan ParseArtifactPostProcessingTimeout(string? configuredTimeout)
     {
-        if (!int.TryParse(configuredTimeout, NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds) || seconds < 0)
+        // Parsed as long rather than int so that a value chosen to mean 'a very long time' lands in
+        // the 'effectively never' branch below instead of overflowing the parse and silently falling
+        // back to the default. Anything above long.MaxValue seconds is not a duration anyone means,
+        // so it keeps the default along with the other unusable values.
+        if (!long.TryParse(configuredTimeout, NumberStyles.Integer, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
         {
             return DefaultArtifactPostProcessingTimeout;
         }
