@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         private static readonly DiagnosticResult ExpectedDiagnostic = new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(0);
 
         [TestMethod]
-        public Task TestLocalDeclarationAsync()
+        public async Task TestLocalDeclarationAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -42,11 +42,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
         [TestMethod]
-        public Task VbTestLocalDeclarationAsync()
+        public async Task VbTestLocalDeclarationAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -69,11 +69,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
         [TestMethod]
-        public Task TestParameterDeclarationAsync()
+        public async Task TestParameterDeclarationAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -94,11 +94,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
         [TestMethod]
-        public Task VbTestParameterDeclarationAsync()
+        public async Task VbTestParameterDeclarationAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -119,11 +119,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
         [TestMethod]
-        public Task TestNegatedAnyAsync()
+        public async Task TestNegatedAnyAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -144,11 +144,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
         [TestMethod]
-        public Task VbTestNegatedAnyAsync()
+        public async Task VbTestNegatedAnyAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -169,11 +169,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
         [TestMethod]
-        public Task DontWarnOnChainedLinqWithAnyAsync()
+        public async Task DontWarnOnChainedLinqWithAnyAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -185,11 +185,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
-        public Task VbDontWarnOnChainedLinqWithAnyAsync()
+        public async Task VbDontWarnOnChainedLinqWithAnyAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -201,11 +201,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyAnalyzerAsync(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
-        public Task DontWarnOnAnyWithPredicateAsync()
+        public async Task DontWarnOnAnyWithPredicateAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -217,11 +217,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
-        public Task VbDontWarnOnAnyWithPredicateAsync()
+        public async Task VbDontWarnOnAnyWithPredicateAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -233,11 +233,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyAnalyzerAsync(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod]
-        public Task DontWarnOnCustomType()
+        public async Task DontWarnOnCustomType()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -254,7 +254,7 @@ public class MyCollection {
     public int Length => throw null;
 }";
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
@@ -278,7 +278,7 @@ public class MyCollection {
                                 }
                 """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
         [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
@@ -319,11 +319,11 @@ public class MyCollection {
                                 }
                 """;
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
         [TestMethod]
-        public Task CS_NestedAny_FixAllRewritesBothAsync()
+        public async Task CS_NestedAny_FixAllRewritesBothAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -344,7 +344,7 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyCodeFixAsync(
+            await VerifyCS.VerifyCodeFixAsync(
                 code,
                 new[]
                 {
@@ -355,7 +355,7 @@ public class Tests {
         }
 
         [TestMethod]
-        public Task VB_NestedAny_FixAllRewritesBothAsync()
+        public async Task VB_NestedAny_FixAllRewritesBothAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -376,7 +376,7 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyCodeFixAsync(
+            await VerifyVB.VerifyCodeFixAsync(
                 code,
                 new[]
                 {

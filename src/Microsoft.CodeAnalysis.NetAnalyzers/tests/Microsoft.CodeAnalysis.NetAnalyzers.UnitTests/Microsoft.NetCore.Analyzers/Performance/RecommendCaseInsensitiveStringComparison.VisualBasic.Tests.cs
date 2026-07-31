@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
@@ -392,7 +392,7 @@ End Class";
         }
 
         [TestMethod]
-        public Task NestedDiagnostics_VisualBasic_FixAllRewritesBoth()
+        public async Task NestedDiagnostics_VisualBasic_FixAllRewritesBoth()
         {
             string originalCode = @"Imports System
 Class C
@@ -414,7 +414,7 @@ Class C
     End Sub
 End Class
 ";
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = originalCode,
                 FixedCode = fixedCode,

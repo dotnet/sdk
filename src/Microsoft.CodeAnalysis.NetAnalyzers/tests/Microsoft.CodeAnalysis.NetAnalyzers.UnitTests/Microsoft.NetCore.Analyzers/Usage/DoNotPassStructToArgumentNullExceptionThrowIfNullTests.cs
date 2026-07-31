@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
@@ -24,7 +24,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [DataRow("int")]
         [DataRow("Guid")]
         [DataRow("bool")]
-        public Task NotNullable_PassedInConstructor_Diagnostic(string type)
+        public async Task NotNullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -48,7 +48,7 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -61,7 +61,7 @@ public class Test
         [DataRow("int")]
         [DataRow("Guid")]
         [DataRow("bool")]
-        public Task Nullable_PassedInConstructor_Diagnostic(string type)
+        public async Task Nullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -90,7 +90,7 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -103,7 +103,7 @@ public class Test
         [DataRow("int")]
         [DataRow("Guid")]
         [DataRow("bool")]
-        public Task NotNullable_PassedAsLocalVariable_Diagnostic(string type)
+        public async Task NotNullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -129,7 +129,7 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -142,7 +142,7 @@ public class Test
         [DataRow("int")]
         [DataRow("Guid")]
         [DataRow("bool")]
-        public Task Nullable_PassedAsLocalVariable_Diagnostic(string type)
+        public async Task Nullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -173,7 +173,7 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -183,7 +183,7 @@ public class Test
         }
 
         [TestMethod]
-        public Task NotNullable_CustomStruct_Diagnostic()
+        public async Task NotNullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 using System;
@@ -211,7 +211,7 @@ public class Test
 
 public struct MyStruct {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -221,7 +221,7 @@ public struct MyStruct {}";
         }
 
         [TestMethod]
-        public Task Nullable_CustomStruct_Diagnostic()
+        public async Task Nullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 using System;
@@ -254,7 +254,7 @@ public class Test
 
 public struct MyStruct {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -265,7 +265,7 @@ public struct MyStruct {}";
 
         [TestMethod]
         [CombinatorialData]
-        public Task NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "System.Guid", "bool")] string type,
+        public async Task NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "System.Guid", "bool")] string type,
             [CombinatorialValues("System.ArgumentNullException", "global::System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -286,7 +286,7 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -297,7 +297,7 @@ public class Test
 
         [TestMethod]
         [CombinatorialData]
-        public Task Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "Guid", "bool")] string type,
+        public async Task Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("int", "Guid", "bool")] string type,
             [CombinatorialValues("System.ArgumentNullException", "global::System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -327,7 +327,7 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -340,7 +340,7 @@ public class Test
         [DataRow("int")]
         [DataRow("Guid")]
         [DataRow("bool")]
-        public Task NotNullable_PropertyAccess_Diagnostic(string type)
+        public async Task NotNullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -368,7 +368,7 @@ public class Test
 
 public record MyRecord({type} X);";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -382,7 +382,7 @@ public record MyRecord({type} X);";
         [DataRow("int")]
         [DataRow("Guid")]
         [DataRow("bool")]
-        public Task Nullable_PropertyAccess_Diagnostic(string type)
+        public async Task Nullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -415,7 +415,7 @@ public class Test
 
 public record MyRecord({type}? X);";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -429,7 +429,7 @@ public record MyRecord({type}? X);";
         [DataRow("int")]
         [DataRow("Guid")]
         [DataRow("MyType")]
-        public Task Instantiation_Diagnostic(string type)
+        public async Task Instantiation_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -455,7 +455,7 @@ class Test
 
 class MyType {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -465,7 +465,7 @@ class MyType {}";
         }
 
         [TestMethod]
-        public Task EmptyInitializer_Diagnostic()
+        public async Task EmptyInitializer_Diagnostic()
         {
             const string code = @"
 using System;
@@ -493,7 +493,7 @@ class Test
 
 class MyType {}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -503,7 +503,7 @@ class MyType {}";
         }
 
         [TestMethod]
-        public Task Initializer_Diagnostic()
+        public async Task Initializer_Diagnostic()
         {
             const string code = @"
 using System;
@@ -535,7 +535,7 @@ class MyType
     public string Name { get; set; }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -545,7 +545,7 @@ class MyType
         }
 
         [TestMethod]
-        public Task CollectionInitializer_Diagnostic()
+        public async Task CollectionInitializer_Diagnostic()
         {
             const string code = @"
 using System;
@@ -569,7 +569,7 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -583,7 +583,7 @@ class Test
         [DataRow("Guid")]
         [DataRow("MyType")]
         [DataRow("System.Net.Http.HttpClient")]
-        public Task Nameof_Diagnostic(string type)
+        public async Task Nameof_Diagnostic(string type)
         {
             var code = $@"
 using System;
@@ -609,7 +609,7 @@ class Test
 
 class MyType {{}}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -619,7 +619,7 @@ class MyType {{}}";
         }
 
         [TestMethod]
-        public Task Generics_Diagnostic()
+        public async Task Generics_Diagnostic()
         {
             const string code = @"
 using System;
@@ -641,7 +641,7 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -651,7 +651,7 @@ class Test
         }
 
         [TestMethod]
-        public Task TriviaIsNotPreserved_Diagnostic()
+        public async Task TriviaIsNotPreserved_Diagnostic()
         {
             const string code = @"
 using System;
@@ -676,7 +676,7 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -686,7 +686,7 @@ class Test
         }
 
         [TestMethod]
-        public Task TriviaIsPreserved_Diagnostic()
+        public async Task TriviaIsPreserved_Diagnostic()
         {
             const string code = @"
 using System;
@@ -714,7 +714,7 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -724,7 +724,7 @@ class Test
         }
 
         [TestMethod]
-        public Task TwoArguments_Diagnostic()
+        public async Task TwoArguments_Diagnostic()
         {
             const string code = @"
 using System;
@@ -748,7 +748,7 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -758,7 +758,7 @@ class Test
         }
 
         [TestMethod]
-        public Task TwoNonNullable_FixAllRemovesBoth_Diagnostic()
+        public async Task TwoNonNullable_FixAllRemovesBoth_Diagnostic()
         {
             const string code = @"
 using System;
@@ -783,7 +783,7 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -797,7 +797,7 @@ class Test
         }
 
         [TestMethod]
-        public Task TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
+        public async Task TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
         {
             const string code = @"
 using System;
@@ -832,7 +832,7 @@ class Test
     }
 }";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -858,7 +858,7 @@ class Test
         [DataRow("bool?")]
         [DataRow("MyStruct")]
         [DataRow("MyStruct?")]
-        public Task CustomThrowIfNull_NoDiagnostic(string type)
+        public async Task CustomThrowIfNull_NoDiagnostic(string type)
         {
             var code = $@"
 #nullable enable
@@ -877,7 +877,7 @@ public class ArgumentNullException {{
 
 public struct MyStruct {{}}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
@@ -894,7 +894,7 @@ public struct MyStruct {{}}";
         [DataRow("Random?")]
         [DataRow("System.Net.Http.HttpClient")]
         [DataRow("System.Net.Http.HttpClient?")]
-        public Task ReferenceTypes_NoDiagnostic(string type)
+        public async Task ReferenceTypes_NoDiagnostic(string type)
         {
             var code = $@"
 using System;
@@ -909,7 +909,7 @@ public class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
@@ -918,7 +918,7 @@ public class Test
         }
 
         [TestMethod]
-        public Task Record_NoDiagnostic()
+        public async Task Record_NoDiagnostic()
         {
             const string code = @"
 using System;
@@ -934,7 +934,7 @@ public class Test
 
 public record MyRecord;";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp9,
@@ -946,7 +946,7 @@ public record MyRecord;";
         [DataRow("")]
         [DataRow("where T : notnull")]
         [DataRow("where T : class")]
-        public Task Generics_NoDiagnostic(string whereClause)
+        public async Task Generics_NoDiagnostic(string whereClause)
         {
             var code = $@"
 using System;
@@ -959,7 +959,7 @@ class Test
     }}
 }}";
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp8,
@@ -979,7 +979,7 @@ class Test
         [DataRow("Int32")]
         [DataRow("Guid")]
         [DataRow("Boolean")]
-        public Task Vb_NotNullable_PassedInConstructor_Diagnostic(string type)
+        public async Task Vb_NotNullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1001,7 +1001,7 @@ Public Class Test
 End Class
 ";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1014,7 +1014,7 @@ End Class
         [DataRow("Int32")]
         [DataRow("Guid")]
         [DataRow("Boolean")]
-        public Task Vb_Nullable_PassedInConstructor_Diagnostic(string type)
+        public async Task Vb_Nullable_PassedInConstructor_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1038,7 +1038,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1051,7 +1051,7 @@ End Class";
         [DataRow("Int32")]
         [DataRow("Guid")]
         [DataRow("Boolean")]
-        public Task Vb_NotNullable_PassedAsLocalVariable_Diagnostic(string type)
+        public async Task Vb_NotNullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1073,7 +1073,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1086,7 +1086,7 @@ End Class";
         [DataRow("Int32")]
         [DataRow("Guid")]
         [DataRow("Boolean")]
-        public Task Vb_Nullable_PassedAsLocalVariable_Diagnostic(string type)
+        public async Task Vb_Nullable_PassedAsLocalVariable_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1113,7 +1113,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1123,7 +1123,7 @@ End Class";
         }
 
         [TestMethod]
-        public Task Vb_NotNullable_CustomStruct_Diagnostic()
+        public async Task Vb_NotNullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1149,7 +1149,7 @@ End Class
 Public Structure MyStruct
 End Structure";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1159,7 +1159,7 @@ End Structure";
         }
 
         [TestMethod]
-        public Task Vb_Nullable_CustomStruct_Diagnostic()
+        public async Task Vb_Nullable_CustomStruct_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1189,7 +1189,7 @@ End Class
 Public Structure MyStruct
 End Structure";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1200,7 +1200,7 @@ End Structure";
 
         [TestMethod]
         [CombinatorialData]
-        public Task Vb_NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("System.Int32", "System.Guid", "System.Boolean")] string type,
+        public async Task Vb_NotNullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("System.Int32", "System.Guid", "System.Boolean")] string type,
             [CombinatorialValues("System.ArgumentNullException", "Global.System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -1217,7 +1217,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1228,7 +1228,7 @@ End Class";
 
         [TestMethod]
         [CombinatorialData]
-        public Task Vb_Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("Int32", "Guid", "Boolean")] string type,
+        public async Task Vb_Nullable_FullyQualifiedExceptionName_Diagnostic([CombinatorialValues("Int32", "Guid", "Boolean")] string type,
             [CombinatorialValues("System.ArgumentNullException", "Global.System.ArgumentNullException")] string exceptionType)
         {
             var code = $@"
@@ -1253,7 +1253,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1266,7 +1266,7 @@ End Class";
         [DataRow("Int32")]
         [DataRow("Guid")]
         [DataRow("Boolean")]
-        public Task Vb_NotNullable_PropertyAccess_Diagnostic(string type)
+        public async Task Vb_NotNullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1294,7 +1294,7 @@ Public Class MyType
     Public Dim X As {type}
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1307,7 +1307,7 @@ End Class";
         [DataRow("Int32")]
         [DataRow("Guid")]
         [DataRow("Boolean")]
-        public Task Vb_Nullable_PropertyAccess_Diagnostic(string type)
+        public async Task Vb_Nullable_PropertyAccess_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1339,7 +1339,7 @@ Public Class MyType
     Public Dim X As {type}?
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1352,7 +1352,7 @@ End Class";
         [DataRow("Int32")]
         [DataRow("Guid")]
         [DataRow("MyType")]
-        public Task Vb_Instantiation_Diagnostic(string type)
+        public async Task Vb_Instantiation_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1376,7 +1376,7 @@ End Class
 Class MyType
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1390,7 +1390,7 @@ End Class";
         [DataRow("Guid")]
         [DataRow("MyType")]
         [DataRow("System.Net.Http.HttpClient")]
-        public Task Vb_Nameof_Diagnostic(string type)
+        public async Task Vb_Nameof_Diagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1414,7 +1414,7 @@ End Class
 Class MyType
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1424,7 +1424,7 @@ End Class";
         }
 
         [TestMethod]
-        public Task Vb_Generics_Diagnostic()
+        public async Task Vb_Generics_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1442,7 +1442,7 @@ Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1452,7 +1452,7 @@ End Class";
         }
 
         [TestMethod]
-        public Task Vb_Initializer_Diagnostic()
+        public async Task Vb_Initializer_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1478,7 +1478,7 @@ Class MyType
     Public Property Name As String
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1488,7 +1488,7 @@ End Class";
         }
 
         [TestMethod]
-        public Task Vb_CollectionInitializer_Diagnostic()
+        public async Task Vb_CollectionInitializer_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1508,7 +1508,7 @@ Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1518,7 +1518,7 @@ End Class";
         }
 
         [TestMethod]
-        public Task Vb_TwoNonNullable_FixAllRemovesBoth_Diagnostic()
+        public async Task Vb_TwoNonNullable_FixAllRemovesBoth_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1539,7 +1539,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1553,7 +1553,7 @@ End Class";
         }
 
         [TestMethod]
-        public Task Vb_TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
+        public async Task Vb_TwoNullableStructs_FixAllRewritesBoth_Diagnostic()
         {
             const string code = @"
 Imports System
@@ -1582,7 +1582,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -1608,7 +1608,7 @@ End Class";
         [DataRow("System.Boolean?")]
         [DataRow("MyStruct")]
         [DataRow("MyStruct?")]
-        public Task Vb_CustomThrowIfNull_NoDiagnostic(string type)
+        public async Task Vb_CustomThrowIfNull_NoDiagnostic(string type)
         {
             var code = $@"
 Public Class Test
@@ -1627,7 +1627,7 @@ End Class
 Public Structure MyStruct
 End Structure";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
@@ -1639,7 +1639,7 @@ End Structure";
         [DataRow("Int32()")]
         [DataRow("Random")]
         [DataRow("System.Net.Http.HttpClient")]
-        public Task Vb_ReferenceTypes_NoDiagnostic(string type)
+        public async Task Vb_ReferenceTypes_NoDiagnostic(string type)
         {
             var code = $@"
 Imports System
@@ -1651,7 +1651,7 @@ Public Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60
@@ -1661,7 +1661,7 @@ End Class";
         [TestMethod]
         [DataRow("")]
         [DataRow("As Class")]
-        public Task Vb_Generics_NoDiagnostic(string whereClause)
+        public async Task Vb_Generics_NoDiagnostic(string whereClause)
         {
             var code = $@"
 Imports System
@@ -1672,7 +1672,7 @@ Class Test
     End Sub
 End Class";
 
-            return new VerifyVB.Test
+            await new VerifyVB.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60

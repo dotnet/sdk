@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
@@ -387,7 +387,7 @@ class C
                                 }
                                 """;
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.NetFramework.Net48.Default,
@@ -423,7 +423,7 @@ class C
                               }
                               """;
 
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = code,
                 FixedCode = fixedCode,
@@ -433,7 +433,7 @@ class C
         }
 
         [TestMethod]
-        public Task NestedDiagnostics_CSharp_FixAllRewritesBoth()
+        public async Task NestedDiagnostics_CSharp_FixAllRewritesBoth()
         {
             string originalCode = @"using System;
 class C
@@ -457,7 +457,7 @@ class C
         var result = a.StartsWith(b.IndexOf(c, StringComparison.CurrentCultureIgnoreCase) > 0 ? ""x"" : ""y"", StringComparison.CurrentCultureIgnoreCase);
     }
 }";
-            return new VerifyCS.Test
+            await new VerifyCS.Test
             {
                 TestCode = originalCode,
                 FixedCode = fixedCode,
