@@ -1511,6 +1511,7 @@ End Namespace";
                     TestCode = testCode,
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
                 }.RunAsync(CancellationToken.None);
+                return;
             }
 
             string fixedCode = CreateCSharpCode($$"""
@@ -1557,6 +1558,7 @@ End Namespace";
                     TestCode = testCode,
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net60
                 }.RunAsync(CancellationToken.None);
+                return;
             }
 
             string fixedCode = CreateVbCode($$"""
