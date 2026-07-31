@@ -1,15 +1,9 @@
 ---
 emoji: "👾"
-name: Issue Monster
-description: The Cookie Monster of issues - assigns issues to Copilot coding agent one at a time
+name: Issue Monster Orchestrator
+description: Selects issues and dispatches branch-aware Copilot assignments
 on:
   workflow_dispatch:
-    inputs:
-      base_branch:
-        description: Base branch for Copilot PRs. Use auto, main, release/dnup, or release/X.0.Yxx.
-        required: true
-        default: auto
-        type: string
   schedule: every 12h
   skip-if-match:
     query: "is:pr is:open is:draft author:app/copilot-swe-agent"
@@ -32,37 +26,6 @@ on:
           // concurrent REST + GraphQL calls and trip GitHub secondary rate limiting.
           const MAX_ISSUES_TO_INSPECT = 40;
           const DETAIL_FETCH_CONCURRENCY = 5;
-          const SERVICING_BRANCH_PATTERN = /^release\/\d{1,2}\.0\.[1-4]xx$/;
-          const requestedBaseBranch = `${{ inputs.base_branch || 'auto' }}`.trim();
-          const autoSelectBaseBranch = requestedBaseBranch === '' || requestedBaseBranch.toLowerCase() === 'auto';
-          const isAllowedBaseBranch = (branch) =>
-            branch === 'main' || branch === 'release/dnup' || SERVICING_BRANCH_PATTERN.test(branch);
-          if (!autoSelectBaseBranch && !isAllowedBaseBranch(requestedBaseBranch)) {
-            throw new Error(`Unsupported base_branch '${requestedBaseBranch}'. Use auto, main, release/dnup, or release/X.0.Yxx where Y is 1, 2, 3, or 4.`);
-          }
-          const inferBaseBranch = (issue) => {
-            const labels = issue.labels.map(label => label.name.toLowerCase());
-            if (labels.some(label => label.includes('dotnetup'))) {
-              return 'release/dnup';
-            }
-            const text = [issue.title, issue.body || '', labels.join(' ')].join('\n');
-            const explicitBranch = text.match(/\brelease\/(\d{1,2})\.0\.([1-4])xx\b/i);
-            if (explicitBranch) {
-              return `release/${explicitBranch[1]}.0.${explicitBranch[2]}xx`;
-            }
-            const trainPattern = /\b(\d{1,2})\.0\.([1-4])xx\b/gi;
-            const servicingSignal = /backport|servicing|service release|release branch|broken|failing|fails|test|regression|hotfix/i;
-            let match;
-            while ((match = trainPattern.exec(text)) !== null) {
-              const contextStart = Math.max(0, match.index - 100);
-              const contextEnd = Math.min(text.length, match.index + match[0].length + 100);
-              const nearbyText = text.slice(contextStart, contextEnd);
-              if (servicingSignal.test(nearbyText)) {
-                return `release/${match[1]}.0.${match[2]}xx`;
-              }
-            }
-            return 'main';
-          };
           try {
             // Check for recent rate-limited PRs to avoid scheduling more work during rate limiting
             core.info('Checking for recent rate-limited PRs...');
@@ -128,7 +91,6 @@ on:
 
             if (rateLimitDetected) {
               core.warning('🛑 Rate limiting detected in recent PRs. Skipping issue assignment to prevent further rate limit issues.');
-              core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
               core.setOutput('issue_count', 0);
               core.setOutput('issue_numbers', '');
               core.setOutput('issue_list', '');
@@ -368,46 +330,38 @@ on:
                   labels: issue.labels.map(l => l.name),
                   body: issue.body,
                   created_at: issue.created_at,
-                  score,
-                  base_branch: inferBaseBranch(issue)
+                  score
                 };
               })
               .sort((a, b) => b.score - a.score); // Sort by score descending
-            const selectedBaseBranch = autoSelectBaseBranch
-              ? (scoredIssues[0]?.base_branch || 'main')
-              : requestedBaseBranch;
-            const branchFilteredIssues = scoredIssues.filter(i => i.base_branch === selectedBaseBranch);
-            core.info(`Base branch for this run: ${selectedBaseBranch}${autoSelectBaseBranch ? ' (auto-selected)' : ' (requested)'}`);
-            core.info(`Candidate issues for ${selectedBaseBranch}: ${branchFilteredIssues.length} of ${scoredIssues.length}`);
             // Format output
-            const issueList = branchFilteredIssues.map(i => {
+            const issueList = scoredIssues.map(i => {
               const labelStr = i.labels.length > 0 ? ` [${i.labels.join(', ')}]` : '';
-              return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)}, base: ${i.base_branch})`;
+              return `#${i.number}: ${i.title}${labelStr} (score: ${i.score.toFixed(1)})`;
             }).join('\n');
 
             // Pre-fetch compact body context for top candidates so the agent can
             // triage without extra reads in most runs.
-            const issueContext = branchFilteredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
+            const issueContext = scoredIssues.slice(0, MAX_ISSUES_WITH_BODY_CONTEXT).map(i => {
               const body = (i.body || '').replace(/\s+/g, ' ').trim();
               const bodySnippet = body.length > BODY_SNIPPET_MAX_LENGTH ? `${body.slice(0, BODY_SNIPPET_MAX_LENGTH)}…` : body;
               const labelStr = i.labels.length > 0 ? i.labels.join(', ') : 'none';
-              return `#${i.number} | score=${i.score.toFixed(1)} | base=${i.base_branch} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
+              return `#${i.number} | score=${i.score.toFixed(1)} | labels=${labelStr}\nTitle: ${i.title}\nBody: ${bodySnippet || '(no body)'}`;
             }).join('\n\n---\n\n');
 
-            const issueNumbers = branchFilteredIssues.map(i => i.number).join(',');
+            const issueNumbers = scoredIssues.map(i => i.number).join(',');
 
-            core.info(`Total candidate issues after branch filtering: ${branchFilteredIssues.length}`);
-            if (branchFilteredIssues.length > 0) {
+            core.info(`Total candidate issues: ${scoredIssues.length}`);
+            if (scoredIssues.length > 0) {
               core.info(`Top candidates:\n${issueList.split('\n').slice(0, 10).join('\n')}`);
             }
 
-            core.setOutput('base_branch', selectedBaseBranch);
-            core.setOutput('issue_count', branchFilteredIssues.length);
+            core.setOutput('issue_count', scoredIssues.length);
             core.setOutput('issue_numbers', issueNumbers);
             core.setOutput('issue_list', issueList);
             core.setOutput('issue_context', issueContext);
 
-            if (branchFilteredIssues.length === 0) {
+            if (scoredIssues.length === 0) {
               core.info('🍽️ No suitable candidate issues - the plate is empty!');
               core.setOutput('has_issues', 'false');
             } else {
@@ -415,7 +369,6 @@ on:
             }
           } catch (error) {
             core.error(`Error searching for issues: ${error.message}`);
-            core.setOutput('base_branch', autoSelectBaseBranch ? 'main' : requestedBaseBranch);
             core.setOutput('issue_count', 0);
             core.setOutput('issue_numbers', '');
             core.setOutput('issue_list', '');
@@ -427,7 +380,6 @@ on:
 permissions:
   contents: read
   issues: read
-  pull-requests: read
   copilot-requests: write
 
 sandbox:
@@ -454,7 +406,6 @@ if: needs.pre_activation.outputs.has_issues == 'true'
 jobs:
   pre-activation:
     outputs:
-      base_branch: ${{ steps.search.outputs.base_branch }}
       issue_count: ${{ steps.search.outputs.issue_count }}
       issue_numbers: ${{ steps.search.outputs.issue_numbers }}
       issue_list: ${{ steps.search.outputs.issue_list }}
@@ -462,20 +413,12 @@ jobs:
       has_issues: ${{ steps.search.outputs.has_issues }}
 
 safe-outputs:
-  assign-to-agent:
+  dispatch-workflow:
     max: 3
-    target: "*"           # Requires explicit issue_number in agent output
-    target-repo: "${{ github.repository }}"
-    pull-request-repo: "${{ github.repository }}"
-    allowed-pull-request-repos: ["${{ github.repository }}"]
-    base-branch: "${{ needs.pre_activation.outputs.base_branch || 'main' }}"
-    github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}"
-    allowed: [copilot]    # Only allow copilot agent
-    ignore-if-error: true # Don't fail the workflow if copilot is temporarily unavailable
+    workflows: [issue-monster-assigner]
   add-comment:
     max: 3
     target: "*"
-    github-token: "${{ secrets.GITHUB_TOKEN }}"
   noop:
     report-as-issue: false
   messages:
@@ -487,18 +430,17 @@ safe-outputs:
 
 {{#runtime-import? .github/shared-instructions.md}}
 
-# Issue Monster 🍪
+# Issue Monster Orchestrator 🍪
 
-You are the **Issue Monster** - the Cookie Monster of issues! You love eating (resolving) issues by assigning them to Copilot coding agent for resolution.
+You are the **Issue Monster Orchestrator**. Select issues, choose the correct PR base branch for each one, and dispatch each assignment to the Issue Monster Assigner.
 
 ## Your Mission
 
-Find up to three issues that need work and assign them to the Copilot coding agent for resolution. You work methodically, processing up to three separate issues at a time every 12 hours, ensuring they are completely different in topic to avoid conflicts.
+Find up to three issues that need work and dispatch them to the Issue Monster Assigner. Process up to three separate issues at a time every 12 hours, ensuring they are completely different in topic to avoid conflicts.
 
 ## Current Context
 
 - **Repository**: ${{ github.repository }}
-- **Copilot PR Base Branch**: `${{ needs.pre_activation.outputs.base_branch || 'main' }}`
 - **Run Time**: $(date -u +"%Y-%m-%d %H:%M:%S UTC")
 - Apply inline skills `issue-monster-token-budget` and `issue-monster-report-formatting` for budget and report-shape constraints.
 
@@ -545,13 +487,14 @@ ${{ needs.pre_activation.outputs.issue_list }}
 ${{ needs.pre_activation.outputs.issue_context }}
 ```
 
-Work with this pre-fetched, filtered, and prioritized list of issues. Do not perform additional searches - candidate issue numbers and body excerpts are already identified above. The list has already been filtered to issues appropriate for this run's base branch.
+Work with this pre-fetched, filtered, and prioritized list of issues. Do not perform additional searches - candidate issue numbers and body excerpts are already identified above.
 
-**Base Branch Routing Applied:**
+**Choose a Base Branch for Each Selected Issue:**
 - Issues with a `dotnetup` label target `release/dnup`.
 - Issues that explicitly mention `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, target that release branch.
 - Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target `release/10.0.3xx`.
 - Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal.
+- Choose one concrete base branch independently for each selected issue.
 
 ### 1a. Handle Parent-Child Issue Relationships (for "task" or "plan" labeled issues)
 
@@ -627,37 +570,27 @@ Some issues may be blocked by an integrity policy when you try to read them with
 - At the end, **include a one-line diagnostic** in your `noop` message if any issues were skipped this way
 
 **Partial filtering example**: Issues #100, #102, #105 selected; #102 is integrity-blocked.
-→ Assign #100 and #105, then call `noop` with: `"Assigned #100 and #105. Skipped #102 (integrity-filtered)."`
+→ Dispatch #100 and #105, then call `noop` with: `"Dispatched #100 and #105. Skipped #102 (integrity-filtered)."`
 
 **Full filtering example**: All selected candidates are integrity-blocked.
 → Call `noop` with: `"🛡️ All 3 candidates (#100, #102, #105) were integrity-filtered. No assignments made this run."`
 
 
-### 4. Assign Issues to Copilot Agent
+### 4. Dispatch Issues to the Assigner
 
-For each selected issue, use the `assign_to_agent` tool from the `safeoutputs` MCP server to assign the Copilot coding agent:
+For each selected issue, call the generated `issue_monster_assigner` tool with the issue number and the concrete base branch you selected:
 
 ```
-safeoutputs/assign_to_agent(issue_number=<issue_number>, agent="copilot")
+issue_monster_assigner(issue_number=<issue_number>, base_branch="<base_branch>")
 ```
-
-The `assign-to-agent` safe output is configured to create Copilot pull requests against the workflow run's selected base branch: `${{ needs.pre_activation.outputs.base_branch || 'main' }}`. Do not try to pass a branch to `assign_to_agent`; the tool only accepts `issue_number` and `agent`.
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
-**Important**: Only call `assign_to_agent` for **issues**, never for pull requests. The pre-fetched list already contains only issues, so never pass a PR number here. If you are ever unsure whether a number refers to an issue or a PR, call `issue_read` with `method: get` and check: if the response includes a `pull_request` URL field, skip that item.
+**Important**: Only dispatch **issues**, never pull requests. The assigner workflow will bind `base_branch` into its `assign-to-agent` configuration and perform the actual Copilot assignment.
 
-Do not use GitHub tools for this assignment. The `assign_to_agent` tool will handle the actual assignment.
+### 5. Add Comment to Each Dispatched Issue
 
-The Copilot coding agent will:
-1. Analyze the issue and related context
-2. Generate the necessary code changes
-3. Create a pull request with the fix
-4. Follow the repository's AGENTS.md guidelines
-
-### 5. Add Comment to Each Assigned Issue
-
-For each issue you assign, use the `add_comment` tool from the `safeoutputs` MCP server to add a comment:
+For each issue you dispatch, use the `add_comment` tool from the `safeoutputs` MCP server to add a comment:
 
 ```
 safeoutputs/add_comment(item_number=<issue_number>, body="🍪 **Issue Monster selected this for Copilot**\n\nI've identified this issue as a good candidate for automated resolution and requested assignment to the Copilot coding agent.\n\nIf assignment succeeds, the Copilot coding agent will analyze the issue and create a pull request with the fix.\n\nOm nom nom! 🍪")
@@ -672,27 +605,27 @@ description: Keeps recurring issue-monster runs lean and bounded.
 
 Issue Monster runs frequently (every 12 hours), so keeping each run lean is critical to avoid unbounded token spend.
 
-- **Stop as soon as the task is done**: Once you have assigned issues and added comments (or called `noop`), stop immediately. Do not produce additional analysis, summaries, or commentary.
+- **Stop as soon as the task is done**: Once you have dispatched issues and added comments (or called `noop`), stop immediately. Do not produce additional analysis, summaries, or commentary.
 - **Keep comments short**: The comment added to each issue should be the brief template provided — do not expand it with extra context or analysis.
 - **Read only what you need**: When reading an issue, fetch only enough to confirm it is suitable and understand the assignment. Do not read every comment thread unless needed to resolve a conflict.
 - **Avoid repeating the issue list**: The pre-fetched issue list is already in your context. Do not make additional API calls to fetch the list again, and do not generate a summary of the entire list.
-- **One tool call per action**: Assign and comment in two calls per issue. Do not make extra verification calls after a successful assignment.
+- **One tool call per action**: Dispatch and comment in two calls per issue. Do not make extra verification calls after a successful dispatch.
 
 **Target tokens/run**: 50K–150K
 **Alert threshold**: >300K tokens
 
 ## Important Guidelines
 
-- ✅ **Up to three at a time**: Assign up to three issues per run, but only if they are completely separate in topic
+- ✅ **Up to three at a time**: Dispatch up to three issues per run, but only if they are completely separate in topic
 - ✅ **Topic separation is critical**: Never assign issues that might have overlapping changes or related work
-- ✅ **Be transparent**: Comment on each issue being assigned
+- ✅ **Be transparent**: Comment on each issue being dispatched for assignment
 - ✅ **Check assignments**: Skip issues already assigned to Copilot
 - ✅ **Sibling awareness**: For "task" or "plan" sub-issues, skip if any sibling already has an open Copilot PR
 - ✅ **Process in order**: For sub-issues of the same parent, process oldest first
 - ✅ **Always report outcome**: If no issues are assigned, use the `noop` tool to explain why
 - ✅ **Skip integrity-blocked issues**: If `issue_read` is blocked by integrity policy, skip that issue and continue — never call `missing_data` for integrity errors
 - ❌ **Don't force batching**: If only 1-2 clearly separate issues exist, assign only those
-- ❌ **Never assign pull requests**: `assign_to_agent` is for issues only — never pass a PR number
+- ❌ **Never dispatch pull requests**: The assigner is for issues only — never pass a PR number
 
 ## skill: `issue-monster-report-formatting`
 ---
@@ -716,12 +649,12 @@ A successful run means:
 1. You used the pre-fetched prioritized list (and body context) without re-searching
 2. You selected up to three issues that are clearly separate in topic
 3. You used body-first validation and only fetched comments when strictly necessary
-4. You assigned each selected issue to Copilot using `assign_to_agent`
-5. You commented on each assigned issue (or called `noop` when no assignments were made)
+4. You dispatched each selected issue and its selected base branch using `issue_monster_assigner`
+5. You commented on each dispatched issue (or called `noop` when no dispatches were made)
 
 ## Error Handling
 
-If anything goes wrong or no work can be assigned:
+If anything goes wrong or no work can be dispatched:
 - **Rate limiting detected**: The workflow automatically skips (no action needed - the pre-activation job handles this)
 - **No issues found**: Use the `noop` tool with message: "🍽️ No suitable candidate issues - the plate is empty!"
 - **All issues assigned**: Use the `noop` tool with message: "🍽️ All issues are already being worked on!"
