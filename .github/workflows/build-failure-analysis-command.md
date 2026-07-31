@@ -89,11 +89,13 @@ jobs:
     # Cheap pre-gate. This job is a dependency of gh-aw's `pre_activation`, so it
     # runs BEFORE the role / command-position check. Without a guard it would
     # download hundreds of MB of binlogs on *every* comment in the repository,
-    # which any public commenter could trigger repeatedly. Mirror the same
-    # trusted-author predicate `pre_activation` uses so an untrusted commenter
-    # cannot force the download at all. `pre_activation` remains the
-    # authoritative role + command-position check, and `activation` additionally
-    # requires `binlog-found == 'true'`.
+    # which any public commenter could trigger repeatedly. This expression is
+    # only the free first filter — `author_association` is coarse (in an
+    # org-owned repo every org member reports MEMBER regardless of the
+    # permission they actually hold here), so the step below resolves the
+    # commenter's real repository permission before anything is downloaded.
+    # `pre_activation` remains the authoritative role + command-position check,
+    # and `activation` additionally requires `binlog-found == 'true'`.
     if: >-
       github.event.repository.fork == false &&
       github.event.issue.pull_request &&
@@ -113,8 +115,37 @@ jobs:
       ado-build-url: ${{ steps.fetch.outputs.ado-build-url }}
       missing-legs: ${{ steps.fetch.outputs.missing-legs }}
     steps:
+      # `author_association` in the job-level `if:` cannot tell an org member
+      # with read-only access apart from a maintainer, so resolve the real
+      # repository permission here — before any download — and match it against
+      # the same `roles: [admin, maintainer, write]` this command declares. The
+      # legacy `.permission` field collapses maintain -> write and triage ->
+      # read, so `admin|write` is exactly "has push access". On any API failure
+      # `gh` emits an error document rather than a role name, which falls into
+      # the deny branch; failing closed is the safe direction for a pre-gate.
+      - name: Verify the commenter has write access
+        id: perm
+        if: github.event_name == 'issue_comment'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          COMMENTER: ${{ github.event.comment.user.login }}
+        run: |
+          set +e
+          perm=$(gh api "repos/${GITHUB_REPOSITORY}/collaborators/${COMMENTER}/permission" --jq '.permission' 2>/dev/null)
+          case "${perm}" in
+            admin|write)
+              echo "'${COMMENTER}' has '${perm}' access to ${GITHUB_REPOSITORY}; proceeding."
+              echo "authorized=true" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              echo "::warning::'${COMMENTER}' does not have write access to ${GITHUB_REPOSITORY}; skipping the binlog download."
+              echo "authorized=false" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
+
       - name: Download binlogs from the PR's latest failed Azure Pipelines build
         id: fetch
+        if: github.event_name != 'issue_comment' || steps.perm.outputs.authorized == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           GH_AW_REPO: ${{ github.repository }}
