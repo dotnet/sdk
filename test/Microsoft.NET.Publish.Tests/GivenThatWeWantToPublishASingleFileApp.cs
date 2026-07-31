@@ -220,6 +220,19 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("16.8.0")]
+        public void It_warns_when_using_IncludeAllContentForSelfExtract()
+        {
+            var publishCommand = GetPublishCommand();
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent)
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining(Strings.IncludeAllContentForSelfExtractIsLegacy);
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_errors_when_including_all_content_but_not_native_libraries()
         {
             var publishCommand = GetPublishCommand();
