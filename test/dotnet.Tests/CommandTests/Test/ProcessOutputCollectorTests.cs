@@ -157,6 +157,23 @@ public class ProcessOutputCollectorTests
     }
 
     /// <summary>
+    /// The diagnostics accessor keeps returning the capture after it was streamed. The trace file has no
+    /// console sink and is collected on its own, so it would otherwise silently lose output that only ever
+    /// went to the terminal.
+    /// </summary>
+    [TestMethod]
+    public void GetCapturedOutput_AfterStreamingEngaged_StillReturnsTheCapture()
+    {
+        var written = new List<string>();
+        var collector = new TestApplication.ProcessOutputCollector(TailLineCount, written.Add);
+
+        collector.AddLine("streamed-line", liveOutputStreamingState: true);
+
+        collector.GetOutputToReport().Should().BeEmpty("it is already on the terminal");
+        collector.GetCapturedOutput().Should().Be("streamed-line", "diagnostics still need the text");
+    }
+
+    /// <summary>
     /// The buffered lines have to reach the terminal in the order the process produced them. The flush
     /// (driven by protocol negotiation on the pipe thread) and the stdout reader run concurrently, so the
     /// write cannot happen once the ordering lock is released: a line added in that window would be

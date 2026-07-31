@@ -207,7 +207,22 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
-            _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutputToReport(), stdErrBuilder.GetOutputToReport());
+            string outputToReport = stdOutBuilder.GetOutputToReport();
+            string errorToReport = stdErrBuilder.GetOutputToReport();
+
+            // Output that was streamed live is not reported again - it is already on the terminal, and
+            // replaying it printed everything twice (https://github.com/dotnet/sdk/issues/55549). The trace
+            // file has no console sink and is collected on its own, though, so it would silently lose that
+            // output. Record it here, where the full capture is still available, for the streams the
+            // handler is not going to log. Guarded so nothing is materialized unless tracing is enabled,
+            // which it is not by default.
+            if (Logger.TraceEnabled)
+            {
+                LogStreamedProcessOutput("Output Data", outputToReport, stdOutBuilder);
+                LogStreamedProcessOutput("Error Data", errorToReport, stdErrBuilder);
+            }
+
+            _handler.OnTestProcessExited(exitCode, outputToReport, errorToReport);
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -639,6 +654,25 @@ internal sealed class TestApplication(
     private bool? GetLiveOutputStreamingState() =>
         Volatile.Read(ref _protocolNegotiated) == 0 ? null : IsProtocol_1_1_OrHigher;
 
+    /// <summary>
+    /// Records process output that is not being reported to the user because it already reached the
+    /// terminal as live output, so that an enabled trace file still contains it.
+    /// </summary>
+    private static void LogStreamedProcessOutput(string label, string reportedOutput, ProcessOutputCollector collector)
+    {
+        if (reportedOutput.Length > 0)
+        {
+            // The output is being reported, so the handler traces it as usual.
+            return;
+        }
+
+        string capturedOutput = collector.GetCapturedOutput();
+        if (capturedOutput.Length > 0)
+        {
+            Logger.LogTrace($"{label} (already streamed live): {capturedOutput}");
+        }
+    }
+
     private void FlushBufferedOutputIfLiveStreamingEnabled()
     {
         bool? liveOutputStreamingState = GetLiveOutputStreamingState();
@@ -770,6 +804,19 @@ internal sealed class TestApplication(
             lock (_lock)
             {
                 return _liveStreamingEnabled ? string.Empty : string.Join(Environment.NewLine, _lines);
+            }
+        }
+
+        /// <summary>
+        /// Returns the captured tail of the stream whether or not it was already streamed live. Only for
+        /// diagnostics that record the output without showing it to the user - anything rendered on the
+        /// terminal must go through <see cref="GetOutputToReport"/> instead, or it will be printed twice.
+        /// </summary>
+        public string GetCapturedOutput()
+        {
+            lock (_lock)
+            {
+                return string.Join(Environment.NewLine, _lines);
             }
         }
 

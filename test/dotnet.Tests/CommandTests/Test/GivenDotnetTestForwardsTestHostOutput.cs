@@ -158,6 +158,16 @@ public class GivenDotnetTestForwardsTestHostOutput : SdkTest
         CountOccurrences(result.StdOut, FailingRunStandardOutputMarker).Should().Be(1);
         CountOccurrences(result.StdOut, FailingRunStandardErrorMarker).Should().Be(1);
 
+        // ...and that single copy has to be the live one. Live output is written verbatim, so the marker
+        // sits alone on its line, whereas the summary folds it into an indented "<label>: <output>" line.
+        // Without this the assertion above would also pass against a host that never streams at all, which
+        // would silently stop exercising the regression. Comparing trimmed lines keeps it locale-agnostic.
+        string[] trimmedLines = [.. (result.StdOut ?? string.Empty).Split('\n').Select(line => line.Trim())];
+        trimmedLines.Should().Contain(FailingRunStandardOutputMarker,
+            "the marker must be the live copy, not folded into the exit code summary");
+        trimmedLines.Should().Contain(FailingRunStandardErrorMarker,
+            "the marker must be the live copy, not folded into the exit code summary");
+
         result.ExitCode.Should().NotBe(ExitCodes.Success);
     }
 
