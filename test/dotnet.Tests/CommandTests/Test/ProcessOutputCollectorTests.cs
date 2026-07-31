@@ -16,6 +16,8 @@ public class ProcessOutputCollectorTests
 {
     private const int TailLineCount = 3;
 
+    public TestContext TestContext { get; set; } = null!;
+
     /// <summary>
     /// Before the protocol version is known the streaming state is <see langword="null"/>: nothing may
     /// reach the terminal yet, and the capture has to stay available so a failure summary can show it.
@@ -162,7 +164,7 @@ public class ProcessOutputCollectorTests
     /// <summary>
     /// The buffered lines have to reach the terminal in the order the process produced them. The flush
     /// (driven by protocol negotiation on the pipe thread) and the stdout reader run concurrently, so the
-    /// write cannot happen after the collector's lock is released: a line added in that window would be
+    /// write cannot happen once the ordering lock is released: a line added in that window would be
     /// printed ahead of the buffered lines that precede it. Live output is now the only copy the user
     /// sees, so nothing corrects a swap after the fact.
     /// </summary>
@@ -174,16 +176,30 @@ public class ProcessOutputCollectorTests
         Thread? readerThread = null;
         int firstWrite = 0;
 
+        using var readerEnteredAddLine = new ManualResetEventSlim(false);
+        using var readerCompletedAddLine = new ManualResetEventSlim(false);
+
         collector = new TestApplication.ProcessOutputCollector(liveOutputTailLineCount: 1000, line =>
         {
             // Reproduce the reader thread arriving exactly while the flush is writing. If the write is
-            // not covered by the collector's lock, this AddLine runs to completion here and its line
-            // lands before the flush records its own.
+            // not covered by the ordering lock, that AddLine runs to completion here and its line lands
+            // before the flush records its own.
             if (Interlocked.Exchange(ref firstWrite, 1) == 0)
             {
-                readerThread = new Thread(() => collector!.AddLine("produced-second", liveOutputStreamingState: true));
+                readerThread = new Thread(() =>
+                {
+                    readerEnteredAddLine.Set();
+                    collector!.AddLine("produced-second", liveOutputStreamingState: true);
+                    readerCompletedAddLine.Set();
+                });
                 readerThread.Start();
-                readerThread.Join(TimeSpan.FromMilliseconds(250));
+
+                // Wait for the reader to be running and about to call AddLine, so the probe below is not
+                // measuring thread start-up. Then give it a window to get through AddLine: it must not,
+                // because this callback still holds the ordering lock.
+                readerEnteredAddLine.Wait(TimeSpan.FromSeconds(30), TestContext.CancellationToken).Should().BeTrue();
+                readerCompletedAddLine.Wait(TimeSpan.FromSeconds(2), TestContext.CancellationToken)
+                    .Should().BeFalse("a line produced while the flush is writing must wait for it");
             }
 
             lock (written)
@@ -203,5 +219,45 @@ public class ProcessOutputCollectorTests
             .Should().BeLessThan(
                 rendered.IndexOf("produced-second", StringComparison.Ordinal),
                 "live output must keep the order the test process produced it in");
+    }
+
+    /// <summary>
+    /// Reading the capture must not wait on terminal IO. <c>TestApplication.RunAsync</c> gives the reader
+    /// threads a bounded grace period after the test process exits and then reads the capture anyway,
+    /// precisely because a reader can still be stuck; that timeout would be pointless if the read could
+    /// then block behind an in-flight write.
+    /// </summary>
+    [TestMethod]
+    public void GetCapturedOutput_WhileALineIsBeingWritten_DoesNotWaitForTheWriteToComplete()
+    {
+        TestApplication.ProcessOutputCollector? collector = null;
+
+        using var writeStarted = new ManualResetEventSlim(false);
+        using var releaseWrite = new ManualResetEventSlim(false);
+
+        CancellationToken cancellationToken = TestContext.CancellationToken;
+
+        collector = new TestApplication.ProcessOutputCollector(TailLineCount, _ =>
+        {
+            writeStarted.Set();
+            releaseWrite.Wait(TimeSpan.FromSeconds(30), cancellationToken);
+        });
+
+        var writerThread = new Thread(() => collector.AddLine("blocked-line", liveOutputStreamingState: true));
+        writerThread.Start();
+
+        try
+        {
+            writeStarted.Wait(TimeSpan.FromSeconds(30), cancellationToken).Should().BeTrue();
+
+            (string output, bool wasStreamedLive) = collector.GetCapturedOutput();
+            output.Should().Be("blocked-line");
+            wasStreamedLive.Should().BeTrue();
+        }
+        finally
+        {
+            releaseWrite.Set();
+            writerThread.Join(TimeSpan.FromSeconds(30)).Should().BeTrue();
+        }
     }
 }

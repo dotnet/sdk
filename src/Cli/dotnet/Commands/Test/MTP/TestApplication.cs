@@ -689,59 +689,69 @@ internal sealed class TestApplication(
 
     internal sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {
+        // Serializes "decide what to write, then write it" so live output reaches the terminal in the
+        // order the test process produced it. Without it the protocol-negotiation flush and a reader
+        // thread can interleave and put a later line ahead of the buffered lines that precede it, and
+        // live output is the only copy the user gets. This is deliberately separate from _lock so a
+        // capture read never waits on terminal IO - RunAsync reads the capture on a timeout path that
+        // exists precisely because a reader may be stuck. Always taken before _lock, never after.
+        private readonly object _writeLock = new();
         private readonly object _lock = new();
         private readonly Queue<string> _lines = [];
         private bool _liveStreamingEnabled;
 
         public void AddLine(string line, bool? liveOutputStreamingState)
         {
-            // The write happens while the lock is held on purpose. Releasing it first lets this
-            // reader thread and the protocol-negotiation flush race, which can put a later line on
-            // the terminal ahead of the buffered lines that precede it. Live output is the only
-            // copy the user gets, so its order has to match the order the test process produced it
-            // in. Nothing reached from writeOutput takes this lock back, so holding it is safe.
-            lock (_lock)
+            lock (_writeLock)
             {
-                _lines.Enqueue(line);
-
                 string outputToWrite;
-                if (_liveStreamingEnabled)
+                lock (_lock)
                 {
-                    // The caller sampled the streaming state before taking this lock, so it can be
-                    // stale: negotiation may have enabled streaming in between. Once streaming is on
-                    // it never turns back off, and the capture is reported as already shown, so this
-                    // line has to be written even when the stale sample says otherwise - skipping it
-                    // would drop it from the terminal entirely.
-                    outputToWrite = line + Environment.NewLine;
-                }
-                else
-                {
-                    if (liveOutputStreamingState != true)
+                    _lines.Enqueue(line);
+
+                    if (_liveStreamingEnabled)
                     {
-                        return;
+                        // The caller sampled the streaming state before taking this lock, so it can be
+                        // stale: negotiation may have enabled streaming in between. Once streaming is on
+                        // it never turns back off, and the capture is reported as already shown, so this
+                        // line has to be written even when the stale sample says otherwise - skipping it
+                        // would drop it from the terminal entirely.
+                        outputToWrite = line + Environment.NewLine;
+                    }
+                    else
+                    {
+                        if (liveOutputStreamingState != true)
+                        {
+                            return;
+                        }
+
+                        _liveStreamingEnabled = true;
+                        outputToWrite = JoinLinesWithTrailingNewLine(_lines);
                     }
 
-                    _liveStreamingEnabled = true;
-                    outputToWrite = JoinLinesWithTrailingNewLine(_lines);
+                    TrimToBoundedTail();
                 }
 
-                TrimToBoundedTail();
                 writeOutput(outputToWrite);
             }
         }
 
         public void FlushBufferedOutputIfLiveStreamingEnabled(bool? liveOutputStreamingState)
         {
-            lock (_lock)
+            lock (_writeLock)
             {
-                if (liveOutputStreamingState != true || _liveStreamingEnabled)
+                string outputToWrite;
+                lock (_lock)
                 {
-                    return;
-                }
+                    if (liveOutputStreamingState != true || _liveStreamingEnabled)
+                    {
+                        return;
+                    }
 
-                _liveStreamingEnabled = true;
-                string outputToWrite = JoinLinesWithTrailingNewLine(_lines);
-                TrimToBoundedTail();
+                    _liveStreamingEnabled = true;
+                    outputToWrite = JoinLinesWithTrailingNewLine(_lines);
+                    TrimToBoundedTail();
+                }
 
                 if (outputToWrite.Length > 0)
                 {
@@ -756,7 +766,7 @@ internal sealed class TestApplication(
         /// </summary>
         /// <remarks>
         /// Both values are read under the same lock so callers cannot pair output with a stale
-        /// streaming state. <see cref="WasStreamedLive"/> is <see langword="true"/> only once live
+        /// streaming state. <c>WasStreamedLive</c> is <see langword="true"/> only once live
         /// streaming actually engaged for this stream; when it does, everything buffered so far is
         /// flushed in the same step, so the whole capture - including lines later evicted by
         /// <see cref="TrimToBoundedTail"/> - has been shown. Callers must therefore not replay the
