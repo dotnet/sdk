@@ -291,9 +291,29 @@ jobs:
           # `Linux_arm64_AOT_Logs_Attempt1`), each containing that leg's
           # `log/<Configuration>/*.binlog`. A retried leg adds an `Attempt2`
           # artifact, which is matched too.
+          # The SDK pipeline publishes one logs artifact per build leg, but the
+          # NAME depends on the target branch even though the definition id is
+          # the same (101):
+          #   * `main`      -> `<Leg>_Logs_Attempt<N>` (e.g. `Windows_x64_Logs_Attempt1`)
+          #   * `release/*` -> `<Leg>` (e.g. `TestBuild_linux_x64`, `AoT_macOS_x64`)
+          # Both carry the same `log/<Configuration>/*.binlog` tree inside, so
+          # only the match differs. Matching just the `main` shape would make the
+          # workflow a silent no-op on every `release/*` PR (0 artifacts matched
+          # -> binlog-found=false -> agent skipped), which is exactly the class of
+          # failure that looks green forever, so handle both.
           artifacts_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}/artifacts?api-version=7.1")
           mapfile -t names < <(printf '%s' "${artifacts_json}" | jq -r '.value // [] | map(select(.name | test("_Logs_Attempt[0-9]+$"))) | .[].name')
-          [ "${#names[@]}" -eq 0 ] && { echo "::warning::No *_Logs_Attempt* artifacts on build ${BUILD_ID}."; emit_none; }
+          ARTIFACT_LAYOUT="attempt"
+          if [ "${#names[@]}" -eq 0 ]; then
+            # `release/*` layout. There is no reliable name-only test for "this
+            # artifact holds binlogs", so take every artifact and let the
+            # extraction decide; an artifact with no binlog inside is tolerated
+            # (but a download/extract FAILURE is still fatal — see below).
+            ARTIFACT_LAYOUT="leg"
+            mapfile -t names < <(printf '%s' "${artifacts_json}" | jq -r '.value // [] | .[].name')
+          fi
+          [ "${#names[@]}" -eq 0 ] && { echo "::warning::No log artifacts on build ${BUILD_ID}."; emit_none; }
+          echo "Artifact layout: ${ARTIFACT_LAYOUT} (${#names[@]} candidate artifact(s))."
 
           # --- 5a. Which failed legs never published logs at all? ---
           # The fail-closed check further down compares staged legs against the
@@ -311,13 +331,16 @@ jobs:
           if [ -n "${timeline_json}" ]; then
             while IFS= read -r jobname; do
               [ -z "${jobname}" ] && continue
-              # Timeline job names use spaces where artifact names use
-              # underscores: "Windows x64 AOT" -> "Windows_x64_AOT_Logs_Attempt1".
-              prefix=$(printf '%s' "${jobname}" | tr ' ' '_')
+              # Timeline job names are punctuated differently from artifact
+              # names: "Windows x64 AOT" -> "Windows_x64_AOT_Logs_Attempt1" and
+              # "TestBuild: linux (x64)" -> "TestBuild_linux_x64". Normalizing
+              # every non-alphanumeric run to a single `_` (and trimming a
+              # trailing one) maps both shapes onto the artifact spelling.
+              prefix=$(printf '%s' "${jobname}" | tr -c 'A-Za-z0-9._-' '_' | tr -s '_' | sed 's/_$//')
               found=0
               for n in "${names[@]}"; do
                 case "${n}" in
-                  "${prefix}_Logs_Attempt"[0-9]*) found=1; break ;;
+                  "${prefix}_Logs_Attempt"[0-9]*|"${prefix}") found=1; break ;;
                 esac
               done
               [ "${found}" -eq 0 ] && MISSING_LEGS="${MISSING_LEGS:+${MISSING_LEGS}, }${jobname}"
@@ -345,12 +368,18 @@ jobs:
           # because a partial view is exactly what the fail-closed check below
           # exists to prevent.
           if [ "${#names[@]}" -gt "${MAX_ARTIFACTS}" ]; then
-            echo "::warning::Build ${BUILD_ID} matched ${#names[@]} *_Logs_Attempt* artifacts, above the ${MAX_ARTIFACTS} cap; skipping."
+            echo "::warning::Build ${BUILD_ID} matched ${#names[@]} log artifacts, above the ${MAX_ARTIFACTS} cap; skipping."
             emit_none
           fi
           mkdir -p /tmp/binlogs
           count=0
           staged_legs=0
+          # Artifacts we tried to use but could not read (download, size-guard or
+          # extraction failure). Always fatal: a leg we failed to READ may be the
+          # one that broke the build. Distinct from an artifact that extracted
+          # fine and simply held no binlog, which is normal in the `leg` layout.
+          legs_failed=0
+          budget_hit=0
           ai=0
           for name in "${names[@]}"; do
             # `name` is PR-controlled ADO artifact metadata and the
@@ -360,7 +389,7 @@ jobs:
             safe_name=$(printf '%s' "${name}" | tr -c 'A-Za-z0-9._-' '_')
             ai=$((ai + 1))
             url=$(printf '%s' "${artifacts_json}" | jq -r --arg n "${name}" '.value[] | select(.name==$n) | .resource.downloadUrl // empty')
-            [ -z "${url}" ] && continue
+            [ -z "${url}" ] && { echo "::warning::No download URL for ${name}."; legs_failed=$((legs_failed + 1)); continue; }
             rm -rf /tmp/ax /tmp/a.zip
             mkdir -p /tmp/ax
             # Hard-cap the bytes written to disk regardless of Content-Length:
@@ -370,16 +399,16 @@ jobs:
             curl -sSL --retry 3 --max-time 300 "${url}" 2>/dev/null | head -c $((MAX_ZIP_BYTES + 1)) > /tmp/a.zip || true
             ZIP_BYTES=$(stat -c%s /tmp/a.zip 2>/dev/null || echo 0)
             if [ "${ZIP_BYTES}" -eq 0 ]; then
-              echo "::warning::Skipping ${name}: empty or failed download."; continue
+              echo "::warning::Skipping ${name}: empty or failed download."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ "${ZIP_BYTES}" -gt "${MAX_ZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: download exceeded ${MAX_ZIP_BYTES} bytes."; continue
+              echo "::warning::Skipping ${name}: download exceeded ${MAX_ZIP_BYTES} bytes."; legs_failed=$((legs_failed + 1)); continue
             fi
             # Bound cumulative *compressed* bytes too. The per-artifact and
             # cumulative-uncompressed caps still allow many mid-sized archives
             # to be pulled over the network before any of them is inspected.
             if [ $((TOTAL_ZIP_BYTES + ZIP_BYTES)) -gt "${MAX_TOTAL_ZIP_BYTES}" ]; then
-              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} reached at ${name}; stopping."; break
+              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} reached at ${name}; stopping."; budget_hit=1; break
             fi
             TOTAL_ZIP_BYTES=$((TOTAL_ZIP_BYTES + ZIP_BYTES))
             UNCOMP=$(unzip -l /tmp/a.zip 2>/dev/null | tail -1 | awk '{print $1}')
@@ -387,7 +416,7 @@ jobs:
             # zip / unexpected `unzip -l` output), we can't verify it — skip the
             # artifact rather than let a non-numeric value bypass the `-gt` guard.
             if ! printf '%s' "${UNCOMP}" | grep -qE '^[0-9]+$'; then
-              echo "::warning::Skipping ${name}: could not determine uncompressed size (unparseable unzip output)."; continue
+              echo "::warning::Skipping ${name}: could not determine uncompressed size (unparseable unzip output)."; legs_failed=$((legs_failed + 1)); continue
             fi
             # ZIP64 uncompressed sizes can reach ~20 digits — beyond Bash's
             # signed 64-bit range, where `-gt` (and the cumulative `$((...))`
@@ -396,13 +425,13 @@ jobs:
             # limit is unambiguously larger, so reject on decimal length first;
             # after this, UNCOMP fits safely in the integer range used below.
             if [ "${#UNCOMP}" -gt "${#MAX_UNZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: uncompressed size has ${#UNCOMP} digits, exceeding the ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; continue
+              echo "::warning::Skipping ${name}: uncompressed size has ${#UNCOMP} digits, exceeding the ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ "${UNCOMP}" -gt "${MAX_UNZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: uncompressed size ${UNCOMP} exceeds ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; continue
+              echo "::warning::Skipping ${name}: uncompressed size ${UNCOMP} exceeds ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ $((TOTAL_BYTES + UNCOMP)) -gt "${MAX_TOTAL_BYTES}" ]; then
-              echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${name}; stopping extraction."; break
+              echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${name}; stopping extraction."; budget_hit=1; break
             fi
             # Refuse the archive if any entry path is absolute or has a `..`
             # component (defense-in-depth over unzip's own traversal guard),
@@ -410,10 +439,19 @@ jobs:
             # paths (no `-j`) under a fresh dir + timeout, so two binlogs that
             # share a basename in different folders don't overwrite each other.
             if unzip -Z1 /tmp/a.zip 2>/dev/null | grep -qE '(^/|(^|/)\.\.(/|$))'; then
-              echo "::warning::Skipping ${name}: archive has a suspicious (absolute or ..) entry path."; continue
+              echo "::warning::Skipping ${name}: archive has a suspicious (absolute or ..) entry path."; legs_failed=$((legs_failed + 1)); continue
             fi
-            timeout 120 unzip -o /tmp/a.zip '*.binlog' -d /tmp/ax >/dev/null 2>&1 \
-              || { echo "::warning::Skipping ${name}: extraction failed or timed out."; continue; }
+            # `unzip` exit 11 means "no files matched" -- the artifact simply
+            # carries no binlog. In the `leg` layout the candidate set is every
+            # artifact on the build, so non-log artifacts (e.g.
+            # `BuildConfiguration`) legitimately hit this; it is not a read
+            # failure and must not fail the run closed. Any other non-zero exit
+            # (corrupt archive, timeout) still counts as an unreadable leg.
+            uz=0
+            timeout 120 unzip -o /tmp/a.zip '*.binlog' -d /tmp/ax >/dev/null 2>&1 || uz=$?
+            if [ "${uz}" -ne 0 ] && [ "${uz}" -ne 11 ]; then
+              echo "::warning::Skipping ${name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
+            fi
             # Consume the cumulative budget only once the archive actually
             # extracted — not on a suspicious-path or extraction-failure skip
             # above — so a skipped leg can't wrongly exhaust the budget and
@@ -442,16 +480,28 @@ jobs:
             # This leg produced at least one usable binlog.
             [ "${leg_staged}" -eq 1 ] && staged_legs=$((staged_legs + 1))
           done
-          echo "Extracted ${count} binlog(s) from ${staged_legs}/${#names[@]} legs into /tmp/binlogs:"
+          echo "Extracted ${count} binlog(s) from ${staged_legs}/${#names[@]} artifact(s) into /tmp/binlogs:"
           ls -la /tmp/binlogs || true
-          [ "${count}" -eq 0 ] && { echo "::warning::No *.binlog found in any *_Logs_Attempt* artifact of build ${BUILD_ID}."; emit_none; }
-          # Fail CLOSED on a partial set: if any *_Logs_Attempt* leg did not yield
-          # a usable binlog (download/extract failure, size-guard skip, or no
-          # binlog inside), we cannot see every leg. Activating anyway would let
-          # the agent treat the retrieved legs as the whole build and possibly
-          # mis-classify a real build break in a missing leg as a clean compile /
-          # non-build failure. A later build/check will re-trigger the analysis.
-          if [ "${staged_legs}" -ne "${#names[@]}" ]; then
+          [ "${count}" -eq 0 ] && { echo "::warning::No *.binlog found in any log artifact of build ${BUILD_ID}."; emit_none; }
+          # Fail CLOSED on a partial set. Activating on an incomplete view would
+          # let the agent treat the retrieved legs as the whole build and
+          # mis-classify a real break in a missing leg as a clean compile /
+          # non-build failure. A later build/check re-triggers the analysis.
+          #
+          # What counts as "partial" depends on the layout: in the `attempt`
+          # layout every matched artifact is a logs artifact, so any leg that
+          # yielded no binlog is a gap. In the `leg` layout the candidate set is
+          # *every* artifact on the build, some of which legitimately carry no
+          # binlog, so only a read FAILURE (or a truncated run) is a gap.
+          if [ "${budget_hit}" -ne 0 ]; then
+            echo "::warning::Stopped early on a size budget, so some legs were never inspected; skipping to avoid analyzing an incomplete build."
+            emit_none
+          fi
+          if [ "${legs_failed}" -ne 0 ]; then
+            echo "::warning::${legs_failed} log artifact(s) could not be downloaded or extracted; skipping to avoid analyzing an incomplete build (an unreadable leg could be the one that failed)."
+            emit_none
+          fi
+          if [ "${ARTIFACT_LAYOUT}" = "attempt" ] && [ "${staged_legs}" -ne "${#names[@]}" ]; then
             echo "::warning::Only ${staged_legs} of ${#names[@]} *_Logs_Attempt* legs produced a usable binlog; skipping to avoid analyzing an incomplete build (a missing leg could be the one that failed)."
             emit_none
           fi
