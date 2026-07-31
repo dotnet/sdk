@@ -336,7 +336,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
                 // Write updated manifest
                 File.WriteAllText(
-                    PackagesJsonPath,
+                    PackagesJsonPath!,
                     JsonSerializer.Serialize(manifest, new JsonSerializerOptions
                     {
                         WriteIndented = true,
