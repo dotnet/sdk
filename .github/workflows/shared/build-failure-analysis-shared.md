@@ -56,7 +56,10 @@ of read-only `shell` commands (including `cat`).
      may be clean while the failure lives in a leg you cannot see. In that case
      do **not** report the failure as non-build — say which legs are missing.
      Name them in your `noop` reason when you have no other evidence, or call
-     them out in the summary comment when you do.
+     them out in the summary comment when you do. A value starting with
+     `(unknown` means the build timeline could not be read at all, so
+     completeness could **not** be verified — treat it exactly like a non-empty
+     list and say so rather than assuming every leg reported in.
    - Post exactly one summary via `add_comment` and any inline
      `suggestion` blocks via `create_pull_request_review_comment`, **targeting
      the pull request `GH_AW_PR_NUMBER` explicitly** (these workflows use

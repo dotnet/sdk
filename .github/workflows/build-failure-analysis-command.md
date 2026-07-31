@@ -276,7 +276,18 @@ jobs:
           # it cannot conclude "no build failure" from the legs that uploaded.
           timeline_json=$(curl -sSL --retry 3 --max-time 60 "${ADO_API}/build/builds/${BUILD_ID}/timeline?api-version=7.1" 2>/dev/null || true)
           MISSING_LEGS=""
-          if [ -n "${timeline_json}" ]; then
+          # An unreadable timeline must not look like a complete build. A failed
+          # request, a non-JSON error page and an ADO error document all left
+          # the list empty, which is exactly how "every failed leg published
+          # logs" is reported — so a transient outage could let the agent
+          # conclude "non-build failure" from an artifact set whose completeness
+          # was never established. Probe for the `records` array first and
+          # report an explicit unknown when it isn't there.
+          timeline_ok=0
+          if printf '%s' "${timeline_json}" | jq -e 'type == "object" and has("records")' >/dev/null 2>&1; then
+            timeline_ok=1
+          fi
+          if [ "${timeline_ok}" -eq 1 ]; then
             while IFS= read -r jobname; do
               [ -z "${jobname}" ] && continue
               # Timeline job names are punctuated differently from artifact
@@ -294,7 +305,10 @@ jobs:
               [ "${found}" -eq 0 ] && MISSING_LEGS="${MISSING_LEGS:+${MISSING_LEGS}, }${jobname}"
             done < <(printf '%s' "${timeline_json}" | jq -r '.records // [] | map(select(.type=="Job" and .result=="failed")) | .[].name' 2>/dev/null)
           fi
-          if [ -n "${MISSING_LEGS}" ]; then
+          if [ "${timeline_ok}" -ne 1 ]; then
+            MISSING_LEGS="(unknown - could not read the build timeline)"
+            echo "::warning::Could not read the timeline for build ${BUILD_ID}; unable to verify that every failed leg published a logs artifact."
+          elif [ -n "${MISSING_LEGS}" ]; then
             echo "::warning::Failed leg(s) with no published logs artifact: ${MISSING_LEGS}"
           fi
 
