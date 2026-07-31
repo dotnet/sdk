@@ -222,20 +222,20 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
             var updatedPackages = await bootstrapper.GetManagedTemplatePackagesAsync(CancellationToken.None);
 
             Assert.HasCount(2, updatedPackages);
-                var commonPackage = updatedPackages[0];
-                Assert.AreEqual("5.0.0", commonPackage.Version);
-                var commonPackageDetails = commonPackage.GetDetails();
-                // dotnet-public feed may not return Owners metadata
-                commonPackageDetails.TryGetValue("Owners", out var commonOwners);
-                // Owners may be empty or populated depending on feed behavior
-                Assert.IsFalse(bool.Parse(commonPackageDetails["Reserved"]));
+            var commonPackage = updatedPackages[0];
+            Assert.AreEqual("5.0.0", commonPackage.Version);
+            var commonPackageDetails = commonPackage.GetDetails();
+            // dotnet-public feed may not return Owners metadata
+            commonPackageDetails.TryGetValue("Owners", out var commonOwners);
+            // Owners may be empty or populated depending on feed behavior
+            Assert.IsFalse(bool.Parse(commonPackageDetails["Reserved"]));
 
-                var webPackage = updatedPackages[1];
-                Assert.AreEqual("10.0.0", webPackage.Version);
-                var webPackageDetails = webPackage.GetDetails();
-                // dotnet-public feed may not return Owners metadata
-                webPackageDetails.TryGetValue("Owners", out var webOwners);
-                Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
+            var webPackage = updatedPackages[1];
+            Assert.AreEqual("10.0.0", webPackage.Version);
+            var webPackageDetails = webPackage.GetDetails();
+            // dotnet-public feed may not return Owners metadata
+            webPackageDetails.TryGetValue("Owners", out var webOwners);
+            Assert.IsFalse(bool.Parse(webPackageDetails["Reserved"]));
         }
 
         [TestMethod]
