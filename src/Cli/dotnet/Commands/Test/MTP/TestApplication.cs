@@ -26,7 +26,15 @@ internal sealed class TestApplication(
     TestRunPolicy? testRunPolicy = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
-    private static readonly TimeSpan ArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan DefaultArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// Largest timeout <see cref="Task.WaitAsync(TimeSpan)"/> accepts, in seconds. Anything above
+    /// <c>Timer.MaxSupportedTimeout</c> (0xFFFFFFFE milliseconds) throws instead of waiting.
+    /// </summary>
+    private const int MaximumArtifactPostProcessingTimeoutSeconds = (int)(0xFFFFFFFE / 1000);
+
+    private static readonly TimeSpan ArtifactPostProcessingTimeout = GetArtifactPostProcessingTimeout();
     private const int LiveOutputTailLineCount = 200;
 
     private readonly Lock _requestLock = new();
@@ -309,16 +317,11 @@ internal sealed class TestApplication(
 
         if (_artifactPostProcessingInvocation is not null)
         {
-            builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
-            builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(_artifactPostProcessingInvocation.ManifestPath)}");
-
-            if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } toolDiagnosticOutputDirectoryPath)
-            {
-                builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(toolDiagnosticOutputDirectoryPath)}");
-            }
-
-            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
-            return builder.ToString();
+            return BuildArtifactPostProcessingArguments(
+                builder,
+                _buildOptions.PathOptions,
+                _artifactPostProcessingInvocation.ManifestPath,
+                _pipeName);
         }
 
         if (TestOptions.IsHelp)
@@ -363,6 +366,68 @@ internal sealed class TestApplication(
             StringComparison.OrdinalIgnoreCase)
             ? $"exec {ArgumentEscaper.EscapeSingleArg(module.TargetPath)}"
             : string.Empty;
+
+    /// <summary>
+    /// Appends the arguments that put a relaunched test application into merge-host mode. None of the
+    /// options describing the test run itself are forwarded — the host discovers nothing and runs no
+    /// tests — but the options deciding which extensions load, and where they write diagnostics, must
+    /// match the run that produced the artifacts.
+    /// </summary>
+    internal static string BuildArtifactPostProcessingArguments(
+        StringBuilder builder,
+        PathOptions pathOptions,
+        string manifestPath,
+        string pipeName)
+    {
+        builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
+        builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(manifestPath)}");
+
+        // A merge host resolves and enables its extensions exactly like a test host does, so a
+        // configuration file that governs which extensions load has to reach it too. Without this
+        // the merge runs with a different extension set than the run that produced the artifacts,
+        // and a post-processor disabled by configuration silently comes back for the merge.
+        if (pathOptions.ConfigFilePath is { } configFilePath)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+        }
+
+        if (pathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+        }
+
+        // The results directory is deliberately not forwarded: the merged output location travels in
+        // the manifest instead, so the SDK keeps control of it even when it has to be derived.
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}");
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Resolves how long a relaunched merge host may run before it is killed. The bound exists so a
+    /// hung merge host cannot hold an already-finished test run open indefinitely, but no single
+    /// value fits every repository — merging the coverage of a large solution legitimately takes far
+    /// longer than merging two TRX reports. The override also accepts '0' to remove the bound, which
+    /// is what makes it possible to attach a debugger to a merge host.
+    /// </summary>
+    private static TimeSpan GetArtifactPostProcessingTimeout()
+        => ParseArtifactPostProcessingTimeout(
+            Environment.GetEnvironmentVariable(CliConstants.TestArtifactPostProcessingTimeoutEnvVar));
+
+    internal static TimeSpan ParseArtifactPostProcessingTimeout(string? configuredTimeout)
+    {
+        if (!int.TryParse(configuredTimeout, NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds) || seconds < 0)
+        {
+            return DefaultArtifactPostProcessingTimeout;
+        }
+
+        // Task.WaitAsync rejects a timeout above Timer.MaxSupportedTimeout (~49.7 days) with an
+        // ArgumentOutOfRangeException, which would escape the TimeoutException-only catch around the
+        // wait and fail every merge. A caller asking for a timeout that long means "effectively
+        // never", so give them that instead of a broken run.
+        return seconds == 0 || seconds > MaximumArtifactPostProcessingTimeoutSeconds
+            ? Timeout.InfiniteTimeSpan
+            : TimeSpan.FromSeconds(seconds);
+    }
 
     private async Task WaitConnectionAsync(CancellationToken token)
     {

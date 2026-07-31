@@ -3,6 +3,7 @@
 
 using System.Text.RegularExpressions;
 using System.Xml.Linq;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Utils;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
@@ -64,6 +65,104 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
         trxReports.Should().NotContain(path => Path.GetFileName(path).StartsWith("merged-", StringComparison.Ordinal));
     }
 
+    [TestMethod]
+    public void SingleTestApplication_ProducesOneReport_WithNoMergedReport()
+    {
+        TestAsset testInstance = TestAssetsManager
+            .CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            .WithSource();
+        EnableTrxReport(testInstance.Path);
+        string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+        // Scoping the multi-project solution to a single project yields exactly one test application,
+        // so the planner never sees the >= 2 inputs it requires to plan a merge.
+        CommandResult result = Run(
+            testInstance.Path,
+            resultsDirectory,
+            "--project",
+            $"TestProject{Path.DirectorySeparatorChar}TestProject.csproj");
+
+        result.ExitCode.Should().Be(
+            ExitCodes.AtLeastOneTestFailed,
+            $"the test output was:{Environment.NewLine}{result.StdOut}{Environment.NewLine}{result.StdErr}");
+
+        string[] trxReports = Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories);
+        trxReports.Should().ContainSingle("a single test application produces exactly one TRX report");
+        trxReports.Should().NotContain(
+            path => Path.GetFileName(path).StartsWith("merged-", StringComparison.Ordinal),
+            "a single input never satisfies the planner's >= 2 inputs rule, so no test application is relaunched to merge");
+    }
+
+    [TestMethod]
+    public void RunCutShortByMaximumFailedTests_KeepsOneReportPerTestApplication()
+    {
+        TestAsset testInstance = TestAssetsManager
+            .CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            .WithSource();
+        EnableTrxReport(testInstance.Path);
+        string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+        CommandResult result = Run(testInstance.Path, resultsDirectory, "--maximum-failed-tests", "1");
+
+        result.ExitCode.Should().Be(
+            ExitCodes.TestExecutionStoppedForMaxFailedTests,
+            $"the test output was:{Environment.NewLine}{result.StdOut}{Environment.NewLine}{result.StdErr}");
+
+        // The run is parallel, so how many modules survived to write a TRX before the policy tripped is
+        // timing dependent; only the absence of a merged report is deterministic.
+        string[] trxReports = Directory.Exists(resultsDirectory)
+            ? Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories)
+            : [];
+        trxReports.Should().NotContain(
+            path => Path.GetFileName(path).StartsWith("merged-", StringComparison.Ordinal),
+            "a run truncated by --maximum-failed-tests skips post-processing so the truncation is not hidden behind one merged report");
+
+        // The progress line is printed as soon as post-processing has anything planned, so its absence
+        // shows the merge was skipped rather than merely finding nothing to do. (For the same
+        // timing reason as above this cannot prove a plan would have existed, so it is a guard against
+        // the skip regressing, not a proof that a merge was averted.)
+        result.StdOut.Should().NotContain(
+            CliCommandStrings.ArtifactPostProcessingStarted,
+            "a truncated run must not even start post-processing");
+    }
+
+    [TestMethod]
+    public void TestModulesRun_MergesTrxArtifacts()
+    {
+        TestAsset testInstance = TestAssetsManager
+            .CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+            .WithSource();
+        EnableTrxReport(testInstance.Path);
+
+        new BuildCommand(testInstance, "TestProject").Execute().Should().Pass();
+        new BuildCommand(testInstance, "OtherTestProject").Execute().Should().Pass();
+
+        string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+        string modulesFilter = $"**/bin/**/Debug/{ToolsetInfo.CurrentTargetFramework}/*TestProject.dll"
+            .Replace('/', Path.DirectorySeparatorChar);
+
+        CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--test-modules", modulesFilter, "--report-trx", "--results-directory", resultsDirectory);
+
+        string mergedTrxPath = GetMergedTrxPath(result);
+        File.Exists(mergedTrxPath).Should().BeTrue();
+        Path.GetFileName(mergedTrxPath).Should().MatchRegex("^merged-[0-9a-f]{32}\\.trx$");
+        Directory.GetFiles(resultsDirectory, "merged-*.trx", SearchOption.AllDirectories)
+            .Should().ContainSingle("post-processing is orchestrated independently of --test-modules discovery");
+
+        XNamespace ns = "http://microsoft.com/schemas/VisualStudio/TeamTest/2010";
+        int TotalCount(string trxPath) => int.Parse(
+            XDocument.Load(trxPath).Descendants(ns + "Counters").Single().Attribute("total")!.Value);
+
+        int individualTotal = Directory.GetFiles(resultsDirectory, "*.trx", SearchOption.AllDirectories)
+            .Where(path => !Path.GetFileName(path).StartsWith("merged-", StringComparison.Ordinal))
+            .Sum(TotalCount);
+        TotalCount(mergedTrxPath).Should().Be(
+            individualTotal,
+            "the merged report accounts for every test from each per-module report");
+    }
+
     private CommandResult Run(string workingDirectory, string resultsDirectory, params string[] additionalArguments)
     {
         string[] arguments =
@@ -76,6 +175,12 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
 
         return new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(workingDirectory)
+            // This test suite itself runs under Microsoft.Testing.Platform, so its process already
+            // carries an execution id. A test application only generates its own when the variable is
+            // unset, so without this the applications launched by the inner 'dotnet test' would adopt
+            // this harness's id and every invocation would look like the same execution. Clearing it
+            // restores what a normal 'dotnet test' sees: one fresh execution id per invocation.
+            .WithEnvironmentVariable("TESTINGPLATFORM_DOTNETTEST_EXECUTIONID", string.Empty)
             .Execute(arguments);
     }
 
