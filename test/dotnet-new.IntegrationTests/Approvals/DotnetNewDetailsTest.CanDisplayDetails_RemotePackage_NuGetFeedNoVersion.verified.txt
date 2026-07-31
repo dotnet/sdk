@@ -1,8 +1,8 @@
-﻿Uno.ProjectTemplates.Dotnet
+﻿Microsoft.Android.Templates
    Package version: %VERSION%
-   Details: Package Description
-   Source Feed: NuGet.org [https://packagefeedproxy.microsoft.io/nuget/v3/index.json]
+   Details: 
+   Source Feed: NuGet.org [https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json]
    Authors:
-      nventive
+      Microsoft
    License Metadata:
-      Repository Url: https://github.com/unoplatform/uno
+      License Expression: MIT

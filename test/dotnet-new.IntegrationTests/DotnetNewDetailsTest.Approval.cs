@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     [TestClass]
     public partial class DotnetNewDetailsTest : BaseIntegrationTest
     {
-        private const string _nuGetPackageId = "Uno.ProjectTemplates.Dotnet";
+        private const string _nuGetPackageId = "Microsoft.Android.Templates";
 
 #pragma warning disable xUnit1004 // Test methods should not be skipped
         [TestMethod]
@@ -46,7 +46,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 <configuration>
   <packageSources>
     <clear />
-    <add key=""NuGet.org"" value=""https://packagefeedproxy.microsoft.io/nuget/v3/index.json"" />
+    <add key=""NuGet.org"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"" />
   </packageSources>
 </configuration>
 ");
@@ -98,7 +98,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             string packageName = "Microsoft.Azure.WebJobs.ItemTemplates";
             string latestVersion = await GetLatestVersion(packageName);
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json")
             .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public Task CanDisplayDetails_InstalledPackage_NuGetFeed()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
-            new DotnetNewCommand(_log, "install", _nuGetPackageId, "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
+            new DotnetNewCommand(_log, "install", _nuGetPackageId, "--nuget-source", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json")
                 .WithoutBuiltInTemplates().WithCustomHive(home)
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute()
@@ -179,7 +179,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .ExitWith(0)
                 .And.NotHaveStdErr();
 
-            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", "https://packagefeedproxy.microsoft.io/nuget/v3/index.json")
+            CommandResult commandResult = new DotnetNewCommand(_log, "details", packageName, "--nuget-source", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json")
                 .WithCustomHive(home).WithoutBuiltInTemplates()
                 .WithWorkingDirectory(CreateTemporaryFolder())
                 .Execute();
@@ -223,7 +223,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             using HttpClient client = new();
             // Resolve the SearchQueryService endpoint from the V3 service index
             // This matches the resolution path that `dotnet new details` uses internally
-            string indexJson = await client.GetStringAsync("https://packagefeedproxy.microsoft.io/nuget/v3/index.json");
+            string indexJson = await client.GetStringAsync("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json");
             JObject index = JObject.Parse(indexJson);
             JToken? searchResource = index["resources"]?
                 .FirstOrDefault(r => HasResourceType(r["@type"], "SearchQueryService"));

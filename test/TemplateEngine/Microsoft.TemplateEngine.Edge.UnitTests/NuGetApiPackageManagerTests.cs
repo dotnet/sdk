@@ -15,9 +15,9 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
         public TestContext TestContext { get; set; } = null!;
 
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
-        private readonly IList<string> _additionalSources = new[] { "https://packagefeedproxy.microsoft.io/nuget/v3/index.json" };
-        // Vulnerability metadata is only available in nuget.org registration blobs (read-only); the proxy does not mirror it.
-        private readonly IList<string> _vulnerabilitySources = new[] { "https://data.nuget.org/v3/index.json" };
+        private readonly IList<string> _additionalSources = new[] { "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json" };
+        // Vulnerability metadata requires nuget.org registration blobs (read-only index); dotnet-public does not include vulnerability data.
+        private readonly IList<string> _vulnerabilitySources = new[] { "https://api.nuget.org/v3/index.json" };
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)

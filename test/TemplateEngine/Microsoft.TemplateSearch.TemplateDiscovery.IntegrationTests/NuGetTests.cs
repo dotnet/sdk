@@ -15,17 +15,11 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         [TestMethod]
         public async Task CanReadPackageInfo()
         {
-            string nuGetOrgFeed = "https://packagefeedproxy.microsoft.io/nuget/v3/index.json";
+            string nuGetOrgFeed = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json";
             var repository = Repository.Factory.GetCoreV3(nuGetOrgFeed);
             ServiceIndexResourceV3 indexResource = repository.GetResource<ServiceIndexResourceV3>(TestContext.Current!.CancellationToken)
                 ?? throw new InvalidOperationException("Failed to get ServiceIndexResourceV3.");
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
-
-            // Fallback: if no entries found with base type, try versioned type explicitly
-            if (searchResources.Count == 0)
-            {
-                searchResources = indexResource.GetServiceEntries("SearchQueryService/3.0.0-beta");
-            }
 
             Assert.IsNotEmpty(searchResources, "No SearchQueryService entries found in the feed service index.");
             string queryString = $"{searchResources[0].Uri}?q=Microsoft.DotNet.Common.ProjectTemplates.5.0&skip=0&take=10&prerelease=true&semVerLevel=2.0.0";
@@ -37,16 +31,13 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 string responseText = await response.Content.ReadAsStringAsync(TestContext.Current!.CancellationToken);
 
                 NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JsonNode.Parse(responseText)!.AsObject());
-                // Proxy feed may report TotalHits=0 even when Data contains results
                 Assert.IsNotEmpty(resultsForPage.Data, "Search returned no data entries.");
 
                 var packageInfo = resultsForPage.Data[0];
 
                 Assert.AreEqual("Microsoft.DotNet.Common.ProjectTemplates.5.0", packageInfo.Name);
                 Assert.IsNotEmpty(packageInfo.Version);
-                // Proxy feed may not return accurate download counts
-                packageInfo.TotalDownloads.Should().BeGreaterThanOrEqualTo(0); // proxy may return 0
-                // Proxy feed may not return Reserved/Owners metadata
+                packageInfo.TotalDownloads.Should().BeGreaterThanOrEqualTo(0);
                 packageInfo.Description.Should().NotBeNullOrEmpty();
             }
             else
