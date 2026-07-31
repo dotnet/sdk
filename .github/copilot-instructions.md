@@ -172,6 +172,21 @@ manually edit:
 - **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
 - More broadly, any file marked `linguist-generated=true` in `.gitattributes`.
 
+### Preserve CI telemetry correlation
+
+Every CI workflow or pipeline entry point must set `DOTNET_CLI_TELEMETRY_SESSIONID` at
+the widest supported shared scope: workflow or pipeline scope when available, otherwise
+on every job. Use the repository's provider-specific value unchanged:
+
+- GitHub Actions:
+  `gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}`
+- Azure DevOps:
+  `azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)`
+
+When adding or editing shared CI environment variables, preserve this setting. See
+the [developer guide](../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation)
+for the required YAML shapes and rationale.
+
 ## External Dependencies
 
 Adding or updating a dependency is a repo-wide compatibility and supply-chain change,
