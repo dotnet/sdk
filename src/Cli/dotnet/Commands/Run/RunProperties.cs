@@ -5,7 +5,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Execution;
 #endif
-using Microsoft.DotNet.Cli.Utils;
 using System.Text.Json.Serialization;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -91,7 +90,14 @@ internal sealed record RunProperties(
     {
         if (applicationArgs.Length != 0)
         {
-            return this with { Arguments = Arguments + " " + ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArgs) };
+            return this with
+            {
+                Arguments = CommonRunHelpers.CombineRunArguments(
+                    Arguments,
+                    applicationArgs,
+                    launchProfileArguments: null,
+                    appendApplicationArgumentsToBase: true),
+            };
         }
 
         return this;

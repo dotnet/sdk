@@ -62,7 +62,7 @@ public class FileBasedAppRunPlanTests
                 previousEntry.ImplicitBuildFiles,
                 out _);
             var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-            foreach (string path in new[] { launchArtifacts.AppHost, launchArtifacts.Assembly, launchArtifacts.RuntimeConfig })
+            foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 File.WriteAllText(path, string.Empty);
@@ -181,7 +181,7 @@ public class FileBasedAppRunPlanTests
 
     /// <summary>Verifies no-build synthetic launch selection and conservative fallback after a directive-bearing edit.</summary>
     [TestMethod]
-    public void AnalyzeNoBuildSyntheticSelectsLaunchOrFallbackForChangedDirective()
+    public void AnalyzeAotNoBuildSyntheticSelectsLaunchOrFallbackForChangedDirective()
     {
         string testDirectory = CreateTestDirectory();
         try
@@ -202,7 +202,7 @@ public class FileBasedAppRunPlanTests
                 JsonSerializer.Serialize(stream, previousEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
             }
             var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-            foreach (string path in new[] { launchArtifacts.AppHost, launchArtifacts.Assembly, launchArtifacts.RuntimeConfig })
+            foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 File.WriteAllText(path, string.Empty);
@@ -211,7 +211,7 @@ public class FileBasedAppRunPlanTests
             File.SetLastWriteTimeUtc(entryPointPath, buildTimeUtc.AddSeconds(-1));
             File.SetLastWriteTimeUtc(successCachePath, buildTimeUtc);
 
-            RunPlan launchPlan = FileBasedAppRunPlan.AnalyzeNoBuildSynthetic(
+            RunPlan launchPlan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
                 entryPointPath,
                 artifactsPath,
                 static () => throw new InvalidOperationException("Unchanged source should not be probed."),
@@ -223,7 +223,7 @@ public class FileBasedAppRunPlanTests
 
             File.WriteAllText(entryPointPath, "#:package Example@1.0.0\nConsole.WriteLine(42);");
             File.SetLastWriteTimeUtc(entryPointPath, buildTimeUtc.AddSeconds(1));
-            RunPlan fallbackPlan = FileBasedAppRunPlan.AnalyzeNoBuildSynthetic(
+            RunPlan fallbackPlan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
                 entryPointPath,
                 artifactsPath,
                 () => FileBasedAppDirectiveProbe.Probe(entryPointPath),
@@ -241,7 +241,7 @@ public class FileBasedAppRunPlanTests
 
     /// <summary>Verifies that no-build synthetic validation checks the final target of an entry-point symbolic link.</summary>
     [TestMethod]
-    public void AnalyzeNoBuildSyntheticChecksSymbolicLinkTargetTimestamp()
+    public void AnalyzeAotNoBuildSyntheticChecksSymbolicLinkTargetTimestamp()
     {
         string testDirectory = CreateTestDirectory();
         try
@@ -273,7 +273,7 @@ public class FileBasedAppRunPlanTests
                 JsonSerializer.Serialize(stream, previousEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
             }
             var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-            foreach (string path in new[] { launchArtifacts.AppHost, launchArtifacts.Assembly, launchArtifacts.RuntimeConfig })
+            foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
                 File.WriteAllText(path, string.Empty);
@@ -284,7 +284,7 @@ public class FileBasedAppRunPlanTests
             File.WriteAllText(targetPath, "#:package Example@1.0.0\nConsole.WriteLine(42);");
             File.SetLastWriteTimeUtc(targetPath, buildTimeUtc.AddSeconds(1));
 
-            RunPlan plan = FileBasedAppRunPlan.AnalyzeNoBuildSynthetic(
+            RunPlan plan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
                 entryPointPath,
                 artifactsPath,
                 static () => FileBasedAppDirectiveProbeResult.Unknown,

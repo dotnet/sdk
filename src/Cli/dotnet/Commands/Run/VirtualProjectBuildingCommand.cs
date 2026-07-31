@@ -90,11 +90,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         MSBuildArgs msbuildArgs,
         string? artifactsPath = null)
     {
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(new Dictionary<string, string>(VirtualProjectBuilder.GetGlobalBuildProperties(), StringComparer.OrdinalIgnoreCase)
-        {
-            { "ProvideCommandLineArgs", bool.TrueString },
-        }
-        .AsReadOnly());
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
+            CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
 
         NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
 

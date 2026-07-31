@@ -57,7 +57,7 @@ internal static class FileBasedAppRunPlan
     {
         if (inputs.DirectiveInfo.ProbeResult == FileBasedAppDirectiveProbeResult.Unknown)
         {
-            report("Deferring to the managed CLI because the source may contain file directives.");
+            report("Falling back to the managed CLI because the source may contain file directives.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.DirectiveProbeUnknown, Cache: null);
         }
 
@@ -72,14 +72,14 @@ internal static class FileBasedAppRunPlan
     }
 
     /// <summary>
-    /// Determines whether a no-build invocation can launch complete synthetic CSC output without full cache validation.
+    /// Determines whether the Native AOT no-build path can launch complete synthetic CSC output without full cache validation.
     /// </summary>
     /// <param name="entryPointFileFullPath">The fully qualified entry-point path.</param>
     /// <param name="artifactsPath">The application artifacts directory.</param>
     /// <param name="probeDirectives">Probes changed source content for possible directives.</param>
     /// <param name="report">Receives planning diagnostics.</param>
     /// <returns>A launch-only plan when eligible; otherwise, a managed-fallback plan.</returns>
-    internal static RunPlan AnalyzeNoBuildSynthetic(
+    internal static RunPlan AnalyzeAotNoBuildSynthetic(
         string entryPointFileFullPath,
         string artifactsPath,
         Func<FileBasedAppDirectiveProbeResult> probeDirectives,
@@ -88,7 +88,7 @@ internal static class FileBasedAppRunPlan
         var successCacheFile = new FileInfo(Path.Join(artifactsPath, BuildSuccessCacheFileName));
         if (!successCacheFile.Exists)
         {
-            report("Deferring to the managed CLI because the build success cache does not exist.");
+            report("Falling back to the managed CLI because the build success cache does not exist.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
@@ -101,28 +101,30 @@ internal static class FileBasedAppRunPlan
             } ||
             !previousEntry.CscArguments.IsDefaultOrEmpty)
         {
-            report("Deferring to the managed CLI because the previous build was not synthetic CSC.");
+            report("Falling back to the managed CLI because the previous build was not synthetic CSC.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
         var launchArtifacts = GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath);
-        if (GetMissingCscBuiltProgramLaunchArtifact(entryPointFileFullPath, artifactsPath) is { } missingArtifact)
+        if (GetMissingCscBuiltProgramLaunchArtifact(launchArtifacts) is { } missingArtifact)
         {
-            report("Deferring to the managed CLI because a CSC launch artifact is missing: " + missingArtifact);
+            report("Falling back to the managed CLI because a CSC launch artifact is missing: " + missingArtifact);
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
         FileSystemInfo entryPointFile = ResolveLinkTargetOrSelf(new FileInfo(entryPointFileFullPath));
         if (!entryPointFile.Exists)
         {
-            report("Deferring to the managed CLI because the entry point file is missing.");
+            report("Falling back to the managed CLI because the entry point file is missing.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
+        // --no-build suppresses compilation, not validation. If the source changed after the
+        // synthetic build, newly added directives would make its launch artifacts inapplicable.
         if (entryPointFile.LastWriteTimeUtc > successCacheFile.LastWriteTimeUtc &&
             probeDirectives() != FileBasedAppDirectiveProbeResult.None)
         {
-            report("Deferring to the managed CLI because the changed source may contain file directives.");
+            report("Falling back to the managed CLI because the changed source may contain file directives.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.DirectiveProbeUnknown, Cache: null);
         }
 
@@ -367,15 +369,32 @@ internal static class FileBasedAppRunPlan
     internal static string? GetMissingCscBuiltProgramLaunchArtifact(
         string entryPointFileFullPath,
         string artifactsPath)
-    {
-        var launchArtifacts = GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath);
-        return new[]
-        {
+        => GetMissingCscBuiltProgramLaunchArtifact(
+            GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath));
+
+    /// <summary>
+    /// Finds the first missing path in a precomputed synthetic CSC launch contract.
+    /// </summary>
+    /// <param name="launchArtifacts">The synthetic launch artifact paths.</param>
+    /// <returns>The missing artifact path, or <see langword="null"/> when all required artifacts exist.</returns>
+    internal static string? GetMissingCscBuiltProgramLaunchArtifact(
+        (string AppHost, string Assembly, string RuntimeConfig) launchArtifacts)
+        => GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts)
+            .FirstOrDefault(static path => !File.Exists(path));
+
+    /// <summary>
+    /// Enumerates every path required to launch a synthetic CSC-built program.
+    /// </summary>
+    /// <param name="launchArtifacts">The synthetic launch artifact paths.</param>
+    /// <returns>All required launch artifact paths.</returns>
+    internal static string[] GetCscBuiltProgramLaunchArtifactPaths(
+        (string AppHost, string Assembly, string RuntimeConfig) launchArtifacts)
+        =>
+        [
             launchArtifacts.AppHost,
             launchArtifacts.Assembly,
             launchArtifacts.RuntimeConfig,
-        }.FirstOrDefault(static path => !File.Exists(path));
-    }
+        ];
 
     private static FileBasedAppCacheInfo? ComputeCacheEntry(FileBasedAppRunPlanInputs inputs, Action<string> report)
     {

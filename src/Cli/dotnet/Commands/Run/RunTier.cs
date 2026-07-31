@@ -17,15 +17,9 @@ internal enum RunTier
     /// <summary>Compile directly without MSBuild.</summary>
     DirectCompile,
 
-    /// <summary>Evaluate the virtual project without building it.</summary>
-    EvaluateOnly,
-
     /// <summary>Build through MSBuild.</summary>
     MSBuildBuild,
 
-    /// <summary>Run through the MSBuild <c>Run</c> target.</summary>
-    MSBuildRun,
-
-    /// <summary>Defer the invocation to the managed CLI.</summary>
+    /// <summary>Fall back to the managed CLI.</summary>
     ManagedFallback,
 }

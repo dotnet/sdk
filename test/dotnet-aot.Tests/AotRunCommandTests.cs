@@ -299,15 +299,18 @@ public class AotRunCommandTests
             ]);
             bool launched = false;
 
-            Assert.Throws<CommandNotAvailableInAotException>(() =>
-                AotRunCommand.Execute(parseResult, _ =>
-                {
-                    launched = true;
-                    return 0;
-                }));
+            IReadOnlyList<string> messages = CaptureVerboseMessages(() =>
+                Assert.Throws<CommandNotAvailableInAotException>(() =>
+                    AotRunCommand.Execute(parseResult, _ =>
+                    {
+                        launched = true;
+                        return 0;
+                    })));
 
             Assert.IsFalse(launched);
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
+            string diagnostics = string.Join(Environment.NewLine, messages);
+            Assert.Contains("changed source", diagnostics);
         }
         finally
         {
@@ -315,19 +318,16 @@ public class AotRunCommandTests
         }
     }
 
-    /// <summary>Verifies that cached arguments and application arguments are combined without introducing a leading separator.</summary>
+    /// <summary>Verifies that run properties append application arguments without introducing a leading separator.</summary>
     /// <param name="cachedArguments">The cached run arguments.</param>
     /// <param name="expectedArguments">The expected final command arguments.</param>
     [TestMethod]
     [DataRow("cached-argument", "cached-argument \"app arg\"")]
     [DataRow(null, "\"app arg\"")]
-    public void CachedRunArgumentsDoNotStartWithSeparator(string? cachedArguments, string expectedArguments)
+    public void RunPropertiesApplicationArgumentsDoNotStartWithSeparator(string? cachedArguments, string expectedArguments)
     {
-        string actualArguments = AotRunArguments.Combine(
-            cachedArguments,
-            ["app arg"],
-            launchProfileArguments: null,
-            appendApplicationArgumentsToBase: true);
+        var runProperties = new RunProperties("test-command", cachedArguments, workingDirectory: null);
+        string? actualArguments = runProperties.WithApplicationArguments(["app arg"]).Arguments;
 
         Assert.AreEqual(expectedArguments, actualArguments);
     }
@@ -349,10 +349,12 @@ public class AotRunCommandTests
                 "--configuration", "Release",
             ]);
 
-            Assert.Throws<CommandNotAvailableInAotException>(() =>
-                AotRunCommand.Execute(parseResult, static _ => throw new InvalidOperationException("Launcher should not be called.")));
+            IReadOnlyList<string> messages = CaptureVerboseMessages(() =>
+                Assert.Throws<CommandNotAvailableInAotException>(() =>
+                    AotRunCommand.Execute(parseResult, static _ => throw new InvalidOperationException("Launcher should not be called."))));
 
             Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
+            Assert.Contains("--configuration", string.Join(Environment.NewLine, messages));
         }
         finally
         {
@@ -411,7 +413,7 @@ public class AotRunCommandTests
             JsonSerializer.Serialize(stream, previousEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
         }
         var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-        foreach (string path in new[] { launchArtifacts.AppHost, launchArtifacts.Assembly, launchArtifacts.RuntimeConfig })
+        foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllText(path, string.Empty);
@@ -425,6 +427,25 @@ public class AotRunCommandTests
 
     private static void WriteLaunchSettings(AotRunCommandTestFixture fixture, string contents)
         => File.WriteAllText(Path.Join(fixture.TestDirectory, "Program.run.json"), contents);
+
+    private static IReadOnlyList<string> CaptureVerboseMessages(Action action)
+    {
+        bool originalVerbose = CommandLoggingContext.IsVerbose;
+        var reporter = new BufferedReporter();
+        try
+        {
+            CommandLoggingContext.SetVerbose(true);
+            Reporter.SetVerbose(reporter);
+            action();
+            return reporter.Lines.ToArray();
+        }
+        finally
+        {
+            Reporter.SetVerbose(Reporter.ConsoleOutReporter);
+            CommandLoggingContext.SetVerbose(originalVerbose);
+            Reporter.Reset();
+        }
+    }
 
     private static void DeleteFixture(AotRunCommandTestFixture fixture)
     {

@@ -1,7 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using System.CommandLine.Parsing;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -11,6 +14,66 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal static class CommonRunHelpers
 {
+    /// <summary>
+    /// Creates the global properties common to managed and Native AOT file-based runs.
+    /// </summary>
+    /// <returns>A case-insensitive property dictionary.</returns>
+    internal static Dictionary<string, string> CreateFileBasedRunGlobalProperties()
+        => new(VirtualProjectBuilder.GetGlobalBuildProperties(), StringComparer.OrdinalIgnoreCase)
+        {
+            ["ProvideCommandLineArgs"] = bool.TrueString,
+        };
+
+    /// <summary>
+    /// Combines evaluated, application, and launch-profile arguments using <c>dotnet run</c> precedence.
+    /// </summary>
+    /// <param name="baseArguments">Arguments from evaluated or cached run properties.</param>
+    /// <param name="applicationArguments">Explicit application arguments.</param>
+    /// <param name="launchProfileArguments">Arguments from the selected launch profile.</param>
+    /// <param name="appendApplicationArgumentsToBase">Whether explicit arguments should be appended to non-empty base arguments.</param>
+    /// <returns>The escaped command arguments.</returns>
+    internal static string CombineRunArguments(
+        string? baseArguments,
+        string[] applicationArguments,
+        string? launchProfileArguments,
+        bool appendApplicationArgumentsToBase = false)
+    {
+        if (applicationArguments.Length != 0)
+        {
+            string escapedArguments = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(applicationArguments);
+            return appendApplicationArgumentsToBase && !string.IsNullOrEmpty(baseArguments)
+                ? $"{baseArguments} {escapedArguments}"
+                : escapedArguments;
+        }
+
+        return string.IsNullOrEmpty(baseArguments) && launchProfileArguments is not null
+            ? launchProfileArguments
+            : baseArguments ?? string.Empty;
+    }
+
+    /// <summary>
+    /// Splits parsed application arguments at <c>--</c> and verifies that the parser preserved the suffix.
+    /// </summary>
+    /// <param name="parseResult">The parsed run invocation.</param>
+    /// <param name="applicationArguments">The parser's application arguments.</param>
+    /// <param name="argumentCountBeforeDoubleDash">Receives the number of application arguments before <c>--</c>.</param>
+    /// <param name="argumentsAfterDoubleDash">Receives the literal token values after <c>--</c>.</param>
+    /// <returns><see langword="true"/> when the token and argument views agree.</returns>
+    internal static bool TrySplitApplicationArgumentsAtDoubleDash(
+        ParseResult parseResult,
+        IReadOnlyList<string> applicationArguments,
+        out int argumentCountBeforeDoubleDash,
+        out string[] argumentsAfterDoubleDash)
+    {
+        int doubleDashIndex = parseResult.Tokens.ToList().FindIndex(static token => token.Type == TokenType.DoubleDash);
+        argumentsAfterDoubleDash = doubleDashIndex < 0
+            ? []
+            : [.. parseResult.Tokens.Skip(doubleDashIndex + 1).Select(static token => token.Value)];
+        argumentCountBeforeDoubleDash = applicationArguments.Count - argumentsAfterDoubleDash.Length;
+        return argumentCountBeforeDoubleDash >= 0 &&
+            applicationArguments.Skip(argumentCountBeforeDoubleDash).SequenceEqual(argumentsAfterDoubleDash, StringComparer.Ordinal);
+    }
+
     /// <summary>
     /// Creates a dictionary of global properties for MSBuild from the command line arguments.
     /// This includes properties that are passed via the command line, as well as some

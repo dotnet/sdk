@@ -51,7 +51,6 @@ internal static class AotRunCommand
         string? currentDirectory = null)
     {
         currentDirectory ??= Environment.CurrentDirectory;
-        Reporter.Reset();
         var definition = (RunCommandDefinition)parseResult.CommandResult.Command;
         if (!TryGetEligibleInvocationInputs(
             parseResult,
@@ -60,10 +59,10 @@ internal static class AotRunCommand
             out bool noBuild,
             out string? entryPointFileFullPath,
             out string[]? applicationArguments,
-            out IReadOnlyDictionary<string, string>? environmentVariables))
+            out IReadOnlyDictionary<string, string>? environmentVariables,
+            out string? fallbackReason))
         {
-            Reporter.Verbose.WriteLine("AOT run deferred because the invocation is outside the native cached-launch option set.");
-            throw new CommandNotAvailableInAotException();
+            throw CreateManagedFallbackException(fallbackReason);
         }
 
         LaunchProfileReadResult profileResult = ReadLaunchProfile(
@@ -78,16 +77,15 @@ internal static class AotRunCommand
         RunProperties? validatedRunProperties = null;
         RunTier runTier;
         RunDecisionReason decisionReason;
-        var planMessages = new List<string>();
         RunPlan? plan = null;
         if (noBuild && profileResult.Profile is not ExecutableLaunchProfile)
         {
             artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
-            RunPlan noBuildPlan = FileBasedAppRunPlan.AnalyzeNoBuildSynthetic(
+            RunPlan noBuildPlan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
                 entryPointFileFullPath,
                 artifactsPath,
                 () => FileBasedAppDirectiveProbe.Probe(entryPointFileFullPath),
-                planMessages.Add);
+                Reporter.Verbose.WriteLine);
             if (noBuildPlan.Tier == RunTier.LaunchOnly)
             {
                 plan = noBuildPlan;
@@ -96,23 +94,26 @@ internal static class AotRunCommand
 
         bool executableCanBypassCache = noBuild &&
             profileResult.Profile is ExecutableLaunchProfile &&
+            // Managed run parses file directives before applying any launch profile. Prove that
+            // none are present before bypassing the build cache for an Executable profile.
             FileBasedAppDirectiveProbe.Probe(entryPointFileFullPath) == FileBasedAppDirectiveProbeResult.None;
+        // A failed synthetic no-build check can still use an authoritative cached RunProperties
+        // contract, so continue to full cache validation before falling back.
         if (plan is null && !executableCanBypassCache)
         {
             if (!TryGetRuntimeVersion(out string? runtimeVersion))
             {
-                throw new CommandNotAvailableInAotException();
+                throw CreateManagedFallbackException("the runtime version could not be read");
             }
 
             artifactsPath ??= VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
-            planMessages.Clear();
             RunPlan cachedPlan = FileBasedAppRunPlan.AnalyzeCachedLaunch(
                 entryPointFileFullPath,
                 artifactsPath,
                 CreateGlobalProperties(parseResult, definition),
                 Product.Version,
                 runtimeVersion,
-                planMessages.Add);
+                Reporter.Verbose.WriteLine);
             if (cachedPlan.Tier == RunTier.CachedLaunch)
             {
                 plan = cachedPlan;
@@ -125,10 +126,9 @@ internal static class AotRunCommand
             if (noBuild)
             {
                 artifactsPath = null;
-                planMessages.Clear();
             }
             command = executableProfile.ExecutablePath;
-            commandArguments = AotRunArguments.Combine(
+            commandArguments = CommonRunHelpers.CombineRunArguments(
                 baseArguments: null,
                 applicationArguments,
                 executableProfile.CommandLineArgs);
@@ -141,7 +141,7 @@ internal static class AotRunCommand
         {
             validatedRunProperties = launchInfo.RunProperties;
             command = launchInfo.Command;
-            commandArguments = AotRunArguments.Combine(
+            commandArguments = CommonRunHelpers.CombineRunArguments(
                 validatedRunProperties?.Arguments,
                 applicationArguments,
                 profileResult.Profile?.CommandLineArgs,
@@ -152,7 +152,7 @@ internal static class AotRunCommand
         }
         else
         {
-            throw new CommandNotAvailableInAotException();
+            throw CreateManagedFallbackException("no eligible cached launch contract was found");
         }
 
         var launchEnvironment = new Dictionary<string, string?>(StringComparer.Ordinal);
@@ -166,8 +166,7 @@ internal static class AotRunCommand
             {
                 if (string.IsNullOrEmpty(NativeEntryPoint.DotnetRoot))
                 {
-                    Reporter.Verbose.WriteLine("AOT run deferred because the dotnet root could not be determined.");
-                    throw new CommandNotAvailableInAotException();
+                    throw CreateManagedFallbackException("the dotnet root could not be determined");
                 }
 
                 launchEnvironment[rootVariableName] = NativeEntryPoint.DotnetRoot;
@@ -179,10 +178,6 @@ internal static class AotRunCommand
             environmentVariables,
             (name, value) => launchEnvironment[name] = value);
 
-        foreach (string message in planMessages)
-        {
-            Reporter.Verbose.WriteLine(message);
-        }
         profileResult.WriteMessages();
         if (!noBuild && profileResult.Profile?.DotNetRunMessages == true)
         {
@@ -246,6 +241,8 @@ internal static class AotRunCommand
             entryPointFileFullPath,
             launchProfile,
             parseResult.HasOption(definition.NoLaunchProfileOption),
+            // Explicit verbosity is not eligible for the AOT path, so every reachable invocation
+            // has the managed command's default non-quiet run verbosity.
             reportUsingLaunchSettings: true,
             (message, isError) => messages.Add((message, isError)));
         if (result.FailureReason is not null)
@@ -262,13 +259,11 @@ internal static class AotRunCommand
     private static Dictionary<string, string> CreateGlobalProperties(
         ParseResult parseResult,
         RunCommandDefinition definition)
-        => new(StringComparer.OrdinalIgnoreCase)
-        {
-            ["NuGetInteractive"] = parseResult.GetValue(definition.InteractiveOption) ? "true" : "false",
-            ["_BuildNonexistentProjectsByDefault"] = bool.TrueString,
-            ["RestoreUseSkipNonexistentTargets"] = bool.FalseString,
-            ["ProvideCommandLineArgs"] = bool.TrueString,
-        };
+    {
+        Dictionary<string, string> globalProperties = CommonRunHelpers.CreateFileBasedRunGlobalProperties();
+        globalProperties["NuGetInteractive"] = parseResult.GetValue(definition.InteractiveOption) ? "true" : "false";
+        return globalProperties;
+    }
 
     private static bool TryGetRuntimeVersion([NotNullWhen(true)] out string? runtimeVersion)
     {
@@ -303,36 +298,44 @@ internal static class AotRunCommand
         out bool noBuild,
         [NotNullWhen(true)] out string? entryPointFileFullPath,
         [NotNullWhen(true)] out string[]? applicationArguments,
-        [NotNullWhen(true)] out IReadOnlyDictionary<string, string>? environmentVariables)
+        [NotNullWhen(true)] out IReadOnlyDictionary<string, string>? environmentVariables,
+        [NotNullWhen(false)] out string? fallbackReason)
     {
         noBuild = parseResult.HasOption(definition.NoBuildOption);
         entryPointFileFullPath = null;
         applicationArguments = null;
         environmentVariables = null;
+        fallbackReason = null;
 
-        if (HasUnsupportedOptions(parseResult, definition))
+        if (GetUnsupportedOption(parseResult, definition) is { } unsupportedOption)
         {
+            fallbackReason = $"option '{unsupportedOption.Name}' is not supported by the native path";
             return false;
         }
 
         string[] parsedApplicationArguments = parseResult.GetValue(definition.ApplicationArguments) ?? [];
-        int doubleDashIndex = parseResult.Tokens.ToList().FindIndex(static token => token.Type == TokenType.DoubleDash);
-        string[] argumentsAfterDoubleDash = doubleDashIndex < 0
-            ? []
-            : [.. parseResult.Tokens.Skip(doubleDashIndex + 1).Select(static token => token.Value)];
-        int argumentCountBeforeDoubleDash = parsedApplicationArguments.Length - argumentsAfterDoubleDash.Length;
-        if (argumentCountBeforeDoubleDash < 0 ||
-            !parsedApplicationArguments.Skip(argumentCountBeforeDoubleDash).SequenceEqual(argumentsAfterDoubleDash, StringComparer.Ordinal))
+        if (!CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
+            parseResult,
+            parsedApplicationArguments,
+            out int argumentCountBeforeDoubleDash,
+            out string[] argumentsAfterDoubleDash))
         {
+            fallbackReason = "application arguments could not be separated at '--'";
             return false;
         }
 
         string? entryPointPath = parseResult.GetValue(definition.FileOption);
         if (string.IsNullOrEmpty(entryPointPath))
         {
-            if (argumentCountBeforeDoubleDash != 1 ||
-                CurrentDirectoryContainsProject(currentDirectory))
+            if (argumentCountBeforeDoubleDash != 1)
             {
+                fallbackReason = "positional file discovery did not identify exactly one entry-point argument";
+                return false;
+            }
+
+            if (CurrentDirectoryContainsProject(currentDirectory))
+            {
+                fallbackReason = "the current directory contains a project or could not be searched safely";
                 return false;
             }
 
@@ -340,6 +343,7 @@ internal static class AotRunCommand
         }
         else if (argumentCountBeforeDoubleDash != 0)
         {
+            fallbackReason = "application arguments before '--' are ambiguous with an explicit --file option";
             return false;
         }
 
@@ -349,17 +353,20 @@ internal static class AotRunCommand
         }
         catch (Exception exception) when (exception is ArgumentException or NotSupportedException or SecurityException)
         {
+            fallbackReason = "the entry-point path could not be normalized";
             return false;
         }
 
         if (!VirtualProjectBuilder.IsValidEntryPointPath(entryPointFileFullPath))
         {
+            fallbackReason = "the entry-point path is not a supported C# file";
             return false;
         }
 
         applicationArguments = argumentsAfterDoubleDash;
         environmentVariables = parseResult.GetValue(definition.EnvOption)
             ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        fallbackReason = null;
         return true;
     }
 
@@ -378,17 +385,24 @@ internal static class AotRunCommand
         }
     }
 
-    private static bool HasUnsupportedOptions(ParseResult parseResult, RunCommandDefinition definition)
+    private static Option? GetUnsupportedOption(ParseResult parseResult, RunCommandDefinition definition)
         => parseResult.CommandResult.Children
             .OfType<OptionResult>()
-            .Any(optionResult =>
+            .FirstOrDefault(optionResult =>
                 !optionResult.Implicit
                 && optionResult.Option != definition.FileOption
                 && optionResult.Option != definition.LaunchProfileOption
                 && optionResult.Option != definition.NoLaunchProfileOption
                 && optionResult.Option != definition.NoBuildOption
                 && optionResult.Option != definition.NoRestoreOption
-                && optionResult.Option != definition.EnvOption);
+                && optionResult.Option != definition.EnvOption)
+            ?.Option;
+
+    private static CommandNotAvailableInAotException CreateManagedFallbackException(string reason)
+    {
+        Reporter.Verbose.WriteLine($"AOT run is falling back to the managed CLI because {reason}.");
+        return new CommandNotAvailableInAotException();
+    }
 
 }
 #endif

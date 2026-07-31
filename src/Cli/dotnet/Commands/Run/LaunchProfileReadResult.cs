@@ -10,6 +10,10 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// <summary>
 /// Contains a parsed launch profile and diagnostics buffered until the Native AOT path commits.
 /// </summary>
+/// <remarks>
+/// The managed fallback parses launch settings again, so writing these messages before the Native AOT
+/// path commits would duplicate user-visible output whenever a later eligibility check falls back.
+/// </remarks>
 /// <param name="Profile">The selected launch profile, or <see langword="null"/>.</param>
 /// <param name="Messages">The buffered message text and error-channel selection.</param>
 internal sealed record LaunchProfileReadResult(

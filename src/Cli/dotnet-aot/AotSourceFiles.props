@@ -135,7 +135,6 @@
   <!-- File-based run cache and launch contracts shared with the managed CLI. -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunCommand.cs" Link="Commands\Run\AotRunCommand.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunArguments.cs" Link="Commands\Run\AotRunArguments.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunInvocation.cs" Link="Commands\Run\AotRunInvocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\BuildLevel.cs" Link="Commands\Run\BuildLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppCacheInfo.cs" Link="Commands\Run\FileBasedAppCacheInfo.cs" />

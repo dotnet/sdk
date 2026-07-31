@@ -13,7 +13,7 @@
     managed dotnet.dll + deps). Then runs `dn <Command>` with DOTNET_CLI_ENABLEAOT
     toggled:
       * Aot      DOTNET_CLI_ENABLEAOT=true: the command runs in-process in dotnet-aot.
-            * Managed  DOTNET_CLI_ENABLEAOT=false; dn hosts the copied dotnet.dll (same source, JIT-compiled).
+      * Managed  DOTNET_CLI_ENABLEAOT=false; dn hosts the copied dotnet.dll (same source, JIT-compiled).
       * Compare  runs both and diffs the output (an empty diff means parity).
 
     DOTNET_ROOT is pointed at the repo-local .dotnet because the publish directory is

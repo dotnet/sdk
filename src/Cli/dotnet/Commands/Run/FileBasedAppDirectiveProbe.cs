@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 /// <remarks>
 /// The launch-only path needs only a one-way proof that application directives are absent.
-/// Ambiguous input and source changes observed during the scan defer to the managed CLI.
+/// Ambiguous input and source changes observed during the scan fall back to the managed CLI.
 /// </remarks>
 internal static class FileBasedAppDirectiveProbe
 {
@@ -71,6 +71,9 @@ internal static class FileBasedAppDirectiveProbe
                         }
                     }
 
+                    // In UTF-8, ASCII bytes cannot occur inside a multi-byte sequence. Searching for
+                    // the literal '#' ':' bytes is therefore equivalent to a text search without
+                    // decoding or allocating the source. BOM-tagged UTF-16 and UTF-32 defer above.
                     foreach (byte value in bytes)
                     {
                         if (previousWasHash && value == (byte)':')
@@ -89,6 +92,8 @@ internal static class FileBasedAppDirectiveProbe
 
             var finalInfo = new FileInfo(filePath);
             finalInfo.Refresh();
+            // A concurrent save can otherwise make a stale read prove absence immediately after
+            // directives were added. Any observed metadata change makes the result inconclusive.
             if (!finalInfo.Exists ||
                 scannedLength != initialLength ||
                 finalInfo.Length != initialLength ||
@@ -100,6 +105,8 @@ internal static class FileBasedAppDirectiveProbe
             return FileBasedAppDirectiveProbeResult.None;
         }
         catch (Exception exception) when (
+            // File and path failures make the probe inconclusive. Do not hide resource exhaustion
+            // or programming errors by catching every exception.
             exception is IOException or
             UnauthorizedAccessException or
             SecurityException or
@@ -120,7 +127,6 @@ internal static class FileBasedAppDirectiveProbe
         }
 
         return bytes.Length >= 4 &&
-            ((bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0xFE && bytes[3] == 0xFF) ||
-             (bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0xFF && bytes[3] == 0xFE));
+            bytes[0] == 0x00 && bytes[1] == 0x00 && bytes[2] == 0xFE && bytes[3] == 0xFF;
     }
 }

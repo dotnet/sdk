@@ -403,9 +403,10 @@ public class RunCommand
     {
         var workingDirectory = launchSettings.WorkingDirectory ?? Path.GetDirectoryName(ProjectOrEntryPointPath);
 
-        var commandArgs = (NoLaunchProfileArguments || ApplicationArgs is not [])
-            ? ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(ApplicationArgs)
-            : launchSettings.CommandLineArgs ?? "";
+        string commandArgs = CommonRunHelpers.CombineRunArguments(
+            baseArguments: null,
+            ApplicationArgs,
+            NoLaunchProfileArguments ? null : launchSettings.CommandLineArgs);
 
         var commandSpec = new CommandSpec(launchSettings.ExecutablePath, commandArgs);
         var command = CommandFactoryUsingResolver.Create(commandSpec)
@@ -938,14 +939,11 @@ public class RunCommand
             out ImmutableArray<string> loggerArgs,
             out ImmutableArray<string> nonLoggerArgs)
         {
-            var applicationArgumentsAfterDoubleDash = GetApplicationArgumentsAfterDoubleDash(parseResult);
-            if (applicationArgumentsAfterDoubleDash is null)
-            {
-                LoggerUtility.SeparateLoggerArguments(applicationArguments, out loggerArgs, out nonLoggerArgs);
-                return;
-            }
-
-            if (!TryCountApplicationArgumentsBeforeDoubleDash(applicationArguments, applicationArgumentsAfterDoubleDash, out var countBeforeDoubleDash))
+            if (!CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
+                parseResult,
+                applicationArguments,
+                out int countBeforeDoubleDash,
+                out string[] applicationArgumentsAfterDoubleDash))
             {
                 // This hopefully should not happen, but if it does, we don't want to break users.
                 Reporter.Error.WriteLine(CliCommandStrings.RunCommandWarningUnableToDetermineLoggerArguments.Yellow());
@@ -956,35 +954,6 @@ public class RunCommand
 
             LoggerUtility.SeparateLoggerArguments(applicationArguments.Take(countBeforeDoubleDash), out loggerArgs, out var nonLoggerArgsBeforeDoubleDash);
             nonLoggerArgs = [.. nonLoggerArgsBeforeDoubleDash, .. applicationArgumentsAfterDoubleDash];
-        }
-
-        static List<string>? GetApplicationArgumentsAfterDoubleDash(ParseResult parseResult)
-        {
-            for (var i = 0; i < parseResult.Tokens.Count; i++)
-            {
-                if (parseResult.Tokens[i].Type == TokenType.DoubleDash)
-                {
-                    return parseResult.Tokens.Skip(i + 1).Select(static token => token.Value).ToList();
-                }
-            }
-
-            return null;
-        }
-
-        static bool TryCountApplicationArgumentsBeforeDoubleDash(
-            IReadOnlyList<string> applicationArguments,
-            IReadOnlyList<string> applicationArgumentsAfterDoubleDash,
-            out int countBeforeDoubleDash)
-        {
-            countBeforeDoubleDash = applicationArguments.Count - applicationArgumentsAfterDoubleDash.Count;
-
-            if (countBeforeDoubleDash < 0)
-            {
-                countBeforeDoubleDash = 0;
-                return false;
-            }
-
-            return applicationArguments.Skip(countBeforeDoubleDash).SequenceEqual(applicationArgumentsAfterDoubleDash, StringComparer.Ordinal);
         }
 
         bool UsingRunCommandShorthandProjectOption(ParseResult parseResult)
