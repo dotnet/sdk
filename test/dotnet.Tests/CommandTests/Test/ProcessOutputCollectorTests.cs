@@ -191,7 +191,11 @@ public class ProcessOutputCollectorTests
                     readerEnteredAddLine.Set();
                     collector!.AddLine("produced-second", liveOutputStreamingState: true);
                     readerCompletedAddLine.Set();
-                });
+                })
+                {
+                    // Background so a thread left blocked by a regression cannot keep the test host alive.
+                    IsBackground = true,
+                };
                 readerThread.Start();
 
                 // Wait for the reader to be running and about to call AddLine, so the probe below is not
@@ -243,14 +247,32 @@ public class ProcessOutputCollectorTests
             releaseWrite.Wait(TimeSpan.FromSeconds(30), cancellationToken);
         });
 
-        var writerThread = new Thread(() => collector.AddLine("blocked-line", liveOutputStreamingState: true));
+        var writerThread = new Thread(() => collector.AddLine("blocked-line", liveOutputStreamingState: true))
+        {
+            // Background so a thread left blocked by a regression cannot keep the test host alive.
+            IsBackground = true,
+        };
         writerThread.Start();
 
         try
         {
             writeStarted.Wait(TimeSpan.FromSeconds(30), cancellationToken).Should().BeTrue();
 
-            (string output, bool wasStreamedLive) = collector.GetCapturedOutput();
+            // The read runs on its own thread so a regression that puts it behind the blocked write shows
+            // up as a failed join here. Reading on this thread instead would deadlock until the callback's
+            // own timeout released it, and the test would then still pass - just far more slowly.
+            string? output = null;
+            bool wasStreamedLive = false;
+            var captureThread = new Thread(() => (output, wasStreamedLive) = collector.GetCapturedOutput())
+            {
+                // Background so a thread left blocked by a regression cannot keep the test host alive.
+                IsBackground = true,
+            };
+            captureThread.Start();
+
+            captureThread.Join(TimeSpan.FromSeconds(15))
+                .Should().BeTrue("reading the capture must not wait for an in-flight terminal write");
+
             output.Should().Be("blocked-line");
             wasStreamedLive.Should().BeTrue();
         }
