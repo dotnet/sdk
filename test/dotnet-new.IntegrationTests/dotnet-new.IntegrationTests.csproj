@@ -38,14 +38,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
   internal class TemplatePackagesPaths
   {
-      public const string MicrosoftDotNetCommonProjectTemplates60Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_6_0)"%3B
-      public const string MicrosoftDotNetCommonProjectTemplates70Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_7_0)"%3B
-      public const string MicrosoftDotNetCommonProjectTemplates80Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_8_0)"%3B
-      public const string MicrosoftDotNetCommonProjectTemplates90Path = @"$(PkgMicrosoft_DotNet_Common_ProjectTemplates_9_0)"%3B
-      public const string MicrosoftDotNetWebProjectTemplates60Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_6_0)"%3B
-      public const string MicrosoftDotNetWebProjectTemplates70Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)"%3B
-      public const string MicrosoftDotNetWebProjectTemplates80Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)"%3B
-      public const string MicrosoftDotNetWebProjectTemplates90Path = @"$(PkgMicrosoft_DotNet_Web_ProjectTemplates_9_0)"%3B
+      private static string FindNupkg(string namePrefix)
+      {
+          string[] files = System.IO.Directory.GetFiles(System.AppContext.BaseDirectory, namePrefix + "*.nupkg")%3B
+          if (files.Length == 0)
+              throw new System.IO.FileNotFoundException($"No nupkg matching '{namePrefix}*.nupkg' in '{System.AppContext.BaseDirectory}'")%3B
+          return files[0]%3B
+      }
+
+      public static string MicrosoftDotNetCommonProjectTemplates60Path => FindNupkg("microsoft.dotnet.common.projecttemplates.6.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates70Path => FindNupkg("microsoft.dotnet.common.projecttemplates.7.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates80Path => FindNupkg("microsoft.dotnet.common.projecttemplates.8.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates90Path => FindNupkg("microsoft.dotnet.common.projecttemplates.9.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates60Path => FindNupkg("microsoft.dotnet.web.projecttemplates.6.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates70Path => FindNupkg("microsoft.dotnet.web.projecttemplates.7.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates80Path => FindNupkg("microsoft.dotnet.web.projecttemplates.8.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates90Path => FindNupkg("microsoft.dotnet.web.projecttemplates.9.0.")%3B
   }
 
   internal class TemplatePackageVersion
@@ -56,6 +64,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
       ]]>
     </GeneratedText>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_6_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_7_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_8_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_9_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_6_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_9_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 
   <Target Name="AddGeneratedFile" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)GeneratedFile.cs">
     <PropertyGroup>
