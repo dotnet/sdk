@@ -36,8 +36,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
 
     public override bool Execute()
     {
-        var absoluteManifestPath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath) : (AbsolutePath?)null;
-        var manifestAbsolutePath = absoluteManifestPath?.Value ?? ManifestPath;
+        var manifestAbsolutePath = !string.IsNullOrEmpty(ManifestPath) ? TaskEnvironment.GetAbsolutePath(ManifestPath).Value : ManifestPath;
         var cacheAbsolutePath = !string.IsNullOrEmpty(CacheFilePath) ? TaskEnvironment.GetAbsolutePath(CacheFilePath).Value : CacheFilePath;
         var exclusionCacheAbsolutePath = !string.IsNullOrEmpty(ExclusionPatternsCacheFilePath) ? TaskEnvironment.GetAbsolutePath(ExclusionPatternsCacheFilePath).Value : ExclusionPatternsCacheFilePath;
 
@@ -137,14 +136,7 @@ public class GenerateStaticWebAssetEndpointsManifest : Task, IMultiThreadableTas
                 Endpoints = [.. filteredEndpoints]
             };
 
-            if (absoluteManifestPath is { } path)
-            {
-                this.PersistFileIfChanged(manifest, path, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
-            }
-            else
-            {
-                this.PersistFileIfChanged(manifest, ManifestPath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
-            }
+            this.PersistFileIfChanged(manifest, manifestAbsolutePath, StaticWebAssetsJsonSerializerContext.RelaxedEscaping.StaticWebAssetEndpointsManifest);
         }
         catch (Exception ex)
         {

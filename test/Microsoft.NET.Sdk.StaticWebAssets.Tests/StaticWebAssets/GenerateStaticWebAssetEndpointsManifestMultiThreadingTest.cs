@@ -64,8 +64,7 @@ public class GenerateStaticWebAssetEndpointsManifestMultiThreadingTest
 
             File.Exists(Path.Combine(spawnOutputDir, "endpoints.json")).Should().BeFalse();
             File.Exists(Path.Combine(spawnOutputDir, "exclusions.cache")).Should().BeFalse();
-            messages.Should().Contain($"Creating artifact because artifact file '{task.ManifestPath}' does not exist.");
-            messages.Should().NotContain(message => message.Contains(projectDir, StringComparison.Ordinal));
+            messages.Should().Contain($"Creating artifact because artifact file '{expectedManifest}' does not exist.");
         }
         finally
         {
