@@ -137,6 +137,29 @@ public class ProcessOutputCollectorTests
     }
 
     /// <summary>
+    /// The reader thread samples the streaming state before it takes the collector's lock, so the value
+    /// it passes can be stale: the protocol-negotiation flush may have enabled streaming in between. The
+    /// line still has to be written, because the capture is now reported as already shown and the summary
+    /// suppresses it - skipping it would drop it from the terminal entirely.
+    /// </summary>
+    [TestMethod]
+    public void AddLine_WithAStaleStreamingStateAfterStreamingEngaged_StillWritesTheLine()
+    {
+        var written = new List<string>();
+        var collector = new TestApplication.ProcessOutputCollector(TailLineCount, written.Add);
+
+        collector.FlushBufferedOutputIfLiveStreamingEnabled(liveOutputStreamingState: true);
+
+        collector.AddLine("sampled-before-negotiation", liveOutputStreamingState: null);
+        collector.AddLine("sampled-as-non-streaming", liveOutputStreamingState: false);
+
+        string.Concat(written).Should().Be(
+            $"sampled-before-negotiation{Environment.NewLine}sampled-as-non-streaming{Environment.NewLine}");
+
+        collector.GetCapturedOutput().WasStreamedLive.Should().BeTrue();
+    }
+
+    /// <summary>
     /// The buffered lines have to reach the terminal in the order the process produced them. The flush
     /// (driven by protocol negotiation on the pipe thread) and the stdout reader run concurrently, so the
     /// write cannot happen after the collector's lock is released: a line added in that window would be

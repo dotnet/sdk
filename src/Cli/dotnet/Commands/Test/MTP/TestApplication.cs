@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
@@ -703,18 +703,24 @@ internal sealed class TestApplication(
             lock (_lock)
             {
                 _lines.Enqueue(line);
-                if (liveOutputStreamingState != true)
-                {
-                    return;
-                }
 
                 string outputToWrite;
                 if (_liveStreamingEnabled)
                 {
+                    // The caller sampled the streaming state before taking this lock, so it can be
+                    // stale: negotiation may have enabled streaming in between. Once streaming is on
+                    // it never turns back off, and the capture is reported as already shown, so this
+                    // line has to be written even when the stale sample says otherwise - skipping it
+                    // would drop it from the terminal entirely.
                     outputToWrite = line + Environment.NewLine;
                 }
                 else
                 {
+                    if (liveOutputStreamingState != true)
+                    {
+                        return;
+                    }
+
                     _liveStreamingEnabled = true;
                     outputToWrite = JoinLinesWithTrailingNewLine(_lines);
                 }
