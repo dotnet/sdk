@@ -48,7 +48,7 @@ safe-outputs:
 
 # Issue Monster Assigner
 
-Assign issue `${{ inputs.issue_number }}` to the Copilot coding agent. The pull request must target `${{ inputs.base_branch }}`.
+Assign issue `${{ inputs.issue_number }}` to the Copilot coding agent; the workflow already targets `${{ inputs.base_branch }}`, so do not pass `base_branch`, `integrity`, or any other metadata to the tool.
 
 Call exactly once:
 
