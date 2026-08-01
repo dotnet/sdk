@@ -39,7 +39,7 @@ safe-outputs:
     pull-request-repo: "${{ github.repository }}"
     # Copilot branches from this ref and targets it when opening the pull request.
     base-branch: "${{ inputs.base_branch }}"
-    github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}"
+    github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}" # token must be Actions, Contents, Issues, Pull Requests: Read and Write on the specific repo.
     allowed: [copilot]
     ignore-if-error: true
   noop:
