@@ -196,8 +196,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_succeeds_if_windows_target_platform_version_does_not_have_trailing_zeros(bool setInTargetframework)
         {
             if (!setInTargetframework)

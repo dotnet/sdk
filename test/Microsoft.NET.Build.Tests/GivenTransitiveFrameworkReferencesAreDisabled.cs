@@ -12,8 +12,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void TargetingPacksAreNotDownloadedIfNotDirectlyReferenced(bool referenceAspNet)
         {
             TestPackagesNotDownloaded(referenceAspNet, selfContained: false);

@@ -554,8 +554,7 @@ class Program
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void It_fails_gracefully_if_targetframework_is_empty(bool useSolution)
         {
             string targetFramework = "";
@@ -564,8 +563,7 @@ class Program
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void It_fails_gracefully_if_targetframework_is_invalid(bool useSolution)
         {
             string targetFramework = "notaframework";
@@ -574,8 +572,7 @@ class Program
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void It_fails_gracefully_if_targetframework_should_be_targetframeworks(bool useSolution)
         {
             string targetFramework = $"{ToolsetInfo.CurrentTargetFramework};net462";

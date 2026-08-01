@@ -257,8 +257,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_does_not_include_netstandard_when_inbox(bool isSdk)
         {
             var testAsset = TestAssetsManager
@@ -325,8 +324,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_does_not_include_netstandard_when_library_targets_netstandard14(bool isSdk)
         {
             var testAsset = TestAssetsManager
@@ -364,8 +362,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_includes_netstandard_when_library_targets_netstandard15(bool isSdk)
         {
             var testAsset = TestAssetsManager

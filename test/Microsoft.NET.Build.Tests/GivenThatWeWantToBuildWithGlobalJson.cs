@@ -9,8 +9,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [FullMSBuildOnly]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_fails_build_on_failed_sdk_resolution(bool runningInVS)
         {
             var prevIncludeDefault = Environment.GetEnvironmentVariable("MSBUILDINCLUDEDEFAULTSDKRESOLVER");

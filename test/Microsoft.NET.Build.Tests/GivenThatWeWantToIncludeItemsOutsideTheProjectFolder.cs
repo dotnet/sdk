@@ -10,10 +10,7 @@ namespace Microsoft.NET.Build.Tests
     {
 
         [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [CombinatorialData]
         public void Link_metadata_is_added_to_items_outside_the_project_folder(bool includeWithGlob, bool useLinkBase)
         {
             string identifier = (includeWithGlob ? "Globbed" : "Direct") + (useLinkBase ? "_LinkBase" : "");

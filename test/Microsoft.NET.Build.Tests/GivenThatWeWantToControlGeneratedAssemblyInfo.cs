@@ -748,8 +748,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_includes_repository_url(bool privateRepo)
         {
             var fakeUrl = "fakeUrl";

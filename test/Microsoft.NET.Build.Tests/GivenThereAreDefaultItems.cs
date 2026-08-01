@@ -651,8 +651,7 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void Implicit_NetCoreApp_reference_can_be_overridden(bool disableImplicitFrameworkReferences)
         {
             var testProject = new TestProject()

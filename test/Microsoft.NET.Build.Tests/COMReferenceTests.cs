@@ -11,8 +11,7 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [FullMSBuildOnly]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void COMReferenceBuildsAndRuns(bool embedInteropTypes)
         {
             var targetFramework = ToolsetInfo.CurrentTargetFramework;

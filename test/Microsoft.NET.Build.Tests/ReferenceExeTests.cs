@@ -287,8 +287,7 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void ReferencedExeCanRunWhenPublished(bool selfContained)
         {
             MainSelfContained = selfContained;
@@ -302,8 +301,7 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ReferencedExeCanRunWhenPublishedWithTrimming(bool referenceExeInCode)
         {
             MainSelfContained = true;
@@ -369,8 +367,7 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void SelfContainedExecutableCannotBeReferencedByNonSelfContainedMTPTestProject(bool setIsTestingPlatformApplicationEarly)
         {
             // The setup of this test is as follows:
@@ -420,8 +417,7 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void MTPNonSelfContainedExecutableCannotBeReferencedBySelfContained(bool setIsTestingPlatformApplicationEarly)
         {
             // The setup of this test is as follows:
@@ -525,8 +521,7 @@ public class ReferencedExeProgram
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void MTPCanBeBuiltAsSelfContained(bool setIsTestingPlatformApplicationEarly)
         {
             var mtpSelfContained = new TestProject("MTPTestProject")
