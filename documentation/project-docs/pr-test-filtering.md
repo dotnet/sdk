@@ -66,8 +66,8 @@ project(s) (e.g. TemplateEngine tests).
 
 Individual test classes are excluded via `[TestCategory]` attributes and MSTest filter
 expressions. The test project still runs on Helix, but specific classes are skipped.
-This is useful when expensive tests (e.g. ILLink trimming tests) live in a shared test
-assembly alongside cheaper tests. Not yet implemented.
+This is useful when expensive tests live in a shared test assembly alongside cheaper
+tests. Not yet implemented.
 
 ### Method-level filtering (future)
 
@@ -174,10 +174,30 @@ also trigger its tests. For example:
   `src/Cli/Microsoft.DotNet.Cli.Definitions/**`.
 - Shared infrastructure or utility projects that multiple features depend on may need to
   appear in multiple scopes' trigger paths.
-- Test assets (e.g. `test/TestAssets/TestPackages/`) that a test suite consumes at
-  runtime should also be included. These are easy to overlook because they are not
-  referenced via `ProjectReference`, but changes to them can cause test failures just
-  the same.
+- Test assets (e.g. `test/TestAssets/TestProjects/`, `test/TestAssets/TestPackages/`)
+  that a test suite consumes at runtime should also be included. These are easy to
+  overlook because they are not referenced via `ProjectReference` — they are looked up
+  by name at test runtime via `TestAssetsManager.CopyTestAsset("AssetName")`. A change
+  to a test asset can silently break tests even when no source file in the scope's
+  `TriggerPaths` has changed.
+
+  **How to find them**: search the test files for string literals passed to
+  `CopyTestAsset`, `GetTestAsset`, or similar helpers. Any asset name found in
+  `test/TestAssets/TestProjects/` or `test/TestAssets/TestPackages/` that is unique to
+  (or primarily used by) this test suite should be added as an explicit trigger path
+  (e.g. `test/TestAssets/TestProjects/MyAsset/**`). For broadly shared assets
+  used across dozens of unrelated test suites (e.g. `HelloWorld`), use judgment
+  — whether to include them is a trade-off between trigger precision and the risk
+  that a shared asset change breaks this suite without activating any other scope
+  that would otherwise catch the regression.
+
+**Runtime behavior vs. compile-time dependencies**: not all dependencies need to be in
+trigger paths. Ask whether a change to that dependency could cause a test to silently
+*pass when it should fail*. If yes, it is a runtime behavior dependency and belongs in
+`TriggerPaths`. If a change would instead cause a *compilation failure* (e.g. a shared
+constants file, a resx, a helper primarily used for test parameterization such as `[DynamicData]`),
+it is a compile-time dependency and does not need to be listed — the build will fail
+loudly before any tests run, making the gap immediately visible.
 
 Use judgment here. If a feature has complex or far-reaching dependencies that make it
 difficult to define a reliable set of trigger paths, it may not be a good candidate for

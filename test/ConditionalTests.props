@@ -57,6 +57,18 @@
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>
 
+    <ConditionalTestScope Include="ILLink">
+      <Mechanism>project</Mechanism>
+      <TestProjects>test/Microsoft.NET.ILLink.Tests/Microsoft.NET.ILLink.Tests.csproj</TestProjects>
+      <TriggerPaths>
+        src/Tasks/Microsoft.NET.Build.Tasks/**;
+        test/Microsoft.NET.ILLink.Tests/**;
+        test/TestAssets/TestProjects/TrimmableNetstandardLibrary/**;
+        test/TestAssets/TestProjects/TrimmedAppWithReferences/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
     <ConditionalTestScope Include="NetAnalyzers">
       <Mechanism>project</Mechanism>
       <TestProjects>src/Microsoft.CodeAnalysis.NetAnalyzers/tests/**/*.csproj</TestProjects>
