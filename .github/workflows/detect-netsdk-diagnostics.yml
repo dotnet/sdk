@@ -25,6 +25,9 @@ on:
 
 permissions: read-all
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   detect-diagnostics:
     name: Detect New NETSDK Diagnostic Codes
