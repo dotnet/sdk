@@ -278,13 +278,21 @@ jobs:
           #        since this build ran, skip: a newer build/check for the
           #        current head will cover it.
           BUILD_PR_SHA=$(printf '%s' "${build_json}" | jq -r '.triggerInfo["pr.sourceSha"] // empty')
-          CURRENT_HEAD=$(printf '%s' "${PR_JSON}" | jq -r '.head.sha // empty')
           # ADO builds GitHub's `refs/pull/<n>/merge` ref, so build_json.sourceVersion
           # is the merge commit GitHub produced at build time and equals the PR's
           # `merge_commit_sha` then. If the base branch advances (even with the PR
           # head unchanged) GitHub recomputes that merge and merge_commit_sha
           # changes, so this catches base-advance staleness the head check misses.
           BUILD_MERGE_SHA=$(printf '%s' "${build_json}" | jq -r '.sourceVersion // empty')
+          # Re-read the PR rather than reusing the snapshot from the scope check:
+          # selecting the build costs an ADO round trip, and right after a
+          # force-push the newest-build query can still return the previous
+          # failed build. The point of this check is to skip BEFORE paying for
+          # the download, so it should compare against the freshest head
+          # available. A post-download re-read below independently catches a
+          # head that moves while the artifacts are being fetched.
+          PR_JSON=$(gh api "repos/${GH_AW_REPO}/pulls/${PR_NUMBER}" 2>/dev/null)
+          CURRENT_HEAD=$(printf '%s' "${PR_JSON}" | jq -r '.head.sha // empty')
           CURRENT_MERGE=$(printf '%s' "${PR_JSON}" | jq -r '.merge_commit_sha // empty')
           # Fail CLOSED: if either the build's analyzed revision or the current
           # PR head can't be resolved, skip — we must not analyze a possibly
