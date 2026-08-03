@@ -330,9 +330,9 @@ public class DotnetupTelemetryTests : IDisposable
     }
 
     [TestMethod]
-    public void Flush_WithTimeout_DoesNotThrow()
+    public void ShutdownWithTimeout_DoesNotThrow()
     {
-        var exception = Record.Exception(() => DotnetupTelemetry.Instance.FlushWithTimeout(1000));
+        var exception = Record.Exception(() => DotnetupTelemetry.Instance.ShutdownWithTimeout(1000));
 
         Assert.IsNull(exception);
     }

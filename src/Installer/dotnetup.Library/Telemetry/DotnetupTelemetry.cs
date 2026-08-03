@@ -505,7 +505,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// Shuts the providers down with an explicit budget, bypassing environment classification.
     /// For tests and diagnostics only.
     /// </summary>
-    internal void FlushWithTimeout(int timeoutMilliseconds)
+    internal void ShutdownWithTimeout(int timeoutMilliseconds)
     {
         ShutdownProviders(timeoutMilliseconds);
     }
