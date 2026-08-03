@@ -125,8 +125,9 @@ version of `Microsoft.Testing.Extensions.TrxReport` currently referenced by the 
 `merged-<runId>.trx`, where `runId` is derived from the inputs, and writes it into a `merged/`
 subdirectory of the supplied output directory. Because the merged report is nested, a non-recursive
 `*.trx` glob over the results directory picks up the per-module inputs but not the merged report, so
-it does not double-count tests. CI that wants the merged report must target it explicitly or use a
-recursive glob.
+it does not double-count tests. CI that wants the merged report must target the `merged/` subdirectory
+explicitly, for example with `merged/merged-*.trx`; a broad recursive glob would also pick up the
+per-module inputs and double-count tests.
 
 ## What currently merges
 
