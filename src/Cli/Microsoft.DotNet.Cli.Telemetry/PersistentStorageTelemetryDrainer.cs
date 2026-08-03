@@ -104,10 +104,8 @@ public static class PersistentStorageTelemetryDrainer
 
             await RunCoreAsync(
                 uploader,
-                maxLifetime,
                 lifetimeCts.Token,
                 static (delay, token) => Task.Delay(delay, token),
-                TimeProvider.System,
                 Random.Shared).ConfigureAwait(false);
         }
         catch (Exception e)
@@ -148,24 +146,15 @@ public static class PersistentStorageTelemetryDrainer
 
     internal static async Task RunCoreAsync(
         PersistentStorageTelemetryUploader uploader,
-        TimeSpan maxLifetime,
         CancellationToken cancellationToken,
         Func<TimeSpan, CancellationToken, Task> delayAsync,
-        TimeProvider timeProvider,
         Random random)
     {
-        var startTimestamp = timeProvider.GetTimestamp();
         var consecutiveRetryPasses = 0;
         var postDrainGraceCheckPending = false;
 
         while (!cancellationToken.IsCancellationRequested)
         {
-            var remainingLifetime = GetRemainingLifetime(maxLifetime, timeProvider, startTimestamp);
-            if (remainingLifetime is { } remaining && remaining <= TimeSpan.Zero)
-            {
-                break;
-            }
-
             TelemetryDrainResult result;
             try
             {
@@ -214,24 +203,6 @@ public static class PersistentStorageTelemetryDrainer
                 consecutiveRetryPasses = 0;
             }
 
-            remainingLifetime = GetRemainingLifetime(maxLifetime, timeProvider, startTimestamp);
-            if (remainingLifetime is { } remainingDelay)
-            {
-                if (remainingDelay <= TimeSpan.Zero)
-                {
-                    break;
-                }
-
-                if (result.RetryAfter >= remainingDelay)
-                {
-                    // The server has asked us to wait beyond this process's useful lifetime. Leave
-                    // the blob persisted for a future drainer rather than sleeping until shutdown.
-                    break;
-                }
-
-                delay = TimeSpan.FromTicks(Math.Min(delay.Ticks, remainingDelay.Ticks));
-            }
-
             try
             {
                 await delayAsync(delay, cancellationToken).ConfigureAwait(false);
@@ -241,16 +212,6 @@ public static class PersistentStorageTelemetryDrainer
                 break;
             }
         }
-    }
-
-    private static TimeSpan? GetRemainingLifetime(TimeSpan maxLifetime, TimeProvider timeProvider, long startTimestamp)
-    {
-        if (maxLifetime <= TimeSpan.Zero)
-        {
-            return null;
-        }
-
-        return maxLifetime - timeProvider.GetElapsedTime(startTimestamp);
     }
 
     // Single-instance-per-directory guard for the drainer. Returns a held lock handle, or null when

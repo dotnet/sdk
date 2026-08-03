@@ -23,10 +23,8 @@ public class PersistentStorageTelemetryDrainerTests
 
         await PersistentStorageTelemetryDrainer.RunCoreAsync(
             uploader,
-            Timeout.InfiniteTimeSpan,
             CancellationToken.None,
             delays.DelayAsync,
-            clock,
             new FixedRandom(0.5));
 
         delays.RequestedDelays.Should().Equal(
@@ -38,44 +36,21 @@ public class PersistentStorageTelemetryDrainerTests
     }
 
     [TestMethod]
-    public async Task RunCoreAsync_StopsAtLifetimeWithoutWaiting()
+    public async Task RunCoreAsync_StopsWhenRetryDelayIsCancelled()
     {
         var storage = new FakeBlobStorage(new FakeBlob([1]));
         var transport = new FakeTransport(TelemetryUploadResult.Rejected, TelemetryUploadResult.Rejected);
         var uploader = new PersistentStorageTelemetryUploader(storage, transport);
-        var clock = new FakeTimeProvider();
-        var delays = new RecordingDelay(clock);
+        using var cancellation = new CancellationTokenSource();
+        var delays = new CancellingDelay(cancellation);
 
         await PersistentStorageTelemetryDrainer.RunCoreAsync(
             uploader,
-            TimeSpan.FromMilliseconds(1_500),
-            CancellationToken.None,
+            cancellation.Token,
             delays.DelayAsync,
-            clock,
             new FixedRandom(0.5));
 
-        delays.RequestedDelays.Should().Equal(TimeSpan.FromMilliseconds(1_500));
-        transport.UploadCount.Should().Be(1);
-    }
-
-    [TestMethod]
-    public async Task RunCoreAsync_ExitsWhenRetryAfterExceedsRemainingLifetime()
-    {
-        var storage = new FakeBlobStorage(new FakeBlob([1]));
-        var transport = new FakeTransport(TelemetryUploadResult.RejectedRetryAfter(TimeSpan.FromMinutes(5)));
-        var uploader = new PersistentStorageTelemetryUploader(storage, transport);
-        var clock = new FakeTimeProvider();
-        var delays = new RecordingDelay(clock);
-
-        await PersistentStorageTelemetryDrainer.RunCoreAsync(
-            uploader,
-            TimeSpan.FromMinutes(3),
-            CancellationToken.None,
-            delays.DelayAsync,
-            clock,
-            new FixedRandom(0.5));
-
-        delays.RequestedDelays.Should().BeEmpty();
+        delays.RequestedDelays.Should().Equal(TimeSpan.FromSeconds(10));
         transport.UploadCount.Should().Be(1);
     }
 
@@ -92,10 +67,8 @@ public class PersistentStorageTelemetryDrainerTests
 
         await PersistentStorageTelemetryDrainer.RunCoreAsync(
             uploader,
-            Timeout.InfiniteTimeSpan,
             CancellationToken.None,
             delays.DelayAsync,
-            clock,
             new FixedRandom(0.5));
 
         transport.UploadCount.Should().Be(2);
@@ -139,6 +112,18 @@ public class PersistentStorageTelemetryDrainerTests
             RequestedDelays.Add(delay);
             clock.Advance(delay);
             return Task.CompletedTask;
+        }
+    }
+
+    private sealed class CancellingDelay(CancellationTokenSource cancellation)
+    {
+        public List<TimeSpan> RequestedDelays { get; } = [];
+
+        public Task DelayAsync(TimeSpan delay, CancellationToken cancellationToken)
+        {
+            RequestedDelays.Add(delay);
+            cancellation.Cancel();
+            return Task.FromCanceled(cancellationToken);
         }
     }
 
