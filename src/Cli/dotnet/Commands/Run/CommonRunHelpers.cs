@@ -15,6 +15,26 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 internal static class CommonRunHelpers
 {
     /// <summary>
+    /// Finds the only project in a directory.
+    /// </summary>
+    /// <param name="directory">The directory to search.</param>
+    /// <returns>The project path, or <see langword="null"/> when no project is present.</returns>
+    /// <exception cref="GracefulException">More than one project is present.</exception>
+    internal static string? TryFindSingleProjectInDirectory(string directory)
+    {
+        using IEnumerator<string> projectFileEnumerator = Directory.EnumerateFiles(directory, "*.*proj").GetEnumerator();
+        if (!projectFileEnumerator.MoveNext())
+        {
+            return null;
+        }
+
+        string projectFile = projectFileEnumerator.Current;
+        return projectFileEnumerator.MoveNext()
+            ? throw new GracefulException(CliCommandStrings.RunCommandExceptionMultipleProjects, directory)
+            : projectFile;
+    }
+
+    /// <summary>
     /// Creates the global properties common to managed and Native AOT file-based runs.
     /// </summary>
     /// <returns>A case-insensitive property dictionary.</returns>

@@ -20,11 +20,21 @@ internal static class FileBasedAppRunPlan
     /// <summary>The cache entry written after a successful file-based application build.</summary>
     internal const string BuildSuccessCacheFileName = "build-success.cache";
 
+    /// <summary>
+    /// <c>IsMSBuildFile</c> is <see langword="true"/> if the presence of the implicit build file
+    /// implies that CSC is not enough and MSBuild is needed to build the project, i.e., the file
+    /// alone can affect MSBuild props or targets.
+    /// </summary>
+    /// <remarks>
+    /// For example, the simple programs our CSC optimized path handles do not need NuGet restore,
+    /// hence we can ignore NuGet config files.
+    /// </remarks>
     private static readonly ImmutableArray<(string Name, bool IsMSBuildFile)> s_implicitBuildFiles =
     [
         ("global.json", false),
 
-        // NuGet recognizes all these casings on case-sensitive platforms.
+        // All these casings are recognized on case-sensitive platforms:
+        // https://github.com/NuGet/NuGet.Client/blob/ab6b96fd9ba07ed3bf629ee389799ca4fb9a20fb/src/NuGet.Core/NuGet.Configuration/Settings/Settings.cs#L32-L37
         ("nuget.config", false),
         ("NuGet.config", false),
         ("NuGet.Config", false),
@@ -36,9 +46,17 @@ internal static class FileBasedAppRunPlan
         ("MSBuild.rsp", true),
     ];
 
+    /// <summary>
+    /// For purposes of determining whether CSC is enough to build as opposed to full MSBuild,
+    /// we can ignore properties that do not affect the build on their own.
+    /// See also the <c>IsMSBuildFile</c> flag in <see cref="s_implicitBuildFiles"/>.
+    /// </summary>
+    /// <remarks>
+    /// This is an <see cref="IEnumerable{T}"/> rather than <see cref="ImmutableArray{T}"/> to avoid boxing at the use site.
+    /// </remarks>
     private static readonly IEnumerable<string> s_ignorableProperties =
     [
-        // These are set by default by dotnet run and do not affect the build on their own.
+        // These are set by default by `dotnet run`, so at least these must be ignored otherwise the CSC optimization would not kick in by default.
         "NuGetInteractive",
         "_BuildNonexistentProjectsByDefault",
         "RestoreUseSkipNonexistentTargets",
@@ -49,19 +67,10 @@ internal static class FileBasedAppRunPlan
     /// Computes the build level required by the current file-based application inputs.
     /// </summary>
     /// <param name="inputs">The current planning inputs.</param>
-    /// <param name="report">Receives planning diagnostics.</param>
     /// <returns>The selected run plan.</returns>
-    internal static RunPlan Analyze(
-        FileBasedAppRunPlanInputs inputs,
-        Action<string> report)
+    internal static RunPlan Analyze(FileBasedAppRunPlanInputs inputs)
     {
-        if (inputs.DirectiveInfo.ProbeResult == FileBasedAppDirectiveProbeResult.Unknown)
-        {
-            report("Falling back to the managed CLI because the source may contain file directives.");
-            return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.DirectiveProbeUnknown, Cache: null);
-        }
-
-        BuildLevel buildLevel = AnalyzeBuildLevel(inputs, report, out FileBasedAppCacheInfo? cache);
+        BuildLevel buildLevel = AnalyzeBuildLevel(inputs, out FileBasedAppCacheInfo? cache);
         return buildLevel switch
         {
             BuildLevel.None => new RunPlan(RunTier.CachedLaunch, RunDecisionReason.CacheValid, cache),
@@ -76,23 +85,19 @@ internal static class FileBasedAppRunPlan
     /// </summary>
     /// <param name="entryPointFileFullPath">The fully qualified entry-point path.</param>
     /// <param name="artifactsPath">The application artifacts directory.</param>
-    /// <param name="probeDirectives">Probes changed source content for possible directives.</param>
-    /// <param name="report">Receives planning diagnostics.</param>
     /// <returns>A launch-only plan when eligible; otherwise, a managed-fallback plan.</returns>
     internal static RunPlan AnalyzeAotNoBuildSynthetic(
         string entryPointFileFullPath,
-        string artifactsPath,
-        Func<FileBasedAppDirectiveProbeResult> probeDirectives,
-        Action<string> report)
+        string artifactsPath)
     {
         var successCacheFile = new FileInfo(Path.Join(artifactsPath, BuildSuccessCacheFileName));
         if (!successCacheFile.Exists)
         {
-            report("Falling back to the managed CLI because the build success cache does not exist.");
+            Reporter.Verbose.WriteLine("Falling back to the managed CLI because the build success cache does not exist.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
-        RunFileBuildCacheEntry? previousEntry = ReadCacheEntry(successCacheFile.FullName, report);
+        RunFileBuildCacheEntry? previousEntry = ReadCacheEntry(successCacheFile.FullName);
         if (previousEntry is not
             {
                 BuildLevel: BuildLevel.Csc,
@@ -101,31 +106,21 @@ internal static class FileBasedAppRunPlan
             } ||
             !previousEntry.CscArguments.IsDefaultOrEmpty)
         {
-            report("Falling back to the managed CLI because the previous build was not synthetic CSC.");
+            Reporter.Verbose.WriteLine("Falling back to the managed CLI because the previous build was not synthetic CSC.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
         var launchArtifacts = GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath);
         if (GetMissingCscBuiltProgramLaunchArtifact(launchArtifacts) is { } missingArtifact)
         {
-            report("Falling back to the managed CLI because a CSC launch artifact is missing: " + missingArtifact);
+            Reporter.Verbose.WriteLine("Falling back to the managed CLI because a CSC launch artifact is missing: " + missingArtifact);
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
-        FileSystemInfo entryPointFile = ResolveLinkTargetOrSelf(new FileInfo(entryPointFileFullPath));
-        if (!entryPointFile.Exists)
+        if (!File.Exists(entryPointFileFullPath))
         {
-            report("Falling back to the managed CLI because the entry point file is missing.");
+            Reporter.Verbose.WriteLine("Falling back to the managed CLI because the entry point file is missing.");
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
-        }
-
-        // --no-build suppresses compilation, not validation. If the source changed after the
-        // synthetic build, newly added directives would make its launch artifacts inapplicable.
-        if (entryPointFile.LastWriteTimeUtc > successCacheFile.LastWriteTimeUtc &&
-            probeDirectives() != FileBasedAppDirectiveProbeResult.None)
-        {
-            report("Falling back to the managed CLI because the changed source may contain file directives.");
-            return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.DirectiveProbeUnknown, Cache: null);
         }
 
         return new RunPlan(
@@ -143,18 +138,16 @@ internal static class FileBasedAppRunPlan
     /// <param name="globalProperties">The effective global properties.</param>
     /// <param name="sdkVersion">The current SDK version.</param>
     /// <param name="runtimeVersion">The current runtime version.</param>
-    /// <param name="report">Receives planning diagnostics.</param>
     /// <returns>A cached-launch plan when valid; otherwise, a managed-fallback plan.</returns>
     internal static RunPlan AnalyzeCachedLaunch(
         string entryPointFileFullPath,
         string artifactsPath,
         Dictionary<string, string> globalProperties,
         string sdkVersion,
-        string runtimeVersion,
-        Action<string> report)
+        string runtimeVersion)
     {
         string successCachePath = Path.Join(artifactsPath, BuildSuccessCacheFileName);
-        RunFileBuildCacheEntry? previousEntry = ReadCacheEntry(successCachePath, report);
+        RunFileBuildCacheEntry? previousEntry = ReadCacheEntry(successCachePath);
         if (previousEntry is null)
         {
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.CachedLaunchNotEligible, Cache: null);
@@ -164,17 +157,13 @@ internal static class FileBasedAppRunPlan
             EntryPointFileFullPath: entryPointFileFullPath,
             ArtifactsPath: artifactsPath,
             GlobalProperties: globalProperties,
-            DirectiveInfo: new FileBasedAppDirectiveInfo(
-                previousEntry.Directives.IsDefaultOrEmpty
-                    ? FileBasedAppDirectiveProbeResult.None
-                    : FileBasedAppDirectiveProbeResult.Present,
-                CanCache: true,
-                Directives: previousEntry.Directives),
+            CanCache: true,
+            Directives: previousEntry.Directives,
             SdkVersion: sdkVersion,
             RuntimeVersion: runtimeVersion,
             NoCache: false,
             GetCscInputPaths: static () => []);
-        RunPlan analyzedPlan = Analyze(inputs, report);
+        RunPlan analyzedPlan = Analyze(inputs);
         if (analyzedPlan is not { Tier: RunTier.CachedLaunch, Cache.PreviousEntry: { } validatedEntry } ||
             !validatedEntry.Directives.SequenceEqual(previousEntry.Directives))
         {
@@ -215,19 +204,18 @@ internal static class FileBasedAppRunPlan
 
     private static BuildLevel AnalyzeBuildLevel(
         FileBasedAppRunPlanInputs inputs,
-        Action<string> report,
         out FileBasedAppCacheInfo? cache)
     {
         if (inputs.NoCache)
         {
-            report("Building because --no-cache was specified.");
-            cache = ComputeCacheEntry(inputs, report);
+            Reporter.Verbose.WriteLine("Building because --no-cache was specified.");
+            cache = ComputeCacheEntry(inputs);
             return BuildLevel.All;
         }
 
-        if (!NeedsToBuild(inputs, report, out cache))
+        if (!NeedsToBuild(inputs, out cache))
         {
-            report("No need to build, the output is up to date. Cache: " + inputs.ArtifactsPath);
+            Reporter.Verbose.WriteLine("No need to build, the output is up to date. Cache: " + inputs.ArtifactsPath);
             return BuildLevel.None;
         }
 
@@ -238,7 +226,9 @@ internal static class FileBasedAppRunPlan
 
         if (cache.CanUseCscViaPreviousArguments)
         {
-            report("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
+            Reporter.Verbose.WriteLine("We have CSC arguments from previous run. Skipping MSBuild and using CSC only.");
+
+            // Keep the cached info for next time, so we can use CSC again.
             Debug.Assert(cache.PreviousEntry != null);
             cache.CurrentEntry.CscArguments = cache.PreviousEntry.CscArguments;
             cache.CurrentEntry.BuildResultFile = cache.PreviousEntry.BuildResultFile;
@@ -246,10 +236,11 @@ internal static class FileBasedAppRunPlan
             return BuildLevel.Csc;
         }
 
+        // Determine whether we can use CSC only or need to use MSBuild.
         RunFileBuildCacheEntry cacheEntry = cache.CurrentEntry;
         if (!cacheEntry.Directives.IsDefaultOrEmpty)
         {
-            report("Using MSBuild because there are directives in the source file.");
+            Reporter.Verbose.WriteLine("Using MSBuild because there are directives in the source file.");
             return BuildLevel.All;
         }
 
@@ -257,14 +248,14 @@ internal static class FileBasedAppRunPlan
         if (globalProperties.FirstOrDefault() is { } exampleKey)
         {
             string exampleValue = cacheEntry.GlobalProperties[exampleKey];
-            report($"Using MSBuild because there are global properties, for example '{exampleKey}={exampleValue}'.");
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are global properties, for example '{exampleKey}={exampleValue}'.");
             return BuildLevel.All;
         }
 
         if (cache.ExampleMSBuildFile is { } exampleMSBuildFile)
         {
             Debug.Assert(cacheEntry.ImplicitBuildFiles.Count != 0);
-            report($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
+            Reporter.Verbose.WriteLine($"Using MSBuild because there are implicit build files, for example '{exampleMSBuildFile}'.");
             return BuildLevel.All;
         }
 
@@ -272,14 +263,18 @@ internal static class FileBasedAppRunPlan
         {
             if (!File.Exists(filePath))
             {
-                report($"Using MSBuild because NuGet package file does not exist: {filePath}");
+                Reporter.Verbose.WriteLine($"Using MSBuild because NuGet package file does not exist: {filePath}");
                 return BuildLevel.All;
             }
         }
 
-        report("Skipping MSBuild and using CSC only.");
+        Reporter.Verbose.WriteLine("Skipping MSBuild and using CSC only.");
+
+        // Don't reuse CSC arguments, this is the simple CSC-only build where we use hard-coded CSC arguments.
         if (cache.PreviousEntry != null)
         {
+            // If we reused CSC arguments in the previous run and want to use hard-coded CSC arguments
+            // in this run, we cannot reuse the csc.rsp file.
             if (!cache.PreviousEntry.CscArguments.IsDefaultOrEmpty)
             {
                 cache.InitialCanReuseAuxiliaryFiles = false;
@@ -297,9 +292,8 @@ internal static class FileBasedAppRunPlan
     /// Reads a successful-build cache entry.
     /// </summary>
     /// <param name="path">The cache file path.</param>
-    /// <param name="report">Receives deserialization diagnostics.</param>
     /// <returns>The deserialized entry, or <see langword="null"/> when it cannot be read.</returns>
-    internal static RunFileBuildCacheEntry? ReadCacheEntry(string path, Action<string> report)
+    internal static RunFileBuildCacheEntry? ReadCacheEntry(string path)
     {
         try
         {
@@ -308,7 +302,7 @@ internal static class FileBasedAppRunPlan
         }
         catch (Exception exception)
         {
-            report($"Failed to deserialize cache entry ({path}): {exception.GetType().FullName}: {exception.Message}");
+            Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({path}): {exception.GetType().FullName}: {exception.Message}");
             return null;
         }
     }
@@ -396,17 +390,41 @@ internal static class FileBasedAppRunPlan
             launchArtifacts.RuntimeConfig,
         ];
 
-    private static FileBasedAppCacheInfo? ComputeCacheEntry(FileBasedAppRunPlanInputs inputs, Action<string> report)
+    /// <summary>
+    /// Touching the artifacts folder ensures it is considered recently used and not removed by
+    /// <see cref="Clean.FileBasedAppArtifacts.CleanFileBasedAppArtifactsCommand"/>.
+    /// </summary>
+    /// <param name="artifactsPath">The application artifacts directory.</param>
+    internal static void MarkArtifactsPathUsed(string artifactsPath)
     {
-        if (!inputs.DirectiveInfo.CanCache)
+        try
         {
-            report("Skipping computing cache because there are project or ref directives.");
+            Directory.SetLastWriteTimeUtc(artifactsPath, DateTime.UtcNow);
+        }
+        catch (Exception exception)
+        {
+            Reporter.Verbose.WriteLine($"Cannot touch folder '{artifactsPath}': {exception}");
+        }
+    }
+
+    /// <summary>
+    /// Compute current cache entry - we need to do this always (except if we already know we will skip saving the cache):
+    /// <list type="bullet">
+    /// <item>if we can skip build, we still need to check everything in the cache entry (e.g., implicit build files)</item>
+    /// <item>if we have to build, we need to have the cache entry to write it to the success cache file</item>
+    /// </list>
+    /// </summary>
+    private static FileBasedAppCacheInfo? ComputeCacheEntry(FileBasedAppRunPlanInputs inputs)
+    {
+        if (!inputs.CanCache)
+        {
+            Reporter.Verbose.WriteLine("Skipping computing cache because there are project or ref directives.");
             return null;
         }
 
         var cacheEntry = new RunFileBuildCacheEntry(inputs.GlobalProperties)
         {
-            Directives = inputs.DirectiveInfo.Directives,
+            Directives = inputs.Directives,
             SdkVersion = inputs.SdkVersion,
             RuntimeVersion = inputs.RuntimeVersion,
         };
@@ -425,43 +443,43 @@ internal static class FileBasedAppRunPlan
 
     private static bool NeedsToBuild(
         FileBasedAppRunPlanInputs inputs,
-        Action<string> report,
         [NotNullWhen(returnValue: false)] out FileBasedAppCacheInfo? cache)
     {
-        cache = ComputeCacheEntry(inputs, report);
+        cache = ComputeCacheEntry(inputs);
         if (cache is null)
         {
             return true;
         }
 
+        // Check cache files.
         var successCacheFile = new FileInfo(Path.Join(inputs.ArtifactsPath, BuildSuccessCacheFileName));
         if (!successCacheFile.Exists)
         {
-            report("Building because cache file does not exist: " + successCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because cache file does not exist: " + successCacheFile.FullName);
             return true;
         }
 
         var startCacheFile = new FileInfo(Path.Join(inputs.ArtifactsPath, BuildStartCacheFileName));
         if (!startCacheFile.Exists)
         {
-            report("Building because start cache file does not exist: " + startCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because start cache file does not exist: " + startCacheFile.FullName);
             return true;
         }
 
         DateTime buildTimeUtc = successCacheFile.LastWriteTimeUtc;
         if (startCacheFile.LastWriteTimeUtc > buildTimeUtc)
         {
-            report("Building because start cache file is newer than success cache file (previous build likely failed): " + startCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because start cache file is newer than success cache file (previous build likely failed): " + startCacheFile.FullName);
             return true;
         }
 
         Debug.Assert(!cache.TriedDeserializingPreviousEntry);
-        RunFileBuildCacheEntry? previousCacheEntry = ReadCacheEntry(successCacheFile.FullName, report);
+        RunFileBuildCacheEntry? previousCacheEntry = ReadCacheEntry(successCacheFile.FullName);
         cache.TriedDeserializingPreviousEntry = true;
         if (previousCacheEntry is null)
         {
             cache.InitialCanReuseAuxiliaryFiles = false;
-            report("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
+            Reporter.Verbose.WriteLine("Building because previous cache entry could not be deserialized: " + successCacheFile.FullName);
             return true;
         }
 
@@ -471,41 +489,43 @@ internal static class FileBasedAppRunPlan
             Path.IsPathFullyQualified(previousRunCommand) &&
             !File.Exists(previousRunCommand))
         {
-            report("Building because the run output is missing: " + previousRunCommand);
+            Reporter.Verbose.WriteLine("Building because the run output is missing: " + previousRunCommand);
             return true;
         }
 
+        // Check that versions match.
         if (previousCacheEntry.SdkVersion != cacheEntry.SdkVersion)
         {
             cache.InitialCanReuseAuxiliaryFiles = false;
-            report($"Building because previous SDK version ({previousCacheEntry.SdkVersion}) does not match current ({cacheEntry.SdkVersion}): {successCacheFile.FullName}");
+            Reporter.Verbose.WriteLine($"Building because previous SDK version ({previousCacheEntry.SdkVersion}) does not match current ({cacheEntry.SdkVersion}): {successCacheFile.FullName}");
             return true;
         }
 
         if (previousCacheEntry.RuntimeVersion != cacheEntry.RuntimeVersion)
         {
             cache.InitialCanReuseAuxiliaryFiles = false;
-            report($"Building because previous runtime version ({previousCacheEntry.RuntimeVersion}) does not match current ({cacheEntry.RuntimeVersion}): {successCacheFile.FullName}");
+            Reporter.Verbose.WriteLine($"Building because previous runtime version ({previousCacheEntry.RuntimeVersion}) does not match current ({cacheEntry.RuntimeVersion}): {successCacheFile.FullName}");
             return true;
         }
 
         if (previousCacheEntry.BuildResultFile is { Length: > 0 } buildResultFile &&
             !File.Exists(buildResultFile))
         {
-            report("Building because the build result is missing: " + buildResultFile);
+            Reporter.Verbose.WriteLine("Building because the build result is missing: " + buildResultFile);
             return true;
         }
 
         if (previousCacheEntry is { BuildLevel: BuildLevel.Csc, Run: null } &&
             GetMissingCscBuiltProgramLaunchArtifact(inputs.EntryPointFileFullPath, inputs.ArtifactsPath) is { } missingArtifact)
         {
-            report("Building because a CSC launch artifact is missing: " + missingArtifact);
+            Reporter.Verbose.WriteLine("Building because a CSC launch artifact is missing: " + missingArtifact);
             return true;
         }
 
+        // Check that properties match.
         if (previousCacheEntry.GlobalProperties.Count != cacheEntry.GlobalProperties.Count)
         {
-            report($"Building because previous global properties count ({previousCacheEntry.GlobalProperties.Count}) does not match current count ({cacheEntry.GlobalProperties.Count}): {successCacheFile.FullName}");
+            Reporter.Verbose.WriteLine($"Building because previous global properties count ({previousCacheEntry.GlobalProperties.Count}) does not match current count ({cacheEntry.GlobalProperties.Count}): {successCacheFile.FullName}");
             return true;
         }
 
@@ -513,53 +533,61 @@ internal static class FileBasedAppRunPlan
         {
             if (!previousCacheEntry.GlobalProperties.TryGetValue(key, out string? otherValue) || value != otherValue)
             {
-                report($"Building because previous global property \"{key}\" ({otherValue}) does not match current ({value}): {successCacheFile.FullName}");
+                Reporter.Verbose.WriteLine($"Building because previous global property \"{key}\" ({otherValue}) does not match current ({value}): {successCacheFile.FullName}");
                 return true;
             }
         }
 
         FileInfo entryPointFile = cache.EntryPointFile;
+        // If the source file does not exist, we want to build so proper errors are reported.
         if (!entryPointFile.Exists)
         {
-            report("Building because entry point file is missing: " + entryPointFile.FullName);
+            Reporter.Verbose.WriteLine("Building because entry point file is missing: " + entryPointFile.FullName);
             return true;
         }
 
         string? reasonToNotReuseCscArguments = GetReasonToNotReuseCscArguments(cache);
         FileSystemInfo targetFile = ResolveLinkTargetOrSelf(entryPointFile);
+        // Check that the source file is not modified.
+        // Only do this here if we cannot reuse CSC arguments (then checking this first is faster); otherwise we need to check implicit build files anyway.
         if (reasonToNotReuseCscArguments != null && targetFile.LastWriteTimeUtc > buildTimeUtc)
         {
-            report("Compiling because entry point file is modified: " + targetFile.FullName);
-            report(reasonToNotReuseCscArguments);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            Reporter.Verbose.WriteLine(reasonToNotReuseCscArguments);
             return true;
         }
 
+        // Check that implicit build files are not modified.
         foreach (string implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles)
         {
             FileSystemInfo implicitBuildFileInfo = ResolveLinkTargetOrSelf(new FileInfo(implicitBuildFilePath));
             if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
-                report("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
+                Reporter.Verbose.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
                 return true;
             }
         }
 
+        // Check that no new implicit build files are present.
         foreach (string implicitBuildFilePath in cacheEntry.ImplicitBuildFiles)
         {
             if (!previousCacheEntry.ImplicitBuildFiles.Contains(implicitBuildFilePath))
             {
-                report("Building because new implicit build file is present: " + implicitBuildFilePath);
+                Reporter.Verbose.WriteLine("Building because new implicit build file is present: " + implicitBuildFilePath);
                 return true;
             }
         }
 
-        // Replayed CSC arguments are not supported when additional sources participate in the build.
+        // Check that additional sources are not modified.
+        // NOTE: We currently don't support the CSC-arg-reuse optimization through additional sources (i.e., we don't set `CanUseCscViaPreviousArguments=true` here).
+        //       If that changes, we will also need to make sure `RunFileBuildCacheEntry.Directives` contains directives from other files
+        //       (as that is used to determine whether we can reuse CSC args, see `GetReasonToNotReuseCscArguments`).
         foreach (string additionalSourcePath in previousCacheEntry.AdditionalSources)
         {
             FileSystemInfo additionalSourceFileInfo = ResolveLinkTargetOrSelf(new FileInfo(additionalSourcePath));
             if (!additionalSourceFileInfo.Exists || additionalSourceFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
-                report("Building because additional source file is missing or modified: " + additionalSourceFileInfo.FullName);
+                Reporter.Verbose.WriteLine("Building because additional source file is missing or modified: " + additionalSourceFileInfo.FullName);
                 return true;
             }
         }
@@ -568,7 +596,7 @@ internal static class FileBasedAppRunPlan
         if (reasonToNotReuseCscArguments == null && targetFile.LastWriteTimeUtc > buildTimeUtc)
         {
             cache.CanUseCscViaPreviousArguments = true;
-            report("Compiling because entry point file is modified: " + targetFile.FullName);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
             return true;
         }
 

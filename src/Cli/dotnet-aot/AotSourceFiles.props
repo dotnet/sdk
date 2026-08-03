@@ -138,9 +138,6 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunInvocation.cs" Link="Commands\Run\AotRunInvocation.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\BuildLevel.cs" Link="Commands\Run\BuildLevel.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppCacheInfo.cs" Link="Commands\Run\FileBasedAppCacheInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppDirectiveInfo.cs" Link="Commands\Run\FileBasedAppDirectiveInfo.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppDirectiveProbe.cs" Link="Commands\Run\FileBasedAppDirectiveProbe.cs" />
-    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppDirectiveProbeResult.cs" Link="Commands\Run\FileBasedAppDirectiveProbeResult.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppLaunchInfo.cs" Link="Commands\Run\FileBasedAppLaunchInfo.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlan.cs" Link="Commands\Run\FileBasedAppRunPlan.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlanInputs.cs" Link="Commands\Run\FileBasedAppRunPlanInputs.cs" />

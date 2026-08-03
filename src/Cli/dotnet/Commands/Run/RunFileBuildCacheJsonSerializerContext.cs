@@ -10,5 +10,4 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 [JsonSourceGenerationOptions(GenerationMode = JsonSourceGenerationMode.Metadata)]
 [JsonSerializable(typeof(RunFileBuildCacheEntry))]
-[JsonSerializable(typeof(RunProperties))]
 internal partial class RunFileBuildCacheJsonSerializerContext : JsonSerializerContext;

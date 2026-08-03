@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Cli.Utils;
+
 namespace Microsoft.DotNet.Cli.Commands.Run;
 
 /// <summary>
@@ -44,9 +46,8 @@ internal sealed class FileBasedAppCacheInfo
     /// <summary>
     /// Determines whether synthetic direct-compilation auxiliary files can be reused.
     /// </summary>
-    /// <param name="report">Receives the reuse decision.</param>
     /// <returns><see langword="true"/> when the auxiliary files can be reused; otherwise, <see langword="false"/>.</returns>
-    public bool DetermineFinalCanReuseAuxiliaryFiles(Action<string> report)
+    public bool DetermineFinalCanReuseAuxiliaryFiles()
     {
         if (PreviousEntry?.CscArguments.IsDefaultOrEmpty == false)
         {
@@ -55,18 +56,18 @@ internal sealed class FileBasedAppCacheInfo
 
         if (!InitialCanReuseAuxiliaryFiles)
         {
-            report("CSC auxiliary files can NOT be reused due to the same reason build is needed.");
+            Reporter.Verbose.WriteLine("CSC auxiliary files can NOT be reused due to the same reason build is needed.");
             return false;
         }
 
         if (PreviousEntry?.BuildLevel != BuildLevel.Csc)
         {
-            report("CSC auxiliary files can NOT be reused because previous build level was not CSC " +
+            Reporter.Verbose.WriteLine("CSC auxiliary files can NOT be reused because previous build level was not CSC " +
                 $"(it was {PreviousEntry?.BuildLevel.ToString() ?? "N/A"}).");
             return false;
         }
 
-        report("CSC auxiliary files can be reused.");
+        Reporter.Verbose.WriteLine("CSC auxiliary files can be reused.");
         return true;
     }
 }

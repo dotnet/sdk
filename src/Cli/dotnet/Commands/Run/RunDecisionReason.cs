@@ -17,9 +17,6 @@ internal enum RunDecisionReason
     /// <summary>The invocation requires a full MSBuild build.</summary>
     FullBuildRequired,
 
-    /// <summary>The source may contain directives and must be handled conservatively.</summary>
-    DirectiveProbeUnknown,
-
     /// <summary>A no-build invocation can reuse complete synthetic CSC output.</summary>
     NoBuildSyntheticCache,
 

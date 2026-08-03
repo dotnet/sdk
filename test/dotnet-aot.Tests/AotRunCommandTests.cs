@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -151,6 +152,58 @@ public class AotRunCommandTests
         }
     }
 
+    /// <summary>Verifies that missing project and file input reports the managed run error in-process.</summary>
+    [TestMethod]
+    public void NoProjectOrFileReportsManagedError()
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            var parseResult = Parser.Parse(["run"]);
+
+            GracefulException exception = Assert.ThrowsExactly<GracefulException>(() =>
+                AotRunCommand.Execute(
+                    parseResult,
+                    static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    fixture.TestDirectory));
+
+            Assert.AreEqual(
+                string.Format(CliCommandStrings.RunCommandExceptionNoProjects, fixture.TestDirectory, "--project"),
+                exception.Message);
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
+    /// <summary>Verifies that multiple projects report the managed run error in-process.</summary>
+    [TestMethod]
+    public void MultipleProjectsReportManagedError()
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            File.WriteAllText(Path.Join(fixture.TestDirectory, "App1.csproj"), "<Project />");
+            File.WriteAllText(Path.Join(fixture.TestDirectory, "App2.csproj"), "<Project />");
+            var parseResult = Parser.Parse(["run"]);
+
+            GracefulException exception = Assert.ThrowsExactly<GracefulException>(() =>
+                AotRunCommand.Execute(
+                    parseResult,
+                    static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    fixture.TestDirectory));
+
+            Assert.AreEqual(
+                string.Format(CliCommandStrings.RunCommandExceptionMultipleProjects, fixture.TestDirectory),
+                exception.Message);
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
     /// <summary>Verifies that a Project launch profile decorates a synthetic launch.</summary>
     [TestMethod]
     public void ProjectLaunchProfileDecoratesSyntheticLaunch()
@@ -235,6 +288,7 @@ public class AotRunCommandTests
                     }
                 }
                 """);
+            File.WriteAllText(fixture.EntryPointPath, "#:package Example@1.0.0\nConsole.WriteLine(42);");
             Directory.Delete(fixture.ArtifactsPath, recursive: true);
             var parseResult = Parser.Parse([
                 "run",
@@ -280,40 +334,38 @@ public class AotRunCommandTests
         }
     }
 
-    /// <summary>Verifies that a changed source containing directive bytes defers before launch side effects.</summary>
+    /// <summary>Verifies that no-build launches existing synthetic output after the source changes.</summary>
     [TestMethod]
-    public void ChangedSourceWithDirectiveFallsBackBeforeCommit()
+    public void ChangedSourceWithDirectiveStillLaunchesNoBuildOutput()
     {
         var fixture = CreateFixture();
+        string? originalDotnetRoot = NativeEntryPoint.DotnetRoot;
         try
         {
+            NativeEntryPoint.DotnetRoot = fixture.TestDirectory;
             File.WriteAllText(fixture.EntryPointPath, "#:package Example@1.0.0\nConsole.WriteLine(42);");
             File.SetLastWriteTimeUtc(fixture.EntryPointPath, File.GetLastWriteTimeUtc(fixture.SuccessCachePath).AddSeconds(1));
-            DateTime oldArtifactsTime = DateTime.UtcNow.AddDays(-1);
-            Directory.SetLastWriteTimeUtc(fixture.ArtifactsPath, oldArtifactsTime);
             var parseResult = Parser.Parse([
                 "run",
                 "--file", fixture.EntryPointPath,
                 "--no-build",
                 "--no-launch-profile",
             ]);
-            bool launched = false;
+            AotRunInvocation? invocation = null;
 
-            IReadOnlyList<string> messages = CaptureVerboseMessages(() =>
-                Assert.Throws<CommandNotAvailableInAotException>(() =>
-                    AotRunCommand.Execute(parseResult, _ =>
-                    {
-                        launched = true;
-                        return 0;
-                    })));
+            int exitCode = AotRunCommand.Execute(parseResult, value =>
+            {
+                invocation = value;
+                return 17;
+            });
 
-            Assert.IsFalse(launched);
-            Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
-            string diagnostics = string.Join(Environment.NewLine, messages);
-            Assert.Contains("changed source", diagnostics);
+            Assert.AreEqual(17, exitCode);
+            Assert.IsNotNull(invocation);
+            Assert.AreEqual(fixture.LaunchArtifacts.AppHost, invocation.Command);
         }
         finally
         {
+            NativeEntryPoint.DotnetRoot = originalDotnetRoot;
             DeleteFixture(fixture);
         }
     }

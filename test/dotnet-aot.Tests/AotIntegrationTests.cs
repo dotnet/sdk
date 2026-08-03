@@ -323,7 +323,7 @@ public partial class AotIntegrationTests
     {
         SkipIfDnUnavailable();
 
-        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-t0-{Guid.NewGuid():N}");
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}");
         Directory.CreateDirectory(testDirectory);
         string entryPointPath = Path.Join(testDirectory, "Program.cs");
         File.WriteAllText(entryPointPath, """
@@ -340,7 +340,7 @@ public partial class AotIntegrationTests
             }
             else
             {
-                Console.WriteLine("AOT_T0:" + Environment.GetEnvironmentVariable("TEST_AOT_RUN") + ":" + string.Join("|", args));
+                Console.WriteLine("AOT_RUN_FILE:" + Environment.GetEnvironmentVariable("TEST_AOT_RUN") + ":" + string.Join("|", args));
             }
             """);
         string artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointPath);
@@ -352,7 +352,7 @@ public partial class AotIntegrationTests
         string? hostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
         if (string.IsNullOrEmpty(hostPath) || !File.Exists(hostPath))
         {
-            Assert.Inconclusive("DOTNET_HOST_PATH must identify the dotnet host for T0-minus integration setup.");
+            Assert.Inconclusive("DOTNET_HOST_PATH must identify the dotnet host for cached run-file integration setup.");
         }
 
         var environment = CreateRunEnvironment(hostPath);
@@ -371,7 +371,7 @@ public partial class AotIntegrationTests
                 setupEnvironment);
 
             Assert.AreEqual(0, setupExitCode, setupOutput + setupError);
-            Assert.AreEqual("AOT_T0::", setupOutput.Trim());
+            Assert.AreEqual("AOT_RUN_FILE::", setupOutput.Trim());
 
             environment["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString;
             environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString;
@@ -389,7 +389,7 @@ public partial class AotIntegrationTests
                 workingDirectory: testDirectory);
 
             Assert.AreEqual(0, exitCode, stderr);
-            Assert.AreEqual("AOT_T0:value:arg one|--flag", stdout.Trim());
+            Assert.AreEqual("AOT_RUN_FILE:value:arg one|--flag", stdout.Trim());
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", stderr);
             Assert.DoesNotContain("Getting target command: for csc-built program.", stderr);
 
@@ -407,7 +407,7 @@ public partial class AotIntegrationTests
                 workingDirectory: testDirectory);
 
             Assert.AreEqual(0, positionalExitCode, positionalStderr);
-            Assert.AreEqual("AOT_T0:value:arg one|--flag", positionalStdout.Trim());
+            Assert.AreEqual("AOT_RUN_FILE:value:arg one|--flag", positionalStdout.Trim());
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", positionalStderr);
             Assert.DoesNotContain("Getting target command: for csc-built program.", positionalStderr);
 
@@ -424,7 +424,7 @@ public partial class AotIntegrationTests
                 workingDirectory: testDirectory);
 
             Assert.AreEqual(0, shorthandExitCode, shorthandStderr);
-            Assert.AreEqual("AOT_T0:value:arg one|--flag", shorthandStdout.Trim());
+            Assert.AreEqual("AOT_RUN_FILE:value:arg one|--flag", shorthandStdout.Trim());
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", shorthandStderr);
             Assert.DoesNotContain("Getting target command: for csc-built program.", shorthandStderr);
 
@@ -533,7 +533,7 @@ public partial class AotIntegrationTests
                 projectRunEnvironment);
 
             Assert.AreEqual(0, projectExitCode, projectStderr);
-            Assert.AreEqual($"AOT_T0:value:{entryPointPath}|arg one|--flag", projectStdout.Trim());
+            Assert.AreEqual($"AOT_RUN_FILE:value:{entryPointPath}|arg one|--flag", projectStdout.Trim());
             Assert.DoesNotContain("AOT run tier: LaunchOnly", projectStderr);
 
             var (projectShorthandExitCode, projectShorthandStdout, projectShorthandStderr) = RunDn(
@@ -549,7 +549,7 @@ public partial class AotIntegrationTests
                 workingDirectory: testDirectory);
 
             Assert.AreEqual(0, projectShorthandExitCode, projectShorthandStderr);
-            Assert.AreEqual("AOT_T0:value:arg one|--flag", projectShorthandStdout.Trim());
+            Assert.AreEqual("AOT_RUN_FILE:value:arg one|--flag", projectShorthandStdout.Trim());
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", projectShorthandStderr);
             File.Delete(projectPath);
 
@@ -571,7 +571,7 @@ public partial class AotIntegrationTests
                 workingDirectory: testDirectory);
 
             Assert.AreEqual(0, fallbackExitCode, fallbackStderr);
-            Assert.AreEqual("AOT_T0:value:arg one|--flag", fallbackStdout.Trim());
+            Assert.AreEqual("AOT_RUN_FILE:value:arg one|--flag", fallbackStdout.Trim());
             Assert.Contains("Getting target command: for csc-built program.", fallbackStderr);
             Assert.DoesNotContain("AOT run tier: LaunchOnly", fallbackStderr);
             Assert.AreSequenceEqual(successCacheBeforeFallback, File.ReadAllBytes(successCachePath));
@@ -594,7 +594,7 @@ public partial class AotIntegrationTests
     {
         SkipIfDnUnavailable();
 
-        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-t0-cache-{Guid.NewGuid():N}");
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-cache-{Guid.NewGuid():N}");
         Directory.CreateDirectory(testDirectory);
         string entryPointPath = Path.Join(testDirectory, "Program.cs");
         File.WriteAllText(entryPointPath, """

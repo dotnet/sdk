@@ -45,6 +45,7 @@ internal static class AotRunCommand
     /// <param name="currentDirectory">The current directory used for discovery and relative paths.</param>
     /// <returns>The launcher exit code.</returns>
     /// <exception cref="CommandNotAvailableInAotException">The invocation cannot be handled safely by the Native AOT path.</exception>
+    /// <exception cref="GracefulException">Managed project discovery reports a user-facing input error.</exception>
     internal static int Execute(
         ParseResult parseResult,
         Func<AotRunInvocation, int> launch,
@@ -60,8 +61,14 @@ internal static class AotRunCommand
             out string? entryPointFileFullPath,
             out string[]? applicationArguments,
             out IReadOnlyDictionary<string, string>? environmentVariables,
-            out string? fallbackReason))
+            out string fallbackReason,
+            out GracefulException? gracefulError))
         {
+            if (gracefulError is not null)
+            {
+                throw gracefulError;
+            }
+
             throw CreateManagedFallbackException(fallbackReason);
         }
 
@@ -83,9 +90,7 @@ internal static class AotRunCommand
             artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
             RunPlan noBuildPlan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
                 entryPointFileFullPath,
-                artifactsPath,
-                () => FileBasedAppDirectiveProbe.Probe(entryPointFileFullPath),
-                Reporter.Verbose.WriteLine);
+                artifactsPath);
             if (noBuildPlan.Tier == RunTier.LaunchOnly)
             {
                 plan = noBuildPlan;
@@ -93,10 +98,7 @@ internal static class AotRunCommand
         }
 
         bool executableCanBypassCache = noBuild &&
-            profileResult.Profile is ExecutableLaunchProfile &&
-            // Managed run parses file directives before applying any launch profile. Prove that
-            // none are present before bypassing the build cache for an Executable profile.
-            FileBasedAppDirectiveProbe.Probe(entryPointFileFullPath) == FileBasedAppDirectiveProbeResult.None;
+            profileResult.Profile is ExecutableLaunchProfile;
         // A failed synthetic no-build check can still use an authoritative cached RunProperties
         // contract, so continue to full cache validation before falling back.
         if (plan is null && !executableCanBypassCache)
@@ -112,8 +114,7 @@ internal static class AotRunCommand
                 artifactsPath,
                 CreateGlobalProperties(parseResult, definition),
                 Product.Version,
-                runtimeVersion,
-                Reporter.Verbose.WriteLine);
+                runtimeVersion);
             if (cachedPlan.Tier == RunTier.CachedLaunch)
             {
                 plan = cachedPlan;
@@ -187,14 +188,7 @@ internal static class AotRunCommand
 
         if (artifactsPath is not null)
         {
-            try
-            {
-                Directory.SetLastWriteTimeUtc(artifactsPath, DateTime.UtcNow);
-            }
-            catch (Exception exception)
-            {
-                Reporter.Verbose.WriteLine($"Cannot touch folder '{artifactsPath}': {exception}");
-            }
+            FileBasedAppRunPlan.MarkArtifactsPathUsed(artifactsPath);
         }
 
         int exitCode = launch(new AotRunInvocation(
@@ -261,6 +255,8 @@ internal static class AotRunCommand
         RunCommandDefinition definition)
     {
         Dictionary<string, string> globalProperties = CommonRunHelpers.CreateFileBasedRunGlobalProperties();
+        // Mirror the managed option's --property:NuGetInteractive forwarding without constructing
+        // MSBuildArgs solely for cache validation.
         globalProperties["NuGetInteractive"] = parseResult.GetValue(definition.InteractiveOption) ? "true" : "false";
         return globalProperties;
     }
@@ -279,14 +275,9 @@ internal static class AotRunCommand
                 .GetString();
             return !string.IsNullOrWhiteSpace(runtimeVersion);
         }
-        catch (Exception exception) when (
-            exception is IOException or
-            UnauthorizedAccessException or
-            SecurityException or
-            JsonException or
-            KeyNotFoundException or
-            InvalidOperationException)
+        catch (Exception exception)
         {
+            Reporter.Verbose.WriteLine($"Failed to read the runtime version: {exception}");
             return false;
         }
     }
@@ -299,13 +290,15 @@ internal static class AotRunCommand
         [NotNullWhen(true)] out string? entryPointFileFullPath,
         [NotNullWhen(true)] out string[]? applicationArguments,
         [NotNullWhen(true)] out IReadOnlyDictionary<string, string>? environmentVariables,
-        [NotNullWhen(false)] out string? fallbackReason)
+        out string fallbackReason,
+        out GracefulException? gracefulError)
     {
         noBuild = parseResult.HasOption(definition.NoBuildOption);
         entryPointFileFullPath = null;
         applicationArguments = null;
         environmentVariables = null;
-        fallbackReason = null;
+        fallbackReason = string.Empty;
+        gracefulError = null;
 
         if (GetUnsupportedOption(parseResult, definition) is { } unsupportedOption)
         {
@@ -327,15 +320,40 @@ internal static class AotRunCommand
         string? entryPointPath = parseResult.GetValue(definition.FileOption);
         if (string.IsNullOrEmpty(entryPointPath))
         {
-            if (argumentCountBeforeDoubleDash != 1)
+            string? projectFilePath;
+            try
             {
-                fallbackReason = "positional file discovery did not identify exactly one entry-point argument";
+                projectFilePath = CommonRunHelpers.TryFindSingleProjectInDirectory(currentDirectory);
+            }
+            catch (GracefulException exception)
+            {
+                gracefulError = exception;
+                return false;
+            }
+            catch (Exception exception) when (
+                exception is IOException or
+                UnauthorizedAccessException or
+                SecurityException)
+            {
+                fallbackReason = "the current directory could not be searched safely";
                 return false;
             }
 
-            if (CurrentDirectoryContainsProject(currentDirectory))
+            if (projectFilePath is not null)
             {
-                fallbackReason = "the current directory contains a project or could not be searched safely";
+                fallbackReason = "the current directory contains a project";
+                return false;
+            }
+
+            if (argumentCountBeforeDoubleDash == 0)
+            {
+                gracefulError = new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, currentDirectory, "--project");
+                return false;
+            }
+
+            if (argumentCountBeforeDoubleDash != 1)
+            {
+                fallbackReason = "positional file discovery did not identify exactly one entry-point argument";
                 return false;
             }
 
@@ -359,6 +377,12 @@ internal static class AotRunCommand
 
         if (!VirtualProjectBuilder.IsValidEntryPointPath(entryPointFileFullPath))
         {
+            if (string.IsNullOrEmpty(parseResult.GetValue(definition.FileOption)))
+            {
+                gracefulError = new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, currentDirectory, "--project");
+                return false;
+            }
+
             fallbackReason = "the entry-point path is not a supported C# file";
             return false;
         }
@@ -366,23 +390,9 @@ internal static class AotRunCommand
         applicationArguments = argumentsAfterDoubleDash;
         environmentVariables = parseResult.GetValue(definition.EnvOption)
             ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        fallbackReason = null;
+        fallbackReason = string.Empty;
+        gracefulError = null;
         return true;
-    }
-
-    private static bool CurrentDirectoryContainsProject(string currentDirectory)
-    {
-        try
-        {
-            return Directory.GetFiles(currentDirectory, "*.*proj").Length != 0;
-        }
-        catch (Exception exception) when (
-            exception is IOException or
-            UnauthorizedAccessException or
-            SecurityException)
-        {
-            return true;
-        }
     }
 
     private static Option? GetUnsupportedOption(ParseResult parseResult, RunCommandDefinition definition)

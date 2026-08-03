@@ -166,7 +166,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 {
                     EntryPointFileFullPath = Builder.EntryPointFileFullPath,
                     ArtifactsPath = Builder.ArtifactsPath,
-                    CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(Reporter.Verbose.WriteLine),
+                    CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
                     CscArguments = cache.PreviousEntry?.CscArguments ?? [],
                     BuildResultFile = cache.PreviousEntry?.BuildResultFile,
                 }
@@ -644,8 +644,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
         return FileBasedAppRunPlan.ReadCacheEntry(
-            Path.Join(Builder.ArtifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName),
-            Reporter.Verbose.WriteLine);
+            Path.Join(Builder.ArtifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName));
     }
 
     private void EnsurePreviousCacheEntry(FileBasedAppCacheInfo cache)
@@ -679,24 +678,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 ? MSBuildArgs.GlobalProperties?.ToDictionary(StringComparer.OrdinalIgnoreCase)
                     ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
                 : new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
-            DirectiveInfo: new FileBasedAppDirectiveInfo(
-                ProbeResult: cacheDirectives.IsDefaultOrEmpty
-                    ? FileBasedAppDirectiveProbeResult.None
-                    : FileBasedAppDirectiveProbeResult.Present,
-                CanCache: canCache,
-                Directives: cacheDirectives),
+            CanCache: canCache,
+            Directives: cacheDirectives,
             SdkVersion: canCache ? Product.Version : string.Empty,
             RuntimeVersion: canCache ? CSharpCompilerCommand.RuntimeVersion : string.Empty,
             NoCache,
             GetCscInputPaths: CSharpCompilerCommand.GetPathsOfCscInputsFromNuGetCache);
-        RunPlan plan = FileBasedAppRunPlan.Analyze(inputs, Reporter.Verbose.WriteLine);
+        RunPlan plan = FileBasedAppRunPlan.Analyze(inputs);
         cache = plan.Cache;
         return plan.ToBuildLevel();
     }
 
-    /// <summary>
-    /// Touching the artifacts folder ensures it's considered as recently used and not cleaned up by <see cref="CleanFileBasedAppArtifactsCommand"/>.
-    /// </summary>
     public void MarkArtifactsFolderUsed()
     {
         if (NoWriteBuildMarkers)
@@ -704,16 +696,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             return;
         }
 
-        string directory = Builder.ArtifactsPath;
-
-        try
-        {
-            Directory.SetLastWriteTimeUtc(directory, DateTime.UtcNow);
-        }
-        catch (Exception ex)
-        {
-            Reporter.Verbose.WriteLine($"Cannot touch folder '{directory}': {ex}");
-        }
+        FileBasedAppRunPlan.MarkArtifactsPathUsed(Builder.ArtifactsPath);
     }
 
     private void MarkBuildStart()

@@ -148,19 +148,18 @@ executed twice. If resolution returns no command, reuse-only implicit file-based
 unchanged validated cache; other shorthand shapes defer. The native path also supports explicit
 `dotnet run --file` and positional `dotnet run app.cs`.
 
-**File-based T0− launch** — `AotRunCommand` handles explicit `--file` and positional
+**No-build file launch** — `AotRunCommand` handles explicit `--file` and positional
 `dotnet run <path> --no-build` when the prior cache records a synthetic CSC build and its apphost,
 assembly, and runtimeconfig all exist. Positional discovery runs natively
 only when the current directory contains no project; otherwise it defers so the project receives
-the path as an application argument. The AOT-safe byte probe scans changed sources for possible
-`#:` directives; uncertainty defers before artifact touching or process launch. The native path
-preserves arguments after `--`, `-e` environment variables, the architecture-specific
+the path as an application argument. The native path preserves arguments after `--`, `-e`
+environment variables, the architecture-specific
 `DOTNET_ROOT`, working directory, Ctrl-C handling, and exit code. Project launch
 profiles decorate the cached apphost; Executable profiles bypass the cache and launch their
 configured command. Runs requiring compile/build work and unsupported options continue through
 managed fallback.
 
-Validated T0 additionally handles unchanged replayed/MSBuild caches, including package apps.
+The validated-cache launch additionally handles unchanged replayed/MSBuild caches, including package apps.
 The bridge validates versions, global properties, source and tracked filesystem inputs, and the
 recorded build-result and launch outputs before using the serialized `RunProperties` command,
 arguments, working directory, and RID/framework contract. Stale or ambiguous caches defer before

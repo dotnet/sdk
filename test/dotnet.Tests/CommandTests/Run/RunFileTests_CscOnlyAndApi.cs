@@ -15,8 +15,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 [TestClass]
 public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 {
-    /// <summary>Verifies that an up-to-date synthetic cache recompiles when a required launch artifact is missing.</summary>
-    /// <param name="artifact">The launch artifact to remove.</param>
+    /// <summary>Verifies incremental build-level selection as source and implicit build inputs change.</summary>
     [TestMethod]
     public void UpToDate()
     {
@@ -826,6 +825,8 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.WriteAllText(programPath, code);
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v3 ");
+
+        Build(testInstance, BuildLevel.None, expectedOutput: "v3 ");
 
         // This MSBuild will skip CoreBuild but we still need to preserve CSC args so the next build can be CSC-only.
         Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "v3 ");

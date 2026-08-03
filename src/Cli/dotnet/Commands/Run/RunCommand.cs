@@ -725,7 +725,7 @@ public class RunCommand
         }
 
         string? projectFilePath = Directory.Exists(projectFileOrDirectoryPath)
-            ? TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
+            ? CommonRunHelpers.TryFindSingleProjectInDirectory(projectFileOrDirectoryPath)
             : projectFileOrDirectoryPath;
 
         // Check if the project file actually exists when it's specified as a direct file path
@@ -746,23 +746,6 @@ public class RunCommand
         }
 
         return projectFilePath;
-
-        static string? TryFindSingleProjectInDirectory(string directory)
-        {
-            string[] projectFiles = Directory.GetFiles(directory, "*.*proj");
-
-            if (projectFiles.Length == 0)
-            {
-                return null;
-            }
-
-            if (projectFiles.Length > 1)
-            {
-                throw new GracefulException(CliCommandStrings.RunCommandExceptionMultipleProjects, directory);
-            }
-
-            return projectFiles[0];
-        }
 
         static string? TryFindEntryPointFilePath(bool readCodeFromStdin, ref string[] args)
         {

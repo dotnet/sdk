@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -23,11 +24,8 @@ public class FileBasedAppRunPlanTests
             string entryPointPath = Path.Join(testDirectory, "Program.cs");
             string artifactsPath = Path.Join(testDirectory, "artifacts");
             File.WriteAllText(entryPointPath, "Console.WriteLine(42);");
-            var messages = new List<string>();
-
-            RunPlan plan = FileBasedAppRunPlan.Analyze(
-                CreateInputs(entryPointPath, artifactsPath),
-                messages.Add);
+            (RunPlan plan, IReadOnlyList<string> messages) = CaptureVerboseMessages(
+                () => FileBasedAppRunPlan.Analyze(CreateInputs(entryPointPath, artifactsPath)));
 
             Assert.AreEqual(RunTier.DirectCompile, plan.Tier);
             Assert.AreEqual(RunDecisionReason.DirectCompilationRequired, plan.Reason);
@@ -79,11 +77,8 @@ public class FileBasedAppRunPlanTests
             File.SetLastWriteTimeUtc(entryPointPath, buildTimeUtc.AddSeconds(-2));
             File.SetLastWriteTimeUtc(startCachePath, buildTimeUtc.AddSeconds(-1));
             File.SetLastWriteTimeUtc(successCachePath, buildTimeUtc);
-            var messages = new List<string>();
-
-            RunPlan plan = FileBasedAppRunPlan.Analyze(
-                CreateInputs(entryPointPath, artifactsPath),
-                messages.Add);
+            (RunPlan plan, IReadOnlyList<string> messages) = CaptureVerboseMessages(
+                () => FileBasedAppRunPlan.Analyze(CreateInputs(entryPointPath, artifactsPath)));
 
             Assert.AreEqual(RunTier.CachedLaunch, plan.Tier);
             Assert.AreEqual(RunDecisionReason.CacheValid, plan.Reason);
@@ -114,15 +109,12 @@ public class FileBasedAppRunPlanTests
                 RuntimeVersion = "11.0.0-test",
             };
             WriteCacheFiles(entryPointPath, artifactsPath, previousEntry);
-            var messages = new List<string>();
-
-            RunPlan plan = FileBasedAppRunPlan.Analyze(
-                CreateInputs(entryPointPath, artifactsPath),
-                messages.Add);
+            (RunPlan plan, IReadOnlyList<string> messages) = CaptureVerboseMessages(
+                () => FileBasedAppRunPlan.Analyze(CreateInputs(entryPointPath, artifactsPath)));
 
             Assert.AreEqual(RunTier.DirectCompile, plan.Tier);
             Assert.IsNotNull(plan.Cache);
-            Assert.IsFalse(plan.Cache.DetermineFinalCanReuseAuxiliaryFiles(messages.Add));
+            Assert.IsFalse(plan.Cache.DetermineFinalCanReuseAuxiliaryFiles());
             Assert.Contains("previous SDK version", messages.Single(message => message.Contains("SDK version", StringComparison.Ordinal)));
         }
         finally
@@ -148,7 +140,7 @@ public class FileBasedAppRunPlanTests
                 GetCscInputPaths = static () => throw new InvalidOperationException("CSC inputs should not be resolved."),
             };
 
-            RunPlan plan = FileBasedAppRunPlan.Analyze(inputs, static _ => { });
+            RunPlan plan = FileBasedAppRunPlan.Analyze(inputs);
 
             Assert.AreEqual(RunTier.MSBuildBuild, plan.Tier);
             Assert.AreEqual(RunDecisionReason.FullBuildRequired, plan.Reason);
@@ -159,29 +151,9 @@ public class FileBasedAppRunPlanTests
         }
     }
 
-    /// <summary>Verifies that an unknown directive probe selects managed fallback.</summary>
+    /// <summary>Verifies no-build synthetic launch selection remains based on existing output after a source edit.</summary>
     [TestMethod]
-    public void AnalyzeUnknownDirectiveProbeSelectsManagedFallback()
-    {
-        FileBasedAppRunPlanInputs inputs = CreateInputs("Program.cs", "artifacts") with
-        {
-            DirectiveInfo = new FileBasedAppDirectiveInfo(
-                FileBasedAppDirectiveProbeResult.Unknown,
-                CanCache: false,
-                Directives: []),
-            GetCscInputPaths = static () => throw new InvalidOperationException("CSC inputs should not be resolved."),
-        };
-
-        RunPlan plan = FileBasedAppRunPlan.Analyze(inputs, static _ => { });
-
-        Assert.AreEqual(RunTier.ManagedFallback, plan.Tier);
-        Assert.AreEqual(RunDecisionReason.DirectiveProbeUnknown, plan.Reason);
-        Assert.IsNull(plan.Cache);
-    }
-
-    /// <summary>Verifies no-build synthetic launch selection and conservative fallback after a directive-bearing edit.</summary>
-    [TestMethod]
-    public void AnalyzeAotNoBuildSyntheticSelectsLaunchOrFallbackForChangedDirective()
+    public void AnalyzeAotNoBuildSyntheticSelectsLaunchAfterSourceChange()
     {
         string testDirectory = CreateTestDirectory();
         try
@@ -213,9 +185,7 @@ public class FileBasedAppRunPlanTests
 
             RunPlan launchPlan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
                 entryPointPath,
-                artifactsPath,
-                static () => throw new InvalidOperationException("Unchanged source should not be probed."),
-                static _ => { });
+                artifactsPath);
 
             Assert.AreEqual(RunTier.LaunchOnly, launchPlan.Tier);
             Assert.AreEqual(RunDecisionReason.NoBuildSyntheticCache, launchPlan.Reason);
@@ -223,76 +193,13 @@ public class FileBasedAppRunPlanTests
 
             File.WriteAllText(entryPointPath, "#:package Example@1.0.0\nConsole.WriteLine(42);");
             File.SetLastWriteTimeUtc(entryPointPath, buildTimeUtc.AddSeconds(1));
-            RunPlan fallbackPlan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
+            RunPlan changedSourcePlan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
                 entryPointPath,
-                artifactsPath,
-                () => FileBasedAppDirectiveProbe.Probe(entryPointPath),
-                static _ => { });
+                artifactsPath);
 
-            Assert.AreEqual(RunTier.ManagedFallback, fallbackPlan.Tier);
-            Assert.AreEqual(RunDecisionReason.DirectiveProbeUnknown, fallbackPlan.Reason);
-            Assert.IsNull(fallbackPlan.Launch);
-        }
-        finally
-        {
-            Directory.Delete(testDirectory, recursive: true);
-        }
-    }
-
-    /// <summary>Verifies that no-build synthetic validation checks the final target of an entry-point symbolic link.</summary>
-    [TestMethod]
-    public void AnalyzeAotNoBuildSyntheticChecksSymbolicLinkTargetTimestamp()
-    {
-        string testDirectory = CreateTestDirectory();
-        try
-        {
-            string targetPath = Path.Join(testDirectory, "Original.cs");
-            string entryPointPath = Path.Join(testDirectory, "Program.cs");
-            string artifactsPath = Path.Join(testDirectory, "artifacts");
-            Directory.CreateDirectory(artifactsPath);
-            File.WriteAllText(targetPath, "Console.WriteLine(42);");
-            try
-            {
-                File.CreateSymbolicLink(entryPointPath, targetPath);
-            }
-            catch (Exception exception) when (
-                OperatingSystem.IsWindows() &&
-                exception is IOException or UnauthorizedAccessException)
-            {
-                Assert.Inconclusive($"Symbolic links are unavailable: {exception.Message}");
-            }
-            var previousEntry = new RunFileBuildCacheEntry
-            {
-                BuildLevel = BuildLevel.Csc,
-                SdkVersion = "11.0.100-test",
-                RuntimeVersion = "11.0.0-test",
-            };
-            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
-            using (var stream = File.Create(successCachePath))
-            {
-                JsonSerializer.Serialize(stream, previousEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
-            }
-            var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-            foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                File.WriteAllText(path, string.Empty);
-            }
-
-            DateTime buildTimeUtc = DateTime.UtcNow.AddSeconds(2);
-            File.SetLastWriteTimeUtc(successCachePath, buildTimeUtc);
-            File.WriteAllText(targetPath, "#:package Example@1.0.0\nConsole.WriteLine(42);");
-            File.SetLastWriteTimeUtc(targetPath, buildTimeUtc.AddSeconds(1));
-
-            RunPlan plan = FileBasedAppRunPlan.AnalyzeAotNoBuildSynthetic(
-                entryPointPath,
-                artifactsPath,
-                static () => FileBasedAppDirectiveProbeResult.Unknown,
-                static _ => { });
-
-            Assert.AreEqual(RunTier.ManagedFallback, plan.Tier);
-            Assert.AreEqual(RunDecisionReason.DirectiveProbeUnknown, plan.Reason);
-            Assert.IsNull(plan.Launch);
+            Assert.AreEqual(RunTier.LaunchOnly, changedSourcePlan.Tier);
+            Assert.AreEqual(RunDecisionReason.NoBuildSyntheticCache, changedSourcePlan.Reason);
+            Assert.AreEqual(launchArtifacts.AppHost, changedSourcePlan.Launch?.Command);
         }
         finally
         {
@@ -340,8 +247,7 @@ public class FileBasedAppRunPlanTests
                 artifactsPath,
                 new Dictionary<string, string>(previousEntry.GlobalProperties, StringComparer.OrdinalIgnoreCase),
                 previousEntry.SdkVersion!,
-                previousEntry.RuntimeVersion!,
-                static _ => { });
+                previousEntry.RuntimeVersion!);
 
             Assert.AreEqual(RunTier.CachedLaunch, plan.Tier);
             Assert.AreEqual(RunDecisionReason.CacheValid, plan.Reason);
@@ -382,8 +288,7 @@ public class FileBasedAppRunPlanTests
                 artifactsPath,
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                 previousEntry.SdkVersion!,
-                previousEntry.RuntimeVersion!,
-                static _ => { });
+                previousEntry.RuntimeVersion!);
 
             Assert.AreEqual(RunTier.ManagedFallback, plan.Tier);
             Assert.AreEqual(RunDecisionReason.CachedLaunchNotEligible, plan.Reason);
@@ -423,11 +328,43 @@ public class FileBasedAppRunPlanTests
                 artifactsPath,
                 new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
                 previousEntry.SdkVersion!,
-                previousEntry.RuntimeVersion!,
-                static _ => { });
+                previousEntry.RuntimeVersion!);
 
             Assert.AreEqual(RunTier.ManagedFallback, plan.Tier);
             Assert.AreEqual(RunDecisionReason.CachedLaunchNotEligible, plan.Reason);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    /// <summary>Verifies that missing synthetic launch output triggers recompilation.</summary>
+    [TestMethod]
+    public void AnalyzeMissingCscLaunchArtifactSelectsCsc()
+    {
+        string testDirectory = CreateTestDirectory();
+        try
+        {
+            string entryPointPath = Path.Join(testDirectory, "Program.cs");
+            string artifactsPath = Path.Join(testDirectory, "artifacts");
+            Directory.CreateDirectory(artifactsPath);
+            File.WriteAllText(entryPointPath, "Console.WriteLine(42);");
+            var previousEntry = new RunFileBuildCacheEntry
+            {
+                BuildLevel = BuildLevel.Csc,
+                SdkVersion = "11.0.100-test",
+                RuntimeVersion = "11.0.0-test",
+            };
+            WriteCacheFiles(entryPointPath, artifactsPath, previousEntry);
+
+            (RunPlan plan, IReadOnlyList<string> messages) = CaptureVerboseMessages(
+                () => FileBasedAppRunPlan.Analyze(CreateInputs(entryPointPath, artifactsPath)));
+
+            Assert.AreEqual(RunTier.DirectCompile, plan.Tier);
+            Assert.Contains(
+                "CSC launch artifact is missing",
+                messages.Single(static message => message.Contains("CSC launch artifact", StringComparison.Ordinal)));
         }
         finally
         {
@@ -444,19 +381,18 @@ public class FileBasedAppRunPlanTests
             EntryPointFile = new FileInfo("Program.cs"),
             CurrentEntry = new RunFileBuildCacheEntry(),
         };
-        var messages = new List<string>();
-
-        Assert.IsFalse(cache.DetermineFinalCanReuseAuxiliaryFiles(messages.Add));
+        (bool canReuse, IReadOnlyList<string> messages) = CaptureVerboseMessages(cache.DetermineFinalCanReuseAuxiliaryFiles);
+        Assert.IsFalse(canReuse);
         Assert.Contains("previous build level was not CSC", messages.Single());
 
-        messages.Clear();
         cache.PreviousEntry = new RunFileBuildCacheEntry { BuildLevel = BuildLevel.Csc };
-        Assert.IsTrue(cache.DetermineFinalCanReuseAuxiliaryFiles(messages.Add));
+        (canReuse, messages) = CaptureVerboseMessages(cache.DetermineFinalCanReuseAuxiliaryFiles);
+        Assert.IsTrue(canReuse);
         Assert.Contains("can be reused", messages.Single());
 
-        messages.Clear();
         cache.InitialCanReuseAuxiliaryFiles = false;
-        Assert.IsFalse(cache.DetermineFinalCanReuseAuxiliaryFiles(messages.Add));
+        (canReuse, messages) = CaptureVerboseMessages(cache.DetermineFinalCanReuseAuxiliaryFiles);
+        Assert.IsFalse(canReuse);
         Assert.Contains("same reason build is needed", messages.Single());
     }
 
@@ -513,10 +449,8 @@ public class FileBasedAppRunPlanTests
             EntryPointFileFullPath: entryPointPath,
             ArtifactsPath: artifactsPath,
             GlobalProperties: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
-            DirectiveInfo: new FileBasedAppDirectiveInfo(
-                FileBasedAppDirectiveProbeResult.None,
-                CanCache: true,
-                Directives: []),
+            CanCache: true,
+            Directives: [],
             SdkVersion: "11.0.100-test",
             RuntimeVersion: "11.0.0-test",
             NoCache: false,
@@ -540,6 +474,24 @@ public class FileBasedAppRunPlanTests
         File.SetLastWriteTimeUtc(startCachePath, buildTimeUtc.AddSeconds(-1));
         File.SetLastWriteTimeUtc(successCachePath, buildTimeUtc);
         return (startCachePath, successCachePath);
+    }
+
+    private static (T Result, IReadOnlyList<string> Messages) CaptureVerboseMessages<T>(Func<T> action)
+    {
+        bool originalVerbose = CommandLoggingContext.IsVerbose;
+        var reporter = new BufferedReporter();
+        try
+        {
+            CommandLoggingContext.SetVerbose(true);
+            Reporter.SetVerbose(reporter);
+            return (action(), reporter.Lines.ToArray());
+        }
+        finally
+        {
+            Reporter.SetVerbose(Reporter.ConsoleOutReporter);
+            CommandLoggingContext.SetVerbose(originalVerbose);
+            Reporter.Reset();
+        }
     }
 
     private static string CreateTestDirectory()
