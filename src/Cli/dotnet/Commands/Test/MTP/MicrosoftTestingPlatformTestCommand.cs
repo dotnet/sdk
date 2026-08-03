@@ -116,10 +116,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 exitCode = ExitCode.TestSessionAborted;
             }
 
-            if (!testOptions.IsHelp
-                && !testOptions.IsDiscovery
-                && !parseResult.GetValue(definition.NoArtifactPostProcessingOption)
-                && !ctrlC.Token.IsCancellationRequested)
+            if (ShouldPostProcessArtifacts(
+                testOptions,
+                parseResult.GetValue(definition.NoArtifactPostProcessingOption),
+                ctrlC.Token.IsCancellationRequested,
+                cancellationReason))
             {
                 artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
             }
@@ -158,6 +159,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
             output.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
         }
     }
+
+    /// <summary>
+    /// Decides whether the artifacts of a finished run should be consolidated.
+    /// </summary>
+    /// <remarks>
+    /// Help and discovery produce no artifacts to merge, and <c>--no-artifact-post-processing</c> is
+    /// the explicit opt-out. The two cancellation cases are the interesting ones: a run stopped by
+    /// Ctrl+C, <c>--maximum-failed-tests</c> or <c>--timeout</c> produced the artifacts of a
+    /// truncated run — modules that never started contributed nothing, and modules killed mid-flight
+    /// wrote whatever they had. Merging those into a single report would hide the truncation behind
+    /// one authoritative-looking artifact, so the per-module artifacts are left as they are.
+    /// </remarks>
+    internal static bool ShouldPostProcessArtifacts(
+        TestOptions testOptions,
+        bool noArtifactPostProcessingRequested,
+        bool cancellationRequested,
+        TestRunCancellationReason cancellationReason)
+        => !testOptions.IsHelp
+            && !testOptions.IsDiscovery
+            && !noArtifactPostProcessingRequested
+            && !cancellationRequested
+            && cancellationReason == TestRunCancellationReason.None;
 
     private static TestListFormat GetListTestsFormat(ParseResult parseResult, TestCommandDefinition.MicrosoftTestingPlatform definition)
     {

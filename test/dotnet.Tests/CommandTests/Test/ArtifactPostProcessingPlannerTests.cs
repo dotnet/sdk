@@ -207,6 +207,61 @@ public class ArtifactPostProcessingPlannerTests
         plan.Jobs[0].Application.Should().BeSameAs(arm64);
     }
 
+    [TestMethod]
+    public void Plan_DifferentKindsSharingAnExtension_AreNotMerged()
+    {
+        // JUnit and NUnit3 both write '.xml'. Extension-only matching would collapse them into one
+        // group and hand a JUnit merger a set of NUnit3 reports; the kind is what keeps them apart.
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            ["example.junit", "example.nunit3"],
+            [".xml"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A-junit.xml", "example.junit", "A.dll", "x64"),
+            CreateArtifact("B-junit.xml", "example.junit", "B.dll", "x64"),
+            CreateArtifact("A-nunit.xml", "example.nunit3", "A.dll", "x64"),
+            CreateArtifact("B-nunit.xml", "example.nunit3", "B.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan([application], artifacts);
+
+        plan.Jobs.Should().ContainSingle();
+        ArtifactPostProcessingGroup[] groups = [.. plan.Jobs[0].Groups];
+        groups.Select(group => group.Key).Should().BeEquivalentTo("example.junit", "example.nunit3");
+        groups.Should().OnlyContain(
+            group => group.Artifacts.Count == 2,
+            "each kind keeps its own inputs even though both write the same file extension");
+    }
+
+    [TestMethod]
+    public void Plan_TaggedArtifact_IsNotAlsoRoutedThroughTheExtensionFallback()
+    {
+        // A tagged artifact must never appear in both its kind group and the fallback group for its
+        // extension: the merge tool would then receive it twice and double-count its tests.
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            ["microsoft.testing.trx"],
+            [".trx"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A.trx", "microsoft.testing.trx", "A.dll", "x64"),
+            CreateArtifact("B.trx", "microsoft.testing.trx", "B.dll", "x64"),
+            CreateArtifact("C.trx", kind: null, "C.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan([application], artifacts);
+
+        string[] plannedPaths =
+            [.. plan.Jobs.SelectMany(job => job.Groups).SelectMany(group => group.Artifacts).Select(artifact => artifact.Path)];
+        plannedPaths.Should().OnlyHaveUniqueItems();
+        plannedPaths.Should().BeEquivalentTo("A.trx", "B.trx", "C.trx");
+    }
+
     private static ArtifactPostProcessingApplication CreateApplication(
         string targetPath,
         string targetFramework,

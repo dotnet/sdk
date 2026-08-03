@@ -1068,6 +1068,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
             terminal.Append(text);
         });
 
+    internal void WriteInformationMessage(string text) =>
+        _terminalWithProgress.WriteToTerminal(terminal =>
+        {
+            terminal.AppendLine(text);
+        });
+
     internal void WriteWarningMessage(string text) =>
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
