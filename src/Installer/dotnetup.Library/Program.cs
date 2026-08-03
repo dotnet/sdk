@@ -34,7 +34,7 @@ public class DotnetupProgram
 
         // Start root activity for the entire process. Disposed explicitly in
         // the finally block below (no `using` here) so the completion event is
-        // emitted before DisposeTelemetry flushes/shuts down the providers.
+        // emitted before FlushTelemetry shuts down the providers.
         var rootOp = DotnetupTelemetry.Instance.StartTrackedProcess("dotnetup");
 
         // Capture current console encoding so it can be restored on exit.
@@ -103,10 +103,10 @@ public class DotnetupProgram
     {
         try
         {
-            DotnetupTelemetry.Instance.WriteLogIfNecessary();
             // Flush, never Dispose: process exit reclaims the providers, and Dispose
             // would trigger the OTel LoggerProvider's unbounded Shutdown drain.
             DotnetupTelemetry.Instance.Flush(exitCode);
+            DotnetupTelemetry.Instance.WriteLogIfNecessary();
         }
         catch
         {
