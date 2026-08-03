@@ -137,4 +137,59 @@ public class TelemetryFilterTests : SdkTest
                                                         e.Properties["subcommand"] ==
                                                         Sha256Hasher.Hash("INSTALL"));
     }
+
+    [TestMethod]
+    public void DotnetHelpShouldSendHelpVerbToTelemetry()
+    {
+        var parseResult = Parser.Parse(["--help"]);
+        TelemetryEventEntry.SendFiltered(parseResult);
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("--HELP") &&
+                e.Properties.ContainsKey("help") &&
+                e.Properties["help"] == Sha256Hasher.Hash("TRUE"));
+    }
+
+    [TestMethod]
+    public void DotnetVersionShouldSendVersionVerbToTelemetry()
+    {
+        var parseResult = Parser.Parse(["--version"]);
+        TelemetryEventEntry.SendFiltered(parseResult);
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("--VERSION"));
+    }
+
+    [TestMethod]
+    public void DotnetInfoShouldSendInfoVerbToTelemetry()
+    {
+        var parseResult = Parser.Parse(["--info"]);
+        TelemetryEventEntry.SendFiltered(parseResult);
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("--INFO"));
+    }
+
+    [TestMethod]
+    public void SubcommandHelpShouldSendVerbWithHelpProperty()
+    {
+        var parseResult = Parser.Parse(["build", "--help"]);
+        TelemetryEventEntry.SendFiltered(parseResult);
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                e.Properties.ContainsKey("help") &&
+                e.Properties["help"] == Sha256Hasher.Hash("TRUE"));
+    }
+
+    [TestMethod]
+    public void RegularBuildCommandShouldNotHaveHelpProperty()
+    {
+        var parseResult = Parser.Parse(["build"]);
+        TelemetryEventEntry.SendFiltered(parseResult);
+        _fakeTelemetry.LogEntries.Should().Contain(e => e.EventName == "toplevelparser/command" &&
+                e.Properties.ContainsKey("verb") &&
+                e.Properties["verb"] == Sha256Hasher.Hash("BUILD") &&
+                !e.Properties.ContainsKey("help"));
+    }
 }

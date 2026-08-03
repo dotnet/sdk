@@ -28,8 +28,17 @@
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SDKCustomTestProject Remove="dotnet-MsiInstallation.Tests\**\*" />
 
-    <!-- dotnet-format unit tests are run under the DOTNET_FORMAT pipeline section. -->
+    <!-- dotnet-format unit tests are disabled; tracked by https://github.com/dotnet/sdk/issues/54249 -->
     <SDKCustomTestProject Remove="dotnet-format.UnitTests\dotnet-format.UnitTests.csproj" />
+
+    <!-- dotnet-format integration tests: one Helix work item per test class.
+         PartitionByClass dynamically discovers classes in the assembly and creates
+         one shard per class. Adding a new test class automatically creates a new shard.
+         These tests are expensive and therefore only run on Linux x64. -->
+    <SDKCustomTestProject Remove="dotnet-format.IntegrationTests\dotnet-format.IntegrationTests.csproj" />
+    <SDKCustomTestProject Include="dotnet-format.IntegrationTests\dotnet-format.IntegrationTests.csproj"
+                          PartitionByClass="true"
+                          Condition="'$(TargetOS)' == 'linux' and '$(TargetArchitecture)' == 'x64'" />
 
     <!-- Filter out .NET Framework only test projects and add them manually. -->
     <SDKCustomTestProject Remove="Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj" />
