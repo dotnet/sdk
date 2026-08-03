@@ -140,6 +140,7 @@ public class ArtifactPostProcessingManagerTests
             SolutionPath: null,
             TestModules: null,
             ResultsDirectoryPath: "/results",
+            ResultsDirectoryLayout: ResultsDirectoryLayout.Flat,
             ConfigFilePath: "/config/testconfig.json",
             DiagnosticOutputDirectoryPath: "/diagnostics");
 
@@ -166,6 +167,7 @@ public class ArtifactPostProcessingManagerTests
             SolutionPath: null,
             TestModules: null,
             ResultsDirectoryPath: "/results",
+            ResultsDirectoryLayout: ResultsDirectoryLayout.Flat,
             ConfigFilePath: null,
             DiagnosticOutputDirectoryPath: null);
 
@@ -466,7 +468,14 @@ public class ArtifactPostProcessingManagerTests
 
     private static BuildOptions CreateBuildOptions(string? resultsDirectory = null)
         => new(
-            new PathOptions(null, null, null, ResultsDirectoryPath: resultsDirectory, null, null),
+            new PathOptions(
+                ProjectOrSolutionPath: null,
+                SolutionPath: null,
+                TestModules: null,
+                ResultsDirectoryPath: resultsDirectory,
+                ResultsDirectoryLayout: ResultsDirectoryLayout.Flat,
+                ConfigFilePath: null,
+                DiagnosticOutputDirectoryPath: null),
             HasNoRestore: false,
             HasNoBuild: false,
             Verbosity: null,
