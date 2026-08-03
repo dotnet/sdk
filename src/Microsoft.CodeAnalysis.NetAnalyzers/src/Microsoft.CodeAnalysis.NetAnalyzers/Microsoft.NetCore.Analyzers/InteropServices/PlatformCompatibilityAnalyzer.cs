@@ -674,7 +674,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 PlatformMethodValue value,
                 SmallDictionary<string, Versions>? callsiteAttributes)
                 => callsiteAttributes != null &&
-                    callsiteAttributes.Values.All(AllowList) &&
                     callsiteAttributes.TryGetValue(value.PlatformName, out Versions? attributes) &&
                     attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version);
 
