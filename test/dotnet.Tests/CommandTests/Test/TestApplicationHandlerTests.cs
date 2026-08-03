@@ -156,6 +156,75 @@ public class TestApplicationHandlerTests : IDisposable
         console.GetOutput().Should().Contain("(try 3)");
     }
 
+    [TestMethod]
+    public void OnHandshakeReceived_WithArtifactPostProcessingCapabilities_RecordsApplication()
+    {
+        var manager = new ArtifactPostProcessingManager();
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingManager: manager);
+        var handshake = BuildHandshake(
+            executionMode: HandshakeMessageExecutionModes.Run,
+            supportedPostProcessorKinds: "microsoft.testing.trx;example.junit",
+            supportedPostProcessorExtensions: ".trx;.xml");
+
+        bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
+
+        accepted.Should().BeTrue();
+        ArtifactPostProcessingApplication application = manager.SnapshotApplications().Should().ContainSingle().Subject;
+        application.SupportedKinds.Should().BeEquivalentTo("microsoft.testing.trx", "example.junit");
+        application.SupportedExtensions.Should().BeEquivalentTo(".trx", ".xml");
+    }
+
+    [TestMethod]
+    public void OnFileArtifactsReceived_RecordsArtifactMetadata()
+    {
+        var manager = new ArtifactPostProcessingManager();
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingManager: manager);
+        handler.OnHandshakeReceived(
+            BuildHandshake(HandshakeMessageExecutionModes.Run),
+            gotSupportedVersion: true).Should().BeTrue();
+        string artifactPath = Path.GetFullPath("result.trx");
+
+        handler.OnFileArtifactsReceived(new FileArtifactMessages(
+            "exec-1",
+            "inst-1",
+            [new FileArtifactMessage(artifactPath, "TRX", null, null, null, null, "microsoft.testing.trx")]));
+
+        ArtifactPostProcessingArtifact artifact = manager.SnapshotArtifacts().Should().ContainSingle().Subject;
+        artifact.Path.Should().Be(artifactPath);
+        artifact.Kind.Should().Be("microsoft.testing.trx");
+        artifact.ProducingTestModule.Should().Be(TargetPath);
+        artifact.TargetFramework.Should().Be(TargetFramework);
+        artifact.Architecture.Should().Be("x64");
+        artifact.ExecutionId.Should().Be("exec-1");
+    }
+
+    [TestMethod]
+    public void OnHandshakeReceived_WhenArtifactPostProcessorHandshakeFails_DoesNotFailTestRun()
+    {
+        var invocation = new ArtifactPostProcessingInvocation("manifest.json");
+        (TestApplicationHandler handler, TerminalTestReporter reporter, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingInvocation: invocation);
+
+        bool accepted = handler.OnHandshakeReceived(
+            BuildHandshake(
+                HandshakeMessageExecutionModes.Tool,
+                hostType: HandshakeMessageHostTypes.TestHost),
+            gotSupportedVersion: true);
+
+        accepted.Should().BeFalse();
+        invocation.FailureMessage.Should().NotBeNullOrEmpty();
+        reporter.HasHandshakeFailure.Should().BeFalse(
+            "post-processing failures must not change the test run exit code");
+    }
+
     /// <summary>
     /// Drives the new validation added in this change: if the host reports an execution mode that
     /// doesn't match what <c>dotnet test</c> intended (e.g. <c>RunArguments</c> or
@@ -318,7 +387,12 @@ public class TestApplicationHandlerTests : IDisposable
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";
 
-    private (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(bool isHelp, bool isDiscovery, bool showAssembly = false)
+    private (TestApplicationHandler Handler, TerminalTestReporter Reporter, CapturingConsole Console) CreateHandler(
+        bool isHelp,
+        bool isDiscovery,
+        bool showAssembly = false,
+        ArtifactPostProcessingManager? artifactPostProcessingManager = null,
+        ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null)
     {
         var capturingConsole = new CapturingConsole();
 
@@ -348,12 +422,30 @@ public class TestApplicationHandlerTests : IDisposable
             DotnetRootArchVariableName: null,
             EnvironmentVariables: new Dictionary<string, string>());
 
-        var testOptions = new TestOptions(IsHelp: isHelp, IsDiscovery: isDiscovery, ListTestsFormat: TestListFormat.Text);
+        var testOptions = new TestOptions(
+            IsHelp: isHelp,
+            IsDiscovery: isDiscovery,
+            ListTestsFormat: TestListFormat.Text,
+            IsArtifactPostProcessing: artifactPostProcessingInvocation is not null);
 
-        return (new TestApplicationHandler(reporter, module, testOptions), reporter, capturingConsole);
+        return (
+            new TestApplicationHandler(
+                reporter,
+                module,
+                testOptions,
+                artifactPostProcessingManager,
+                artifactPostProcessingInvocation),
+            reporter,
+            capturingConsole);
     }
 
-    private static HandshakeMessage BuildHandshake(string? executionMode, string hostType = "TestHost", bool includeInstanceId = true, int? attemptNumber = null)
+    private static HandshakeMessage BuildHandshake(
+        string? executionMode,
+        string hostType = "TestHost",
+        bool includeInstanceId = true,
+        int? attemptNumber = null,
+        string? supportedPostProcessorKinds = null,
+        string? supportedPostProcessorExtensions = null)
     {
         var properties = new Dictionary<byte, string>
         {
@@ -380,6 +472,16 @@ public class TestApplicationHandlerTests : IDisposable
         if (attemptNumber.HasValue)
         {
             properties[HandshakeMessagePropertyNames.AttemptNumber] = attemptNumber.Value.ToString(CultureInfo.InvariantCulture);
+        }
+
+        if (supportedPostProcessorKinds is not null)
+        {
+            properties[HandshakeMessagePropertyNames.SupportedPostProcessorKinds] = supportedPostProcessorKinds;
+        }
+
+        if (supportedPostProcessorExtensions is not null)
+        {
+            properties[HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy] = supportedPostProcessorExtensions;
         }
 
         return new HandshakeMessage(properties);

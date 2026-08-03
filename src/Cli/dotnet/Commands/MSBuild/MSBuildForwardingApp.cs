@@ -51,7 +51,7 @@ public class MSBuildForwardingApp : CommandBase
 #else
                 string loggerTypeFullName = "Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildLogger";
                 string forwardingLoggerTypeFullName = "Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildForwardingLogger";
-                string loggerTypeLocation = Path.Combine(AppContext.BaseDirectory, "dotnet.dll");
+                string loggerTypeLocation = Path.Combine(SdkPaths.SdkDirectory, "dotnet.dll");
                 string forwardingLoggerTypeLocation = loggerTypeLocation;
 #endif
 

@@ -502,6 +502,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry..
+        /// </summary>
+        internal static string ImageLoadFailed_WslcMultiArchUnsupported {
+            get {
+                return ResourceManager.GetString("ImageLoadFailed_WslcMultiArchUnsupported", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2005: The inferred image name &apos;{0}&apos; contains entirely invalid characters. The valid characters for an image name are alphanumeric characters, -, /, or _, and the image name must start with an alphanumeric character..
         /// </summary>
         internal static string InvalidImageName_EntireNameIsInvalidCharacters {
