@@ -99,6 +99,7 @@ Takeaway: dotnetup's ideal is the *lighter half* of Aspire's model. i.e. Separat
 ## 4. Versions Policy
 
 The version intent in [dotnet/sdk#55390](https://github.com/dotnet/sdk/pull/55390) supersedes the earlier assumptions in this plan.
+`dotnetup` versioning is inspired by Semantic Versioning but does not strictly implement it. Minor releases may contain intentional breaking changes, while major releases communicate substantial feature additions or breaking changes.
 
 | Channel  | Version shape | Meaning |
 |----------|---------------|---------|
@@ -133,7 +134,7 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
    Implement a preview release pipeline that lets an operator select a prior daily pipeline run and creates the release branch from the corresponding source commit.
 4. **The release pipeline:**
   - Creates a new build using the selected daily artifact set as its input rather than treating the daily build itself as the preview build.
-  - Sets the release version properties, including `PreReleaseVersionLabel`, so the resulting version is `0.y.z-preview.N`.
+  - Sets the numeric version properties, including the minor and patch components, and `PreReleaseVersionLabel` at build time so the resulting version is `0.y.z-preview.N`. Updating only the prerelease label is insufficient.
   - Uses trusted pipeline/workflow and script content from the corresponding
     `release/dnup/0.y.z-preview.N` branch only (no PR ref checkout for executable content).
   - Validates release preconditions before publishing:
