@@ -21,6 +21,7 @@ namespace Benchmark;
     warmupCount: WarmupCount,
     iterationCount: IterationCount,
     invocationCount: 1)]
+[InProcess]
 [MinColumn]
 [MaxColumn]
 [MedianColumn]
