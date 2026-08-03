@@ -81,4 +81,23 @@ public class DotnetupTelemetryDrainProcessTests
 
         Assert.IsNull(exception);
     }
+
+    [TestMethod]
+    [DataRow("renamed-bootstrapper.exe")]
+    [DataRow("DOTNETUP")]
+    public void CanRelaunchAsDrainer_AcceptsRenamedNativeExecutable(string executableName)
+    {
+        Assert.IsTrue(DotnetupTelemetryDrainProcess.CanRelaunchAsDrainer(executableName, "dotnetup"));
+    }
+
+    [TestMethod]
+    [DataRow(null, "dotnetup")]
+    [DataRow("", "dotnetup")]
+    [DataRow("dotnet.exe", "dotnetup")]
+    [DataRow("testhost.exe", "testhost")]
+    [DataRow("dotnetup.exe", "testhost")]
+    public void CanRelaunchAsDrainer_RejectsManagedAndTestHosts(string? executablePath, string? entryAssemblyName)
+    {
+        Assert.IsFalse(DotnetupTelemetryDrainProcess.CanRelaunchAsDrainer(executablePath, entryAssemblyName));
+    }
 }
