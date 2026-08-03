@@ -80,7 +80,7 @@ upstream partial as a separate source. Each source is tracked independently.
 > a `*.cs` glob in `TerminalReporterContract.props`, so a new partial appears
 > upstream without any manifest change here. New upstream partials must be
 > appended to this manifest by hand, otherwise later edits to them are invisible
-> to drift detection
+> to drift detection.
 > ([microsoft/testfx#10390](https://github.com/microsoft/testfx/issues/10390)).
 
 ## How drift is detected
