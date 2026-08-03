@@ -222,8 +222,6 @@ public class PackPublishBenchmark
         [
             Operation == BenchmarkOperation.Pack ? "pack" : "publish",
             cell.SolutionPath,
-            "-c",
-            "Release",
             "-m",
             "-v:q",
         ];
