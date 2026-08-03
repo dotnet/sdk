@@ -215,7 +215,22 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
-            _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
+            string outputToReport = stdOutBuilder.GetOutputToReport();
+            string errorToReport = stdErrBuilder.GetOutputToReport();
+
+            // Output that was streamed live is not reported again - it is already on the terminal, and
+            // replaying it printed everything twice (https://github.com/dotnet/sdk/issues/55549). The trace
+            // file has no console sink and is collected on its own, though, so it would silently lose that
+            // output. Record it here, where the full capture is still available, for the streams the
+            // handler is not going to log. Guarded so nothing is materialized unless tracing is enabled,
+            // which it is not by default.
+            if (Logger.TraceEnabled)
+            {
+                LogStreamedProcessOutput("Output Data", outputToReport, stdOutBuilder);
+                LogStreamedProcessOutput("Error Data", errorToReport, stdErrBuilder);
+            }
+
+            _handler.OnTestProcessExited(exitCode, outputToReport, errorToReport);
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -708,6 +723,25 @@ internal sealed class TestApplication(
     private bool? GetLiveOutputStreamingState() =>
         Volatile.Read(ref _protocolNegotiated) == 0 ? null : IsProtocol_1_1_OrHigher;
 
+    /// <summary>
+    /// Records process output that is not being reported to the user because it already reached the
+    /// terminal as live output, so that an enabled trace file still contains it.
+    /// </summary>
+    private static void LogStreamedProcessOutput(string label, string reportedOutput, ProcessOutputCollector collector)
+    {
+        if (reportedOutput.Length > 0)
+        {
+            // The output is being reported, so the handler traces it as usual.
+            return;
+        }
+
+        string capturedOutput = collector.GetCapturedOutput();
+        if (capturedOutput.Length > 0)
+        {
+            Logger.LogTrace($"{label} (already streamed live): {capturedOutput}");
+        }
+    }
+
     private void FlushBufferedOutputIfLiveStreamingEnabled()
     {
         bool? liveOutputStreamingState = GetLiveOutputStreamingState();
@@ -749,60 +783,105 @@ internal sealed class TestApplication(
     private void OnDisplayMessage(DisplayMessage displayMessage)
         => _handler.OnDisplayMessageReceived(displayMessage);
 
-    private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
+    internal sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {
+        // Serializes "decide what to write, then write it" so live output reaches the terminal in the
+        // order the test process produced it. Without it the protocol-negotiation flush and a reader
+        // thread can interleave and put a later line ahead of the buffered lines that precede it, and
+        // live output is the only copy the user gets. This is deliberately separate from _lock so a
+        // capture read never waits on terminal IO - RunAsync reads the capture on a timeout path that
+        // exists precisely because a reader may be stuck. Always taken before _lock, never after.
+        private readonly object _writeLock = new();
         private readonly object _lock = new();
         private readonly Queue<string> _lines = [];
         private bool _liveStreamingEnabled;
 
         public void AddLine(string line, bool? liveOutputStreamingState)
         {
-            string? outputToWrite = null;
-            lock (_lock)
+            lock (_writeLock)
             {
-                _lines.Enqueue(line);
-                if (liveOutputStreamingState == true)
+                string outputToWrite;
+                lock (_lock)
                 {
+                    _lines.Enqueue(line);
+
                     if (_liveStreamingEnabled)
                     {
+                        // The caller sampled the streaming state before taking this lock, so it can be
+                        // stale: negotiation may have enabled streaming in between. Once streaming is on
+                        // it never turns back off, and the capture is reported as already shown, so this
+                        // line has to be written even when the stale sample says otherwise - skipping it
+                        // would drop it from the terminal entirely.
                         outputToWrite = line + Environment.NewLine;
                     }
                     else
                     {
+                        if (liveOutputStreamingState != true)
+                        {
+                            return;
+                        }
+
                         _liveStreamingEnabled = true;
                         outputToWrite = JoinLinesWithTrailingNewLine(_lines);
                     }
 
                     TrimToBoundedTail();
                 }
-            }
 
-            if (outputToWrite is not null)
-            {
                 writeOutput(outputToWrite);
             }
         }
 
         public void FlushBufferedOutputIfLiveStreamingEnabled(bool? liveOutputStreamingState)
         {
-            string? outputToWrite = null;
-            lock (_lock)
+            lock (_writeLock)
             {
-                if (liveOutputStreamingState == true && !_liveStreamingEnabled)
+                string outputToWrite;
+                lock (_lock)
                 {
+                    if (liveOutputStreamingState != true || _liveStreamingEnabled)
+                    {
+                        return;
+                    }
+
                     _liveStreamingEnabled = true;
                     outputToWrite = JoinLinesWithTrailingNewLine(_lines);
                     TrimToBoundedTail();
                 }
-            }
 
-            if (!string.IsNullOrEmpty(outputToWrite))
-            {
-                writeOutput(outputToWrite);
+                if (outputToWrite.Length > 0)
+                {
+                    writeOutput(outputToWrite);
+                }
             }
         }
 
-        public string GetOutput()
+        /// <summary>
+        /// Returns the captured tail of the stream for the caller to report, or an empty string when
+        /// that content already reached the terminal as live output.
+        /// </summary>
+        /// <remarks>
+        /// Live streaming engages only once for a stream, and everything buffered up to that point is
+        /// flushed in the same step, so from then on the whole capture - including lines later evicted
+        /// by <see cref="TrimToBoundedTail"/> - has been shown. Reporting it again would print it twice
+        /// (https://github.com/dotnet/sdk/issues/55549). Until streaming engages the capture is the only
+        /// copy there is, so it is returned in full: older Microsoft.Testing.Platform versions that
+        /// don't negotiate protocol 1.1.0, and processes that fail before the handshake, depend on it.
+        /// </remarks>
+        public string GetOutputToReport()
+        {
+            lock (_lock)
+            {
+                return _liveStreamingEnabled ? string.Empty : string.Join(Environment.NewLine, _lines);
+            }
+        }
+
+        /// <summary>
+        /// Returns the captured tail of the stream whether or not it was already streamed live. Only for
+        /// diagnostics that record the output without showing it to the user - anything rendered on the
+        /// terminal must go through <see cref="GetOutputToReport"/> instead, or it will be printed twice.
+        /// </summary>
+        public string GetCapturedOutput()
         {
             lock (_lock)
             {
