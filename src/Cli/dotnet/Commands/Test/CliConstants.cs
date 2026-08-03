@@ -27,6 +27,12 @@ internal static class CliConstants
     public const string DLLExtension = ".dll";
 
     public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
+
+    /// <summary>
+    /// Overrides how long a relaunched artifact post-processing host may run, in seconds.
+    /// '0' removes the bound entirely. Absent, non-numeric or negative values keep the default.
+    /// </summary>
+    public const string TestArtifactPostProcessingTimeoutEnvVar = "DOTNET_CLI_TEST_ARTIFACT_POST_PROCESSING_TIMEOUT_SECONDS";
 }
 
 internal static class TestStates
