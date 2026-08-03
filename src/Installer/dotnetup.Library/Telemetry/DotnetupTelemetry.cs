@@ -50,9 +50,9 @@ public sealed class DotnetupTelemetry : IDisposable
     private readonly List<Activity> _activities = [];
 
     /// <summary>
-    /// True when telemetry needs to be drained from storage externally VS CI environments which wait to exit until a POST is complete
+    /// Whether shutdown should start the detached drainer after local telemetry is persisted.
     /// </summary>
-    private readonly bool _isLocalPersistDelivery;
+    private readonly bool _shouldSpawnDetachedDrainer;
 
     /// <summary>
     /// Snapshot of process-level common properties (os.type, device.id,
@@ -135,7 +135,7 @@ public sealed class DotnetupTelemetry : IDisposable
             _logger = _loggerFactory.CreateLogger(Constants.Telemetry.BootstrapperSourceName);
 
             // Local runs persist synchronously and deliver via a detached drainer on exit.
-            _isLocalPersistDelivery = !IsOneAndDoneEnvironment && !disableExport && !string.IsNullOrWhiteSpace(storageDirectory);
+            _shouldSpawnDetachedDrainer = !IsOneAndDoneEnvironment && !disableExport && !string.IsNullOrWhiteSpace(storageDirectory);
         }
         catch (Exception)
         {
@@ -484,7 +484,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// </param>
     public void Flush(int exitCode)
     {
-        if (_isLocalPersistDelivery)
+        if (_shouldSpawnDetachedDrainer)
         {
             ShutdownProviders(GetLocalShutdownBudgetMs(exitCode));
 
