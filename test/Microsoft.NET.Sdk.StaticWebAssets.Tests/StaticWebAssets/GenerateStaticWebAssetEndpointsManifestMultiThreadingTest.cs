@@ -9,20 +9,29 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+// Test parallelization is disabled assembly-wide: the MSTest.Sdk project sets
+// MSTestParallelizeScope=None, which emits [assembly: DoNotParallelize] and runs
+// tests sequentially, isolating the process-CWD mutation this test performs.
 [TestClass]
 public class GenerateStaticWebAssetEndpointsManifestMultiThreadingTest
 {
+    // Deliberately short: the layout below nests several levels under the test binary
+    // directory and Directory.SetCurrentDirectory is still limited to MAX_PATH on Windows.
+    private const string TestRootName = "GSWAEndpointsManifestMT";
+
     [TestMethod]
     public void WritesEndpointsManifestAndExclusionCacheRelativeToTaskEnvironmentProjectDirectory_NotProcessCurrentDirectory()
     {
         // Layout: place project and decoy in disjoint subtrees so that the same
         // relative path produces different absolute paths from each root.
-        //   <testRoot>/project/output/   <-- TaskEnvironment.ProjectDirectory
-        //   <testRoot>/decoy/spawn/      <-- process CWD (the "decoy")
-        //   <testRoot>/decoy/spawn/output/ <-- where the pre-migration code would write
-        var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(GenerateStaticWebAssetEndpointsManifestMultiThreadingTest), Guid.NewGuid().ToString("N"));
-        var projectDir = Path.Combine(testRoot, "project");
-        var spawnDir = Path.Combine(testRoot, "decoy", "spawn");
+        //   <testRoot>/p/output/       <-- TaskEnvironment.ProjectDirectory
+        //   <testRoot>/d/s/            <-- process CWD (the "decoy")
+        //   <testRoot>/d/s/output/     <-- where the pre-migration code would write
+        // Path segments are kept short because Directory.SetCurrentDirectory is limited to
+        // MAX_PATH on Windows even when long paths are otherwise enabled.
+        var testRoot = Path.Combine(AppContext.BaseDirectory, TestRootName, Guid.NewGuid().ToString("N")[..8]);
+        var projectDir = Path.Combine(testRoot, "p");
+        var spawnDir = Path.Combine(testRoot, "d", "s");
         var projectOutputDir = Path.Combine(projectDir, "output");
         var spawnOutputDir = Path.Combine(spawnDir, "output");
         Directory.CreateDirectory(projectOutputDir);
@@ -80,7 +89,7 @@ public class GenerateStaticWebAssetEndpointsManifestMultiThreadingTest
     [OSCondition(OperatingSystems.Linux | OperatingSystems.OSX)]
     public void WritesEndpointsManifestWhenPathIsWhitespace()
     {
-        var projectDir = Path.Combine(AppContext.BaseDirectory, nameof(WritesEndpointsManifestWhenPathIsWhitespace), Guid.NewGuid().ToString("N"));
+        var projectDir = Path.Combine(AppContext.BaseDirectory, TestRootName, Guid.NewGuid().ToString("N")[..8], "ws");
         Directory.CreateDirectory(projectDir);
 
         try
