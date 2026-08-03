@@ -9,6 +9,10 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [FullMSBuildOnly]
+        // MSBUILDINCLUDEDEFAULTSDKRESOLVER is process-global and is inherited by the child MSBuild
+        // processes that other test classes spawn concurrently under class-level parallelization,
+        // so hold the environment-variable lock for the duration of the test.
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DataRow(true)]
         [DataRow(false)]
         public void It_fails_build_on_failed_sdk_resolution(bool runningInVS)
