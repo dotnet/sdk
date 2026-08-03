@@ -33,7 +33,7 @@ We do not recommend using `daily` builds in production. They have no guarantees,
 
 ### `Preview` Channel Versions
 
-`preview` versions are not officially supported but they are offered for public testing ahead of a promotion to a `stable` release. At our discretion, `daily` builds will be promoted to `preview` versions.
+`preview` versions are not officially supported but they are offered for public testing ahead of a promotion to a `stable` release. At our discretion, a selected `daily` build will be used to produce a separately versioned `preview` build.
 
 Breaking change notices may be published in the [.NET Docs](https://github.com/dotnet/docs) if we expect high impact. However, `preview` versions may contain breaking changes without notice. No service-level agreement or fix timeline applies to a `preview` version.
 
@@ -49,11 +49,22 @@ At this time, historical `stable` versions of `dotnetup` will remain available f
 
 PSAs and CVEs are planned to be announced through the [.NET release notes](https://github.com/dotnet/core), following a similar convention to other .NET releases. Discussions and release tags will exist in the [.NET SDK repository](https://github.com/dotnet/sdk).
 
-## Semantic Versioning
+## Versioning
 
-`preview` and `stable` versions of `dotnetup` follow [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html). For example:
+`dotnetup` versioning is inspired by [Semantic Versioning](https://semver.org/) but does not strictly implement it. Major, minor, and patch version components communicate the expected scope of a release; they are not compatibility guarantees.
 
-- `1.2.4-preview.1` identifies a `preview` version.
-- `1.2.4` identifies a `stable` version.
+`preview` versions add a prerelease label to the intended release version. For example, `1.2.4-preview.1` identifies a preview of `1.2.4`, while `1.2.4` identifies the stable version.
 
-`daily` versions do not follow Semantic Versioning. They are intended for rapid engineering iteration and may introduce breaking changes without a corresponding major version increment.
+### Major Releases
+
+Major releases communicate a substantial product change. They may include major feature additions, new functionality or APIs, and significant intentional [breaking changes](https://learn.microsoft.com/dotnet/core/compatibility/breaking-changes).
+
+### Minor Releases
+
+Minor releases communicate a smaller feature release than a major release. They may include new features, functionality, APIs, bug fixes, and intentional breaking changes. A minor version increment does not imply backward compatibility.
+
+### Patch Releases
+
+Patch releases may include security fixes, bug fixes, and updates to the self-contained .NET Runtime embedded in the executable. A patch release is not intended to introduce new features.
+
+`daily` versions are intended for rapid engineering iteration and are not governed by these version-component expectations.

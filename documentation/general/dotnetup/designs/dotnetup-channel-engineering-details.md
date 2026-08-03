@@ -14,8 +14,10 @@ We may implement backward compatibility for breaking changes in `daily` builds a
 
 ## `Preview` Channel Versions
 
-We will closely monitor telemetry for potential bugs or regressions in a `daily` build before promoting it to a `preview` build.
+We will closely monitor telemetry for potential bugs or regressions in a `daily` build before selecting it to produce a `preview` build.
 `preview` versions may be built with preview or supported .NET versions.
+
+The preview release pipeline must assign the intended numeric version components and the prerelease label at build time. Updating only `PreReleaseVersionLabel` is insufficient: the pipeline must also update the minor and patch components as appropriate for the preview version being produced.
 
 We should aim to write breaking change notices when a change reaches `preview`, making the notices available before the change reaches `stable`. We do not require notices for `daily` versions because they may change rapidly or multiple times before promotion.
 
@@ -23,7 +25,7 @@ We should aim to write breaking change notices when a change reaches `preview`, 
 
 ## `Stable` Channel Versions
 
-Every `stable` release begins as a `daily` build that is promoted to `preview` and then to `stable`. We should provide both notice and backward compatibility for breaking changes when reasonable.
+Every `stable` release begins with artifacts from a selected `daily` build that are used to produce a separately versioned `preview` build before the release reaches `stable`. We should provide both notice and backward compatibility for breaking changes when reasonable.
 
 The .NET Runtime used to build the native `dotnetup` application is an implementation detail, but it affects how the product is built and serviced. `stable` builds will initially use a stable .NET Runtime. The branch for the `stable` channel will be named `release/stable/dotnetup`. The `daily` and `preview` channels may move to newer .NET versions while `stable` remains on that branch. Code flow from the development branch to `release/stable/dotnetup` will not be automated.
 
