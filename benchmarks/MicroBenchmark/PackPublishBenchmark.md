@@ -56,23 +56,40 @@ This includes:
 - [dotnet/sdk#55426](https://github.com/dotnet/sdk/pull/55426)
 - [NuGet/NuGet.Client#7603](https://github.com/NuGet/NuGet.Client/pull/7603)
 
-Build each branch into a separate immutable SDK directory. NuGet#7603 changes only
-`NuGet.Build.Tasks.Pack.targets`, so select the baseline or modified targets with the cell's
-`packArguments`; no MSBuild overlay is part of this A/B.
+The branches document the two SDK code states. For strict total wall-clock measurements, use one
+experimental SDK binary with local-only stage and context-policy selectors. Using the same binaries
+for both cells avoids unrelated binary and incremental-build differences.
+
+Use separate OrchardCore worktrees for the two cells so they do not share `bin` or `obj`.
+NuGet#7603 changes only `NuGet.Build.Tasks.Pack.targets`: copy the baseline target from the measured
+SDK and apply NuGet#7603 to a copy of that same file. Do not substitute a complete target from an
+unrelated NuGet build because its task parameters may not match the SDK's Pack task assembly.
 
 ```json
 {
   "before": {
-    "dotnetPath": "C:\\perf\\sdk-before\\dotnet.exe",
+    "dotnetPath": "C:\\perf\\sdk-experiment\\dotnet.exe",
+    "orchardCoreRoot": "C:\\OrchardCore-before",
+    "workingDirectory": "C:\\OrchardCore-before",
+    "environmentVariables": {
+      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_STAGE": "Full",
+      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_CONTEXT_POLICY": "Isolated"
+    },
     "packArguments": [
-      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\before.override.props",
+      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\override.props",
       "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack\\Pack.baseline.targets"
     ]
   },
   "after": {
-    "dotnetPath": "C:\\perf\\sdk-after\\dotnet.exe",
+    "dotnetPath": "C:\\perf\\sdk-experiment\\dotnet.exe",
+    "orchardCoreRoot": "C:\\OrchardCore-after",
+    "workingDirectory": "C:\\OrchardCore-after",
+    "environmentVariables": {
+      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_STAGE": "Properties",
+      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_CONTEXT_POLICY": "Shared"
+    },
     "packArguments": [
-      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\after.override.props",
+      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\override.props",
       "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack\\Pack.modified.targets"
     ]
   }
