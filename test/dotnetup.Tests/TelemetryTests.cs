@@ -341,7 +341,7 @@ public class DotnetupTelemetryTests : IDisposable
     public void GetLocalShutdownBudgetMs_UsesShortBudgetForSuccessfulShellStartup()
     {
         using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.StartTrackedCommand("env script");
+        telemetry.IsShellStartupCommand = true;
 
         Assert.AreEqual(10, telemetry.GetLocalShutdownBudgetMs(0));
     }
@@ -350,7 +350,7 @@ public class DotnetupTelemetryTests : IDisposable
     public void GetLocalShutdownBudgetMs_UsesFailureBudgetForFailedShellStartup()
     {
         using var telemetry = new DotnetupTelemetry(_ => "1");
-        telemetry.StartTrackedCommand("env script");
+        telemetry.IsShellStartupCommand = true;
 
         Assert.AreEqual(400, telemetry.GetLocalShutdownBudgetMs(1));
     }

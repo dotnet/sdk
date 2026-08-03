@@ -436,11 +436,9 @@ public sealed class DotnetupTelemetry : IDisposable
     private const int FailureShutdownBudgetMs = 400;
 
     /// <summary>
-    /// True when the current invocation is the latency-critical shell-startup command
-    /// (<c>env script</c>, including its hidden <c>print-env-script</c> alias).
+    /// Gets or sets whether the current invocation is the latency-critical shell-startup command.
     /// </summary>
-    private bool IsShellStartupCommand =>
-        string.Equals(CurrentCommandName, "env script", StringComparison.Ordinal);
+    internal bool IsShellStartupCommand { get; set; }
 
     /// <summary>
     /// Returns the CI shutdown budget (ms): the <c>DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS</c>

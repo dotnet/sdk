@@ -4,6 +4,7 @@
 using System.CommandLine;
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Env;
 
@@ -18,6 +19,7 @@ internal class EnvScriptCommand : CommandBase
 
     public EnvScriptCommand(ParseResult result, IDotnetEnvironmentManager? dotnetEnvironment = null) : base(result, "env script")
     {
+        DotnetupTelemetry.Instance.IsShellStartupCommand = true;
         _dotnetEnvironment = dotnetEnvironment ?? new DotnetEnvironmentManager();
         _shellProvider = result.GetValue(EnvScriptCommandParser.ShellOption);
         _dotnetInstallPath = result.GetValue(EnvScriptCommandParser.DotnetInstallPathOption);
