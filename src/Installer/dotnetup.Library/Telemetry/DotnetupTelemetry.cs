@@ -417,7 +417,7 @@ public sealed class DotnetupTelemetry : IDisposable
     /// batch exporter and waits for the in-flight HTTP POST, bounded by this budget. Matches the
     /// dotnet CLI default (<c>DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS</c>).
     /// </summary>
-    private const int DefaultCiShutdownBudgetMs = 20000;
+    private const int DefaultCiShutdownBudgetMs = 20_000;
 
     /// <summary>
     /// Teardown budget (ms) for local runs. Telemetry is already persisted synchronously as it is emitted, so shutdown only has to release the providers.
