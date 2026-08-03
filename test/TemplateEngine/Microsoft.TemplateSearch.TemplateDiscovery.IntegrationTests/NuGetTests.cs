@@ -20,6 +20,10 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             ServiceIndexResourceV3 indexResource = repository.GetResource<ServiceIndexResourceV3>(TestContext.Current!.CancellationToken)
                 ?? throw new InvalidOperationException("Failed to get ServiceIndexResourceV3.");
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
+            if (searchResources.Count == 0)
+            {
+                searchResources = indexResource.GetServiceEntries("SearchQueryService/3.0.0-beta");
+            }
 
             Assert.IsNotEmpty(searchResources, "No SearchQueryService entries found in the feed service index.");
             string queryString = $"{searchResources[0].Uri}?q=Microsoft.DotNet.Common.ProjectTemplates.5.0&skip=0&take=10&prerelease=true&semVerLevel=2.0.0";
