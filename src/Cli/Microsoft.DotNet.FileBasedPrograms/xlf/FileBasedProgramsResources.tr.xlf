@@ -72,6 +72,11 @@
         <target state="translated">‘#:project’ yönergesi geçersizdir: {0}</target>
         <note>{0} is the inner error message.</note>
       </trans-unit>
+      <trans-unit id="InvalidQuoteInDirective">
+        <source>Double quotes (") in a directive must enclose an entire value, for example: 'Name="a b"' or '"a b"'.</source>
+        <target state="new">Double quotes (") in a directive must enclose an entire value, for example: 'Name="a b"' or '"a b"'.</target>
+        <note>{Locked="Name="a b""}{Locked=""a b""}</note>
+      </trans-unit>
       <trans-unit id="InvalidRefDirective">
         <source>The '#:ref' directive is invalid: {0}</source>
         <target state="translated">'#:ref' yönergesi geçersiz: {0}</target>

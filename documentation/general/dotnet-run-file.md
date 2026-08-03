@@ -179,7 +179,7 @@ which are [ignored][ignored-directives] by the C# language but recognized by the
 #:property TargetFramework=net11.0
 #:property LangVersion=preview
 #:package System.CommandLine@2.0.0-*
-#:package Microsoft.Extensions.Logging@9.0.0 ExcludeAssets=runtime PrivateAssets=all
+#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all
 #:project ../MyLibrary
 #:ref ../lib/lib.cs
 #:include ./**/*.cs
@@ -193,13 +193,14 @@ and any leading and trailing white space is not considered part of the name and 
 
 The remainder of a directive (after the kind) is split into whitespace-separated tokens.
 Whitespace inside a value is not allowed unless the value is enclosed in double quotes (`"`).
-The quotes are removed and the quoted text (which may contain whitespace) becomes part of the token,
-e.g., `#:property Description="Hello World"` sets the value to `Hello World`.
-Adjacent quoted and unquoted segments are concatenated (`a"b c"d` yields `ab cd`).
+A value is written either bare or wrapped entirely in double quotes; the quotes are removed and the
+quoted text (which may contain whitespace) becomes the value, e.g., `#:property Description="Hello World"`
+sets the value to `Hello World`. Quotes can only enclose a whole value, so `#:property A=B` and
+`#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
 It is an error if a quote is left unterminated.
 
 `#:package` and `#:project` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
-e.g., `#:package Microsoft.Extensions.Logging@9.0.0 ExcludeAssets=runtime PrivateAssets=all`.
+e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
 Each metadata name must be a valid XML element name; each metadata value can be quoted to contain whitespace.
 The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
 

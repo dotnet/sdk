@@ -322,10 +322,12 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     /// <summary>
     /// Splits <see cref="ParseContext.DirectiveText"/> into whitespace-separated tokens.
-    /// Double quotes (<c>"</c>) group text that can contain whitespace; the quotes themselves
-    /// are removed and adjacent quoted/unquoted segments are concatenated (e.g., <c>a"b c"d</c>
-    /// yields the single token <c>ab cd</c>).
-    /// Returns <see langword="null"/> and reports an error if a quote is left unterminated.
+    /// A value is written either bare or wrapped entirely in double quotes (<c>"</c>), which lets it
+    /// contain whitespace; the quotes themselves are removed. A quote may therefore open only at the
+    /// start of a token (e.g., <c>"a b"</c>) or immediately after a single <c>Name=</c> separator
+    /// (e.g., <c>A="b c"</c>), and it must close at the end of the token. So <c>A=B</c> and
+    /// <c>A="B"</c> are allowed, but <c>A=B"C"</c> and <c>A="B"C</c> are errors. Returns
+    /// <see langword="null"/> and reports an error if a quote is misplaced or left unterminated.
     /// </summary>
     private static ImmutableArray<string>? Tokenize(in ParseContext context)
     {
@@ -334,6 +336,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         var current = new StringBuilder();
         var tokenStarted = false;
         var inQuotes = false;
+        var quoteClosed = false;
+        var equalsCount = 0;
 
         for (var i = 0; i < text.Length; i++)
         {
@@ -341,7 +345,26 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (c == '"')
             {
-                inQuotes = !inQuotes;
+                if (inQuotes)
+                {
+                    // Closing quote: nothing more may follow it within this token.
+                    inQuotes = false;
+                    quoteClosed = true;
+                }
+                else
+                {
+                    // A quoted value must be the whole token or the value after a single 'Name=' separator.
+                    var atTokenStart = current.Length == 0;
+                    var afterNameSeparator = current.Length > 0 && current[current.Length - 1] == '=' && equalsCount == 1;
+                    if (quoteClosed || !(atTokenStart || afterNameSeparator))
+                    {
+                        context.ReportError(FileBasedProgramsResources.InvalidQuoteInDirective);
+                        return null;
+                    }
+
+                    inQuotes = true;
+                }
+
                 // A quote starts a token even if it is empty (e.g., '""' is an empty token).
                 tokenStarted = true;
                 continue;
@@ -354,9 +377,22 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                     tokens.Add(current.ToString());
                     current.Clear();
                     tokenStarted = false;
+                    quoteClosed = false;
+                    equalsCount = 0;
                 }
 
                 continue;
+            }
+
+            if (!inQuotes && quoteClosed)
+            {
+                context.ReportError(FileBasedProgramsResources.InvalidQuoteInDirective);
+                return null;
+            }
+
+            if (!inQuotes && c == '=')
+            {
+                equalsCount++;
             }
 
             current.Append(c);

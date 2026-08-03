@@ -2464,6 +2464,23 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow("#:property A=B\"C\"")]
+    [DataRow("#:property A=B\"C\"D")]
+    [DataRow("#:property A=\"B\"C")]
+    [DataRow("#:property A\"B\"=C")]
+    public void Directives_InvalidQuote(string directive)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: directive,
+            expectedErrors:
+            [
+                (1, FileBasedProgramsResources.InvalidQuoteInDirective),
+            ]);
+    }
+
+    [TestMethod]
     public void Directives_InvalidMetadataName()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
