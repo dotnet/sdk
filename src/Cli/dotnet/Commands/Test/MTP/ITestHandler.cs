@@ -7,5 +7,7 @@ internal interface ITestHandler
 {
     bool Initialize();
 
+    IEnumerable<string?> GetTestApplicationWorkingDirectories();
+
     int RunTestApplications(TestApplicationActionQueue actionQueue);
 }
