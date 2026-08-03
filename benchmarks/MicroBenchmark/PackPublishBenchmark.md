@@ -42,61 +42,42 @@ intermediate outputs.
 
 ## Reproduce the combined optimization measurement
 
-Both cells must contain #55499 so both emit the pre-submission metric. The combined A/B discussed
-in the linked work items uses:
+Both cells must contain #55499 so both emit the pre-submission metric:
 
-| Cell | Release-property discovery | Restore | NuGet Pack |
+| Cell | SDK branch | Release-property discovery | NuGet Pack |
 | --- | --- | --- | --- |
-| Before | Full evaluation with isolated contexts | Evaluation reuse disabled | Targets before NuGet/NuGet.Client#7603 |
-| After | Properties-only evaluation with a Shared context | MSBuild#14274 evaluation reuse enabled | Targets from NuGet/NuGet.Client#7603 |
+| Before | `dev/veronikao/pack-publish-benchmark-before` | Full evaluation with isolated contexts | Targets before NuGet/NuGet.Client#7603 |
+| After | `dev/veronikao/pack-publish-benchmark-after` | Properties-only evaluation with a Shared context | Targets from NuGet/NuGet.Client#7603 |
 
 This includes:
 
+- [dotnet/msbuild#14290](https://github.com/dotnet/msbuild/pull/14290)
 - [dotnet/sdk#55271](https://github.com/dotnet/sdk/pull/55271)
 - [dotnet/sdk#55426](https://github.com/dotnet/sdk/pull/55426)
-- [dotnet/msbuild#14274](https://github.com/dotnet/msbuild/pull/14274)
 - [NuGet/NuGet.Client#7603](https://github.com/NuGet/NuGet.Client/pull/7603)
 
-The most representative setup uses two immutable SDK directories. Build the Before SDK with only
-#55499 added to the baseline component versions. Build the After SDK with #55499 and all four
-optimizations. Overlay the corresponding MSBuild and NuGet outputs into each SDK directory before
-running the benchmark.
-
-A local experimental SDK may instead expose selectors for the same binaries. The measurement used
-these cell differences:
+Build each branch into a separate immutable SDK directory. NuGet#7603 changes only
+`NuGet.Build.Tasks.Pack.targets`, so select the baseline or modified targets with the cell's
+`packArguments`; no MSBuild overlay is part of this A/B.
 
 ```json
 {
   "before": {
-    "dotnetPath": "C:\\perf\\sdk-experiment\\dotnet.exe",
-    "environmentVariables": {
-      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_STAGE": "Full",
-      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_CONTEXT_POLICY": "Isolated",
-      "MSBUILD_ENABLE_REVERTED_RESTORE_REUSE": null
-    },
+    "dotnetPath": "C:\\perf\\sdk-before\\dotnet.exe",
     "packArguments": [
-      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\override.props",
+      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\before.override.props",
       "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack\\Pack.baseline.targets"
     ]
   },
   "after": {
-    "dotnetPath": "C:\\perf\\sdk-experiment\\dotnet.exe",
-    "environmentVariables": {
-      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_STAGE": "Properties",
-      "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_CONTEXT_POLICY": "Shared",
-      "MSBUILD_ENABLE_REVERTED_RESTORE_REUSE": "1"
-    },
+    "dotnetPath": "C:\\perf\\sdk-after\\dotnet.exe",
     "packArguments": [
-      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\override.props",
+      "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\after.override.props",
       "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack\\Pack.modified.targets"
     ]
   }
 }
 ```
-
-These selectors are experimental measurement aids, not product configuration. Do not add them to a
-shipping SDK solely for benchmarking; prefer separate immutable artifacts when reproducing results
-outside the original experiment.
 
 ## Configuration
 
