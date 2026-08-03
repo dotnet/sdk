@@ -60,10 +60,21 @@ The branches document the two SDK code states. For strict total wall-clock measu
 experimental SDK binary with local-only stage and context-policy selectors. Using the same binaries
 for both cells avoids unrelated binary and incremental-build differences.
 
+The reusable selector branch is:
+[`dev/veronikao/pack-publish-benchmark-selector`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-selector).
+
 Use separate OrchardCore worktrees for the two cells so they do not share `bin` or `obj`.
 NuGet#7603 changes only `NuGet.Build.Tasks.Pack.targets`: copy the baseline target from the measured
 SDK and apply NuGet#7603 to a copy of that same file. Do not substitute a complete target from an
 unrelated NuGet build because its task parameters may not match the SDK's Pack task assembly.
+
+Prepare the compatible baseline target, modified target, and override props with:
+
+```powershell
+.\benchmarks\MicroBenchmark\PrepareNuGetPackTargets.ps1 `
+  -DotNetRoot C:\perf\sdk-experiment `
+  -OutputDirectory C:\perf\nuget-pack
+```
 
 ```json
 {
