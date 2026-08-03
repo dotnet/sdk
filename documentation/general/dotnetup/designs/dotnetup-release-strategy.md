@@ -98,11 +98,13 @@ Takeaway: dotnetup's ideal is the *lighter half* of Aspire's model. i.e. Separat
 
 ## 4. Versions Policy
 
+The version intent in [dotnet/sdk#55390](https://github.com/dotnet/sdk/pull/55390) supersedes the earlier assumptions in this plan.
+
 | Channel  | Version shape | Meaning |
 |----------|---------------|---------|
-| daily    | `0.x.y`       | Moving, as-is, built from active development tip. No stability promise. |
-| preview  | `0.x.y`       | Blessed internal preview. The latest supported version. |
-| stable   | `1.0.0`       | Public, CDN-scaled release (future). |
+| daily    | CI-generated  | Moving, as-is build from the active development tip. Daily versions are not required to follow Semantic Versioning. |
+| preview  | `0.y.z-preview.N` | Public testing release created from a selected daily artifact set. Only the latest preview is maintained. |
+| stable   | `x.y.z`       | Public, CDN-scaled release. Only the latest stable version is maintained. |
 
 Explicit immutable version selectors remain downloadable for historical acquisition and rollback.
 These are real, working URLs today — verified `200` on 2026-06-11, e.g.:
@@ -124,27 +126,39 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
 
 ### Phase 1 — Blessed `preview` selector
 
-1. **Maintain one branch: `release/dnup`.**
+1. **Use `release/dnup` for ongoing development and a release branch named
+   `release/dnup/0.y.z-preview.N` for each preview release.**
 2. **Expose both `/daily/` and `/preview/` URLs.** Daily keeps tracking the moving tip; preview resolves to a 'blessed' build. (But still not 'blessed' to actually tell external customers to use in production.)
-3. **Change which `/daily/` build `/preview/` points at via an explicit process**
-   Implement a `release` pipeline that lets an operator select a set of dotnetup release artifacts from a prior daily pipeline run.
+3. **Create preview releases through an explicit process.**
+   Implement a preview release pipeline that lets an operator select a prior daily pipeline run and creates the release branch from the corresponding source commit.
 4. **The release pipeline:**
-  - Takes a previously produced daily build/artifact set and promotes it as-is. **No rebuild.**
-  - Does **not** inject version properties (`PreReleaseVersionLabel`, patch bump, etc.) at release time.
-  - Validates release preconditions before promotion:
-    - Selected artifact version is different from the version in the latest preview tag.
+  - Creates a new build using the selected daily artifact set as its input rather than treating the daily build itself as the preview build.
+  - Sets the release version properties, including `PreReleaseVersionLabel`, so the resulting version is `0.y.z-preview.N`.
+  - Uses trusted pipeline/workflow and script content from the corresponding
+    `release/dnup/0.y.z-preview.N` branch only (no PR ref checkout for executable content).
+  - Validates release preconditions before publishing:
+    - The preview version is different from the version in the latest preview tag.
     - Selected artifacts include matching checksum sidecars for all published installers.
-  - Executes using the trusted pipeline/workflow and script content from `release/dnup` only (no PR ref checkout for executable content).
-  - Creates/updates the preview tag on `release/dnup` that corresponds to the already-built artifact version.
-  - Repoints `/preview/` `aka.ms` links to that immutable version.
+  - Creates the preview tag on the release branch for the newly built preview version.
+  - Adds the preview build to the appropriate Arcade channel, publishing the newly versioned assets and setting the `/preview/` `aka.ms` links.
   - Creates the GitHub Release notes for that version.
 
-5. **Version bumping is decoupled from release promotion.**
-  - Version increments are prepared ahead of time via bot-created PRs on `release/dnup` which must be merged manually.
-  - Promotion only picks and blesses a prebuilt version; it does not author a new version.
+5. **Versioning is part of the preview release build.**
+  - The selected daily build remains unchanged and available from its immutable daily URL.
+  - The preview pipeline creates a distinct build and version by applying the release properties on the release branch.
+
+#### `aka.ms` update limitation
+
+Arcade does not currently provide a transactional operation to repoint an `aka.ms` link for a build that is already in a channel. Based on current operational knowledge, changing the target requires:
+
+1. Remove the build from the channel with `delete-build-from-channel`.
+2. Add the build back to the channel.
+
+Re-adding the build runs promotion again. Immutable assets that are identical are not updated, but the promotion repoints the `aka.ms` links. There is no atomic operation that updates all link targets as a transaction, so release and recovery procedures must not assume that the links switch together.
 
 **Recovery — if only a simple revert is needed:**
-1. Re-run the `release` pipeline against an existing tag and repoint the `/preview/` URL.
+1. Run the recovery path against the desired existing preview build: if it is already in the channel, remove it with `delete-build-from-channel`, then add it back so promotion repoints the `/preview/` URL.
+   This is not transactional; the operator must verify that the re-add and promotion complete successfully.
    Archival CI URLs exist per version and are confirmed live today, e.g.
    `https://ci.dot.net/public/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe` and its
    `.../public-checksums/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe.sha512` sidecar.
@@ -156,41 +170,13 @@ The dotnetup CI pipeline ([.vsts-dnup-ci.yml](../../../../.vsts-dnup-ci.yml)) tr
 
 **Recovery — fix needed (e.g. security patch on an old branch):**
 1. Check out the tagged commit.
-2. Create `release/dnup/<tag-version>/hotfix-x.y.z` off the tag.
+2. Create a new `release/dnup/0.y.z-preview.N` branch for the fixed preview version.
 3. Open an internal PR with the fix into that branch and get approval.
-4. Validate the fix through normal branch CI/PR checks, then run the release pipeline to repoint the selector.
+4. Validate the fix through normal branch CI/PR checks, then run the preview release pipeline to create and publish the new preview build.
 
 This phase allows a public preview. I view arcade rollout as valid around this time once we see stabilization of the public preview, but also potential arcade rollout with a fallback during `preview`.
 
 In this phase, before public preview we'd remove the fallback to the .NET Install Script, but keep the fallback on the `daily` dotnetup builds, and keep `release/dnup` using the `daily` dotnetup builds to build. (This prevents a broken `dotnetup` from preventing us from shipping a new `dotnetup`.)
-
-### Phase 1.1 — Concrete version-bump bot strategy (no new bot)
-
-Goal: always have a bot-created "next version bump" PR ready on `release/dnup`, and automatically create the next one when the previous bump PR merges.
-
-#### GitHub Actions PR loop (recommended)
-
-Use a repo workflow with `github-actions[bot]` as the actor (no new custom bot service):
-1. Trigger on merge of a PR labeled `dotnetup-version-bump` (or matching branch prefix).
-2. Run a small script that computes next preview version from the canonical version file and updates only those version fields.
-3. Open/update PR via standard PR action (single open PR invariant).
-4. Reapply label and assign owners.
-
-Guardrails:
-- If an open bump PR already exists, update it instead of creating a second one.
-- Require branch protection + required checks before merge.
-- Include idempotency checks so reruns do not create duplicate bumps.
-- Workflow execution must use the trusted workflow definition and scripts from `release/dnup` only. Do not execute workflow YAML, scripts, or other content from the PR branch/ref when performing bump automation, since PR-authored content could run malicious code.
-
-Why this is the best fit:
-- Directly models the required "always create next PR after merge" behavior.
-- No extra source channel, no synthetic dependency graph, no new bot host.
-- Uses existing GitHub native automation and can still coexist with Maestro for other flows.
-
-#### Proposed decision
-
-- Use **GitHub Actions** for the recurring version-bump PR loop.
-- Keep **Maestro/Darc** for build/channel/subscription flow where it already excels.
 
 ### Phase 2 — Stable on `builds.dotnet.microsoft.com` (tentative)
 
@@ -198,6 +184,8 @@ Migrate to `stable` versioning as well. Confirm whether it is actually feasible 
 
 Host a `stable` URL on `builds.dotnet.microsoft.com` by coordinating with the release team to use their promotion pipeline — we already push to `dotnetbuilds`, so this is a copy/promote from
 `dotnetbuilds` → `dotnetcli` plus storage write permissions granted by the release/dnceng team.
+
+The .NET Runtime servicing schedule informs the stable release cadence. A servicing release should be limited to updating the embedded runtime and any required security fixes.
 
 Similar release process, through coordination. Possibly automate `preview` releases at this point. Required to rollout to any azdo task.
 
