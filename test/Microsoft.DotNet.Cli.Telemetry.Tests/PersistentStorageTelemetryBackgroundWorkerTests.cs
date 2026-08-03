@@ -11,20 +11,32 @@ public class PersistentStorageTelemetryBackgroundWorkerTests
     public TestContext TestContext { get; set; }
 
     [TestMethod]
-    public void StartOnce_StartsOnlyOneDrain()
+    public async Task RequestDrain_StartsWorkerAndDrainsEachNotification()
     {
         int starts = 0;
+        var firstDrain = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondDrain = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var worker = new PersistentStorageTelemetryBackgroundWorker(_ =>
         {
-            Interlocked.Increment(ref starts);
-            return Task.CompletedTask;
+            if (Interlocked.Increment(ref starts) == 1)
+            {
+                firstDrain.SetResult();
+            }
+            else
+            {
+                secondDrain.SetResult();
+            }
+
+            return Task.FromResult(new TelemetryDrainResult(0, shouldBackOff: false, retryAfter: null));
         });
 
-        worker.StartOnce();
-        worker.StartOnce();
+        worker.RequestDrain();
+        await firstDrain.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        worker.RequestDrain();
+        await secondDrain.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         worker.Shutdown(1_000).Should().BeTrue();
-        starts.Should().Be(1);
+        starts.Should().Be(2);
     }
 
     [TestMethod]
@@ -37,12 +49,39 @@ public class PersistentStorageTelemetryBackgroundWorkerTests
             observedToken = cancellationToken;
             started.SetResult();
             await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return new TelemetryDrainResult(0, shouldBackOff: false, retryAfter: null);
         });
 
-        worker.StartOnce();
+        worker.RequestDrain();
         await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
 
         worker.Shutdown(1_000).Should().BeTrue();
         observedToken.IsCancellationRequested.Should().BeTrue();
+    }
+
+    [TestMethod]
+    public async Task RequestDrain_ContinuesUntilTheBacklogIsEmpty()
+    {
+        int passes = 0;
+        var drained = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var worker = new PersistentStorageTelemetryBackgroundWorker(_ =>
+        {
+            var pass = Interlocked.Increment(ref passes);
+            if (pass == 3)
+            {
+                drained.SetResult();
+            }
+
+            return Task.FromResult(new TelemetryDrainResult(
+                deletedBlobCount: pass < 3 ? 1 : 0,
+                shouldBackOff: false,
+                retryAfter: null));
+        });
+
+        worker.RequestDrain();
+        await drained.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+
+        worker.Shutdown(1_000).Should().BeTrue();
+        passes.Should().Be(3);
     }
 }

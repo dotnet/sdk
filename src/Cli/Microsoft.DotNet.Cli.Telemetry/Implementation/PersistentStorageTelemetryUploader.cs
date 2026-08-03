@@ -5,10 +5,10 @@ using System.Diagnostics;
 namespace Microsoft.DotNet.Cli.Telemetry.Implementation;
 
 /// <summary>
-/// Phase 2 of the persist-then-drain pipeline: an in-process background worker that leases
+/// Phase 2 of the persist-then-drain pipeline: an uploader that leases
 /// persisted telemetry blobs and POSTs them to Azure Monitor. Because a CLI process is
-/// short-lived it will usually exit before draining its <em>own</em> telemetry; that data is
-/// delivered by a subsequent CLI invocation (eventual consistency across invocations).
+/// short-lived it may exit before draining all of its own telemetry; remaining data is delivered
+/// by a later export or subsequent CLI invocation (eventual consistency across invocations).
 ///
 /// The drain is best-effort and must never affect the CLI: every failure is swallowed, the
 /// work runs on a background thread that is abandoned on process exit, and blobs that fail to

@@ -8,9 +8,12 @@ namespace Microsoft.DotNet.Cli.Telemetry.Implementation;
 
 internal sealed class PersistentStorageTelemetryBackgroundWorker
 {
-    private readonly Func<CancellationToken, Task> _drainAsync;
-    private int _started;
+    private readonly Func<CancellationToken, Task<TelemetryDrainResult>> _drainAsync;
+    private readonly SemaphoreSlim _drainSignal = new(0, 1);
+    private readonly object _sync = new();
     private CancellationTokenSource? _cancellation;
+    private int _drainRequested;
+    private bool _shutdown;
     private Task? _task;
 
     public PersistentStorageTelemetryBackgroundWorker(
@@ -22,33 +25,53 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
     {
     }
 
-    internal PersistentStorageTelemetryBackgroundWorker(Func<CancellationToken, Task> drainAsync)
+    internal PersistentStorageTelemetryBackgroundWorker(Func<CancellationToken, Task<TelemetryDrainResult>> drainAsync)
     {
         _drainAsync = drainAsync;
     }
 
-    public void StartOnce()
+    public void RequestDrain()
     {
-        if (Interlocked.Exchange(ref _started, 1) != 0)
+        lock (_sync)
         {
-            return;
-        }
+            if (_shutdown)
+            {
+                return;
+            }
 
-        _cancellation = new CancellationTokenSource();
-        _task = Task.Run(() => DrainAsync(_cancellation.Token));
+            if (_task is null)
+            {
+                _cancellation = new CancellationTokenSource();
+                _task = Task.Run(() => DrainAsync(_cancellation.Token));
+            }
+
+            if (Interlocked.Exchange(ref _drainRequested, 1) == 0)
+            {
+                _drainSignal.Release();
+            }
+        }
     }
 
     public bool Shutdown(int timeoutMilliseconds)
     {
-        _cancellation?.Cancel();
-        if (_task is null)
+        CancellationTokenSource? cancellation;
+        Task? task;
+        lock (_sync)
+        {
+            _shutdown = true;
+            cancellation = _cancellation;
+            task = _task;
+        }
+
+        cancellation?.Cancel();
+        if (task is null)
         {
             return true;
         }
 
         try
         {
-            return _task.Wait(timeoutMilliseconds);
+            return task.Wait(timeoutMilliseconds);
         }
         catch (AggregateException)
         {
@@ -58,20 +81,33 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
 
     private async Task DrainAsync(CancellationToken cancellationToken)
     {
-        try
+        while (true)
         {
-            await _drainAsync(cancellationToken).ConfigureAwait(false);
-        }
-        catch (OperationCanceledException)
-        {
-        }
-        catch (Exception e)
-        {
-            Debug.Fail(e.ToString());
+            try
+            {
+                await _drainSignal.WaitAsync(cancellationToken).ConfigureAwait(false);
+                Interlocked.Exchange(ref _drainRequested, 0);
+                TelemetryDrainResult result;
+                do
+                {
+                    result = await _drainAsync(cancellationToken).ConfigureAwait(false);
+                }
+                while (result.DeletedBlobCount > 0
+                    && !result.ShouldBackOff
+                    && !cancellationToken.IsCancellationRequested);
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                return;
+            }
+            catch (Exception e)
+            {
+                Debug.Fail(e.ToString());
+            }
         }
     }
 
-    private static Func<CancellationToken, Task> CreateDrainAsync(
+    private static Func<CancellationToken, Task<TelemetryDrainResult>> CreateDrainAsync(
         ITelemetryBlobStorage storage,
         Uri ingestionTrackUri,
         int leasePeriodMilliseconds,
