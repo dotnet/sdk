@@ -670,11 +670,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return true;
             }
 
+            // A call site without a minimum supported version for the platform cannot prove the branch unreachable,
+            // so 'SupportedFirst' being null must not exclude the platform.
             static bool IsPlatformExcludedByCallsite(
                 PlatformMethodValue value,
                 SmallDictionary<string, Versions>? callsiteAttributes)
                 => callsiteAttributes != null &&
                     callsiteAttributes.TryGetValue(value.PlatformName, out Versions? attributes) &&
+                    attributes.SupportedFirst != null &&
                     attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version);
 
             static bool IsPlatformSupportWasSuppresed(PlatformMethodValue parentValue, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> originalAttributes)
@@ -692,6 +695,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     originalVersion.SupportedFirst != null &&
                     callsiteAttributes != null &&
                     callsiteAttributes.TryGetValue(value.PlatformName, out Versions? callsiteVersion) &&
+                    callsiteVersion.SupportedFirst != null &&
                     callsiteVersion.SupportedFirst.IsGreaterThanOrEqualTo(originalVersion.SupportedFirst);
 
             static bool IsOnlySupportNeedsGuard(string platformName, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> csAttributes)

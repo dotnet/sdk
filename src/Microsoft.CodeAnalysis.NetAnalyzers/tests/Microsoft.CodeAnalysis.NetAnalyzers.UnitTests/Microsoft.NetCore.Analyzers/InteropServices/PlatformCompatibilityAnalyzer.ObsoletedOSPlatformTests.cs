@@ -84,6 +84,35 @@ partial class TestType
         }
 
         [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task NegatedCustomGuardNotSuppressedByUnsupportedOnlyCallsite()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+using Mock;
+
+partial class TestType
+{
+    [System.Runtime.Versioning.UnsupportedOSPlatform(""macos12.0"")]
+    void DoSomething()
+    {
+        if (!IsMacOS15)
+        {
+            Console.WriteLine({|CA1416:OldApi|});
+        }
+    }
+
+    [SupportedOSPlatform(""macos11.0"")]
+    public ulong? OldApi { get; private set; }
+
+    [SupportedOSPlatformGuard(""macos15.0"")]
+    internal static bool IsMacOS15 => true;
+}" + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
         public async Task NegatedCustomGuardsPartiallySuppressedByCallsite()
         {
             var source = @"
