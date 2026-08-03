@@ -335,6 +335,23 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     }
 
     [TestMethod]
+    public void RefWithMetadataRoundTrips()
+    {
+        // A #:ref directive with trailing metadata is parsed and preserved verbatim when other edits happen.
+        Verify(
+            """
+            #:ref lib.cs Aliases=lib Note="with spaces"
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #:package MyPackage@1.0.0
+            #:ref lib.cs Aliases=lib Note="with spaces"
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
     public void Group()
     {
         Verify(

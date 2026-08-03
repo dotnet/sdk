@@ -873,14 +873,31 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// </summary>
         public string? ResolvedPath { get; init; }
 
+        /// <summary>
+        /// Additional item metadata specified as trailing <c>Name=Value</c> pairs,
+        /// e.g. <c>#:ref ../lib/lib.cs Aliases=lib</c>.
+        /// </summary>
+        public ImmutableArray<(string Name, string Value)> Metadata { get; init; }
+
         public static new Ref? Parse(in ParseContext context)
         {
-            if (ParseSingleValue(context) is not { } value)
+            if (Tokenize(context) is not { } tokens)
             {
                 return null;
             }
 
-            return new Ref(context.Info, value);
+            if (tokens.Length == 0 || tokens[0].Length == 0)
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
+                return null;
+            }
+
+            if (ParseMetadata(context, tokens, start: 1) is not { } metadata)
+            {
+                return null;
+            }
+
+            return new Ref(context.Info, tokens[0]) { Metadata = metadata };
         }
 
         public enum NameKind
@@ -908,6 +925,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 OriginalName = OriginalName,
                 ExpandedName = kind == NameKind.Expanded ? name : ExpandedName,
                 ResolvedPath = kind == NameKind.Resolved ? name : ResolvedPath,
+                Metadata = Metadata,
             };
         }
 
@@ -932,7 +950,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return WithName(resolvedFilePath, NameKind.Resolved);
         }
 
-        public override string ToString() => $"#:ref {QuoteIfNeeded(Name)}";
+        public override string ToString()
+        {
+            var builder = new StringBuilder("#:ref ");
+            builder.Append(QuoteIfNeeded(Name));
+            AppendMetadata(builder, Metadata);
+            return builder.ToString();
+        }
     }
 
     public enum IncludeOrExcludeKind

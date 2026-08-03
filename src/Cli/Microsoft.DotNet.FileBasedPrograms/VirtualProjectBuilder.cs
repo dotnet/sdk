@@ -893,9 +893,8 @@ sealed class VirtualProjectBuilder
                 if (refDirective.ResolvedPath is not null)
                 {
                     var virtualProjectPath = GetVirtualProjectPath(refDirective.ResolvedPath);
-                    writer.WriteLine($"""
-                            <ProjectReference Include="{EscapeValue(virtualProjectPath)}" {FromRefDirectiveMetadataName}="{EscapeValue(refDirective.ResolvedPath)}" />
-                        """);
+                    var attributes = $"Include=\"{EscapeValue(virtualProjectPath)}\" {FromRefDirectiveMetadataName}=\"{EscapeValue(refDirective.ResolvedPath)}\"";
+                    WriteItem(writer, "ProjectReference", attributes, refDirective.Metadata);
                 }
 
                 processedDirectives++;

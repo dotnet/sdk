@@ -199,7 +199,7 @@ sets the value to `Hello World`. Quotes can only enclose a whole value, so `#:pr
 `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
 It is an error if a quote is left unterminated.
 
-`#:package` and `#:project` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
+`#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
 e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
 Each metadata name must be a valid XML element name; each metadata value can be quoted to contain whitespace.
 The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
@@ -233,6 +233,7 @@ The directives are processed as follows:
   A virtual project is created for the referenced file (e.g., `lib.cs` produces a virtual `lib.cs.csproj`),
   and a `<ProjectReference Include="lib.cs.csproj" />` is injected in an `<ItemGroup>`.
   It is an error if the name is empty or if the referenced file does not exist.
+  Any trailing `Name=Value` metadata is injected as child elements of the `<ProjectReference>`.
   Unlike `#:project`, `#:ref` points to a `.cs` file (not a `.csproj` file or directory).
 
   The referenced file is itself a file-based program with its own virtual project (defaulting to `OutputType=Exe`).

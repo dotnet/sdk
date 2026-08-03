@@ -344,6 +344,38 @@ public sealed class RunFileTests_Directives : RunFileTestBase
             .And.HaveStdOut("Hello, World!");
     }
 
+    /// <summary>
+    /// Trailing metadata on <c>#:ref</c> (including quoted values) is emitted as child elements on the
+    /// generated <c>&lt;ProjectReference&gt;</c> and accepted by MSBuild.
+    /// </summary>
+    [TestMethod]
+    public void RefDirective_Metadata()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        EnableRefDirective(testInstance);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
+            #:ref lib.cs Category=test Note="a b c"
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        new DotnetCommand(Log, "run", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+    }
+
     [TestMethod]
     public void RefDirective_Subdirectory()
     {

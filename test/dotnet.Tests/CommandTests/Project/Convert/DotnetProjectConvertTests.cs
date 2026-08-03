@@ -268,6 +268,53 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    public void RefDirective_Metadata_Convert()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), $"""
+            <Project>
+              <PropertyGroup>
+                <{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>true</{CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective}>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "lib.cs"), """
+            #:property OutputType=Library
+            namespace MyLib;
+            public static class Greeter
+            {
+                public static string Greet(string name) => $"Hello, {name}!";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "app.cs"), """
+            #!/usr/bin/env dotnet
+            #:ref lib.cs Category=test
+            Console.WriteLine(MyLib.Greeter.Greet("World"));
+            """);
+
+        var outputDirFullPath = Path.Join(testInstance.Path, "Project");
+        new DotnetCommand(Log, "project", "convert", "app.cs", "-o", outputDirFullPath)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // #:ref metadata should be carried over to the converted ProjectReference as a child element.
+        var appProject = File.ReadAllText(Path.Join(outputDirFullPath, "app", "app.csproj"));
+        appProject.Should().Contain($"""Include="..{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}lib.csproj""");
+        appProject.Should().Contain("<Category>test</Category>");
+
+        // The converted project should build and produce the same output.
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(Path.Join(outputDirFullPath, "app"))
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("Hello, World!");
+    }
+
+    [TestMethod]
     public void RefDirective_Transitive_Convert()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

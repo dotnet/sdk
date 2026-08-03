@@ -134,6 +134,8 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.EnsureResolvedPath(Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ExpandedName.get -> string?
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.ExpandedName.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.Metadata.get -> System.Collections.Immutable.ImmutableArray<(string! Name, string! Value)>
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.Metadata.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind.Expanded = 1 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind.Final = 3 -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.NameKind
