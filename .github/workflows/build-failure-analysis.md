@@ -139,6 +139,7 @@ steps:
       path: /tmp/binlogs
 
   - name: Export agent context
+    shell: bash
     env:
       GH_AW_BINLOG_FOUND_VALUE: ${{ needs.fetch-binlog.outputs.binlog-found }}
       GH_AW_PR_NUMBER_VALUE: ${{ needs.fetch-binlog.outputs.pr-number }}

@@ -44,7 +44,12 @@ permissions:
   copilot-requests: write
 
 concurrency:
-  group: build-failure-analysis-${{ github.event.issue.number || github.event.pull_request.number || fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number || github.run_id }}
+  # Distinct from the automatic workflow's group (`build-failure-analysis-<pr>`).
+  # Concurrency groups are repository-global, so sharing the name made the two
+  # workflows cancel each other for the same PR: a newly failing build would
+  # kill an on-demand analysis a maintainer had just asked for. Each still
+  # collapses its own repeat invocations for a PR.
+  group: build-failure-analysis-cmd-${{ github.event.issue.number || github.event.pull_request.number || fromJSON(github.event.inputs.aw_context || github.event.client_payload.aw_context || '{}').item_number || github.run_id }}
   cancel-in-progress: true
 
 timeout-minutes: 30
@@ -94,6 +99,7 @@ steps:
       path: /tmp/binlogs
 
   - name: Export agent context
+    shell: bash
     env:
       GH_AW_BINLOG_FOUND_VALUE: ${{ needs.fetch-binlog.outputs.binlog-found }}
       GH_AW_PR_NUMBER_VALUE: ${{ needs.fetch-binlog.outputs.pr-number }}
