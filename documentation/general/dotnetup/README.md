@@ -147,7 +147,7 @@ $ dotnetup list
 
 Installations (managed by dotnetup):
 
-  C:\Users\you\.dotnet
+  C:\Users\you\AppData\Local\dotnetup\dotnet
 
     Tracked channels:
       SDK latest                          (source: explicit)

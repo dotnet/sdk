@@ -25,7 +25,7 @@ When you install a channel like `10.0` or `latest`, dotnetup records that channe
 ```
 $ dotnetup update
 Downloading .NET SDK 10.0.103...  ████████████████████████ 100%
-Installed .NET SDK 10.0.103 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.103 to C:\Users\you\AppData\Local\dotnetup\dotnet
 Runtime 9.0.5 is already up to date.
 ASP.NET Core 9.0.5 is already up to date.
 ```
@@ -57,7 +57,7 @@ Pinned versions (fully-specified like `10.0.100`) are point-in-time snapshots. T
 ```
 $ dotnetup sdk update
 Downloading .NET SDK 10.0.103...  ████████████████████████ 100%
-Installed .NET SDK 10.0.103 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.103 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 ### Update SDKs and global.json
@@ -67,7 +67,7 @@ If your SDK was installed from a `global.json` file, you can update both the SDK
 ```
 $ dotnetup sdk update --update-global-json
 Downloading .NET SDK 10.0.103...  ████████████████████████ 100%
-Installed .NET SDK 10.0.103 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.103 to C:\Users\you\AppData\Local\dotnetup\dotnet
 Updated C:\src\myproject\global.json: 10.0.100 → 10.0.103
 ```
 
@@ -134,7 +134,7 @@ $ dotnetup list
 
 Installations (managed by dotnetup):
 
-  C:\Users\you\.dotnet
+  C:\Users\you\AppData\Local\dotnetup\dotnet
     Tracked channels:
       SDK latest                          (source: explicit)
 
@@ -146,7 +146,7 @@ Total: 2
 
 $ dotnetup update
 Downloading .NET SDK 10.0.103...  ████████████████████████ 100%
-Installed .NET SDK 10.0.103 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.103 to C:\Users\you\AppData\Local\dotnetup\dotnet
 SDK 10.0.102 in D:\projects\.dotnet is already up to date.
 ```
 
