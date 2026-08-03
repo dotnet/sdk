@@ -134,7 +134,85 @@ Today only **TRX** consolidates: the only shipping post-processor is the one in 
 `Microsoft.Testing.Extensions.TrxReport` package. Code coverage and other formats will only be
 merged once a post-processor ships in the extension that produces them; until then those
 artifacts are listed individually, exactly as before. This is a capability question, not a
-configuration one — the SDK merges whatever the installed extensions advertise.
+configuration one — the SDK merges whatever the installed extensions advertise. The contract for
+adding a format is public; see [Extending it to another artifact format](#extending-it-to-another-artifact-format).
+
+## Extending it to another artifact format
+
+The post-processing contract is **public API on `Microsoft.Testing.Platform`**, so a third-party
+extension can consolidate its own format without any change to the SDK. It is gated behind the
+`TPEXP` experimental diagnostic, so it can still change; suppressing that diagnostic is how you
+opt in.
+
+The relevant public types live in `Microsoft.Testing.Platform.Extensions.ArtifactPostProcessing`:
+
+| Type | Role |
+|---|---|
+| `IArtifactPostProcessor` | The contract: `SupportedKinds`, `SupportedFileExtensionsFallback`, and `ProcessAsync(inputs, outputDirectory, cancellationToken)`. |
+| `IArtifactPostProcessingManager` | Registration, via `AddArtifactPostProcessor(Func<IServiceProvider, IArtifactPostProcessor>)`. |
+| `InputArtifact` | One input: path, kind, producing test module, target framework, architecture, execution id. |
+| `ProcessedArtifact` | The merged result: path, kind, display name, description. |
+
+The dispatcher that runs post-processors, the manifest, and the handshake plumbing are all
+internal — an extension never interacts with them.
+
+A minimal processor:
+
+```csharp
+#pragma warning disable TPEXP // Artifact post-processing is experimental.
+internal sealed class MyArtifactPostProcessor : IArtifactPostProcessor
+{
+    public string Uid => "Contoso.MyReport.PostProcessor";
+    public string Version => "1.0.0";
+    public string DisplayName => "Contoso report merger";
+    public string Description => "Merges Contoso reports.";
+
+    public IReadOnlyList<string> SupportedKinds { get; } = ["contoso.myreport"];
+    public IReadOnlyList<string> SupportedFileExtensionsFallback { get; } = [".myreport"];
+
+    public Task<bool> IsEnabledAsync() => Task.FromResult(true);
+
+    public async Task<ProcessedArtifact?> ProcessAsync(
+        IReadOnlyList<InputArtifact> inputs, string outputDirectory, CancellationToken cancellationToken)
+    {
+        if (inputs.Count < 2)
+        {
+            return null; // Nothing worth merging; the originals stay listed.
+        }
+
+        string output = Path.Combine(outputDirectory, "merged.myreport");
+        await MergeAsync(inputs.Select(i => i.Path), output, cancellationToken);
+        return new ProcessedArtifact(output, "contoso.myreport", "Contoso report (merged)", null);
+    }
+}
+#pragma warning restore TPEXP
+```
+
+What `dotnet test` expects of a processor:
+
+- **Tag the artifacts you produce with the same `Kind` you advertise.** Grouping is by kind first;
+  the file-extension list is only a fallback for producers that have not adopted kinds.
+- **Do not claim an overly generic fallback extension.** Claiming something like `.xml`, which
+  several unrelated formats use, opts your extension into groups of artifacts that are not yours.
+  Prefer kind-only routing for formats whose file extension is not distinctive.
+- **Return `null` rather than throwing** when there is nothing to do. The SDK only ever asks you to
+  merge a group of two or more inputs, but your own policy may still decline (for example, inputs
+  a binary format cannot safely combine).
+- **Treat inputs as read-only** and write under the supplied `outputDirectory`. Never return one of
+  the inputs as your output, and never delete a source file.
+- **Set `Kind` on the artifact you return.** That is what the SDK uses to decide which originals the
+  merged artifact replaced in the run summary.
+- **Be deterministic**: the same set of inputs should produce the same output path.
+
+Two SDK behaviors are worth knowing about. The SDK relaunches the *fewest* test applications that
+cover all mergeable groups, so a processor may be asked to merge artifacts produced by a different
+test application than the one hosting it. And architecture compatibility is enforced only for code
+coverage (kind `microsoft.codecoverage` / extension `.coverage`), because that format is a binary
+blob; every other kind may be elected regardless of architecture.
+
+The design behind all of this, including the election algorithm and the reasoning for kinds over
+file extensions, is
+[microsoft/testfx RFC 018](https://github.com/microsoft/testfx/blob/main/docs/RFCs/018-Artifact-Post-Processing.md).
 
 ## Failure behavior
 
