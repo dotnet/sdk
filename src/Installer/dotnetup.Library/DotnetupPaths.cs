@@ -153,7 +153,8 @@ internal static class DotnetupPaths
 
     /// <summary>
     /// Gets the default dotnet install path managed by dotnetup.
-    /// This is the user-local dotnet root (e.g. %LOCALAPPDATA%\dotnet on Windows).
+    /// This is the dotnet child of the dotnetup data directory
+    /// (e.g. %LOCALAPPDATA%\dotnetup\dotnet on Windows).
     /// </summary>
     /// <remarks>
     /// Can be overridden via DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH environment variable.
@@ -168,13 +169,7 @@ internal static class DotnetupPaths
                 return overridePath;
             }
 
-            var baseDir = GetBaseDirectory();
-            if (string.IsNullOrEmpty(baseDir))
-            {
-                throw new InvalidOperationException("Could not determine the local application data directory.");
-            }
-
-            return Path.Combine(baseDir, "dotnet");
+            return Path.Combine(DataDirectory, "dotnet");
         }
     }
 
