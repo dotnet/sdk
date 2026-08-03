@@ -5,11 +5,9 @@ using FluentAssertions;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Tasks.ConflictResolution;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests;
-
-[Collection(nameof(CwdSensitiveCollection))]
+[TestClass]
 public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
 {
     private readonly string _originalCwd = Directory.GetCurrentDirectory();
@@ -27,7 +25,7 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     /// pointing at a manifest that exists relative to the project directory but not the
     /// CWD: if path resolution were CWD-based, the task would log CouldNotLoadPlatformManifest.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void PlatformManifest_ResolvesRelativePathAgainstProjectDir()
     {
         var projectDir = CreateTempDir();
@@ -66,7 +64,7 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
         conflict.GetMetadata(nameof(ConflictItemType)).Should().Be(ConflictItemType.CopyLocal.ToString());
     }
 
-    [Fact]
+    [TestMethod]
     public void PlatformManifest_EmptyPathLogsAndSkips()
     {
         var projectDir = CreateTempDir();
@@ -85,7 +83,7 @@ public class GivenAResolvePackageFileConflictsMultiThreading : IDisposable
     /// TargetFrameworkDirectories with a relative ItemSpec must preserve the pre-migration
     /// behavior: the derived FrameworkList.xml path is invalid because it is not rooted.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void TargetFrameworkDirectories_RelativePathLogsNotRootedOriginalPath()
     {
         var projectDir = CreateTempDir();

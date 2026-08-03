@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             test.ExpectedDiagnostics.AddRange(expected);
 
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            return test.RunAsync(CancellationToken.None);
         }
 
         // Verifies that the analyzer generates the specified VB diagnostic results, if any, for the specified originalSource.
@@ -78,7 +78,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             test.ExpectedDiagnostics.AddRange(expected);
 
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            return test.RunAsync(CancellationToken.None);
         }
 
         // Retrieves the C# diagnostic for the specified rule, lines, columns, method and preferred method.

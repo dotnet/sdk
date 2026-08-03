@@ -1,29 +1,32 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Nodes;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
-public class TelemetryClientTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class TelemetryClientTests : SdkTest
 {
-    public static TheoryData<string[], string> CommandsWithExitCode => new()
-    {
-        { new[] { "--help" }, "0" },
-        { new[] { "--info" }, "0" },
-        { new[] { "workload", "list" }, "0" },
-        { new[] { "sdk", "check" }, "0" },
-        { new[] { "build-server", "shutdown" }, "0" },
-        { new[] { "solution", "list" }, "1" },
-        { new[] { "clean" }, "1" },
-        { new[] { "run" }, "1" },
-        { new[] { "new", "details" }, "127" }
-    };
+    public static IEnumerable<object[]> CommandsWithExitCode =>
+    [
+        [new[] { "--help" }, "0"],
+        [new[] { "--info" }, "0"],
+        [new[] { "workload", "list" }, "0"],
+        [new[] { "sdk", "check" }, "0"],
+        [new[] { "build-server", "shutdown" }, "0"],
+        [new[] { "solution", "list" }, "1"],
+        [new[] { "clean" }, "1"],
+        [new[] { "run" }, "1"],
+        [new[] { "new", "details" }, "127"]
+    ];
 
     // Only runs on Windows because OTel libraries are only referenced on Windows builds.
     // Thus, this test that writes telemetry logs will not work on other platforms.
-    [PlatformSpecificTheory(TestPlatforms.Windows)]
-    [MemberData(nameof(CommandsWithExitCode))]
+    [TestMethod]
+
+        [OSCondition(OperatingSystems.Windows)]
+    [DynamicData(nameof(CommandsWithExitCode))]
     public void ItProcessesTelemetryData(string[] commandArgs, string exitCodeExpected)
     {
         var testDir = TestAssetsManager.CreateTestDirectory().Path;

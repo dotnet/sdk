@@ -94,7 +94,9 @@ internal sealed class ImageBuilder
             Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
             ManifestDigest = newManifest.GetDigest(),
             ManifestMediaType = ManifestMediaType,
-            Layers = _manifest.Layers
+            Layers = _manifest.Layers,
+            Architecture = BaseImageConfig.Architecture,
+            OS = BaseImageConfig.OS
         };
     }
 

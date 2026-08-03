@@ -5,32 +5,32 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using Microsoft.DotNet.Tools.Bootstrapper;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class DotnetupUILanguageTests
 {
-    [Theory]
-    [InlineData("fr_FR.UTF-8", "fr-FR")]
-    [InlineData("fr_FR.UTF-8@euro", "fr-FR")]
-    [InlineData("de_DE@euro", "de-DE")]
-    [InlineData("pt_BR.UTF-8", "pt-BR")]
-    [InlineData("ja_JP.eucJP", "ja-JP")]
-    [InlineData("en_US", "en-US")]
-    [InlineData("zh_CN", "zh-CN")]
+    [TestMethod]
+    [DataRow("fr_FR.UTF-8", "fr-FR")]
+    [DataRow("fr_FR.UTF-8@euro", "fr-FR")]
+    [DataRow("de_DE@euro", "de-DE")]
+    [DataRow("pt_BR.UTF-8", "pt-BR")]
+    [DataRow("ja_JP.eucJP", "ja-JP")]
+    [DataRow("en_US", "en-US")]
+    [DataRow("zh_CN", "zh-CN")]
     public void NormalizePosixLocale_StripsEncodingAndModifier(string posix, string expected)
     {
         DotnetupUILanguage.NormalizePosixLocale(posix).Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("C")]
-    [InlineData("c")]
-    [InlineData("POSIX")]
-    [InlineData("posix")]
-    [InlineData("")]
-    [InlineData(".UTF-8")]
+    [TestMethod]
+    [DataRow("C")]
+    [DataRow("c")]
+    [DataRow("POSIX")]
+    [DataRow("posix")]
+    [DataRow("")]
+    [DataRow(".UTF-8")]
     public void NormalizePosixLocale_ReturnsNullForInvariantLocales(string posix)
     {
         DotnetupUILanguage.NormalizePosixLocale(posix).Should().BeNull();
@@ -62,27 +62,27 @@ public class DotnetupUILanguageTests
         ["zh-Hant", "zh-Hant"],
     ];
 
-    [Theory]
-    [MemberData(nameof(SupportedLanguageCases))]
+    [TestMethod]
+    [DynamicData(nameof(SupportedLanguageCases))]
     public void MatchSupportedLanguage_MapsToShippedSatellite(string input, string expected)
     {
         DotnetupUILanguage.MatchSupportedLanguage(input).Should().Be(expected);
     }
 
-    [Theory]
-    [InlineData("en-US")]
-    [InlineData("en")]
-    [InlineData("nl-NL")]
-    [InlineData("pt-PT")]
-    [InlineData("pt")]
-    [InlineData("")]
-    [InlineData(null)]
+    [TestMethod]
+    [DataRow("en-US")]
+    [DataRow("en")]
+    [DataRow("nl-NL")]
+    [DataRow("pt-PT")]
+    [DataRow("pt")]
+    [DataRow("")]
+    [DataRow(null)]
     public void MatchSupportedLanguage_ReturnsNullForUnsupported(string? input)
     {
         DotnetupUILanguage.MatchSupportedLanguage(input).Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void SupportedLanguageCases_CoverEverySupportedLanguage()
     {
         IEnumerable<string> covered = SupportedLanguageCases().Select(c => (string)c[1]).Distinct();
@@ -92,7 +92,7 @@ public class DotnetupUILanguageTests
             "every shipped UI language needs a representative MatchSupportedLanguage test case");
     }
 
-    [Fact]
+    [TestMethod]
     public void SupportedUILanguages_MatchesShippedSatelliteResources()
     {
         // Discover the satellite resource cultures actually emitted next to the test, so adding or
@@ -108,7 +108,7 @@ public class DotnetupUILanguageTests
     }
 }
 
-[Collection("DotnetupEnvironmentMutationTests")]
+[TestClass]
 public class DotnetupUILanguageOverrideTests : IDisposable
 {
     private const string DotnetCliUiLanguage = "DOTNET_CLI_UI_LANGUAGE";
@@ -132,7 +132,7 @@ public class DotnetupUILanguageOverrideTests : IDisposable
         Environment.SetEnvironmentVariable(VsLang, _originalVsLang);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveUICulture_AppliesOverrideAsIsOnNonInvariantPlatforms()
     {
         // On Windows/macOS dotnetup runs non-invariant and the override is applied as-is (the
@@ -148,7 +148,7 @@ public class DotnetupUILanguageOverrideTests : IDisposable
         DotnetupUILanguage.ResolveUICulture()!.Name.Should().Be("fr-FR");
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveUICulture_MapsOverrideToSatelliteOnInvariantPlatforms()
     {
         // On invariant platforms (Linux, etc.) the override is resolved with the same code as the
@@ -163,7 +163,7 @@ public class DotnetupUILanguageOverrideTests : IDisposable
         DotnetupUILanguage.ResolveUICulture()!.Name.Should().Be("fr");
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolveUICulture_WithoutOverride_DefersToRuntimeOnNonInvariantPlatforms()
     {
         // On Windows and macOS the runtime already initialized CurrentUICulture from the OS, so

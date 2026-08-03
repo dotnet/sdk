@@ -10,15 +10,13 @@ using static Microsoft.NET.Publish.Tests.ILLinkTestUtils;
 namespace Microsoft.NET.Publish.Tests
 {
     // this test class is split up arbitrarily so Helix can run tests in multiple workitems
+    [TestClass]
     public class GivenThatWeWantToRunILLink3b : SdkTest
     {
-        public GivenThatWeWantToRunILLink3b(ITestOutputHelper log) : base(log)
-        {
-        }
-
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(Net5Plus), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DynamicData(nameof(Net5Plus), typeof(PublishTestUtils))]
         public void ILLink_can_treat_warnings_as_errors_independently(string targetFramework)
         {
             var projectName = "AnalysisWarnings";
@@ -40,9 +38,10 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("net5.0")]
-        [InlineData("netcoreapp3.1")]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow("net5.0")]
+        [DataRow("netcoreapp3.1")]
         public void ILLink_displays_informational_warning_up_to_net5_by_default(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -59,8 +58,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DynamicData(nameof(Net6Plus), typeof(PublishTestUtils))]
         public void ILLink_displays_informational_warning_when_trim_analysis_warnings_are_suppressed_on_net6plus(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -78,8 +78,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(Net6Plus), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DynamicData(nameof(Net6Plus), typeof(PublishTestUtils))]
         public void ILLink_dont_display_informational_warning_by_default_on_net6plus(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -97,8 +98,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [MemberData(nameof(SupportedTfms), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DynamicData(nameof(SupportedTfms), typeof(PublishTestUtils))]
         public void ILLink_dont_display_time_awareness_message_on_incremental_build(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -117,9 +119,10 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().Pass().And.NotHaveStdErrContaining("This process might take a while");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, false)]
         public void Build_respects_IsTrimmable_property(string targetFramework, bool isExe)
         {
             var projectName = "AnalysisWarnings";
@@ -154,8 +157,9 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void Build_respects_PublishTrimmed_property(string targetFramework)
         {
             var projectName = "AnalysisWarnings";

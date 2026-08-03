@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableCertificateValidation,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotDisableCertificateValidationTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -31,7 +31,7 @@ class TestClass
             GetCSharpResultAt(8, 68));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaWithLiteralValueDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -47,7 +47,7 @@ class TestClass
             GetCSharpResultAt(8, 68));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAnonymousMethodDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -63,7 +63,7 @@ class TestClass
             GetCSharpResultAt(8, 68));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationLocalFunctionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -90,7 +90,7 @@ class TestClass
             GetCSharpResultAt(10, 67));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -135,7 +135,7 @@ End Namespace",
             GetBasicResultAt(9, 82));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -159,7 +159,7 @@ class TestClass
             GetCSharpResultAt(16, 67));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegatedMethodFromDifferentAssemblyNoDiagnosticAsync()
         {
             string source1 = @"
@@ -209,10 +209,10 @@ class TestClass
                     },
                     AdditionalProjectReferences = { "DependencyProject" },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegatedMethodFromLocalFromDifferentAssemblyNoDiagnosticAsync()
         {
             string source1 = @"
@@ -273,10 +273,10 @@ class TestClass
                     },
                     AdditionalProjectReferences = { "DependencyProject" },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -291,7 +291,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaWithLiteralValueNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -306,7 +306,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAnonymousMethodNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -321,7 +321,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationLocalFunctionNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -352,7 +352,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -401,7 +401,7 @@ Public Module TestModule
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNoDiagnostic2Async()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -426,7 +426,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -449,7 +449,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationFromLocalFromLocalNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -507,7 +507,7 @@ Public Module TestModule
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationFromLocalFromLocal2NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -132,8 +132,8 @@ again, you can opt out via `#:property PackAsTool=false`.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
-Commands `dotnet package add PackageName --file app.cs` and `dotnet package remove PackageName --file app.cs`
-can be used to manipulate `#:package` directives in the C# files, similarly to what the commands do for project-based apps.
+Sub-commands of `dotnet package add` and `dotnet reference` can be used to manipulate `#:package`/`#:project`/`#:ref` directives in the C# files,
+similarly to what the commands do for project-based apps. For example, `dotnet package add PackageName --file app.cs`.
 
 ## Multiple files
 
@@ -287,7 +287,7 @@ For project-based programs, `#:` directives are an error (reported by Roslyn whe
 Along with `#:`, the language also ignores `#!` which could be then used for [shebang][shebang] support.
 
 ```cs
-#!/usr/bin/dotnet run
+#!/usr/bin/env dotnet
 Console.WriteLine("Hello");
 ```
 
@@ -359,13 +359,15 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
-#!/usr/bin/env dotnet run
-// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
-```
-```cs
 #!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
+
+```cs
+#!/usr/bin/env dotnet run
+// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
+```
+
 ```cs
 #!/usr/bin/env -S dotnet run
 // ^ Works in some shells.
@@ -385,8 +387,6 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 
 `dotnet clean` could be extended to support cleaning all file-based app outputs,
 e.g., `dotnet clean --all-file-based-apps`.
-
-More NuGet commands (like `dotnet nuget why` or `dotnet package list`) could be supported for file-based programs as well.
 
 ### Explicit importing
 

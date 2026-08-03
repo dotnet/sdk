@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -15,12 +16,15 @@ internal sealed class TestModulesFilterHandler : ITestHandler
     private readonly string _testModules;
     private readonly string? _testModulesRoot;
     private readonly List<string> _testModulePaths;
+    private readonly IReadOnlyDictionary<string, string> _environmentVariables;
 
     public TestModulesFilterHandler(string testModules, ParseResult parseResult)
     {
         _testModules = testModules;
 
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+        _environmentVariables = parseResult.GetValue(definition.EnvOption)
+            ?? ImmutableDictionary<string, string>.Empty;
 
         // If the module path pattern(s) was provided, we will use that to filter the test modules
         // If the root directory was provided, we will use that to search for the test modules
@@ -66,7 +70,15 @@ internal sealed class TestModulesFilterHandler : ITestHandler
                 ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null));
+            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(
+                runProperties,
+                null,
+                null,
+                true,
+                null,
+                testModule,
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: _environmentVariables));
             // Write the test application to the channel
             actionQueue.Enqueue(testApp);
         }

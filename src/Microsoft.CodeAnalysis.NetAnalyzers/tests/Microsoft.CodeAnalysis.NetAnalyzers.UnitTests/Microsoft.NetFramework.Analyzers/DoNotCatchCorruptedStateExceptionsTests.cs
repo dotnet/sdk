@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotCatchCorruptedStateExceptionsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
+    [TestClass]
     public class DoNotCatchCorruptedStateExceptionsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithSecurityCriticalAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -77,7 +77,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithHpcseAttributeAsync()
         {
             // Note this is a change from FxCop's previous behavior since we no longer consider SystemCritical.
@@ -147,7 +147,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
            );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchRethrowExceptionInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -218,7 +218,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -315,7 +315,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -389,7 +389,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchsystemExceptionInMethodWithHpcseAndSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -463,7 +463,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchWithFilterInMethodWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -509,7 +509,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             GetCA2153BasicResultAt(11, 25, "Public Shared Sub TestMethod()", "System.SystemException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchVariableWithFilterInMethodWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -553,7 +553,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassScopeEverythingAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -605,7 +605,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -636,7 +636,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalClassScopeExcplicitAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -667,7 +667,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalL1AttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -699,7 +699,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInMethodWithHpcseAndSecurityCriticalL2AttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -731,7 +731,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInNestedClassMethodWithOuterHpcseAndSecurityCriticalScopeEverythingAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -765,7 +765,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInNestedClassMethodWithInnerHpcseAndSecurityCriticalScopeEverythingAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -799,7 +799,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInNestedClassMethodwithInnerHpcseAndOuterSecurityCriticalAttributesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -833,7 +833,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInGetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -897,7 +897,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchInGetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -936,7 +936,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchSystemExceptionInGetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -975,7 +975,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchInSetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1013,7 +1013,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInSetAccessorWithHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1078,7 +1078,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
            );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchIOExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1115,7 +1115,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchIOExceptionSwallowOtherExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1152,7 +1152,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestSwallowAccessViolationExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1187,7 +1187,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestSwallowAccessViolationExceptionThenSwallowOtherExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1227,7 +1227,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionThrowNotImplementedExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1300,7 +1300,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchExceptionInnerCatchThrowIOExceptionInMethodHpcseAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1395,7 +1395,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchGeneralExceptionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1463,7 +1463,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2153TestCatchInsideLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

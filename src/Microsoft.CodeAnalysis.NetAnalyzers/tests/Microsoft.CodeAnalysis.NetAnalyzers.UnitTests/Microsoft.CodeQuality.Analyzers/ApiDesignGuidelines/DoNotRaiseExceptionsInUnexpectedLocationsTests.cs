@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotRaiseExceptionsInUnexpectedLocationsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,11 +14,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotRaiseExceptionsInUnexpectedLocationsTests
     {
         #region Property and Event Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpPropertyNoDiagnosticsAsync()
         {
             var code = @"
@@ -41,7 +41,7 @@ class NonPublic
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpPropertyWithDerivedExceptionNoDiagnosticsAsync()
         {
             var code = @"
@@ -55,7 +55,7 @@ public class C
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicPropertyNoDiagnosticsAsync()
         {
             var code = @"
@@ -108,7 +108,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicPropertyWithDerivedExceptionNoDiagnosticsAsync()
         {
             var code = @"
@@ -128,7 +128,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpPropertyWithInvalidExceptionsAsync()
         {
             var code = @"
@@ -148,7 +148,7 @@ public class C
                          GetCSharpAllowedExceptionsResultAt(8, 80, "remove_Event1", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicPropertyWithInvalidExceptionsAsync()
         {
             var code = @"
@@ -195,7 +195,7 @@ End Class
                         GetBasicAllowedExceptionsResultAt(28, 13, "remove_Event1", "Exception"));
         }
 
-        [Fact, WorkItem(1842, "https://github.com/dotnet/roslyn-analyzers/issues/1842")]
+        [TestMethod, WorkItem(1842, "https://github.com/dotnet/roslyn-analyzers/issues/1842")]
         public async Task CSharpIndexer_KeyNotFoundException_NoDiagnosticsAsync()
         {
             var code = @"
@@ -212,7 +212,7 @@ public class C
 
         #region Equals, GetHashCode, Dispose and ToString Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpEqualsAndGetHashCodeWithExceptionsAsync()
         {
             var code = @"
@@ -236,7 +236,7 @@ public class C
                          GetCSharpNoExceptionsResultAt(12, 9, "GetHashCode", "ArgumentException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicEqualsAndGetHashCodeWithExceptionsAsync()
         {
             var code = @"
@@ -257,7 +257,7 @@ End Class
                         GetBasicNoExceptionsResultAt(9, 9, "GetHashCode", "ArgumentException"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpEqualsAndGetHashCodeNoDiagnosticsAsync()
         {
             var code = @"
@@ -279,7 +279,7 @@ public class C
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicEqualsAndGetHashCodeNoDiagnosticsAsync()
         {
             var code = @"
@@ -298,7 +298,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIEquatableEqualsWithExceptionsAsync()
         {
             var code = @"
@@ -316,7 +316,7 @@ public class C : IEquatable<C>
                          GetCSharpNoExceptionsResultAt(8, 9, "Equals", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIEquatableEqualsAsExplicitInterfaceImplementationWithExceptionsAsync()
         {
             var code = @"
@@ -334,7 +334,7 @@ public class C : IEquatable<C>
                 GetCSharpNoExceptionsResultAt(8, 9, "System.IEquatable<C>.Equals", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicIEquatableEqualsExceptionsAsync()
         {
             var code = @"
@@ -352,7 +352,7 @@ End Class
                         GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicIEquatableEqualsAsExplicitInterfaceImplementationExceptionsAsync()
         {
             var code = @"
@@ -370,7 +370,7 @@ End Class
                 GetBasicNoExceptionsResultAt(7, 9, "Equals", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIHashCodeProviderGetHashCodeAsync()
         {
             var code = @"
@@ -396,7 +396,7 @@ public class D : IHashCodeProvider
                          GetCSharpAllowedExceptionsResultAt(8, 9, "GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIHashCodeProviderGetHashCodeAsExplicitInterfaceImplementationAsync()
         {
             var code = @"
@@ -422,7 +422,7 @@ public class D : IHashCodeProvider
                 GetCSharpAllowedExceptionsResultAt(8, 9, "System.Collections.IHashCodeProvider.GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicIHashCodeProviderGetHashCodeAsync()
         {
             var code = @"
@@ -447,7 +447,7 @@ End Class
                         GetBasicAllowedExceptionsResultAt(7, 9, "GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicIHashCodeProviderGetHashCodeAsExplicitInterfaceImplementationAsync()
         {
             var code = @"
@@ -472,7 +472,7 @@ End Class
                 GetBasicAllowedExceptionsResultAt(7, 9, "GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIEqualityComparerAsync()
         {
             var code = @"
@@ -495,7 +495,7 @@ public class C : IEqualityComparer<C>
                          GetCSharpAllowedExceptionsResultAt(12, 9, "GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIEqualityComparerWithExplicitInterfaceImplementationsAsync()
         {
             var code = @"
@@ -518,7 +518,7 @@ public class C : IEqualityComparer<C>
                 GetCSharpAllowedExceptionsResultAt(12, 9, "System.Collections.Generic.IEqualityComparer<C>.GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicIEqualityComparerAsync()
         {
             var code = @"
@@ -540,7 +540,7 @@ End Class
                 GetBasicAllowedExceptionsResultAt(10, 9, "GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicIEqualityComparerWithExplicitInterfaceImplementationsAsync()
         {
             var code = @"
@@ -562,7 +562,7 @@ End Class
                         GetBasicAllowedExceptionsResultAt(10, 9, "GetHashCode", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpIDisposableAsync()
         {
             var code = @"
@@ -580,7 +580,7 @@ public class C : IDisposable
                          GetCSharpNoExceptionsResultAt(8, 9, "Dispose", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicIDisposableAsync()
         {
             var code = @"
@@ -598,7 +598,7 @@ End Class
                         GetBasicNoExceptionsResultAt(7, 9, "Dispose", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpToStringWithExceptionsAsync()
         {
             var code = @"
@@ -617,7 +617,7 @@ public class C
                          GetCSharpNoExceptionsResultAt(8, 9, "ToString", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicToStringWithExceptionsAsync()
         {
             var code = @"
@@ -637,7 +637,7 @@ End Class
         #endregion
 
         #region Constructor and Destructor tests
-        [Fact]
+        [TestMethod]
         public async Task CSharpStaticConstructorWithExceptionsAsync()
         {
             var code = @"
@@ -655,7 +655,7 @@ class NonPublic
                          GetCSharpNoExceptionsResultAt(8, 9, ".cctor", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicStaticConstructorWithExceptionsAsync()
         {
             var code = @"
@@ -672,7 +672,7 @@ End Class
                         GetBasicNoExceptionsResultAt(6, 9, ".cctor", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpFinalizerWithExceptionsAsync()
         {
             var code = @"
@@ -690,7 +690,7 @@ class NonPublic
                          GetCSharpNoExceptionsResultAt(8, 9, "Finalize", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicFinalizerWithExceptionsAsync()
         {
             var code = @"
@@ -707,7 +707,7 @@ End Class
                         GetBasicNoExceptionsResultAt(6, 9, "Finalize", "Exception"));
         }
 
-        [Fact, WorkItem(6963, "https://github.com/dotnet/roslyn-analyzers/issues/6963")]
+        [TestMethod, WorkItem(6963, "https://github.com/dotnet/roslyn-analyzers/issues/6963")]
         public Task Lambda_NoDiagnostic()
         {
             const string code = """
@@ -727,7 +727,7 @@ End Class
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(6963, "https://github.com/dotnet/roslyn-analyzers/issues/6963")]
+        [TestMethod, WorkItem(6963, "https://github.com/dotnet/roslyn-analyzers/issues/6963")]
         public Task VB_Lambda_NoDiagnostic()
         {
             const string code = """
@@ -745,7 +745,7 @@ End Class
             return VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(6001, "https://github.com/dotnet/roslyn-analyzers/issues/6001")]
+        [TestMethod, WorkItem(6001, "https://github.com/dotnet/roslyn-analyzers/issues/6001")]
         public Task UnreachableException_NoDiagnostic()
         {
             const string code = """
@@ -763,10 +763,10 @@ End Class
                 TestCode = code,
                 FixedCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6001, "https://github.com/dotnet/roslyn-analyzers/issues/6001")]
+        [TestMethod, WorkItem(6001, "https://github.com/dotnet/roslyn-analyzers/issues/6001")]
         public Task VB_UnreachableException_NoDiagnostic()
         {
             const string code = """
@@ -782,13 +782,13 @@ End Class
                 TestCode = code,
                 FixedCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region Operator tests
-        [Fact]
+        [TestMethod]
         public async Task CSharpEqualityOperatorWithExceptionsAsync()
         {
             var code = @"
@@ -812,7 +812,7 @@ public class C
                          GetCSharpNoExceptionsResultAt(12, 9, "op_Inequality", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicEqualityOperatorWithExceptionsAsync()
         {
             var code = @"
@@ -833,7 +833,7 @@ End Class
                         GetBasicNoExceptionsResultAt(9, 9, "op_Inequality", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5021, "https://github.com/dotnet/roslyn-analyzers/issues/5021")]
         public async Task CSharpComparisonOperatorWithExceptionsAsync()
         {
@@ -867,7 +867,7 @@ public class C
                 GetCSharpNoExceptionsResultAt(3, "op_GreaterThan", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicComparisonOperatorWithExceptionsAsync()
         {
             var code = @"
@@ -895,7 +895,7 @@ End Class";
                 GetBasicNoExceptionsResultAt(3, "op_GreaterThan", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpImplicitOperatorWithExceptionsAsync()
         {
             var code = @"
@@ -918,7 +918,7 @@ public class C
                          GetCSharpNoExceptionsResultAt(8, 9, "op_Implicit", "Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicImplicitOperatorWithExceptionsAsync()
         {
             var code = @"

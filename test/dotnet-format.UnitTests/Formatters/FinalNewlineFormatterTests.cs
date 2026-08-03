@@ -5,16 +5,12 @@ using Microsoft.CodeAnalysis.Tools.Formatters;
 
 namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 {
+    [TestClass]
     public class FinalNewlineFormatterTests : CSharpFormatterTests
     {
         private protected override ICodeFormatter Formatter => new FinalNewlineFormatter();
 
-        public FinalNewlineFormatterTests(ITestOutputHelper output)
-        {
-            TestOutputHelper = output;
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineUnspecified_AndFinalNewlineMissing_NoChange()
         {
             var code = @"
@@ -30,7 +26,7 @@ class C
             await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineUnspecified_AndFinalNewlineExits_NoChange()
         {
             var code = @"
@@ -47,7 +43,7 @@ class C
             await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineRequired_AndEndOfLineIsLineFeed_LineFeedAdded()
         {
             var testCode = "class C\n{\n}";
@@ -63,7 +59,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineRequired_AndEndOfLineIsCarriageReturnLineFeed_CarriageReturnLineFeedAdded()
         {
             var testCode = "class C\r\n{\r\n}";
@@ -79,7 +75,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineRequired_AndEndOfLineIsCarriageReturn_CarriageReturnAdded()
         {
             var testCode = "class C\r{\r}";
@@ -94,7 +90,7 @@ class C
 
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineRequired_AndFinalNewlineExits_NoChange()
         {
             var code = @"
@@ -112,7 +108,7 @@ class C
             await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineUnwanted_AndFinalNewlineExists_CarriageReturnLineFeedRemoved()
         {
             var testCode = "class C\r\n{\r\n}\r\n\r\n\r\n";
@@ -128,7 +124,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineUnwanted_AndFinalNewlineExists_LineFeedRemoved()
         {
             var testCode = "class C\n{\n}\n\n\n";
@@ -144,7 +140,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineUnwanted_AndFinalNewlineExists_CarriageReturnRemoved()
         {
             var testCode = "class C\r{\r}\r\r\r";
@@ -160,7 +156,7 @@ class C
             await AssertCodeChangedAsync(testCode, expectedCode, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineUnwanted_AndFinalNewlineMissing_NoChange()
         {
             var code = @"
@@ -177,7 +173,7 @@ class C
             await AssertCodeUnchangedAsync(code, editorConfig);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenFinalNewlineUnwanted_AndFileIsEmpty_NoChange()
         {
             var code = @"";

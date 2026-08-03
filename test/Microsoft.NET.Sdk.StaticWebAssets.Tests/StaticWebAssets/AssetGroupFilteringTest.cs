@@ -1,8 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Moq;
@@ -14,6 +19,7 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 /// UpdateExternallyDefinedStaticWebAssets, ComputeReferenceStaticWebAssetItems and
 /// DefineStaticWebAssets.ApplyGroupDefinitions.
 /// </summary>
+[TestClass]
 public class AssetGroupFilteringTest : IDisposable
 {
     private readonly string _tempDir;
@@ -44,7 +50,7 @@ public class AssetGroupFilteringTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateExternal_AssetWithGroups_MatchingDeclaration_IsIncluded()
     {
         var file = CreateTempFile("ext", "site.css", "body{}");
@@ -71,7 +77,7 @@ public class AssetGroupFilteringTest : IDisposable
         task.UpdatedAssets.Should().HaveCount(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateExternal_AssetWithGroups_NoDeclarations_IsExcluded()
     {
         var file = CreateTempFile("ext", "site.css", "body{}");
@@ -91,7 +97,7 @@ public class AssetGroupFilteringTest : IDisposable
         task.UpdatedAssets.Should().HaveCount(0, "grouped assets should be excluded when no declarations exist");
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateExternal_MultiGroup_PartialMatch_IsExcluded()
     {
         var file = CreateTempFile("ext", "site.css", "body{}");
@@ -118,7 +124,7 @@ public class AssetGroupFilteringTest : IDisposable
         task.UpdatedAssets.Should().HaveCount(0, "AND-matching requires all entries satisfied");
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateExternal_CascadingExclusion_RelatedAssetExcludedWithPrimary()
     {
         var primaryFile = CreateTempFile("ext", "css", "site.css", "body{}");
@@ -145,7 +151,7 @@ public class AssetGroupFilteringTest : IDisposable
         task.UpdatedAssets.Should().HaveCount(0, "related asset should cascade-exclude with primary");
     }
 
-    [Fact]
+    [TestMethod]
     public void UpdateExternal_EndpointFiltering_ExcludedAssetEndpointsRemoved()
     {
         var includedFile = CreateTempFile("ext", "app.js", "var x;");
@@ -185,7 +191,7 @@ public class AssetGroupFilteringTest : IDisposable
         task.UpdatedEndpoints.Should().HaveCount(1, "only endpoints for included assets should remain");
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeReference_GroupedFrameworkAsset_PreservesSourceType()
     {
         // Two grouped framework assets at the same target path
@@ -216,7 +222,7 @@ public class AssetGroupFilteringTest : IDisposable
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ComputeReference_NonGroupedFrameworkAsset_PreservesSourceType()
     {
         var asset = CreateReferenceAsset("framework.js", "FrameworkLib", "Framework", "js/framework.js", "All", "All");
@@ -240,7 +246,7 @@ public class AssetGroupFilteringTest : IDisposable
             "non-grouped framework assets should also preserve SourceType=Framework");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_SameOrderSameSourceId_ProducesError()
     {
         var file = CreateTempFile("wwwroot", "V5", "css", "site.css", "body{}");
@@ -275,7 +281,7 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages.Should().ContainMatch("*same Order*");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_DifferentOrderSameSourceId_NoError()
     {
         var file = CreateTempFile("wwwroot", "V5", "css", "site.css", "body{}");
@@ -310,7 +316,7 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_MissingValue_ProducesError()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
@@ -334,7 +340,7 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages.Should().ContainSingle(m => m.Contains("missing required metadata 'Value'"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_MissingSourceId_ProducesError()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
@@ -358,7 +364,7 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages.Should().ContainSingle(m => m.Contains("missing required metadata 'SourceId'"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_InvalidOrder_ProducesError()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
@@ -382,7 +388,7 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages.Should().ContainSingle(m => m.Contains("invalid or missing 'Order'"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_MissingIncludePattern_ProducesError()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body{}");
@@ -406,7 +412,7 @@ public class AssetGroupFilteringTest : IDisposable
         _errorMessages.Should().ContainSingle(m => m.Contains("missing required metadata 'IncludePattern'"));
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_SourceIdMismatch_DefinitionsIgnored()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
@@ -437,7 +443,7 @@ public class AssetGroupFilteringTest : IDisposable
         asset.RelativePath.Should().Contain("V4", "RelativePath should not be transformed");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_MultipleContentRootSuffix_Compose()
     {
         var file = CreateTempFile("wwwroot", "shared", "site.css", "body{}");
@@ -474,10 +480,10 @@ public class AssetGroupFilteringTest : IDisposable
         asset.ContentRoot.Should().Contain(Path.Combine("suffixA", "suffixB"));
     }
 
-    [Theory]
-    [InlineData(new[] { "BootstrapVersion=V4", "BootstrapVersion=V5" }, true)]
-    [InlineData(new[] { "BootstrapVersion=V4", "" }, false)]
-    [InlineData(new[] { "BootstrapVersion=V5", "BootstrapVersion=V5" }, false)]
+    [TestMethod]
+    [DataRow(new[] { "BootstrapVersion=V4", "BootstrapVersion=V5" }, true)]
+    [DataRow(new[] { "BootstrapVersion=V4", "" }, false)]
+    [DataRow(new[] { "BootstrapVersion=V5", "BootstrapVersion=V5" }, false)]
     public void AllAssetsHaveDistinctGroups_ReturnsExpectedResult(string[] groups, bool expected)
     {
         var assets = groups.Select((g, i) => CreateStaticWebAsset($"{(char)('a' + i)}.css", g)).ToList();
@@ -637,7 +643,7 @@ public class AssetGroupFilteringTest : IDisposable
         };
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_ContentRootSuffix_AdjustsContentRoot()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
@@ -671,7 +677,7 @@ public class AssetGroupFilteringTest : IDisposable
         asset.AssetGroups.Should().Contain("BootstrapVersion=V4");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_PatternOnly_NoAutoFileOnlyToken()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
@@ -705,7 +711,7 @@ public class AssetGroupFilteringTest : IDisposable
         asset.ContentRoot.Should().Be(wwwrootPath, "ContentRoot unchanged when no ContentRootSuffix");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_RelativePathPrefix_FileOnlyToken()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
@@ -739,7 +745,7 @@ public class AssetGroupFilteringTest : IDisposable
         asset.AssetGroups.Should().Contain("BootstrapVersion=V4");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_RelativePathPrefix_LiteralPrepend()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
@@ -772,7 +778,7 @@ public class AssetGroupFilteringTest : IDisposable
         asset.ContentRoot.Should().Be(wwwrootPath, "ContentRoot unchanged when no ContentRootSuffix");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_AllThreeOrthogonal()
     {
         var file = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");
@@ -808,7 +814,7 @@ public class AssetGroupFilteringTest : IDisposable
         asset.AssetGroups.Should().Contain("BootstrapVersion=V4");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_RelativePathPrefix_WithoutPattern_PrependsToOriginalPath()
     {
         var file = CreateTempFile("wwwroot", "css", "site.css", "body{}");
@@ -843,7 +849,7 @@ public class AssetGroupFilteringTest : IDisposable
         asset.AssetGroups.Should().Contain("Theme=Default");
     }
 
-    [Fact]
+    [TestMethod]
     public void ApplyGroupDefinitions_ContentRootSuffix_MultipleGroups_EachGetsOwnContentRoot()
     {
         var fileV4 = CreateTempFile("wwwroot", "V4", "css", "site.css", "body-v4{}");

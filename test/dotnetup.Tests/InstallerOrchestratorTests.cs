@@ -10,15 +10,15 @@ using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Mocks;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class InstallerOrchestratorTests
 {
     #region InstallAlreadyExists
 
-    [Fact]
+    [TestMethod]
     public void PrepareInstall_UntrackedAlreadyInstalled_ReturnsAlreadyInstalledResult()
     {
         using var testEnv = new TestEnvironment();
@@ -58,7 +58,7 @@ public class InstallerOrchestratorTests
         validator.LastInstall.Version.ToString().Should().Be("10.0.100");
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallAlreadyExists_ReturnsTrueForDuplicateInstall()
     {
         using var testEnv = new TestEnvironment();
@@ -69,7 +69,7 @@ public class InstallerOrchestratorTests
         manifest.InstallAlreadyExists(install).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallAlreadyExists_ReturnsFalseForDifferentVersion()
     {
         using var testEnv = new TestEnvironment();
@@ -80,7 +80,7 @@ public class InstallerOrchestratorTests
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallAlreadyExists_ReturnsFalseForDifferentComponent()
     {
         using var testEnv = new TestEnvironment();
@@ -91,7 +91,7 @@ public class InstallerOrchestratorTests
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallAlreadyExists_ReturnsFalseForDifferentRoot()
     {
         using var testEnv = new TestEnvironment();
@@ -104,7 +104,7 @@ public class InstallerOrchestratorTests
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallAlreadyExists_ReturnsFalseForEmptyManifest()
     {
         using var testEnv = new TestEnvironment();
@@ -115,7 +115,7 @@ public class InstallerOrchestratorTests
         manifest.InstallAlreadyExists(install).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallAlreadyExists_DetectsDuplicateAmongMultipleInstallations()
     {
         using var testEnv = new TestEnvironment();
@@ -141,7 +141,7 @@ public class InstallerOrchestratorTests
 
     #region IsRootTracked
 
-    [Fact]
+    [TestMethod]
     public void IsRootTracked_ReturnsTrueWhenRootExists()
     {
         using var testEnv = new TestEnvironment();
@@ -152,7 +152,7 @@ public class InstallerOrchestratorTests
         manifest.IsRootTracked(root).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void IsRootTracked_ReturnsFalseWhenRootDoesNotExist()
     {
         using var testEnv = new TestEnvironment();
@@ -165,7 +165,7 @@ public class InstallerOrchestratorTests
         manifest.IsRootTracked(root).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void IsRootTracked_ReturnsFalseForEmptyManifest()
     {
         using var testEnv = new TestEnvironment();
@@ -180,20 +180,20 @@ public class InstallerOrchestratorTests
 
     #region HasDotnetArtifacts
 
-    [Fact]
+    [TestMethod]
     public void HasDotnetArtifacts_ReturnsFalseForNullPath()
     {
         DotnetupSharedManifest.HasDotnetArtifacts(null).Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasDotnetArtifacts_ReturnsFalseForNonexistentPath()
     {
         DotnetupSharedManifest.HasDotnetArtifacts(Path.Combine(Path.GetTempPath(), "nonexistent-" + Guid.NewGuid().ToString("N")))
             .Should().BeFalse();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasDotnetArtifacts_ReturnsTrueWhenSdkDirectoryExists()
     {
         using var testEnv = new TestEnvironment();
@@ -202,7 +202,7 @@ public class InstallerOrchestratorTests
         DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasDotnetArtifacts_ReturnsTrueWhenSharedDirectoryExists()
     {
         using var testEnv = new TestEnvironment();
@@ -211,7 +211,7 @@ public class InstallerOrchestratorTests
         DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasDotnetArtifacts_ReturnsTrueWhenDotnetExeExists()
     {
         using var testEnv = new TestEnvironment();
@@ -221,7 +221,7 @@ public class InstallerOrchestratorTests
         DotnetupSharedManifest.HasDotnetArtifacts(testEnv.InstallPath).Should().BeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void HasDotnetArtifacts_ReturnsFalseForEmptyDirectory()
     {
         using var testEnv = new TestEnvironment();

@@ -5,9 +5,10 @@ using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class TestNodeResultsStateTests
 {
-    [Fact]
+    [TestMethod]
     public void AddRunningTestNode_AfterRemove_IsSuppressed()
     {
         // Simulates the stale-add race: the producer may emit an in-progress
@@ -18,17 +19,17 @@ public class TestNodeResultsStateTests
         const string uid = "Foo";
 
         state.AddRunningTestNode(id: 100, instanceId, uid, "Foo", new FakeStopwatch());
-        Assert.Equal(1, state.Count);
+        Assert.AreEqual(1, state.Count);
 
         state.RemoveRunningTestNode(instanceId, uid);
-        Assert.Equal(0, state.Count);
+        Assert.AreEqual(0, state.Count);
 
         // Stale in-progress arriving after completion must be ignored.
         state.AddRunningTestNode(id: 101, instanceId, uid, "Foo", new FakeStopwatch());
-        Assert.Equal(0, state.Count);
+        Assert.AreEqual(0, state.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void AddRunningTestNode_DifferentInstance_SameUid_NotSuppressed()
     {
         // Retries use a new instanceId. A previous instance completing must
@@ -38,13 +39,13 @@ public class TestNodeResultsStateTests
 
         state.AddRunningTestNode(id: 100, "instance-A", uid, "Foo", new FakeStopwatch());
         state.RemoveRunningTestNode("instance-A", uid);
-        Assert.Equal(0, state.Count);
+        Assert.AreEqual(0, state.Count);
 
         state.AddRunningTestNode(id: 200, "instance-B", uid, "Foo", new FakeStopwatch());
-        Assert.Equal(1, state.Count);
+        Assert.AreEqual(1, state.Count);
     }
 
-    [Fact]
+    [TestMethod]
     public void AddRunningTestNode_DistinctTests_AllTracked()
     {
         var state = new TestNodeResultsState(id: 1);
@@ -53,7 +54,7 @@ public class TestNodeResultsStateTests
         state.AddRunningTestNode(id: 101, "instance-A", "Test2", "Test2", new FakeStopwatch());
         state.AddRunningTestNode(id: 102, "instance-B", "Test1", "Test1", new FakeStopwatch());
 
-        Assert.Equal(3, state.Count);
+        Assert.AreEqual(3, state.Count);
     }
 
     private sealed class FakeStopwatch : IStopwatch

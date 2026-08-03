@@ -4,13 +4,13 @@
 using System.Runtime.InteropServices;
 using FakeItEasy;
 using Microsoft.TemplateEngine.Abstractions;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
+    [TestClass]
     public class PathInfoTests
     {
-        [Fact]
+        [TestMethod]
         public void DefaultLocationTest()
         {
             var environment = A.Fake<IEnvironment>();
@@ -25,13 +25,13 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var homeFolder = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "C:\\users\\user" : "/home/path";
 
-            Assert.Equal(homeFolder, pathInfo.UserProfileDir);
-            Assert.Equal(Path.Combine(homeFolder, ".templateengine"), pathInfo.GlobalSettingsDir);
-            Assert.Equal(Path.Combine(homeFolder, ".templateengine", "hostID"), pathInfo.HostSettingsDir);
-            Assert.Equal(Path.Combine(homeFolder, ".templateengine", "hostID", "1.0.0"), pathInfo.HostVersionSettingsDir);
+            Assert.AreEqual(homeFolder, pathInfo.UserProfileDir);
+            Assert.AreEqual(Path.Combine(homeFolder, ".templateengine"), pathInfo.GlobalSettingsDir);
+            Assert.AreEqual(Path.Combine(homeFolder, ".templateengine", "hostID"), pathInfo.HostSettingsDir);
+            Assert.AreEqual(Path.Combine(homeFolder, ".templateengine", "hostID", "1.0.0"), pathInfo.HostVersionSettingsDir);
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultLocationTest_ExpectedExceptions()
         {
             var environment = A.Fake<IEnvironment>();
@@ -41,18 +41,18 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var host = A.Fake<ITemplateEngineHost>();
             A.CallTo(() => host.HostIdentifier).Returns("hostID");
             A.CallTo(() => host.Version).Returns(string.Empty);
-            Assert.Throws<ArgumentException>(() => new DefaultPathInfo(environment, host));
+            Assert.ThrowsExactly<ArgumentException>(() => new DefaultPathInfo(environment, host));
 
             A.CallTo(() => host.HostIdentifier).Returns(string.Empty);
             A.CallTo(() => host.Version).Returns("ver");
-            Assert.Throws<ArgumentException>(() => new DefaultPathInfo(environment, host));
+            Assert.ThrowsExactly<ArgumentException>(() => new DefaultPathInfo(environment, host));
         }
 
-        [Theory]
-        [InlineData("global", "host", "version")]
-        [InlineData(null, "host", "version")]
-        [InlineData("global", null, "version")]
-        [InlineData("global", "host", null)]
+        [TestMethod]
+        [DataRow("global", "host", "version")]
+        [DataRow(null, "host", "version")]
+        [DataRow("global", null, "version")]
+        [DataRow("global", "host", null)]
         public void CustomLocationTest(string? global, string? hostDir, string? hostVersion)
         {
             var environment = A.Fake<IEnvironment>();
@@ -70,15 +70,15 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             var defaultHost = Path.Combine(homeFolder, ".templateengine", "hostID");
             var defaultHostVesrion = Path.Combine(homeFolder, ".templateengine", "hostID", "1.0.0");
 
-            Assert.Equal(homeFolder, pathInfo.UserProfileDir);
-            Assert.Equal(string.IsNullOrWhiteSpace(global) ? defaultGlobal : global, pathInfo.GlobalSettingsDir);
-            Assert.Equal(string.IsNullOrWhiteSpace(hostDir) ? defaultHost : hostDir, pathInfo.HostSettingsDir);
-            Assert.Equal(string.IsNullOrWhiteSpace(hostVersion) ? defaultHostVesrion : hostVersion, pathInfo.HostVersionSettingsDir);
+            Assert.AreEqual(homeFolder, pathInfo.UserProfileDir);
+            Assert.AreEqual(string.IsNullOrWhiteSpace(global) ? defaultGlobal : global, pathInfo.GlobalSettingsDir);
+            Assert.AreEqual(string.IsNullOrWhiteSpace(hostDir) ? defaultHost : hostDir, pathInfo.HostSettingsDir);
+            Assert.AreEqual(string.IsNullOrWhiteSpace(hostVersion) ? defaultHostVesrion : hostVersion, pathInfo.HostVersionSettingsDir);
         }
 
-        [Theory]
-        [InlineData("custom")]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow("custom")]
+        [DataRow(null)]
         public void CustomHiveLocationTest(string? hiveLocation)
         {
             var environment = A.Fake<IEnvironment>();
@@ -106,10 +106,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 ? Path.Combine(homeFolder, ".templateengine", "hostID", "1.0.0")
                 : Path.Combine(hiveLocation, "hostID", "1.0.0");
 
-            Assert.Equal(homeFolder, pathInfo.UserProfileDir);
-            Assert.Equal(expectedGlobal, pathInfo.GlobalSettingsDir);
-            Assert.Equal(expectedHost, pathInfo.HostSettingsDir);
-            Assert.Equal(expectedHostVesrion, pathInfo.HostVersionSettingsDir);
+            Assert.AreEqual(homeFolder, pathInfo.UserProfileDir);
+            Assert.AreEqual(expectedGlobal, pathInfo.GlobalSettingsDir);
+            Assert.AreEqual(expectedHost, pathInfo.HostSettingsDir);
+            Assert.AreEqual(expectedHostVesrion, pathInfo.HostVersionSettingsDir);
         }
     }
 }

@@ -5,20 +5,21 @@ using Microsoft.DotNet.Cli.Commands.Test;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class TestModulesFilterHandlerTests : SdkTest
     {
-        public TestModulesFilterHandlerTests(ITestOutputHelper log) : base(log)
+        public TestModulesFilterHandlerTests()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_NullOrEmptyRootDirectory_ReturnsEmpty()
         {
             TestModulesFilterHandler.GetMatchedModulePaths("**/*.dll", null).Should().BeEmpty();
             TestModulesFilterHandler.GetMatchedModulePaths("**/*.dll", string.Empty).Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_TrimsWhitespaceBetweenPatterns()
         {
             var root = TestAssetsManager.CreateTestDirectory(identifier: nameof(GetMatchedModulePaths_TrimsWhitespaceBetweenPatterns)).Path;
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should().BeEquivalentTo("A.Foo.dll", "B.Foo.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_FoldedYamlStyleExpression_AllPatternsApplied()
         {
             var root = TestAssetsManager.CreateTestDirectory(identifier: nameof(GetMatchedModulePaths_FoldedYamlStyleExpression_AllPatternsApplied)).Path;
@@ -49,7 +50,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should().BeEquivalentTo("Some.ModuleA.Tests.dll", "Some.ModuleB.Tests.dll", "Some.ModuleC.Tests.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_ExclusionPatternWithBang_ExcludesMatchingFiles()
         {
             var root = TestAssetsManager.CreateTestDirectory(identifier: nameof(GetMatchedModulePaths_ExclusionPatternWithBang_ExcludesMatchingFiles)).Path;
@@ -63,7 +64,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should().BeEquivalentTo("Foo.mstest.exe", "Bar.mstest.exe");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_ExclusionPatternWithWhitespaceAfterBang_StillExcludes()
         {
             var root = TestAssetsManager.CreateTestDirectory(identifier: nameof(GetMatchedModulePaths_ExclusionPatternWithWhitespaceAfterBang_StillExcludes)).Path;
@@ -76,7 +77,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should().BeEquivalentTo("Keep.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_OnlyExcludePattern_ReturnsNothing()
         {
             // When there are no includes, the matcher has nothing to enumerate -> no results.
@@ -88,7 +89,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             matches.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_EmptyOrWhitespaceOnlyPattern_IsSkipped()
         {
             var root = TestAssetsManager.CreateTestDirectory(identifier: nameof(GetMatchedModulePaths_EmptyOrWhitespaceOnlyPattern_IsSkipped)).Path;
@@ -100,7 +101,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should().BeEquivalentTo("Foo.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMatchedModulePaths_OnlyBangNoPattern_IsIgnored()
         {
             var root = TestAssetsManager.CreateTestDirectory(identifier: nameof(GetMatchedModulePaths_OnlyBangNoPattern_IsIgnored)).Path;

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverrideEqualsAndOperatorEqualsOnValueTypesAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpOverrideEqualsAndOperatorEqualsOnValueTypesFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OverrideEqualsAndOperatorEqualsOnValueTypesFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpCodeFixNoEqualsOverrideOrEqualityOperatorsAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -56,7 +56,7 @@ public struct A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCodeFixNoEqualsOverrideAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -100,7 +100,7 @@ public struct A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCodeFixNoEqualityOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -149,7 +149,7 @@ public struct A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCodeFixNoInequalityOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -197,7 +197,7 @@ public struct A
 }
 ");
         }
-        [Fact]
+        [TestMethod]
         public async Task BasicCodeFixNoEqualsOverrideOrEqualityOperatorsAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -233,7 +233,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCodeFixNoEqualsOverrideAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -269,7 +269,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCodeFixNoEqualityOperatorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -309,7 +309,7 @@ End Structure
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCodeFixNoInequalityOperatorAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

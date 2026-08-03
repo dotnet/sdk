@@ -9,20 +9,22 @@ using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Abstractions.Constraints;
 using Microsoft.TemplateEngine.Edge.Constraints;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
+    [TestClass]
     public class SdkVersionConstraintTests
     {
-        [Theory]
-        [InlineData("1.2.3", true)]
-        [InlineData("1.2.3-dev", true)]
-        [InlineData("1.2.4", false)]
-        [InlineData("4.5.3-dev", false)]
-        [InlineData("4.5.3", true)]
-        [InlineData("4.5.0", true)]
-        [InlineData("4.6.0", false)]
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
+        [DataRow("1.2.3", true)]
+        [DataRow("1.2.3-dev", true)]
+        [DataRow("1.2.4", false)]
+        [DataRow("4.5.3-dev", false)]
+        [DataRow("4.5.3", true)]
+        [DataRow("4.5.0", true)]
+        [DataRow("4.6.0", false)]
         public async Task Evaluate_ArrayOfVersions(string sdkVersion, bool allowed)
         {
             var config = new
@@ -49,19 +51,19 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             //Workaround needed
             //A.CallTo(() => sdkInfoProvider.GetVersionAsync(A<CancellationToken>._)).Returns(Task.Run(() => sdkVersion));
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
-            Assert.Equal(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.CancellationToken);
+            Assert.AreEqual(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
         }
 
-        [Theory]
-        [InlineData("1.2.2", false)]
-        [InlineData("1.2.3", true)]
-        [InlineData("1.2.3-dev", true)]
-        [InlineData("1.2.4", true)]
-        [InlineData("4.5.3-dev", false)]
-        [InlineData("4.5.3", false)]
-        [InlineData("4.5.0", true)]
-        [InlineData("4.4.0-dev", true)]
+        [TestMethod]
+        [DataRow("1.2.2", false)]
+        [DataRow("1.2.3", true)]
+        [DataRow("1.2.3-dev", true)]
+        [DataRow("1.2.4", true)]
+        [DataRow("4.5.3-dev", false)]
+        [DataRow("4.5.3", false)]
+        [DataRow("4.5.0", true)]
+        [DataRow("4.4.0-dev", true)]
         public async Task Evaluate_SingleVersionRange(string sdkVersion, bool allowed)
         {
             var config = new
@@ -88,14 +90,14 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             //Workaround needed
             //A.CallTo(() => sdkInfoProvider.GetVersionAsync(A<CancellationToken>._)).Returns(t);
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
-            Assert.Equal(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.CancellationToken);
+            Assert.AreEqual(allowed ? TemplateConstraintResult.Status.Allowed : TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
         }
 
-        [Theory]
-        [InlineData("1.1.1", new[] { "0.1.2", "1.2.3", "3.4.5" }, true)]
-        [InlineData("1.1.1", new[] { "0.1.2", "1.2.2", "3.4.5" }, false)]
-        [InlineData("1.1.1", new[] { "0.1.2", "1.2.3", "4.5.6" }, true)]
+        [TestMethod]
+        [DataRow("1.1.1", new[] { "0.1.2", "1.2.3", "3.4.5" }, true)]
+        [DataRow("1.1.1", new[] { "0.1.2", "1.2.2", "3.4.5" }, false)]
+        [DataRow("1.1.1", new[] { "0.1.2", "1.2.3", "4.5.6" }, true)]
         public async Task Evaluate_AlternativeInstalledVersions(string sdkVersion, IReadOnlyList<string> installedVersions, bool hasAlternativeInstalled)
         {
             var config = new
@@ -119,8 +121,8 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
             var constraintManager = new TemplateConstraintManager(settings);
 
-            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.Current.CancellationToken);
-            Assert.Equal(TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
+            var evaluateResult = await constraintManager.EvaluateConstraintAsync(configModel.Constraints.Single().Type, configModel.Constraints.Single().Args, TestContext.CancellationToken);
+            Assert.AreEqual(TemplateConstraintResult.Status.Restricted, evaluateResult.EvaluationStatus);
             Assert.StartsWith(
                 hasAlternativeInstalled
                     ? "Sample CTA with alternatives"

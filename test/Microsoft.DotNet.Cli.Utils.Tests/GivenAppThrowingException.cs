@@ -3,13 +3,15 @@
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class GivenAppThrowingException : SdkTest
     {
-        public GivenAppThrowingException(ITestOutputHelper log) : base(log)
+        public GivenAppThrowingException()
         {
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp1.1")]
         public void ItShowsStackTraceWhenRun()
         {
             var root = TestAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)
@@ -29,7 +31,8 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                          .And.HaveStdErrContaining(msg2);
         }
 
-        [RequiresSpecificFrameworkFact("netcoreapp1.1")]
+        [TestMethod]
+        [RequiresSpecificFramework("netcoreapp1.1")]
         public void ItShowsStackTraceWhenRunAsTool()
         {
             var root = TestAssetsManager.CopyTestAsset("AppThrowingException", testAssetSubdirectory: TestAssetSubdirectories.NonRestoredTestProjects)

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
@@ -203,70 +202,70 @@ Trailing stuff
             ["INNER_ELSEIF_CLAUSE"] = false
         };
 
-        [Theory(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestOuterIfTrue))]
-        [InlineData(JsxNoDefaultValue, JsxOuterIfTrueExpectedValue)]
-        [InlineData(JsxOuterIfDefaultValue, JsxOuterIfTrueExpectedValue)]
-        [InlineData(JsxOuterElseifDefaultValue, JsxOuterIfTrueExpectedValue)]
-        [InlineData(JsxOuterElseDefaultValue, JsxOuterIfTrueExpectedValue)]
-        [InlineData(JsxInnerIfDefaultValue, JsxOuterIfTrueExpectedValue)]
-        [InlineData(JsxInnerElseifDefaultValue, JsxOuterIfTrueExpectedValue)]
-        [InlineData(JsxInnerElseDefaultValue, JsxOuterIfTrueExpectedValue)]
+        [TestMethod]
+        [DataRow(JsxNoDefaultValue, JsxOuterIfTrueExpectedValue)]
+        [DataRow(JsxOuterIfDefaultValue, JsxOuterIfTrueExpectedValue)]
+        [DataRow(JsxOuterElseifDefaultValue, JsxOuterIfTrueExpectedValue)]
+        [DataRow(JsxOuterElseDefaultValue, JsxOuterIfTrueExpectedValue)]
+        [DataRow(JsxInnerIfDefaultValue, JsxOuterIfTrueExpectedValue)]
+        [DataRow(JsxInnerElseifDefaultValue, JsxOuterIfTrueExpectedValue)]
+        [DataRow(JsxInnerElseDefaultValue, JsxOuterIfTrueExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestOuterIfTrue(string source, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxOuterIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseifTrueExpectedValue))]
-        [InlineData(JsxNoDefaultValue, JsxOuterElseifTrueExpectedValue)]
-        [InlineData(JsxOuterIfDefaultValue, JsxOuterElseifTrueExpectedValue)]
-        [InlineData(JsxOuterElseifDefaultValue, JsxOuterElseifTrueExpectedValue)]
-        [InlineData(JsxOuterElseDefaultValue, JsxOuterElseifTrueExpectedValue)]
-        [InlineData(JsxInnerIfDefaultValue, JsxOuterElseifTrueExpectedValue)]
-        [InlineData(JsxInnerElseifDefaultValue, JsxOuterElseifTrueExpectedValue)]
-        [InlineData(JsxInnerElseDefaultValue, JsxOuterElseifTrueExpectedValue)]
+        [TestMethod]
+        [DataRow(JsxNoDefaultValue, JsxOuterElseifTrueExpectedValue)]
+        [DataRow(JsxOuterIfDefaultValue, JsxOuterElseifTrueExpectedValue)]
+        [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseifTrueExpectedValue)]
+        [DataRow(JsxOuterElseDefaultValue, JsxOuterElseifTrueExpectedValue)]
+        [DataRow(JsxInnerIfDefaultValue, JsxOuterElseifTrueExpectedValue)]
+        [DataRow(JsxInnerElseifDefaultValue, JsxOuterElseifTrueExpectedValue)]
+        [DataRow(JsxInnerElseDefaultValue, JsxOuterElseifTrueExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseifTrueExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxOuterElseifTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerIfTrueExpectedValue))]
-        [InlineData(JsxNoDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(JsxOuterElseDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(JsxInnerIfDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(JsxInnerElseifDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
-        [InlineData(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
+        [TestMethod]
+        [DataRow(JsxNoDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(JsxOuterElseDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(JsxInnerIfDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(JsxInnerElseifDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
+        [DataRow(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerIfTrueExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerIfTrueExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxInnerIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseifTrueExpectedValue))]
-        [InlineData(JsxNoDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(JsxOuterElseDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(JsxInnerIfDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(JsxInnerElseifDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
-        [InlineData(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
+        [TestMethod]
+        [DataRow(JsxNoDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(JsxOuterElseDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(JsxInnerIfDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(JsxInnerElseifDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
+        [DataRow(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerElseifTrueExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseifTrueExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxInnerElseIfTrueVariableCollection);
             RunAndVerify(source, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseHappensExpectedValue))]
-        [InlineData(JsxNoDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(JsxOuterElseDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(JsxInnerIfDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(JsxInnerElseifDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
-        [InlineData(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
+        [TestMethod]
+        [DataRow(JsxNoDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(JsxOuterIfDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(JsxOuterElseifDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(JsxOuterElseDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(JsxInnerIfDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(JsxInnerElseifDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
+        [DataRow(JsxInnerElseDefaultValue, JsxOuterElseHappensInnerElseHappensExpectedValue)]
         public void VerifyJsxBlockCommentEmbeddedInElseTestJsxOuterElseHappensInnerElseHappensExpectedValue(string source, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxAllFalse);
@@ -323,27 +322,27 @@ Trailing stuff";
             ["CLAUSE_2"] = false
         };
 
-        [Theory(DisplayName = nameof(JsxBlockCommentsBasicTestBothClausesTrue))]
-        [InlineData(JsxBasicValue, JsxIfEmitted)]
-        [InlineData(JsxBasicWithDefault, JsxIfEmitted)]
+        [TestMethod]
+        [DataRow(JsxBasicValue, JsxIfEmitted)]
+        [DataRow(JsxBasicWithDefault, JsxIfEmitted)]
         public void JsxBlockCommentsBasicTestBothClausesTrue(string test, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxBothClausesTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(JsxBlockCommentsBasicTestClauseTwoTrue))]
-        [InlineData(JsxBasicValue, JsxElseIfEmitted)]
-        [InlineData(JsxBasicWithDefault, JsxElseIfEmitted)]
+        [TestMethod]
+        [DataRow(JsxBasicValue, JsxElseIfEmitted)]
+        [DataRow(JsxBasicWithDefault, JsxElseIfEmitted)]
         public void JsxBlockCommentsBasicTestClauseTwoTrue(string test, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxClauseTwoTrue);
             RunAndVerify(test, expected, processor, 9999);
         }
 
-        [Theory(DisplayName = nameof(JsxBlockCommentsBasicTestNeitherClauseTrue))]
-        [InlineData(JsxBasicValue, JsxElseEmitted)]
-        [InlineData(JsxBasicWithDefault, JsxElseEmitted)]
+        [TestMethod]
+        [DataRow(JsxBasicValue, JsxElseEmitted)]
+        [DataRow(JsxBasicWithDefault, JsxElseEmitted)]
         public void JsxBlockCommentsBasicTestNeitherClauseTrue(string test, string expected)
         {
             IProcessor processor = SetupJsxBlockCommentsProcessor(JsxNeitherClauseTrue);

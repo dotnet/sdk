@@ -24,6 +24,13 @@
 .PARAMETER NoBuild
     Skip the publish step and run a previously published binary.
 
+.PARAMETER Trx
+    Emit a TRX test report (for CI result publishing). The report is written to
+    ResultsDirectory (defaults to <repo>/artifacts/TestResults/<Configuration>).
+
+.PARAMETER ResultsDirectory
+    Directory for the TRX report when -Trx is specified.
+
 .EXAMPLE
     ./run-aot-tests.ps1
     ./run-aot-tests.ps1 -Configuration Release
@@ -33,14 +40,16 @@
 param(
     [string]$Configuration = "Debug",
     [string]$RuntimeIdentifier,
-    [switch]$NoBuild
+    [switch]$NoBuild,
+    [switch]$Trx,
+    [string]$ResultsDirectory
 )
 
 $ErrorActionPreference = "Stop"
 
 # Resolve paths
 $repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..\..") | Select-Object -ExpandProperty Path
-$dotnet = Join-Path $repoRoot ".dotnet" "dotnet"
+$dotnet = [System.IO.Path]::Combine($repoRoot, ".dotnet", "dotnet")
 $testProject = Join-Path $PSScriptRoot "dotnet-aot.Tests.csproj"
 
 # Auto-detect RID
@@ -59,7 +68,7 @@ if (-not $RuntimeIdentifier) {
     }
 }
 
-$publishDir = Join-Path $PSScriptRoot "artifacts" "aot-tests" $Configuration $RuntimeIdentifier
+$publishDir = [System.IO.Path]::Combine($PSScriptRoot, "artifacts", "aot-tests", $Configuration, $RuntimeIdentifier)
 $exeName = if ($RuntimeIdentifier.StartsWith("win")) { "dotnet-aot.Tests.exe" } else { "dotnet-aot.Tests" }
 $exePath = Join-Path $publishDir $exeName
 
@@ -103,8 +112,41 @@ if (-not (Test-Path $exePath)) {
 Write-Host "Running AOT tests..." -ForegroundColor Yellow
 Write-Host ""
 
-& $exePath
-$testExitCode = $LASTEXITCODE
+$sdkDirectory = & $dotnet --info 2>$null | ForEach-Object {
+    if ($_ -match '^\s*Base Path:\s*(.+?)\s*$') {
+        $Matches[1]
+    }
+} | Select-Object -First 1
+
+if (-not $sdkDirectory) {
+    Write-Host "ERROR: Could not determine the bootstrap SDK directory." -ForegroundColor Red
+    exit 1
+}
+
+$previousTestSdkDirectory = $env:DOTNET_AOT_TEST_SDK_DIRECTORY
+$previousDotnetHostPath = $env:DOTNET_HOST_PATH
+$env:DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
+$env:DOTNET_HOST_PATH = $dotnet
+
+# When -Trx is set, emit a TRX report (the AOT test binary is a Microsoft.Testing.Platform
+# app, so it accepts the --report-trx options) so CI can publish the results.
+$runArgs = @()
+if ($Trx) {
+    if (-not $ResultsDirectory) {
+        $ResultsDirectory = [System.IO.Path]::Combine($repoRoot, "artifacts", "TestResults", $Configuration)
+    }
+    New-Item -ItemType Directory -Path $ResultsDirectory -Force | Out-Null
+    $runArgs += @("--report-trx", "--report-trx-filename", "dotnet-aot.Tests.trx", "--results-directory", $ResultsDirectory)
+}
+
+try {
+    & $exePath @runArgs
+    $testExitCode = $LASTEXITCODE
+}
+finally {
+    $env:DOTNET_AOT_TEST_SDK_DIRECTORY = $previousTestSdkDirectory
+    $env:DOTNET_HOST_PATH = $previousDotnetHostPath
+}
 
 Write-Host ""
 if ($testExitCode -eq 0) {

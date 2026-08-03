@@ -7,6 +7,7 @@ using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class ProgressDescriptionTests
 {
     /// <summary>
@@ -20,7 +21,7 @@ public class ProgressDescriptionTests
         public double MaxValue { get; set; } = maxValue;
     }
 
-    [Fact]
+    [TestMethod]
     public void ShimmerProgressTask_StopShimmer_PreservesExternallySetDescription()
     {
         // Arrange: create a shimmer task with "Installing ..." description
@@ -45,7 +46,7 @@ public class ProgressDescriptionTests
             "StopShimmer on Dispose must preserve the last externally-set description, not revert to construction-time text");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShimmerProgressTask_NoShimmerForNonInstallingDescriptions()
     {
         // Shimmer only activates for descriptions starting with "Installing"
@@ -58,7 +59,7 @@ public class ProgressDescriptionTests
         shimmer.Description.Should().Be("Downloading SDK 11.0.100");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShimmerProgressTask_DescriptionSetter_SyncsBaseDescription()
     {
         var inner = new PlainProgressTask("Installing SDK 11.0.100");
@@ -75,7 +76,7 @@ public class ProgressDescriptionTests
         inner.Description.Should().Be("Installed SDK 11.0.100");
     }
 
-    [Fact]
+    [TestMethod]
     public void ExtractorProgressTracker_CompleteExtraction_SetsInstalledDescription()
     {
         var recorder = new RecordingProgressReporter();
@@ -92,10 +93,10 @@ public class ProgressDescriptionTests
         extractionTask.Description.Should().NotContain(ProgressFormatting.ActionInstalling);
     }
 
-    [Theory]
-    [InlineData(InstallComponent.SDK, "11.0.100-preview.3.26170.106")]
-    [InlineData(InstallComponent.Runtime, "10.0.5")]
-    [InlineData(InstallComponent.ASPNETCore, "9.0.312")]
+    [TestMethod]
+    [DataRow(InstallComponent.SDK, "11.0.100-preview.3.26170.106")]
+    [DataRow(InstallComponent.Runtime, "10.0.5")]
+    [DataRow(InstallComponent.ASPNETCore, "9.0.312")]
     public void ExtractorProgressTracker_FullLifecycle_EndsWithInstalledDescription(
         InstallComponent component, string version)
     {

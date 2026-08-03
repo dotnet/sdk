@@ -19,7 +19,7 @@ internal class InfoCommand : CommandBase
     /// <summary>
     /// Constructor for use with the command-line parser.
     /// </summary>
-    public InfoCommand(ParseResult parseResult) : base(parseResult)
+    public InfoCommand(ParseResult parseResult) : base(parseResult, "info")
     {
         _format = parseResult.GetValue(InfoCommandParser.FormatOption);
         _noList = parseResult.GetValue(InfoCommandParser.NoListOption);
@@ -29,7 +29,7 @@ internal class InfoCommand : CommandBase
     /// <summary>
     /// Constructor for testing with explicit parameters.
     /// </summary>
-    public InfoCommand(ParseResult parseResult, OutputFormat format, bool noList, TextWriter output) : base(parseResult)
+    public InfoCommand(ParseResult parseResult, OutputFormat format, bool noList, TextWriter output) : base(parseResult, "info")
     {
         _format = format;
         _noList = noList;
@@ -45,8 +45,6 @@ internal class InfoCommand : CommandBase
         var command = new InfoCommand(parseResult, format, noList, output);
         return command.Execute();
     }
-
-    protected override string GetCommandName() => "info";
 
     protected override void ExecuteCore()
     {

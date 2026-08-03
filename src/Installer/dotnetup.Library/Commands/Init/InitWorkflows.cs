@@ -2,9 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
-using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -12,7 +13,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
 /// Orchestrates the interactive init/onboarding flow that configures the user's
-/// environment and records the path replacement preference to
+/// environment and records the access mode to
 /// <c>dotnetup.config.json</c>.
 /// </summary>
 internal class InitWorkflows
@@ -31,87 +32,154 @@ internal class InitWorkflows
         _channelVersionResolver = channelVersionResolver;
     }
 
-    /// <summary>
-    /// Returns true when the given <see cref="PathPreference"/> implies we should
-    /// replace the default dotnet installation (i.e. update PATH / DOTNET_ROOT).
-    /// </summary>
-    public static bool ShouldReplaceSystemConfiguration(PathPreference preference) =>
-        preference is PathPreference.FullPathReplacement;
-
-    /// <summary>
-    /// Returns true when the user chose a mode that shadows the system PATH and should therefore
-    /// be offered migration of existing system-level .NET installs into dotnetup-managed installs.
-    /// </summary>
-    public static bool ShouldPromptToConvertSystemInstalls(PathPreference preference)
-    {
-        return preference != PathPreference.DotnetupDotnet;
-    }
-
     // ── Init Flow Orchestrators ──
 
     /// <summary>
     /// Interactive onboarding flow used both by the explicit <c>dotnetup init</c> command
     /// and by the first interactive install when dotnetup has not yet been configured.
-    /// When <paramref name="requests"/> is not supplied, the user is asked to pick a starter
-    /// channel. When it is supplied, the walkthrough reuses the already-resolved install
-    /// requests and skips the extra channel prompt.
+    /// Resolves the recommended setup, shows the summary selector, and then either applies
+    /// that recommended setup (proceed), runs the step-by-step prompts (customize), or exits.
+    /// When <paramref name="requests"/> is supplied, those already-resolved install requests are
+    /// reused as the recommended requests instead of resolving the default SDK channel.
     /// </summary>
     public List<ResolvedInstallRequest> InitWalkthrough(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests = null)
     {
         ShowBanner();
-        var effectiveRequests = ResolveWalkthroughRequests(command, requests);
 
-        // Determine the install root for environment configuration and migration.
-        // Use the first request's root if available, otherwise fall back to the default path.
-        DotnetInstallRoot installRoot = effectiveRequests.Count > 0
-            ? effectiveRequests[0].Request.InstallRoot
-            : new DotnetInstallRoot(
-                _dotnetEnvironment.GetDefaultDotnetInstallPath(),
-                InstallerUtilities.GetDefaultInstallArchitecture());
+        // Resolve the recommended setup for the summary. This is side-effect-free: it performs no
+        // version resolution, writes no output, and does not throw on an unresolvable channel, so
+        // simply viewing the summary or choosing to exit never triggers an install or a download.
+        WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughPlan(command, requests, _dotnetEnvironment);
 
-        // Fire off background predownload while the user answers prompts.
+        DotnetAccessMode? previousAccessMode = DotnetupConfig.ReadAccessMode();
+
+        WalkthroughSelection? selection = ResolveWalkthroughSelection(command, requests, plan, previousAccessMode);
+        if (selection is null)
+        {
+            return []; // User chose to exit without changes.
+        }
+
+        return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousAccessMode);
+    }
+
+    /// <summary>
+    /// Shows the summary selector (when interactive) and resolves the user's choice into a
+    /// <see cref="WalkthroughSelection"/>, resolving the concrete install requests only for the
+    /// branches that actually install. Returns null when the user chooses to exit. In
+    /// non-interactive sessions the historical behavior is preserved: the recommended setup is
+    /// applied silently and nothing is migrated.
+    /// </summary>
+    private WalkthroughSelection? ResolveWalkthroughSelection(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? requests,
+        WalkthroughPlan plan,
+        DotnetAccessMode? previousAccessMode)
+    {
+        bool interactiveSummary = command.Interactive && !Console.IsInputRedirected;
+        if (!interactiveSummary)
+        {
+            return new WalkthroughSelection(
+                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.AccessMode, []);
+        }
+
+        WalkthroughDecision decision = WalkthroughSummary.Show(plan, previousAccessMode);
+        return decision switch
+        {
+            WalkthroughDecision.Exit => null,
+            WalkthroughDecision.Proceed => new WalkthroughSelection(
+                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.AccessMode, plan.Migrations),
+            _ => ResolveCustomizedSelection(command, requests, plan),
+        };
+    }
+
+    /// <summary>
+    /// Runs the existing step-by-step walkthrough (channel, mode, and migration prompts).
+    /// </summary>
+    private WalkthroughSelection ResolveCustomizedSelection(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? requests,
+        WalkthroughPlan plan)
+    {
+        List<ResolvedInstallRequest> effectiveRequests = ResolveWalkthroughRequests(command, requests);
+        DotnetAccessMode accessMode = GetInitAccessMode(command.Interactive, command.ShellProvider);
+        List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
+            _dotnetEnvironment,
+            accessMode,
+            GetInstallRootOrDefault(effectiveRequests, plan.InstallRoot),
+            GetManifestPath(effectiveRequests),
+            effectiveRequests,
+            command.Interactive);
+
+        return new WalkthroughSelection(effectiveRequests, accessMode, toMigrate);
+    }
+
+    /// <summary>
+    /// Installs the selected requests (with any migrations), persists the configuration, and
+    /// applies the environment changes for the chosen mode.
+    /// </summary>
+    private List<ResolvedInstallRequest> ExecuteWalkthroughSelection(
+        InstallCommand command,
+        WalkthroughSelection selection,
+        DotnetInstallRoot defaultInstallRoot,
+        DotnetAccessMode? previousAccessMode)
+    {
+        List<ResolvedInstallRequest> effectiveRequests = selection.Requests;
+        DotnetAccessMode accessMode = selection.AccessMode;
+
+        // Start the predownload now that the install requests are known, so the cache populates
+        // while the config is written.
         Task? predownloadTask = effectiveRequests.Count > 0
             ? InstallerOrchestratorSingleton.PredownloadToCacheAsync(effectiveRequests[0])
             : null;
 
-        // User chooses how to access .NET
-        PathPreference? previousPreference = DotnetupConfig.ReadPathPreference();
-        PathPreference pathPreference = GetInitPathPreference(command.Interactive, command.ShellProvider);
-        string? manifestPath = effectiveRequests.Count > 0 ? effectiveRequests[0].Request.Options.ManifestPath : null;
+        DotnetInstallRoot installRoot = GetInstallRootOrDefault(effectiveRequests, defaultInstallRoot);
+        string? manifestPath = GetManifestPath(effectiveRequests);
 
-        // Step 2: Prompt about admin installs before setting up the environment.
-        List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
+        // A failed install (e.g. one unavailable runtime version) must not prevent us from
+        // configuring the environment for the installs that DID succeed. The install step is
+        // already best-effort — it installs every available request and then throws for the
+        // failures — so we capture that failure, finish applying configuration below, and then
+        // rethrow (before printing "Setup complete!") so the error still surfaces to the caller
+        // (and telemetry).
+        ExceptionDispatchInfo? installFailure = null;
+        try
+        {
+            if (selection.Migrations.Count > 0)
+            {
+                effectiveRequests = RunInstallsWithMigration(
+                    command, effectiveRequests, selection.Migrations, installRoot, manifestPath, predownloadTask);
+            }
+            else
+            {
+                RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
+            }
+        }
+        catch (DotnetInstallException ex)
+        {
+            installFailure = ExceptionDispatchInfo.Capture(ex);
+        }
+
+        // Save config and apply configuration(s) regardless of partial install failure, so the
+        // user's choice persists and the successful installs are usable (PATH / shell profile).
+        const bool dotnetupOnPath = true;
+        SaveConfig(accessMode, dotnetupOnPath);
+
+        ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
+            .Inspect(command.ShellProvider ?? ShellDetection.GetCurrentShellProvider());
+        EnvSettingsApplier.Apply(
+            accessMode,
+            dotnetupOnPath,
+            observed,
             _dotnetEnvironment,
-            pathPreference,
-            installRoot,
-            manifestPath,
-            effectiveRequests,
-            command.Interactive);
+            installRoot.Path,
+            command.ShellProvider);
 
-        if (toMigrate.Count > 0)
-        {
-            effectiveRequests = RunInstallsWithMigration(
-                command, effectiveRequests, toMigrate, installRoot, manifestPath, predownloadTask);
-        }
-        else
-        {
-            RunInstallRequests(effectiveRequests, predownloadTask, command.NoProgress, command);
-        }
+        // One or more installs failed; surface the error after configuration was applied.
+        installFailure?.Throw();
 
-        // Save config and apply configuration(s).
-        SaveConfigAndDisplayResult(pathPreference, previousPreference);
-
-        if (pathPreference is PathPreference.ShellProfile)
-        {
-            _dotnetEnvironment.ApplyTerminalProfileModifications(installRoot.Path, shellProvider: command.ShellProvider);
-        }
-
-        if (ShouldReplaceSystemConfiguration(pathPreference))
-        {
-            _dotnetEnvironment.ApplyEnvironmentModifications(InstallType.User, installRoot.Path);
-        }
+        DisplaySetupResult(accessMode, previousAccessMode);
 
         return effectiveRequests;
     }
@@ -133,10 +201,22 @@ internal class InitWorkflows
         }
 
         // Generate the install request via the workflow (handles path resolution, global.json, validation)
-        var workflow = new InstallWorkflow(command);
-        return workflow.GenerateInstallRequests(
-            [new MinimalInstallSpec(InstallComponent.SDK, selectedChannel)]);
+        return InitWorkflowDefaults.GenerateSdkInstallRequests(command, selectedChannel);
     }
+
+    /// <summary>
+    /// Returns the first request's install root when any requests exist, otherwise the fallback.
+    /// </summary>
+    private static DotnetInstallRoot GetInstallRootOrDefault(
+        List<ResolvedInstallRequest> requests,
+        DotnetInstallRoot fallback)
+        => requests.Count > 0 ? requests[0].Request.InstallRoot : fallback;
+
+    /// <summary>
+    /// Returns the manifest path carried by the first request, or null when there are no requests.
+    /// </summary>
+    private static string? GetManifestPath(List<ResolvedInstallRequest> requests)
+        => requests.Count > 0 ? requests[0].Request.Options.ManifestPath : null;
 
     /// <summary>
     /// Two-phase install used by the init walkthrough when migrations were selected.
@@ -187,38 +267,33 @@ internal class InitWorkflows
         InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, noProgress, command);
     }
 
-    private static PathPreference GetInitPathPreference(bool interactive, IEnvShellProvider? shellProvider = null)
+    private static DotnetAccessMode GetInitAccessMode(bool interactive, IEnvShellProvider? shellProvider = null)
     {
         if (!interactive)
         {
-            if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
-            {
-                return PathPreference.DotnetupDotnet;
-            }
-
-            return PathPreference.ShellProfile;
+            return InitWorkflowDefaults.GetDefaultAccessMode(shellProvider);
         }
 
         if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
         {
             SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
                 $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{ShellDetection.GetCurrentShellDisplayName().EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
-            return PathPreference.DotnetupDotnet;
+            return DotnetAccessMode.None;
         }
 
-        return ValidatePathPreference(PromptPathPreference());
+        return ValidateAccessMode(PromptAccessMode());
     }
 
-    private static PathPreference ValidatePathPreference(PathPreference preference)
+    private static DotnetAccessMode ValidateAccessMode(DotnetAccessMode accessMode)
     {
-        if (preference == PathPreference.FullPathReplacement && !OperatingSystem.IsWindows())
+        if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(accessMode))
         {
             throw new DotnetInstallException(
                 DotnetInstallErrorCode.PlatformNotSupported,
                 Strings.PathReplacementModeUnixError);
         }
 
-        return preference;
+        return accessMode;
     }
 
     // ── Prompt Functions ──
@@ -233,9 +308,7 @@ internal class InitWorkflows
         string brand = DotnetupTheme.Current.Brand;
         string dim = DotnetupTheme.Current.Dim;
 
-        SpectreAnsiConsole.MarkupLine($"Welcome to [{brand} bold]dotnetup[/]!");
-        SpectreAnsiConsole.WriteLine();
-
+        // The summary screen already greeted the user before reaching this customize prompt.
         SpectreAnsiConsole.MarkupLine(string.Format(
             CultureInfo.InvariantCulture,
             "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",
@@ -281,38 +354,39 @@ internal class InitWorkflows
     /// Prompts the user to choose how they want to access the dotnetup-managed dotnet
     /// using an interactive selector that shows all options with descriptions and tooltips.
     /// </summary>
-    internal static PathPreference PromptPathPreference()
+    internal static DotnetAccessMode PromptAccessMode()
     {
         bool isWindows = OperatingSystem.IsWindows();
 
         string isolationTooltip = string.Format(
             CultureInfo.InvariantCulture,
-            Strings.PathTooltipDotnetupDotnet,
+            Strings.PathTooltipNone,
             isWindows ? "Program Files" : "/usr/local");
 
         string terminalTooltip = isWindows
-            ? Strings.PathTooltipShellProfile + " " + Strings.PathTooltipShellProfileWindowsNote
-            : Strings.PathTooltipShellProfile;
+            ? Strings.PathTooltipShell + " " + Strings.PathTooltipShellWindowsNote
+            : Strings.PathTooltipShell;
 
+        var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
         var options = new List<SelectableOption>
         {
-            new("i", Strings.PathPreferenceDotnetupDotnet, Strings.PathDescriptionDotnetupDotnet, isolationTooltip),
-            new("t", Strings.PathPreferenceShellProfile,   isWindows ? Strings.PathDescriptionShellProfile : Strings.PathDescriptionShellProfileBase,   terminalTooltip),
+            new(Strings.AccessModeNone, Strings.PathDescriptionNone, isolationTooltip),
+            new(Strings.AccessModeShell, isWindows ? Strings.PathDescriptionShell : Strings.PathDescriptionShellBase, terminalTooltip),
         };
 
         if (isWindows)
         {
-            options.Add(new("r", Strings.PathPreferenceFullReplacement, Strings.PathDescriptionFullReplacement, Strings.PathTooltipFullReplacement));
+            modes.Add(DotnetAccessMode.Everywhere);
+            options.Add(new(Strings.AccessModeEverywhere, Strings.PathDescriptionEverywhere, Strings.PathTooltipEverywhere));
         }
 
-        int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex: 1);
+        // Highlight the recommended mode by default so the customize prompt agrees with the summary
+        // (e.g. Everywhere on Windows), rather than always defaulting to a fixed option.
+        int defaultIndex = Math.Max(0, modes.IndexOf(InitWorkflowDefaults.GetDefaultAccessMode()));
 
-        return selected switch
-        {
-            0 => PathPreference.DotnetupDotnet,
-            1 => PathPreference.ShellProfile,
-            _ => PathPreference.FullPathReplacement,
-        };
+        int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex);
+
+        return modes[selected];
     }
 
     /// <summary>
@@ -322,24 +396,21 @@ internal class InitWorkflows
     /// <returns>A list of deduplicated channel selections to migrate, or an empty list if the user declines or no candidates remain.</returns>
     internal static List<MigrationWorkflow.MigrationSelection> PromptInstallsToMigrateIfDesired(
         IDotnetEnvironmentManager dotnetEnvironment,
-        PathPreference pathPreference,
+        DotnetAccessMode accessMode,
         DotnetInstallRoot installRoot,
         string? manifestPath = null,
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null,
         bool interactive = true)
     {
-        if (!ShouldPromptToConvertSystemInstalls(pathPreference))
-        {
-            return [];
-        }
-
         if (!interactive)
         {
             return [];
         }
 
-        var systemInstalls = MigrationWorkflow.GetMigrationCandidates(dotnetEnvironment);
-        var migrationSelections = MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, manifestPath, existingRequests);
+        // ResolveDefaultMigrations already returns an empty list for modes that do not migrate
+        // system installs, so no separate ShouldPromptToConvertSystemInstalls guard is needed here.
+        var migrationSelections = InitWorkflowDefaults.ResolveDefaultMigrations(
+            dotnetEnvironment, accessMode, installRoot, manifestPath, existingRequests);
         if (migrationSelections.Count == 0)
         {
             return [];
@@ -376,9 +447,10 @@ internal class InitWorkflows
             return [];
         }
 
-        // Find the system install path for display purposes
+        // Find the system install path for display purposes. Whether the dotnet winning on PATH is
+        // a dotnetup hive is irrelevant here; we want its location only when it is a system install.
         var currentInstall = dotnetEnvironment.GetCurrentPathConfiguration();
-        string systemPath = currentInstall?.InstallType == InstallType.System
+        string systemPath = currentInstall is not null && InstallPathClassifier.IsAdminInstallPath(currentInstall.Path)
             ? currentInstall.Path
             : DotnetEnvironmentManager.GetSystemDotnetPaths().FirstOrDefault() ?? "the system .NET location";
 
@@ -388,7 +460,7 @@ internal class InitWorkflows
 
         var confirmResult = SpectreDisplayHelpers.RenderScrollableListWithConfirm(
             displayItems,
-            visibleCount: 3,
+            visibleCount: MigrationWorkflow.MigrationPreviewCount,
             "Do you want dotnetup to install matching versions in its managed directory?");
 
         HandleMigrationConfirmResult(confirmResult);
@@ -472,6 +544,9 @@ internal class InitWorkflows
             new(NoneChannel, "I'll tell you what to install later.", null),
             new(ChannelVersionResolver.LtsChannel, "Long Term Support", ltsVersion),
             new(ChannelVersionResolver.PreviewChannel, "Latest preview", previewVersion),
+            // Daily resolves against the blob feed, so we don't pre-resolve a version here to avoid
+            // a slow/failing network call during the prompt; it is shown without a resolved version.
+            new(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build", null),
         };
 
         if (latestResolved is not null)
@@ -490,7 +565,9 @@ internal class InitWorkflows
 
     private static string FormatChannelExample(ChannelExample ex, string brand, string dim)
     {
-        if (ex.Channel == NoneChannel)
+        // The "none" sentinel and the daily channel carry no pre-resolved version, so they render
+        // as channel + description without a "→ version" (or "no version available") suffix.
+        if (ex.Channel is NoneChannel or ChannelVersionResolver.DailyChannel)
         {
             return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]  [{2}]{3}[/]",
                 brand,
@@ -514,34 +591,34 @@ internal class InitWorkflows
             resolved);
     }
 
-    private static void SaveConfigAndDisplayResult(PathPreference pathPreference, PathPreference? previousPreference)
+    /// <summary>
+    /// Writes the dotnetup config capturing the user's access mode. Safe to call on the
+    /// failure path so the choice persists even when an install did not complete.
+    /// </summary>
+    private static void SaveConfig(DotnetAccessMode accessMode, bool dotnetupOnPath)
+        => DotnetupConfig.Write(new DotnetupConfigData { AccessMode = accessMode, DotnetupOnPath = dotnetupOnPath });
+
+    private static void DisplaySetupResult(DotnetAccessMode accessMode, DotnetAccessMode? previousAccessMode)
     {
-        var config = new DotnetupConfigData
+        // Only show guidance when the access mode actually changed (or first-time setup).
+        if (previousAccessMode != accessMode)
         {
-            PathPreference = pathPreference,
-        };
-
-        DotnetupConfig.Write(config);
-
-        // Only show guidance when the preference actually changed (or first-time setup).
-        if (previousPreference != pathPreference)
-        {
-            DisplayPathGuidance(pathPreference);
+            DisplayPathGuidance(accessMode);
         }
 
         SpectreAnsiConsole.MarkupLine(DotnetupTheme.Brand("Setup complete!"));
     }
 
     /// <summary>
-    /// Shows guidance based on the chosen path preference.
+    /// Shows guidance based on the chosen access mode.
     /// </summary>
-    private static void DisplayPathGuidance(PathPreference preference)
+    private static void DisplayPathGuidance(DotnetAccessMode accessMode)
     {
-        string? guidance = preference switch
+        string? guidance = accessMode switch
         {
-            PathPreference.DotnetupDotnet => Strings.PathGuidanceDotnetupDotnet,
-            PathPreference.ShellProfile => Strings.PathGuidanceShellProfile,
-            PathPreference.FullPathReplacement => Strings.PathGuidanceFullReplacement,
+            DotnetAccessMode.None => Strings.PathGuidanceNone,
+            DotnetAccessMode.Shell => Strings.PathGuidanceShell,
+            DotnetAccessMode.Everywhere => Strings.PathGuidanceEverywhere,
             _ => null,
         };
 

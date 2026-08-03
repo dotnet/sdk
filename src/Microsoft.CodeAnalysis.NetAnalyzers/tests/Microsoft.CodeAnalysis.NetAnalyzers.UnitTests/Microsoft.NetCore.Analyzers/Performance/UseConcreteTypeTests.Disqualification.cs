@@ -3,15 +3,15 @@
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
-    public static partial class UseConcreteTypeTests
+    [TestClass]
+    public partial class UseConcreteTypeTests
     {
-        [Theory]
-        [MemberData(nameof(DisqualifiedSources))]
-        public static async Task Disqualication(string insert)
+        [TestMethod]
+        [DynamicData(nameof(DisqualifiedSources))]
+        public async Task Disqualication(string insert)
         {
             string source = @$"
                 #pragma warning disable CS8019

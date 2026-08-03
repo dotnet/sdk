@@ -9,6 +9,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.MsiInstallerTests
 {
+    [TestClass]
     public class WorkloadTests : VMTestBase
     {
         const string RollbackRC1 = """
@@ -45,7 +46,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 }
                 """;
 
-        public WorkloadTests(ITestOutputHelper log) : base(log)
+        public WorkloadTests()
         {
         }
 
@@ -69,7 +70,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             return ApplyManifests(Rollback8_0_101, "8.0.101");
         }
 
-        [Fact]
+        [TestMethod]
         public void InstallWasm()
         {
             InstallSdk();
@@ -79,7 +80,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallWorkload("wasm-tools", skipManifestUpdate: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void InstallAndroid()
         {
             InstallSdk();
@@ -89,7 +90,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallWorkload("android", skipManifestUpdate: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void InstallAndroidAndWasm()
         {
             InstallSdk();
@@ -101,7 +102,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             InstallWorkload("wasm-tools", skipManifestUpdate: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void SdkInstallation()
         {
             var command = VM.CreateRunCommand("dotnet", "--version");
@@ -146,7 +147,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
 
-        [Fact]
+        [TestMethod]
         public void WorkloadInstallationAndGarbageCollection()
         {
             InstallSdk();
@@ -180,7 +181,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
         }
 
         //  Fixed by https://github.com/dotnet/installer/pull/18266
-        [Fact]
+        [TestMethod]
         public void InstallStateShouldBeRemovedOnSdkUninstall()
         {
             InstallSdk();
@@ -193,7 +194,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             VM.GetRemoteFile(installStatePath).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void UpdateWithRollback()
         {
             InstallSdk();
@@ -208,7 +209,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
                 .NotHaveStdOutContaining("Installing");
         }
 
-        [Fact]
+        [TestMethod]
         public void InstallWithRollback()
         {
             InstallSdk();
@@ -222,7 +223,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             TestWasmWorkload();
         }
 
-        [Fact]
+        [TestMethod]
         public void InstallShouldNotUpdatePinnedRollback()
         {
             InstallSdk();
@@ -234,7 +235,7 @@ namespace Microsoft.DotNet.MsiInstallerTests
             GetWorkloadVersion().Should().Be(workloadVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void UpdateShouldUndoPinnedRollback()
         {
             InstallSdk();
@@ -249,19 +250,19 @@ namespace Microsoft.DotNet.MsiInstallerTests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotShowRebootMessage()
         {
             throw new NotImplementedException();
         }
 
-        [Fact]
+        [TestMethod]
         public void ApplyRollbackShouldNotUpdateAdvertisingManifests()
         {
             throw new NotImplementedException();
         }
 
-        [Fact]
+        [TestMethod]
         public void TestAspire()
         {
             InstallSdk();

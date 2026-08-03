@@ -6,13 +6,14 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Cli.Run.Tests
 {
+    [TestClass]
     public class GivenDotnetRunRunsVbproj : SdkTest
     {
-        public GivenDotnetRunRunsVbproj(ITestOutputHelper log) : base(log)
+        public GivenDotnetRunRunsVbproj()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItGivesAnErrorWhenAttemptingToUseALaunchProfileThatDoesNotExistWhenThereIsNoLaunchSettingsFile()
         {
             var testAppName = "VBTestApp";
@@ -34,7 +35,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                     """));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFailsWhenTryingToUseLaunchProfileSharingTheSameNameWithAnotherProfileButDifferentCapitalization()
         {
             var testAppName = "AppWithDuplicateLaunchProfiles";
@@ -53,7 +54,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .HaveStdErrContaining(expectedError);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItFailsWithSpecificErrorMessageIfLaunchProfileDoesntExist()
         {
             var testAppName = "VbAppWithLaunchSettings";
@@ -71,9 +72,9 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .HaveStdErrContaining(string.Format(ProjectTools.Resources.LaunchProfileDoesNotExist, invalidLaunchProfileName));
         }
 
-        [Theory]
-        [InlineData("Second")]
-        [InlineData("sEcoND")] // ItAcceptsLaunchProfileWithAlternativeCasing
+        [TestMethod]
+        [DataRow("Second")]
+        [DataRow("sEcoND")] // ItAcceptsLaunchProfileWithAlternativeCasing
         public void ItUsesLaunchProfileOfTheSpecifiedName(string launchProfileName)
         {
             var testAppName = "VbAppWithLaunchSettings";
@@ -93,7 +94,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .HaveStdErrContaining(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDefaultsToTheFirstUsableLaunchProfile()
         {
             var testAppName = "VbAppWithLaunchSettings";
@@ -112,7 +113,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("First");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItPrintsUsingLaunchSettingsMessageWhenNotQuiet()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("VbAppWithLaunchSettings")
@@ -130,7 +131,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .And.HaveStdOutContaining("First");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItGivesAnErrorWhenTheLaunchProfileNotFound()
         {
             var testAppName = "VbAppWithLaunchSettings";
