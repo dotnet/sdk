@@ -1,7 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using BenchmarkDotNet.Configs;
+using BenchmarkDotNet.Engines;
+using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
+using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
 namespace Benchmark;
 
@@ -20,7 +24,16 @@ internal class Program
         }
         else if (args is ["--pack-publish"])
         {
-            BenchmarkRunner.Run<PackPublishBenchmark>();
+            Job job = Job.Default
+                .WithToolchain(new InProcessEmitToolchain(TimeSpan.FromHours(2), true))
+                .WithStrategy(RunStrategy.Monitoring)
+                .WithLaunchCount(1)
+                .WithWarmupCount(PackPublishBenchmark.WarmupCount)
+                .WithIterationCount(PackPublishBenchmark.IterationCount)
+                .WithInvocationCount(1)
+                .WithUnrollFactor(1);
+            ManualConfig config = ManualConfig.Create(DefaultConfig.Instance).AddJob(job);
+            BenchmarkRunner.Run<PackPublishBenchmark>(config);
         }
         else if (args is ["--pack-publish-smoke"])
         {

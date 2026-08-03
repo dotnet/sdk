@@ -3,11 +3,9 @@
 
 using System.Diagnostics;
 using System.Globalization;
-using System.Text;
 using System.Text.Json;
 using System.Xml.Linq;
 using BenchmarkDotNet.Attributes;
-using BenchmarkDotNet.Engines;
 using PackPublishMetricsStartupHook;
 
 namespace Benchmark;
@@ -15,13 +13,6 @@ namespace Benchmark;
 /// <summary>
 /// Measures paired external <c>dotnet pack</c> and <c>dotnet publish</c> commands on OrchardCore.
 /// </summary>
-[SimpleJob(
-    RunStrategy.Monitoring,
-    launchCount: 1,
-    warmupCount: WarmupCount,
-    iterationCount: IterationCount,
-    invocationCount: 1)]
-[InProcess]
 [MinColumn]
 [MaxColumn]
 [MedianColumn]
@@ -31,8 +22,8 @@ public class PackPublishBenchmark
     private const string ConfigurationEnvironmentVariable = "DOTNET_SDK_PACK_PUBLISH_BENCHMARK_CONFIG";
     private const string RunIdEnvironmentVariable = "DOTNET_SDK_PACK_PUBLISH_BENCHMARK_RUN_ID";
     private const string MetricsOutputDirectoryEnvironmentVariable = "DOTNET_CLI_BENCHMARK_METRICS_DIRECTORY";
-    private const int WarmupCount = 3;
-    private const int IterationCount = 12;
+    internal const int WarmupCount = 3;
+    internal const int IterationCount = 12;
 
     private readonly Dictionary<BenchmarkCell, PreparedCell> _preparedCells = [];
     private BenchmarkSettings _settings = null!;
