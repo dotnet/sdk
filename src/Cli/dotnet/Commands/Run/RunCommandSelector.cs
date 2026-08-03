@@ -188,6 +188,7 @@ internal sealed class RunCommandSelector : IDisposable
 
         try
         {
+            using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
             _collection = new ProjectCollection(
                 globalProperties: _globalProperties,
                 loggers: GetLoggers(),
@@ -236,11 +237,14 @@ internal sealed class RunCommandSelector : IDisposable
         // Create a new project without TargetFramework.
         var restoreProperties = new Dictionary<string, string>(_globalProperties, StringComparer.OrdinalIgnoreCase);
         restoreProperties.Remove("TargetFramework");
-        _restoreCollection = new ProjectCollection(
-            globalProperties: restoreProperties,
-            loggers: null,
-            toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-        _restoreProject = _restoreCollection.LoadProject(_projectFilePath);
+        using (MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables())
+        {
+            _restoreCollection = new ProjectCollection(
+                globalProperties: restoreProperties,
+                loggers: null,
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+            _restoreProject = _restoreCollection.LoadProject(_projectFilePath);
+        }
         return _restoreProject.CreateProjectInstance();
     }
 
@@ -347,11 +351,15 @@ internal sealed class RunCommandSelector : IDisposable
         {
             // Run restore without TargetFramework to prevent it from cascading to
             // dependency projects. See https://github.com/dotnet/sdk/issues/53488
-            var restoreResult = CreateRestoreProjectInstance().Build(
-                targets: ["Restore"],
-                loggers: GetLoggers(),
-                remoteLoggers: null,
-                out _);
+            bool restoreResult;
+            using (MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables())
+            {
+                restoreResult = CreateRestoreProjectInstance().Build(
+                    targets: ["Restore"],
+                    loggers: GetLoggers(),
+                    remoteLoggers: null,
+                    out _);
+            }
             if (!restoreResult)
             {
                 return false;
@@ -361,11 +369,16 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         // Build the target
-        var buildResult = projectInstance.Build(
-            targets: [Constants.ComputeAvailableDevices],
-            loggers: GetLoggers(),
-            remoteLoggers: null,
-            out var targetOutputs);
+        bool buildResult;
+        IDictionary<string, TargetResult> targetOutputs;
+        using (MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables())
+        {
+            buildResult = projectInstance.Build(
+                targets: [Constants.ComputeAvailableDevices],
+                loggers: GetLoggers(),
+                remoteLoggers: null,
+                out targetOutputs);
+        }
 
         if (!buildResult)
         {
@@ -591,11 +604,15 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         // Build the DeployToDevice target
-        var buildResult = projectInstance.Build(
-            targets: [Constants.DeployToDevice],
-            loggers: GetLoggers(),
-            remoteLoggers: null,
-            out _);
+        bool buildResult;
+        using (MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables())
+        {
+            buildResult = projectInstance.Build(
+                targets: [Constants.DeployToDevice],
+                loggers: GetLoggers(),
+                remoteLoggers: null,
+                out _);
+        }
 
         return buildResult;
     }

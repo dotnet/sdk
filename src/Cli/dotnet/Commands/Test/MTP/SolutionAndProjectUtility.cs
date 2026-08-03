@@ -621,6 +621,8 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
+                using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
                 if (project.Targets.ContainsKey(Constants.DeployToDevice))
                 {
                     // Deploy on a fresh ProjectInstance to avoid accumulating state (existing item

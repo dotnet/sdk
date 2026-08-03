@@ -292,6 +292,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // Check if TargetFramework is already specified via -f/--framework or -p:TargetFramework=
         if (!globalProperties.ContainsKey(ProjectProperties.TargetFramework))
         {
+            using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
             // Evaluate the project to get TargetFrameworks
             using var collection = new ProjectCollection(
                 globalProperties,
