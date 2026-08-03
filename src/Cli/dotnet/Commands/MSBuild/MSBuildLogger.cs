@@ -125,7 +125,10 @@ public sealed class MSBuildLogger : INodeLogger
 
     private void OnBuildStarted(object sender, BuildStartedEventArgs e)
     {
-        ActivityContext parentContext = Activity.Current?.Context ?? TelemetryClient.ParentActivityContext;
+        ActivityContext parentContext =
+            Activity.Current?.Context
+            ?? TelemetryClient.GetParentActivityContext()
+            ?? TelemetryClient.ParentActivityContext;
         _activity = Activities.Source.StartActivity(
             "msbuild",
             ActivityKind.Internal,

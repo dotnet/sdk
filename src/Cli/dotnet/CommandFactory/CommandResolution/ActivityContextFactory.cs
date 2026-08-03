@@ -3,10 +3,6 @@
 
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
-#if TARGET_WINDOWS
-using OpenTelemetry;
-using OpenTelemetry.Context.Propagation;
-#endif
 
 namespace Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
 
@@ -25,24 +21,16 @@ public static class ActivityContextFactory
             return null;
         }
 
-        var environment = new Dictionary<string, string>(capacity: 2);
-#if TARGET_WINDOWS
-        var propagationContext = new PropagationContext(activityContext, Baggage.Current);
-        Propagators.DefaultTextMapPropagator.Inject(propagationContext, environment, WriteTraceStateIntoEnvironment);
-#endif
-        return environment;
-    }
-
-    private static void WriteTraceStateIntoEnvironment(Dictionary<string, string> environment, string key, string value)
-    {
-        switch (key)
+        var environment = new Dictionary<string, string>(capacity: 2)
         {
-            case "traceparent":
-                environment[Activities.TRACEPARENT] = value;
-                break;
-            case "tracestate":
-                environment[Activities.TRACESTATE] = value;
-                break;
+            [Activities.TRACEPARENT] = $"00-{activityContext.TraceId}-{activityContext.SpanId}-{(activityContext.TraceFlags == ActivityTraceFlags.Recorded ? "01" : "00")}"
+        };
+
+        if (!string.IsNullOrEmpty(activityContext.TraceState))
+        {
+            environment[Activities.TRACESTATE] = activityContext.TraceState;
         }
+
+        return environment;
     }
 }

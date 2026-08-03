@@ -272,5 +272,64 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             stoppedActivity.Should().NotBeNull();
             stoppedActivity.Status.Should().Be(ActivityStatusCode.Ok);
         }
+
+        [TestMethod]
+        [DoNotParallelize]
+        public void ItUsesTheCurrentParentContextForEachServerBuild()
+        {
+            string originalTraceParent = Environment.GetEnvironmentVariable(Activities.TRACEPARENT);
+            Activity ambientActivity = Activity.Current;
+            Activity.Current = null;
+
+            try
+            {
+                ActivitySource activitySource = Activities.Source;
+                using var listener = new ActivityListener
+                {
+                    ShouldListenTo = source => source == activitySource,
+                    Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                };
+                ActivitySource.AddActivityListener(listener);
+
+                var firstParent = new ActivityContext(
+                    ActivityTraceId.CreateRandom(),
+                    ActivitySpanId.CreateRandom(),
+                    ActivityTraceFlags.Recorded,
+                    isRemote: true);
+                var firstActivity = RunBuildWithParent(firstParent);
+
+                var secondParent = new ActivityContext(
+                    ActivityTraceId.CreateRandom(),
+                    ActivitySpanId.CreateRandom(),
+                    ActivityTraceFlags.Recorded,
+                    isRemote: true);
+                var secondActivity = RunBuildWithParent(secondParent);
+
+                firstActivity.TraceId.Should().Be(firstParent.TraceId);
+                firstActivity.ParentSpanId.Should().Be(firstParent.SpanId);
+                secondActivity.TraceId.Should().Be(secondParent.TraceId);
+                secondActivity.ParentSpanId.Should().Be(secondParent.SpanId);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(Activities.TRACEPARENT, originalTraceParent);
+                Activity.Current = ambientActivity;
+            }
+
+            static Activity RunBuildWithParent(ActivityContext parentContext)
+            {
+                Environment.SetEnvironmentVariable(
+                    Activities.TRACEPARENT,
+                    $"00-{parentContext.TraceId}-{parentContext.SpanId}-01");
+
+                var eventSource = new PersistentDispatcher([]);
+                var logger = new MSBuildLogger(new FakeTelemetry());
+                logger.Initialize(eventSource);
+                eventSource.Dispatch(new BuildStartedEventArgs("Build started.", helpKeyword: null));
+                Activity activity = Activity.Current;
+                eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
+                return activity;
+            }
+        }
     }
 }

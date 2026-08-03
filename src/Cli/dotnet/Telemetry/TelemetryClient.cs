@@ -211,7 +211,7 @@ public class TelemetryClient : ITelemetryClient
     /// bridge via <c>hostfxr_set_runtime_property_value</c>), then falls back to the
     /// <c>TRACEPARENT</c> / <c>TRACESTATE</c> environment variables.
     /// </summary>
-    private static ActivityContext? GetParentActivityContext()
+    internal static ActivityContext? GetParentActivityContext()
     {
         // Runtime properties take precedence — they are set by the AOT bridge when it
         // falls back to the managed CLI so that the managed spans become children of the

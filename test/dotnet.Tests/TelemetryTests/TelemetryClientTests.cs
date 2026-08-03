@@ -111,12 +111,31 @@ public class TelemetryClientTests : SdkTest
 
             var msbuildActivities = activities.Where(activity =>
                 activity?["events"]?.AsArray()
-                    .Any(@event => @event?["name"]?.GetValue<string>().StartsWith("dotnet/cli/msbuild/") == true) == true);
+                    .Any(@event => @event?["name"]?.GetValue<string>().StartsWith("dotnet/cli/msbuild/") == true) == true)
+                .ToArray();
 
             var msbuildTraceIds = msbuildActivities
                 .Select(activity => activity?["identifiers"]?["traceId"]?.GetValue<string>())
                 .Distinct();
             msbuildTraceIds.Should().HaveCount(2);
+
+            var invocationTraceIds = activities
+                .Where(activity => activity?["operationName"]?.GetValue<string>() == "invocation")
+                .Select(activity => activity?["identifiers"]?["traceId"]?.GetValue<string>())
+                .ToHashSet();
+            var activityContexts = activities
+                .Select(activity => (
+                    traceId: activity?["identifiers"]?["traceId"]?.GetValue<string>(),
+                    spanId: activity?["identifiers"]?["spanId"]?.GetValue<string>()))
+                .ToHashSet();
+
+            var msbuildParentContexts = msbuildActivities
+                .Select(activity => (
+                    traceId: activity?["identifiers"]?["traceId"]?.GetValue<string>(),
+                    spanId: activity?["identifiers"]?["parentSpanId"]?.GetValue<string>()))
+                .ToArray();
+            msbuildParentContexts.Should().OnlyContain(
+                context => invocationTraceIds.Contains(context.traceId) && activityContexts.Contains(context));
         }
         finally
         {

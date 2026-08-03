@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Diagnostics;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Telemetry;
@@ -45,6 +46,21 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var msbuildPath = "<msbuildpath>";
             var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), msbuildPath).GetProcessStartInfo();
             startInfo.Environment.ContainsKey(envVarName).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void ItPropagatesTheCurrentActivityContext()
+        {
+            using var activity = new Activity("invocation")
+                .SetIdFormat(ActivityIdFormat.W3C)
+                .Start();
+            activity.TraceStateString = "vendor=value";
+
+            var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>").GetProcessStartInfo();
+
+            startInfo.Environment[Activities.TRACEPARENT]
+                .Should().Be($"00-{activity.TraceId}-{activity.SpanId}-{(activity.ActivityTraceFlags == ActivityTraceFlags.Recorded ? "01" : "00")}");
+            startInfo.Environment[Activities.TRACESTATE].Should().Be(activity.TraceStateString);
         }
 
         [TestMethod]
