@@ -91,6 +91,12 @@ Idempotency uses a hidden marker `<!-- vendored-sync:id={id}:{source-index} -->`
 in the issue body, not the title. Existing matching issues are updated in place
 when the rendered body changes; otherwise they are left alone.
 
+Because that marker embeds the *positional* index of the source, **`sources` is
+append-only**. Inserting or reordering entries shifts every later index, which
+orphans the open issues keyed to the old positions and files duplicates at the
+new ones. Always add a new source at the end of the array, even when that breaks
+an otherwise alphabetical list.
+
 The workflow never auto-closes issues. A reviewer closes the issue after the
 reconciliation PR is merged.
 
@@ -107,6 +113,10 @@ reconciliation PR is merged.
      (`gh api "repos/{repo}/contents/{path}?ref={ref}" --jq .sha`).
 3. Run `python .github/scripts/check_vendored_files.py validate` locally to
    confirm the structure is correct.
+
+To add another *source* to an existing entry, append it to the end of that
+entry's `sources` array — see the append-only note under
+[How drift is detected](#how-drift-is-detected).
 
 ## Reconciling drift
 
