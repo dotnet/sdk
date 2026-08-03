@@ -8,8 +8,12 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
-public class DefineStaticWebAssetEndpoints : Task
+[MSBuildMultiThreadableTask]
+public class DefineStaticWebAssetEndpoints : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] CandidateAssets { get; set; }
 
@@ -41,7 +45,8 @@ public class DefineStaticWebAssetEndpoints : Task
                 existingEndpointsByAssetFile,
                 Log,
                 contentTypeProvider,
-                additionalEndpointDefinitions),
+                additionalEndpointDefinitions,
+                TaskEnvironment),
             static (i, loop, state) => state.Process(i, loop),
             static worker => worker.Finally());
 
@@ -143,7 +148,8 @@ public class DefineStaticWebAssetEndpoints : Task
         Dictionary<string, HashSet<string>> existingEndpointsByAssetFile,
         TaskLoggingHelper log,
         ContentTypeProvider contentTypeProvider,
-        DefineStaticWebAssetEndpoints.AdditionalEndpointDefinition[] additionalEndpointDefinitions)
+        DefineStaticWebAssetEndpoints.AdditionalEndpointDefinition[] additionalEndpointDefinitions,
+        TaskEnvironment taskEnvironment)
     {
         public List<StaticWebAssetEndpoint> CollectedEndpoints { get; } = collectedEndpoints;
         public List<StaticWebAssetEndpoint> CurrentEndpoints { get; } = currentEndpoints;
@@ -152,6 +158,7 @@ public class DefineStaticWebAssetEndpoints : Task
         public TaskLoggingHelper Log { get; } = log;
         public ContentTypeProvider ContentTypeProvider { get; } = contentTypeProvider;
         public DefineStaticWebAssetEndpoints.AdditionalEndpointDefinition[] AdditionalEndpointDefinitions { get; } = additionalEndpointDefinitions;
+        public TaskEnvironment TaskEnvironment { get; } = taskEnvironment;
 
         private readonly List<StaticWebAsset.StaticWebAssetResolvedRoute> _resolvedRoutes = new(2);
 
@@ -325,7 +332,7 @@ public class DefineStaticWebAssetEndpoints : Task
 
         internal ParallelWorker Process(int i, ParallelLoopState _)
         {
-            var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i]);
+            var asset = StaticWebAsset.FromTaskItem(CandidateAssets[i], TaskEnvironment);
             asset.ComputeRoutes(_resolvedRoutes);
             // We extract these from the metadata because we avoid the conversion to their typed version and then back to string.
             var length = CandidateAssets[i].GetMetadata(nameof(StaticWebAsset.FileLength));

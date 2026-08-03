@@ -3,6 +3,7 @@
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class ProcessFrameworkReferencesTests
     {
         // Shared runtime graph templates
@@ -240,9 +241,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public string? NETCoreSdkPortableRuntimeIdentifier { get; set; }
         }
 
-        [Theory]
-        [InlineData(false)] // Without target platform
-        [InlineData(true)]  // With target platform
+        [TestMethod]
+        [DataRow(false)] // Without target platform
+        [DataRow(true)]  // With target platform
         public void It_resolves_AspNetCore_FrameworkReferences(bool withTargetPlatform)
         {
             var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", 
@@ -271,7 +272,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks[0].GetMetadata(MetadataKeys.Version).Should().Be("1.9.5");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_resolve_FrameworkReferences_if_targetframework_doesnt_match()
         {
             var aspNetCoreRef = CreateKnownFrameworkReference("Microsoft.AspNetCore.App", "netcoreapp3.0", "1.9.5");
@@ -292,7 +293,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimeFrameworks.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_KnownFrameworkReferences_with_RuntimePackAlwaysCopyLocal_It_resolves_FrameworkReferences()
         {
             var windowsSDKRef = CreateKnownFrameworkReference("Microsoft.Windows.SDK.NET.Ref", 
@@ -340,7 +341,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             runtimePack.GetMetadata(MetadataKeys.RuntimePackAlwaysCopyLocal).Should().Be("true");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_self_contained_FrameworkReferences_to_download()
         {
             var config = new TaskConfiguration
@@ -376,7 +377,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Given_reference_to_NETCoreApp_It_should_not_resolve_runtime_pack()
         {
             var config = new TaskConfiguration
@@ -410,12 +411,12 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref", "should not resolve runtime pack for Microsoft.NETCore.App");
         }
 
-        [Theory]
-        [InlineData(null, new[] { "win-x64", "win-x86", "linux-x64" }, "Multiple RuntimeIdentifiers without RuntimeIdentifier")]
-        [InlineData("", new[] { "win-x64", "linux-x64" }, "Empty RuntimeIdentifier with RuntimeIdentifiers")]
-        [InlineData("any", new[] { "win-x64" }, "Any RID with RuntimeIdentifiers")]
-        [InlineData(null, new string[0], "No RuntimeIdentifier with empty RuntimeIdentifiers")]
-        [InlineData(null, null, "No RuntimeIdentifier with null RuntimeIdentifiers")]
+        [TestMethod]
+        [DataRow(null, new[] { "win-x64", "win-x86", "linux-x64" }, "Multiple RuntimeIdentifiers without RuntimeIdentifier")]
+        [DataRow("", new[] { "win-x64", "linux-x64" }, "Empty RuntimeIdentifier with RuntimeIdentifiers")]
+        [DataRow("any", new[] { "win-x64" }, "Any RID with RuntimeIdentifiers")]
+        [DataRow(null, new string[0], "No RuntimeIdentifier with empty RuntimeIdentifiers")]
+        [DataRow(null, null, "No RuntimeIdentifier with null RuntimeIdentifiers")]
         public void It_processes_various_RuntimeIdentifier_scenarios(string? runtimeIdentifier, string[]? runtimeIdentifiers, string scenario)
         {
             var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net5.0", "5.0.0",
@@ -449,7 +450,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_processes_RuntimeIdentifiers_with_AlwaysCopyLocal_and_no_RuntimeIdentifier()
         {
             var config = new TaskConfiguration
@@ -478,7 +479,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.RuntimePacks[0].ItemSpec.Should().Be("Microsoft.Windows.SDK.NET.Ref");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_real_world_ridless_scenario_with_aot_and_trimming()
         {
             // This test reproduces the exact scenario from the reported issue
@@ -562,7 +563,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec.Contains("Microsoft.DotNet.ILCompiler"), "Should include AOT compiler tooling");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_AOT_properties_without_failure()
         {
             var config = new TaskConfiguration
@@ -591,7 +592,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.linux-x64");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_trimming_scenarios()
         {
             var config = new TaskConfiguration
@@ -618,7 +619,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.win-x64");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_combined_publish_properties()
         {
             var config = new TaskConfiguration
@@ -648,7 +649,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().Contain(p => p.ItemSpec == "Microsoft.NETCore.App.Runtime.osx-arm64");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_mobile_iOS_framework_references()
         {
             // Create compatible framework references with correct target framework
@@ -681,11 +682,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.TargetingPacks.Should().Contain(p => p.GetMetadata(MetadataKeys.NuGetPackageId) == "Microsoft.iOS.Ref");
         }
 
-        [Theory]
-        [InlineData(true, true, true, "All analyzers enabled")]
-        [InlineData(true, true, false, "AOT and Trim analyzers only")]
-        [InlineData(false, false, true, "SingleFile analyzer only")]
-        [InlineData(true, false, false, "AOT analyzer only")]
+        [TestMethod]
+        [DataRow(true, true, true, "All analyzers enabled")]
+        [DataRow(true, true, false, "AOT and Trim analyzers only")]
+        [DataRow(false, false, true, "SingleFile analyzer only")]
+        [DataRow(true, false, false, "AOT analyzer only")]
         public void It_handles_analyzer_combinations(bool aotAnalyzer, bool trimAnalyzer, bool singleFileAnalyzer, string scenario)
         {
             var config = new TaskConfiguration
@@ -712,10 +713,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.PackagesToDownload.Should().NotBeNull();
         }
 
-        [Theory]
-        [InlineData("Android", "34.0", "android-arm64")]
-        [InlineData("macOS", "14.0", "osx-arm64")]
-        [InlineData("Windows", "10.0.19041.0", "win-x64")]
+        [TestMethod]
+        [DataRow("Android", "34.0", "android-arm64")]
+        [DataRow("macOS", "14.0", "osx-arm64")]
+        [DataRow("Windows", "10.0.19041.0", "win-x64")]
         public void It_handles_different_target_platforms(string platformId, string platformVersion, string runtimeId)
         {
             var platformFrameworkRef = CreateKnownFrameworkReference($"Microsoft.{platformId}", "net8.0", "8.0.0",
@@ -756,7 +757,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.TargetingPacks.Should().NotBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_runtime_packs_for_SelfContained_deployment()
         {
             // This test validates the "good" behavior from good-processframeworkreferences-selfcontained.txt
@@ -826,7 +827,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ImplicitPackageReferences.Should().Contain(p => p.ItemSpec == "Microsoft.NET.ILLink.Tasks");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_runtime_packs_for_PublishTrimmed_without_SelfContained()
         {
             // This test validates that PublishTrimmed should trigger runtime pack resolution
@@ -897,14 +898,14 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "ILLink pack should be included for PublishTrimmed");
         }
 
-        [Theory]
-        [InlineData(true, false, false, false, "SelfContained only")]
-        [InlineData(false, true, false, false, "PublishTrimmed only")]
-        [InlineData(false, false, true, false, "PublishReadyToRun only")]
-        [InlineData(false, false, false, true, "PublishAot only")]
-        [InlineData(true, true, false, false, "SelfContained + PublishTrimmed")]
-        [InlineData(true, false, true, false, "SelfContained + PublishReadyToRun")]
-        [InlineData(false, true, true, false, "PublishTrimmed + PublishReadyToRun")]
+        [TestMethod]
+        [DataRow(true, false, false, false, "SelfContained only")]
+        [DataRow(false, true, false, false, "PublishTrimmed only")]
+        [DataRow(false, false, true, false, "PublishReadyToRun only")]
+        [DataRow(false, false, false, true, "PublishAot only")]
+        [DataRow(true, true, false, false, "SelfContained + PublishTrimmed")]
+        [DataRow(true, false, true, false, "SelfContained + PublishReadyToRun")]
+        [DataRow(false, true, true, false, "PublishTrimmed + PublishReadyToRun")]
         public void It_resolves_runtime_packs_for_various_publish_scenarios(
             bool selfContained, bool publishTrimmed, bool publishReadyToRun, bool publishAot, string scenario)
         {
@@ -955,7 +956,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 $"Should have runtime pack in output for scenario: {scenario}");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_handles_complex_cross_compilation_RuntimeIdentifiers()
         {
             var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net8.0", "8.0.0",
@@ -988,10 +989,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Theory]
-        [InlineData(null, "linux-x64")]
-        [InlineData("linux-x64", "linux-x64")]
-        [InlineData(NonPortableRid, NonPortableRid)]
+        [TestMethod]
+        [DataRow(null, "linux-x64")]
+        [DataRow("linux-x64", "linux-x64")]
+        [DataRow(NonPortableRid, NonPortableRid)]
         public void It_selects_correct_ILCompiler_based_on_RuntimeIdentifier(string? runtimeIdentifier, string expectedILCompilerRid)
         {
             var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App", "net10.0", "10.0.1",

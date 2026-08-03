@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.EnumStorageShouldBeInt32Analyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpEnumStorageShouldBeInt32Fixer>;
@@ -14,11 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class EnumStorageShouldBeInt32Tests
     {
         #region CSharpUnitTests
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -57,7 +57,7 @@ namespace Test
  ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_DiagnosticForInt64WithNoFlagsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -74,7 +74,7 @@ namespace Test
             GetCSharpResultAt(5, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum1", "long"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_DiagnosticForSByteAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -91,7 +91,7 @@ namespace Test
             GetCSharpResultAt(5, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum2", "sbyte"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1028_DiagnosticForUShortAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -111,7 +111,7 @@ namespace Test
 
         #region BasicUnitTests
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -143,7 +143,7 @@ End Module
  ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_DiagnosticForInt64WithNoFlagsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -158,7 +158,7 @@ End Module
             GetBasicResultAt(4, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum1", "Long"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_DiagnosticForByteAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -173,7 +173,7 @@ End Module
             GetBasicResultAt(4, 17, EnumStorageShouldBeInt32Analyzer.Rule, "TestEnum2", "Byte"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1028_DiagnosticForUShortAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

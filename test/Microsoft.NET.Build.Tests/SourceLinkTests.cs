@@ -8,14 +8,10 @@ using System.Reflection.Metadata;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class SourceLinkTests : SdkTest
     {
         private static readonly Guid s_embeddedSourceKindGuid = new("0E8A571B-6926-466E-B4AD-8AB04611F5FE");
-
-        public SourceLinkTests(ITestOutputHelper log)
-            : base(log)
-        {
-        }
 
         private void CreateGitFiles(string repoDir, string originUrl, string commitSha = "1200000000000000000000000000000000000000")
         {
@@ -56,7 +52,7 @@ namespace Microsoft.NET.Build.Tests
                 var attrDocHandle = mdReader.Documents.Single(h => mdReader.GetString(mdReader.GetDocument(h).Name).EndsWith(".AssemblyAttributes.cs"));
                 var cdis = mdReader.GetCustomDebugInformation(attrDocHandle);
 
-                Assert.Equal(expectedEmbeddedSources, cdis.Any(h => mdReader.GetGuid(mdReader.GetCustomDebugInformation(h).Kind) == s_embeddedSourceKindGuid));
+                Assert.AreEqual(expectedEmbeddedSources, cdis.Any(h => mdReader.GetGuid(mdReader.GetCustomDebugInformation(h).Kind) == s_embeddedSourceKindGuid));
             }
         }
 
@@ -94,7 +90,7 @@ namespace Microsoft.NET.Build.Tests
                 }
             });
 
-        [Fact]
+        [TestMethod]
         public void WithNoGitMetadata()
         {
             // We need to copy the test project to a directory outside of the SDK repo,
@@ -114,7 +110,8 @@ namespace Microsoft.NET.Build.Tests
         /// <summary>
         /// When creating a new repository locally we want the build to work and not report warnings even before the remote is set.
         /// </summary>
-        [RequiresMSBuildVersionFact("17.12.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12.0")]
         public void WithNoRemoteNoCommit()
         {
             var testAsset = TestAssetsManager
@@ -133,7 +130,8 @@ namespace Microsoft.NET.Build.Tests
         /// <summary>
         /// When creating a new repository locally we want the build to work and not report warnings even before the remote is set.
         /// </summary>
-        [RequiresMSBuildVersionFact("17.12.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12.0")]
         public void WithNoRemote()
         {
             var testAsset = TestAssetsManager
@@ -149,7 +147,7 @@ namespace Microsoft.NET.Build.Tests
             intermediateDir.Should().NotHaveFile("SourceLinkTestApp.sourcelink.json");
         }
 
-        [Fact]
+        [TestMethod]
         public void WithRemoteOrigin_UnknownDomain()
         {
             var testAsset = TestAssetsManager
@@ -169,12 +167,12 @@ namespace Microsoft.NET.Build.Tests
             intermediateDir.Should().NotHaveFile("SourceLinkTestApp.sourcelink.json");
         }
 
-        [Theory]
-        [InlineData("https://github.com/org/repo", "https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*", true)]
-        [InlineData("https://github.com/org/repo", "https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*", false)]
-        [InlineData("https://gitlab.com/org/repo", "https://gitlab.com/org/repo/-/raw/1200000000000000000000000000000000000000/*")]
-        [InlineData("https://bitbucket.org/org/repo", "https://api.bitbucket.org/2.0/repositories/org/repo/src/1200000000000000000000000000000000000000/*")]
-        [InlineData("https://test.visualstudio.com/org/_git/repo", "https://test.visualstudio.com/org/_apis/git/repositories/repo/items?api-version=1.0&versionType=commit&version=1200000000000000000000000000000000000000&path=/*")]
+        [TestMethod]
+        [DataRow("https://github.com/org/repo", "https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*", true)]
+        [DataRow("https://github.com/org/repo", "https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*", false)]
+        [DataRow("https://gitlab.com/org/repo", "https://gitlab.com/org/repo/-/raw/1200000000000000000000000000000000000000/*")]
+        [DataRow("https://bitbucket.org/org/repo", "https://api.bitbucket.org/2.0/repositories/org/repo/src/1200000000000000000000000000000000000000/*")]
+        [DataRow("https://test.visualstudio.com/org/_git/repo", "https://test.visualstudio.com/org/_apis/git/repositories/repo/items?api-version=1.0&versionType=commit&version=1200000000000000000000000000000000000000&path=/*")]
         public void WithRemoteOrigin_KnownDomain(string origin, string expectedLink, bool multitarget = false)
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
@@ -204,7 +202,7 @@ namespace Microsoft.NET.Build.Tests
                 var actualContent = File.ReadAllText(sourceLinkFilePath, Encoding.UTF8);
                 var expectedPattern = Path.Combine(testAsset.Path, "*").Replace("\\", "\\\\");
 
-                Assert.Equal($$$"""{"documents":{"{{{expectedPattern}}}":"{{{expectedLink}}}"}}""", actualContent);
+                Assert.AreEqual($$$"""{"documents":{"{{{expectedPattern}}}":"{{{expectedLink}}}"}}""", actualContent);
 
                 ValidatePdb(Path.Combine(intermediateDir.FullName, "SourceLinkTestApp.pdb"), expectedEmbeddedSources: true);
             }
@@ -219,9 +217,9 @@ namespace Microsoft.NET.Build.Tests
             Assert.Contains(@"repository type=""git"" commit=""1200000000000000000000000000000000000000""", nuspecStr);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void SuppressImplicitGitSourceLink_SetExplicitly(bool multitarget)
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
@@ -253,9 +251,9 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void SuppressImplicitGitSourceLink_ExplicitPackage(bool multitarget)
         {
             string targetFrameworks = ToolsetInfo.CurrentTargetFramework + (multitarget ? ";netstandard2.0" : "");
@@ -290,7 +288,9 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
+        [FullMSBuildOnly]
         public void Cpp()
         {
             var testAsset = TestAssetsManager
@@ -316,14 +316,15 @@ namespace Microsoft.NET.Build.Tests
             var actualContent = File.ReadAllText(sourceLinkFilePath, Encoding.UTF8);
             var expectedPattern = Path.Combine(testAsset.Path, "*").Replace("\\", "\\\\");
             var expectedSourceLink = $$$"""{"documents":{"{{{expectedPattern}}}":"https://raw.githubusercontent.com/org/repo/1200000000000000000000000000000000000000/*"}}""";
-            Assert.Equal(expectedSourceLink, actualContent);
+            Assert.AreEqual(expectedSourceLink, actualContent);
 
             var outputDir = Path.Combine(testAsset.Path, "NETCoreCppCliTest", "x64", "Debug");
             var pdbText = File.ReadAllText(Path.Combine(outputDir, "NETCoreCppCliTest.pdb"), Encoding.UTF8);
             Assert.Contains(expectedSourceLink, pdbText);
         }
 
-        [FullMSBuildOnlyFact]
+        [TestMethod]
+        [FullMSBuildOnly]
         public void LegacyDesktopWpf()
         {
             var testAsset = TestAssetsManager
@@ -339,7 +340,7 @@ namespace Microsoft.NET.Build.Tests
 
             buildCommand.Execute().Should().Pass();
 
-            Assert.True(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));
+            Assert.IsTrue(File.Exists(Path.Combine(testAsset.Path, "obj", "net472", "MainWindow.g.cs")));
         }
     }
 }

@@ -3,9 +3,10 @@
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenANETBuildExtensionsError
     {
-        [Fact]
+        [TestMethod]
         public void It_is_compiled_with_extensions_specific_name()
         {
             // Regression test for https://github.com/dotnet/sdk/issues/2061

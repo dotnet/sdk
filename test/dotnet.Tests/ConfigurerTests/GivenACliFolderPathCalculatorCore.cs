@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Configurer.UnitTests
 {
+    [TestClass]
     public class GivenACliFolderPathCalculatorCore
     {
-        [Fact]
+        [TestMethod]
         public void UsesDotnetCliHomeWhenSet()
         {
             var calculator = new CliFolderPathCalculatorCore(name =>
@@ -14,7 +15,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             calculator.GetDotnetHomePath().Should().Be("/custom/home");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void FallsBackToUserProfileOnWindowsWhenDotnetCliHomeIsEmpty()
         {
             var calculator = new CliFolderPathCalculatorCore(name => name switch
@@ -27,7 +29,8 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             calculator.GetDotnetHomePath().Should().Be(@"C:\Users\test");
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void FallsBackToHomeOnUnixWhenDotnetCliHomeIsEmpty()
         {
             var calculator = new CliFolderPathCalculatorCore(name => name switch
@@ -40,7 +43,7 @@ namespace Microsoft.DotNet.Configurer.UnitTests
             calculator.GetDotnetHomePath().Should().Be("/home/test");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetDotnetUserProfileFolderPathAppendsDotnetDirectory()
         {
             var calculator = new CliFolderPathCalculatorCore(name =>

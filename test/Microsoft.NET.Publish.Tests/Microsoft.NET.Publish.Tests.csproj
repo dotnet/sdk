@@ -1,14 +1,11 @@
-﻿<Project>
+<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
   </PropertyGroup>
 
-  <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
-
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
   </PropertyGroup>
 
@@ -19,11 +16,10 @@
   <ItemGroup>
     <PackageReference Include="AwesomeAssertions.Json" />
     <PackageReference Include="System.Reflection.MetadataLoadContext" />
-    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
     <ProjectReference Include="..\TelemetryStdOutLogger\TelemetryStdOutLogger.csproj" />
   </ItemGroup>
 
@@ -39,7 +35,5 @@
     <PackageReference Include="Microsoft.DotNet.XliffTasks" Version="$(MicrosoftDotNetXliffTasksPackageVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
     <EmbeddedResource Include="**\*.resx" Exclude="$(GlobalExclude)" />
   </ItemGroup>
-
-  <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
 </Project>

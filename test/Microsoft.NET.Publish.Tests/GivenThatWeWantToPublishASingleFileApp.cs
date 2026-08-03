@@ -11,6 +11,7 @@ using static Microsoft.NET.Publish.Tests.PublishTestUtils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishASingleFileApp : SdkTest
     {
         private const string TestProjectName = "HelloWorldWithSubDirs";
@@ -42,10 +43,6 @@ namespace Microsoft.NET.Publish.Tests
         private const string LargeNameDir = "This is a directory with a really long name for one that only contains a small file";
         private readonly string SmallNameDirWord = Path.Combine(SmallNameDir, "word").Replace('\\', '/'); // DirectoryInfoAssertions normalizes Path-Separator.
         private readonly string LargeNameDirWord = Path.Combine(SmallNameDir, LargeNameDir, ".word").Replace('\\', '/');
-
-        public GivenThatWeWantToPublishASingleFileApp(ITestOutputHelper log) : base(log)
-        {
-        }
 
         private PublishCommand GetPublishCommand(string identifier = null, [CallerMemberName] string callingMethod = "", Action<XDocument> projectChanges = null)
         {
@@ -88,7 +85,7 @@ namespace Microsoft.NET.Publish.Tests
                                                      runtimeIdentifier: runtimeIdentifier ?? RuntimeInformation.RuntimeIdentifier);
         }
 
-        [Fact]
+        [TestMethod]
         public void Incremental_add_single_file()
         {
             var testProject = new TestProject()
@@ -121,7 +118,7 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_errors_when_publishing_single_file_without_apphost()
         {
             GetPublishCommand()
@@ -132,9 +129,9 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotHaveSingleFileWithoutAppHost);
         }
 
-        [Theory]
-        [InlineData("Microsoft.NET.Sdk")]
-        [InlineData("Microsoft.NET.Sdk.Web")]
+        [TestMethod]
+        [DataRow("Microsoft.NET.Sdk")]
+        [DataRow("Microsoft.NET.Sdk.Web")]
         public void Target_after_AfterSdkPublish_executes(string sdk)
         {
             var projectChanges = (XDocument doc) =>
@@ -154,7 +151,7 @@ namespace Microsoft.NET.Publish.Tests
             publishResults.Should().HaveStdOutContaining("Executed AfterAfterSdkPublish");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_errors_when_publishing_single_file_lib()
         {
             var testProject = new TestProject()
@@ -177,7 +174,7 @@ namespace Microsoft.NET.Publish.Tests
                 .NotHaveStdOutContaining(Strings.CanOnlyHaveSingleFileWithNetCoreApp);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_errors_when_targetting_netstandard()
         {
             var testProject = new TestProject()
@@ -200,7 +197,7 @@ namespace Microsoft.NET.Publish.Tests
                 .NotHaveStdOutContaining(Strings.CannotHaveSingleFileWithoutExecutable);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_errors_when_targetting_netcoreapp_2_x()
         {
             var testProject = new TestProject()
@@ -221,7 +218,8 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.PublishSingleFileRequiresVersion30);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_errors_when_including_all_content_but_not_native_libraries()
         {
             var publishCommand = GetPublishCommand();
@@ -233,7 +231,8 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining(Strings.CannotIncludeAllContentButNotNativeLibrariesInSingleFile);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_generates_a_single_file_for_framework_dependent_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -248,7 +247,8 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_generates_a_single_file_for_self_contained_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -267,7 +267,8 @@ namespace Microsoft.NET.Publish.Tests
                 .NotHaveFiles(unexpectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void No_runtime_files()
         {
             var testProject = new TestProject()
@@ -292,9 +293,10 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_supports_composite_r2r(bool extractAll)
         {
             var projName = "SingleFileTest";
@@ -336,7 +338,8 @@ namespace Microsoft.NET.Publish.Tests
                 .HaveStdOutContaining("Hello World");
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_generates_a_single_file_with_native_binaries_for_framework_dependent_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -351,7 +354,8 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_generates_a_single_file_with_native_binaries_for_self_contained_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -366,7 +370,8 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_generates_a_single_file_with_all_content_for_framework_dependent_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -381,7 +386,8 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_generates_a_single_file_with_all_content_for_self_contained_apps()
         {
             var publishCommand = GetPublishCommand();
@@ -398,9 +404,10 @@ namespace Microsoft.NET.Publish.Tests
 
         //  https://github.com/dotnet/sdk/issues/49665
         //   error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("netcoreapp3.1")]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow("netcoreapp3.0")]
+        [DataRow("netcoreapp3.1")]
         public void It_generates_a_single_file_including_pdbs(string targetFramework)
         {
             var testProject = new TestProject()
@@ -424,15 +431,11 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_excludes_ni_pdbs_from_single_file()
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // R2R doesn't produce ni pdbs on OSX.
-                return;
-            }
-
             var publishCommand = GetPublishCommand();
             publishCommand
                 .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent, ReadyToRun, ReadyToRunWithSymbols, ReadyToRunCompositeOff)
@@ -452,17 +455,13 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("netcoreapp3.0")]
-        [InlineData("netcoreapp3.1")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow("netcoreapp3.0")]
+        [DataRow("netcoreapp3.1")]
         public void It_can_include_ni_pdbs_in_single_file(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // R2R doesn't produce ni pdbs on OSX.
-                return;
-            }
-
             var testProject = new TestProject()
             {
                 Name = "SingleFileTest",
@@ -484,9 +483,10 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData(ExcludeNewest, NewestContent)]
-        [InlineData(ExcludeAlways, AlwaysContent)]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
+        [DataRow(ExcludeNewest, NewestContent)]
+        [DataRow(ExcludeAlways, AlwaysContent)]
         public void It_generates_a_single_file_excluding_content(string exclusion, string content)
         {
             var publishCommand = GetPublishCommand(exclusion);
@@ -501,7 +501,8 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_generates_a_single_file_for_R2R_compiled_Apps()
         {
             var publishCommand = GetPublishCommand();
@@ -516,7 +517,8 @@ namespace Microsoft.NET.Publish.Tests
                 .OnlyHaveFiles(expectedFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_does_not_rewrite_the_single_file_unnecessarily()
         {
             var publishCommand = GetPublishCommand();
@@ -539,7 +541,8 @@ namespace Microsoft.NET.Publish.Tests
             fileWriteTimeAfterSecondRun.Should().Be(fileWriteTimeAfterFirstRun);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_uses_appropriate_host_on_selfcontained_publish_with_no_build()
         {
             var testProject = new TestProject()
@@ -577,7 +580,8 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_rewrites_the_apphost_for_single_file_publish()
         {
             var publishCommand = GetPublishCommand();
@@ -601,7 +605,8 @@ namespace Microsoft.NET.Publish.Tests
             singleFileSize.Should().BeGreaterThan(appHostSize);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_rewrites_the_apphost_for_non_single_file_publish()
         {
             var publishCommand = GetPublishCommand();
@@ -625,8 +630,9 @@ namespace Microsoft.NET.Publish.Tests
             appHostSize.Should().BeLessThan(singleFileSize);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void ILLink_analyzer_warnings_are_produced(string targetFramework)
         {
             var projectName = "ILLinkAnalyzerWarningsApp";
@@ -642,8 +648,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("(10,13): warning IL3001");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void ILLink_linker_analyzer_warnings_are_not_produced(string targetFramework)
         {
             var projectName = "ILLinkAnalyzerWarningsApp";
@@ -661,8 +668,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2026");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void ILLink_analyzer_warnings_are_produced_using_EnableSingleFileAnalyzer(string targetFramework)
         {
             var projectName = "ILLinkAnalyzerWarningsApp";
@@ -680,13 +688,14 @@ namespace Microsoft.NET.Publish.Tests
 
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("netcoreapp2.1", true)]
-        [InlineData("netcoreapp3.0", false)]
-        [InlineData("netcoreapp3.1", false)]
-        [InlineData("net5.0", false)]
-        [InlineData("net6.0", false)]
-        [InlineData("net7.0", false)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow("netcoreapp2.1", true)]
+        [DataRow("netcoreapp3.0", false)]
+        [DataRow("netcoreapp3.1", false)]
+        [DataRow("net5.0", false)]
+        [DataRow("net6.0", false)]
+        [DataRow("net7.0", false)]
         public void PublishSingleFile_fails_for_unsupported_target_framework(string targetFramework, bool shouldFail)
         {
             var testProject = new TestProject()
@@ -714,18 +723,19 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.8.0")]
-        [InlineData("netstandard2.0", true)]
-        [InlineData("net5.0", true)]
-        [InlineData("net6.0", false)]
-        [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
-        [InlineData("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
-        [InlineData("netstandard2.0;net8.0", false)] // Net8.0 is supported for single-file
-        [InlineData("netstandard2.0;net9.0", true)] // Net9.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
-        [InlineData("alias-ns2", true)]
-        [InlineData("alias-n6", false)]
-        [InlineData("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
-        [InlineData("alias-ns2;alias-n6", true)] // This is correctly multi-targeted, but the logic can't detect this due to the alias so it still warns.
+        [TestMethod]
+        [RequiresMSBuildVersion("17.8.0")]
+        [DataRow("netstandard2.0", true)]
+        [DataRow("net5.0", true)]
+        [DataRow("net6.0", false)]
+        [DataRow("netstandard2.0;net5.0", true)] // None of these TFMs are supported for single-file
+        [DataRow("netstandard2.0;net6.0", false)] // Net6.0 is the min TFM supported for single-file and targeting.
+        [DataRow("netstandard2.0;net8.0", false)] // Net8.0 is supported for single-file
+        [DataRow("netstandard2.0;net9.0", true)] // Net9.0 is supported for single-file, but leaves a "gap" for the supported net6./net7.0 TFMs.
+        [DataRow("alias-ns2", true)]
+        [DataRow("alias-n6", false)]
+        [DataRow("alias-n6;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
+        [DataRow("alias-ns2;alias-n6", true)] // This is correctly multi-targeted, but the logic can't detect this due to the alias so it still warns.
         public void EnableSingleFile_warns_when_expected_for_not_correctly_multitargeted_libraries(string targetFrameworks, bool shouldWarn)
         {
             var testProject = new TestProject()
@@ -786,19 +796,20 @@ class C
             return testProject;
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData("net6.0", false, IncludeDefault)]
-        [InlineData("net6.0", false, IncludeNative)]
-        [InlineData("net6.0", false, IncludeAllContent)]
-        [InlineData("net6.0", true, IncludeDefault)]
-        [InlineData("net6.0", true, IncludeNative)]
-        [InlineData("net6.0", true, IncludeAllContent)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeDefault)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeNative)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, false, IncludeAllContent)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeDefault)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeNative)]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
+        [DataRow("net6.0", false, IncludeDefault)]
+        [DataRow("net6.0", false, IncludeNative)]
+        [DataRow("net6.0", false, IncludeAllContent)]
+        [DataRow("net6.0", true, IncludeDefault)]
+        [DataRow("net6.0", true, IncludeNative)]
+        [DataRow("net6.0", true, IncludeAllContent)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, false, IncludeDefault)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, false, IncludeNative)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, false, IncludeAllContent)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true, IncludeDefault)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true, IncludeNative)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true, IncludeAllContent)]
         public void It_runs_single_file_apps(string targetFramework, bool selfContained, string bundleOption)
         {
             if (targetFramework == "net6.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -835,10 +846,10 @@ class C
                 .HaveStdOutContaining("Hello World");
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(null)]
+        [DataRow(true)]
+        [DataRow(false)]
         public void It_can_disable_cetcompat(bool? cetCompat)
         {
             string rid = "win-x64"; // CET compat support is currently only on Windows x64
@@ -877,9 +888,10 @@ class C
             isCetCompatible.Should().Be(!cetCompat.HasValue || cetCompat.Value);
         }
 
-        [RequiresMSBuildVersionTheory("16.8.0")]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
+        [DataRow(false)]
+        [DataRow(true)]
         public void It_errors_when_including_symbols_targeting_net5(bool selfContained)
         {
             var testProject = new TestProject()
@@ -901,7 +913,8 @@ class C
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificFact(TestPlatforms.Any & ~TestPlatforms.OSX)]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
         public void It_errors_when_enabling_compression_targeting_net5()
         {
             var testProject = new TestProject()
@@ -923,7 +936,8 @@ class C
                 .HaveStdOutContaining(Strings.CompressionInSingleFileRequires60);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void It_errors_when_enabling_compression_without_selfcontained()
         {
             var testProject = new TestProject()
@@ -947,7 +961,8 @@ class C
                 .HaveStdOutContaining(Strings.CompressionInSingleFileRequiresSelfContained);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void It_compresses_single_file_as_directed()
         {
             var testProject = new TestProject()
@@ -978,7 +993,8 @@ class C
             uncompressedSize.Should().BeGreaterThan(compressedSize);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void It_does_not_compress_single_file_by_default()
         {
             var testProject = new TestProject()
@@ -1009,7 +1025,8 @@ class C
             uncompressedSize.Should().Be(compressedSize);
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void User_can_get_bundle_info_before_bundling()
         {
             var testProject = new TestProject()
@@ -1067,7 +1084,8 @@ class C
             }
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void User_can_move_file_before_bundling()
         {
             var testProject = new TestProject()
@@ -1129,7 +1147,7 @@ class C
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_preserves_native_dependencies_on_subsequent_publish()
         {
             // This test validates the fix for https://github.com/dotnet/sdk/issues/52151
@@ -1190,13 +1208,13 @@ class C
             File.Exists(nativeDllPath).Should().BeTrue($"Native DLL {nativeDll} should persist across multiple incremental publishes");
         }
 
-        [Theory]
-        [InlineData("osx-x64", true)]
-        [InlineData("osx-arm64", true)]
-        [InlineData("osx-x64", false)]
-        [InlineData("osx-arm64", false)]
-        [InlineData("osx-x64", null)]
-        [InlineData("osx-arm64", null)]
+        [TestMethod]
+        [DataRow("osx-x64", true)]
+        [DataRow("osx-arm64", true)]
+        [DataRow("osx-x64", false)]
+        [DataRow("osx-arm64", false)]
+        [DataRow("osx-x64", null)]
+        [DataRow("osx-arm64", null)]
         public void It_codesigns_an_app_targeting_osx(string rid, bool? enableMacOSCodeSign)
         {
             const bool CodesignsByDefault = true;

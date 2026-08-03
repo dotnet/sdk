@@ -8,15 +8,16 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestBuildsAndDiscoversTests : SdkTest
     {
-        public GivenDotnetTestBuildsAndDiscoversTests(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestBuildsAndDiscoversTests()
         {
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverTestProjectWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolution", Guid.NewGuid().ToString())
@@ -28,7 +29,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Discovered 0 tests.");
@@ -37,9 +38,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverMultipleTestProjectsWithNoTests_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultipleTestProjectSolution", Guid.NewGuid().ToString())
@@ -51,18 +52,18 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
-                Assert.Matches(@"Discovered 0 tests.*", result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", true, configuration, "Discovered 0 tests"), result.StdOut);
+                Assert.MatchesRegex(@"Discovered 0 tests.*", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverTestProjectWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
@@ -74,16 +75,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 1 tests", ["Test0"]), result.StdOut);
-                Assert.Matches(@"Discovered 1 tests.*", result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 1 tests", ["Test0"]), result.StdOut);
+                Assert.MatchesRegex(@"Discovered 1 tests.*", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverMultipleTestProjectsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDiscoveredTests", Guid.NewGuid().ToString())
@@ -95,17 +96,54 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 2 tests", ["Test0", "Test2"]), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", true, configuration, "Discovered 1 tests", ["Test1"]), result.StdOut);
-                Assert.Matches(@"Discovered 3 tests.*", result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 2 tests", ["Test0", "Test2"]), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", true, configuration, "Discovered 1 tests", ["Test1"]), result.StdOut);
+                Assert.MatchesRegex(@"Discovered 3 tests.*", result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void DiscoverTestProjectWithTestsInJsonFormat_EmitsMachineReadableJson(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithDiscoveredTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("--list-tests", "json", "-c", configuration);
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            // The discovery JSON is emitted as a single object. Extract it from stdout (which may also
+            // contain restore/build output) and assert the versioned, container-grouped shape.
+            string stdout = result.StdOut!;
+            int start = stdout.IndexOf('{');
+            int end = stdout.LastIndexOf('}');
+            start.Should().BeGreaterThanOrEqualTo(0, $"expected a JSON document in the output. Full output:{Environment.NewLine}{stdout}");
+            end.Should().BeGreaterThan(start);
+
+            using var document = System.Text.Json.JsonDocument.Parse(stdout.Substring(start, end - start + 1));
+            System.Text.Json.JsonElement root = document.RootElement;
+
+            root.GetProperty("version").GetString().Should().Be("1.0");
+
+            System.Text.Json.JsonElement containers = root.GetProperty("testContainers");
+            containers.GetArrayLength().Should().BeGreaterThanOrEqualTo(1);
+
+            bool foundTest0 = containers.EnumerateArray()
+                .SelectMany(c => c.GetProperty("tests").EnumerateArray())
+                .Any(t => t.GetProperty("uid").GetString() == "Test0");
+
+            foundTest0.Should().BeTrue("the discovered test 'Test0' should appear in the JSON output.");
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverProjectWithMSTestMetaPackageAndMultipleTFMsWithTests_ShouldReturnExitCodeSuccess(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MSTestMetaPackageProjectWithMultipleTFMsSolution", Guid.NewGuid().ToString())
@@ -118,16 +156,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", false, configuration, "Discovered 3 tests", ["TestMethod1", "TestMethod2", "TestMethod3"]), result.StdOut);
-                Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 2 tests", ["TestMethod1", "TestMethod3"]), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", false, configuration, "Discovered 3 tests", ["TestMethod1", "TestMethod2", "TestMethod3"]), result.StdOut);
+                Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", true, configuration, "Discovered 2 tests", ["TestMethod1", "TestMethod3"]), result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverTestProjectsWithHybridModeTestRunners_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("HybridTestRunnerTestProjects", Guid.NewGuid().ToString())
@@ -145,9 +183,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void DiscoverTestProjectWithCustomRunArgumentsAndTestEscaping(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestAppPrintingCommandLineArguments", Guid.NewGuid().ToString())

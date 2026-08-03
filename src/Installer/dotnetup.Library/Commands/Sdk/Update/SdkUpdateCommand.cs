@@ -7,7 +7,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Update;
 
-internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = false) : CommandBase(result)
+internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = false) : CommandBase(result, "sdk/update")
 {
     private readonly bool _updateAll = updateAllOverride || result.GetValue(SdkUpdateCommandParser.UpdateAllOption);
     private readonly bool _updateGlobalJson = result.GetValue(SdkUpdateCommandParser.UpdateGlobalJsonOption);
@@ -15,8 +15,6 @@ internal class SdkUpdateCommand(ParseResult result, bool updateAllOverride = fal
     private readonly Verbosity _verbosity = result.GetValue(CommonOptions.VerbosityOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
-
-    protected override string GetCommandName() => "sdk/update";
 
     protected override void ExecuteCore()
     {

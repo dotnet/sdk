@@ -3,13 +3,14 @@
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class GivenAnEnvironmentForResolution : SdkTest
     {
-        public GivenAnEnvironmentForResolution(ITestOutputHelper log) : base(log)
+        public GivenAnEnvironmentForResolution() : base()
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIgnoresInvalidPath()
         {
             Func<string, string> getPathEnvVarFunc = (string var) => { return $"{Directory.GetCurrentDirectory()}Dir{Path.GetInvalidPathChars().First()}Name"; };
@@ -18,7 +19,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             pathResult.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotReturnNullDotnetRootOnExtraPathSeparator()
         {
             File.Create(Path.Combine(Directory.GetCurrentDirectory(), "dotnet.exe")).Close();
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             result.Should().NotBeNullOrWhiteSpace();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotMistakeDotnetPrefixedProcessForDotnetHost()
         {
             // Use separate directories for the dotnet host and the dotnet-prefixed process

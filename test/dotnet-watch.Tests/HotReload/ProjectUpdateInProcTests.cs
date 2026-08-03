@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class ProjectUpdateInProcTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task ProjectAndSourceFileChange()
     {
         var testAsset = CopyTestAsset("WatchHotReloadApp");
@@ -52,7 +53,7 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         await hasUpdatedOutput.Task;
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProjectAndSourceFileChange_AddProjectReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithProjectDeps")
@@ -122,12 +123,12 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await managedCodeChangesApplied.WaitAsync(waitCts.Token);
 
-        Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
-        Assert.Equal(1, projectsRebuilt.CurrentCount);
-        Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
+        Assert.AreEqual(1, projectChangeTriggeredReEvaluation.CurrentCount);
+        Assert.AreEqual(1, projectsRebuilt.CurrentCount);
+        Assert.AreEqual(1, projectDependenciesDeployed.CurrentCount);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProjectAndSourceFileChange_AddPackageReference()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp")
@@ -185,8 +186,8 @@ public class ProjectUpdateInProcTests(ITestOutputHelper logger) : DotNetWatchTes
         using var waitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
         await managedCodeChangesApplied.WaitAsync(waitCts.Token);
 
-        Assert.Equal(1, projectChangeTriggeredReEvaluation.CurrentCount);
-        Assert.Equal(0, projectsRebuilt.CurrentCount);
-        Assert.Equal(1, projectDependenciesDeployed.CurrentCount);
+        Assert.AreEqual(1, projectChangeTriggeredReEvaluation.CurrentCount);
+        Assert.AreEqual(0, projectsRebuilt.CurrentCount);
+        Assert.AreEqual(1, projectDependenciesDeployed.CurrentCount);
     }
 }

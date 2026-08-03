@@ -301,71 +301,56 @@ internal class DotnetArchiveExtractor : IDisposable
     /// <summary>
     /// Extracts a tar or tar.gz archive to the target directory.
     /// </summary>
-    private static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
+    internal static void ExtractTarArchive(string archivePath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
     {
-        string decompressedPath = DecompressTarGzIfNeeded(archivePath, out bool needsDecompression);
+        bool isGzip = IsGzipArchive(archivePath);
 
-        try
-        {
-            long totalEntries = CountTarEntries(decompressedPath);
-            installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
+        // Hold a read handle on the archive throughout the entire extraction to prevent garbage collectors reaping the archive.
+        using var archiveStream = new FileStream(archivePath, FileMode.Open, FileAccess.Read, FileShare.Read);
 
-            ExtractTarContents(decompressedPath, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
-        }
-        finally
-        {
-            // Clean up temporary decompressed file
-            if (needsDecompression && File.Exists(decompressedPath))
-            {
-                File.Delete(decompressedPath);
-            }
-        }
+        long totalEntries = CountTarEntries(archiveStream, isGzip);
+        installTask?.MaxValue = totalEntries > 0 ? totalEntries : 1;
+
+        archiveStream.Seek(0, SeekOrigin.Begin);
+        ExtractTarContents(archiveStream, isGzip, targetDir, installTask, muxerHandler, onEntryExtracted, shouldSkipEntry);
     }
 
     /// <summary>
-    /// Decompresses a .tar.gz file if needed, returning the path to the tar file.
+    /// Determines whether the archive at the given path is gzip-compressed based on its file extension.
     /// </summary>
-    private static string DecompressTarGzIfNeeded(string archivePath, out bool needsDecompression)
-    {
-        needsDecompression = archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
-        if (!needsDecompression)
-        {
-            return archivePath;
-        }
-
-        string decompressedPath = archivePath.Replace(".gz", "", StringComparison.Ordinal);
-
-        using FileStream originalFileStream = File.OpenRead(archivePath);
-        using FileStream decompressedFileStream = File.Create(decompressedPath);
-        using GZipStream decompressionStream = new GZipStream(originalFileStream, CompressionMode.Decompress);
-        decompressionStream.CopyTo(decompressedFileStream);
-
-        return decompressedPath;
-    }
+    private static bool IsGzipArchive(string archivePath)
+        => archivePath.EndsWith(".gz", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
-    /// Counts the number of entries in a tar file for progress reporting.
+    /// Wraps an already-open tar archive stream for reading, layering in gzip decompression when needed.
+    /// The returned <see cref="OwnedTarStream"/> is always safe to dispose without closing the underlying
+    /// <paramref name="archiveStream"/>.
     /// </summary>
-    private static long CountTarEntries(string tarPath)
+    private static OwnedTarStream OpenTarReadStream(Stream archiveStream, bool isGzip)
+        => isGzip
+            ? new OwnedTarStream(new GZipStream(archiveStream, CompressionMode.Decompress, leaveOpen: true))
+            : new OwnedTarStream(archiveStream, ownsStream: false);
+
+    /// <summary>
+    /// Counts the number of entries in a tar archive for progress reporting.
+    /// </summary>
+    private static long CountTarEntries(Stream archiveStream, bool isGzip)
     {
         long totalFiles = 0;
-        using var tarStream = File.OpenRead(tarPath);
-        var tarReader = new TarReader(tarStream);
+        using OwnedTarStream tarStream = OpenTarReadStream(archiveStream, isGzip);
+        using var tarReader = new TarReader(tarStream.Stream, leaveOpen: true);
         while (tarReader.GetNextEntry() is not null)
         {
             totalFiles++;
         }
+
         return totalFiles;
     }
 
-    /// <summary>
-    /// Extracts the contents of a tar file to the target directory.
-    /// Exposed as internal static for testing.
-    /// </summary>
-    internal static void ExtractTarContents(string tarPath, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler = null, Action<string>? onEntryExtracted = null, Func<string, bool>? shouldSkipEntry = null)
+    private static void ExtractTarContents(Stream archiveStream, bool isGzip, string targetDir, IProgressTask? installTask, MuxerHandler? muxerHandler, Action<string>? onEntryExtracted, Func<string, bool>? shouldSkipEntry)
     {
-        using var tarStream = File.OpenRead(tarPath);
-        var tarReader = new TarReader(tarStream);
+        using OwnedTarStream tarStream = OpenTarReadStream(archiveStream, isGzip);
+        using var tarReader = new TarReader(tarStream.Stream, leaveOpen: true);
         TarEntry? entry;
 
         // Defer hard link creation until after all regular files are extracted,

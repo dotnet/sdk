@@ -31,6 +31,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.PermissionDenied => ErrorCategory.User,
             DotnetInstallErrorCode.DiskFull => ErrorCategory.User,
             DotnetInstallErrorCode.NetworkError => ErrorCategory.User,
+            DotnetInstallErrorCode.InvalidArguments => ErrorCategory.User,
 
             // Product errors - issues we can take action on
             DotnetInstallErrorCode.ExtractionFailed => ErrorCategory.Product,
@@ -55,6 +56,7 @@ internal static class ErrorCategoryClassifier
             DotnetInstallErrorCode.PlatformNotSupported => ErrorCategory.User,
             DotnetInstallErrorCode.UninstallTargetNotFound => ErrorCategory.User,
             DotnetInstallErrorCode.UnsignedDownloadBlockedByPolicy => ErrorCategory.User,
+            DotnetInstallErrorCode.NoUserInstallableArtifact => ErrorCategory.User,
             DotnetInstallErrorCode.Unknown => ErrorCategory.Product,
 
             _ => ErrorCategory.Product

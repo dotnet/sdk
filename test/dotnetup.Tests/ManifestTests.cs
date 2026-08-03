@@ -12,13 +12,13 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class ManifestTests
 {
-    [Fact]
+    [TestMethod]
     public void NewManifestCreatesValidJson()
     {
         using var testEnv = new TestEnvironment();
@@ -33,7 +33,7 @@ public class ManifestTests
         data.DotnetRoots.Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void SerializationRoundTrip()
     {
         var original = new DotnetupManifestData
@@ -101,7 +101,7 @@ public class ManifestTests
         root.Installations[0].Subcomponents.Should().Contain("sdk/10.0.103");
     }
 
-    [Fact]
+    [TestMethod]
     public void LegacyFormatThrowsError()
     {
         using var testEnv = new TestEnvironment();
@@ -119,7 +119,7 @@ public class ManifestTests
             .WithMessage("*legacy format*no longer supported*");
     }
 
-    [Fact]
+    [TestMethod]
     public void AddAndRemoveInstallSpec()
     {
         using var testEnv = new TestEnvironment();
@@ -145,7 +145,7 @@ public class ManifestTests
         manifest.GetInstallSpecs(installRoot).Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void AddAndRemoveInstallation()
     {
         using var testEnv = new TestEnvironment();
@@ -177,7 +177,7 @@ public class ManifestTests
         manifest.GetInstallations(installRoot).Should().BeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void MultipleDotnetRoots()
     {
         using var testEnv = new TestEnvironment();
@@ -208,7 +208,7 @@ public class ManifestTests
         manifest.GetInstallations(root2).Should().ContainSingle();
     }
 
-    [Fact]
+    [TestMethod]
     public void GlobalJsonInstallSpec()
     {
         using var testEnv = new TestEnvironment();
@@ -232,7 +232,7 @@ public class ManifestTests
         specs[0].GlobalJsonPath.Should().Be(@"C:\Projects\myapp\global.json");
     }
 
-    [Fact]
+    [TestMethod]
     public void AddInstallSpec_DifferentSource_CreatesDuplicate()
     {
         // If AddInstallSpec is called with a different InstallSource for the same
@@ -263,7 +263,7 @@ public class ManifestTests
         manifest.GetInstallSpecs(installRoot).Should().HaveCount(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void Update_RecordsInstallation_WithoutDuplicatingSpec()
     {
         // Simulates the fixed update flow: the update adds a new installation
@@ -302,7 +302,7 @@ public class ManifestTests
         manifest.GetInstallations(installRoot).Should().HaveCount(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void Update_ExplicitSpec_RecordsInstallation_WithoutDuplicatingSpec()
     {
         // Same as above but with an Explicit spec instead of GlobalJson
@@ -338,7 +338,7 @@ public class ManifestTests
 
     #region Manifest Checksum Tests
 
-    [Fact]
+    [TestMethod]
     public void ManifestChecksum_WrittenOnCreate()
     {
         using var testEnv = new TestEnvironment();
@@ -349,7 +349,7 @@ public class ManifestTests
         File.ReadAllText(checksumPath).Trim().Should().NotBeNullOrWhiteSpace();
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestChecksum_UpdatedOnWrite()
     {
         using var testEnv = new TestEnvironment();
@@ -368,7 +368,7 @@ public class ManifestTests
         checksumAfter.Should().NotBe(checksumBefore, "checksum should change after add");
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestCorrupted_WithValidChecksum_ThrowsLocalManifestCorrupted()
     {
         using var testEnv = new TestEnvironment();
@@ -389,12 +389,12 @@ public class ManifestTests
         File.WriteAllText(checksumPath, Convert.ToHexString(hash));
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestCorrupted,
             "checksum matches corrupt content → product error");
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestCorrupted_WithMismatchedChecksum_ThrowsLocalManifestUserCorrupted()
     {
         using var testEnv = new TestEnvironment();
@@ -404,12 +404,12 @@ public class ManifestTests
         File.WriteAllText(testEnv.ManifestPath, "user broke this {[}");
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
             "checksum doesn't match user-edited content → user error");
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestCorrupted_WithNoChecksum_ThrowsLocalManifestUserCorrupted()
     {
         using var testEnv = new TestEnvironment();
@@ -421,12 +421,12 @@ public class ManifestTests
         File.WriteAllText(testEnv.ManifestPath, "garbage data");
 
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
             "no checksum file → assume external edit → user error");
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestValidation_InvalidVersion_WithChecksumMismatch_ThrowsUserCorrupted()
     {
         using var testEnv = new TestEnvironment();
@@ -445,13 +445,13 @@ public class ManifestTests
         File.WriteAllText(testEnv.ManifestPath, json);
 
         using var mutex2 = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
             "checksum doesn't match user-edited content with invalid version → user error");
         ex.Message.Should().Contain("not-a-version");
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestValidation_InvalidVersion_WithMatchingChecksum_SkipsValidation()
     {
         using var testEnv = new TestEnvironment();
@@ -488,7 +488,7 @@ public class ManifestTests
         result.DotnetRoots[0].Installations.Should().HaveCount(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestValidation_EmptyVersion_ThrowsCorrupted()
     {
         using var testEnv = new TestEnvironment();
@@ -516,12 +516,12 @@ public class ManifestTests
 
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
         ex.Message.Should().Contain("empty version");
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestValidation_ValidData_DoesNotThrow()
     {
         using var testEnv = new TestEnvironment();
@@ -545,7 +545,7 @@ public class ManifestTests
         result.DotnetRoots[0].Installations.Should().HaveCount(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestValidation_InvalidComponentType_ThrowsUserCorrupted()
     {
         using var testEnv = new TestEnvironment();
@@ -573,12 +573,12 @@ public class ManifestTests
 
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted);
         ex.Message.Should().Contain("Unknown component type");
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestValidation_InvalidComponentString_ThrowsUserCorrupted()
     {
         using var testEnv = new TestEnvironment();
@@ -605,7 +605,7 @@ public class ManifestTests
 
         var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
         using var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates);
-        var ex = Assert.Throws<DotnetInstallException>(() => manifest.ReadManifest());
+        var ex = Assert.ThrowsExactly<DotnetInstallException>(() => manifest.ReadManifest());
         ex.ErrorCode.Should().Be(DotnetInstallErrorCode.LocalManifestUserCorrupted,
             "invalid string enum value should fail JSON deserialization and be detected as user edit");
     }
@@ -614,7 +614,7 @@ public class ManifestTests
 
     #region Manifest Tracking Tests
 
-    [Fact]
+    [TestMethod]
     public void ManifestTracking_DifferentComponents_TrackedSeparately()
     {
         using var testEnv = new TestEnvironment();
@@ -651,7 +651,7 @@ public class ManifestTests
         installs.Should().Contain(i => i.Component == InstallComponent.ASPNETCore);
     }
 
-    [Fact]
+    [TestMethod]
     public void ManifestTracking_SameVersionDifferentComponent_BothTracked()
     {
         using var testEnv = new TestEnvironment();
@@ -685,7 +685,7 @@ public class ManifestTests
 
     #region PruneStaleInstallations
 
-    [Fact]
+    [TestMethod]
     public void ReadManifest_PrunesInstallationWhenComponentDirectoryDeleted()
     {
         using var testEnv = new TestEnvironment();
@@ -715,7 +715,7 @@ public class ManifestTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadManifest_KeepsInstallationWhenComponentDirectoryExists()
     {
         using var testEnv = new TestEnvironment();
@@ -743,7 +743,7 @@ public class ManifestTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadManifest_PrunesEntireRootWhenDirectoryDeleted()
     {
         using var testEnv = new TestEnvironment();
@@ -774,7 +774,7 @@ public class ManifestTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadManifest_PrunesRuntimeInstallationWhenDeleted()
     {
         using var testEnv = new TestEnvironment();
@@ -803,7 +803,7 @@ public class ManifestTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadManifest_PrunesAspNetInstallationWhenDeleted()
     {
         using var testEnv = new TestEnvironment();
@@ -832,7 +832,7 @@ public class ManifestTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadManifest_PrunesOnlyDeletedInstallationsKeepsOthers()
     {
         using var testEnv = new TestEnvironment();
@@ -867,7 +867,7 @@ public class ManifestTests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ReadManifest_PrunePersistsToManifestFile()
     {
         using var testEnv = new TestEnvironment();

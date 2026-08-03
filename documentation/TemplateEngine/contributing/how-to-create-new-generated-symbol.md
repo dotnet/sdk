@@ -107,7 +107,7 @@ The very basic implementation may be:
 ```
 
 `IMacroConfigDependency` interface depicts macro capability to derive it value(s) from other macros.
-Dependencies are defined based on passed `IReadOnlyList<string> symbols` collection. An example of implemetation can be find here: [`CoalesceMacroConfig.cs`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CoalesceMacroConfig.cs).
+Dependencies are defined based on passed `IReadOnlyList<string> symbols` collection. An example of implementation can be find here: [`CoalesceMacroConfig.cs`](../../src/Microsoft.TemplateEngine.Orchestrator.RunnableProjects/Macros/CoalesceMacroConfig.cs).
 
 `IGeneratedSymbolConfig` config already contains the pre-parsed JSON from template.json. It has properties for: symbol name, data type (if specified) and parameters collection. 
 Parameters collection contains parameter key-value pairs from JSON. Note that value is in JSON format, i.e. if the parameter value is string, then it contains `"\"string-value\""`.

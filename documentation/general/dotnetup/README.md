@@ -16,6 +16,17 @@ The easiest way to download `dotnetup` is to use the installation script:
 curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash
 ```
 
+On Windows, save the script and run it so PowerShell can verify its Authenticode signature (the `.ps1` served from https://aka.ms/dotnetup/get-dotnetup.ps1 is signed by the .NET signing certificate):
+
+```pwsh
+$s = Join-Path $env:TEMP 'get-dotnetup.ps1'
+iwr https://aka.ms/dotnetup/get-dotnetup.ps1 -OutFile $s
+# Get-AuthenticodeSignature $s   # optional: inspect the signature
+& $s
+```
+
+If you prefer a one-liner and don't need signature verification, you can pipe the script straight into PowerShell (this bypasses execution-policy signature checks):
+
 ```pwsh
 iwr https://aka.ms/dotnetup/get-dotnetup.ps1 | iex
 ```

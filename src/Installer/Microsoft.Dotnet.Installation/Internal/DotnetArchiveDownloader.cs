@@ -216,6 +216,17 @@ internal class DotnetArchiveDownloader : IArchiveDownloader
                     version: resolvedVersion.ToString(),
                     component: installRequest.Component.ToString());
 
+            case FindReleaseFileStatus.NoUserInstallableArtifact:
+                throw new DotnetInstallException(
+                    DotnetInstallErrorCode.NoUserInstallableArtifact,
+                    string.Format(
+                        System.Globalization.CultureInfo.CurrentCulture,
+                        Strings.NoUserInstallableArtifact,
+                        installRequest.Component,
+                        resolvedVersion),
+                    version: resolvedVersion.ToString(),
+                    component: installRequest.Component.ToString());
+
             case FindReleaseFileStatus.ProductNotFound:
             case FindReleaseFileStatus.ReleaseNotFound:
                 // Manifest doesn't list this version. For fully-specified prerelease

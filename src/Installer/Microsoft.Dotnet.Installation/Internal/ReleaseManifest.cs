@@ -19,6 +19,13 @@ internal enum FindReleaseFileStatus
     /// <summary>The release exists in the manifest but has no archive for the requested RID/extension.</summary>
     NoMatchingFile,
 
+    /// <summary>
+    /// The release publishes artifacts for the requested RID, but none of them is a
+    /// user-installable archive (no .tar.gz, and on Windows no .zip) — e.g. only .exe
+    /// installers. User-actionable: choose a different version or install at the system level.
+    /// </summary>
+    NoUserInstallableArtifact,
+
     /// <summary>No product (major.minor) for the version was found in the manifest.</summary>
     ProductNotFound,
 
@@ -36,6 +43,7 @@ internal readonly record struct FindReleaseFileResult(FindReleaseFileStatus Stat
 
     public static FindReleaseFileResult ProductNotFound { get; } = new(FindReleaseFileStatus.ProductNotFound, null);
     public static FindReleaseFileResult ReleaseNotFound { get; } = new(FindReleaseFileStatus.ReleaseNotFound, null);
+    public static FindReleaseFileResult NoUserInstallableArtifact { get; } = new(FindReleaseFileStatus.NoUserInstallableArtifact, null);
 }
 
 /// <summary>
@@ -150,7 +158,7 @@ internal class ReleaseManifest
             {
                 return FindReleaseFileResult.ReleaseNotFound;
             }
-            return FindReleaseFileResult.FromFile(FindMatchingFile(release, installRequest));
+            return ResolveReleaseFile(release, installRequest);
         }
         catch (DotnetInstallException)
         {
@@ -292,14 +300,18 @@ internal class ReleaseManifest
     }
 
     /// <summary>
-    /// Finds the matching file in the release for the given installation requirements.
+    /// Finds the matching file in the release for the given installation requirements and
+    /// classifies the result. When no user-installable archive exists, distinguishes between
+    /// a platform that has no files at all (<see cref="FindReleaseFileStatus.NoMatchingFile"/>)
+    /// and one that publishes only non-installable artifacts such as .exe installers
+    /// (<see cref="FindReleaseFileStatus.NoUserInstallableArtifact"/>).
     /// </summary>
     /// <remarks>
     /// Some components (notably ASP.NET Core) include both regular and composite (AOT) archives
     /// with the same RID and extension. Composite archives contain "composite" in the file name
     /// and are filtered out to avoid selecting the wrong archive.
     /// </remarks>
-    private static ReleaseFile? FindMatchingFile(ReleaseComponent release, DotnetInstallRequest installRequest)
+    internal static FindReleaseFileResult ResolveReleaseFile(ReleaseComponent release, DotnetInstallRequest installRequest)
     {
         var rid = DotnetupUtilities.GetRuntimeIdentifier(installRequest.InstallRoot.Architecture);
 
@@ -309,24 +321,52 @@ internal class ReleaseManifest
              .Where(f => !IsApphostPackArchive(f.Name))
              .ToList();
 
-        // Prefer tar.gz, fall back to zip if unavailable (older .NET versions may not publish tar.gz for Windows)
-        var matchingFiles = ridFiles
-             .Where(f => f.Name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase))
-             .ToList();
-
-        if (!matchingFiles.Any() && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        var match = SelectInstallableArchive(ridFiles);
+        if (match is not null)
         {
-            matchingFiles = ridFiles
-                .Where(f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-                .ToList();
+            return FindReleaseFileResult.FromFile(match);
         }
 
-        if (matchingFiles.Count == 0)
+        // No extractable archive (.tar.gz, or .zip on Windows). If the release lists files for
+        // this RID anyway (e.g. older Windows Desktop Runtime releases shipped only .exe
+        // installers), the platform is supported but there's nothing dotnetup can install at the
+        // user level — a user-actionable condition. Otherwise the platform genuinely has no files.
+        return ClassifyArchiveMiss(ridFiles.Select(f => f.Name));
+    }
+
+    /// <summary>
+    /// Selects the user-installable archive for the platform, preferring .tar.gz and falling
+    /// back to .zip on Windows (older .NET versions may not publish a Windows tar.gz). Returns
+    /// <c>null</c> when no installable archive is present.
+    /// </summary>
+    private static ReleaseFile? SelectInstallableArchive(IReadOnlyList<ReleaseFile> ridFiles)
+    {
+        var tarGz = ridFiles.FirstOrDefault(f => f.Name.EndsWith(".tar.gz", StringComparison.OrdinalIgnoreCase));
+        if (tarGz is not null)
         {
-            return null;
+            return tarGz;
         }
 
-        return matchingFiles.First();
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return ridFiles.FirstOrDefault(f => f.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase));
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Classifies a release that has no user-installable archive for the platform. Called only
+    /// after <see cref="SelectInstallableArchive"/> returns <c>null</c>. When the release still
+    /// lists artifacts for the RID, the miss is user-actionable
+    /// (<see cref="FindReleaseFileStatus.NoUserInstallableArtifact"/>); otherwise the platform
+    /// has no files at all (<see cref="FindReleaseFileStatus.NoMatchingFile"/>).
+    /// </summary>
+    internal static FindReleaseFileResult ClassifyArchiveMiss(IEnumerable<string> ridFileNames)
+    {
+        return ridFileNames.Any()
+            ? FindReleaseFileResult.NoUserInstallableArtifact
+            : FindReleaseFileResult.FromFile(null);
     }
 
     /// <summary>

@@ -6,7 +6,6 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.PhysicalFileSystem;
 using Microsoft.TemplateEngine.Cli.PostActionProcessors;
-using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.New.PostActions;
 
@@ -20,8 +19,31 @@ internal class DotnetSlnPostActionProcessor(Func<string, IReadOnlyList<string>, 
 
     internal static IReadOnlyList<string> FindSolutionFilesAtOrAbovePath(IPhysicalFileSystem fileSystem, string outputBasePath)
     {
-        var slnFiles = FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, outputBasePath, "*.sln");
-        return slnFiles.Count > 0 ? slnFiles : FileFindHelpers.FindFilesAtOrAbovePath(fileSystem, outputBasePath, "*.slnx");
+        // Search for .sln and .slnx at each directory level before walking up.
+        // This prevents finding an unrelated .sln in a distant parent directory when
+        // the intended .slnx exists in the output directory (or a closer ancestor).
+        string? directory = fileSystem.DirectoryExists(outputBasePath) ? outputBasePath : Path.GetDirectoryName(outputBasePath);
+        while (directory != null)
+        {
+            List<string> slnFiles = fileSystem.EnumerateFileSystemEntries(directory, "*.sln", SearchOption.TopDirectoryOnly)
+                .Where(f => f.EndsWith(".sln", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (slnFiles.Count > 0)
+            {
+                return slnFiles;
+            }
+
+            List<string> slnxFiles = fileSystem.EnumerateFileSystemEntries(directory, "*.slnx", SearchOption.TopDirectoryOnly)
+                .Where(f => f.EndsWith(".slnx", StringComparison.OrdinalIgnoreCase))
+                .ToList();
+            if (slnxFiles.Count > 0)
+            {
+                return slnxFiles;
+            }
+
+            directory = Path.GetPathRoot(directory) != directory ? Directory.GetParent(directory)?.FullName : null;
+        }
+        return [];
     }
 
     // The project files to add are a subset of the primary outputs, specifically the primary outputs indicated by the primaryOutputIndexes post action argument (semicolon separated)

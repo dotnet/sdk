@@ -1,10 +1,11 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Sdk.Publish.Tasks.Xdt;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 {
+    [TestClass]
     public class TransformXmlTests
     {
         private XDocument _webConfigTemplate => XDocument.Parse(
@@ -46,7 +47,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 </configuration>");
 
 
-        [Fact]
+        [TestMethod]
         public void XmlTransform_AppliesRemoveAllTransform()
         {
             // Arrange
@@ -74,12 +75,12 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
 
                 // Assert
-                Assert.True(success);
-                Assert.True(XDocument.Parse(File.ReadAllText(sourceFile)).Descendants("handlers").Count() == 1);
-                Assert.True(XDocument.Parse(File.ReadAllText(sourceFile)).Descendants("aspNetCore").Count() == 1);
+                Assert.IsTrue(success);
+                Assert.HasCount(1, XDocument.Parse(File.ReadAllText(sourceFile)).Descendants("handlers"));
+                Assert.HasCount(1, XDocument.Parse(File.ReadAllText(sourceFile)).Descendants("aspNetCore"));
 
-                Assert.True(XDocument.Parse(File.ReadAllText(outputFile)).Descendants("handlers").Count() == 0);
-                Assert.True(XDocument.Parse(File.ReadAllText(outputFile)).Descendants("aspNetCore").Count() == 0);
+                Assert.IsEmpty(XDocument.Parse(File.ReadAllText(outputFile)).Descendants("handlers"));
+                Assert.IsEmpty(XDocument.Parse(File.ReadAllText(outputFile)).Descendants("aspNetCore"));
             }
             finally
             {
@@ -91,7 +92,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
         }
 
 
-        [Fact]
+        [TestMethod]
         public void XmlTransform_AppliesAdd()
         {
             // Arrange
@@ -119,9 +120,9 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.Tests.Tasks
 
 
                 // Assert
-                Assert.True(success);
-                Assert.True(XDocument.Parse(File.ReadAllText(sourceFile)).Descendants("environmentVariable").Count() == 0);
-                Assert.True(XDocument.Parse(File.ReadAllText(outputFile)).Descendants("environmentVariable").Count() == 1);
+                Assert.IsTrue(success);
+                Assert.IsEmpty(XDocument.Parse(File.ReadAllText(sourceFile)).Descendants("environmentVariable"));
+                Assert.HasCount(1, XDocument.Parse(File.ReadAllText(outputFile)).Descendants("environmentVariable"));
             }
             finally
             {

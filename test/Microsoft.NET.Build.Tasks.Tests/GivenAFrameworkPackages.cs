@@ -15,6 +15,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// exercise the method in isolation (the early-out guards, the missing-folder branch, and a successful
     /// PackageOverrides.txt load) rather than only through <see cref="GetPackagesToPrune"/>.
     /// </summary>
+    [TestClass]
     public class GivenAFrameworkPackages
     {
         private const string NetCoreApp = "Microsoft.NETCore.App";
@@ -29,7 +30,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         private static AbsolutePath AbsolutePathFor(string path) =>
             TaskEnvironmentHelper.CreateForTest(Path.GetTempPath()).GetAbsolutePath(path);
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenFrameworkIsNotANetCoreAppPack()
         {
             // null framework and non-.NETCoreApp frameworks both short-circuit to null.
@@ -41,7 +42,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().BeNull("only .NETCoreApp frameworks have targeting pack data");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItReturnsNullWhenTargetingPackFolderDoesNotExist()
         {
             var missingRoot = Path.Combine(Path.GetTempPath(), "fp-missing-" + Guid.NewGuid().ToString("N"));
@@ -50,7 +51,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .Should().BeNull("a non-existent targeting pack folder yields no packages");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItLoadsPackageOverridesFromTargetingPack()
         {
             var root = Path.Combine(Path.GetTempPath(), "fp-" + Guid.NewGuid().ToString("N"));

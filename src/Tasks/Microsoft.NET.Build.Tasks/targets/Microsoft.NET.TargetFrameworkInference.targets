@@ -139,6 +139,14 @@ Copyright (c) .NET Foundation. All rights reserved.
                  FormatArguments="$(TargetPlatformIdentifier)" />
   </Target>
 
+  <Target Name="_CheckForUnsupportedMonoMobileRuntime"
+          BeforeTargets="_CheckForInvalidConfigurationAndPlatform;RunResolvePackageDependencies;GetFrameworkPaths;GetReferenceAssemblyPaths;CollectPackageReferences"
+          Condition="'$(_DisableCheckForUnsupportedMonoMobileRuntime)' != 'true' and '$(UseMonoRuntime)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp' and $([MSBuild]::VersionGreaterThanOrEquals($(_TargetFrameworkVersionWithoutV), 11.0)) and ('$(TargetPlatformIdentifier)' == 'ios' or '$(TargetPlatformIdentifier)' == 'tvos' or '$(TargetPlatformIdentifier)' == 'maccatalyst' or '$(TargetPlatformIdentifier)' == 'android')">
+
+    <NETSdkError ResourceName="MonoRuntimeNotSupportedForPlatform"
+                 FormatArguments="$(TargetPlatformIdentifier)" />
+  </Target>
+
   <UsingTask TaskName="AllowEmptyTelemetry" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
   <Target Name="_CollectTargetFrameworkForTelemetry" AfterTargets="_CheckForUnsupportedTargetFramework">

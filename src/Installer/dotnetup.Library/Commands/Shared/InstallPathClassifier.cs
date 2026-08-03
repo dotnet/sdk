@@ -10,9 +10,12 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 internal static class InstallPathClassifier
 {
     /// <summary>
-    /// Determines whether the given path is an admin/system-managed .NET install location.
-    /// These locations are managed by system package managers or OS installers and should not
-    /// be used by dotnetup for user-level installations.
+    /// Determines whether the given path is in a well-known system/admin .NET install location
+    /// (for example <c>Program Files\dotnet</c> on Windows).  These locations are usually managed
+    /// by system package managers or OS installers and should not be used by dotnetup.
+    /// 
+    /// This is a location heuristic only, it doesn't verify that the install there is actually managed
+    /// by an OS installer or package manager.
     /// </summary>
     public static bool IsAdminInstallPath(string path)
     {

@@ -16,7 +16,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// caused intermittent timeouts on this pipeline before. Serialization removes the
 /// contention; runtime cost is negligible (one test).
 /// </summary>
-[Collection("DotnetupProcessLaunchTests")]
+[TestClass]
 public class DotnetCommandStdinForwardingTests
 {
     /// <summary>
@@ -29,7 +29,7 @@ public class DotnetCommandStdinForwardingTests
     /// writes test data, and verifies the child process echoes it back
     /// through stdout — proving the full stdin forwarding pipeline works.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void DotnetCommand_ForwardsStdinToChildProcess()
     {
         var tempDir = Directory.CreateTempSubdirectory("dotnetup-stdin-test");
@@ -48,9 +48,11 @@ public class DotnetCommandStdinForwardingTests
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.RedirectStandardError = true;
 
-            // Prepend our temp dir to PATH so dotnetup resolves our fake dotnet
-            var currentPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-            process.StartInfo.Environment["PATH"] = tempDir.FullName + Path.PathSeparator + currentPath;
+            // Point dotnetup's managed hive at our temp dir so it resolves our fake dotnet.
+            // dotnetup resolves the dotnet to run from its managed hive (not from PATH), so the
+            // fake dotnet must live at <hive>/dotnet[.exe] — which is exactly where
+            // CreateStdinEchoFakeDotnet placed it.
+            process.StartInfo.Environment["DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH"] = tempDir.FullName;
             process.StartInfo.Environment["DOTNET_NOLOGO"] = "1";
             process.StartInfo.Environment["NO_COLOR"] = "1";
 

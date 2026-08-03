@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
@@ -21,24 +20,53 @@ internal sealed class TestApplication(
     BuildOptions buildOptions,
     TestOptions testOptions,
     TerminalTestReporter output,
-    Action<CommandLineOptionMessages> onHelpRequested) : IDisposable
+    Action<CommandLineOptionMessages> onHelpRequested,
+    ArtifactPostProcessingManager? artifactPostProcessingManager = null,
+    ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+    TestRunPolicy? testRunPolicy = null) : IDisposable
 {
+    private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
+    private static readonly TimeSpan ArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
+    private const int LiveOutputTailLineCount = 200;
+
     private readonly Lock _requestLock = new();
+    private readonly Lock _controlRequestLock = new();
+    private readonly Lock _pipeConnectionsLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
-    private readonly TestApplicationHandler _handler = new(output, module, testOptions);
+    private readonly TestApplicationHandler _handler = new(
+        output,
+        module,
+        testOptions,
+        artifactPostProcessingManager,
+        artifactPostProcessingInvocation,
+        testRunPolicy);
+    private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
+    private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
+    private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+    private readonly string _controlPipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
+    private readonly List<TaskCompletionSource<IResponse>> _pendingControlRequests = [];
 
     private int _hasRun;
+    private int _protocolNegotiated;
+    private int _sessionCancellationRequested;
+    private Version? _negotiatedProtocolVersion;
+    private ProcessOutputCollector? _standardOutputCollector;
+    private ProcessOutputCollector? _standardErrorCollector;
 
     public TestModule Module { get; } = module;
     public TestOptions TestOptions { get; } = testOptions;
 
     public bool HasFailureDuringDispose { get; private set; }
+
+    internal bool IsProtocol_1_1_OrHigher =>
+        _negotiatedProtocolVersion is { } negotiatedProtocolVersion &&
+        negotiatedProtocolVersion.CompareTo(ProtocolVersion_1_1) >= 0;
 
     public async Task<int> RunAsync(CtrlCCancellationManager ctrlC)
     {
@@ -49,16 +77,19 @@ internal sealed class TestApplication(
 
         var processStartInfo = CreateProcessStartInfo();
 
-        var cancellationTokenSource = new CancellationTokenSource();
-        var cancellationToken = cancellationTokenSource.Token;
+        var cancellationToken = _pipeCancellationTokenSource.Token;
         var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
+        var controlPipeConnectionLoop = Task.Run(async () => await WaitControlConnectionAsync(cancellationToken));
 
         Process? process = null;
+        bool testApplicationStarted = false;
         try
         {
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
             process = Process.Start(processStartInfo)!;
+            _testRunPolicy?.OnTestApplicationStarted();
+            testApplicationStarted = true;
 
             // Register with the Ctrl+C manager so a force-exit (second Ctrl+C) kills this process
             // tree even if the child's own cooperative cancellation hangs.
@@ -68,10 +99,12 @@ internal sealed class TestApplication(
             // Note: even with 'process.StandardOutput.ReadToEndAsync()' or 'process.BeginOutputReadLine()', we ended up with
             // many TP threads just doing synchronous IO, slowing down the progress of the test run.
             // We want to read requests coming through the pipe and sending responses back to the test app as fast as possible.
-            // We are using ConcurrentQueue to avoid thread-safety issues for the timeout case.
+            // The collector is thread-safe for the timeout case.
             // In the timeout case, we leave stdOutTask and stdErrTask running, just we stop observing them.
-            var stdOutBuilder = new ConcurrentQueue<string>();
-            var stdErrBuilder = new ConcurrentQueue<string>();
+            var stdOutBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
+            var stdErrBuilder = new ProcessOutputCollector(LiveOutputTailLineCount, _handler.WriteMessage);
+            Volatile.Write(ref _standardOutputCollector, stdOutBuilder);
+            Volatile.Write(ref _standardErrorCollector, stdErrBuilder);
 
             var stdOutTask = Task.Factory.StartNew(() =>
             {
@@ -79,7 +112,7 @@ internal sealed class TestApplication(
                 string? currentLine;
                 while ((currentLine = stdOut.ReadLine()) is not null)
                 {
-                    stdOutBuilder.Enqueue(currentLine);
+                    stdOutBuilder.AddLine(currentLine, GetLiveOutputStreamingState());
                 }
             }, TaskCreationOptions.LongRunning);
 
@@ -89,13 +122,74 @@ internal sealed class TestApplication(
                 string? currentLine;
                 while ((currentLine = stdErr.ReadLine()) is not null)
                 {
-                    stdErrBuilder.Enqueue(currentLine);
+                    stdErrBuilder.AddLine(currentLine, GetLiveOutputStreamingState());
                 }
             }, TaskCreationOptions.LongRunning);
 
             // WaitForExitAsync only waits for process exit (and doesn't wait for output) for our usage here.
             // If we use BeginOutputReadLine/BeginErrorReadLine, it will also wait for output which can deadlock.
-            await process.WaitForExitAsync();
+            bool artifactPostProcessingTimedOut = false;
+            if (_artifactPostProcessingInvocation is null)
+            {
+                Task processExitTask = process.WaitForExitAsync();
+                if (_testRunPolicy is { } testRunPolicy)
+                {
+                    Task firstCompletedTask = await Task.WhenAny(processExitTask, testRunPolicy.Cancellation);
+                    if (firstCompletedTask != processExitTask)
+                    {
+                        RequestSessionCancellation();
+                        try
+                        {
+                            await processExitTask.WaitAsync(testRunPolicy.CancellationGracePeriod);
+                        }
+                        catch (TimeoutException)
+                        {
+                            try
+                            {
+                                if (!process.HasExited)
+                                {
+                                    process.Kill(entireProcessTree: true);
+                                }
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // The process exited between the HasExited check and Kill.
+                                Logger.LogTrace($"Test process exited before it could be killed after cancellation:\n{ex}");
+                            }
+
+                            await processExitTask;
+                        }
+                    }
+                    else
+                    {
+                        await processExitTask;
+                    }
+                }
+                else
+                {
+                    await processExitTask;
+                }
+            }
+            else
+            {
+                try
+                {
+                    await process.WaitForExitAsync().WaitAsync(ArtifactPostProcessingTimeout);
+                }
+                catch (TimeoutException)
+                {
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                        await process.WaitForExitAsync();
+                    }
+
+                    artifactPostProcessingTimedOut = true;
+                }
+            }
+
+            _testRunPolicy?.OnTestApplicationExited();
+            testApplicationStarted = false;
 
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
@@ -107,8 +201,13 @@ internal sealed class TestApplication(
             {
             }
 
+            if (artifactPostProcessingTimedOut)
+            {
+                throw new TimeoutException();
+            }
+
             var exitCode = process.ExitCode;
-            _handler.OnTestProcessExited(exitCode, string.Join(Environment.NewLine, stdOutBuilder), string.Join(Environment.NewLine, stdErrBuilder));
+            _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -124,14 +223,22 @@ internal sealed class TestApplication(
         }
         finally
         {
+            if (testApplicationStarted)
+            {
+                _testRunPolicy?.OnTestApplicationExited();
+            }
+
             if (process is not null)
             {
                 ctrlC.Unregister(process);
                 process.Dispose();
             }
 
-            cancellationTokenSource.Cancel();
-            await testAppPipeConnectionLoop;
+            Volatile.Write(ref _standardOutputCollector, null);
+            Volatile.Write(ref _standardErrorCollector, null);
+
+            _pipeCancellationTokenSource.Cancel();
+            await Task.WhenAll(testAppPipeConnectionLoop, controlPipeConnectionLoop);
         }
     }
 
@@ -162,15 +269,17 @@ internal sealed class TestApplication(
                 processStartInfo.Environment[entry.Key] = entry.Value;
             }
 
-            if (!_buildOptions.NoLaunchProfileArguments &&
+            if (_artifactPostProcessingInvocation is null &&
+                !_buildOptions.NoLaunchProfileArguments &&
                 !string.IsNullOrEmpty(Module.LaunchSettings.CommandLineArgs))
             {
                 processStartInfo.Arguments = $"{processStartInfo.Arguments} {Module.LaunchSettings.CommandLineArgs}";
             }
         }
 
-        // Env variables specified on command line override those specified in launch profile:
-        foreach (var (name, value) in TestOptions.EnvironmentVariables)
+        // Command-line variables (including changes made by opted-in MSBuild targets)
+        // override variables specified in the launch profile.
+        foreach (var (name, value) in Module.EnvironmentVariables)
         {
             processStartInfo.Environment[name] = value;
         }
@@ -193,7 +302,24 @@ internal sealed class TestApplication(
         // RunArguments is intentionally not escaped. It can contain multiple arguments and spaces there shouldn't cause the whole
         // value to be wrapped in double quotes. This matches dotnet run behavior.
         // In short, it's expected to already be escaped properly.
-        StringBuilder builder = new(Module.RunProperties.Arguments);
+        StringBuilder builder = new(
+            _artifactPostProcessingInvocation is null
+                ? Module.RunProperties.Arguments
+                : GetArtifactPostProcessingLaunchArguments(Module));
+
+        if (_artifactPostProcessingInvocation is not null)
+        {
+            builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
+            builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(_artifactPostProcessingInvocation.ManifestPath)}");
+
+            if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } toolDiagnosticOutputDirectoryPath)
+            {
+                builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(toolDiagnosticOutputDirectoryPath)}");
+            }
+
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+            return builder.ToString();
+        }
 
         if (TestOptions.IsHelp)
         {
@@ -230,6 +356,14 @@ internal sealed class TestApplication(
         return builder.ToString();
     }
 
+    internal static string GetArtifactPostProcessingLaunchArguments(TestModule module)
+        => string.Equals(
+            Path.GetFileNameWithoutExtension(module.RunProperties.Command),
+            "dotnet",
+            StringComparison.OrdinalIgnoreCase)
+            ? $"exec {ArgumentEscaper.EscapeSingleArg(module.TargetPath)}"
+            : string.Empty;
+
     private async Task WaitConnectionAsync(CancellationToken token)
     {
         try
@@ -240,7 +374,7 @@ internal sealed class TestApplication(
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
-                _testAppPipeConnections.Add(pipeConnection);
+                AddPipeConnection(pipeConnection);
             }
         }
         catch (OperationCanceledException ex)
@@ -253,6 +387,91 @@ internal sealed class TestApplication(
             var exAsString = ex.ToString();
             Logger.LogTrace(exAsString);
             Environment.FailFast(exAsString);
+        }
+    }
+
+    private async Task WaitControlConnectionAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                NamedPipeServer? pipeConnection = new(
+                    _controlPipeName,
+                    OnControlRequest,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    token,
+                    skipUnknownMessages: false);
+                try
+                {
+                    pipeConnection.RegisterAllSerializers();
+
+                    await pipeConnection.WaitConnectionAsync(token);
+                    AddPipeConnection(pipeConnection);
+                    pipeConnection = null;
+                }
+                finally
+                {
+                    pipeConnection?.Dispose();
+                }
+            }
+        }
+        catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+        {
+            Logger.LogTrace("WaitControlConnectionAsync() was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            // The reverse channel is an optional capability. A failure here must not replace
+            // the test application's result; policy cancellation can still use the kill fallback.
+            Logger.LogTrace($"The server-control pipe stopped accepting connections:\n{ex}");
+        }
+    }
+
+    private Task<IResponse> OnControlRequest(NamedPipeServer _, IRequest request)
+    {
+        if (request is not WaitForServerControlRequest)
+        {
+            throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+        }
+
+        lock (_controlRequestLock)
+        {
+            if (Volatile.Read(ref _sessionCancellationRequested) != 0)
+            {
+                return Task.FromResult<IResponse>(new ServerControlMessage(ServerControlKinds.CancelSession));
+            }
+
+            var completion = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _pendingControlRequests.Add(completion);
+            _pipeCancellationTokenSource.Token.Register(
+                () => completion.TrySetCanceled(_pipeCancellationTokenSource.Token));
+            return completion.Task;
+        }
+    }
+
+    private void AddPipeConnection(NamedPipeServer pipeConnection)
+    {
+        lock (_pipeConnectionsLock)
+        {
+            _testAppPipeConnections.Add(pipeConnection);
+        }
+    }
+
+    private void RequestSessionCancellation()
+    {
+        if (Interlocked.Exchange(ref _sessionCancellationRequested, 1) != 0)
+        {
+            return;
+        }
+
+        lock (_controlRequestLock)
+        {
+            var message = new ServerControlMessage(ServerControlKinds.CancelSession);
+            foreach (TaskCompletionSource<IResponse> request in _pendingControlRequests)
+            {
+                request.TrySetResult(message);
+            }
         }
     }
 
@@ -277,6 +496,7 @@ internal sealed class TestApplication(
                         // properties, mismatching info, ...) respond with an empty negotiated version so
                         // Microsoft.Testing.Platform stops sending further messages on this connection.
                         bool handshakeAccepted = OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
+                        SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
                         return Task.FromResult((IResponse)CreateHandshakeMessage(handshakeAccepted ? negotiatedVersion : string.Empty));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
@@ -301,6 +521,14 @@ internal sealed class TestApplication(
 
                     case TestSessionEvent sessionEvent:
                         OnSessionEvent(sessionEvent);
+                        break;
+
+                    case AzureDevOpsLogMessage azureDevOpsLogMessage:
+                        OnAzureDevOpsLogMessage(azureDevOpsLogMessage);
+                        break;
+
+                    case DisplayMessage displayMessage:
+                        OnDisplayMessage(displayMessage);
                         break;
 
                     // If we don't recognize the message, log and skip it
@@ -333,7 +561,7 @@ internal sealed class TestApplication(
         }
     }
 
-    private static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
+    internal static string GetSupportedProtocolVersion(HandshakeMessage handshakeMessage)
     {
         if (!handshakeMessage.Properties.TryGetValue(HandshakeMessagePropertyNames.SupportedProtocolVersions, out string? protocolVersions) ||
             string.IsNullOrWhiteSpace(protocolVersions))
@@ -344,29 +572,79 @@ internal sealed class TestApplication(
             return string.Empty;
         }
 
-        // NOTE: Today, ProtocolConstants.Version is only 1.0.0 (i.e, SDK supports only a single version).
-        // Whenever we support multiple versions in SDK, we should do intersection
-        // between protocolVersions given by MTP, and the versions supported by SDK.
-        // Then we return the "highest" version from the intersection.
-        // The current logic **assumes** that ProtocolConstants.SupportedVersions is a single version.
-        if (protocolVersions.Split(";").Contains(ProtocolConstants.SupportedVersions))
+        List<(Version Version, string Text)> sdkSupportedVersions = [];
+        foreach (string supportedVersion in ProtocolConstants.SupportedVersions.Split(';'))
         {
-            return ProtocolConstants.SupportedVersions;
+            string trimmedSupportedVersion = supportedVersion.Trim();
+            if (Version.TryParse(trimmedSupportedVersion, out Version? parsedSupportedVersion))
+            {
+                sdkSupportedVersions.Add((parsedSupportedVersion, trimmedSupportedVersion));
+            }
         }
 
-        // The version given by MTP is not supported by SDK.
-        return string.Empty;
+        Version? highestCommonVersion = null;
+        string highestCommonVersionText = string.Empty;
+        foreach (string advertisedVersion in protocolVersions.Split(';'))
+        {
+            if (!Version.TryParse(advertisedVersion.Trim(), out Version? parsedAdvertisedVersion))
+            {
+                continue;
+            }
+
+            foreach ((Version sdkSupportedVersion, string sdkSupportedVersionText) in sdkSupportedVersions)
+            {
+                if (parsedAdvertisedVersion.Equals(sdkSupportedVersion) &&
+                    (highestCommonVersion is null || sdkSupportedVersion.CompareTo(highestCommonVersion) > 0))
+                {
+                    highestCommonVersion = sdkSupportedVersion;
+                    highestCommonVersionText = sdkSupportedVersionText;
+                }
+            }
+        }
+
+        return highestCommonVersionText;
     }
 
-    private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new HandshakeMessage(new Dictionary<byte, string>(capacity: 5)
+    private HandshakeMessage CreateHandshakeMessage(string version)
+    {
+        var properties = new Dictionary<byte, string>(capacity: 6)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
             { HandshakeMessagePropertyNames.Framework, RuntimeInformation.FrameworkDescription },
             { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
-        });
+        };
+
+        if (version.Length > 0)
+        {
+            properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+        }
+
+        return new HandshakeMessage(properties);
+    }
+
+    private void SetNegotiatedProtocolVersion(string negotiatedVersion)
+    {
+        if (Version.TryParse(negotiatedVersion, out Version? parsedNegotiatedVersion) &&
+            (_negotiatedProtocolVersion is null || parsedNegotiatedVersion.CompareTo(_negotiatedProtocolVersion) > 0))
+        {
+            _negotiatedProtocolVersion = parsedNegotiatedVersion;
+        }
+
+        Volatile.Write(ref _protocolNegotiated, 1);
+        FlushBufferedOutputIfLiveStreamingEnabled();
+    }
+
+    private bool? GetLiveOutputStreamingState() =>
+        Volatile.Read(ref _protocolNegotiated) == 0 ? null : IsProtocol_1_1_OrHigher;
+
+    private void FlushBufferedOutputIfLiveStreamingEnabled()
+    {
+        bool? liveOutputStreamingState = GetLiveOutputStreamingState();
+        Volatile.Read(ref _standardOutputCollector)?.FlushBufferedOutputIfLiveStreamingEnabled(liveOutputStreamingState);
+        Volatile.Read(ref _standardErrorCollector)?.FlushBufferedOutputIfLiveStreamingEnabled(liveOutputStreamingState);
+    }
 
     public bool OnHandshakeMessage(HandshakeMessage handshakeMessage, bool gotSupportedVersion)
         => _handler.OnHandshakeReceived(handshakeMessage, gotSupportedVersion);
@@ -395,6 +673,93 @@ internal sealed class TestApplication(
 
     private void OnSessionEvent(TestSessionEvent sessionEvent)
         => _handler.OnSessionEventReceived(sessionEvent);
+
+    private void OnAzureDevOpsLogMessage(AzureDevOpsLogMessage azureDevOpsLogMessage)
+        => _handler.OnAzureDevOpsLogReceived(azureDevOpsLogMessage);
+
+    private void OnDisplayMessage(DisplayMessage displayMessage)
+        => _handler.OnDisplayMessageReceived(displayMessage);
+
+    private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
+    {
+        private readonly object _lock = new();
+        private readonly Queue<string> _lines = [];
+        private bool _liveStreamingEnabled;
+
+        public void AddLine(string line, bool? liveOutputStreamingState)
+        {
+            string? outputToWrite = null;
+            lock (_lock)
+            {
+                _lines.Enqueue(line);
+                if (liveOutputStreamingState == true)
+                {
+                    if (_liveStreamingEnabled)
+                    {
+                        outputToWrite = line + Environment.NewLine;
+                    }
+                    else
+                    {
+                        _liveStreamingEnabled = true;
+                        outputToWrite = JoinLinesWithTrailingNewLine(_lines);
+                    }
+
+                    TrimToBoundedTail();
+                }
+            }
+
+            if (outputToWrite is not null)
+            {
+                writeOutput(outputToWrite);
+            }
+        }
+
+        public void FlushBufferedOutputIfLiveStreamingEnabled(bool? liveOutputStreamingState)
+        {
+            string? outputToWrite = null;
+            lock (_lock)
+            {
+                if (liveOutputStreamingState == true && !_liveStreamingEnabled)
+                {
+                    _liveStreamingEnabled = true;
+                    outputToWrite = JoinLinesWithTrailingNewLine(_lines);
+                    TrimToBoundedTail();
+                }
+            }
+
+            if (!string.IsNullOrEmpty(outputToWrite))
+            {
+                writeOutput(outputToWrite);
+            }
+        }
+
+        public string GetOutput()
+        {
+            lock (_lock)
+            {
+                return string.Join(Environment.NewLine, _lines);
+            }
+        }
+
+        private void TrimToBoundedTail()
+        {
+            while (_lines.Count > liveOutputTailLineCount)
+            {
+                _lines.Dequeue();
+            }
+        }
+
+        private static string JoinLinesWithTrailingNewLine(IEnumerable<string> lines)
+        {
+            StringBuilder builder = new();
+            foreach (string line in lines)
+            {
+                builder.AppendLine(line);
+            }
+
+            return builder.ToString();
+        }
+    }
 
     public override string ToString()
     {
@@ -462,5 +827,7 @@ internal sealed class TestApplication(
                 Reporter.Error.WriteLine(messageBuilder.ToString());
             }
         }
+
+        _pipeCancellationTokenSource.Dispose();
     }
 }

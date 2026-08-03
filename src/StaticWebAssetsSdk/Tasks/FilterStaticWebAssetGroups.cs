@@ -11,8 +11,12 @@ namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 // When SkipDeferred=true (first pass / pre-filter), groups marked Deferred are skipped.
 // When SkipDeferred=false (final pass), all groups must be concrete — an error is raised
 // if any group is still marked Deferred.
-public class FilterStaticWebAssetGroups : Task
+[MSBuildMultiThreadableTask]
+public class FilterStaticWebAssetGroups : Task, IMultiThreadableTask
 {
+    /// <inheritdoc/>
+    public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
     [Required]
     public ITaskItem[] Assets { get; set; }
 
@@ -66,7 +70,7 @@ public class FilterStaticWebAssetGroups : Task
             }
         }
 
-        var parsedAssets = StaticWebAsset.FromTaskItemGroup(Assets);
+        var parsedAssets = StaticWebAsset.FromTaskItemGroup(Assets, TaskEnvironment);
         var (_, excludedAssetFiles) = StaticWebAsset.FilterByGroup(parsedAssets, groups, SkipDeferred, Source);
 
         // Null out excluded entries in-place — MSBuild ignores null ITaskItem[] entries,

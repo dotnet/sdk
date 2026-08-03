@@ -4,7 +4,6 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DisposeMethodsShouldCallBaseClassDispose,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDisposeMethodsShouldCallBaseClassDisposeFixer>;
@@ -14,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DisposeMethodsShouldCallBaseClassDisposeTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)
@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 #pragma warning restore RS0030 // Do not use banned APIs
                 .WithArguments(arguments);
 
-        [Fact]
+        [TestMethod]
         public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -63,7 +63,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoBaseDisposeImplementation_NoBaseDisposeCall_02_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -101,7 +101,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -142,7 +142,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoBaseDisposeCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -185,7 +185,7 @@ End Class",
             GetBasicResultAt(14, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BaseDisposeCall_IgnoreCase_VB_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -207,7 +207,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BaseDisposeBoolCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -259,7 +259,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoBaseDisposeBoolCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -313,7 +313,7 @@ End Class",
             GetBasicResultAt(19, 26, "Sub B.Dispose(b As Boolean)", "MyBase.Dispose(Boolean)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoBaseDisposeCloseCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -363,7 +363,7 @@ Class B
 End Class");
         }
 
-        [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
+        [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task BaseDisposeAsyncCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -414,7 +414,7 @@ Class B
 End Class");
         }
 
-        [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
+        [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task NoBaseDisposeAsyncCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -469,7 +469,7 @@ End Class",
             GetBasicResultAt(20, 31, "Function B.DisposeAsync() As Task", "MyBase.DisposeAsync()"));
         }
 
-        [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
+        [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task BaseDisposeCoreAsyncCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -537,7 +537,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
+        [TestMethod, WorkItem(1796, "https://github.com/dotnet/roslyn-analyzers/issues/1796")]
         public async Task NoBaseDisposeCoreAsyncCall_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -609,7 +609,7 @@ End Class",
             GetBasicResultAt(30, 34, "Function C.DisposeCoreAsync(initialized As Boolean) As Task", "MyBase.DisposeCoreAsync(Boolean)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AbstractBaseDisposeMethod_NoBaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -645,7 +645,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ShadowsBaseDisposeMethod_NoBaseDisposeCall_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -684,7 +684,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Multiple_BaseDisposeCalls_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -727,7 +727,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BaseDisposeCalls_AllPaths_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -781,7 +781,7 @@ Class B
 End Class");
         }
 
-        [Fact(Skip = "Analyzer isn't yet flow based."), WorkItem(1654, "https://github.com/dotnet/roslyn-analyzers/issues/1654")]
+        [TestMethod, Ignore("Analyzer isn't yet flow based."), WorkItem(1654, "https://github.com/dotnet/roslyn-analyzers/issues/1654")]
         public async Task BaseDisposeCalls_SomePaths_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -833,7 +833,7 @@ End Class",
             GetBasicResultAt(15, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BaseDisposeCall_GuardedWithBoolField_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -889,7 +889,7 @@ Class B
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BaseDisposeCall_DifferentOverload_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -941,7 +941,7 @@ End Class",
             GetBasicResultAt(17, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposeCall_DifferentInstance_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -988,7 +988,7 @@ End Class",
             GetBasicResultAt(15, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposeCall_StaticMethod_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1040,7 +1040,7 @@ End Class",
             GetBasicResultAt(17, 26, "Sub B.Dispose()", "MyBase.Dispose()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DisposeCall_ThisOrMeInstance_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

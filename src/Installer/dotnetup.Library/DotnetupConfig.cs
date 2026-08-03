@@ -11,34 +11,48 @@ using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
-/// Represents the user's path replacement preference chosen during the init flow.
+/// How dotnetup exposes the managed <c>dotnet</c> in the environment. This is the
+/// dotnet-access axis; whether <c>dotnetup</c> itself is on PATH is a separate,
+/// orthogonal setting (<see cref="DotnetupConfigData.DotnetupOnPath"/>).
 /// </summary>
-internal enum PathPreference
+internal enum DotnetAccessMode
 {
-    /// <summary>No PATH replacement. User runs commands via <c>dotnetup dotnet</c>.</summary>
-    DotnetupDotnet = 1,
+    /// <summary>No dotnet PATH wiring. User runs commands via <c>dotnetup dotnet</c>.</summary>
+    None = 1,
 
     /// <summary>Add dotnetup-managed dotnet to a shell profile file.</summary>
-    ShellProfile = 2,
+    Shell = 2,
 
-    /// <summary>Full PATH and DOTNET_ROOT replacement (the existing set-default-install behavior).</summary>
-    FullPathReplacement = 3,
+    /// <summary>Shell profile plus user-level env-var PATH/DOTNET_ROOT (so cmd.exe and GUI apps see the user dotnet too).</summary>
+    Everywhere = 3,
 }
 
 /// <summary>
 /// Persisted user configuration for dotnetup, stored alongside the manifest.
-/// Records decisions made during the interactive init flow.
+/// Records decisions made during the interactive init flow and via <c>dotnetup env</c>.
 /// </summary>
 internal class DotnetupConfigData
 {
     public string SchemaVersion { get; set; } = "1";
-    public PathPreference PathPreference { get; set; } = PathPreference.FullPathReplacement;
+
+    /// <summary>
+    /// How the managed dotnet is exposed. Serialized as <c>accessMode</c> via the
+    /// <see cref="DotnetAccessModeJsonConverter"/> (lowercase <c>none</c> / <c>shell</c> /
+    /// <c>everywhere</c>).
+    /// </summary>
+    [JsonPropertyName("accessMode")]
+    [JsonConverter(typeof(DotnetAccessModeJsonConverter))]
+    public DotnetAccessMode AccessMode { get; set; } = DotnetAccessMode.Shell;
+
+    /// <summary>
+    /// Whether the dotnetup directory is on PATH so <c>dotnetup</c> can be invoked. Orthogonal
+    /// to <see cref="AccessMode"/>. Defaults to <c>true</c> (and when absent from an older config).
+    /// </summary>
+    public bool DotnetupOnPath { get; set; } = true;
 }
 
-[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
-    UseStringEnumConverter = true)]
+[JsonSourceGenerationOptions(WriteIndented = true, PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase)]
 [JsonSerializable(typeof(DotnetupConfigData))]
-[JsonSerializable(typeof(PathPreference))]
 internal partial class DotnetupConfigJsonContext : JsonSerializerContext { }
 
 /// <summary>
@@ -49,6 +63,10 @@ internal static class DotnetupConfig
     /// <summary>
     /// Reads the config file if it exists, otherwise returns null.
     /// Uses GlobalJsonFileHelper for encoding-aware reading (handles BOM variants).
+    /// A config written by an earlier internal build (legacy <c>pathPreference</c> property or
+    /// pre-rename enum spellings) no longer maps: the unknown property is ignored and an
+    /// unrecognized <c>accessMode</c> value is treated as corrupt, so the config re-defaults on the
+    /// next write.
     /// </summary>
     public static DotnetupConfigData? Read()
     {
@@ -60,8 +78,14 @@ internal static class DotnetupConfig
 
         try
         {
-            using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path);
-            return JsonSerializer.Deserialize(stream, DotnetupConfigJsonContext.Default.DotnetupConfigData);
+            string text;
+            using (var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(path))
+            using (var streamReader = new StreamReader(stream))
+            {
+                text = streamReader.ReadToEnd();
+            }
+
+            return JsonSerializer.Deserialize(text, DotnetupConfigJsonContext.Default.DotnetupConfigData);
         }
         catch (Exception ex)
         {
@@ -84,13 +108,13 @@ internal static class DotnetupConfig
     }
 
     /// <summary>
-    /// Returns the user's <see cref="PathPreference"/> from the config file if it exists,
-    /// otherwise returns <c>null</c>.
+    /// Returns the user's dotnet-access <see cref="DotnetAccessMode"/> from the config file if
+    /// it exists, otherwise returns <c>null</c>.
     /// </summary>
-    public static PathPreference? ReadPathPreference()
+    public static DotnetAccessMode? ReadAccessMode()
     {
         var config = Read();
-        return config?.PathPreference;
+        return config?.AccessMode;
     }
 
     /// <summary>

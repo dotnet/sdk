@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertiesShouldNotBeWriteOnlyAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertiesShouldNotBeWriteOnlyFixer>;
@@ -13,10 +12,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class PropertiesShouldNotBeWriteOnlyTests
     {
         // Valid C# Tests that should not be flagged based on CA1044 (good tests)
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_Read_WriteAsync()
         {
             var code = @"
@@ -36,7 +36,7 @@ namespace CS_DesignLibrary
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_Read_Write1Async()
         {
             var code = @"
@@ -56,7 +56,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests1
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_public_Read_private_WriteAsync()
         {
             var code = @"
@@ -76,7 +76,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests2
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_protected_Read_private_WriteAsync()
         {
             var code = @"
@@ -96,7 +96,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests3
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_internal_Read_private_WriteAsync()
         {
             var code = @"
@@ -116,7 +116,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests4
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_protected_internal_Read_internal_WriteAsync()
         {
             var code = @"
@@ -136,7 +136,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests5
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_public_Read_internal_WriteAsync()
         {
             var code = @"
@@ -156,7 +156,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests6
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_public_Read_protected_WriteAsync()
         {
             var code = @"
@@ -176,7 +176,7 @@ namespace CS__GoodPropertiesShouldNotBeWriteOnlyTests7
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Good_public_override_WriteAsync()
         {
             var code = @"
@@ -199,7 +199,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests8
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044InterfaceAsync()
         {
             var code = @"
@@ -225,7 +225,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests9
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Base_WriteAsync()
         {
             var code = @"
@@ -252,7 +252,7 @@ namespace CS_GoodPropertiesShouldNotBeWriteOnlyTests10
         }
 
         // Valid VB Tests that should not be flagged based on CA1044 (good tests)
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_Read_WriteAsync()
         {
             var code = @"
@@ -274,7 +274,7 @@ End Namespace
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_Read_Write1Async()
         {
             var code = @"
@@ -296,7 +296,7 @@ End Namespace
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_public_Read_private_WriteAsync()
         {
             var code = @"
@@ -318,7 +318,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_protected_Read_private_WriteAsync()
         {
             var code = @"
@@ -340,7 +340,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_internal_Read_private_WriteAsync()
         {
             var code = @"
@@ -362,7 +362,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_protected_internal_Read_internal_WriteAsync()
         {
             var code = @"
@@ -384,7 +384,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_public_Read_internal_WriteAsync()
         {
             var code = @"
@@ -406,7 +406,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Good_public_Read_protected_WriteAsync()
         {
             var code = @"
@@ -429,7 +429,7 @@ End NameSpace
         }
 
         // C# Tests that should be flagged with CA1044 Addgetter
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_Write_with_NoReadAsync()
         {
             var code = @"
@@ -448,7 +448,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(8, 23, CA1044MessageAddGetter, "CS_WriteOnlyProperty"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_Write_with_NoRead1Async()
         {
             var code = @"
@@ -467,7 +467,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests1
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(8, 23, CA1044MessageAddGetter, "CS_WriteOnlyProperty1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_Write_with_NoRead2Async()
         {
             var code = @"
@@ -486,7 +486,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests2
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(8, 26, CA1044MessageAddGetter, "CS_WriteOnlyProperty2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_Write_with_NoRead3Async()
         {
             var code = @"
@@ -505,7 +505,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests3
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(8, 26, CA1044MessageAddGetter, "CS_WriteOnlyProperty3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_Write_with_NoRead4Async()
         {
             var code = @"
@@ -524,7 +524,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests4
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(8, 35, CA1044MessageAddGetter, "CS_WriteOnlyProperty4"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044bad_Base_WriteAsync()
         {
             var code = @"
@@ -542,7 +542,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests5
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(7, 31, CA1044MessageAddGetter, "CS_BaseProperty5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044bad_Interface_WriteAsync()
         {
             var code = @"
@@ -561,7 +561,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests6
         }
 
         // C# Tests that should be flagged with CA1044 MakeMoreAccessible
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_InaccessibleReadAsync()
         {
             var code = @"
@@ -581,7 +581,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(8, 24, CA1044MessageMakeMoreAccessible, "CS_InaccessibleProperty"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_InaccessibleRead1Async()
         {
             var code = @"
@@ -601,7 +601,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests1
             await VerifyCS.VerifyAnalyzerAsync(code, GetCA1044CSharpResultAt(8, 26, CA1044MessageMakeMoreAccessible, "CS_InaccessibleProperty1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS_CA1044Bad_InaccessibleRead2Async()
         {
             var code = @"
@@ -622,7 +622,7 @@ namespace CS_BadPropertiesShouldNotBeWriteOnlyTests2
         }
 
         // VB Tests that should be flagged with CA1044 Addgetter
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Write_with_NoReadAsync()
         {
             var code = @"
@@ -641,7 +641,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 35, CA1044MessageAddGetter, "VB_WriteOnlyProperty"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Write_with_NoRead1Async()
         {
             var code = @"
@@ -660,7 +660,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 38, CA1044MessageAddGetter, "VB_WriteOnlyProperty1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Write_with_NoRead2Async()
         {
             var code = @"
@@ -679,7 +679,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 35, CA1044MessageAddGetter, "VB_WriteOnlyProperty2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Write_with_NoRead3Async()
         {
             var code = @"
@@ -698,7 +698,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 45, CA1044MessageAddGetter, "VB_WriteOnlyProperty3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Write_with_NoRead4Async()
         {
             var code = @"
@@ -717,7 +717,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 35, CA1044MessageAddGetter, "VB_WriteOnlyProperty4"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Write_with_NoRead5Async()
         {
             var code = @"
@@ -735,7 +735,7 @@ End NameSpace
 ";
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 35, CA1044MessageAddGetter, "VB_WriteOnlyProperty5"));
         }
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Interface_WriteAsync()
         {
             var code = @"
@@ -756,7 +756,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(5, 28, CA1044MessageAddGetter, "InterfaceProperty"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Interface_Write1Async()
         {
             var code = @"
@@ -770,7 +770,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(5, 28, CA1044MessageAddGetter, "VB_InterfaceProperty1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Write_with_NoRead6Async()
         {
             var code = @"
@@ -790,7 +790,7 @@ End NameSpace
 ";
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(5, 28, CA1044MessageAddGetter, "InterfaceProperty"));
         }
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_Base_WriteAsync()
         {
             var code = @"
@@ -808,7 +808,7 @@ End NameSpace
         }
 
         // VB Tests that should be flagged with CA1044 MakeMoreAccessible
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_InaccessibleReadAsync()
         {
             var code = @"
@@ -830,7 +830,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 25, CA1044MessageMakeMoreAccessible, "VB_InaccessibleProperty"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_InaccessibleRead1Async()
         {
             var code = @"
@@ -852,7 +852,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 28, CA1044MessageMakeMoreAccessible, "VB_InaccessibleProperty1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_InaccessibleRead2Async()
         {
             var code = @"
@@ -874,7 +874,7 @@ End NameSpace
             await VerifyVB.VerifyAnalyzerAsync(code, GetCA1044BasicResultAt(6, 35, CA1044MessageMakeMoreAccessible, "VB_InaccessibleProperty2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VB_CA1044Bad_InaccessibleRead3Async()
         {
             var code = @"

@@ -10,9 +10,10 @@ using NuGet.Versioning;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAPackageOverrideResolver
     {
-        [Fact]
+        [TestMethod]
         public void ItMergesPackageOverridesUsingHighestVersion()
         {
             ITaskItem[] packageOverrides = new[]
@@ -29,27 +30,27 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var resolver = new PackageOverrideResolver<MockConflictItem>(packageOverrides);
 
-            Assert.Single(resolver.PackageOverrides);
+            Assert.ContainsSingle(resolver.PackageOverrides);
 
             PackageOverride packageOverride = resolver.PackageOverrides["Platform"];
-            Assert.Equal(5, packageOverride.OverriddenPackages.Count);
-            Assert.Equal(new NuGetVersion(4, 2, 0), packageOverride.OverriddenPackages["System.Ben"]);
-            Assert.Equal(new NuGetVersion(4, 3, 0), packageOverride.OverriddenPackages["System.Immo"]);
-            Assert.Equal(new NuGetVersion(4, 3, 0), packageOverride.OverriddenPackages["System.Livar"]);
-            Assert.Equal(new NuGetVersion(4, 2, 0), packageOverride.OverriddenPackages["System.Dave"]);
-            Assert.Equal(new NuGetVersion(4, 2, 0), packageOverride.OverriddenPackages["System.Nick"]);
+            Assert.HasCount(5, packageOverride.OverriddenPackages);
+            Assert.AreEqual(new NuGetVersion(4, 2, 0), packageOverride.OverriddenPackages["System.Ben"]);
+            Assert.AreEqual(new NuGetVersion(4, 3, 0), packageOverride.OverriddenPackages["System.Immo"]);
+            Assert.AreEqual(new NuGetVersion(4, 3, 0), packageOverride.OverriddenPackages["System.Livar"]);
+            Assert.AreEqual(new NuGetVersion(4, 2, 0), packageOverride.OverriddenPackages["System.Dave"]);
+            Assert.AreEqual(new NuGetVersion(4, 2, 0), packageOverride.OverriddenPackages["System.Nick"]);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHandlesNullITaskItemArray()
         {
             var resolver = new PackageOverrideResolver<MockConflictItem>(null);
 
-            Assert.Null(resolver.PackageOverrides);
-            Assert.Null(resolver.Resolve(new MockConflictItem(), new MockConflictItem()));
+            Assert.IsNull(resolver.PackageOverrides);
+            Assert.IsNull(resolver.Resolve(new MockConflictItem(), new MockConflictItem()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ItHandlesNullPackageIds()
         {
             ITaskItem[] packageOverrides = new[]
@@ -62,7 +63,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
             var resolver = new PackageOverrideResolver<MockConflictItem>(packageOverrides);
 
-            Assert.NotNull(resolver.PackageOverrides);
+            Assert.IsNotNull(resolver.PackageOverrides);
 
             var packageItem = new MockConflictItem("System.Eric")
             {
@@ -79,8 +80,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ItemType = ConflictItemType.Platform
             };
 
-            Assert.Null(resolver.Resolve(packageItem, platformItem));
-            Assert.Null(resolver.Resolve(platformItem, packageItem));
+            Assert.IsNull(resolver.Resolve(packageItem, platformItem));
+            Assert.IsNull(resolver.Resolve(platformItem, packageItem));
 
             var packageItem2 = new MockConflictItem("System.Eric")
             {
@@ -90,8 +91,8 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ItemType = ConflictItemType.Reference
             };
 
-            Assert.Null(resolver.Resolve(packageItem2, platformItem));
-            Assert.Null(resolver.Resolve(platformItem, packageItem2));
+            Assert.IsNull(resolver.Resolve(packageItem2, platformItem));
+            Assert.IsNull(resolver.Resolve(platformItem, packageItem2));
         }
     }
 }

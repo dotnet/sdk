@@ -1,7 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
+
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -9,14 +15,46 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
-// Test parallelization is disabled assembly-wide via
-// [assembly:CollectionBehavior(DisableTestParallelization = true)] in
-// LegacyStaticWebAssetsV1IntegrationTest.cs, which already isolates the
-// process-CWD mutation this test performs.
+[TestClass]
 public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest
 {
-    [Fact]
-    public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory()
+    [TestMethod]
+    public void WritesPropsFileRelativeToTaskEnvironmentProjectDirectory() =>
+        AssertWritesPropsFileRelativeToTaskEnvironmentProjectDirectory("output/props.xml");
+
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    public void WhitespaceBuildTargetPathFailsOnWindows()
+    {
+        WithTask(" ", (task, _, _) =>
+        {
+            Action execute = () => task.Execute();
+            execute.Should().Throw<Exception>();
+        });
+    }
+
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
+    public void WhitespaceBuildTargetPathWritesRelativeToTaskEnvironmentProjectDirectoryOnUnix() =>
+        AssertWritesPropsFileRelativeToTaskEnvironmentProjectDirectory(" ");
+
+    private static void AssertWritesPropsFileRelativeToTaskEnvironmentProjectDirectory(string relativeBuildTargetPath)
+    {
+        WithTask(relativeBuildTargetPath, (task, projectDir, spawnDir) =>
+        {
+            task.Execute().Should().BeTrue();
+
+            var expectedPath = Path.Combine(projectDir, relativeBuildTargetPath);
+            File.Exists(expectedPath).Should().BeTrue("the file should be written under the project dir, not the process CWD");
+
+            var incorrectPath = Path.Combine(spawnDir, relativeBuildTargetPath);
+            File.Exists(incorrectPath).Should().BeFalse();
+        });
+    }
+
+    private static void WithTask(
+        string buildTargetPath,
+        Action<StaticWebAssetsGeneratePackagePropsFile, string, string> assertion)
     {
         var testRoot = Path.Combine(AppContext.BaseDirectory, nameof(StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest), Guid.NewGuid().ToString("N"));
         var projectDir = Path.Combine(testRoot, "project");
@@ -37,16 +75,10 @@ public class StaticWebAssetsGeneratePackagePropsFileMultiThreadingTest
                 BuildEngine = buildEngine.Object,
                 TaskEnvironment = TaskEnvironment.CreateWithProjectDirectoryAndEnvironment(projectDir),
                 PropsFileImport = "Microsoft.AspNetCore.StaticWebAssets.props",
-                BuildTargetPath = Path.Combine("output", "props.xml")
+                BuildTargetPath = buildTargetPath
             };
 
-            task.Execute().Should().BeTrue();
-
-            var expectedPath = Path.Combine(projectDir, "output", "props.xml");
-            File.Exists(expectedPath).Should().BeTrue("the file should be written under the project dir, not the process CWD");
-
-            var incorrectPath = Path.Combine(spawnDir, "output", "props.xml");
-            File.Exists(incorrectPath).Should().BeFalse();
+            assertion(task, projectDir, spawnDir);
         }
         finally
         {

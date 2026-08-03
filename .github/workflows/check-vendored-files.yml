@@ -1,0 +1,67 @@
+name: Check vendored source files
+
+# Detects drift between source files copied into this repo and their upstream
+# sources, as listed in eng/vendored-files.json. See eng/vendored-files.md.
+#
+# - Scheduled runs and manual dispatch perform full drift detection and open
+#   (or update) tracking issues labelled `area-vendored-sync`.
+# - Pull-request runs that touch the manifest, script, or workflow validate the
+#   manifest structure only (no network, no issue mutation).
+
+on:
+  schedule:
+    # Weekly, Monday 08:00 UTC.
+    - cron: '0 8 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Print drift results without creating or updating issues.'
+        required: false
+        default: 'false'
+  pull_request:
+    paths:
+      - 'eng/vendored-files.json'
+      - 'eng/vendored-files.md'
+      - '.github/scripts/check_vendored_files.py'
+      - '.github/workflows/check-vendored-files.yml'
+
+permissions:
+  contents: read
+  issues: write
+
+concurrency:
+  group: vendored-files-check
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    name: Validate manifest
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate vendored-files.json
+        run: python .github/scripts/check_vendored_files.py validate
+
+  check:
+    name: Check upstream drift
+    needs: validate
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check vendored files
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VENDORED_SYNC_REPO: ${{ github.repository }}
+        run: |
+          if [ "${{ inputs.dry_run }}" = "true" ]; then
+            python .github/scripts/check_vendored_files.py check --dry-run
+          else
+            python .github/scripts/check_vendored_files.py check
+          fi

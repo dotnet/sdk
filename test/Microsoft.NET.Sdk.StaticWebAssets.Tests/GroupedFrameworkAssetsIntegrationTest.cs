@@ -1,16 +1,22 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class GroupedFrameworkAssetsIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(GroupedFrameworkAssetsIntegrationTest))
+    [TestClass]
+    public class GroupedFrameworkAssetsIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
+        protected override string RestoreNugetPackagePath => nameof(GroupedFrameworkAssetsIntegrationTest);
         // Regression coverage for the blazor.webassembly.js 404. A package ships an asset that is both a
         // framework asset and a member of a group (as Microsoft.AspNetCore.Components.WebAssembly does for
         // blazor.webassembly.js). The scenario is Package -> Library -> App:
@@ -21,9 +27,9 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         //    cleared during materialization, downstream endpoint generation skips the asset and it 404s.
         //  * The materialized framework asset is a current-project asset of the library, so the app (which
         //    does not enable the group) does not include it at the root.
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void Build_PackageToLibraryToApp_GroupedFrameworkAsset_IsConditionalAndMaterializedIntoLibrary(bool includeGroupedFrameworkAssets)
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("GroupedFrameworkAssetsSample", identifier: includeGroupedFrameworkAssets.ToString())

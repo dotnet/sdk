@@ -172,8 +172,9 @@ internal class UpdateWorkflow
         }
 
         // Check if this version is already installed (in the manifest)
-        var alreadyInstalled = root.Installations.Any(i =>
+        var existingInstallation = root.Installations.FirstOrDefault(i =>
             i.Component == spec.Component && i.Version == latestVersion.ToString());
+        var alreadyInstalled = existingInstallation is not null;
 
         // If the manifest says it's installed, validate on disk. If missing, remove the stale record.
         if (alreadyInstalled)
@@ -182,13 +183,11 @@ internal class UpdateWorkflow
             ArchiveInstallationValidator validator = new();
             if (!validator.Validate(install))
             {
-                var staleInstallation = root.Installations.First(i =>
-                    i.Component == spec.Component && i.Version == latestVersion.ToString());
                 var manifest = new DotnetupSharedManifest(manifestPath);
                 manifest.RemoveInstallation(installRoot, new Installation
                 {
-                    Component = staleInstallation.Component,
-                    Version = staleInstallation.Version
+                    Component = existingInstallation!.Component,
+                    Version = existingInstallation.Version
                 });
                 alreadyInstalled = false;
             }
