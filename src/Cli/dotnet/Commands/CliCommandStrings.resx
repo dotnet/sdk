@@ -2681,6 +2681,9 @@ Proceed?</value>
     <value>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</value>
     <comment>{0} is the test application path. {1} is the process exit code.</comment>
   </data>
+  <data name="ArtifactPostProcessingStarted" xml:space="preserve">
+    <value>Merging compatible artifacts produced by different test applications...</value>
+  </data>
   <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>
   </data>

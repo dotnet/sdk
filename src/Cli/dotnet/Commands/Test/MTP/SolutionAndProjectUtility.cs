@@ -617,10 +617,16 @@ internal static class SolutionAndProjectUtility
             // Every project of the run shares the same build session, so the requests are serialized here.
             lock (s_buildLock)
             {
-                if (project.Targets.ContainsKey(Constants.DeployToDevice) &&
-                    !buildSession.Build(project, [Constants.DeployToDevice]))
+                if (project.Targets.ContainsKey(Constants.DeployToDevice))
                 {
-                    throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    // Deploy on a fresh ProjectInstance to avoid accumulating state (existing item
+                    // groups) that would leak into the ComputeRunArguments build below, which has to
+                    // build the original instance since the run properties are read back from it.
+                    // Same reason as dotnet run, see RunCommandSelector.OpenProjectIfNeeded.
+                    if (!buildSession.Build(project.DeepCopy(), [Constants.DeployToDevice]))
+                    {
+                        throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
+                    }
                 }
 
                 if (!buildSession.Build(project, s_computeRunArgumentsTarget))

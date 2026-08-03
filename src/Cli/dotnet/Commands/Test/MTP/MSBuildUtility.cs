@@ -72,7 +72,7 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        using var buildSession = new TestBuildSession(collection, logger);
+        using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
         var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger, buildSession);
         buildSession.Complete();
         collection.UnloadAllProjects();
@@ -109,7 +109,7 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        using var buildSession = new TestBuildSession(collection, logger);
+        using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, buildSession, configuration: null, platform: null);
         buildSession.Complete();
         collection.UnloadAllProjects();
@@ -182,7 +182,7 @@ internal static class MSBuildUtility
             // through BuildManager.DefaultBuildManager, which must not overlap an open session. A
             // multi-target-framework device run therefore still writes one build per target framework
             // into the binary log. Tracked by https://github.com/dotnet/sdk/issues/55561.
-            using var buildSession = new TestBuildSession(collection, logger);
+            using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
             IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
                 projectFilePath, collection, evaluationContext, perTfmBuildOptions, buildSession, configuration, platform);
             buildSession.Complete();

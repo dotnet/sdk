@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
@@ -47,15 +48,17 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal sealed class TestBuildSession : IDisposable
 {
     private readonly ProjectCollection _projectCollection;
+    private readonly MSBuildArgs _msbuildArgs;
     private readonly FacadeLogger? _logger;
     private readonly Lock _lock = new();
 
     private BuildManager? _buildManager;
     private bool _disposed;
 
-    public TestBuildSession(ProjectCollection projectCollection, FacadeLogger? logger)
+    public TestBuildSession(ProjectCollection projectCollection, MSBuildArgs msbuildArgs, FacadeLogger? logger)
     {
         _projectCollection = projectCollection;
+        _msbuildArgs = msbuildArgs;
         _logger = logger;
     }
 
@@ -186,7 +189,7 @@ internal sealed class TestBuildSession : IDisposable
         {
             var parameters = new BuildParameters(_projectCollection)
             {
-                Loggers = _logger is null ? null : [_logger],
+                Loggers = CreateLoggers(),
                 // ProjectInstance.Build defaults to a single in-process node, keep that behavior.
                 MaxNodeCount = 1,
                 EnableNodeReuse = false,
@@ -209,5 +212,37 @@ internal sealed class TestBuildSession : IDisposable
 
         _buildManager = buildManager;
         return buildManager;
+    }
+
+    /// <summary>
+    /// Gets the loggers to attach to the session.
+    /// </summary>
+    /// <remarks>
+    /// A console logger is attached (unless <c>-noConsoleLogger</c> was passed) so that MSBuild errors are
+    /// actually reported to the user: the binary logger only forwards events to binlogs, and it is only
+    /// created when <c>-bl</c> was passed, so without a console logger these builds fail silently and the user
+    /// is only told to "fix the errors and warnings" without any error being printed anywhere.
+    /// This mirrors what <c>dotnet run</c> does in <c>RunCommand.InvokeRunArgumentsTarget</c>.
+    /// The loggers are created once per session rather than once per build, because a session
+    /// initializes and shuts down its loggers exactly once.
+    /// </remarks>
+    private List<ILogger> CreateLoggers()
+    {
+        var loggers = new List<ILogger>(capacity: 2);
+
+        if (_logger is not null)
+        {
+            loggers.Add(_logger);
+        }
+
+        if (!LoggerUtility.HasNoConsoleLoggerArgument(_msbuildArgs.OtherMSBuildArgs))
+        {
+            // These builds only compute run arguments and deploy, so keep them quiet - at this verbosity
+            // MSBuild still reports errors and warnings.
+            loggers.Add(CommonRunHelpers.GetConsoleLogger(
+                _msbuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", .. _msbuildArgs.OtherMSBuildArgs])));
+        }
+
+        return loggers;
     }
 }
