@@ -1,9 +1,11 @@
 ﻿﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
@@ -11,6 +13,7 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 public sealed class MSBuildLogger : INodeLogger
 {
     private readonly ITelemetryClient? _telemetry;
+    private Activity? _activity;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -65,10 +68,12 @@ public sealed class MSBuildLogger : INodeLogger
         {
             string? sessionId = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
 
-            if (sessionId != null)
+            if (!TelemetryClient.IsInitialized)
             {
-                _telemetry = new TelemetryClient(sessionId);
+                _ = new TelemetryClient(sessionId);
             }
+
+            _telemetry = TelemetryClient.Instance;
         }
         catch (Exception)
         {
@@ -106,6 +111,8 @@ public sealed class MSBuildLogger : INodeLogger
                 {
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
+
+                eventSource.BuildStarted += OnBuildStarted;
             }
 
             eventSource.BuildFinished += OnBuildFinished;
@@ -116,9 +123,20 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
+    private void OnBuildStarted(object sender, BuildStartedEventArgs e)
+    {
+        ActivityContext parentContext = Activity.Current?.Context ?? TelemetryClient.ParentActivityContext;
+        _activity = Activities.Source.StartActivity(
+            "msbuild",
+            ActivityKind.Internal,
+            parentContext);
+    }
+
     private void OnBuildFinished(object sender, BuildFinishedEventArgs e)
     {
         SendAggregatedEventsOnBuildFinished(_telemetry);
+        _activity?.SetStatus(e.Succeeded ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+        StopActivity();
     }
 
     internal void SendAggregatedEventsOnBuildFinished(ITelemetryClient? telemetry)
@@ -267,6 +285,20 @@ public sealed class MSBuildLogger : INodeLogger
 
     public void Shutdown()
     {
+        StopActivity();
+
+        if (_telemetry is TelemetryClient telemetryClient)
+        {
+            telemetryClient.WaitForPendingEvents();
+        }
+
+        TelemetryClient.WriteLogIfNecessary();
+    }
+
+    private void StopActivity()
+    {
+        _activity?.Stop();
+        _activity = null;
     }
 
     public LoggerVerbosity Verbosity { get; set; }

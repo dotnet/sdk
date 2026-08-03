@@ -3,8 +3,10 @@
 
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Tools.Test.Utilities;
 using Moq;
 
 namespace Microsoft.DotNet.Tests.TelemetryTests;
@@ -72,6 +74,85 @@ public class TelemetryClientTests : SdkTest
     }
 
     [TestMethod]
+    [OSCondition(OperatingSystems.Windows)]
+    [DoNotParallelize]
+    public void ItProcessesMSBuildTelemetryWithTheServerEnabled()
+    {
+        var testAsset = TestAssetsManager.CopyTestAsset("HelloWorld")
+            .WithSource();
+        var logFile = Path.Combine(testAsset.TestRoot, "msbuild-server-telemetry.json");
+        File.Delete(logFile);
+
+        ShutdownMSBuildServer(testAsset.TestRoot);
+
+        try
+        {
+            new BuildCommand(testAsset)
+                .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
+                .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "true")
+                .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH", logFile)
+                .WithEnvironmentVariable("MSBUILDUSESERVER", "1")
+                .Execute()
+                .Should()
+                .Pass();
+
+            new BuildCommand(testAsset)
+                .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
+                .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "true")
+                .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH", logFile)
+                .WithEnvironmentVariable("MSBUILDUSESERVER", "1")
+                .Execute()
+                .Should()
+                .Pass();
+
+            var telemetryJson = JsonNode.Parse(File.ReadAllText(logFile));
+            var activities = telemetryJson?["activities"]?.AsArray();
+            activities.Should().NotBeNull();
+
+            var msbuildActivities = activities.Where(activity =>
+                activity?["events"]?.AsArray()
+                    .Any(@event => @event?["name"]?.GetValue<string>().StartsWith("dotnet/cli/msbuild/") == true) == true);
+
+            var msbuildTraceIds = msbuildActivities
+                .Select(activity => activity?["identifiers"]?["traceId"]?.GetValue<string>())
+                .Distinct();
+            msbuildTraceIds.Should().HaveCount(2);
+        }
+        finally
+        {
+            ShutdownMSBuildServer(testAsset.TestRoot);
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
+    public void MSBuildLoggerDoesNotReinitializeDisabledTelemetry()
+    {
+        var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
+
+        TelemetryClient.DisabledForTests = true;
+        TelemetryClient.DisabledForTests = false;
+
+        try
+        {
+            environmentProvider
+                .Setup(p => p.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, It.IsAny<bool>()))
+                .Returns(true);
+
+            var telemetry = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
+            _ = new MSBuildLogger();
+
+            telemetry.Enabled.Should().BeFalse();
+            TelemetryClient.IsInitialized.Should().BeTrue();
+            TelemetryClient.Instance.Should().BeSameAs(telemetry);
+        }
+        finally
+        {
+            TelemetryClient.DisabledForTests = true;
+        }
+    }
+
+    [TestMethod]
     [DoNotParallelize]
     public void ItSeedsCurrentSessionIdFromEnvironmentWhenSessionIdIsNotProvided()
     {
@@ -126,5 +207,14 @@ public class TelemetryClientTests : SdkTest
         {
             TelemetryClient.DisabledForTests = true;
         }
+    }
+
+    private void ShutdownMSBuildServer(string workingDirectory)
+    {
+        new BuildServerCommand(Log)
+            .WithWorkingDirectory(workingDirectory)
+            .Execute("shutdown", "--msbuild")
+            .Should()
+            .Pass();
     }
 }

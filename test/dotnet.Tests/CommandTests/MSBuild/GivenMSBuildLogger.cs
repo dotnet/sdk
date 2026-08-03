@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Utils;
@@ -239,6 +240,37 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["Tasks"].Should().Be("[{\"Name\":\"Copy\",\"ExecutionsCount\":10}]");
             fakeTelemetry.LogEntry.Properties["TaskCount"].Should().Be("1");
             fakeTelemetry.LogEntry.Properties["TotalTaskCount"].Should().Be("1");
+        }
+
+        [TestMethod]
+        public void ItCreatesAnInternalActivityForEachBuild()
+        {
+            ActivitySource activitySource = Activities.Source;
+            Activity stoppedActivity = null;
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = source => source == activitySource,
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                ActivityStopped = activity => stoppedActivity = activity,
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            using Activity parentActivity = new Activity("parent").Start();
+            var eventSource = new PersistentDispatcher([]);
+            var logger = new MSBuildLogger(new FakeTelemetry());
+            logger.Initialize(eventSource);
+
+            eventSource.Dispatch(new BuildStartedEventArgs("Build started.", helpKeyword: null));
+
+            Activity.Current.Should().NotBeSameAs(parentActivity);
+            Activity.Current.Kind.Should().Be(ActivityKind.Internal);
+            Activity.Current.ParentSpanId.Should().Be(parentActivity.SpanId);
+
+            eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
+
+            Activity.Current.Should().BeSameAs(parentActivity);
+            stoppedActivity.Should().NotBeNull();
+            stoppedActivity.Status.Should().Be(ActivityStatusCode.Ok);
         }
     }
 }

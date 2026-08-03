@@ -82,6 +82,8 @@ public class TelemetryClient : ITelemetryClient
     }
 
     public static string? CurrentSessionId { get; private set; } = null;
+    internal static bool IsInitialized { get; private set; }
+    internal static TelemetryClient? Instance { get; private set; }
     public static bool DisabledForTests
     {
         get => field;
@@ -92,6 +94,8 @@ public class TelemetryClient : ITelemetryClient
             if (field)
             {
                 CurrentSessionId = null;
+                IsInitialized = false;
+                Instance = null;
             }
         }
     } = false;
@@ -167,6 +171,9 @@ public class TelemetryClient : ITelemetryClient
 
     public TelemetryClient(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
+        Instance = this;
+        IsInitialized = true;
+
         // This is some kind of special condition for MSBuild-related tests.
         if (DisabledForTests)
         {
@@ -271,9 +278,18 @@ public class TelemetryClient : ITelemetryClient
 
     public static void WriteLogIfNecessary()
     {
-        if (!string.IsNullOrWhiteSpace(s_diskLogPath) && s_activities.Any())
+        if (string.IsNullOrWhiteSpace(s_diskLogPath))
         {
-            TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
+            return;
+        }
+
+        Activity[] activities = [.. s_activities];
+        if (activities.Length > 0 && TelemetryDiskLogger.WriteLog(s_diskLogPath, activities))
+        {
+            foreach (Activity activity in activities)
+            {
+                s_activities.Remove(activity);
+            }
         }
     }
 
@@ -298,6 +314,11 @@ public class TelemetryClient : ITelemetryClient
         }
 
         TrackEventTask(eventName, properties);
+    }
+
+    internal void WaitForPendingEvents()
+    {
+        _trackEventTask?.GetAwaiter().GetResult();
     }
 
     private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties)
