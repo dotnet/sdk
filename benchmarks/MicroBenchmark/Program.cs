@@ -7,9 +7,45 @@ namespace Benchmark;
 
 internal class Program
 {
-    static void Main(string[] args)
+    private static void Main(string[] args)
     {
-        BenchmarkRunner.Run(typeof(Program).Assembly);
+        if (args.Length > 0 && args[0] is "--pack-publish" or "--pack-publish-smoke")
+        {
+            SetPackPublishRunId();
+        }
+
+        if (args.Length == 0)
+        {
+            BenchmarkRunner.Run<InfoTests>();
+        }
+        else if (args is ["--pack-publish"])
+        {
+            BenchmarkRunner.Run<PackPublishBenchmark>();
+        }
+        else if (args is ["--pack-publish-smoke"])
+        {
+            PackPublishBenchmark.RunSmokeAsync().GetAwaiter().GetResult();
+        }
+        else if (args is ["--pack-publish-smoke", string operation] &&
+                 Enum.TryParse(operation, ignoreCase: true, out PackPublishBenchmark.BenchmarkOperation parsedOperation))
+        {
+            PackPublishBenchmark.RunSmokeAsync(parsedOperation).GetAwaiter().GetResult();
+        }
+        else
+        {
+            throw new ArgumentException(
+                "Supported arguments are --pack-publish and --pack-publish-smoke [Pack|Publish].");
+        }
+
+        static void SetPackPublishRunId()
+        {
+            if (Environment.GetEnvironmentVariable("DOTNET_SDK_PACK_PUBLISH_BENCHMARK_RUN_ID") is null)
+            {
+                Environment.SetEnvironmentVariable(
+                    "DOTNET_SDK_PACK_PUBLISH_BENCHMARK_RUN_ID",
+                    Guid.NewGuid().ToString("N"));
+            }
+        }
 
         // BenchmarkDotNet bakes a fair amount of assumptions into the way it generates
         // projects for running its benchmarks. One of the key problems we run into is how
