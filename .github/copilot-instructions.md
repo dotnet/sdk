@@ -84,6 +84,7 @@ Major source areas under [`src/`](../src/):
 | [`Containers/`](../src/Containers/) | `dotnet publish` container image support. |
 | [`Dotnet.Watch/`](../src/Dotnet.Watch/), [`Dotnet.Format/`](../src/Dotnet.Format/) | `dotnet watch` and `dotnet format` tools. |
 | [`Compatibility/`](../src/Compatibility/) | ApiCompat, GenAPI, API diff, and package validation tooling. |
+| [`Microsoft.CodeAnalysis.NetAnalyzers/`](../src/Microsoft.CodeAnalysis.NetAnalyzers/) | The .NET code analyzers (`CA####` rules and their fixers), migrated from the retired `dotnet/roslyn-analyzers`. |
 | [`TemplateEngine/`](../src/TemplateEngine/) | Template engine libraries and authoring/discovery tools; see the [Template Engine overview](../documentation/TemplateEngine/README.md). |
 | [`Workloads/`](../src/Workloads/), [`Microsoft.DotNet.TemplateLocator/`](../src/Microsoft.DotNet.TemplateLocator/) | Workload manifests and installation, plus workload-provided template pack location. |
 | [`Layout/`](../src/Layout/) | Composes the final `dotnet` layout through [`redist.csproj`](../src/Layout/redist/redist.csproj). |

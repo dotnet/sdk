@@ -32,6 +32,9 @@ Guidance for changes under `test/`.
 - **Don't raise parallelism.** MSTest is repo-defaulted to `None` in
   `test/Directory.Build.props` because of concurrency flakiness; a few projects opt
   into `ClassLevel`. Cranking it up causes Helix over-subscription/timeouts.
+- **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
+  test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
+  `TestContext` output is both captured in the result and shown while the test runs.
 - **Skips must point to a tracking issue URL** — `[Ignore("https://github.com/dotnet/sdk/issues/N")]`.
 - **Verify (approval) snapshots**: `*.verified.*` is checked in; the runner writes a
   `*.received.*` on mismatch — promote received → verified when you change output
