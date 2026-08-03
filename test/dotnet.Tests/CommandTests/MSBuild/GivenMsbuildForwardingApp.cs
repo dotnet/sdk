@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             var startInfo = new MSBuildForwardingApp(Array.Empty<string>(), "<msbuildpath>").GetProcessStartInfo();
 
             startInfo.Environment[Activities.TRACEPARENT]
-                .Should().Be($"00-{activity.TraceId}-{activity.SpanId}-{(activity.ActivityTraceFlags == ActivityTraceFlags.Recorded ? "01" : "00")}");
+                .Should().Be($"00-{activity.TraceId}-{activity.SpanId}-{(byte)activity.Context.TraceFlags:x2}");
             startInfo.Environment[Activities.TRACESTATE].Should().Be(activity.TraceStateString);
         }
 
