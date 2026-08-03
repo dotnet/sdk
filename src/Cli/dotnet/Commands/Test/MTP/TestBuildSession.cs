@@ -5,6 +5,7 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 using Microsoft.Build.Framework;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -31,7 +32,15 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 /// <para>
 /// The session is started lazily, so a caller can create it up front and still run MSBuild through
 /// <see cref="BuildManager.DefaultBuildManager"/> (for example to build or restore the projects
-/// under test) before the first target invocation.
+/// under test) before the first target invocation. A session must never be left started across such
+/// a call.
+/// </para>
+/// <para>
+/// This covers the ordinary project and solution paths. Runs that involve device selection still
+/// emit more than one build into the log, because device selection and the per-target-framework
+/// rebuilds it drives interleave MSBuild builds with target invocations; see
+/// <see href="https://github.com/dotnet/sdk/issues/55561"/>. The underlying engine limitation is
+/// tracked by <see href="https://github.com/dotnet/msbuild/issues/14609"/>.
 /// </para>
 /// </remarks>
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
@@ -42,6 +51,7 @@ internal sealed class TestBuildSession : IDisposable
     private readonly Lock _lock = new();
 
     private BuildManager? _buildManager;
+    private bool _disposed;
 
     public TestBuildSession(ProjectCollection projectCollection, FacadeLogger? logger)
     {
@@ -59,21 +69,47 @@ internal sealed class TestBuildSession : IDisposable
     {
         lock (_lock)
         {
-            BuildResult result = GetOrStartBuildManager().BuildRequest(new BuildRequestData(project, targets));
+            ObjectDisposedException.ThrowIf(_disposed, this);
+
+            // Every ProjectInstance.Build call used to be its own build, which meant a fresh results
+            // cache each time. Within a single session MSBuild would instead serve a second request
+            // for the same project from the results cached by the first one, so targets shared by
+            // DeployToDevice and ComputeRunArguments would silently stop re-running.
+            // ReplaceExistingProjectInstance re-points the configuration at this instance and clears
+            // its cached results, which keeps the previous per-request behavior.
+            var requestData = new BuildRequestData(
+                project,
+                targets,
+                hostServices: null,
+                BuildRequestDataFlags.ReplaceExistingProjectInstance);
+
+            BuildResult result = GetOrStartBuildManager().BuildRequest(requestData);
             return result.OverallResult == BuildResultCode.Success;
         }
     }
 
-    public void Dispose()
+    /// <summary>
+    /// Ends the session, surfacing any failure MSBuild captured during it.
+    /// </summary>
+    /// <remarks>
+    /// Call this on the success path. Unlike <see cref="ProjectInstance.Build(string[], IEnumerable{ILogger})"/>,
+    /// which drains the engine's captured thread exception into the <see cref="BuildResult"/> it
+    /// returns, the public <see cref="BuildManager.BuildRequest"/> leaves it in place and only
+    /// <see cref="BuildManager.EndBuild"/> rethrows it. A failure that lands between requests or
+    /// while the logging service is flushing - a binary logger failing to write, for example - is
+    /// therefore reported here and nowhere else, so it must not be swallowed when the run otherwise
+    /// succeeded.
+    /// </remarks>
+    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
+    public void Complete()
     {
         lock (_lock)
         {
-            if (_buildManager is not { } buildManager)
+            if (TakeBuildManager() is not { } buildManager)
             {
                 return;
             }
 
-            _buildManager = null;
             try
             {
                 buildManager.EndBuild();
@@ -83,6 +119,55 @@ internal sealed class TestBuildSession : IDisposable
                 buildManager.Dispose();
             }
         }
+    }
+
+    /// <summary>
+    /// Ends the session without reporting failures, for the case where the run is already failing.
+    /// </summary>
+    public void Dispose()
+    {
+        lock (_lock)
+        {
+            if (TakeBuildManager() is not { } buildManager)
+            {
+                return;
+            }
+
+            try
+            {
+                // Reaching Dispose without Complete means an exception is unwinding through the
+                // enclosing 'using'. EndBuild rethrows whatever the engine captured, which would
+                // replace that exception - typically the GracefulException naming the project that
+                // failed - with a raw MSBuild stack trace, so it is only logged here.
+                buildManager.EndBuild();
+            }
+            catch (Exception ex)
+            {
+                Reporter.Verbose.WriteLine($"Failed to end the dotnet test MSBuild session: {ex}");
+            }
+            finally
+            {
+                buildManager.Dispose();
+            }
+        }
+    }
+
+    /// <summary>
+    /// Marks the session finished and hands back the build manager to close, or <see langword="null"/>
+    /// if it was never started or has already been closed.
+    /// </summary>
+    private BuildManager? TakeBuildManager()
+    {
+        if (_disposed)
+        {
+            return null;
+        }
+
+        _disposed = true;
+
+        BuildManager? buildManager = _buildManager;
+        _buildManager = null;
+        return buildManager;
     }
 
     [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
@@ -97,22 +182,31 @@ internal sealed class TestBuildSession : IDisposable
         // this session open never conflicts with the in-process MSBuild invocations the CLI makes to
         // build or restore the projects under test.
         var buildManager = new BuildManager("dotnet-test");
-        var parameters = new BuildParameters(_projectCollection)
+        try
         {
-            Loggers = _logger is null ? null : [_logger],
-            // ProjectInstance.Build defaults to a single in-process node, keep that behavior.
-            MaxNodeCount = 1,
-            EnableNodeReuse = false,
-        };
+            var parameters = new BuildParameters(_projectCollection)
+            {
+                Loggers = _logger is null ? null : [_logger],
+                // ProjectInstance.Build defaults to a single in-process node, keep that behavior.
+                MaxNodeCount = 1,
+                EnableNodeReuse = false,
+            };
 
-        if (_logger is not null)
+            if (_logger is not null)
+            {
+                // The facade logger forwards to a binary logger, which wants the full event stream.
+                parameters.LogTaskInputs = true;
+                parameters.EnableTargetOutputLogging = true;
+            }
+
+            buildManager.BeginBuild(parameters);
+        }
+        catch
         {
-            // The facade logger forwards to a binary logger, which wants the full event stream.
-            parameters.LogTaskInputs = true;
-            parameters.EnableTargetOutputLogging = true;
+            buildManager.Dispose();
+            throw;
         }
 
-        buildManager.BeginBuild(parameters);
         _buildManager = buildManager;
         return buildManager;
     }

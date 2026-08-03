@@ -74,6 +74,7 @@ internal static class MSBuildUtility
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         using var buildSession = new TestBuildSession(collection, logger);
         var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger, buildSession);
+        buildSession.Complete();
         collection.UnloadAllProjects();
 
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
@@ -110,6 +111,7 @@ internal static class MSBuildUtility
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
         using var buildSession = new TestBuildSession(collection, logger);
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, buildSession, configuration: null, platform: null);
+        buildSession.Complete();
         collection.UnloadAllProjects();
         return (projects, buildExitCode);
     }
@@ -176,9 +178,14 @@ internal static class MSBuildUtility
                 logger is null ? null : [logger],
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+            // The session is scoped to this iteration because the next one runs another restore/build
+            // through BuildManager.DefaultBuildManager, which must not overlap an open session. A
+            // multi-target-framework device run therefore still writes one build per target framework
+            // into the binary log. Tracked by https://github.com/dotnet/sdk/issues/55561.
             using var buildSession = new TestBuildSession(collection, logger);
             IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
                 projectFilePath, collection, evaluationContext, perTfmBuildOptions, buildSession, configuration, platform);
+            buildSession.Complete();
 
             allGroups.AddRange(modules);
         }
@@ -420,6 +427,9 @@ internal static class MSBuildUtility
 
         // Phase 1: Handle device projects sequentially. Per-TFM builds use in-process MSBuild
         // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
+        // Phase 1 must also complete before phase 2 starts using the session: the session's dedicated
+        // BuildManager must never be open across one of those builds. The session starts lazily, so it
+        // stays unstarted until phase 2 issues the first request.
         foreach (var project in projects)
         {
             var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
