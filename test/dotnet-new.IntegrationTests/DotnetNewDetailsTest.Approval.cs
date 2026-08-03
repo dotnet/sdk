@@ -34,32 +34,24 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public Task CanDisplayDetails_RemotePackage_NuGetFeedNoVersion()
         {
             var folder = CreateTemporaryFolder();
+            var emptySource = CreateTemporaryFolder();
 
-            var createCommandResult = () => new DotnetNewCommand(_log, "details", _nuGetPackageId)
+            var createCommandResult = (string source) => new DotnetNewCommand(_log, "details", _nuGetPackageId, "--nuget-source", source)
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(folder)
                 .Execute();
 
-            createCommandResult().Should().Fail();
+            createCommandResult(emptySource).Should().Fail();
 
-            File.WriteAllText(Path.Combine(folder, "NuGet.Config"), @"<?xml version=""1.0"" encoding=""utf-8""?>
-<configuration>
-  <packageSources>
-    <clear />
-    <add key=""NuGet.org"" value=""https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json"" />
-  </packageSources>
-</configuration>
-");
-
-            var commandResult = createCommandResult();
+            var commandResult = createCommandResult("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json");
 
             commandResult.Should().Pass();
 
             return Verify(commandResult.StdOut)
                 .AddScrubber(output =>
                 {
-                    output.ScrubByRegex(@"Package version: .+", "Package version: %VERSION%");
-                    // Template list varies between package versions on the proxy feed;
+                    output.ScrubByRegex(@"^   Package version:.*$", "   Package version: %VERSION%", RegexOptions.Multiline);
+                    // Template list varies between package versions on the public feed;
                     // keep only the header and scrub the table contents.
                     int idx = output.ToString().IndexOf("   Templates:");
                     if (idx >= 0)
@@ -161,7 +153,22 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Should()
                 .Pass();
 
-            return Verify(commandResult.StdOut);
+            return Verify(commandResult.StdOut)
+                .AddScrubber(output =>
+                {
+                    output.ScrubByRegex(@"^   Package version:.*$", "   Package version: %VERSION%", RegexOptions.Multiline);
+                    output.ScrubByRegex(@"(microsoft\.android\.templates/)[^/]+/", "$1%VERSION%/");
+                    int idx = output.ToString().IndexOf("   Templates:");
+                    if (idx >= 0)
+                    {
+                        int lineEnd = output.ToString().IndexOf('\n', idx);
+                        if (lineEnd >= 0)
+                        {
+                            output.Remove(lineEnd + 1, output.Length - lineEnd - 1);
+                            output.Append("      %TEMPLATES%");
+                        }
+                    }
+                });
         }
 
         [TestMethod]
