@@ -1,8 +1,10 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Utils;
 using CommandResult = Microsoft.DotNet.Cli.Utils.CommandResult;
 using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
@@ -269,6 +271,16 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("succeeded: 2")
                     .And.Contain("failed: 1")
                     .And.Contain("skipped: 2");
+
+                // Issue #52128: per-assembly summary lines must show their own counts in the
+                // compact bracketed form that mirrors the in-progress indicator. The subprocess
+                // stdout is redirected, so the SDK renders the ASCII glyph form "[+P/xF/?S]".
+                Assert.Matches(
+                    GeneratePerAssemblyCountsRegexPattern("TestProject", TestingConstants.Failed, configuration, passed: 1, failed: 1, skipped: 1),
+                    result.StdOut);
+                Assert.Matches(
+                    GeneratePerAssemblyCountsRegexPattern("OtherTestProject", TestingConstants.Passed, configuration, passed: 1, failed: 0, skipped: 1),
+                    result.StdOut);
             }
 
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
@@ -292,6 +304,20 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.ZeroTestsRan, true, configuration, "8"), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Failed, true, configuration, "2"), result.StdOut);
                 Assert.Matches(RegexPatternHelper.GenerateProjectRegexPattern("AnotherTestProject", TestingConstants.Passed, true, configuration), result.StdOut);
+
+                // Issue #52128: per-assembly summary lines must show their own counts in the
+                // compact bracketed form even when no tests ran in the assembly ("Zero tests ran")
+                // and when an assembly failed. The subprocess stdout is redirected, so the SDK
+                // renders the ASCII glyph form "[+P/xF/?S]".
+                Assert.Matches(
+                    GeneratePerAssemblyCountsRegexPattern("TestProject", TestingConstants.ZeroTestsRan, configuration, passed: 0, failed: 0, skipped: 0),
+                    result.StdOut);
+                Assert.Matches(
+                    GeneratePerAssemblyCountsRegexPattern("OtherTestProject", TestingConstants.Failed, configuration, passed: 1, failed: 1, skipped: 1),
+                    result.StdOut);
+                Assert.Matches(
+                    GeneratePerAssemblyCountsRegexPattern("AnotherTestProject", TestingConstants.Passed, configuration, passed: 1, failed: 0, skipped: 0),
+                    result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
@@ -517,7 +543,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                    at Microsoft.DotNet.Cli.Commands.Test.TestApplicationActionQueue.Read(BuildOptions buildOptions, TestOptions testOptions, TerminalTestReporter output, Action`1 onHelpRequested) in C:\Users\ygerges\Desktop\sdk\src\Cli\dotnet\Commands\Test\MTP\TestApplicationActionQueue.cs:line 68
                  */
                 result.StdErr.Should().MatchRegex("""
-                    The following exception occurred when running the test module with RunCommand '.+?TestProject1(\..+?)?' and RunArguments ' ':
+                    The following exception occurred when running the test module with RunCommand '.+?TestProject1(\..+?)?' and RunArguments '.*?':
                     """);
 
                 result.StdErr.Should().Contain("System.InvalidOperationException: A test session start event was received without a corresponding test session end.");
@@ -611,6 +637,34 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute("-c", configuration);
 
             result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        // Issue #52128: builds a regex that matches the per-assembly summary line — the line that
+        // names the test assembly with its TFM/architecture and the status, followed by the
+        // compact counts block (matching the in-progress indicator) that we render between the
+        // status and the duration. Acceptance tests run "dotnet test" in a subprocess whose stdout
+        // is redirected, so the SDK picks NonAnsiTerminal (extends SimpleTerminal) and emits the
+        // ASCII glyph form "[+P/xF/?S]" (full-ANSI terminals emit "[✓P/xF/↓S]").
+        // Example shapes we match:
+        //   ".../Debug/net11.0/TestProject.dll (net11.0|x64) passed [+1/x0/?1] (1.2s)"
+        //   ".../Debug/net11.0/TestProject.dll (net11.0|x64) failed with 1 error(s) [+1/x1/?1] (1.5s)"
+        private static string GeneratePerAssemblyCountsRegexPattern(
+            string projectName,
+            string status,
+            string configuration,
+            int passed,
+            int failed,
+            int skipped)
+        {
+            string version = ToolsetInfo.CurrentTargetFramework;
+            string escapedVersion = Regex.Escape(version);
+            string escapedProject = Regex.Escape(projectName);
+            // PathUtility.GetDirectorySeparatorChar() already returns a regex-escaped separator.
+            string separator = PathUtility.GetDirectorySeparatorChar();
+            // After the status name we may have an optional "with N error(s)" suffix (rendered when
+            // tests failed AND exitCode != 0), so we allow any non-bracket, non-newline characters
+            // between the status and the leading "[" that introduces the compact counts block.
+            return $@".+{configuration}{separator}{escapedVersion}{separator}{escapedProject}(\.dll|\.exe)?\s+\({escapedVersion}\|[A-Za-z0-9]+\)\s{status}[^\[\r\n]*\[\+{passed}/x{failed}/\?{skipped}\]\s+\(";
         }
     }
 }

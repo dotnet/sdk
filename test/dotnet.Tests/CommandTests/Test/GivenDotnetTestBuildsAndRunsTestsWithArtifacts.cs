@@ -47,10 +47,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
         [InlineData(TestingConstants.Debug, false)]
         [InlineData(TestingConstants.Release, false)]
-        // When IncludeTestAssembly is true, the test process crashes with BadImageFormatException.
-        // See: https://github.com/dotnet/sdk/issues/52029
-        [InlineData(TestingConstants.Debug, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
-        [InlineData(TestingConstants.Release, true, Skip = "https://github.com/dotnet/sdk/issues/52029")]
+        [InlineData(TestingConstants.Debug, true)]
+        [InlineData(TestingConstants.Release, true)]
         [Theory]
         public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration, bool includeTestAssembly)
         {
@@ -63,13 +61,26 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             testInstance.UpdateProjectFileWithMSTestPackageVersion(Path.Combine($@"{testInstance.Path}{PathUtility.GetDirectorySeparatorChar()}TestProject", "TestProject.csproj"), msTestVersion);
 
             // Explicitly configure IncludeTestAssembly so the test behavior does not depend on
-            // changes to the Microsoft.CodeCoverage default value.
+            // changes to the Microsoft.CodeCoverage default value. Also explicitly enable static
+            // managed instrumentation and populate <IncludeDirectories> so the
+            // StaticManagedInstrumenter actually rewrites the test assembly and its dependencies
+            // (it short-circuits when both <IncludeDirectories> and <AdditionalFiles> are empty).
+            // This is what surfaces the historic crash described in
+            // https://github.com/dotnet/sdk/issues/52029 on Linux/macOS.
+            string testProjectBinDir = Path.Combine(testInstance.Path, "TestProject", "bin", configuration);
             string coverageSettingsPath = Path.Combine(testInstance.Path, "coverage.config");
             File.WriteAllText(coverageSettingsPath, $"""
                 <?xml version="1.0" encoding="utf-8"?>
                 <Configuration>
                     <CodeCoverage>
+                        <EnableStaticManagedInstrumentation>True</EnableStaticManagedInstrumentation>
+                        <EnableStaticManagedInstrumentationRestore>True</EnableStaticManagedInstrumentationRestore>
                         <IncludeTestAssembly>{includeTestAssembly}</IncludeTestAssembly>
+                        <ModulePaths>
+                            <IncludeDirectories>
+                                <Directory Recursive="true">{testProjectBinDir}</Directory>
+                            </IncludeDirectories>
+                        </ModulePaths>
                     </CodeCoverage>
                 </Configuration>
                 """);
@@ -86,8 +97,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")
-                    .And.Contain("total: 2")
-                    .And.Contain("succeeded: 1")
+                    .And.Contain("total: 6")
+                    .And.Contain("succeeded: 5")
                     .And.Contain("failed: 1")
                     .And.Contain("skipped: 0");
             }

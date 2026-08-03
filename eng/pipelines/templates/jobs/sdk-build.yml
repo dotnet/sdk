@@ -23,6 +23,9 @@ parameters:
   targetArchitecture: x64
   publishArgument: ''
   signArgument: ''
+  # MSBuild /p:Projects argument used to scope the build to specific projects (e.g. a .slnf).
+  # Defaults to empty, which builds the repo's default solution.
+  projectsArgument: ''
   pgoInstrument: false
   enableDefaultArtifacts: false
   runtimeIdentifier: linux-x64
@@ -30,12 +33,8 @@ parameters:
   runtimeSourceProperties: ''
   officialBuildProperties: ''
   downloadManifestMsiPackages: false
-  # Lets a build be scoped to a specific project or solution, for example by setting
-  # this to `/p:Projects=$(Build.SourcesDirectory)/dotnetup.slnf`
-  projectsArgument: ''
   ### ARCADE ###
   preSteps: []
-  enableMicrobuildForMacAndLinux: false
 
 jobs:
 - template: /eng/common/${{ parameters.oneESCompat.templateFolderName }}/job/job.yml
@@ -52,7 +51,6 @@ jobs:
     helixRepo: dotnet/sdk
     timeoutInMinutes: ${{ parameters.timeoutInMinutes }}
     enableMicrobuild: true
-    enableMicrobuildForMacAndLinux: ${{ parameters.enableMicrobuildForMacAndLinux }}
     enablePublishBuildAssets: true
     enableTelemetry: true
     enablePublishUsingPipelines: true
@@ -99,10 +97,10 @@ jobs:
           -configuration $(buildConfiguration)
           ${{ parameters.publishArgument }}
           ${{ parameters.signArgument }}
+          ${{ parameters.projectsArgument }}
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }}
           /p:TargetArchitecture=${{ parameters.targetArchitecture }}
           /p:PgoInstrument=${{ parameters.pgoInstrument }}
-          ${{ parameters.projectsArgument }}
           ${{ parameters.runtimeSourceProperties }}
           ${{ parameters.officialBuildProperties }}
           /p:DotNetSignType=$(_SignType) /p:TeamName=$(_TeamName)
@@ -123,11 +121,11 @@ jobs:
           -configuration $(buildConfiguration) \
           ${{ parameters.publishArgument }} \
           ${{ parameters.signArgument }} \
+          ${{ parameters.projectsArgument }} \
           /p:EnableDefaultArtifacts=${{ parameters.enableDefaultArtifacts }} \
           /p:TargetArchitecture=${{ parameters.targetArchitecture }} \
           /p:PgoInstrument=${{ parameters.pgoInstrument }} \
           /p:TargetRid=${{ parameters.runtimeIdentifier }} \
-          ${{ parameters.projectsArgument }} \
           ${{ parameters.osProperties }} \
           ${{ parameters.runtimeSourceProperties }} \
           ${{ parameters.officialBuildProperties }} \
@@ -137,21 +135,10 @@ jobs:
           BuildConfig: $(buildConfiguration)
           OPENSSL_ENABLE_SHA1_SIGNATURES: 1
           MSBUILDALWAYSRETRY: true
-          # Required by the MicroBuild signing plugin to acquire a federated
-          # token for ESRP. AzDO exposes System.AccessToken automatically to
-          # script processes on Windows agents but not on Linux/macOS, so the
-          # SignFiles task fails with "Access token is not available" without
-          # this env var.
-          SYSTEM_ACCESSTOKEN: $(System.AccessToken)
           TARGET_ARCHITECTURE: ${{ parameters.targetArchitecture }}
 
     ############### TESTING ###############
     - ${{ if eq(parameters.runTests, true) }}:
-      - ${{ if eq(parameters.runAoTTests, true) }}:
-        # For the reason this is here, see: https://github.com/dotnet/sdk/issues/22655
-        - script: $(Build.SourcesDirectory)/artifacts/bin/redist/$(buildConfiguration)/dotnet/dotnet workload install wasm-tools --skip-manifest-update
-          workingDirectory: $(Build.SourcesDirectory)/artifacts/bin
-          displayName: 🟣 Install wasm-tools Workload
 
       # For the /p:Projects syntax for PowerShell, see: https://github.com/dotnet/msbuild/issues/471#issuecomment-1146466335
       - ${{ if eq(parameters.pool.os, 'windows') }}:
@@ -163,9 +150,9 @@ jobs:
             /p:TargetArchitecture=${{ parameters.targetArchitecture }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}
+            /p:EnableHelixJobMonitor=true
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -187,9 +174,9 @@ jobs:
             ${{ parameters.osProperties }}
             ${{ parameters.runtimeSourceProperties }}
             /p:CustomHelixTargetQueue=${{ parameters.helixTargetQueue }}${{ parameters.helixTargetContainer }}
+            /p:EnableHelixJobMonitor=true
             /bl:$(Build.SourcesDirectory)/artifacts/log/$(buildConfiguration)/${{ parameters.categoryName }}Tests.binlog
-          displayName: 🟣 Run ${{ parameters.categoryName }} Tests
-          condition: succeeded()
+          displayName: 🟣 Queue Tests
           env:
             # Required by Arcade for running in Helix.
             SYSTEM_ACCESSTOKEN: $(System.AccessToken)
@@ -236,7 +223,38 @@ jobs:
         PathtoPublish: $(Build.ArtifactStagingDirectory)
         # This is the job name, but because of "legacy reasons", both Agent.JobName and System.JobName are not the actual job name.
         # See: https://developercommunity.visualstudio.com/t/systemjobname-seems-to-be-incorrectly-assigned-and/1209736#TPIN-N1211828
-        ArtifactName: $(System.PhaseName)
+        ArtifactName: $(System.PhaseName)_Logs
         publishLocation: Container
       continueOnError: true
       condition: always()
+
+    # Publish the leg's Shipping packages as a <JobName>_Assets pipeline artifact, but only when
+    # there's something to publish. A scoped build (e.g. the dotnetup build, which builds only
+    # dotnetup via /p:Projects) produces no Shipping packages, and 1ES.PublishPipelineArtifact
+    # fails hard on a missing targetPath (it doesn't honor continueOnError there), so guard the
+    # step on the directory actually containing files.
+    - ${{ if eq(parameters.pool.os, 'windows') }}:
+      - powershell: |
+          $dir = "$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          $hasAssets = (Test-Path $dir) -and ((Get-ChildItem -Path $dir -File -Recurse -ErrorAction SilentlyContinue | Measure-Object).Count -gt 0)
+          Write-Host "##vso[task.setvariable variable=HasBuiltAssets]$($hasAssets.ToString().ToLowerInvariant())"
+        displayName: 🟣 Check for built assets
+        condition: not(canceled())
+    - ${{ else }}:
+      - bash: |
+          dir="$(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping"
+          if [ -d "$dir" ] && [ -n "$(find "$dir" -type f -print -quit)" ]; then
+            echo "##vso[task.setvariable variable=HasBuiltAssets]true"
+          else
+            echo "##vso[task.setvariable variable=HasBuiltAssets]false"
+          fi
+        displayName: 🟣 Check for built assets
+        condition: not(canceled())
+
+    - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishPipelineArtifact@1
+      displayName: 🟣 Publish Built Assets
+      inputs:
+        targetPath: $(Build.SourcesDirectory)/artifacts/packages/$(buildConfiguration)/Shipping
+        artifactName: $(System.PhaseName)_Assets
+      continueOnError: true
+      condition: and(not(canceled()), eq(variables['HasBuiltAssets'], 'true'))

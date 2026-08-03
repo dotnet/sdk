@@ -1038,5 +1038,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1240: The current .NET SDK ({0}) has no newer release in its feature band. Update to version {1}: https://dotnet.microsoft.com/download</value>
     <comment>{StrBegins="NETSDK1240: "}{Locked="{0}"}{Locked="{1}"}</comment>
   </data>
-  <!-- The latest message added is SdkFeatureBandDiscontinued. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="TargetFrameworkEmpty" xml:space="preserve">
+    <value>NETSDK1241: The TargetFramework property is empty. Specify a value for the TargetFramework property in your project file.</value>
+    <comment>{StrBegins="NETSDK1241: "}</comment>
+  </data>
+  <!-- The latest message added is TargetFrameworkEmpty. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

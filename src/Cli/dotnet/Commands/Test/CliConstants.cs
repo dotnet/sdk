@@ -55,6 +55,27 @@ internal static class HandshakeMessagePropertyNames
     internal const byte ModulePath = 6;
     internal const byte ExecutionId = 7;
     internal const byte InstanceId = 8;
+    internal const byte IsIDE = 9;
+
+    // Reports which command-line execution mode the test host is running in,
+    // so the SDK can detect mismatches such as a help/list-tests option leaking
+    // from RunArguments or launchSettings.json into what the SDK thinks is a
+    // normal run. Values come from HandshakeMessageExecutionModes.
+    // Optional property — older Microsoft.Testing.Platform versions don't send
+    // it, in which case the SDK falls back to its previous (no-validation) behavior.
+    internal const byte ExecutionMode = 10;
+}
+
+internal static class HandshakeMessageExecutionModes
+{
+    // Standard test run.
+    internal const string Run = "run";
+
+    // The test host is going to print command-line help (e.g. --help, -?).
+    internal const string Help = "help";
+
+    // The test host is going to discover tests (e.g. --list-tests).
+    internal const string Discover = "discover";
 }
 
 internal static class ProtocolConstants

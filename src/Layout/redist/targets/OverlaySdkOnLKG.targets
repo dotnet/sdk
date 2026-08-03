@@ -57,6 +57,20 @@
     <OverrideAndCreateBundledNETCoreAppPackageVersion
       Stage0BundledVersionsPath="$(_DotNetHiveRoot)/sdk/$(Stage0SdkVersion)/Microsoft.NETCoreSdk.BundledVersions.props"
       Stage2BundledVersionsPath="$(TestHostDotNetRoot)/sdk/$(Version)/Microsoft.NETCoreSdk.BundledVersions.props"/>
+  
+    <!-- Pass the credential provider plugin path to the subprocess so it can authenticate
+         with internal NuGet feeds. DOTNET_CLI_HOME redirection causes NuGet to look for
+         plugins in the wrong location (artifacts/tmp/ instead of the user profile). -->
+    <PropertyGroup>
+      <_UserHome Condition="'$(USERPROFILE)' != ''">$(USERPROFILE)</_UserHome>
+      <_UserHome Condition="'$(_UserHome)' == ''">$(HOME)</_UserHome>
+      <_CredentialProviderPath>$(_UserHome)/.nuget/plugins/netcore/CredentialProvider.Microsoft/CredentialProvider.Microsoft.dll</_CredentialProviderPath>
+    </PropertyGroup>
+    <ItemGroup>
+      <_OverlaySdkEnvVars Include="DOTNET_CLI_HOME=$(ArtifactsTmpDir)" />
+      <_OverlaySdkEnvVars Condition="Exists('$(_CredentialProviderPath)')"
+                          Include="NUGET_PLUGIN_PATHS=$(_CredentialProviderPath)" />
+    </ItemGroup>
   </Target>
 
   <!-- Use target batching to avoid qualified metadata references inside item transforms (MSB4043).

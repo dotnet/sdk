@@ -218,4 +218,29 @@ public class BuildParametersSelectionPromptTests
         var formatted = SpectreBuildParametersSelectionPrompt.FormatDevice(device);
         Assert.Equal("device-1", formatted);
     }
+
+    [Fact]
+    public async Task SelectsFrameworkThenDevice()
+    {
+        var console = new SpectreTestConsole();
+        console.Profile.Capabilities.Interactive = true;
+
+        // Push keys for TFM selection (search + enter)
+        console.Input.PushText("net9.0");
+        console.Input.PushKey(ConsoleKey.Enter);
+
+        // Push keys for device selection (search + enter)
+        console.Input.PushText("Pixel 7 Pro");
+        console.Input.PushKey(ConsoleKey.Enter);
+
+        var frameworks = new[] { "net7.0", "net8.0", "net9.0" };
+        var devices = CreateTestDevices();
+        var prompt = new SpectreBuildParametersSelectionPrompt(console);
+
+        var selectedFramework = await prompt.SelectTargetFrameworkAsync(frameworks, CancellationToken.None);
+        Assert.Equal("net9.0", selectedFramework);
+
+        var selectedDevice = await prompt.SelectDeviceAsync(devices, CancellationToken.None);
+        Assert.Equal("0A041FDD400327", selectedDevice.Id);
+    }
 }

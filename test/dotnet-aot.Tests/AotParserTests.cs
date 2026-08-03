@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework.Utilities;
 using Xunit;
@@ -11,8 +12,10 @@ namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Tests for the AOT-compiled CLI parser (the #if CLI_AOT path in Parser.cs).
-///  Validates that --version, --info, and default usage work correctly,
-///  and that unsupported commands produce parse errors.
+///  Validates that --version, --info, --help, and default usage are served entirely
+///  from AOT, that the full command surface now parses (matching the managed CLI),
+///  and that commands which require the managed CLI report this via
+///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
 public class AotParserTests
 {
@@ -38,17 +41,149 @@ public class AotParserTests
     }
 
     [Fact]
-    public void ParseUnrecognizedCommand_HasErrors()
+    public void ParseKnownCommand_HasNoErrors()
     {
+        // The AOT parser now builds the full command tree, so real commands like `build`
+        // parse cleanly (they no longer surface as unknown). Execution still falls back.
         var result = Parser.Parse(["build"]);
-        Assert.NotEmpty(result.Errors);
+        Assert.Empty(result.Errors);
     }
 
     [Fact]
-    public void ParseUnrecognizedOption_HasErrors()
+    public void DetectFileBasedApp_WhenFirstArgIsCSharpFile()
     {
-        var result = Parser.Parse(["--list-sdks"]);
-        Assert.NotEmpty(result.Errors);
+        // `dotnet app.cs` is an implicit file-based app invocation. The AOT parser only sees the
+        // path as an unmatched root argument, so the shared detection (reused from the managed CLI)
+        // identifies it so NativeEntryPoint can defer to the managed run pipeline.
+        var csFile = Path.Combine(Path.GetTempPath(), $"aot-filebased-{Guid.NewGuid():N}.cs");
+        File.WriteAllText(csFile, "Console.WriteLine(\"hi\");");
+        try
+        {
+            var result = Parser.Parse([csFile]);
+            Assert.Empty(result.Errors);
+            Assert.NotNull(result.GetFileBasedAppEntryPointToken());
+        }
+        finally
+        {
+            File.Delete(csFile);
+        }
+    }
+
+    [Fact]
+    public void DoesNotDetectFileBasedApp_ForBuiltInCommand()
+    {
+        var result = Parser.Parse(["build"]);
+        Assert.Null(result.GetFileBasedAppEntryPointToken());
+    }
+
+    [Fact]
+    public void DoesNotDetectFileBasedApp_ForNonExistentFile()
+    {
+        // IsValidEntryPointPath requires the file to exist, so a bogus *.cs argument is not
+        // treated as a file-based app (it would resolve as an external `dotnet-<name>` command).
+        var result = Parser.Parse([$"does-not-exist-{Guid.NewGuid():N}.cs"]);
+        Assert.Null(result.GetFileBasedAppEntryPointToken());
+    }
+
+    [Theory]
+    [InlineData("ef")]                                  // external command: dotnet-ef
+    [InlineData("does-not-exist-command")]              // unknown external command
+    public void DetectExternalCommand_RequiresManagedResolution(string command)
+    {
+        // `dotnet <external>` doesn't match a built-in command, so it lands on the root's hidden
+        // subcommand argument and must be deferred to the managed CLI's external command resolution
+        // rather than executed by the AOT root usage action.
+        var result = Parser.Parse([command]);
+        Assert.Empty(result.Errors);
+        Assert.True(result.RequiresManagedCommandResolution());
+    }
+
+    [Theory]
+    [InlineData("")]                                    // `dotnet` (usage)
+    [InlineData("--version")]
+    [InlineData("--info")]
+    public void RootInvocations_DoNotRequireManagedResolution(string arg)
+    {
+        // Bare `dotnet`, `--version`, `--info`, etc. are handled entirely in AOT.
+        string[] args = arg.Length == 0 ? [] : [arg];
+        var result = Parser.Parse(args);
+        Assert.False(result.RequiresManagedCommandResolution());
+    }
+
+    [Fact]
+    public void ParseHostHandledOption_HasNoErrors()
+    {
+        // --list-sdks / --list-runtimes are host-handled options defined on the root command
+        // so they appear in help and parse without error. The host resolves them before AOT.
+        Assert.Empty(Parser.Parse(["--list-sdks"]).Errors);
+        Assert.Empty(Parser.Parse(["--list-runtimes"]).Errors);
+    }
+
+    [Fact]
+    public void ParseUnknownToken_IsToleratedForExternalCommandForwarding()
+    {
+        // The dotnet root command is intentionally tolerant of unknown tokens so that
+        // `dotnet foo` can be forwarded to an external `dotnet-foo` command. Unknown tokens
+        // therefore do not produce parse errors; they are resolved by the managed CLI on fallback.
+        var result = Parser.Parse(["--this-option-does-not-exist"]);
+        Assert.Empty(result.Errors);
+    }
+
+    [Fact]
+    public void InvokeKnownCommand_FallsBackToManaged()
+    {
+        // Commands that cannot run in AOT must signal a managed fallback rather than execute.
+        var result = Parser.Parse(["build"]);
+        Assert.Empty(result.Errors);
+        Assert.Throws<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [Fact]
+    public void InvokeRootHelp_RendersUsageFromAot()
+    {
+        var (exitCode, stdout, _) = InvokeWithCapture(["--help"]);
+
+        Assert.Equal(0, exitCode);
+        Assert.Contains("dotnet", stdout);
+        Assert.Contains("build", stdout);
+    }
+
+    [Fact]
+    public void InvokeCommandHelp_RendersFromAotWithoutFallback()
+    {
+        // Help for a definition-backed command (one that does not shell out to an external
+        // tool) renders entirely from AOT and must not request a managed fallback.
+        var result = Parser.Parse(["build", "--help"]);
+        var exception = Record.Exception(() => Parser.Invoke(result));
+
+        Assert.Null(exception);
+    }
+
+    [Fact]
+    public void InvokeExternalToolHelp_RendersFromAotWithoutFallback()
+    {
+        // Help for the external-tool commands (msbuild/nuget/vstest/format/fsi) now shells out to the
+        // underlying tool from AOT instead of falling back to the managed CLI. The forwarded process
+        // may fail in the test environment, but help must never request a managed fallback.
+        var result = Parser.Parse(["msbuild", "--help"]);
+        var exception = Record.Exception(() => Parser.Invoke(result));
+
+        Assert.IsNotType<CommandNotAvailableInAotException>(exception);
+    }
+
+    [Fact]
+    public void InvokeCliSchema_RendersSchemaJsonFromAot()
+    {
+        // --cli-schema serializes the command tree via a source-generated JsonSerializerContext,
+        // so it runs entirely in AOT (no managed fallback) and emits the command surface as JSON.
+        var (exitCode, stdout, _) = InvokeWithCapture(["--cli-schema"]);
+
+        Assert.Equal(0, exitCode);
+        // The root command name reflects the host executable, so assert on stable content instead:
+        // the SDK version, the subcommands collection, and a representative built-in subcommand.
+        Assert.Contains($"\"version\": \"{Product.Version}\"", stdout);
+        Assert.Contains("\"subcommands\"", stdout);
+        Assert.Contains("\"build\"", stdout);
     }
 
     [Fact]
@@ -122,46 +257,49 @@ public class AotParserTests
 
         var bufferedOutput = new BufferedReporter();
         var bufferedError = new BufferedReporter();
+        var originalOut = Console.Out;
+        var originalErr = Console.Error;
         var stdoutWriter = new StringWriter();
         var stderrWriter = new StringWriter();
-
-        // Redirect InvocationConfiguration.Output/Error so S.CL writes are captured.
-        var originalInvocationOut = Parser.InvocationConfiguration.Output;
-        var originalInvocationErr = Parser.InvocationConfiguration.Error;
 
         try
         {
             Reporter.SetOutput(bufferedOutput);
             Reporter.SetError(bufferedError);
-            Parser.InvocationConfiguration.Output = stdoutWriter;
-            Parser.InvocationConfiguration.Error = stderrWriter;
+            Console.SetOut(stdoutWriter);
+            Console.SetError(stderrWriter);
+            InvocationConfiguration invocationConfiguration = new()
+            {
+                EnableDefaultExceptionHandler = false, // parity with Parser.InvocationConfiguration
+                Output = stdoutWriter,
+                Error = stderrWriter
+            };
+            int exitCode = parseResult.Invoke(invocationConfiguration);
 
-            int exitCode = Parser.Invoke(parseResult);
-
-            // Combine Reporter output and InvocationConfiguration output
+            // Combine Reporter output and direct Console.Out output
             string reporterOut = string.Join(Environment.NewLine, bufferedOutput.Lines);
-            string invocationOut = stdoutWriter.ToString();
+            string consoleOut = stdoutWriter.ToString();
             string stdout = string.IsNullOrEmpty(reporterOut)
-                ? invocationOut
-                : (string.IsNullOrEmpty(invocationOut)
+                ? consoleOut
+                : (string.IsNullOrEmpty(consoleOut)
                     ? reporterOut
-                    : reporterOut + Environment.NewLine + invocationOut);
+                    : reporterOut + Environment.NewLine + consoleOut);
 
             string reporterErr = string.Join(Environment.NewLine, bufferedError.Lines);
-            string invocationErr = stderrWriter.ToString();
+            string consoleErr = stderrWriter.ToString();
             string stderr = string.IsNullOrEmpty(reporterErr)
-                ? invocationErr
-                : (string.IsNullOrEmpty(invocationErr)
+                ? consoleErr
+                : (string.IsNullOrEmpty(consoleErr)
                     ? reporterErr
-                    : reporterErr + Environment.NewLine + invocationErr);
+                    : reporterErr + Environment.NewLine + consoleErr);
 
             return (exitCode, stdout, stderr);
         }
         finally
         {
             Reporter.Reset();
-            Parser.InvocationConfiguration.Output = originalInvocationOut;
-            Parser.InvocationConfiguration.Error = originalInvocationErr;
+            Console.SetOut(originalOut);
+            Console.SetError(originalErr);
         }
     }
 }
