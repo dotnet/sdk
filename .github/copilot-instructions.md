@@ -233,6 +233,7 @@ property:
   - Examples:
     - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
     - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll --filter "ItShowsTheAppropriateMessageToTheUser"`
+  - Most test projects require a full redist SDK build first (see the build steps above); `dotnetup.Tests` is the exception and runs without one.
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
 - This repo uses conditional test filtering to skip expensive test suites on PRs when
   relevant source files have not changed. When adding new test projects, consider
