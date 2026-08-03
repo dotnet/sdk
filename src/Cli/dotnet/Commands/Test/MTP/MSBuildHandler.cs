@@ -80,6 +80,9 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, FacadeLogger? lo
         return actionQueue.CompleteEnqueueAndWait();
     }
 
+    public IEnumerable<TestModule> EnumerateTestModules()
+        => _testApplications.SelectMany(static moduleGroup => moduleGroup);
+
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {
         if (!Logger.TraceEnabled)

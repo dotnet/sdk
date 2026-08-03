@@ -252,6 +252,9 @@ internal static class MSBuildUtility
             parseResult.GetValue(definition.SolutionOption),
             positionalTestModules ?? parseResult.GetValue(definition.TestModulesFilterOption),
             resultsDirectory,
+            parseResult.GetValue(definition.ResultsDirectoryLayoutOption) == "per-module"
+                ? ResultsDirectoryLayout.PerModule
+                : ResultsDirectoryLayout.Flat,
             configFile,
             diagnosticOutputDirectory);
 
