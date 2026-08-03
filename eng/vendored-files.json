@@ -34,14 +34,14 @@
     {
       "id": "dotnet-test-terminal-reporter",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs",
-      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
+      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
-          "baseline_blob_sha": "26135cc81bcd492e730a58b490b5cba9b8623ade",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "51bf9c46545d06d31f2944c88c20c68f76654acc",
           "scope": "reporter partial"
         },
         {
@@ -107,6 +107,38 @@
           "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
           "baseline_blob_sha": "b8aee10a39ad8b5a7a64d6b9d5b2e1571de1f698",
           "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Coverage.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "897e98cd2503a44f6d92ac0f7008edc77741c017",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.FlakyTests.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "b61b9512cd73c34ecbd86c45abccaeaa5cc9765c",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.SlowestTests.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "0463662d971dc911a7f8aacaaca68b9d4d3d6f7a",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.TestDiscovery.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "55fb099b665181200701f0153282093b511ce499",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
         }
       ]
     },
