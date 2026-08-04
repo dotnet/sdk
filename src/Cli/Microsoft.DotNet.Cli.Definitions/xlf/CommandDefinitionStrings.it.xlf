@@ -1318,6 +1318,11 @@ Se il comando è specificato senza l'argomento, vengono elencati tutti i pacchet
         <target state="translated">Consente di installare pacchetti di modelli dalle origini specificate anche se sovrascrivessero un pacchetto di modelli da un'altra origine.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Consente al comando di arrestare l'esecuzione e attendere l'input o l'azione dell'utente, ad esempio per completare l'autenticazione.</target>

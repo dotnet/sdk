@@ -1318,6 +1318,11 @@ Pokud je příkaz zadán bez argumentu, zobrazí seznam všech nainstalovaných 
         <target state="translated">Umožňuje instalaci balíčků šablon ze zadaných zdrojů i v případě, že by přepsaly balíček šablony z jiného zdroje.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">Umožňuje, aby se příkaz zastavil a počkal na vstup nebo akci uživatele (například na dokončení ověření).</target>

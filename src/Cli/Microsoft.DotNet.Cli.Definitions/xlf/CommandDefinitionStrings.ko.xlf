@@ -1318,6 +1318,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">지정된 원본에서 템플릿 패키지를 다른 원본에서 재정의하더라도 템플릿 패키지를 설치할 수 있습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">명령을 중지하고 사용자 입력 또는 작업을 기다리도록 허용합니다(예: 인증 완료).</target>

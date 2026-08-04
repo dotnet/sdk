@@ -1318,6 +1318,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">指定されたソースからテンプレート パッケージが、別のソースからのテンプレート パッケージをオーバーライドする場合でも、インストールできます。</target>
         <note />
       </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Option_Interactive">
         <source>Allows the command to stop and wait for user input or action (for example to complete authentication).</source>
         <target state="translated">コマンドを停止して、ユーザーの入力またはアクション (認証の完了など) を待機できるようにします。</target>
