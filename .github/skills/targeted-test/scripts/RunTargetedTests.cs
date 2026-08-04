@@ -160,7 +160,7 @@ static async Task<int> RunAsync(
         cancellationToken);
     if (projectProperties is null)
     {
-        return 2;
+        return 1;
     }
 
     // MSTest.Sdk projects are executable test applications. Build them explicitly so the
@@ -517,5 +517,5 @@ static bool IsShellSafe(char value) =>
 static int Fail(string message)
 {
     Console.Error.WriteLine($"Error: {message}");
-    return 2;
+    return 1;
 }
