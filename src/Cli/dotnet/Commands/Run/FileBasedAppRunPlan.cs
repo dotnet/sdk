@@ -81,7 +81,7 @@ internal static class FileBasedAppRunPlan
     }
 
     /// <summary>
-    /// Determines whether the Native AOT no-build path can launch complete synthetic CSC output without full cache validation.
+    /// Determines whether the Native AOT no-build path can reuse a synthetic CSC cache without full cache validation.
     /// </summary>
     /// <param name="entryPointFileFullPath">The fully qualified entry-point path.</param>
     /// <param name="artifactsPath">The application artifacts directory.</param>
@@ -110,13 +110,6 @@ internal static class FileBasedAppRunPlan
             return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
         }
 
-        var launchArtifacts = GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath);
-        if (GetMissingCscBuiltProgramLaunchArtifact(launchArtifacts) is { } missingArtifact)
-        {
-            Reporter.Verbose.WriteLine("Falling back to the managed CLI because a CSC launch artifact is missing: " + missingArtifact);
-            return new RunPlan(RunTier.ManagedFallback, RunDecisionReason.NoBuildNotEligible, Cache: null);
-        }
-
         if (!File.Exists(entryPointFileFullPath))
         {
             Reporter.Verbose.WriteLine("Falling back to the managed CLI because the entry point file is missing.");
@@ -127,7 +120,9 @@ internal static class FileBasedAppRunPlan
             RunTier.LaunchOnly,
             RunDecisionReason.NoBuildSyntheticCache,
             Cache: null,
-            new FileBasedAppLaunchInfo(launchArtifacts.AppHost, artifactsPath));
+            new FileBasedAppLaunchInfo(
+                GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath).AppHost,
+                artifactsPath));
     }
 
     /// <summary>
@@ -355,42 +350,6 @@ internal static class FileBasedAppRunPlan
     }
 
     /// <summary>
-    /// Finds the first missing synthetic CSC launch artifact.
-    /// </summary>
-    /// <param name="entryPointFileFullPath">The fully qualified entry-point path.</param>
-    /// <param name="artifactsPath">The application artifacts directory.</param>
-    /// <returns>The missing artifact path, or <see langword="null"/> when all required artifacts exist.</returns>
-    internal static string? GetMissingCscBuiltProgramLaunchArtifact(
-        string entryPointFileFullPath,
-        string artifactsPath)
-        => GetMissingCscBuiltProgramLaunchArtifact(
-            GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath));
-
-    /// <summary>
-    /// Finds the first missing path in a precomputed synthetic CSC launch contract.
-    /// </summary>
-    /// <param name="launchArtifacts">The synthetic launch artifact paths.</param>
-    /// <returns>The missing artifact path, or <see langword="null"/> when all required artifacts exist.</returns>
-    internal static string? GetMissingCscBuiltProgramLaunchArtifact(
-        (string AppHost, string Assembly, string RuntimeConfig) launchArtifacts)
-        => GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts)
-            .FirstOrDefault(static path => !File.Exists(path));
-
-    /// <summary>
-    /// Enumerates every path required to launch a synthetic CSC-built program.
-    /// </summary>
-    /// <param name="launchArtifacts">The synthetic launch artifact paths.</param>
-    /// <returns>All required launch artifact paths.</returns>
-    internal static string[] GetCscBuiltProgramLaunchArtifactPaths(
-        (string AppHost, string Assembly, string RuntimeConfig) launchArtifacts)
-        =>
-        [
-            launchArtifacts.AppHost,
-            launchArtifacts.Assembly,
-            launchArtifacts.RuntimeConfig,
-        ];
-
-    /// <summary>
     /// Touching the artifacts folder ensures it is considered recently used and not removed by
     /// <see cref="Clean.FileBasedAppArtifacts.CleanFileBasedAppArtifactsCommand"/>.
     /// </summary>
@@ -505,20 +464,6 @@ internal static class FileBasedAppRunPlan
         {
             cache.InitialCanReuseAuxiliaryFiles = false;
             Reporter.Verbose.WriteLine($"Building because previous runtime version ({previousCacheEntry.RuntimeVersion}) does not match current ({cacheEntry.RuntimeVersion}): {successCacheFile.FullName}");
-            return true;
-        }
-
-        if (previousCacheEntry.BuildResultFile is { Length: > 0 } buildResultFile &&
-            !File.Exists(buildResultFile))
-        {
-            Reporter.Verbose.WriteLine("Building because the build result is missing: " + buildResultFile);
-            return true;
-        }
-
-        if (previousCacheEntry is { BuildLevel: BuildLevel.Csc, Run: null } &&
-            GetMissingCscBuiltProgramLaunchArtifact(inputs.EntryPointFileFullPath, inputs.ArtifactsPath) is { } missingArtifact)
-        {
-            Reporter.Verbose.WriteLine("Building because a CSC launch artifact is missing: " + missingArtifact);
             return true;
         }
 

@@ -61,14 +61,8 @@ internal static class AotRunCommand
             out string? entryPointFileFullPath,
             out string[]? applicationArguments,
             out IReadOnlyDictionary<string, string>? environmentVariables,
-            out string fallbackReason,
-            out GracefulException? gracefulError))
+            out string fallbackReason))
         {
-            if (gracefulError is not null)
-            {
-                throw gracefulError;
-            }
-
             throw CreateManagedFallbackException(fallbackReason);
         }
 
@@ -290,15 +284,13 @@ internal static class AotRunCommand
         [NotNullWhen(true)] out string? entryPointFileFullPath,
         [NotNullWhen(true)] out string[]? applicationArguments,
         [NotNullWhen(true)] out IReadOnlyDictionary<string, string>? environmentVariables,
-        out string fallbackReason,
-        out GracefulException? gracefulError)
+        out string fallbackReason)
     {
         noBuild = parseResult.HasOption(definition.NoBuildOption);
         entryPointFileFullPath = null;
         applicationArguments = null;
         environmentVariables = null;
         fallbackReason = string.Empty;
-        gracefulError = null;
 
         if (GetUnsupportedOption(parseResult, definition) is { } unsupportedOption)
         {
@@ -325,11 +317,6 @@ internal static class AotRunCommand
             {
                 projectFilePath = CommonRunHelpers.TryFindSingleProjectInDirectory(currentDirectory);
             }
-            catch (GracefulException exception)
-            {
-                gracefulError = exception;
-                return false;
-            }
             catch (Exception exception) when (
                 exception is IOException or
                 UnauthorizedAccessException or
@@ -347,8 +334,7 @@ internal static class AotRunCommand
 
             if (argumentCountBeforeDoubleDash == 0)
             {
-                gracefulError = new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, currentDirectory, "--project");
-                return false;
+                throw new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, currentDirectory, "--project");
             }
 
             if (argumentCountBeforeDoubleDash != 1)
@@ -379,8 +365,7 @@ internal static class AotRunCommand
         {
             if (string.IsNullOrEmpty(parseResult.GetValue(definition.FileOption)))
             {
-                gracefulError = new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, currentDirectory, "--project");
-                return false;
+                throw new GracefulException(CliCommandStrings.RunCommandExceptionNoProjects, currentDirectory, "--project");
             }
 
             fallbackReason = "the entry-point path is not a supported C# file";
@@ -391,7 +376,6 @@ internal static class AotRunCommand
         environmentVariables = parseResult.GetValue(definition.EnvOption)
             ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         fallbackReason = string.Empty;
-        gracefulError = null;
         return true;
     }
 

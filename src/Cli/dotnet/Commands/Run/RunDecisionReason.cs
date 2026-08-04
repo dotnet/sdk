@@ -17,7 +17,7 @@ internal enum RunDecisionReason
     /// <summary>The invocation requires a full MSBuild build.</summary>
     FullBuildRequired,
 
-    /// <summary>A no-build invocation can reuse complete synthetic CSC output.</summary>
+    /// <summary>A no-build invocation can reuse a synthetic CSC cache.</summary>
     NoBuildSyntheticCache,
 
     /// <summary>A no-build invocation does not have an eligible synthetic cache.</summary>

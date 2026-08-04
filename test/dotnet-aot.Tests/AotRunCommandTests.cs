@@ -18,12 +18,15 @@ namespace Microsoft.DotNet.Cli.Tests;
 [TestClass]
 public class AotRunCommandTests
 {
-    /// <summary>Verifies that an explicit no-build invocation launches complete synthetic output.</summary>
+    /// <summary>Verifies that an explicit no-build invocation reaches the launcher without prevalidating output.</summary>
     [TestMethod]
     public void EligibleSyntheticNoBuildProducesLaunchInvocation()
     {
         var fixture = CreateFixture();
         File.WriteAllText(Path.Join(fixture.TestDirectory, "App.csproj"), "<Project />");
+        File.Delete(fixture.LaunchArtifacts.AppHost);
+        File.Delete(fixture.LaunchArtifacts.Assembly);
+        File.Delete(fixture.LaunchArtifacts.RuntimeConfig);
         string? originalDotnetRoot = NativeEntryPoint.DotnetRoot;
         string? rootVariableName = EnvironmentVariableNames.TryGetDotNetRootVariableName(
             RuntimeInformation.RuntimeIdentifier,
@@ -81,7 +84,7 @@ public class AotRunCommandTests
         }
     }
 
-    /// <summary>Verifies that a positional no-build invocation launches complete synthetic output.</summary>
+    /// <summary>Verifies that a positional no-build invocation reuses a synthetic CSC cache.</summary>
     [TestMethod]
     public void EligiblePositionalNoBuildProducesLaunchInvocation()
     {
@@ -465,7 +468,7 @@ public class AotRunCommandTests
             JsonSerializer.Serialize(stream, previousEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
         }
         var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-        foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
+        foreach (string path in new[] { launchArtifacts.AppHost, launchArtifacts.Assembly, launchArtifacts.RuntimeConfig })
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
             File.WriteAllText(path, string.Empty);

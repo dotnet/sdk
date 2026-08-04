@@ -138,70 +138,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         Build(testInstance, BuildLevel.Csc);
     }
 
-    /// <summary>Verifies that an up-to-date synthetic cache recompiles when a required launch artifact is missing.</summary>
-    /// <param name="artifact">The launch artifact to remove.</param>
-    [TestMethod]
-    [DataRow("apphost")]
-    [DataRow("assembly")]
-    [DataRow("runtimeconfig")]
-    public void UpToDate_MissingCscLaunchArtifactRecompiles(string artifact)
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
-        string programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, "Console.WriteLine(\"Hello\");");
-
-        string artifactsDirectory = VirtualProjectBuilder.GetArtifactsPath(programPath);
-        if (Directory.Exists(artifactsDirectory)) Directory.Delete(artifactsDirectory, recursive: true);
-
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hello");
-
-        string artifactPath = GetCscLaunchArtifactPath(artifactsDirectory, artifact);
-        File.Delete(artifactPath);
-
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hello");
-        new FileInfo(artifactPath).Should().Exist();
-    }
-
-    /// <summary>Verifies that no-build reports a missing synthetic launch artifact before process construction.</summary>
-    /// <param name="artifact">The launch artifact to remove.</param>
-    [TestMethod]
-    [DataRow("apphost")]
-    [DataRow("assembly")]
-    [DataRow("runtimeconfig")]
-    public void NoBuild_MissingCscLaunchArtifactFailsBeforeLaunch(string artifact)
-    {
-        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
-        string programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, "Console.WriteLine(\"Hello\");");
-
-        string artifactsDirectory = VirtualProjectBuilder.GetArtifactsPath(programPath);
-        if (Directory.Exists(artifactsDirectory)) Directory.Delete(artifactsDirectory, recursive: true);
-
-        Build(testInstance, BuildLevel.Csc, expectedOutput: "Hello");
-
-        string artifactPath = GetCscLaunchArtifactPath(artifactsDirectory, artifact);
-        File.Delete(artifactPath);
-
-        new DotnetCommand(Log, "run", "--no-build", "Program.cs")
-            .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CmdNonExistentFileErrorDescription, artifactPath))
-            .And.NotHaveStdErrContaining("Unhandled exception");
-    }
-
-    private static string GetCscLaunchArtifactPath(string artifactsDirectory, string artifact)
-    {
-        string artifactFileName = artifact switch
-        {
-            "apphost" => "Program" + FileNameSuffixes.CurrentPlatform.Exe,
-            "assembly" => "Program.dll",
-            "runtimeconfig" => "Program.runtimeconfig.json",
-            _ => throw new ArgumentOutOfRangeException(nameof(artifact)),
-        };
-        return Path.Join(artifactsDirectory, "bin", "debug", artifactFileName);
-    }
-
     /// <summary>
     /// See <see href="https://github.com/dotnet/sdk/issues/55056"/>.
     /// </summary>
@@ -826,8 +762,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
         Build(testInstance, BuildLevel.All, expectedOutput: "v3 ");
 
-        Build(testInstance, BuildLevel.None, expectedOutput: "v3 ");
-
         // This MSBuild will skip CoreBuild but we still need to preserve CSC args so the next build can be CSC-only.
         Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "v3 ");
 
@@ -903,11 +837,10 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         new FileInfo(objDll).Should().Exist();
         var binDll = Path.Join(artifactsDir, "bin", "debug", "Program.dll");
         new FileInfo(binDll).Should().Exist();
-        byte[] binDllContents = File.ReadAllBytes(binDll);
 
-        // Keep the cached build result so the changed source can replay CSC arguments.
-        // Removing it correctly requires a full MSBuild build instead of CSC-only compilation.
+        // Delete the dlls
         File.Delete(objDll);
+        File.Delete(binDll);
 
         // Write invalid code that causes compilation to fail
         code = code + "\n#error my custom error";
@@ -923,8 +856,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             .And.HaveStdErrContaining(CliCommandStrings.RunCommandException);
 
         new FileInfo(objDll).Should().NotExist();
-        new FileInfo(binDll).Should().Exist();
-        File.ReadAllBytes(binDll).Should().Equal(binDllContents);
+        new FileInfo(binDll).Should().NotExist();
     }
 
     /// <summary>

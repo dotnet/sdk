@@ -225,7 +225,7 @@ public static class Parser
         ToolCommandParser.ConfigureCommand(rootCommand.ToolCommand);
 
         // Narrow file-based run fast path: explicit, positional, and shorthand invocations can
-        // launch complete synthetic output or a validated cached run contract. Other shapes fall back.
+        // reuse a synthetic CSC cache or a validated cached run contract. Other shapes fall back.
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);

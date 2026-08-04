@@ -196,13 +196,6 @@ public class RunCommand
 
                 Reporter.Verbose.WriteLine("Checking changes for run properties");
                 var buildLevel = projectBuilder.GetBuildLevel(out var cache);
-                if (cache?.PreviousEntry is { BuildLevel: BuildLevel.Csc, Run: null } &&
-                    FileBasedAppRunPlan.GetMissingCscBuiltProgramLaunchArtifact(
-                        EntryPointFileFullPath,
-                        projectBuilder.Builder.ArtifactsPath) is { } missingArtifact)
-                {
-                    throw new GracefulException(CliCommandStrings.CmdNonExistentFileErrorDescription, missingArtifact);
-                }
                 projectFactory = CanUseRunPropertiesForCscBuiltProgram(BuildLevel.None, cache?.PreviousEntry) ? null : projectBuilder.CreateProjectInstance;
                 cachedRunProperties = buildLevel != BuildLevel.All ? cache?.PreviousEntry?.Run : null;
             }

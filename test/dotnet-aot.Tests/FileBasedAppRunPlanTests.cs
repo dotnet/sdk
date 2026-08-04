@@ -38,9 +38,9 @@ public class FileBasedAppRunPlanTests
         }
     }
 
-    /// <summary>Verifies that complete current synthetic output selects cached launch.</summary>
+    /// <summary>Verifies that a current synthetic cache selects cached launch.</summary>
     [TestMethod]
-    public void AnalyzeCompleteSyntheticCacheSelectsNone()
+    public void AnalyzeCurrentSyntheticCacheSelectsNone()
     {
         string testDirectory = CreateTestDirectory();
         try
@@ -59,12 +59,6 @@ public class FileBasedAppRunPlanTests
                 new DirectoryInfo(testDirectory),
                 previousEntry.ImplicitBuildFiles,
                 out _);
-            var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-            foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                File.WriteAllText(path, string.Empty);
-            }
 
             string startCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildStartCacheFileName);
             string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
@@ -91,9 +85,9 @@ public class FileBasedAppRunPlanTests
         }
     }
 
-    /// <summary>Verifies that an SDK mismatch disables auxiliary reuse before missing-output checks.</summary>
+    /// <summary>Verifies that an SDK mismatch disables auxiliary reuse.</summary>
     [TestMethod]
-    public void AnalyzeVersionMismatchDisablesAuxiliaryReuseBeforeMissingArtifactCheck()
+    public void AnalyzeVersionMismatchDisablesAuxiliaryReuse()
     {
         string testDirectory = CreateTestDirectory();
         try
@@ -151,9 +145,9 @@ public class FileBasedAppRunPlanTests
         }
     }
 
-    /// <summary>Verifies no-build synthetic launch selection remains based on existing output after a source edit.</summary>
+    /// <summary>Verifies no-build synthetic launch selection does not prevalidate output, even after a source edit.</summary>
     [TestMethod]
-    public void AnalyzeAotNoBuildSyntheticSelectsLaunchAfterSourceChange()
+    public void AnalyzeAotNoBuildSyntheticSelectsLaunchWithoutOutputAfterSourceChange()
     {
         string testDirectory = CreateTestDirectory();
         try
@@ -174,11 +168,9 @@ public class FileBasedAppRunPlanTests
                 JsonSerializer.Serialize(stream, previousEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
             }
             var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath);
-            foreach (string path in FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifactPaths(launchArtifacts))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-                File.WriteAllText(path, string.Empty);
-            }
+            Assert.IsFalse(File.Exists(launchArtifacts.AppHost));
+            Assert.IsFalse(File.Exists(launchArtifacts.Assembly));
+            Assert.IsFalse(File.Exists(launchArtifacts.RuntimeConfig));
             DateTime buildTimeUtc = DateTime.UtcNow.AddSeconds(-2);
             File.SetLastWriteTimeUtc(entryPointPath, buildTimeUtc.AddSeconds(-1));
             File.SetLastWriteTimeUtc(successCachePath, buildTimeUtc);
@@ -293,78 +285,6 @@ public class FileBasedAppRunPlanTests
             Assert.AreEqual(RunTier.ManagedFallback, plan.Tier);
             Assert.AreEqual(RunDecisionReason.CachedLaunchNotEligible, plan.Reason);
             Assert.IsNull(plan.Launch);
-        }
-        finally
-        {
-            Directory.Delete(testDirectory, recursive: true);
-        }
-    }
-
-    /// <summary>Verifies that a missing recorded build result invalidates cached launch.</summary>
-    [TestMethod]
-    public void AnalyzeCachedLaunchRejectsMissingBuildResult()
-    {
-        string testDirectory = CreateTestDirectory();
-        try
-        {
-            string entryPointPath = Path.Join(testDirectory, "Program.cs");
-            string artifactsPath = Path.Join(testDirectory, "artifacts");
-            Directory.CreateDirectory(artifactsPath);
-            File.WriteAllText(entryPointPath, "Console.WriteLine(42);");
-            string appHostPath = Path.Join(testDirectory, "Program.exe");
-            File.WriteAllText(appHostPath, string.Empty);
-            var previousEntry = new RunFileBuildCacheEntry
-            {
-                BuildLevel = BuildLevel.All,
-                SdkVersion = "11.0.100-test",
-                RuntimeVersion = "11.0.0-test",
-                Run = new RunProperties(appHostPath, null, testDirectory),
-                BuildResultFile = Path.Join(testDirectory, "missing", "Program.dll"),
-            };
-            WriteCacheFiles(entryPointPath, artifactsPath, previousEntry);
-
-            RunPlan plan = FileBasedAppRunPlan.AnalyzeCachedLaunch(
-                entryPointPath,
-                artifactsPath,
-                new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase),
-                previousEntry.SdkVersion!,
-                previousEntry.RuntimeVersion!);
-
-            Assert.AreEqual(RunTier.ManagedFallback, plan.Tier);
-            Assert.AreEqual(RunDecisionReason.CachedLaunchNotEligible, plan.Reason);
-        }
-        finally
-        {
-            Directory.Delete(testDirectory, recursive: true);
-        }
-    }
-
-    /// <summary>Verifies that missing synthetic launch output triggers recompilation.</summary>
-    [TestMethod]
-    public void AnalyzeMissingCscLaunchArtifactSelectsCsc()
-    {
-        string testDirectory = CreateTestDirectory();
-        try
-        {
-            string entryPointPath = Path.Join(testDirectory, "Program.cs");
-            string artifactsPath = Path.Join(testDirectory, "artifacts");
-            Directory.CreateDirectory(artifactsPath);
-            File.WriteAllText(entryPointPath, "Console.WriteLine(42);");
-            var previousEntry = new RunFileBuildCacheEntry
-            {
-                BuildLevel = BuildLevel.Csc,
-                SdkVersion = "11.0.100-test",
-                RuntimeVersion = "11.0.0-test",
-            };
-            WriteCacheFiles(entryPointPath, artifactsPath, previousEntry);
-
-            (RunPlan plan, IReadOnlyList<string> messages) = CaptureVerboseMessages(
-                () => FileBasedAppRunPlan.Analyze(CreateInputs(entryPointPath, artifactsPath)));
-
-            Assert.AreEqual(RunTier.DirectCompile, plan.Tier);
-            Assert.Contains(
-                "CSC launch artifact is missing",
-                messages.Single(static message => message.Contains("CSC launch artifact", StringComparison.Ordinal)));
         }
         finally
         {
