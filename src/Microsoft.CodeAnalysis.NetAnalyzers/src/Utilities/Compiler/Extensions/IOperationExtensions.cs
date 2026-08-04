@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Analyzer.Utilities.Lightup;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis;
@@ -489,7 +488,7 @@ namespace Analyzer.Utilities.Extensions
                     // Attribute blocks have OperationKind.None (prior to IAttributeOperation support) or
                     // OperationKind.Attribute, but we do not support flow analysis for attributes.
                     // Gracefully return null for this case and fire an assert for any other OperationKind.
-                    Debug.Assert(operation.Kind is OperationKind.None or OperationKindEx.Attribute, $"Unexpected root operation kind: {operation.Kind}");
+                    Debug.Assert(operation.Kind is OperationKind.None or OperationKind.Attribute, $"Unexpected root operation kind: {operation.Kind}");
                     return null;
             }
         }
