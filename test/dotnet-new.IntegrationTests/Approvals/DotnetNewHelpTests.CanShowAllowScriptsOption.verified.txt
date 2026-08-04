@@ -11,7 +11,7 @@ Options:
   --force                          Forces content to be generated even if it would change existing files. [default: False]
   --no-update-check                Disables checking for the template package updates when instantiating a template. [default: False]
   --project <project>              The project that should be used for context evaluation.
-  --allow-scripts <No|Prompt|Yes>  Specifies if post action scripts should run. [default: Prompt]
+  --allow-scripts <No|Prompt|Yes>  Specifies if post action scripts should run. Templates can run arbitrary code through MSBuild whether or not this option is enabled; only use templates from trusted sources. [default: Prompt]
 
 Template options:
    (No options)

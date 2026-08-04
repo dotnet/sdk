@@ -77,10 +77,10 @@
       TestAssets.TemplateWithFileRenameDate            TestAssets.TemplateWithFileRenameDate                                                     Test Asset          
       TemplateWithJoinAndFolderRename                  TestAssets.TemplateWithJoinAndFolderRename                                                Test Asset          
       name                                             TestAssets.TemplateWithLocalization                                         project       Test Asset  C#      
+      TemplateWithMultiValueChoice                     TestAssets.TemplateWithMultiValueChoice                                                   Test Asset          
       TemplateWithMultipleRenamesOnSameFile            TestAssets.TemplateWithMultipleRenamesOnSameFile                                          Test Asset          
       TemplateWithMultipleRenamesOnSameFileHandles...  TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesInducedOverlap                     Test Asset          
       TemplateWithMultipleRenamesOnSameFileHandles...  TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesOverlap                            Test Asset          
-      TemplateWithMultiValueChoice                     TestAssets.TemplateWithMultiValueChoice                                                   Test Asset          
       TemplateWithParamsSharingPrefix                  TestAssets.TemplateWithParamsSharingPrefix                                  project       Test Asset          
       TemplateWithPlaceholderFiles                     TestAssets.TemplateWithPlaceholderFiles                                                   Test Asset          
       TemplateWithPortsAndCoalesce                     TestAssets.TemplateWithPortsAndCoalesce                                                   Test Asset          

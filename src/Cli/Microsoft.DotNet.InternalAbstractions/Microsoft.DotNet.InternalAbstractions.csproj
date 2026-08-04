@@ -11,8 +11,4 @@
     <RepositoryType>git</RepositoryType>
     <IsPackable>true</IsPackable>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Include="$(RepoRoot)src\Common\PathUtilities.cs" LinkBase="Common" />
-  </ItemGroup>
 </Project>

@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFrameworks>$(CurrentTargetFramework)-windows;$(CurrentTargetFramework)</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SharedLib\SharedLib.csproj" />
+  </ItemGroup>
+  <Target Name="ComputeAvailableDevices" Returns="@(AvailableDevice)">
+    <ItemGroup>
+      <AvailableDevice Include="local-machine" Description="Local Machine" />
+    </ItemGroup>
+  </Target>
+</Project>

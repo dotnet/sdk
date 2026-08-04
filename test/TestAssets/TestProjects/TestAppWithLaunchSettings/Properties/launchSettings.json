@@ -2,7 +2,7 @@
   "profiles": {
     "TestAppWithLaunchSettings": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
+      "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5000",
       "commandLineArgs": "TestAppCommandLineArguments SecondTestAppCommandLineArguments",
       "environmentVariables": {
@@ -11,7 +11,7 @@
     },
     "Profile2": {
       "commandName": "Project",
-      "dotnetRunMessages": "true",
+      "dotnetRunMessages": true,
       "applicationUrl": "http://localhost:5000",
       "environmentVariables": {
         "DOTNET_LAUNCH_PROFILE": "XYZ",

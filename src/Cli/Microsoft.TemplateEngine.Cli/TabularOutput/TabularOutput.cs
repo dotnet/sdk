@@ -128,11 +128,11 @@ namespace Microsoft.TemplateEngine.Cli.TabularOutput
             {
                 for (int i = 0; i < _columns.Count; ++i)
                 {
-                    b.Append(new string(_settings.HeaderSeparator.Value, _columns[i].CalculatedWidth));
+                    b.Append(_settings.HeaderSeparator.Value, _columns[i].CalculatedWidth);
 
                     if (i < _columns.Count - 1)
                     {
-                        b.Append(new string(' ', _settings.ColumnPadding));
+                        b.Append(' ', _settings.ColumnPadding);
                     }
                 }
                 b.AppendLine().Indent(indent);

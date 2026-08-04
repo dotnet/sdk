@@ -38,7 +38,7 @@ namespace Microsoft.NET.Build.Tests
             try
             {
                 //  Delete the generated NuGet packages in the cache.
-                foreach (string dir in Directory.EnumerateDirectories(TestContext.Current.NuGetCachePath, ConstantStringValues.DependencyDirectoryNamePrefix + "*"))
+                foreach (string dir in Directory.EnumerateDirectories(SdkTestContext.Current.NuGetCachePath, ConstantStringValues.DependencyDirectoryNamePrefix + "*"))
                 {
                     Directory.Delete(dir, true);
                 }

@@ -854,6 +854,61 @@ public class Class1
                 .BeEmpty();
         }
 
+        [Fact]
+        public void It_excludes_items_in_publish_directory()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                // Create a PublishDir with a JSON file (simulating a previous publish)
+                string publishDir = Path.Combine(getValuesCommand.ProjectRootPath, "artifacts", "TestLibrary");
+                WriteFile(Path.Combine(publishDir, "appsettings.json"),
+                    "{ \"Setting\": \"Value\" }");
+
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                propertyGroup.Add(new XElement(ns + "PublishDir", "artifacts\\TestLibrary\\"));
+            };
+
+            var noneItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "None", setup, projectChanges: projectChanges);
+
+            // The appsettings.json file in the PublishDir should not be included in None items
+            noneItems.Should().NotContain(item => item.Contains("appsettings.json"));
+        }
+
+        [Fact]
+        public void It_does_not_exclude_source_files_when_publish_dir_is_project_root()
+        {
+            Action<GetValuesCommand> setup = getValuesCommand =>
+            {
+                WriteFile(Path.Combine(getValuesCommand.ProjectRootPath, "Code", "Class1.cs"),
+                    "public class Class1 {}");
+            };
+
+            Action<XDocument> projectChanges = project =>
+            {
+                var ns = project.Root.Name.Namespace;
+
+                var propertyGroup = new XElement(ns + "PropertyGroup");
+                project.Root.Add(propertyGroup);
+                // PublishDir set to the project directory itself (simulates 'dotnet publish -o .')
+                propertyGroup.Add(new XElement(ns + "PublishDir", ".\\"));
+            };
+
+            var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, _testAssetsManager, "Compile", setup, projectChanges: projectChanges);
+
+            RemoveGeneratedCompileItems(compileItems);
+
+            compileItems.Should().BeEquivalentTo(new[] { Path.Combine("Code", "Class1.cs"), "Helper.cs" });
+        }
+
         void RemoveGeneratedCompileItems(List<string> compileItems)
         {
             //  Remove auto-generated compile items.

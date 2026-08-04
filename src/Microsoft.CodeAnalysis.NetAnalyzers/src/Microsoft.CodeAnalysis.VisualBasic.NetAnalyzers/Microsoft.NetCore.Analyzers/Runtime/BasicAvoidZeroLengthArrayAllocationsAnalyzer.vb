@@ -16,5 +16,9 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Runtime
         Protected Overrides Function IsAttributeSyntax(node As SyntaxNode) As Boolean
             Return TypeOf node Is AttributeSyntax
         End Function
+
+        Protected Overrides Function IsCollectionExpressionSyntax(node As SyntaxNode) As Boolean
+            Return False
+        End Function
     End Class
 End Namespace

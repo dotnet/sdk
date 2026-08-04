@@ -3,11 +3,14 @@
 
 #nullable disable
 
+extern alias DotNetNativeWrapper;
+
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.MSBuildSdkResolver;
 using Microsoft.DotNet.NativeWrapper;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Utils;
+using EnvironmentProvider = DotNetNativeWrapper::Microsoft.DotNet.NativeWrapper.EnvironmentProvider;
 
 namespace Microsoft.DotNet.Cli.Commands.New;
 
@@ -34,7 +37,7 @@ internal class SdkInfoProvider : ISdkInfoProvider
     public Task<IEnumerable<string>> GetInstalledVersionsAsync(CancellationToken cancellationToken)
     {
         // Get the dotnet directory, while ignoring custom msbuild resolvers
-        string dotnetDir = NativeWrapper.EnvironmentProvider.GetDotnetExeDirectory(
+        string dotnetDir = EnvironmentProvider.GetDotnetExeDirectory(
             key =>
                 key.Equals("DOTNET_MSBUILD_SDK_RESOLVER_CLI_DIR", StringComparison.InvariantCultureIgnoreCase)
                     ? null

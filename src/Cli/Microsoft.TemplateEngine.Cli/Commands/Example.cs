@@ -1,30 +1,15 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Parsing;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal class Example
+    internal abstract class Example
     {
-        private List<string> _commandParts = new();
-        private Command _currentCommand;
-
-        private Example(Command currentCommand, params string[] commandParts)
-        {
-            _commandParts.AddRange(commandParts);
-            _currentCommand = currentCommand;
-        }
-
-        public static implicit operator string(Example e) => e.ToString();
-
-        public override string ToString()
-        {
-            return string.Join(" ", _commandParts);
-        }
-
-        internal static Example For<T>(ParseResult parseResult) where T : Command
+        internal static Example<T> For<T>(ParseResult parseResult) where T : Command
         {
             var commandResult = parseResult.CommandResult;
 
@@ -43,11 +28,11 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                     commandResult = (commandResult.Parent as CommandResult);
                 }
                 parentCommands.Reverse();
-                return new Example(typedCommand, parentCommands.ToArray());
+                return new Example<T>(typedCommand, [.. parentCommands]);
             }
 
             // if the command is not found in parents of command result, try to search it in the whole command tree
-            Command siblingCommand = SearchForSiblingCommand<T>(parseResult.CommandResult.Command);
+            T siblingCommand = SearchForSiblingCommand<T>(parseResult.CommandResult.Command);
             List<string> parentCommands2 = new();
             Command? nextCommand = siblingCommand;
             while (nextCommand != null)
@@ -56,96 +41,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 nextCommand = nextCommand.Parents.OfType<Command>().FirstOrDefault();
             }
             parentCommands2.Reverse();
-            return new Example(siblingCommand, parentCommands2.ToArray());
-        }
-
-        internal static Example FromExistingTokens(ParseResult parseResult)
-        {
-            // root command name is not part of the tokens
-            var commandParts = parseResult.Tokens.Select(t => t.Value).Prepend(parseResult.RootCommandResult.Command.Name);
-            return new Example(parseResult.CommandResult.Command, commandParts.ToArray());
-        }
-
-        internal Example WithOption(Option option, params string[] args)
-        {
-            if (!_currentCommand.Options.Contains(option) && !_currentCommand.Options.Any(o => o.Name == option.Name))
-            {
-                throw new ArgumentException($"Command {_currentCommand.Name} does not have option {option.Name}");
-            }
-
-            _commandParts.Add(option.Name);
-            if (args.Any())
-            {
-                _commandParts.AddRange(args.Select(a => a.Any(char.IsWhiteSpace) ? $"'{a}'" : a));
-                return this;
-            }
-            if (option.Arity.MinimumNumberOfValues == 0)
-            {
-                return this;
-            }
-
-            _commandParts.Add(CommandLineUtils.FormatArgumentUsage(option));
-            return this;
-        }
-
-        internal Example WithArgument(Argument argument, params string[] args)
-        {
-            if (!_currentCommand.Arguments.Contains(argument))
-            {
-                throw new ArgumentException($"Command {_currentCommand.Name} does not have argument {argument.Name}");
-            }
-
-            if (args.Any())
-            {
-                _commandParts.AddRange(args.Select(a => a.Any(char.IsWhiteSpace) ? $"'{a}'" : a));
-                return this;
-            }
-            _commandParts.Add(CommandLineUtils.FormatArgumentUsage(argument));
-            return this;
-        }
-
-        internal Example WithSubcommand(Command command)
-        {
-            if (!_currentCommand.Subcommands.Contains(command))
-            {
-                throw new ArgumentException($"Command {_currentCommand.Name} does not have subcommand {command.Name}");
-            }
-
-            _commandParts.Add(command.Name);
-            _currentCommand = command;
-            return this;
-        }
-
-        internal Example WithSubcommand(string token)
-        {
-            Command? commandToUse = _currentCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(token) || c.Aliases.Contains(token));
-
-            if (commandToUse is null)
-            {
-                throw new ArgumentException($"Command {_currentCommand.Name} does not have subcommand '{token}'.");
-            }
-
-            _commandParts.Add(token);
-            _currentCommand = commandToUse;
-            return this;
-        }
-
-        internal Example WithSubcommand<T>() where T : Command
-        {
-            if (!_currentCommand.Subcommands.Any(c => c is T))
-            {
-                throw new ArgumentException($"Command {_currentCommand.Name} does not have subcommand {typeof(T).Name}");
-            }
-            _currentCommand = _currentCommand.Subcommands.First(c => c is T);
-            _commandParts.Add(_currentCommand.Name);
-
-            return this;
-        }
-
-        internal Example WithHelpOption()
-        {
-            _commandParts.Add(Constants.KnownHelpAliases.First());
-            return this;
+            return new Example<T>(siblingCommand, [.. parentCommands2]);
         }
 
         private static T SearchForSiblingCommand<T>(Command currentCommand) where T : Command
@@ -174,6 +70,79 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 }
             }
             throw new Exception($"Command structure is not correct: {nameof(T)} is not found.");
+        }
+
+        internal static Example<T> FromExistingTokens<T>(ParseResult parseResult) where T : Command
+        {
+            // root command name is not part of the tokens
+            var commandParts = parseResult.Tokens.Select(t => t.Value).Prepend(parseResult.RootCommandResult.Command.Name);
+            return new Example<T>((T)parseResult.CommandResult.Command, [.. commandParts]);
+        }
+
+        public static implicit operator string(Example e) => e.ToString()!;
+
+        public Example WithHelpOption()
+            => WithHelpOptionImpl();
+
+        protected abstract Example WithHelpOptionImpl();
+    }
+
+    internal sealed class Example<T>(T currentCommand, ImmutableArray<string> commandParts) : Example
+        where T : Command
+    {
+        public override string ToString()
+            => string.Join(" ", commandParts);
+
+        internal Example<T> WithOption(Func<T, Option> optionSelector, params string[] args)
+        {
+            var option = optionSelector(currentCommand);
+
+            if (args.Any())
+            {
+                return new(currentCommand, commandParts.Add(option.Name).AddRange(args.Select(a => a.Any(char.IsWhiteSpace) ? $"'{a}'" : a)));
+            }
+
+            if (option.Arity.MinimumNumberOfValues == 0)
+            {
+                return new(currentCommand, commandParts.Add(option.Name));
+            }
+
+            return new(currentCommand, commandParts.AddRange(option.Name, CommandLineUtils.FormatArgumentUsage(option)));
+        }
+
+        protected override Example WithHelpOptionImpl()
+            => WithHelpOption();
+
+        public new Example<T> WithHelpOption()
+            => new(currentCommand, commandParts.Add(Constants.KnownHelpAliases.First()));
+
+        public Example<T> WithArguments(params IEnumerable<string> args)
+            => new(currentCommand, commandParts.AddRange(args.Select(a => a.Any(char.IsWhiteSpace) ? $"'{a}'" : a)));
+
+        public Example<T> WithArgument(Func<T, Argument> argumentSelector)
+            => new(currentCommand, commandParts.Add(CommandLineUtils.FormatArgumentUsage(argumentSelector(currentCommand))));
+
+        public Example<TSubcommand> WithSubcommand<TSubcommand>(Func<T, TSubcommand> subcommandSelector)
+            where TSubcommand : Command
+        {
+            var subcommand = subcommandSelector(currentCommand);
+            return new(subcommand, commandParts.Add(subcommand.Name));
+        }
+
+        public Example<TSubcommand> WithSubcommand<TSubcommand>() where TSubcommand : Command
+        {
+            var subcommand = (TSubcommand?)currentCommand.Subcommands.FirstOrDefault(c => c is TSubcommand)
+                ?? throw new ArgumentException($"Command {currentCommand.Name} does not have subcommand {typeof(TSubcommand).Name}");
+
+            return new(subcommand, commandParts.Add(subcommand.Name));
+        }
+
+        internal Example<Command> WithSubcommand(string token)
+        {
+            var subcommand = currentCommand.Subcommands.FirstOrDefault(c => c.Name.Equals(token) || c.Aliases.Contains(token))
+                ?? throw new ArgumentException($"Command {currentCommand.Name} does not have subcommand '{token}'.");
+
+            return new(subcommand, commandParts.Add(token));
         }
     }
 
