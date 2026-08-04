@@ -68,10 +68,20 @@ runtime-library generators or `dotnet/sdk` for SDK analyzers.
 
 ### Architecture and major components
 
-The managed CLI dispatches commands registered in
-[`Parser.cs`](../src/Cli/dotnet/Parser.cs). Unmatched input goes through external command
-resolution and then file-based app fallback, as implemented by
-[`Program.cs`](../src/Cli/dotnet/Program.cs).
+SDK-owned CLI code has three conceptually equal process entry points:
+
+- The managed CLI dispatches commands registered in
+  [`Parser.cs`](../src/Cli/dotnet/Parser.cs). Unmatched input goes through external command
+  resolution and then file-based app fallback, as implemented by
+  [`Program.cs`](../src/Cli/dotnet/Program.cs).
+- The Native AOT CLI begins at
+  [`NativeEntryPoint.cs`](../src/Cli/dotnet-aot/NativeEntryPoint.cs), handles supported
+  commands directly, and falls through to the managed CLI for unsupported operations.
+- [`MSBuildLogger.cs`](../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) is a separate
+  SDK entry point loaded by MSBuild as an `INodeLogger`. It may execute in the CLI process,
+  a child MSBuild process, or a persistent MSBuild server, so code reached through it must
+  not assume either CLI bootstrap already initialized process-wide state. Treat
+  `BuildStarted`/`BuildFinished` as request boundaries and `Shutdown` as host teardown.
 
 Major source areas under [`src/`](../src/):
 

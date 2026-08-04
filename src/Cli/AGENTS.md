@@ -2,7 +2,24 @@
 
 Guidance for changes under `src/Cli`.
 
-## Three-project split
+## SDK process entry points
+
+SDK-owned CLI code can begin executing through three conceptually equal entry points:
+
+| Entry point | Source | Host and lifecycle |
+|-------------|--------|--------------------|
+| Managed CLI | `dotnet/Program.cs` | CoreCLR process; normal `Program.Main` startup and process shutdown. |
+| Native AOT CLI | `dotnet-aot/NativeEntryPoint.cs` | Native host calls the exported `dotnet_execute`; unsupported operations can fall through to the managed CLI. |
+| MSBuild logger | `dotnet/Commands/MSBuild/MSBuildLogger.cs` | MSBuild loads the SDK assembly as an `INodeLogger` through the `-distributedlogger` argument added by `MSBuildForwardingApp`. It can run inside the CLI process, a child MSBuild process, or a persistent MSBuild server. |
+
+Treat the logger as an independent entry point, not as code that necessarily runs beneath
+managed `Program.Main` or the Native AOT bootstrap in the same process. Any process-wide
+state it uses, including telemetry and tracing, must initialize correctly when MSBuild
+loads it directly. Use `BuildStarted`/`BuildFinished` for request-scoped state and
+`Shutdown` for host teardown; a persistent server can execute multiple builds in the same
+process, with different environment and trace context for each request.
+
+## Three-project command split
 
 A `dotnet` command or option spans three cooperating projects:
 

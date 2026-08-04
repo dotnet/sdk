@@ -57,6 +57,26 @@ Run the following command from the root of the repository:
 
 The build script will output a .NET Core installation to `artifacts\bin\redist\Debug\dotnet` that will include any local changes to the .NET Core CLI.
 
+## SDK process entry points
+
+Contributor changes under `src/Cli` must account for three conceptually equal ways that
+SDK-owned code can begin executing:
+
+| Entry point | Source | Host |
+| --- | --- | --- |
+| Managed CLI | [`src/Cli/dotnet/Program.cs`](../../src/Cli/dotnet/Program.cs) | CoreCLR runs the full command implementation. |
+| Native AOT CLI | [`src/Cli/dotnet-aot/NativeEntryPoint.cs`](../../src/Cli/dotnet-aot/NativeEntryPoint.cs) | The native `dotnet` host calls the exported `dotnet_execute` fast path, which can fall through to the managed CLI. See the [NativeAOT design](../../src/Cli/dotnet-aot/DESIGN.md). |
+| MSBuild logger | [`src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) | MSBuild loads `dotnet.dll` as an `INodeLogger` using the `-distributedlogger` argument assembled by [`MSBuildForwardingApp`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildForwardingApp.cs). |
+
+The MSBuild logger is a separate process entry point even though it is not a standalone
+executable. It may run in the managed CLI process, a child MSBuild process, or a persistent
+MSBuild server. Code reached through the logger must not assume that managed
+`Program.Main` or the Native AOT bootstrap already initialized process-wide state.
+Per-build state belongs to the MSBuild `BuildStarted`/`BuildFinished` lifecycle, while
+logger `Shutdown` represents host teardown. Persistent servers can run multiple builds in
+one process, so request-specific environment and trace context must be refreshed for each
+build rather than retained globally.
+
 ## Running tests
 
 ### Windows
