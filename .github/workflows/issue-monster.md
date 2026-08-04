@@ -4,6 +4,11 @@ name: Issue Monster Orchestrator
 description: Selects issues and dispatches branch-aware Copilot assignments
 on:
   workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Optional issue number; leave blank to use the scheduled candidate search"
+        required: false
+        type: string
   schedule: every 24h
   skip-if-match:
     query: "is:pr is:open is:draft author:app/copilot-swe-agent"
@@ -27,6 +32,12 @@ on:
           const MAX_ISSUES_TO_INSPECT = 40;
           const DETAIL_FETCH_CONCURRENCY = 5;
           try {
+            const requestedIssueNumberInput = `${{ github.event.inputs.issue_number || '' }}`.trim();
+            if (requestedIssueNumberInput && !/^[1-9]\d*$/.test(requestedIssueNumberInput)) {
+              throw new Error(`Invalid issue number: ${requestedIssueNumberInput}`);
+            }
+            const requestedIssueNumber = requestedIssueNumberInput ? Number(requestedIssueNumberInput) : null;
+
             // Check for recent rate-limited PRs to avoid scheduling more work during rate limiting
             core.info('Checking for recent rate-limited PRs...');
             const rateLimitCheckDate = new Date();
@@ -131,17 +142,41 @@ on:
               'performance'
             ];
 
-            // Search for open issues with "cookie" label and without excluded labels
-            // The "cookie" label indicates issues that are approved work queue items from automated workflows
-            const query = `is:issue is:open repo:${owner}/${repo} label:cookie -label:"${excludeLabels.join('" -label:"')}"`;
-            core.info(`Searching: ${query}`);
-            const response = await github.rest.search.issuesAndPullRequests({
-              q: query,
-              per_page: 100,
-              sort: 'created',
-              order: 'desc'
-            });
-            core.info(`Found ${response.data.total_count} total issues matching basic criteria`);
+            let candidateIssues;
+            if (requestedIssueNumber) {
+              core.info(`Loading manually requested issue #${requestedIssueNumber}`);
+              const requestedIssue = await github.rest.issues.get({
+                owner,
+                repo,
+                issue_number: requestedIssueNumber
+              });
+              const requestedLabels = requestedIssue.data.labels.map(label => label.name.toLowerCase());
+              const meetsBasicCriteria =
+                !requestedIssue.data.pull_request &&
+                requestedIssue.data.state === 'open' &&
+                requestedLabels.includes('cookie') &&
+                !requestedLabels.some(label => excludeLabels.includes(label));
+
+              if (meetsBasicCriteria) {
+                candidateIssues = [requestedIssue.data];
+              } else {
+                core.info(`Skipping manually requested issue #${requestedIssueNumber}: it does not meet the open cookie issue criteria`);
+                candidateIssues = [];
+              }
+            } else {
+              // Search for open issues with "cookie" label and without excluded labels.
+              // The "cookie" label indicates issues that are approved work queue items from automated workflows.
+              const query = `is:issue is:open repo:${owner}/${repo} label:cookie -label:"${excludeLabels.join('" -label:"')}"`;
+              core.info(`Searching: ${query}`);
+              const response = await github.rest.search.issuesAndPullRequests({
+                q: query,
+                per_page: 100,
+                sort: 'created',
+                order: 'desc'
+              });
+              core.info(`Found ${response.data.total_count} total issues matching basic criteria`);
+              candidateIssues = response.data.items;
+            }
 
             // Fetch full details for each issue to get labels, assignees, sub-issues, and linked PRs
             // Track integrity-filtered issues to emit a diagnostic summary
@@ -238,9 +273,9 @@ on:
 
             // Only inspect the most recent candidates (search is sorted by created desc)
             // to bound the total number of detail requests per run.
-            const issuesToInspect = response.data.items.slice(0, MAX_ISSUES_TO_INSPECT);
-            if (response.data.items.length > issuesToInspect.length) {
-              core.info(`Inspecting the ${issuesToInspect.length} most recent of ${response.data.items.length} matching issues to stay within rate limits`);
+            const issuesToInspect = candidateIssues.slice(0, MAX_ISSUES_TO_INSPECT);
+            if (candidateIssues.length > issuesToInspect.length) {
+              core.info(`Inspecting the ${issuesToInspect.length} most recent of ${candidateIssues.length} matching issues to stay within rate limits`);
             }
 
             // Fetch details in bounded-concurrency batches rather than all at once.
