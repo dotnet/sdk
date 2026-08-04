@@ -42,6 +42,14 @@ safe-outputs:
     github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}" # token must be Actions, Contents, Issues, Pull Requests: Read and Write on the specific repo.
     allowed: [copilot]
     ignore-if-error: true
+  # Pin the threat-detection engine to a capable model. The default detection
+  # alias resolves to a small model that false-positively flags gh-aw's own
+  # anti-injection preamble as prompt_injection, which under the warn policy
+  # aborts the non-reviewable assign_to_agent output and blocks assignment.
+  threat-detection:
+    engine:
+      id: copilot
+      model: claude-sonnet-4.6
   noop:
     report-as-issue: false
 ---
