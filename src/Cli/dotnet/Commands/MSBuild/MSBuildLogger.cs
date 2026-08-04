@@ -206,10 +206,10 @@ public sealed class MSBuildLogger : INodeLogger
     /// Completes telemetry and activity state for one MSBuild request.
     /// </summary>
     /// <remarks>
-    /// Aggregated events are emitted before the activity is stopped so they remain attached
-    /// to the build span. The overall MSBuild result supplies the span status. Stopping and
-    /// clearing the activity here prevents a persistent server from parenting a later build
-    /// to the completed request.
+    /// MSBuild events are attached synchronously, so all events are present before the
+    /// activity is stopped and exporters snapshot it. The overall MSBuild result supplies
+    /// the span status. Stopping and clearing the activity here prevents a persistent server
+    /// from parenting a later build to the completed request.
     /// </remarks>
     private void OnBuildFinished(object sender, BuildFinishedEventArgs e)
     {
@@ -354,7 +354,16 @@ public sealed class MSBuildLogger : INodeLogger
             }
         }
 
-        telemetry?.TrackEvent(eventName, properties ?? eventProperties);
+        if (telemetry is TelemetryClient telemetryClient)
+        {
+            // This activity ends at BuildFinished, so production events must be attached before
+            // an exporter observes Activity.Stop. Test clients retain the ITelemetryClient seam.
+            telemetryClient.ThreadBlockingTrackEvent(eventName, properties ?? eventProperties);
+        }
+        else
+        {
+            telemetry?.TrackEvent(eventName, properties ?? eventProperties);
+        }
     }
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)

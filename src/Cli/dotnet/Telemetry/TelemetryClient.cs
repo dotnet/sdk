@@ -171,14 +171,14 @@ public class TelemetryClient : ITelemetryClient
 
     public TelemetryClient(string? sessionId, IEnvironmentProvider? environmentProvider = null)
     {
-        Instance = this;
-        IsInitialized = true;
-
         // This is some kind of special condition for MSBuild-related tests.
         if (DisabledForTests)
         {
             return;
         }
+
+        Instance = this;
+        IsInitialized = true;
 
         environmentProvider ??= new EnvironmentProvider();
         Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT,

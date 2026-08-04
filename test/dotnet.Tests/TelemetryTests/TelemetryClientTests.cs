@@ -145,6 +145,27 @@ public class TelemetryClientTests : SdkTest
 
     [TestMethod]
     [DoNotParallelize]
+    public void DisabledForTestsDoesNotInitializeTelemetry()
+    {
+        TelemetryClient.DisabledForTests = true;
+
+        try
+        {
+            _ = new TelemetryClient();
+            TelemetryClient.DisabledForTests = false;
+
+            TelemetryClient.IsInitialized.Should().BeFalse();
+            TelemetryClient.Instance.Should().BeNull();
+            TelemetryClient.CurrentSessionId.Should().BeNull();
+        }
+        finally
+        {
+            TelemetryClient.DisabledForTests = true;
+        }
+    }
+
+    [TestMethod]
+    [DoNotParallelize]
     public void MSBuildLoggerDoesNotReinitializeDisabledTelemetry()
     {
         var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);

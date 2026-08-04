@@ -47,7 +47,7 @@ internal static class TelemetryDiskLogger
         s_jsonContext = new(s_jsonOptions);
     }
 
-    public static bool WriteLog(string logPath, IEnumerable<Activity> activies)
+    public static bool WriteLog(string logPath, IEnumerable<Activity> activities)
     {
         try
         {
@@ -55,7 +55,7 @@ internal static class TelemetryDiskLogger
             var root = JsonNode.Parse(jsonText)!;
             var activitiesArray = root["activities"]!.AsArray();
 
-            foreach (var activity in activies)
+            foreach (var activity in activities)
             {
                 activitiesArray.Add(JsonNode.Parse(JsonSerializer.Serialize(CreateActivityJsonModel(activity), s_jsonContext.ActivityModel)));
             }
