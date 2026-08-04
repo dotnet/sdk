@@ -36,12 +36,14 @@ that Restore optimization.
 Build the two SDK states from these branches:
 
 - Before:
-  [`dev/veronikao/pack-publish-benchmark-before`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-before)
+  [`dev/veronikao/pack-publish-benchmark-before-pre-partial`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-before-pre-partial)
 - After:
   [`dev/veronikao/pack-publish-benchmark-after`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-after)
 
-The Before branch uses Full evaluation with the default isolated context. The After branch uses
-Properties-only evaluation with a Shared context. Both branches contain the benchmark and the
+The Before branch starts from `51511d9796875967598c369a822db2637d1704e1`, the parent of SDK
+#55271, and then cherry-picks only the metric and benchmark commits. It therefore uses the original
+full `ProjectInstance` evaluation path with isolated contexts. The After branch uses Properties-only
+evaluation with a Shared context. Both branches contain the benchmark and the
 pre-MSBuild-submission metric.
 
 Use separate OrchardCore worktrees for Before and After so they do not share `bin` or `obj`:
