@@ -495,8 +495,8 @@ Work with this pre-fetched, filtered, and prioritized list of issues. Do not per
 **Choose a Base Branch for Each Selected Issue:**
 - Issues with a `dotnetup` label target `release/dnup`.
 - Issues that explicitly mention `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, target that release branch.
-- Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target `release/10.0.3xx`.
-- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal.
+- Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target such as `release/10.0.3xx` (generically, `release/{hotfix-target}` while replacing `hotfix-target` with the form `release/X.0.Yxx`).
+- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal to the latest `release/{hotfix-target}` branch..
 - Choose one concrete base branch independently for each selected issue.
 
 ### 1a. Handle Parent-Child Issue Relationships (for "task" or "plan" labeled issues)
@@ -629,6 +629,7 @@ Issue Monster runs frequently (every 12 hours), so keeping each run lean is crit
 - ✅ **Skip integrity-blocked issues**: If `issue_read` is blocked by integrity policy, skip that issue and continue — never call `missing_data` for integrity errors
 - ❌ **Don't force batching**: If only 1-2 clearly separate issues exist, assign only those
 - ❌ **Never dispatch pull requests**: The assigner is for issues only — never pass a PR number
+- ❌ **Never assign issues with software vulnerability relevance or any security context**: These should be managed by engineers and via internal conversations.
 
 ## skill: `issue-monster-report-formatting`
 ---
