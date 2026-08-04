@@ -31,7 +31,7 @@ internal static class MSBuildUtility
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromSolution(
         string solutionFilePath,
         BuildOptions buildOptions,
-        FacadeLogger? logger)
+        MSBuildSession buildSession)
     {
         int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
@@ -70,12 +70,9 @@ internal static class MSBuildUtility
             .Where(p => p.Item1.IncludeInBuild)
             .Select(p => (p.AbsolutePath, (string?)p.Item1.ConfigurationName, (string?)p.Item1.PlatformName));
 
-        using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        var collection = buildSession.ProjectCollection;
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
-        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger, buildSession);
-        buildSession.Complete();
-        collection.UnloadAllProjects();
+        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, globalProperties, buildSession);
 
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
     }
@@ -84,18 +81,18 @@ internal static class MSBuildUtility
     public static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromProject(
         string projectFilePath,
         BuildOptions buildOptions,
-        FacadeLogger? logger)
+        MSBuildSession buildSession)
     {
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
         var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
             projectFilePath,
             buildOptions,
-            logger: logger);
+            buildSession);
 
         if (deviceSelection is not null)
         {
-            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, logger);
+            return BuildPerTfmWithDevices(projectFilePath, buildOptions, deviceSelection, buildSession);
         }
 
         int buildExitCode = BuildOrRestoreProjectOrSolution(projectFilePath, buildOptions);
@@ -105,14 +102,14 @@ internal static class MSBuildUtility
             return (Array.Empty<ParallelizableTestModuleGroupWithSequentialInnerModules>(), buildExitCode);
         }
 
-        var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments(buildOptions.MSBuildArgs, CommonOptions.CreatePropertyOption(), CommonOptions.CreateRestorePropertyOption(), CommonOptions.CreateMSBuildTargetOption(), CommonOptions.CreateVerbosityOption(), CommonOptions.CreateNoLogoOption());
-
-        using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+        var collection = buildSession.ProjectCollection;
+        // A fresh evaluation context: the one device selection used above ran before the build, so it
+        // caches a view of the file system that predates the build outputs.
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, buildSession, configuration: null, platform: null);
-        buildSession.Complete();
-        collection.UnloadAllProjects();
+        var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(
+            projectFilePath, collection, evaluationContext, buildOptions, buildSession, configuration: null, platform: null,
+            CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs));
         return (projects, buildExitCode);
     }
 
@@ -125,7 +122,7 @@ internal static class MSBuildUtility
         string projectFilePath,
         BuildOptions buildOptions,
         SolutionAndProjectUtility.DeviceSelectionResult deviceSelection,
-        FacadeLogger? logger,
+        MSBuildSession buildSession,
         string? configuration = null,
         string? platform = null)
     {
@@ -173,19 +170,13 @@ internal static class MSBuildUtility
 
             var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(perTfmBuildOptions.MSBuildArgs);
 
-            using var collection = new ProjectCollection(
-                globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs),
-                logger is null ? null : [logger],
-                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+            // The target framework, device and runtime identifier of this iteration are passed as
+            // per-project global properties instead of through a project collection of their own: every
+            // project built in the session has to come from the collection the session owns.
+            var perTfmGlobalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
             var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-            // The session is scoped to this iteration because the next one runs another restore/build
-            // through BuildManager.DefaultBuildManager, which must not overlap an open session. A
-            // multi-target-framework device run therefore still writes one build per target framework
-            // into the binary log. Tracked by https://github.com/dotnet/sdk/issues/55561.
-            using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
             IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
-                projectFilePath, collection, evaluationContext, perTfmBuildOptions, buildSession, configuration, platform);
-            buildSession.Complete();
+                projectFilePath, buildSession.ProjectCollection, evaluationContext, perTfmBuildOptions, buildSession, configuration, platform, perTfmGlobalProperties);
 
             allGroups.AddRange(modules);
         }
@@ -419,25 +410,22 @@ internal static class MSBuildUtility
         EvaluationContext evaluationContext,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
         BuildOptions buildOptions,
-        FacadeLogger? logger,
-        TestBuildSession buildSession)
+        IReadOnlyDictionary<string, string> globalProperties,
+        MSBuildSession buildSession)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         var nonDeviceProjects = new List<(string ProjectFilePath, string? Configuration, string? Platform)>();
 
         // Phase 1: Handle device projects sequentially. Per-TFM builds use in-process MSBuild
         // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
-        // Phase 1 must also complete before phase 2 starts using the session: the session's dedicated
-        // BuildManager must never be open across one of those builds. The session starts lazily, so it
-        // stays unstarted until phase 2 issues the first request.
+        // The shared session may stay open across them, because it owns a build manager of its own.
         foreach (var project in projects)
         {
             var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
                 project.ProjectFilePath,
                 buildOptions,
-                projectCollection,
-                evaluationContext,
-                logger);
+                buildSession,
+                evaluationContext);
 
             if (deviceSelection is not null)
             {
@@ -445,7 +433,7 @@ internal static class MSBuildUtility
                     project.ProjectFilePath,
                     buildOptions,
                     deviceSelection,
-                    logger,
+                    buildSession,
                     project.Configuration,
                     project.Platform);
                 if (exitCode != 0)
@@ -475,7 +463,7 @@ internal static class MSBuildUtility
             {
                 try
                 {
-                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, buildSession, project.Configuration, project.Platform);
+                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, buildSession, project.Configuration, project.Platform, globalProperties);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);

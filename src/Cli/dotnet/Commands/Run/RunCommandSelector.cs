@@ -26,16 +26,19 @@ internal sealed class RunCommandSelector : IDisposable
     private readonly string _projectFilePath;
     private readonly Dictionary<string, string> _globalProperties;
     private readonly FacadeLogger? _binaryLogger;
+    private readonly MSBuildSession? _buildSession;
     private readonly bool _isInteractive;
     private readonly MSBuildArgs _msbuildArgs;
     private readonly IReadOnlyDictionary<string, string> _environmentVariables;
     private readonly string _commandName;
-    
-    private ProjectCollection? _collection;
+
+    // Every project this class evaluates lives in a single collection: MSBuild refuses to build
+    // project instances coming from different collections inside one build session, and the projects
+    // built here (restore, device computation, deployment) differ only by their global properties.
+    private ProjectCollection? _ownedCollection;
     private Microsoft.Build.Evaluation.Project? _project;
 
-    // Project/collection without TargetFramework, used for restore. Lazily populated.
-    private ProjectCollection? _restoreCollection;
+    // Project without TargetFramework, used for restore. Lazily populated.
     private Microsoft.Build.Evaluation.Project? _restoreProject;
 
     /// <summary>
@@ -85,13 +88,19 @@ internal sealed class RunCommandSelector : IDisposable
     /// <param name="environmentVariables">Environment variables to pass to MSBuild targets as items</param>
     /// <param name="commandName">The command name used when rendering example messages, e.g. "dotnet run" or "dotnet test".</param>
     /// <param name="binaryLogger">Optional binary logger for MSBuild operations. The logger will not be disposed by this class.</param>
+    /// <param name="buildSession">
+    /// Optional MSBuild session shared with the rest of the command. When provided, the targets this class
+    /// invokes run inside that single build instead of one build each, so a binary log attached to the
+    /// command holds one well formed build. The session is owned by the caller and is not disposed here.
+    /// </param>
     public RunCommandSelector(
         string projectFilePath,
         bool isInteractive,
         MSBuildArgs msbuildArgs,
         IReadOnlyDictionary<string, string> environmentVariables,
         string commandName,
-        FacadeLogger? binaryLogger = null)
+        FacadeLogger? binaryLogger = null,
+        MSBuildSession? buildSession = null)
     {
         _projectFilePath = projectFilePath;
         _globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
@@ -100,6 +109,7 @@ internal sealed class RunCommandSelector : IDisposable
         _environmentVariables = environmentVariables;
         _commandName = commandName;
         _binaryLogger = binaryLogger;
+        _buildSession = buildSession;
     }
 
     /// <summary>
@@ -145,19 +155,14 @@ internal sealed class RunCommandSelector : IDisposable
     /// </summary>
     public void InvalidateGlobalProperties(Dictionary<string, string> updatedProperties)
     {
-        // When TargetFramework is first added, save the current project for restore use
-        // instead of disposing it. See https://github.com/dotnet/sdk/issues/53488
+        // When TargetFramework is first added, keep the current project for restore use
+        // instead of dropping it. See https://github.com/dotnet/sdk/issues/53488
         if (_restoreProject is null &&
             _project is not null &&
             updatedProperties.ContainsKey("TargetFramework") &&
             !_globalProperties.ContainsKey("TargetFramework"))
         {
             _restoreProject = _project;
-            _restoreCollection = _collection;
-        }
-        else
-        {
-            _collection?.Dispose();
         }
 
         // Update our stored global properties
@@ -168,49 +173,69 @@ internal sealed class RunCommandSelector : IDisposable
 
         // Reset to force re-evaluation with new global properties
         _project = null;
-        _collection = null;
         HasValidProject = false;
     }
+
+    /// <summary>
+    /// The collection every project of this selector is evaluated in: the one shared with the rest of
+    /// the command when a build session was provided, otherwise one of its own. It deliberately carries
+    /// no global properties, because MSBuild merges those of a collection into every project loaded from
+    /// it and restore has to run without the TargetFramework the rest of the command uses
+    /// (see https://github.com/dotnet/sdk/issues/53488).
+    /// </summary>
+    private ProjectCollection Collection
+        => _buildSession?.ProjectCollection
+            ?? (_ownedCollection ??= new ProjectCollection(
+                globalProperties: null,
+                loggers: GetLoggers(),
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default));
 
     /// <summary>
     /// Opens the project if it hasn't been opened yet.
     /// </summary>
     private bool OpenProjectIfNeeded([NotNullWhen(true)] out ProjectInstance? projectInstance)
     {
-        if (_project is not null)
+        if (_project is null)
         {
-            // Create a fresh ProjectInstance for each build operation
-            // to avoid accumulating state (existing item groups) from previous builds
-            projectInstance = _project.CreateProjectInstance();
-            HasValidProject = true;
-            return true;
+            try
+            {
+                // The global properties are passed explicitly rather than taken from the collection:
+                // they change as the target framework and the device get selected, and the collection
+                // is shared with the projects of the rest of the command.
+                _project = Collection.LoadProject(_projectFilePath, new Dictionary<string, string>(_globalProperties), toolsVersion: null);
+            }
+            catch (InvalidProjectFileException)
+            {
+                // Invalid project file, return false
+                projectInstance = null;
+                HasValidProject = false;
+                return false;
+            }
         }
 
-        try
-        {
-            _collection = new ProjectCollection(
-                globalProperties: _globalProperties,
-                loggers: GetLoggers(),
-                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-            _project = _collection.LoadProject(_projectFilePath);
-            projectInstance = _project.CreateProjectInstance();
-            HasValidProject = true;
-            return true;
-        }
-        catch (InvalidProjectFileException)
-        {
-            // Invalid project file, return false
-            projectInstance = null;
-            HasValidProject = false;
-            return false;
-        }
+        // Create a fresh ProjectInstance for each build operation
+        // to avoid accumulating state (existing item groups) from previous builds
+        projectInstance = _project.CreateProjectInstance();
+        HasValidProject = true;
+        return true;
     }
+
+    /// <summary>
+    /// Builds targets of an evaluated project, either in the build session shared with the rest of the
+    /// command (so a binary log attached to it holds a single build) or, when no session was provided,
+    /// in a build of its own.
+    /// </summary>
+    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
+    private bool BuildTargets(ProjectInstance projectInstance, string[] targets, out IDictionary<string, TargetResult> targetOutputs)
+        => _buildSession is { } buildSession
+            ? buildSession.Build(projectInstance, targets, out targetOutputs)
+            : projectInstance.Build(targets, GetLoggers(), remoteLoggers: null, out targetOutputs);
 
     public void Dispose()
     {
-        // NOTE: _binaryLogger is not disposed here because it is *owned* by the caller
-        _collection?.Dispose();
-        _restoreCollection?.Dispose();
+        // NOTE: neither _binaryLogger nor the collection of _buildSession are disposed here,
+        // because they are *owned* by the caller
+        _ownedCollection?.Dispose();
     }
 
     /// <summary>
@@ -233,14 +258,11 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         // TargetFramework is set and no pre-TF project was saved (e.g. --framework was explicit).
-        // Create a new project without TargetFramework.
+        // Evaluate the project without TargetFramework, in the same collection so that it can be
+        // built in the same session as the rest of the command.
         var restoreProperties = new Dictionary<string, string>(_globalProperties, StringComparer.OrdinalIgnoreCase);
         restoreProperties.Remove("TargetFramework");
-        _restoreCollection = new ProjectCollection(
-            globalProperties: restoreProperties,
-            loggers: null,
-            toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-        _restoreProject = _restoreCollection.LoadProject(_projectFilePath);
+        _restoreProject = Collection.LoadProject(_projectFilePath, restoreProperties, toolsVersion: null);
         return _restoreProject.CreateProjectInstance();
     }
 
@@ -347,12 +369,7 @@ internal sealed class RunCommandSelector : IDisposable
         {
             // Run restore without TargetFramework to prevent it from cascading to
             // dependency projects. See https://github.com/dotnet/sdk/issues/53488
-            var restoreResult = CreateRestoreProjectInstance().Build(
-                targets: ["Restore"],
-                loggers: GetLoggers(),
-                remoteLoggers: null,
-                out _);
-            if (!restoreResult)
+            if (!BuildTargets(CreateRestoreProjectInstance(), ["Restore"], out _))
             {
                 return false;
             }
@@ -361,11 +378,7 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         // Build the target
-        var buildResult = projectInstance.Build(
-            targets: [Constants.ComputeAvailableDevices],
-            loggers: GetLoggers(),
-            remoteLoggers: null,
-            out var targetOutputs);
+        var buildResult = BuildTargets(projectInstance, [Constants.ComputeAvailableDevices], out var targetOutputs);
 
         if (!buildResult)
         {
@@ -591,13 +604,7 @@ internal sealed class RunCommandSelector : IDisposable
         }
 
         // Build the DeployToDevice target
-        var buildResult = projectInstance.Build(
-            targets: [Constants.DeployToDevice],
-            loggers: GetLoggers(),
-            remoteLoggers: null,
-            out _);
-
-        return buildResult;
+        return BuildTargets(projectInstance, [Constants.DeployToDevice], out _);
     }
 
     /// <summary>

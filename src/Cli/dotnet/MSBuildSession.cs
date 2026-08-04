@@ -8,11 +8,12 @@ using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 
-namespace Microsoft.DotNet.Cli.Commands.Test;
+namespace Microsoft.DotNet.Cli;
 
 /// <summary>
-/// Runs the MSBuild targets that <c>dotnet test</c> needs on top of the build (for example
-/// <c>ComputeRunArguments</c>) for every test project of a run inside a single MSBuild build session.
+/// Runs every MSBuild target a single CLI command needs to invoke on top of the build - for example
+/// <c>Restore</c>, <c>ComputeAvailableDevices</c>, <c>DeployToDevice</c> and <c>ComputeRunArguments</c> -
+/// inside one MSBuild build session, so the binary log behind <c>-bl</c> holds a single well formed build.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -21,33 +22,28 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 /// <see cref="BuildEventContext"/> ids it hands out - project context ids, target ids, task ids -
 /// restart from zero, and every build emits its own build-started/build-finished pair.
 /// Attaching the same binary logger to several of those builds, which is what <c>dotnet test -bl</c>
-/// does when a run contains more than one test project, produces a binlog holding several builds
-/// with colliding ids: readers attribute every project's targets to whichever project claimed the id
-/// first, and the other projects appear to have executed no targets at all.
+/// does when a run contains more than one test project or performs device selection, produces a binlog
+/// holding several builds with colliding ids: readers attribute every project's targets to whichever
+/// project claimed the id first, and the other projects appear to have executed no targets at all.
+/// The underlying engine limitation is tracked by
+/// <see href="https://github.com/dotnet/msbuild/issues/14609"/>.
 /// </para>
 /// <para>
 /// Sending all the requests to a single <see cref="BuildManager"/> session instead yields one build
-/// with unique ids, so the binlog produced by <c>dotnet test -bl</c> is well formed and shows the
-/// targets executed for each test project.
+/// with unique ids, so the binlog is well formed and shows the targets executed for each project.
+/// MSBuild requires every project instance built in one session to come from the same
+/// <see cref="Evaluation.ProjectCollection"/>, so the session owns the collection every project of the
+/// command has to be evaluated in - see <see cref="ProjectCollection"/>.
 /// </para>
 /// <para>
-/// The session is started lazily, so a caller can create it up front and still run MSBuild through
-/// <see cref="BuildManager.DefaultBuildManager"/> (for example to build or restore the projects
-/// under test) before the first target invocation. A session must never be left started across such
-/// a call.
-/// </para>
-/// <para>
-/// This covers the ordinary project and solution paths. Runs that involve device selection still
-/// emit more than one build into the log, because device selection and the per-target-framework
-/// rebuilds it drives interleave MSBuild builds with target invocations; see
-/// <see href="https://github.com/dotnet/sdk/issues/55561"/>. The underlying engine limitation is
-/// tracked by <see href="https://github.com/dotnet/msbuild/issues/14609"/>.
+/// The session is started lazily and owns a dedicated <see cref="BuildManager"/> rather than using
+/// <see cref="BuildManager.DefaultBuildManager"/>, so it can stay open across the in-process MSBuild
+/// invocations the CLI makes to build or restore the projects it is working on (which go through the
+/// default build manager and write their own binary log).
 /// </para>
 /// </remarks>
-[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
-internal sealed class TestBuildSession : IDisposable
+internal sealed class MSBuildSession : IDisposable
 {
-    private readonly ProjectCollection _projectCollection;
     private readonly MSBuildArgs _msbuildArgs;
     private readonly FacadeLogger? _logger;
     private readonly Lock _lock = new();
@@ -55,21 +51,47 @@ internal sealed class TestBuildSession : IDisposable
     private BuildManager? _buildManager;
     private bool _disposed;
 
-    public TestBuildSession(ProjectCollection projectCollection, MSBuildArgs msbuildArgs, FacadeLogger? logger)
+    public MSBuildSession(MSBuildArgs msbuildArgs, FacadeLogger? logger)
     {
-        _projectCollection = projectCollection;
         _msbuildArgs = msbuildArgs;
         _logger = logger;
+        // Deliberately without global properties: MSBuild merges the global properties of a collection
+        // into every project loaded from it, and the projects of a command do not all want the same ones
+        // (restore, for instance, must run without the TargetFramework the rest of the command uses -
+        // see https://github.com/dotnet/sdk/issues/53488). Every project passes its own instead.
+        ProjectCollection = new ProjectCollection(
+            globalProperties: null,
+            loggers: logger is null ? null : [logger],
+            toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
     }
+
+    /// <summary>
+    /// The collection every project built in this session must be evaluated in. MSBuild rejects a build
+    /// whose submissions mix project instances coming from different collections ("All build submissions
+    /// in a build must use project instances originating from the same project collection.").
+    /// </summary>
+    /// <remarks>
+    /// The collection carries no global properties of its own: each project passes the ones it needs -
+    /// its target framework, device or runtime identifier - when it is evaluated.
+    /// </remarks>
+    public ProjectCollection ProjectCollection { get; }
 
     /// <summary>
     /// Builds the given targets of an already evaluated project in the shared build session.
     /// The results are applied to <paramref name="project"/> itself, so properties produced by the
     /// targets can be read from it afterwards.
     /// </summary>
-    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     public bool Build(ProjectInstance project, string[] targets)
+        => Build(project, targets, out _);
+
+    /// <inheritdoc cref="Build(ProjectInstance, string[])"/>
+    /// <param name="targetOutputs">The outputs of the requested targets.</param>
+    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
+    public bool Build(ProjectInstance project, string[] targets, out IDictionary<string, TargetResult> targetOutputs)
     {
+        // The MSBuild build APIs cannot be called in parallel, even for different projects:
+        // BuildManager throws "The operation cannot be completed because a build is already in progress."
+        // Every project of the command shares this session, so the requests are serialized here.
         lock (_lock)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
@@ -87,6 +109,7 @@ internal sealed class TestBuildSession : IDisposable
                 BuildRequestDataFlags.ReplaceExistingProjectInstance);
 
             BuildResult result = GetOrStartBuildManager().BuildRequest(requestData);
+            targetOutputs = result.ResultsByTarget;
             return result.OverallResult == BuildResultCode.Success;
         }
     }
@@ -120,6 +143,7 @@ internal sealed class TestBuildSession : IDisposable
             finally
             {
                 buildManager.Dispose();
+                ProjectCollection.Dispose();
             }
         }
     }
@@ -146,18 +170,20 @@ internal sealed class TestBuildSession : IDisposable
             }
             catch (Exception ex)
             {
-                Reporter.Verbose.WriteLine($"Failed to end the dotnet test MSBuild session: {ex}");
+                Reporter.Verbose.WriteLine($"Failed to end the MSBuild session: {ex}");
             }
             finally
             {
                 buildManager.Dispose();
+                ProjectCollection.Dispose();
             }
         }
     }
 
     /// <summary>
     /// Marks the session finished and hands back the build manager to close, or <see langword="null"/>
-    /// if it was never started or has already been closed.
+    /// if it has already been closed. The collection is released even when the session was never
+    /// started, because the projects of the command are evaluated in it whether or not a target ran.
     /// </summary>
     private BuildManager? TakeBuildManager()
     {
@@ -170,6 +196,12 @@ internal sealed class TestBuildSession : IDisposable
 
         BuildManager? buildManager = _buildManager;
         _buildManager = null;
+
+        if (buildManager is null)
+        {
+            ProjectCollection.Dispose();
+        }
+
         return buildManager;
     }
 
@@ -183,11 +215,11 @@ internal sealed class TestBuildSession : IDisposable
 
         // A dedicated build manager is used instead of BuildManager.DefaultBuildManager so that keeping
         // this session open never conflicts with the in-process MSBuild invocations the CLI makes to
-        // build or restore the projects under test.
-        var buildManager = new BuildManager("dotnet-test");
+        // build or restore the projects it is working on.
+        var buildManager = new BuildManager("dotnet-cli-session");
         try
         {
-            var parameters = new BuildParameters(_projectCollection)
+            var parameters = new BuildParameters(ProjectCollection)
             {
                 Loggers = CreateLoggers(),
                 // ProjectInstance.Build defaults to a single in-process node, keep that behavior.
@@ -237,8 +269,8 @@ internal sealed class TestBuildSession : IDisposable
 
         if (!LoggerUtility.HasNoConsoleLoggerArgument(_msbuildArgs.OtherMSBuildArgs))
         {
-            // These builds only compute run arguments and deploy, so keep them quiet - at this verbosity
-            // MSBuild still reports errors and warnings.
+            // These builds only select devices, deploy and compute run arguments, so keep them quiet -
+            // at this verbosity MSBuild still reports errors and warnings.
             loggers.Add(CommonRunHelpers.GetConsoleLogger(
                 _msbuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", .. _msbuildArgs.OtherMSBuildArgs])));
         }
