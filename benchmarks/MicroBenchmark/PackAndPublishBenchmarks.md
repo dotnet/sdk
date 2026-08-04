@@ -80,6 +80,9 @@ Prepare compatible Pack targets separately for the Before and After SDK builds:
 For Before, pass `Pack.baseline.targets` and its generated `override.props`. For After, pass
 `Pack.modified.targets` and its generated `override.props`.
 
+The script discovers the SDK directory containing the Pack targets and task assembly. If a redist
+contains more than one matching SDK, pass `-SdkVersion <version>`.
+
 ## Run Pack
 
 Before:

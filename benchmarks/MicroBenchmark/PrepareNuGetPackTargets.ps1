@@ -3,7 +3,9 @@ param(
     [string] $DotNetRoot,
 
     [Parameter(Mandatory)]
-    [string] $OutputDirectory
+    [string] $OutputDirectory,
+
+    [string] $SdkVersion
 )
 
 $ErrorActionPreference = "Stop"
@@ -24,8 +26,38 @@ if (-not (Test-Path $dotnetExecutable))
     throw "dotnet was not found at '$dotnetExecutable'."
 }
 
-$sdkVersion = (& $dotnetExecutable --version).Trim()
-$sdkDirectory = Join-Path $DotNetRoot "sdk\$sdkVersion"
+$sdkRoot = Join-Path $DotNetRoot "sdk"
+if (-not (Test-Path $sdkRoot))
+{
+    throw "The SDK directory was not found: '$sdkRoot'."
+}
+
+if ([string]::IsNullOrWhiteSpace($SdkVersion))
+{
+    $sdkDirectories = @(
+        Get-ChildItem $sdkRoot -Directory |
+            Where-Object {
+                (Test-Path (Join-Path $_.FullName "NuGet.Build.Tasks.Pack.targets")) -and
+                (Test-Path (Join-Path $_.FullName "NuGet.Build.Tasks.Pack.dll"))
+            })
+    if ($sdkDirectories.Count -eq 0)
+    {
+        throw "No SDK under '$sdkRoot' contains the NuGet Pack targets and task assembly."
+    }
+
+    if ($sdkDirectories.Count -gt 1)
+    {
+        throw "Multiple SDKs contain the NuGet Pack files: $($sdkDirectories.Name -join ', '). " +
+            "Specify one with -SdkVersion."
+    }
+
+    $sdkDirectory = $sdkDirectories[0].FullName
+}
+else
+{
+    $sdkDirectory = Join-Path $sdkRoot $SdkVersion
+}
+
 $packTargetsPath = Join-Path $sdkDirectory "NuGet.Build.Tasks.Pack.targets"
 $packTaskAssemblyPath = Join-Path $sdkDirectory "NuGet.Build.Tasks.Pack.dll"
 foreach ($path in @($packTargetsPath, $packTaskAssemblyPath))
