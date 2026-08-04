@@ -462,6 +462,13 @@ jobs:
       has_issues: ${{ steps.search.outputs.has_issues }}
 
 safe-outputs:
+  # Pin threat detection to a stronger model. The default detection alias resolves to a
+  # small model that false-positives on gh-aw's own auto-generated anti-injection preamble,
+  # which caused every dispatch_workflow output to be aborted under the warn policy.
+  threat-detection:
+    engine:
+      id: copilot
+      model: claude-sonnet-4.6
   dispatch-workflow:
     max: 3
     workflows: [issue-monster-assigner]
@@ -568,7 +575,16 @@ For issues with the "task" or "plan" label, check if they are sub-issues linked 
 
 ### 2. Select Up to Three Issues to Work On
 
-From the prioritized and filtered list (issues WITHOUT Copilot assignments or open PRs):
+> 🔒 **MANDATORY SECURITY GATE — run this FIRST, before scoring or topic separation.**
+> Copilot must **never** be assigned to security-sensitive issues; these are handled by engineers through internal channels. For **every** candidate in the pre-fetched list, read its title and body excerpt and **exclude it from selection** if it has any security relevance, including (non-exhaustively):
+> - Labels or text mentioning: `security`, `vulnerability`, `CVE`, `CWE`, exploit, threat, attack, malicious, privilege escalation, injection, sandbox escape, or responsible/coordinated disclosure.
+> - Insecure or unsafe handling of: credentials, secrets, tokens, certificates/keys, authentication/authorization, cryptography, or **temporary file/folder creation, predictable paths, symlink/TOCTOU, or world-writable permissions** (e.g. insecure temp directory creation).
+> - Any report framed as a weakness an attacker could abuse, even if it is filed as a "bug" or "tech debt" and carries the `cookie` label.
+> - When in doubt, treat the issue as security-sensitive and exclude it.
+>
+> A security-relevant candidate must be **dropped entirely**: do not score it, do not dispatch it, and do not post a "selected for assignment" comment on it. If security exclusion removes every candidate, call `noop` explaining that the remaining issues were security-sensitive and left for engineers (e.g. `noop(message="🔒 Remaining candidates are security-sensitive; leaving them for engineers. No assignments this run.")`).
+
+From the prioritized and filtered list (issues WITHOUT Copilot assignments or open PRs, **and after applying the security gate above**):
 - **Select up to three appropriate issues** to assign
 - **Use the priority scoring**: Issues are already sorted by score, so prefer higher-scored issues
 - **Topic Separation Required**: Issues MUST be completely separate in topic to avoid conflicts:
