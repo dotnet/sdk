@@ -120,13 +120,14 @@ The output directory is chosen by
   merged artifact then lands next to the reports it summarizes instead of inside an unrelated
   project's output.
 
-The merging extension — not the SDK — decides the final file name and may nest its output. The TRX
-post-processor names its output `merged-<runId>.trx`, where `runId` is derived from the inputs, and
-with the currently referenced `Microsoft.Testing.Extensions.TrxReport` it writes that file directly
-into the supplied directory, as a sibling of the reports it merged. A non-recursive `*.trx` glob
-over the results directory therefore picks up both the merged report and its own inputs, which
-would double-count every test. Configure CI to publish the merged file specifically, rather than
-globbing the whole directory.
+The merging extension — not the SDK — decides the final file name and may nest its output. The
+version of `Microsoft.Testing.Extensions.TrxReport` currently referenced by the SDK names its output
+`merged-<runId>.trx`, where `runId` is derived from the inputs, and writes it into a `merged/`
+subdirectory of the supplied output directory. Because the merged report is nested, a non-recursive
+`*.trx` glob over the results directory picks up the per-module inputs but not the merged report, so
+it does not double-count tests. CI that wants the merged report must target the `merged/` subdirectory
+explicitly, for example with `merged/merged-*.trx`; a broad recursive glob would also pick up the
+per-module inputs and double-count tests.
 
 ## What currently merges
 
