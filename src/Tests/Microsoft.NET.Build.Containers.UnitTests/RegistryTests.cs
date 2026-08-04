@@ -28,7 +28,7 @@ public class RegistryTests : IDisposable
     {
         _loggerFactory.Dispose();
     }
-        
+
     [InlineData("us-south1-docker.pkg.dev", true)]
     [InlineData("us.gcr.io", false)]
     [Theory]
@@ -48,7 +48,7 @@ public class RegistryTests : IDisposable
         Assert.Equal("docker.io", registry.RegistryName);
         Assert.Equal("registry-1.docker.io", registry.BaseUri.Host);
     }
-    
+
     [Fact]
     public async Task RegistriesThatProvideNoUploadSizeAttemptFullUpload()
     {
@@ -546,7 +546,7 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:testdigest1234", 1234);
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
