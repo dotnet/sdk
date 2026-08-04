@@ -13,44 +13,54 @@ internal class Program
 {
     private static void Main(string[] args)
     {
-        if (args.Length > 0 && args[0] is "--pack-publish" or "--pack-publish-smoke")
+        if (args.Length > 0 &&
+            args[0] is "--pack" or "--publish" or "--pack-smoke" or "--publish-smoke")
         {
-            SetPackPublishRunId();
+            SetCommandRunId();
         }
 
         if (args.Length == 0)
         {
             BenchmarkRunner.Run<InfoTests>();
         }
-        else if (args is ["--pack-publish"])
+        else if (args is ["--pack"])
+        {
+            RunBenchmark<PackBenchmark>();
+        }
+        else if (args is ["--publish"])
+        {
+            RunBenchmark<PublishBenchmark>();
+        }
+        else if (args is ["--pack-smoke"])
+        {
+            new PackBenchmark().RunSmokeAsync().GetAwaiter().GetResult();
+        }
+        else if (args is ["--publish-smoke"])
+        {
+            new PublishBenchmark().RunSmokeAsync().GetAwaiter().GetResult();
+        }
+        else
+        {
+            throw new ArgumentException(
+                "Supported arguments are --pack, --publish, --pack-smoke, and --publish-smoke.");
+        }
+
+        static void RunBenchmark<T>()
+            where T : OrchardCoreCommandBenchmark
         {
             Job job = Job.Default
                 .WithToolchain(new InProcessEmitToolchain(TimeSpan.FromHours(2), true))
                 .WithStrategy(RunStrategy.Monitoring)
                 .WithLaunchCount(1)
-                .WithWarmupCount(PackPublishBenchmark.WarmupCount)
-                .WithIterationCount(PackPublishBenchmark.IterationCount)
+                .WithWarmupCount(OrchardCoreCommandBenchmark.WarmupCount)
+                .WithIterationCount(OrchardCoreCommandBenchmark.IterationCount)
                 .WithInvocationCount(1)
                 .WithUnrollFactor(1);
             ManualConfig config = ManualConfig.Create(DefaultConfig.Instance).AddJob(job);
-            BenchmarkRunner.Run<PackPublishBenchmark>(config);
-        }
-        else if (args is ["--pack-publish-smoke"])
-        {
-            PackPublishBenchmark.RunSmokeAsync().GetAwaiter().GetResult();
-        }
-        else if (args is ["--pack-publish-smoke", string operation] &&
-                 Enum.TryParse(operation, ignoreCase: true, out PackPublishBenchmark.BenchmarkOperation parsedOperation))
-        {
-            PackPublishBenchmark.RunSmokeAsync(parsedOperation).GetAwaiter().GetResult();
-        }
-        else
-        {
-            throw new ArgumentException(
-                "Supported arguments are --pack-publish and --pack-publish-smoke [Pack|Publish].");
+            BenchmarkRunner.Run<T>(config);
         }
 
-        static void SetPackPublishRunId()
+        static void SetCommandRunId()
         {
             if (Environment.GetEnvironmentVariable("DOTNET_SDK_PACK_PUBLISH_BENCHMARK_RUN_ID") is null)
             {
