@@ -4,10 +4,10 @@ name: Issue Monster Orchestrator
 description: Selects issues and dispatches branch-aware Copilot assignments
 on:
   workflow_dispatch:
-  schedule: every 12h
+  schedule: every 24h
   skip-if-match:
     query: "is:pr is:open is:draft author:app/copilot-swe-agent"
-    max: 3
+    max: 2
   skip-if-no-match: "is:issue is:open"
   permissions:
     issues: read
