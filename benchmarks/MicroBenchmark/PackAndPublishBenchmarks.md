@@ -33,11 +33,16 @@ The combined A/B includes:
 MSBuild#14274 is excluded because OrchardCore solution Pack/Publish did not meaningfully exercise
 that Restore optimization.
 
-For strict total wall-clock comparisons, use the same SDK binaries in both runs with local-only
-stage and context-policy selectors. This avoids unrelated binary differences.
+Build the two SDK states from these branches:
 
-The reusable selector branch is:
-[`dev/veronikao/pack-publish-benchmark-selector`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-selector).
+- Before:
+  [`dev/veronikao/pack-publish-benchmark-before`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-before)
+- After:
+  [`dev/veronikao/pack-publish-benchmark-after`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-after)
+
+The Before branch uses Full evaluation with the default isolated context. The After branch uses
+Properties-only evaluation with a Shared context. Both branches contain the benchmark and the
+pre-MSBuild-submission metric.
 
 Use separate OrchardCore worktrees for Before and After so they do not share `bin` or `obj`:
 
@@ -48,17 +53,21 @@ git -C C:\OrchardCore worktree add --detach C:\OrchardCore-after `
   e3f8acb327a95f1dec6e75cefccaef2ad5eefb45
 ```
 
-Prepare compatible baseline and NuGet#7603 Pack targets:
+Prepare compatible Pack targets separately for each built SDK:
 
 ```powershell
 .\benchmarks\MicroBenchmark\PrepareNuGetPackTargets.ps1 `
-  -DotNetRoot C:\perf\sdk-experiment `
-  -OutputDirectory C:\perf\nuget-pack
+  -DotNetRoot C:\perf\sdk-before `
+  -OutputDirectory C:\perf\nuget-pack-before
+
+.\benchmarks\MicroBenchmark\PrepareNuGetPackTargets.ps1 `
+  -DotNetRoot C:\perf\sdk-after `
+  -OutputDirectory C:\perf\nuget-pack-after
 ```
 
-The script copies the measured SDK's own `NuGet.Build.Tasks.Pack.targets`, applies the
-NuGet#7603 implementation patch to a copy, and creates `override.props` pointing to the matching
-`NuGet.Build.Tasks.Pack.dll`.
+The Before run selects `nuget-pack-before\Pack.baseline.targets`. The After run selects
+`nuget-pack-after\Pack.modified.targets`. Each generated `override.props` points to the Pack task
+assembly from its corresponding SDK build.
 
 ## Configuration
 
@@ -73,14 +82,14 @@ Before:
   "workingDirectory": "C:\\OrchardCore-before",
   "publishFramework": "net10.0",
   "resultsPath": "C:\\perf\\{benchmark}-{label}-{runId}.csv",
-  "dotNetPath": "C:\\perf\\sdk-experiment\\dotnet.exe",
+  "dotNetPath": "C:\\perf\\sdk-before\\dotnet.exe",
   "environmentVariables": {
-    "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_STAGE": "Full",
-    "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_CONTEXT_POLICY": "Isolated"
+    "DOTNET_ROOT": "C:\\perf\\sdk-before",
+    "DOTNET_ROOT_X64": "C:\\perf\\sdk-before"
   },
   "packArguments": [
-    "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\override.props",
-    "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack\\Pack.baseline.targets"
+    "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack-before\\override.props",
+    "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack-before\\Pack.baseline.targets"
   ],
   "publishArguments": [],
   "timeoutMinutes": 30
@@ -96,14 +105,14 @@ After:
   "workingDirectory": "C:\\OrchardCore-after",
   "publishFramework": "net10.0",
   "resultsPath": "C:\\perf\\{benchmark}-{label}-{runId}.csv",
-  "dotNetPath": "C:\\perf\\sdk-experiment\\dotnet.exe",
+  "dotNetPath": "C:\\perf\\sdk-after\\dotnet.exe",
   "environmentVariables": {
-    "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_STAGE": "Properties",
-    "DOTNET_CLI_RELEASE_PROPERTY_EVALUATION_CONTEXT_POLICY": "Shared"
+    "DOTNET_ROOT": "C:\\perf\\sdk-after",
+    "DOTNET_ROOT_X64": "C:\\perf\\sdk-after"
   },
   "packArguments": [
-    "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack\\override.props",
-    "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack\\Pack.modified.targets"
+    "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack-after\\override.props",
+    "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack-after\\Pack.modified.targets"
   ],
   "publishArguments": [],
   "timeoutMinutes": 30
