@@ -352,6 +352,28 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     }
 
     [TestMethod]
+    public void LegacyWhitespacePreservedVerbatim()
+    {
+        // Directives using the deprecated unquoted-whitespace form are still parsed and are
+        // preserved verbatim when unrelated edits happen (no breaking change).
+        Verify(
+            """
+            #:package Existing@1.0
+            #:property Description=Hello World
+            #:project ../My Library
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #:package Existing@1.0
+            #:package MyPackage@1.0.0
+            #:property Description=Hello World
+            #:project ../My Library
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
     public void Group()
     {
         Verify(

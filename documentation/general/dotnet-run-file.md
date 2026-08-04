@@ -199,6 +199,12 @@ sets the value to `Hello World`. Quotes can only enclose a whole value, so `#:pr
 `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
 It is an error if a quote is left unterminated.
 
+For backward compatibility, a directive whose value contains no double quotes is still accepted in a
+*legacy mode*: the entire remainder after the name and separator is taken verbatim as a single value
+(including any internal whitespace), matching how these directives behaved before quoting and metadata
+were supported. Analyzer [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)
+flags such legacy directives and offers a code fix to rewrite them into the quoted form.
+
 `#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
 e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
 Each metadata name must be a valid XML element name; each metadata value can be quoted to contain whitespace.

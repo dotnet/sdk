@@ -413,14 +413,102 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     }
 
     /// <summary>
+    /// Tokenizes <see cref="ParseContext.DirectiveText"/> like <see cref="Tokenize"/> for the "new" form
+    /// (which may use double quotes and/or trailing <c>Name=Value</c> metadata), but falls back to the
+    /// pre-quoting "legacy" behavior to avoid a breaking change: before quoting and metadata were
+    /// supported, a directive value could contain unquoted whitespace and was taken verbatim.
+    /// <para>
+    /// Rules (double quotes were previously disallowed, so their presence unambiguously means the new form):
+    /// <list type="bullet">
+    /// <item>If the text contains a double quote, it is parsed strictly via <see cref="Tokenize"/>.</item>
+    /// <item>Otherwise, if there is at most one whitespace-separated token, it is returned as-is.</item>
+    /// <item>Otherwise, the trailing tokens are treated as metadata only when <paramref name="allowMetadata"/>
+    /// is set and every trailing token is a valid <c>Name=Value</c> pair; then the split tokens are returned.</item>
+    /// <item>Otherwise the whole (already trimmed) remainder is returned as a single legacy value with its
+    /// internal whitespace preserved, and <paramref name="isLegacy"/> is set. The deprecated legacy form is
+    /// flagged by an analyzer rather than erroring here.</item>
+    /// </list>
+    /// </para>
+    /// </summary>
+    private static ImmutableArray<string>? TokenizeWithLegacyFallback(in ParseContext context, bool allowMetadata, out bool isLegacy)
+    {
+        isLegacy = false;
+        var text = context.DirectiveText;
+
+        // Quoting is the "new" form; parse strictly with full validation once a quote is present.
+        if (text.IndexOf('"') >= 0)
+        {
+            return Tokenize(context);
+        }
+
+        if (text.Length == 0)
+        {
+            return ImmutableArray<string>.Empty;
+        }
+
+        var rawTokens = Patterns.Whitespace.Split(text);
+
+        // A single token (no internal whitespace) is unambiguous.
+        if (rawTokens.Length <= 1)
+        {
+            return ImmutableArray.Create(rawTokens);
+        }
+
+        // Multiple unquoted whitespace-separated tokens. Interpret the trailing ones as item metadata
+        // only when metadata is supported and every trailing token is a valid 'Name=Value' pair.
+        if (allowMetadata && AllValidMetadata(rawTokens, start: 1))
+        {
+            return ImmutableArray.Create(rawTokens);
+        }
+
+        // Legacy: the whole remainder is a single value (preserves pre-quoting behavior).
+        isLegacy = true;
+        return ImmutableArray.Create(text);
+    }
+
+    /// <summary>
+    /// Returns whether every token from <paramref name="start"/> onwards is a valid <c>Name=Value</c>
+    /// metadata pair (i.e., would be accepted by <see cref="ParseMetadata"/>).
+    /// </summary>
+    private static bool AllValidMetadata(string[] tokens, int start)
+    {
+        for (var i = start; i < tokens.Length; i++)
+        {
+            var token = tokens[i];
+            var separatorIndex = token.IndexOf('=');
+            if (separatorIndex <= 0)
+            {
+                return false;
+            }
+
+            try
+            {
+                XmlConvert.VerifyName(token.Substring(0, separatorIndex));
+            }
+            catch (XmlException)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
     /// Splits a single directive <paramref name="token"/> into a required name and optional value
     /// on the first occurrence of <paramref name="separator"/> (e.g., <c>Name@Version</c>),
-    /// validating the name. Used by <c>#:sdk</c> and <c>#:package</c>.
+    /// validating the name. Used by <c>#:sdk</c> and <c>#:package</c>. When <paramref name="trimAroundSeparator"/>
+    /// is set (legacy form, where the token may contain unquoted whitespace), whitespace adjacent to the
+    /// separator is trimmed to match the pre-quoting behavior.
     /// </summary>
-    private static (string Name, string? Value)? ParseNameAndValue(in ParseContext context, string token, char separator)
+    private static (string Name, string? Value)? ParseNameAndValue(in ParseContext context, string token, char separator, bool trimAroundSeparator = false)
     {
         var separatorIndex = token.IndexOf(separator);
         var name = separatorIndex < 0 ? token : token.Substring(0, separatorIndex);
+        if (trimAroundSeparator)
+        {
+            name = name.TrimEnd();
+        }
 
         if (name.Length == 0)
         {
@@ -436,6 +524,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         var value = separatorIndex < 0 ? null : token.Substring(separatorIndex + 1);
+        if (trimAroundSeparator && value is not null)
+        {
+            value = value.TrimStart();
+        }
+
         return (name, value);
     }
 
@@ -485,10 +578,12 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// <summary>
     /// Parses a directive that expects exactly one token (its value) and no metadata.
     /// Reports an error and returns <see langword="null"/> on empty or extra tokens.
+    /// Unquoted whitespace is accepted as part of the value for backward compatibility
+    /// (see <see cref="TokenizeWithLegacyFallback"/>).
     /// </summary>
     private static string? ParseSingleValue(in ParseContext context)
     {
-        if (Tokenize(context) is not { } tokens)
+        if (TokenizeWithLegacyFallback(context, allowMetadata: false, out _) is not { } tokens)
         {
             return null;
         }
@@ -561,7 +656,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public static new Sdk? Parse(in ParseContext context)
         {
-            if (Tokenize(context) is not { } tokens)
+            if (TokenizeWithLegacyFallback(context, allowMetadata: false, out var isLegacy) is not { } tokens)
             {
                 return null;
             }
@@ -578,7 +673,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseNameAndValue(context, tokens[0], separator: '@') is not var (sdkName, sdkVersion))
+            if (ParseNameAndValue(context, tokens[0], separator: '@', trimAroundSeparator: isLegacy) is not var (sdkName, sdkVersion))
             {
                 return null;
             }
@@ -602,7 +697,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public static new Property? Parse(in ParseContext context)
         {
-            if (Tokenize(context) is not { } tokens)
+            if (TokenizeWithLegacyFallback(context, allowMetadata: false, out var isLegacy) is not { } tokens)
             {
                 return null;
             }
@@ -619,7 +714,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseNameAndValue(context, tokens[0], separator: '=') is not var (propertyName, propertyValue))
+            if (ParseNameAndValue(context, tokens[0], separator: '=', trimAroundSeparator: isLegacy) is not var (propertyName, propertyValue))
             {
                 return null;
             }
@@ -671,7 +766,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public static new Package? Parse(in ParseContext context)
         {
-            if (Tokenize(context) is not { } tokens)
+            if (TokenizeWithLegacyFallback(context, allowMetadata: true, out var isLegacy) is not { } tokens)
             {
                 return null;
             }
@@ -682,7 +777,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseNameAndValue(context, tokens[0], separator: '@') is not var (packageName, packageVersion))
+            if (ParseNameAndValue(context, tokens[0], separator: '@', trimAroundSeparator: isLegacy) is not var (packageName, packageVersion))
             {
                 return null;
             }
@@ -747,7 +842,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public static new Project? Parse(in ParseContext context)
         {
-            if (Tokenize(context) is not { } tokens)
+            if (TokenizeWithLegacyFallback(context, allowMetadata: true, out _) is not { } tokens)
             {
                 return null;
             }
@@ -881,7 +976,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         public static new Ref? Parse(in ParseContext context)
         {
-            if (Tokenize(context) is not { } tokens)
+            if (TokenizeWithLegacyFallback(context, allowMetadata: true, out _) is not { } tokens)
             {
                 return null;
             }

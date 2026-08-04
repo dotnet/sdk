@@ -2364,8 +2364,11 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    public void Directives_WhitespaceRequiresQuoting()
+    public void Directives_WhitespaceLegacy()
     {
+        // Unquoted whitespace inside a directive value is accepted as a deprecated "legacy" form
+        // (it was valid before quoting/metadata support was added) so no breaking change occurs.
+        // A separate analyzer flags it and offers a code fix to the quoted form.
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
@@ -2375,13 +2378,28 @@ public sealed class DotnetProjectConvertTests : SdkTest
                 #:package P1 @ 1.0
                 #:package P2@1.0 ExtraToken
                 """,
-            expectedErrors:
-            [
-                (1, string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, "property")),
-                (2, string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, "sdk")),
-                (3, string.Format(FileBasedProgramsResources.InvalidDirectiveMetadata, "@")),
-                (4, string.Format(FileBasedProgramsResources.InvalidDirectiveMetadata, "ExtraToken")),
-            ]);
+            expectedProject: $"""
+                <Project Sdk="First/1.0">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <Prop>Value</Prop>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="P1" Version="1.0" />
+                    <PackageReference Include="P2" Version="1.0 ExtraToken" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
     }
 
     [TestMethod]
@@ -2530,11 +2548,12 @@ public sealed class DotnetProjectConvertTests : SdkTest
     [TestMethod]
     public void Directives_InvalidMetadataName()
     {
+        // A quote forces the strict (new) form, so the metadata name is validated.
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:package Foo@1.0.0 1Invalid=value
+                #:package Foo@1.0.0 1Invalid="value"
                 """,
             expectedErrors:
             [
