@@ -152,7 +152,12 @@ static async Task<int> RunAsync(
     // The repository contains both MSTest.Sdk/Microsoft.Testing.Platform projects and projects
     // that still run through `dotnet test`. Query evaluated MSBuild properties instead of
     // guessing from package references or project text, which may be supplied by imports.
-    var projectProperties = await GetProjectProperties(dotnetPath, projectPath, configuration, repoRoot);
+    var projectProperties = await GetProjectProperties(
+        dotnetPath,
+        projectPath,
+        configuration,
+        repoRoot,
+        cancellationToken);
     if (projectProperties is null)
     {
         return 2;
@@ -174,7 +179,7 @@ static async Task<int> RunAsync(
         };
         Console.WriteLine($"Build command: {FormatCommand(dotnetPath, buildArguments, repoRoot)}");
         Console.WriteLine();
-        var buildExitCode = await RunProcess(dotnetPath, buildArguments, repoRoot);
+        var buildExitCode = await RunProcess(dotnetPath, buildArguments, repoRoot, cancellationToken);
         if (buildExitCode != 0)
         {
             Console.Error.WriteLine($"Targeted test project build failed with exit code {buildExitCode}.");
@@ -243,7 +248,7 @@ static async Task<int> RunAsync(
             + "Build the project or omit --no-build.");
     }
 
-    var testExitCode = await RunProcess(dotnetPath, testArguments, repoRoot);
+    var testExitCode = await RunProcess(dotnetPath, testArguments, repoRoot, cancellationToken);
 
     Console.WriteLine();
     if (testExitCode == 0)
@@ -301,7 +306,8 @@ static async Task<(bool UsesMSTestSdk, string TargetPath)?> GetProjectProperties
     string dotnetPath,
     string projectPath,
     string configuration,
-    string repoRoot)
+    string repoRoot,
+    CancellationToken cancellationToken)
 {
     // -getProperty asks MSBuild for the fully evaluated values and emits a small JSON document.
     // Running the repo-local MSBuild process guarantees evaluation with this checkout's pinned
@@ -322,28 +328,17 @@ static async Task<(bool UsesMSTestSdk, string TargetPath)?> GetProjectProperties
 
     // Property evaluation output must be captured for JSON parsing. The actual build and test
     // processes intentionally inherit the console instead so their detailed output streams live.
-    using var process = Process.Start(startInfo);
-    if (process is null)
+    var processOutput = await Process.RunAndCaptureTextAsync(startInfo, cancellationToken);
+
+    if (processOutput.ExitStatus.ExitCode != 0)
     {
-        Console.Error.WriteLine($"Error: Failed to start {dotnetPath}.");
+        Console.Error.WriteLine(
+            $"Error: Could not evaluate test project properties (exit code {processOutput.ExitStatus.ExitCode}).");
+        Console.Error.WriteLine(processOutput.StandardError);
         return null;
     }
 
-    var standardOutput = process.StandardOutput.ReadToEndAsync();
-    var standardError = process.StandardError.ReadToEndAsync();
-
-    // Drain both redirected streams concurrently. Reading one stream only after the process exits
-    // can deadlock when the other stream fills its operating-system pipe buffer.
-    await process.WaitForExitAsync();
-    var output = await standardOutput;
-    var error = await standardError;
-
-    if (process.ExitCode != 0)
-    {
-        Console.Error.WriteLine($"Error: Could not evaluate test project properties (exit code {process.ExitCode}).");
-        Console.Error.WriteLine(error);
-        return null;
-    }
+    var output = processOutput.StandardOutput;
 
     // MSBuild may write SDK or workload messages around the JSON payload. Extract the outer JSON
     // object rather than requiring stdout to contain JSON and nothing else.
@@ -393,19 +388,15 @@ static async Task<(bool UsesMSTestSdk, string TargetPath)?> GetProjectProperties
 static async Task<int> RunProcess(
     string executable,
     IEnumerable<string> arguments,
-    string workingDirectory)
+    string workingDirectory,
+    CancellationToken cancellationToken)
 {
     // Do not redirect output here. The runner promises detailed live diagnostics, and inheriting
     // stdout/stderr preserves test-host formatting and avoids buffering large build logs in memory.
-    using var process = Process.Start(CreateProcessStartInfo(executable, arguments, workingDirectory));
-    if (process is null)
-    {
-        Console.Error.WriteLine($"Error: Failed to start {executable}.");
-        return 2;
-    }
-
-    await process.WaitForExitAsync();
-    return process.ExitCode;
+    var exitStatus = await Process.RunAsync(
+        CreateProcessStartInfo(executable, arguments, workingDirectory),
+        cancellationToken);
+    return exitStatus.ExitCode;
 }
 
 static ProcessStartInfo CreateProcessStartInfo(
