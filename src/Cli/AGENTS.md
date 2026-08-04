@@ -16,8 +16,9 @@ Treat the logger as an independent entry point, not as code that necessarily run
 managed `Program.Main` or the Native AOT bootstrap in the same process. Any process-wide
 state it uses, including telemetry and tracing, must initialize correctly when MSBuild
 loads it directly. Use `BuildStarted`/`BuildFinished` for request-scoped state and
-`Shutdown` for host teardown; a persistent server can execute multiple builds in the same
-process, with different environment and trace context for each request.
+`Shutdown` for logger-instance completion; it does not imply process exit. A persistent
+server can execute multiple builds in the same process, with different environment and
+trace context for each request.
 
 ## Three-project command split
 

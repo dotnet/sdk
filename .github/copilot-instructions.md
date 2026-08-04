@@ -81,7 +81,8 @@ SDK-owned CLI code has three conceptually equal process entry points:
   SDK entry point loaded by MSBuild as an `INodeLogger`. It may execute in the CLI process,
   a child MSBuild process, or a persistent MSBuild server, so code reached through it must
   not assume either CLI bootstrap already initialized process-wide state. Treat
-  `BuildStarted`/`BuildFinished` as request boundaries and `Shutdown` as host teardown.
+  `BuildStarted`/`BuildFinished` as request boundaries and `Shutdown` as logger-instance
+  completion, which does not necessarily mean process exit.
 
 Major source areas under [`src/`](../src/):
 

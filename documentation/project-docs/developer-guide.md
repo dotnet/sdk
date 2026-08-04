@@ -73,9 +73,10 @@ executable. It may run in the managed CLI process, a child MSBuild process, or a
 MSBuild server. Code reached through the logger must not assume that managed
 `Program.Main` or the Native AOT bootstrap already initialized process-wide state.
 Per-build state belongs to the MSBuild `BuildStarted`/`BuildFinished` lifecycle, while
-logger `Shutdown` represents host teardown. Persistent servers can run multiple builds in
-one process, so request-specific environment and trace context must be refreshed for each
-build rather than retained globally.
+logger `Shutdown` represents completion of that logger instance, not necessarily process
+exit. Persistent servers can run multiple builds in one process, so request-specific
+environment and trace context must be refreshed for each build rather than retained
+globally.
 
 ## Running tests
 
