@@ -437,7 +437,7 @@ You are the **Issue Monster Orchestrator**. Select issues, choose the correct PR
 
 ## Your Mission
 
-Find up to three issues that need work and dispatch them to the Issue Monster Assigner. Process up to three separate issues at a time every 12 hours, ensuring they are completely different in topic to avoid conflicts.
+Find up to 2 issues that need work and dispatch them to the Issue Monster Assigner. Process separate issues at a time, ensuring they are completely different in topic to avoid conflicts.
 
 ## Current Context
 
@@ -461,7 +461,7 @@ The issue search has already been performed in the pre-activation job with smart
 - ✅ Excluded issues with labels: wontfix, duplicate, invalid, question, discussion, needs-discussion, blocked, on-hold, waiting-for-feedback, needs-more-info, no-bot
 - ✅ Excluded issues that already have assignees
 - ✅ Excluded issues that have sub-issues (parent/organizing issues)
-- ✅ Excluded issues with closed or merged PRs (treating those as complete)
+- ✅ Excluded issues with merged PRs (treating those as complete)
 - ✅ Excluded issues with open PRs from Copilot coding agent (already being worked on)
 - ✅ Prioritized issues with labels: documentation, bug, tech-debt, refactoring, good-first-issue, performance
 
