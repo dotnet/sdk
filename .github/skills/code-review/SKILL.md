@@ -137,7 +137,7 @@ Then read the PR description, labels, and linked issues (in PR review mode) as *
 
 - Compare *behavior*, not just shape: how leniently each accepts input, how each orders or normalizes values, and which options or flags each honors. An input the SDK accepts elsewhere should not fail here, and vice versa — flag the divergence with both file:line references (the new code and the established sibling).
 - When the new code emits output that another component must later consume (a project-file edit, a generated directive, a manifest), verify the consumer's contract is satisfied — including ordering and implicit-default semantics, not just syntactic validity.
-- For added or changed CI workflow and pipeline entry points, verify that `DOTNET_CLI_TELEMETRY_SESSIONID` remains defined at the widest supported shared scope with the provider-specific format from the [developer guide](../../../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation). Flag a missing, per-step-only, or reformatted value because it prevents reliable correlation across the run's `dotnet` processes.
+- For each changed CI entry point, verify that `DOTNET_CLI_TELEMETRY_SESSIONID` remains at workflow or pipeline scope. Use the provider format from the [developer guide](../../../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation). Flag a missing, per-step, or changed value. These errors prevent reliable correlation between the run's `dotnet` processes.
 
 ### Impact Analysis for Tests and Regressions
 

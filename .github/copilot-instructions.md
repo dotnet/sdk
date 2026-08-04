@@ -174,18 +174,17 @@ manually edit:
 
 ### Preserve CI telemetry correlation
 
-Every CI workflow or pipeline entry point must set `DOTNET_CLI_TELEMETRY_SESSIONID` at
-the widest supported shared scope: workflow or pipeline scope when available, otherwise
-on every job. Use the repository's provider-specific value unchanged:
+Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point. Set
+the variable at the workflow or pipeline scope. Use the applicable value without changes:
 
 - GitHub Actions:
   `gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}`
 - Azure DevOps:
   `azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)`
 
-When adding or editing shared CI environment variables, preserve this setting. See
+When you change shared CI environment variables, preserve this variable. See
 the [developer guide](../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation)
-for the required YAML shapes and rationale.
+for the required YAML and the reason for this variable.
 
 ## External Dependencies
 

@@ -178,24 +178,20 @@ taskkill /F /IM msbuild.exe /T
 
 ## CI workflow telemetry correlation
 
-Every CI workflow or pipeline entry point in this repository must define
-`DOTNET_CLI_TELEMETRY_SESSIONID` at the widest supported shared scope. The CLI uses this
-value to correlate telemetry from separate `dotnet` processes that belong to the same
-run. Defining it centrally also ensures that later steps inherit the correlation ID
-without needing per-step updates.
+Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point.
+Set the variable at the workflow or pipeline scope. The CLI uses this value to correlate
+telemetry from separate `dotnet` processes in one run. All steps inherit the value from
+the shared scope.
 
-GitHub Actions workflows under [`.github/workflows`](../../.github/workflows) should use:
+Use this value in GitHub Actions workflows under
+[`.github/workflows`](../../.github/workflows):
 
 ```yaml
 env:
   DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 ```
 
-Use workflow-level `env` when the workflow schema supports it. For special workflows
-that do not support workflow-level `env`, such as `copilot-setup-steps.yml`, define the
-same value on every job instead.
-
-Azure DevOps pipeline entry points should use:
+Use this value in Azure DevOps pipeline entry points:
 
 ```yaml
 variables:
@@ -203,10 +199,9 @@ variables:
   value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 ```
 
-When adding a workflow or pipeline, or changing its shared environment or variables,
-preserve this setting and the provider-specific format. See the
-[telemetry documentation](telemetry.md#related-environment-variables) for the CLI
-behavior.
+When you add or change a CI entry point, preserve this variable and its provider-specific
+format. For CLI behavior, see the
+[telemetry documentation](telemetry.md#related-environment-variables).
 
 ## Automated PR Maintenance Commands
 
