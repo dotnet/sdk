@@ -395,8 +395,7 @@ imports:
 timeout-minutes: 30
 
 tools:
-  # Route GitHub tools and Safe Outputs through the generated CLI proxy instead of
-  # the native HTTP MCP endpoint on the internal awmg-mcpg gateway.
+  # Route GitHub tools and Safe Outputs through the generated CLI proxy to avoid a bug in agentic workflows blocking itself
   cli-proxy: true
   github:
     mode: gh-proxy
