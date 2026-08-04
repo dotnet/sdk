@@ -83,11 +83,8 @@ The test project `test\dotnet.Tests\dotnet.Tests.csproj` outputs directly to `ar
 Use the **targeted-test** runner so failures retain detailed output, a TRX, and a
 binlog:
 
-```powershell
-.\.dotnet\dotnet.exe .github\skills\targeted-test\scripts\RunTargetedTests.cs -- `
-  --project test\dotnet.Tests\dotnet.Tests.csproj `
-  --filter "Name~TestMethodName" `
-  --no-build
+```shell
+./.dotnet/dotnet .github/skills/targeted-test/scripts/RunTargetedTests.cs -- --project test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~TestMethodName" --no-build
 ```
 
 ## Common project paths
