@@ -12,8 +12,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests;
 
 /// <summary>
 /// Covers the binary log that `dotnet test -bl` writes for the MSBuild work the test command drives
-/// itself (project evaluation plus the ComputeRunArguments target of every test project), which lands
-/// in msbuild-dotnet-test.binlog next to the msbuild.binlog of the build.
+/// itself (project evaluation, device selection and deployment, plus the ComputeRunArguments target of
+/// every test project), which lands in msbuild-dotnet-test.binlog next to the msbuild.binlog of the build.
 /// </summary>
 [TestClass]
 public class GivenDotnetTestProducesBinaryLog : SdkTest
@@ -33,11 +33,13 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
             .Execute("-bl")
             .Should().Pass();
 
-        StructuredLoggerBuild build = ReadTestBinaryLog(testInstance.Path);
+        string binlogPath = GetTestBinaryLogPath(testInstance.Path);
+        ShouldHoldASingleBuild(binlogPath);
 
-        GetComputeRunArgumentsProjects(build).Should().ContainSingle()
+        GetComputeRunArgumentsProjects(BinaryLog.ReadBuild(binlogPath)).Should().ContainSingle()
             .Which.ProjectFile.Should().EndWith("TestProject.csproj");
     }
+
     /// <summary>
     /// Regression test for https://github.com/dotnet/sdk/issues/49386: every test project used to run
     /// ComputeRunArguments in its own MSBuild build, so all those builds shared the same
@@ -58,20 +60,15 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
             .Execute("-bl")
             .ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
 
-        StructuredLoggerBuild build = ReadTestBinaryLog(testInstance.Path);
+        string binlogPath = GetTestBinaryLogPath(testInstance.Path);
+        ShouldHoldASingleBuild(binlogPath);
 
-        var projects = GetComputeRunArgumentsProjects(build);
+        var projects = GetComputeRunArgumentsProjects(BinaryLog.ReadBuild(binlogPath));
 
         projects.Select(project => Path.GetFileName(project.ProjectFile))
             .Should().BeEquivalentTo(["TestProject.csproj", "OtherTestProject.csproj"]);
 
-        // Each project must own its targets, instead of one project holding the targets of both.
-        foreach (StructuredLoggerProject project in projects)
-        {
-            project.Children.OfType<StructuredLoggerTarget>()
-                .Should().Contain(target => target.Name == "ComputeRunArguments",
-                    $"'{project.ProjectFile}' should record the targets that ran for it");
-        }
+        ShouldOwnItsTargets(projects);
     }
 
     /// <summary>
@@ -90,30 +87,113 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
             .Execute("--property", "TestTfmsInParallel=false", "-bl")
             .ExitCode.Should().Be(ExitCodes.Success);
 
-        StructuredLoggerBuild build = ReadTestBinaryLog(testInstance.Path);
+        string binlogPath = GetTestBinaryLogPath(testInstance.Path);
+        ShouldHoldASingleBuild(binlogPath);
 
-        var projects = GetComputeRunArgumentsProjects(build);
+        var projects = GetComputeRunArgumentsProjects(BinaryLog.ReadBuild(binlogPath));
 
         // One node per target framework. Under the old behavior the second build reused the first
         // build's ids, so the reader collapsed both onto a single node.
         projects.Should().HaveCount(2, "the project targets two frameworks, so it yields one test module per framework");
 
-        foreach (StructuredLoggerProject project in projects)
-        {
-            project.Children.OfType<StructuredLoggerTarget>()
-                .Should().Contain(target => target.Name == "ComputeRunArguments",
-                    $"'{project.ProjectFile}' should record the targets that ran for it");
-        }
+        ShouldOwnItsTargets(projects);
     }
 
-    private static StructuredLoggerBuild ReadTestBinaryLog(string testInstancePath)
+    /// <summary>
+    /// Regression test for https://github.com/dotnet/sdk/issues/55561: device selection used to run its
+    /// own MSBuild builds (restore plus ComputeAvailableDevices) and each target framework of a device
+    /// project used to get a build session of its own, so a device run wrote several builds with
+    /// colliding BuildEventContext ids into the same binary log.
+    /// </summary>
+    [TestMethod]
+    public void ItRecordsOneBuildForEveryTargetFrameworkOfADeviceProject()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", Guid.NewGuid().ToString())
+            .WithSource();
+
+        // SingleDevice=true auto-selects one device per target framework, so the run goes through
+        // device selection, a build per target framework, deployment and ComputeRunArguments.
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("-p:SingleDevice=true", "-bl")
+            .Should().Pass();
+
+        string binlogPath = GetTestBinaryLogPath(testInstance.Path);
+        ShouldHoldASingleBuild(binlogPath);
+
+        StructuredLoggerBuild build = BinaryLog.ReadBuild(binlogPath);
+
+        var projects = GetComputeRunArgumentsProjects(build);
+        projects.Should().HaveCount(2, "the project is deployed and run for each of its two target frameworks");
+        ShouldOwnItsTargets(projects);
+
+        build.FindChildrenRecursive<StructuredLoggerTarget>(target => target.Name == "ComputeAvailableDevices")
+            .Should().NotBeEmpty("device selection should be part of the same build");
+    }
+
+    /// <summary>
+    /// Regression test for https://github.com/dotnet/sdk/issues/55561: a solution containing device
+    /// projects used to emit the device builds of every project on top of the build of the run itself.
+    /// </summary>
+    [TestMethod]
+    public void ItRecordsOneBuildForASolutionOfDeviceProjects()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", Guid.NewGuid().ToString())
+            .WithSource();
+
+        var project1Dir = Path.Combine(testInstance.Path, "Project1");
+        var project2Dir = Path.Combine(testInstance.Path, "Project2");
+        Directory.CreateDirectory(project1Dir);
+        Directory.CreateDirectory(project2Dir);
+
+        foreach (var dir in new[] { project1Dir, project2Dir })
+        {
+            File.Copy(Path.Combine(testInstance.Path, "Program.cs"), Path.Combine(dir, "Program.cs"));
+            File.Copy(
+                Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"),
+                Path.Combine(dir, Path.GetFileName(dir) + ".csproj"));
+        }
+
+        File.Delete(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"));
+        File.Delete(Path.Combine(testInstance.Path, "Program.cs"));
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "TestSolution.slnx"),
+            """
+            <Solution>
+              <Project Path="Project1\Project1.csproj" />
+              <Project Path="Project2\Project2.csproj" />
+            </Solution>
+            """);
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--solution", "TestSolution.slnx", "-p:SingleDevice=true", "-bl")
+            .Should().Pass();
+
+        string binlogPath = GetTestBinaryLogPath(testInstance.Path);
+        ShouldHoldASingleBuild(binlogPath);
+
+        var projects = GetComputeRunArgumentsProjects(BinaryLog.ReadBuild(binlogPath));
+        projects.Should().HaveCount(4, "both projects are deployed and run for each of their two target frameworks");
+        ShouldOwnItsTargets(projects);
+    }
+
+    private static string GetTestBinaryLogPath(string testInstancePath)
     {
         string binlogPath = Path.Combine(testInstancePath, "msbuild-dotnet-test.binlog");
         File.Exists(binlogPath).Should().BeTrue($"'{binlogPath}' should have been written by 'dotnet test -bl'");
 
-        // The invariant behind the fix: the test command must contribute exactly one MSBuild build.
-        // More than one means BuildEventContext ids restart mid-file, which is the corruption this
-        // test class guards against.
+        return binlogPath;
+    }
+
+    /// <summary>
+    /// The invariant behind the fix: the test command must contribute exactly one MSBuild build.
+    /// More than one means BuildEventContext ids restart mid-file, so readers attribute the projects
+    /// and targets of the later builds to whichever project of the first build claimed the id, which
+    /// is the corruption this test class guards against.
+    /// </summary>
+    private static void ShouldHoldASingleBuild(string binlogPath)
+    {
         int buildStarted = 0;
         int buildFinished = 0;
         foreach (var record in BinaryLog.ReadRecords(binlogPath))
@@ -131,8 +211,17 @@ public class GivenDotnetTestProducesBinaryLog : SdkTest
 
         buildStarted.Should().Be(1, "'dotnet test -bl' must record exactly one build, otherwise BuildEventContext ids collide");
         buildFinished.Should().Be(1, "the single recorded build must be closed");
+    }
 
-        return BinaryLog.ReadBuild(binlogPath);
+    private static void ShouldOwnItsTargets(IEnumerable<StructuredLoggerProject> projects)
+    {
+        // Each project must own its targets, instead of one project holding the targets of all of them.
+        foreach (StructuredLoggerProject project in projects)
+        {
+            project.Children.OfType<StructuredLoggerTarget>()
+                .Should().Contain(target => target.Name == "ComputeRunArguments",
+                    $"'{project.ProjectFile}' should record the targets that ran for it");
+        }
     }
 
     /// <summary>
