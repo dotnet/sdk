@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # get-dotnetup.sh
 #
-# Downloads the latest dotnetup daily build and installs it locally.
+# Downloads the latest dotnetup preview build and installs it locally.
 #
 # Downloads dotnetup from the public aka.ms shortlinks (e.g.
-# https://aka.ms/dotnet/dotnetup/daily/dotnetup-linux-x64), verifies the
+# https://aka.ms/dotnet/dotnetup/preview/dotnetup-linux-x64), verifies the
 # SHA-512 checksum, and installs the binary to a local directory.
 #
 # Usage:
@@ -17,7 +17,7 @@ set -euo pipefail
 
 # --- Defaults ---
 INSTALL_DIR="$HOME/.dotnetup"
-QUALITY="daily"
+QUALITY="preview"
 RUNTIME_ID=""
 
 # --- Colors (disabled if not a terminal) ---
@@ -48,16 +48,17 @@ while [[ $# -gt 0 ]]; do
             cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Downloads the latest dotnetup daily build from aka.ms and installs it locally.
+Downloads the latest dotnetup build from aka.ms and installs it locally.
 
 Options:
   --install-dir DIR     Installation directory (default: ~/.dotnetup)
-  --quality QUALITY     Build quality (default: daily)
+  --quality QUALITY     Build quality (default: preview; use daily for the latest daily build)
   --runtime-id RID      Override OS/architecture detection (e.g. linux-musl-x64, osx-arm64)
   --help, -h            Show this help message
 
 Examples:
   ./get-dotnetup.sh
+  ./get-dotnetup.sh --quality daily
   ./get-dotnetup.sh --runtime-id linux-musl-x64
   ./get-dotnetup.sh --install-dir /opt/dotnetup
 EOF

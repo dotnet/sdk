@@ -10,7 +10,7 @@
 
 ## Download dotnetup
 
-The easiest way to download `dotnetup` is to use the installation script:
+The easiest way to download the latest preview build of `dotnetup` is to use the installation script:
 
 ```bash
 curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash
@@ -25,13 +25,26 @@ iwr https://aka.ms/dotnetup/get-dotnetup.ps1 -OutFile $s
 & $s
 ```
 
-If you prefer a one-liner and don't need signature verification, you can pipe the script straight into PowerShell (this bypasses execution-policy signature checks):
+To install the latest daily build instead, pass the quality explicitly:
+
+```bash
+curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash -s -- --quality daily
+```
+
+For a PowerShell one-liner, create a script block from the downloaded script and pass the
+parameter when invoking it:
+
+```pwsh
+& ([scriptblock]::Create((iwr https://aka.ms/dotnetup/get-dotnetup.ps1).Content)) -Quality daily
+```
+
+These PowerShell one-liners bypass Authenticode signature verification:
 
 ```pwsh
 iwr https://aka.ms/dotnetup/get-dotnetup.ps1 | iex
 ```
 
-These scripts will download the latest version of `dotnetup` and install it in your user directory, then print instructions to update your $PATH so that `dotnetup` is available in your terminal.
+These scripts default to the `preview` channel. They download `dotnetup` and install it in your user directory, then print instructions to update your $PATH so that `dotnetup` is available in your terminal.
 
 ## First-Time Setup
 
@@ -173,3 +186,7 @@ This lets you change your path preference (Isolation → Terminal, etc.) or inst
 - [Install SDKs with global.json](./usecases/install-with-global-json.md) — Install the right SDK version for a project automatically
 - [Update SDK and Runtime Installations](./usecases/update-installations.md) — Keep your .NET installations current
 - [Try Daily Builds](./usecases/try-daily-builds.md) — Safely test pre-release .NET builds
+
+## Maintainer Documentation
+
+- [Publish, update, and roll back preview builds](./releasing.md)
