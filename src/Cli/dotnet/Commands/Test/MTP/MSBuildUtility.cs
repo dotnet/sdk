@@ -72,7 +72,9 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger);
+        using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
+        var (projects, deviceBuildExitCode) = GetProjectsProperties(collection, evaluationContext, projectPaths, buildOptions, logger, buildSession);
+        buildSession.Complete();
         collection.UnloadAllProjects();
 
         return (projects, deviceBuildExitCode != 0 ? deviceBuildExitCode : buildExitCode);
@@ -107,7 +109,9 @@ internal static class MSBuildUtility
 
         using var collection = new ProjectCollection(globalProperties: CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs), logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
         var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
-        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, logger, configuration: null, platform: null);
+        using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(projectFilePath, collection, evaluationContext, buildOptions, buildSession, configuration: null, platform: null);
+        buildSession.Complete();
         collection.UnloadAllProjects();
         return (projects, buildExitCode);
     }
@@ -174,8 +178,14 @@ internal static class MSBuildUtility
                 logger is null ? null : [logger],
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
             var evaluationContext = EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
+            // The session is scoped to this iteration because the next one runs another restore/build
+            // through BuildManager.DefaultBuildManager, which must not overlap an open session. A
+            // multi-target-framework device run therefore still writes one build per target framework
+            // into the binary log. Tracked by https://github.com/dotnet/sdk/issues/55561.
+            using var buildSession = new TestBuildSession(collection, msbuildArgs, logger);
             IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> modules = SolutionAndProjectUtility.GetProjectProperties(
-                projectFilePath, collection, evaluationContext, perTfmBuildOptions, logger, configuration, platform);
+                projectFilePath, collection, evaluationContext, perTfmBuildOptions, buildSession, configuration, platform);
+            buildSession.Complete();
 
             allGroups.AddRange(modules);
         }
@@ -409,13 +419,17 @@ internal static class MSBuildUtility
         EvaluationContext evaluationContext,
         IEnumerable<(string ProjectFilePath, string? Configuration, string? Platform)> projects,
         BuildOptions buildOptions,
-        FacadeLogger? logger)
+        FacadeLogger? logger,
+        TestBuildSession buildSession)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
         var nonDeviceProjects = new List<(string ProjectFilePath, string? Configuration, string? Platform)>();
 
         // Phase 1: Handle device projects sequentially. Per-TFM builds use in-process MSBuild
         // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
+        // Phase 1 must also complete before phase 2 starts using the session: the session's dedicated
+        // BuildManager must never be open across one of those builds. The session starts lazily, so it
+        // stays unstarted until phase 2 issues the first request.
         foreach (var project in projects)
         {
             var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
@@ -461,7 +475,7 @@ internal static class MSBuildUtility
             {
                 try
                 {
-                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, logger, project.Configuration, project.Platform);
+                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, buildSession, project.Configuration, project.Platform);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);

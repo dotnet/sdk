@@ -7,7 +7,6 @@ using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
-using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -239,7 +238,7 @@ internal static class SolutionAndProjectUtility
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         BuildOptions buildOptions,
-        FacadeLogger? logger,
+        TestBuildSession buildSession,
         string? configuration,
         string? platform,
         HashSet<string>? visitedTraversalProjects = null)
@@ -270,7 +269,7 @@ internal static class SolutionAndProjectUtility
                     continue;
                 }
 
-                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, logger, reference.Configuration, reference.Platform, visitedTraversalProjects));
+                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, buildSession, reference.Configuration, reference.Platform, visitedTraversalProjects));
             }
 
             return projects;
@@ -283,7 +282,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+            if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
@@ -311,7 +310,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
@@ -325,7 +324,7 @@ internal static class SolutionAndProjectUtility
                     projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
                     {
                         innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
@@ -535,7 +534,7 @@ internal static class SolutionAndProjectUtility
     private static TestModule? GetModuleFromProject(
         ProjectInstance project,
         BuildOptions buildOptions,
-        FacadeLogger? logger)
+        TestBuildSession buildSession)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -556,8 +555,7 @@ internal static class SolutionAndProjectUtility
         {
             runProperties = DeployAndGetRunProperties(
                 project,
-                logger,
-                AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs),
+                buildSession,
                 buildOptions.EnvironmentVariables,
                 out runtimeEnvironmentVariables);
 
@@ -604,8 +602,7 @@ internal static class SolutionAndProjectUtility
         [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
         static RunProperties DeployAndGetRunProperties(
             ProjectInstance project,
-            FacadeLogger? logger,
-            MSBuildArgs msbuildArgs,
+            TestBuildSession buildSession,
             IReadOnlyDictionary<string, string> environmentVariables,
             out IReadOnlyDictionary<string, string> runtimeEnvironmentVariables)
         {
@@ -615,10 +612,9 @@ internal static class SolutionAndProjectUtility
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
-            // Build API cannot be called in parallel, even if the projects are different.
-            // Otherwise, BuildManager in MSBuild will fail:
-            // System.InvalidOperationException: The operation cannot be completed because a build is already in progress.
-            // NOTE: BuildManager is singleton.
+            // The MSBuild build APIs cannot be called in parallel, even for different projects:
+            // BuildManager throws "The operation cannot be completed because a build is already in progress."
+            // Every project of the run shares the same build session, so the requests are serialized here.
             lock (s_buildLock)
             {
                 if (project.Targets.ContainsKey(Constants.DeployToDevice))
@@ -627,13 +623,13 @@ internal static class SolutionAndProjectUtility
                     // groups) that would leak into the ComputeRunArguments build below, which has to
                     // build the original instance since the run properties are read back from it.
                     // Same reason as dotnet run, see RunCommandSelector.OpenProjectIfNeeded.
-                    if (!project.DeepCopy().Build([Constants.DeployToDevice], CreateBuildLoggers(msbuildArgs, logger)))
+                    if (!buildSession.Build(project.DeepCopy(), [Constants.DeployToDevice]))
                     {
                         throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
                     }
                 }
 
-                if (!project.Build(s_computeRunArgumentsTarget, CreateBuildLoggers(msbuildArgs, logger)))
+                if (!buildSession.Build(project, s_computeRunArgumentsTarget))
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
                 }
@@ -643,34 +639,6 @@ internal static class SolutionAndProjectUtility
                 ? EnvironmentVariablesToMSBuild.ReadFromItems(project)
                 : environmentVariables;
             return RunProperties.FromProject(project);
-        }
-    }
-
-    /// <summary>
-    /// Gets the loggers to attach to an in-process <see cref="ProjectInstance"/> build.
-    /// A console logger is attached (unless <c>-noConsoleLogger</c> was passed) so that MSBuild errors are
-    /// actually reported to the user: the binary logger only forwards events to binlogs, and it is only
-    /// created when <c>-bl</c> was passed, so without a console logger these builds fail silently and the user
-    /// is only told to "fix the errors and warnings" without any error being printed anywhere.
-    /// This mirrors what <c>dotnet run</c> does in <c>RunCommand.InvokeRunArgumentsTarget</c>.
-    /// </summary>
-    /// <remarks>
-    /// A fresh console logger is created for each build to avoid disposal issues when calling
-    /// <see cref="ProjectInstance.Build(string[], IEnumerable{ILogger})"/> multiple times.
-    /// </remarks>
-    private static IEnumerable<ILogger> CreateBuildLoggers(MSBuildArgs msbuildArgs, FacadeLogger? binaryLogger)
-    {
-        if (binaryLogger is not null)
-        {
-            yield return binaryLogger;
-        }
-
-        if (!LoggerUtility.HasNoConsoleLoggerArgument(msbuildArgs.OtherMSBuildArgs))
-        {
-            // These builds only compute run arguments and deploy, so keep them quiet - at this verbosity
-            // MSBuild still reports errors and warnings.
-            yield return CommonRunHelpers.GetConsoleLogger(
-                msbuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", .. msbuildArgs.OtherMSBuildArgs]));
         }
     }
 
