@@ -420,26 +420,24 @@ namespace Analyzer.Utilities
         /// </param>
         /// <param name="compilation">The compilation</param>
         /// <returns>
-        /// An sequence containing a single statement that throws <see cref="System.NotImplementedException"/>.
+        /// A sequence containing a single throw statement. It throws <see cref="System.NotImplementedException"/>
+        /// when that type can be resolved, or <see langword="null"/> otherwise.
         /// </returns>
         public static IEnumerable<SyntaxNode> DefaultMethodBody(
             this SyntaxGenerator generator, Compilation compilation)
         {
-            if (DefaultMethodStatement(generator, compilation) is SyntaxNode statement)
-            {
-                yield return statement;
-            }
+            yield return DefaultMethodStatement(generator, compilation);
         }
 
-        public static SyntaxNode? DefaultMethodStatement(this SyntaxGenerator generator, Compilation compilation)
+        public static SyntaxNode DefaultMethodStatement(this SyntaxGenerator generator, Compilation compilation)
         {
-            if (!compilation.TryGetOrCreateTypeByMetadataName(SystemNotImplementedExceptionTypeName, out INamedTypeSymbol? notImplementedExceptionType))
-            {
-                return null;
-            }
+            SyntaxNode expression = compilation.TryGetOrCreateTypeByMetadataName(
+                SystemNotImplementedExceptionTypeName,
+                out INamedTypeSymbol? notImplementedExceptionType)
+                    ? generator.ObjectCreationExpression(generator.TypeExpression(notImplementedExceptionType))
+                    : generator.NullLiteralExpression();
 
-            return generator.ThrowStatement(generator.ObjectCreationExpression(
-                generator.TypeExpression(notImplementedExceptionType)));
+            return generator.ThrowStatement(expression);
         }
 
         public static SyntaxNode? TryGetContainingDeclaration(this SyntaxGenerator generator, SyntaxNode? node, DeclarationKind kind)
