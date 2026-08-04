@@ -66,6 +66,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 {
                     output.ScrubByRegex(@"^   Package version:.*$", "   Package version: %VERSION%", RegexOptions.Multiline);
                     output.ScrubByRegex(@"(microsoft\.android\.templates/)[^/]+/", "$1%VERSION%/");
+                    output.ScrubByRegex(@"(microsoft\.android\.templates\.)[^/]+(\.nupkg)", "$1%VERSION%$2");
                     // Template list varies between package versions on the public feed;
                     // keep only the header and scrub the table contents.
                     int idx = output.ToString().IndexOf("   Templates:");
@@ -173,6 +174,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 {
                     output.ScrubByRegex(@"^   Package version:.*$", "   Package version: %VERSION%", RegexOptions.Multiline);
                     output.ScrubByRegex(@"(microsoft\.android\.templates/)[^/]+/", "$1%VERSION%/");
+                    output.ScrubByRegex(@"(microsoft\.android\.templates\.)[^/]+(\.nupkg)", "$1%VERSION%$2");
                     int idx = output.ToString().IndexOf("   Templates:");
                     if (idx >= 0)
                     {
