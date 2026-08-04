@@ -119,11 +119,15 @@ on:
             // Labels that indicate an issue is a GOOD candidate for auto-assignment
             const priorityLabels = [
               'good first issue',
-              'good-first-issue',
+              'help wanted',
+              'cost:s',
               'bug',
               'documentation',
-              'tech-debt',
-              'refactoring',
+              'area-infrastructure',
+              'test debt',
+              'known build error',
+              'enhancement',
+              'fit-n-finish',
               'performance'
             ];
 
@@ -298,21 +302,29 @@ on:
                 const issueLabels = issue.labels.map(l => l.name.toLowerCase());
                 let score = 0;
 
-                // Score based on priority labels (higher score = higher priority)
-                if (issueLabels.includes('good first issue') || issueLabels.includes('good-first-issue')) {
-                  score += 40;
+                // Score based on repository labels (higher score = higher priority)
+                if (issueLabels.includes('documentation')) {
+                  score += 60;
                 }
                 if (issueLabels.includes('bug')) {
                   score += 55;
                 }
-                if (issueLabels.includes('documentation')) {
-                  score += 60;
+                if (issueLabels.includes('area-infrastructure') ||
+                    issueLabels.includes('test debt') ||
+                    issueLabels.includes('known build error')) {
+                  score += 50;
+                }
+                if (issueLabels.includes('cost:s')) {
+                  score += 50;
+                }
+                if (issueLabels.includes('good first issue') || issueLabels.includes('help wanted')) {
+                  score += 40;
+                }
+                if (issueLabels.includes('enhancement') || issueLabels.includes('fit-n-finish')) {
+                  score += 40;
                 }
                 if (issueLabels.includes('performance')) {
                   score += 30;
-                }
-                if (issueLabels.includes('tech-debt') || issueLabels.includes('refactoring')) {
-                  score += 45;
                 }
 
                 // Bonus for issues with clear labels (any priority label)
@@ -463,19 +475,19 @@ The issue search has already been performed in the pre-activation job with smart
 - ✅ Excluded issues that have sub-issues (parent/organizing issues)
 - ✅ Excluded issues with merged PRs (treating those as complete)
 - ✅ Excluded issues with open PRs from Copilot coding agent (already being worked on)
-- ✅ Prioritized issues with labels: documentation, bug, tech-debt, refactoring, good-first-issue, performance
+- ✅ Prioritized issues with labels: documentation, bug, Area-Infrastructure, Test Debt, Known Build Error, Cost:S, good first issue, help wanted, enhancement, fit-n-finish, performance
 
 **Scoring System:**
 Issues are scored and sorted by priority:
 - Documentation: +60 points
 - Bug: +55 points
-- Tech-debt: +50 points
-- Good first issue: +40 points
-- Small Refactor: +40 points
+- Area-Infrastructure, Test Debt, or Known Build Error: +50 points
+- Cost:S: +50 points
+- Good first issue or help wanted: +40 points
+- Enhancement or fit-n-finish: +40 points
 - Performance: +30 points
 - Has any priority label: +10 points
 - Age bonus: +0-20 points (older issues get slight priority)
-- Security: -100 points. Never assign an issue related to security changes.
 
 **Issue Count**: ${{ needs.pre_activation.outputs.issue_count }}
 **Issue Numbers**: ${{ needs.pre_activation.outputs.issue_numbers }}
