@@ -87,7 +87,8 @@ public class TelemetryClientTests : SdkTest
 
         try
         {
-            new BuildCommand(testAsset)
+            new DotnetCommand(Log, "build")
+                .WithWorkingDirectory(testAsset.TestRoot)
                 .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
                 .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "true")
                 .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH", logFile)
@@ -96,7 +97,8 @@ public class TelemetryClientTests : SdkTest
                 .Should()
                 .Pass();
 
-            new BuildCommand(testAsset)
+            new DotnetCommand(Log, "build")
+                .WithWorkingDirectory(testAsset.TestRoot)
                 .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", "false")
                 .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT", "true")
                 .WithEnvironmentVariable("DOTNET_CLI_TELEMETRY_LOG_PATH", logFile)
