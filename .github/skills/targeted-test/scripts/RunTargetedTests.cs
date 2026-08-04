@@ -24,7 +24,7 @@ Option<string?> filterOption = new("--filter")
     Arity = ArgumentArity.ExactlyOne,
     Description = "VSTest filter, for example FullyQualifiedName~TestClass."
 };
-Option<string> configurationOption = new("--configuration")
+Option<string> configurationOption = new("--configuration", "-c")
 {
     Arity = ArgumentArity.ExactlyOne,
     DefaultValueFactory = _ => "Debug",
