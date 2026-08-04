@@ -13,29 +13,31 @@ internal class Program
 {
     private static void Main(string[] args)
     {
+        string? command = args.Length > 0 ? args[0] : null;
         if (args.Length > 0 &&
-            args[0] is "--pack" or "--publish" or "--pack-smoke" or "--publish-smoke")
+            command is "--pack" or "--publish" or "--pack-smoke" or "--publish-smoke")
         {
             SetCommandRunId();
+            OrchardCoreCommandBenchmark.Configure(CommandBenchmarkOptions.Parse(args[1..]));
         }
 
         if (args.Length == 0)
         {
             BenchmarkRunner.Run<InfoTests>();
         }
-        else if (args is ["--pack"])
+        else if (command == "--pack")
         {
             RunBenchmark<PackBenchmark>();
         }
-        else if (args is ["--publish"])
+        else if (command == "--publish")
         {
             RunBenchmark<PublishBenchmark>();
         }
-        else if (args is ["--pack-smoke"])
+        else if (command == "--pack-smoke")
         {
             new PackBenchmark().RunSmokeAsync().GetAwaiter().GetResult();
         }
-        else if (args is ["--publish-smoke"])
+        else if (command == "--publish-smoke")
         {
             new PublishBenchmark().RunSmokeAsync().GetAwaiter().GetResult();
         }

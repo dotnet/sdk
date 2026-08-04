@@ -16,14 +16,15 @@ namespace Benchmark;
 [MarkdownExporter]
 public abstract class OrchardCoreCommandBenchmark
 {
-    private const string ConfigurationEnvironmentVariable = "DOTNET_SDK_PACK_PUBLISH_BENCHMARK_CONFIG";
     private const string RunIdEnvironmentVariable = "DOTNET_SDK_PACK_PUBLISH_BENCHMARK_RUN_ID";
     private const string MetricsOutputDirectoryEnvironmentVariable = "DOTNET_CLI_BENCHMARK_METRICS_DIRECTORY";
 
     internal const int WarmupCount = 3;
     internal const int IterationCount = 12;
 
-    private BenchmarkSettings _settings = null!;
+    private static CommandBenchmarkOptions? s_options;
+
+    private CommandBenchmarkOptions _options = null!;
     private PreparedConfiguration _configuration = null!;
     private string _resultsPath = null!;
     private string _runId = null!;
@@ -32,30 +33,22 @@ public abstract class OrchardCoreCommandBenchmark
     protected abstract string CommandName { get; }
     protected abstract bool IsPublish { get; }
 
+    internal static void Configure(CommandBenchmarkOptions options) => s_options = options;
+
     [GlobalSetup]
     public async Task GlobalSetup()
     {
-        string configurationPath = Environment.GetEnvironmentVariable(ConfigurationEnvironmentVariable)
-            ?? throw new InvalidOperationException(
-                $"{ConfigurationEnvironmentVariable} must point to a benchmark JSON configuration.");
-
-        configurationPath = Path.GetFullPath(configurationPath);
-        _settings = JsonSerializer.Deserialize<BenchmarkSettings>(
-            File.ReadAllText(configurationPath),
-            BenchmarkSettings.SerializerOptions)
-            ?? throw new InvalidDataException($"Could not deserialize '{configurationPath}'.");
-        _settings.Validate(configurationPath);
-
+        _options = s_options ?? CommandBenchmarkOptions.Default;
         _runId = Environment.GetEnvironmentVariable(RunIdEnvironmentVariable)
             ?? throw new InvalidOperationException($"{RunIdEnvironmentVariable} was not set by the benchmark host.");
-        _resultsPath = _settings.GetResultsPath(configurationPath, _runId, CommandName);
+        _resultsPath = _options.GetResultsPath(_runId, CommandName);
         Directory.CreateDirectory(Path.GetDirectoryName(_resultsPath)!);
         if (!File.Exists(_resultsPath))
         {
             File.WriteAllText(_resultsPath, ResultRow.Header + Environment.NewLine);
         }
 
-        _configuration = PrepareConfiguration(_settings, configurationPath);
+        _configuration = PrepareConfiguration(_options);
         await PrepareOutputsAsync().ConfigureAwait(false);
     }
 
@@ -77,7 +70,7 @@ public abstract class OrchardCoreCommandBenchmark
         ResultRow row = new(
             _runId,
             CommandName,
-            _settings.Label,
+            _options.Label,
             isWarmup ? "Warmup" : "Measured",
             phaseIteration,
             measurement.TotalDuration.TotalSeconds,
@@ -102,34 +95,26 @@ public abstract class OrchardCoreCommandBenchmark
         }
     }
 
-    private PreparedConfiguration PrepareConfiguration(
-        BenchmarkSettings settings,
-        string configurationPath)
+    private PreparedConfiguration PrepareConfiguration(CommandBenchmarkOptions options)
     {
-        string configurationDirectory = Path.GetDirectoryName(configurationPath)!;
-        string dotNetPath = ResolvePath(configurationDirectory, settings.DotNetPath);
-        if (!File.Exists(dotNetPath))
-        {
-            throw new InvalidDataException(
-                $"DotNetPath does not reference an existing file: '{dotNetPath}'.");
-        }
-
-        string orchardCoreRoot = ResolvePath(configurationDirectory, settings.OrchardCoreRoot);
+        string dotNetPath = ResolveExecutable(options.DotNetPath);
+        string orchardCoreRoot = ResolvePath(options.OrchardCoreRoot);
         string fullSolutionPath = Path.Combine(orchardCoreRoot, "OrchardCore.slnx");
         if (!File.Exists(fullSolutionPath))
         {
             throw new InvalidDataException(
-                $"OrchardCoreRoot does not contain OrchardCore.slnx: '{orchardCoreRoot}'.");
+                $"OrchardCore root does not contain OrchardCore.slnx: '{orchardCoreRoot}'.");
         }
 
-        string workingDirectory = settings.WorkingDirectory is null
-            ? orchardCoreRoot
-            : ResolvePath(configurationDirectory, settings.WorkingDirectory);
+        string workingDirectory = ResolvePath(options.WorkingDirectory ?? orchardCoreRoot);
         if (!Directory.Exists(workingDirectory))
         {
             throw new InvalidDataException(
-                $"WorkingDirectory does not reference an existing directory: '{workingDirectory}'.");
+                $"Working directory does not reference an existing directory: '{workingDirectory}'.");
         }
+
+        string? packTargetsPath = ResolveOptionalFile(options.PackTargetsPath, "--pack-targets");
+        string? packPropsPath = ResolveOptionalFile(options.PackPropsPath, "--pack-props");
 
         string? generatedPublishSolutionPath = null;
         string solutionPath = fullSolutionPath;
@@ -144,10 +129,9 @@ public abstract class OrchardCoreCommandBenchmark
             workingDirectory,
             solutionPath,
             generatedPublishSolutionPath,
-            settings.EnvironmentVariables ?? [],
-            settings.PackArguments ?? [],
-            settings.PublishArguments ?? [],
-            TimeSpan.FromMinutes(settings.TimeoutMinutes));
+            packTargetsPath,
+            packPropsPath,
+            TimeSpan.FromMinutes(options.TimeoutMinutes));
     }
 
     private async Task PrepareOutputsAsync()
@@ -169,7 +153,7 @@ public abstract class OrchardCoreCommandBenchmark
         if (IsPublish)
         {
             buildArguments.Add("-f");
-            buildArguments.Add(_settings.PublishFramework);
+            buildArguments.Add(_options.PublishFramework);
         }
 
         await RunProcessAsync(buildArguments, expectedMetricCommand: null).ConfigureAwait(false);
@@ -188,12 +172,21 @@ public abstract class OrchardCoreCommandBenchmark
         if (IsPublish)
         {
             arguments.Add("-f");
-            arguments.Add(_settings.PublishFramework);
-            arguments.AddRange(_configuration.PublishArguments);
+            arguments.Add(_options.PublishFramework);
         }
         else
         {
-            arguments.AddRange(_configuration.PackArguments);
+            if (_configuration.PackPropsPath is not null)
+            {
+                arguments.Add(
+                    $"-p:CustomBeforeMicrosoftCommonProps={_configuration.PackPropsPath}");
+            }
+
+            if (_configuration.PackTargetsPath is not null)
+            {
+                arguments.Add(
+                    $"-p:NuGetBuildTasksPackTargets={_configuration.PackTargetsPath}");
+            }
         }
 
         return RunProcessAsync(arguments, CommandName);
@@ -223,17 +216,11 @@ public abstract class OrchardCoreCommandBenchmark
         startInfo.Environment.Remove("MSBUILDDISABLENODEREUSE");
         startInfo.Environment.Remove("DOTNET_STARTUP_HOOKS");
         startInfo.Environment.Remove(MetricsOutputDirectoryEnvironmentVariable);
-
-        foreach ((string name, string? value) in _configuration.EnvironmentVariables)
+        if (Path.IsPathRooted(_configuration.DotNetPath))
         {
-            if (value is null)
-            {
-                startInfo.Environment.Remove(name);
-            }
-            else
-            {
-                startInfo.Environment[name] = value;
-            }
+            string dotNetRoot = Path.GetDirectoryName(_configuration.DotNetPath)!;
+            startInfo.Environment["DOTNET_ROOT"] = dotNetRoot;
+            startInfo.Environment["DOTNET_ROOT_X64"] = dotNetRoot;
         }
 
         if (expectedMetricCommand is not null)
@@ -294,7 +281,7 @@ public abstract class OrchardCoreCommandBenchmark
                 .. Directory.EnumerateFiles(metricsDirectory!, "metrics-*.json")
                     .Select(static path => JsonSerializer.Deserialize<MetricsDocument>(
                         File.ReadAllText(path),
-                        BenchmarkSettings.SerializerOptions))
+                        SerializerOptions))
                     .WhereNotNull(),
             ];
             (MetricsDocument Document, MetricMeasurement Measurement)[] matchingMeasurements =
@@ -368,8 +355,37 @@ public abstract class OrchardCoreCommandBenchmark
         return path;
     }
 
-    private static string ResolvePath(string configurationDirectory, string path) =>
-        Path.GetFullPath(Path.IsPathRooted(path) ? path : Path.Combine(configurationDirectory, path));
+    private static string ResolveExecutable(string path)
+    {
+        if (!Path.IsPathRooted(path) &&
+            !path.Contains(Path.DirectorySeparatorChar) &&
+            !path.Contains(Path.AltDirectorySeparatorChar))
+        {
+            return path;
+        }
+
+        string fullPath = ResolvePath(path);
+        return File.Exists(fullPath)
+            ? fullPath
+            : throw new InvalidDataException(
+                $"dotnet executable does not reference an existing file: '{fullPath}'.");
+    }
+
+    private static string? ResolveOptionalFile(string? path, string optionName)
+    {
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return null;
+        }
+
+        string fullPath = ResolvePath(path);
+        return File.Exists(fullPath)
+            ? fullPath
+            : throw new InvalidDataException(
+                $"{optionName} does not reference an existing file: '{fullPath}'.");
+    }
+
+    private static string ResolvePath(string path) => Path.GetFullPath(path);
 
     private static string TakeTail(string value)
     {
@@ -377,77 +393,18 @@ public abstract class OrchardCoreCommandBenchmark
         return value.Length <= MaximumLength ? value : value[^MaximumLength..];
     }
 
-    private sealed class BenchmarkSettings
+    private static readonly JsonSerializerOptions SerializerOptions = new()
     {
-        internal static readonly JsonSerializerOptions SerializerOptions = new()
-        {
-            PropertyNameCaseInsensitive = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            AllowTrailingCommas = true,
-        };
-
-        public string Label { get; init; } = string.Empty;
-        public string OrchardCoreRoot { get; init; } = string.Empty;
-        public string PublishFramework { get; init; } = "net10.0";
-        public string ResultsPath { get; init; } =
-            "{benchmark}-{label}-results-{runId}.csv";
-        public string DotNetPath { get; init; } = string.Empty;
-        public string? WorkingDirectory { get; init; }
-        public Dictionary<string, string?>? EnvironmentVariables { get; init; }
-        public string[]? PackArguments { get; init; }
-        public string[]? PublishArguments { get; init; }
-        public int TimeoutMinutes { get; init; } = 30;
-
-        internal void Validate(string configurationPath)
-        {
-            if (string.IsNullOrWhiteSpace(Label))
-            {
-                throw new InvalidDataException($"Label is missing from '{configurationPath}'.");
-            }
-
-            if (string.IsNullOrWhiteSpace(OrchardCoreRoot))
-            {
-                throw new InvalidDataException($"OrchardCoreRoot is missing from '{configurationPath}'.");
-            }
-
-            if (string.IsNullOrWhiteSpace(PublishFramework))
-            {
-                throw new InvalidDataException($"PublishFramework is missing from '{configurationPath}'.");
-            }
-
-            if (string.IsNullOrWhiteSpace(DotNetPath))
-            {
-                throw new InvalidDataException($"DotNetPath is missing from '{configurationPath}'.");
-            }
-
-            if (TimeoutMinutes <= 0)
-            {
-                throw new InvalidDataException($"TimeoutMinutes in '{configurationPath}' must be positive.");
-            }
-        }
-
-        internal string GetResultsPath(
-            string configurationPath,
-            string runId,
-            string benchmark)
-        {
-            string configurationDirectory = Path.GetDirectoryName(configurationPath)!;
-            string path = ResultsPath
-                .Replace("{runId}", runId, StringComparison.Ordinal)
-                .Replace("{benchmark}", benchmark, StringComparison.OrdinalIgnoreCase)
-                .Replace("{label}", Label, StringComparison.OrdinalIgnoreCase);
-            return ResolvePath(configurationDirectory, path);
-        }
-    }
+        PropertyNameCaseInsensitive = true,
+    };
 
     private sealed record PreparedConfiguration(
         string DotNetPath,
         string WorkingDirectory,
         string SolutionPath,
         string? GeneratedPublishSolutionPath,
-        IReadOnlyDictionary<string, string?> EnvironmentVariables,
-        IReadOnlyCollection<string> PackArguments,
-        IReadOnlyCollection<string> PublishArguments,
+        string? PackTargetsPath,
+        string? PackPropsPath,
         TimeSpan Timeout);
 
     private sealed record ProcessMeasurement(
@@ -503,6 +460,100 @@ public abstract class OrchardCoreCommandBenchmark
 
             return $"\"{value.Replace("\"", "\"\"")}\"";
         }
+    }
+}
+
+internal sealed class CommandBenchmarkOptions
+{
+    internal static CommandBenchmarkOptions Default { get; } = new();
+
+    internal string Label { get; private set; } = "Default";
+    internal string DotNetPath { get; private set; } = "dotnet";
+    internal string OrchardCoreRoot { get; private set; } = Directory.GetCurrentDirectory();
+    internal string? WorkingDirectory { get; private set; }
+    internal string PublishFramework { get; private set; } = "net10.0";
+    internal string ResultsPath { get; private set; } =
+        Path.Combine("BenchmarkDotNet.Artifacts", "{benchmark}-{label}-{runId}.csv");
+    internal string? PackTargetsPath { get; private set; }
+    internal string? PackPropsPath { get; private set; }
+    internal int TimeoutMinutes { get; private set; } = 30;
+
+    internal static CommandBenchmarkOptions Parse(IReadOnlyList<string> arguments)
+    {
+        CommandBenchmarkOptions options = new();
+        for (int index = 0; index < arguments.Count; index++)
+        {
+            string option = arguments[index];
+            string value = GetValue(arguments, ref index, option);
+            switch (option)
+            {
+                case "--label":
+                    options.Label = value;
+                    break;
+                case "--dotnet":
+                    options.DotNetPath = value;
+                    break;
+                case "--orchard-core":
+                    options.OrchardCoreRoot = value;
+                    break;
+                case "--working-directory":
+                    options.WorkingDirectory = value;
+                    break;
+                case "--publish-framework":
+                    options.PublishFramework = value;
+                    break;
+                case "--results":
+                    options.ResultsPath = value;
+                    break;
+                case "--pack-targets":
+                    options.PackTargetsPath = value;
+                    break;
+                case "--pack-props":
+                    options.PackPropsPath = value;
+                    break;
+                case "--timeout-minutes":
+                    if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int timeoutMinutes) ||
+                        timeoutMinutes <= 0)
+                    {
+                        throw new ArgumentException("--timeout-minutes must be a positive integer.");
+                    }
+
+                    options.TimeoutMinutes = timeoutMinutes;
+                    break;
+                default:
+                    throw new ArgumentException($"Unknown benchmark option '{option}'.");
+            }
+        }
+
+        return options;
+    }
+
+    internal string GetResultsPath(string runId, string benchmark)
+    {
+        string path = ResultsPath
+            .Replace("{runId}", runId, StringComparison.Ordinal)
+            .Replace("{benchmark}", benchmark, StringComparison.OrdinalIgnoreCase)
+            .Replace("{label}", Label, StringComparison.OrdinalIgnoreCase);
+        return Path.GetFullPath(path);
+    }
+
+    private static string GetValue(
+        IReadOnlyList<string> arguments,
+        ref int index,
+        string option)
+    {
+        if (!option.StartsWith("--", StringComparison.Ordinal))
+        {
+            throw new ArgumentException($"Expected an option name, found '{option}'.");
+        }
+
+        index++;
+        if (index >= arguments.Count)
+        {
+            throw new ArgumentException($"Option '{option}' requires a value.");
+        }
+
+        return arguments[index];
     }
 }
 

@@ -1,39 +1,44 @@
 # OrchardCore Pack and Publish Benchmarks
 
-`PackBenchmark` and `PublishBenchmark` are independent BenchmarkDotNet benchmarks:
+The benchmark project contains two independent scenarios:
 
-- `PackBenchmark` measures one configured external `dotnet pack` process per iteration.
-- `PublishBenchmark` measures one configured external `dotnet publish` process per iteration.
+- `PackBenchmark`: one external `dotnet pack` process per iteration.
+- `PublishBenchmark`: one external `dotnet publish` process per iteration.
 
-Each benchmark accepts one SDK configuration. Run it once with the Before configuration and again
-with the After configuration. The benchmark does not execute or compare both states in one process.
+Each scenario measures one SDK configuration. Run it once for Before and once for After, then
+compare the two result CSVs.
 
-Every measured child process records:
+Each measured process records:
 
 - Total process wall-clock time.
-- `dotnet.cli.process_start_to_msbuild_submission.duration`, emitted by the SDK before its first
-  MSBuild invocation.
+- `dotnet.cli.process_start_to_msbuild_submission.duration`.
+- The loaded `Microsoft.DotNet.Cli.Utils` path and SHA-256.
 
-The SDK must contain the metric introduced by
+The SDK under test must contain the metric introduced by
 [dotnet/sdk#55499](https://github.com/dotnet/sdk/pull/55499).
 
-The collector removes its startup-hook environment variables before the CLI starts MSBuild child
-processes. Persistent MSBuild servers and reusable nodes retain their normal behavior and do not
-inherit per-invocation metric output paths.
+## Defaults
 
-## Reproduce the combined optimization measurement
+All benchmark options are optional:
 
-The combined A/B includes:
+| Option | Default |
+| --- | --- |
+| `--dotnet` | `dotnet` resolved from `PATH` |
+| `--orchard-core` | Current directory |
+| `--working-directory` | OrchardCore root |
+| `--label` | `Default` |
+| `--publish-framework` | `net10.0` |
+| `--results` | `BenchmarkDotNet.Artifacts/{benchmark}-{label}-{runId}.csv` |
+| `--timeout-minutes` | `30` |
+| `--pack-targets` | Not set; use the SDK's normal Pack targets |
+| `--pack-props` | Not set; use the SDK's normal Pack task assembly |
 
-- [dotnet/msbuild#14290](https://github.com/dotnet/msbuild/pull/14290), adopted by
-  [dotnet/sdk#55271](https://github.com/dotnet/sdk/pull/55271)
-- [dotnet/sdk#55426](https://github.com/dotnet/sdk/pull/55426)
-- [NuGet/NuGet.Client#7603](https://github.com/NuGet/NuGet.Client/pull/7603), Pack only
+Omitting `--pack-targets` and `--pack-props` measures normal SDK Pack behavior without a NuGet
+target override.
 
-MSBuild#14274 is excluded because OrchardCore solution Pack/Publish did not meaningfully exercise
-that Restore optimization.
+## Combined optimization A/B
 
-Build the two SDK states from these branches:
+The combined comparison uses:
 
 - Before:
   [`dev/veronikao/pack-publish-benchmark-before-pre-partial`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-before-pre-partial)
@@ -41,170 +46,124 @@ Build the two SDK states from these branches:
   [`dev/veronikao/pack-publish-benchmark-after`](https://github.com/OvesN/sdk/tree/dev/veronikao/pack-publish-benchmark-after)
 
 The Before branch starts from `51511d9796875967598c369a822db2637d1704e1`, the parent of SDK
-#55271, and then cherry-picks only the metric and benchmark commits. It therefore uses the original
-full `ProjectInstance` evaluation path with isolated contexts. The After branch uses Properties-only
-evaluation with a Shared context. Both branches contain the benchmark and the
-pre-MSBuild-submission metric.
+#55271, then cherry-picks only the metric and benchmark commits. It uses the original full
+`ProjectInstance` evaluation path and isolated contexts.
 
-Use separate OrchardCore worktrees for Before and After so they do not share `bin` or `obj`:
+The After branch uses Properties-only evaluation and a Shared evaluation context.
 
-```powershell
-git -C C:\OrchardCore worktree add --detach C:\OrchardCore-before `
-  e3f8acb327a95f1dec6e75cefccaef2ad5eefb45
-git -C C:\OrchardCore worktree add --detach C:\OrchardCore-after `
-  e3f8acb327a95f1dec6e75cefccaef2ad5eefb45
-```
+The comparison includes:
 
-Prepare compatible Pack targets separately for each built SDK:
+- [dotnet/msbuild#14290](https://github.com/dotnet/msbuild/pull/14290), adopted by
+  [dotnet/sdk#55271](https://github.com/dotnet/sdk/pull/55271)
+- [dotnet/sdk#55426](https://github.com/dotnet/sdk/pull/55426)
+- [NuGet/NuGet.Client#7603](https://github.com/NuGet/NuGet.Client/pull/7603), Pack only
+
+MSBuild#14274 is excluded because OrchardCore solution Pack/Publish does not meaningfully exercise
+that Restore optimization.
+
+Use separate OrchardCore worktrees for Before and After so they do not share `bin` or `obj`.
+
+## Optional NuGet #7603 target preparation
+
+Prepare compatible Pack targets separately for the Before and After SDK builds:
 
 ```powershell
 .\benchmarks\MicroBenchmark\PrepareNuGetPackTargets.ps1 `
-  -DotNetRoot C:\perf\sdk-before `
-  -OutputDirectory C:\perf\nuget-pack-before
+  -DotNetRoot <before-dotnet-root> `
+  -OutputDirectory <before-nuget-output>
 
 .\benchmarks\MicroBenchmark\PrepareNuGetPackTargets.ps1 `
-  -DotNetRoot C:\perf\sdk-after `
-  -OutputDirectory C:\perf\nuget-pack-after
+  -DotNetRoot <after-dotnet-root> `
+  -OutputDirectory <after-nuget-output>
 ```
 
-The Before run selects `nuget-pack-before\Pack.baseline.targets`. The After run selects
-`nuget-pack-after\Pack.modified.targets`. Each generated `override.props` points to the Pack task
-assembly from its corresponding SDK build.
+For Before, pass `Pack.baseline.targets` and its generated `override.props`. For After, pass
+`Pack.modified.targets` and its generated `override.props`.
 
-## Configuration
-
-Set `DOTNET_SDK_PACK_PUBLISH_BENCHMARK_CONFIG` to one JSON configuration before each run.
+## Run Pack
 
 Before:
 
-```json
-{
-  "label": "Before",
-  "orchardCoreRoot": "C:\\OrchardCore-before",
-  "workingDirectory": "C:\\OrchardCore-before",
-  "publishFramework": "net10.0",
-  "resultsPath": "C:\\perf\\{benchmark}-{label}-{runId}.csv",
-  "dotNetPath": "C:\\perf\\sdk-before\\dotnet.exe",
-  "environmentVariables": {
-    "DOTNET_ROOT": "C:\\perf\\sdk-before",
-    "DOTNET_ROOT_X64": "C:\\perf\\sdk-before"
-  },
-  "packArguments": [
-    "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack-before\\override.props",
-    "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack-before\\Pack.baseline.targets"
-  ],
-  "publishArguments": [],
-  "timeoutMinutes": 30
-}
+```powershell
+dotnet run --project benchmarks\MicroBenchmark\MicroBenchmark.csproj -c Release -- `
+  --pack `
+  --dotnet <before-dotnet-executable> `
+  --orchard-core <before-orchardcore-worktree> `
+  --label Before `
+  --pack-targets <before-nuget-output>\Pack.baseline.targets `
+  --pack-props <before-nuget-output>\override.props `
+  --results <results-directory>\pack-Before-{runId}.csv
 ```
 
 After:
 
-```json
-{
-  "label": "After",
-  "orchardCoreRoot": "C:\\OrchardCore-after",
-  "workingDirectory": "C:\\OrchardCore-after",
-  "publishFramework": "net10.0",
-  "resultsPath": "C:\\perf\\{benchmark}-{label}-{runId}.csv",
-  "dotNetPath": "C:\\perf\\sdk-after\\dotnet.exe",
-  "environmentVariables": {
-    "DOTNET_ROOT": "C:\\perf\\sdk-after",
-    "DOTNET_ROOT_X64": "C:\\perf\\sdk-after"
-  },
-  "packArguments": [
-    "-p:CustomBeforeMicrosoftCommonProps=C:\\perf\\nuget-pack-after\\override.props",
-    "-p:NuGetBuildTasksPackTargets=C:\\perf\\nuget-pack-after\\Pack.modified.targets"
-  ],
-  "publishArguments": [],
-  "timeoutMinutes": 30
-}
+```powershell
+dotnet run --project benchmarks\MicroBenchmark\MicroBenchmark.csproj -c Release -- `
+  --pack `
+  --dotnet <after-dotnet-executable> `
+  --orchard-core <after-orchardcore-worktree> `
+  --label After `
+  --pack-targets <after-nuget-output>\Pack.modified.targets `
+  --pack-props <after-nuget-output>\override.props `
+  --results <results-directory>\pack-After-{runId}.csv
 ```
 
-Paths may be absolute or relative to the configuration file. A `null` environment-variable value
-removes an inherited value.
+To measure normal Pack behavior without a NuGet override, omit `--pack-targets` and `--pack-props`.
 
-The results path supports:
+## Run Publish
 
-- `{benchmark}`: `pack` or `publish`
-- `{label}`: the configured label
-- `{runId}`: a unique identifier generated by the benchmark host
-
-## Run Pack twice
+Before:
 
 ```powershell
-$env:DOTNET_SDK_PACK_PUBLISH_BENCHMARK_CONFIG = "C:\perf\before.json"
-.\.dotnet\dotnet.exe run `
-  --project benchmarks\MicroBenchmark\MicroBenchmark.csproj `
-  -c Release -- --pack
-
-$env:DOTNET_SDK_PACK_PUBLISH_BENCHMARK_CONFIG = "C:\perf\after.json"
-.\.dotnet\dotnet.exe run `
-  --project benchmarks\MicroBenchmark\MicroBenchmark.csproj `
-  -c Release -- --pack
+dotnet run --project benchmarks\MicroBenchmark\MicroBenchmark.csproj -c Release -- `
+  --publish `
+  --dotnet <before-dotnet-executable> `
+  --orchard-core <before-orchardcore-worktree> `
+  --label Before `
+  --results <results-directory>\publish-Before-{runId}.csv
 ```
 
-## Run Publish twice
+After:
 
 ```powershell
-$env:DOTNET_SDK_PACK_PUBLISH_BENCHMARK_CONFIG = "C:\perf\before.json"
-.\.dotnet\dotnet.exe run `
-  --project benchmarks\MicroBenchmark\MicroBenchmark.csproj `
-  -c Release -- --publish
-
-$env:DOTNET_SDK_PACK_PUBLISH_BENCHMARK_CONFIG = "C:\perf\after.json"
-.\.dotnet\dotnet.exe run `
-  --project benchmarks\MicroBenchmark\MicroBenchmark.csproj `
-  -c Release -- --publish
+dotnet run --project benchmarks\MicroBenchmark\MicroBenchmark.csproj -c Release -- `
+  --publish `
+  --dotnet <after-dotnet-executable> `
+  --orchard-core <after-orchardcore-worktree> `
+  --label After `
+  --results <results-directory>\publish-After-{runId}.csv
 ```
 
-Validate one process without running a complete job:
+## Smoke commands
 
-```powershell
-.\.dotnet\dotnet.exe run `
-  --project benchmarks\MicroBenchmark\MicroBenchmark.csproj `
-  -c Release -- --pack-smoke
+Replace `--pack` with `--pack-smoke`, or `--publish` with `--publish-smoke`, to execute one measured
+child process without a complete BenchmarkDotNet job.
 
-.\.dotnet\dotnet.exe run `
-  --project benchmarks\MicroBenchmark\MicroBenchmark.csproj `
-  -c Release -- --publish-smoke
-```
+## Benchmark behavior
 
-Each complete benchmark performs:
+Each complete run performs:
 
 - Restore and Release Build preparation outside measurement.
 - Three warmup iterations.
 - Twelve measured iterations.
-- Implicit Restore and a no-op Build in every measured command.
+- Implicit Restore and a no-op Build in measured commands.
 - Default MSBuild Server and node-reuse behavior.
-- BenchmarkDotNet's high-performance power plan while the benchmark runs.
+- BenchmarkDotNet's high-performance power plan for the run.
 
 Pack uses the full `OrchardCore.slnx`. Publish generates a solution containing projects under
 `src/OrchardCore.Modules` and `src/OrchardCore.Themes`.
 
-## Report results
-
-For each CSV, filter to `Phase=Measured`. Compare the Before and After files for the same benchmark:
-
-- Median `TotalDurationSeconds`.
-- Median `PreSubmissionDurationSeconds`.
-- Absolute and percentage median reductions.
-- Exact SDK, NuGet, and OrchardCore commit SHAs.
-
-Use the included comparison script:
+## Compare results
 
 ```powershell
 .\benchmarks\MicroBenchmark\CompareCommandBenchmarkResults.ps1 `
-  -BeforeCsv C:\perf\pack-Before-<runId>.csv `
-  -AfterCsv C:\perf\pack-After-<runId>.csv
+  -BeforeCsv <pack-before-csv> `
+  -AfterCsv <pack-after-csv>
 
 .\benchmarks\MicroBenchmark\CompareCommandBenchmarkResults.ps1 `
-  -BeforeCsv C:\perf\publish-Before-<runId>.csv `
-  -AfterCsv C:\perf\publish-After-<runId>.csv
+  -BeforeCsv <publish-before-csv> `
+  -AfterCsv <publish-after-csv>
 ```
 
-BenchmarkDotNet's report now represents one external command per iteration, so its wall-clock
-median should agree with the CSV's `TotalDurationSeconds` median.
-
-Keep the raw CSV and BenchmarkDotNet artifacts. Do not infer evaluation counts from either timing
-metric; collect MSBuild evaluation counters separately when required.
+The script reports median total wall-clock and pre-submission durations, plus absolute and
+percentage reductions.
