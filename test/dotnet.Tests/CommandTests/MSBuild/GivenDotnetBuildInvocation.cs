@@ -82,8 +82,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(LoggerFileBasedBuildData))]
+        [TestMethod]
+        [DynamicData(nameof(LoggerFileBasedBuildData))]
         public void LoggerOptionDoesNotPreventFileBasedBuild(string commandName, string[] args)
         {
             var workingDirectory = Path.Join(Path.GetTempPath(), Path.GetRandomFileName());
