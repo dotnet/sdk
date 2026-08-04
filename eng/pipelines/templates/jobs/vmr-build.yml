@@ -118,8 +118,6 @@ jobs:
     condition: succeededOrFailed()
     dependsOn: ${{ parameters.reuseBuildArtifactsFrom }}_${{ parameters.architecture }}
   variables:
-  - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-    - group: AzureDevOps-Artifact-Feeds-Pats
   - ${{ if and(not(parameters.isBuiltFromVmr), eq(variables['System.TeamProject'], 'internal'), not(startswith(parameters.vmrBranch, 'internal/release/')), ne(variables['Build.Reason'], 'PullRequest')) }}:
     - group: DotNetBot-GitHub
   - ${{ else }}:
@@ -180,6 +178,26 @@ jobs:
 
     # Synchronize new content in the VMR during PRs (we expect this to come
     - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+      - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
+        - task: AzureCLI@2
+          displayName: 'Mint AzDO token for VMR push'
+          inputs:
+            azureSubscription: 'dnceng-build-rw-code-rw-wif'
+            scriptType: 'pscore'
+            scriptLocation: 'inlineScript'
+            inlineScript: |
+              $token = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
+              if ($LASTEXITCODE -ne 0) {
+                Write-Error "Failed to acquire Azure DevOps access token via 'az account get-access-token'. Exit code: $LASTEXITCODE"
+                exit 1
+              }
+              $token = $token.Trim()
+              if ([string]::IsNullOrWhiteSpace($token)) {
+                Write-Error "Received an empty or whitespace Azure DevOps access token from 'az account get-access-token'."
+                exit 1
+              }
+              Write-Host "##vso[task.setvariable variable=AzdoToken;issecret=true]$token"        
+
       - template: ../steps/vmr-pull-updates.yml@self
         parameters:
           vmrPath: $(vmrPath)
@@ -392,27 +410,15 @@ jobs:
             filePath: $(sourcesPath)/src/sdk/eng/common/SetupNugetSources.sh
             arguments: $(sourcesPath)/src/sdk/NuGet.config $Token
           env:
-            Token: $(dn-bot-dnceng-artifact-feeds-rw)
+            # The smoke tests restore from internal darc-int feeds while running inside a container, so the
+            # Azure Artifacts credential provider on the host agent is unreachable. Instead, embed a valid
+            # credential directly into the test NuGet.config. The dn-bot-dnceng-artifact-feeds-rw PAT has been
+            # retired in favor of PAT-less auth, so use the pipeline's OAuth token, which is the same identity
+            # a service-connection-less NuGetAuthenticate uses to authenticate to these dnceng/internal feeds.
+            Token: $(System.AccessToken)
 
         - script: cp "$(sourcesPath)/src/sdk/NuGet.config" "$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
           displayName: Copy Test NuGet Config for Smoke Tests
-
-      - ${{ else }}:
-        - task: Bash@3
-          displayName: Add aspnetcore public feed for smoke tests
-          inputs:
-            targetType: inline
-            script: |
-              set -euo pipefail
-
-              ONLINE_CONFIG="$(sourcesPath)/test/Microsoft.DotNet.SourceBuild.SmokeTests/assets/online.NuGet.Config"
-              FEED_KEY="darc-pub-dotnet-aspnetcore-3c5c32a7"
-              FEED_URL="https://pkgs.dev.azure.com/dnceng/public/_packaging/darc-pub-dotnet-aspnetcore-3c5c32a7/nuget/v3/index.json"
-
-              # Add only if missing. Do not touch disabledPackageSources.
-              if ! grep -qi "<add key=\"$FEED_KEY\"" "$ONLINE_CONFIG"; then
-                sed -i.bak "s|</packageSources>|    <add key=\"$FEED_KEY\" value=\"$FEED_URL\" />\n  </packageSources>|" "$ONLINE_CONFIG"
-              fi
 
       - script: |
           set -ex

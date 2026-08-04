@@ -1,4 +1,4 @@
-### These steps clone the VMR (https://github.com/dotnet/dotnet) into $(Agent.BuildDirectory)/vmr for installer
+### These steps clone the VMR (https://github.com/dotnet/dotnet) into $(Agent.BuildDirectory)/vmr for sdk
 
 parameters:
 - name: vmrBranch
