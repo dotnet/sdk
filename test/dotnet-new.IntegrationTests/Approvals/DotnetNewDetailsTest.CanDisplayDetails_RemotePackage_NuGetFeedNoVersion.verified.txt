@@ -1,8 +1,11 @@
-﻿Microsoft.Android.Templates
+Microsoft.Android.Templates
    Package version: %VERSION%
-   Details: 
-   Source Feed: NuGet.org [https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json]
+   Details: Templates for Android platforms.
+   Source Feed: https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json
    Authors:
       Microsoft
    License Metadata:
-      License Expression: MIT
+      License Url: https://pkgs.dev.azure.com/9ee6d478-d288-47f7-aacc-f6e6d082ae6d/_packaging/45bacae2-5efb-47c8-91e5-8ec20c22b4f8/nuget/v3/flat2/microsoft.android.templates/%VERSION%/microsoft.android.templates.%VERSION%.nupkg?extract=LICENSE.TXT
+      Repository Url: https://dot.net/
+   Templates:
+      %TEMPLATES%

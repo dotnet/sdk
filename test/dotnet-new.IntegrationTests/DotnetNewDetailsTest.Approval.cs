@@ -34,16 +34,30 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         public Task CanDisplayDetails_RemotePackage_NuGetFeedNoVersion()
         {
             var folder = CreateTemporaryFolder();
-            var emptySource = CreateTemporaryFolder();
 
-            var createCommandResult = (string source) => new DotnetNewCommand(_log, "details", _nuGetPackageId, "--nuget-source", source)
+            // Write a NuGet.Config that clears all globally-configured sources so that
+            // the first call (which omits --nuget-source) cannot fall back to any feed
+            // that already carries the package (e.g. a CI-wide dotnet11 feed).
+            // This makes the "must fail" assertion deterministic across environments.
+            File.WriteAllText(Path.Combine(folder, "NuGet.Config"), @"<?xml version=""1.0"" encoding=""utf-8""?>
+<configuration>
+  <packageSources>
+    <clear />
+  </packageSources>
+</configuration>
+");
+
+            new DotnetNewCommand(_log, "details", _nuGetPackageId)
+                .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
+                .WithWorkingDirectory(folder)
+                .Execute()
+                .Should()
+                .Fail();
+
+            var commandResult = new DotnetNewCommand(_log, "details", _nuGetPackageId, "--nuget-source", "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json")
                 .WithCustomHive(CreateTemporaryFolder(folderName: "Home"))
                 .WithWorkingDirectory(folder)
                 .Execute();
-
-            createCommandResult(emptySource).Should().Fail();
-
-            var commandResult = createCommandResult("https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json");
 
             commandResult.Should().Pass();
 
@@ -51,6 +65,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .AddScrubber(output =>
                 {
                     output.ScrubByRegex(@"^   Package version:.*$", "   Package version: %VERSION%", RegexOptions.Multiline);
+                    output.ScrubByRegex(@"(microsoft\.android\.templates/)[^/]+/", "$1%VERSION%/");
                     // Template list varies between package versions on the public feed;
                     // keep only the header and scrub the table contents.
                     int idx = output.ToString().IndexOf("   Templates:");
