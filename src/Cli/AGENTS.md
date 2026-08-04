@@ -4,21 +4,20 @@ Guidance for changes under `src/Cli`.
 
 ## SDK process entry points
 
-SDK-owned CLI code can begin executing through three conceptually equal entry points:
+SDK-owned CLI code has three process entry points of equal importance:
 
 | Entry point | Source | Host and lifecycle |
 |-------------|--------|--------------------|
-| Managed CLI | `dotnet/Program.cs` | CoreCLR process; normal `Program.Main` startup and process shutdown. |
-| Native AOT CLI | `dotnet-aot/NativeEntryPoint.cs` | Native host calls the exported `dotnet_execute`; unsupported operations can fall through to the managed CLI. |
-| MSBuild logger | `dotnet/Commands/MSBuild/MSBuildLogger.cs` | MSBuild loads the SDK assembly as an `INodeLogger` through the `-distributedlogger` argument added by `MSBuildForwardingApp`. It can run inside the CLI process, a child MSBuild process, or a persistent MSBuild server. |
+| Managed CLI | `dotnet/Program.cs` | CoreCLR calls `Program.Main`. The process ends after the command completes. |
+| Native AOT CLI | `dotnet-aot/NativeEntryPoint.cs` | The native host calls the exported `dotnet_execute`. Unsupported operations can continue in the managed CLI. |
+| MSBuild logger | `dotnet/Commands/MSBuild/MSBuildLogger.cs` | MSBuild loads the SDK assembly as an `INodeLogger`. `MSBuildForwardingApp` adds the `-distributedlogger` argument. The logger can run in the CLI process, a child process, or a persistent server. |
 
-Treat the logger as an independent entry point, not as code that necessarily runs beneath
-managed `Program.Main` or the Native AOT bootstrap in the same process. Any process-wide
-state it uses, including telemetry and tracing, must initialize correctly when MSBuild
-loads it directly. Use `BuildStarted`/`BuildFinished` for request-scoped state and
-`Shutdown` for logger-instance completion; it does not imply process exit. A persistent
-server can execute multiple builds in the same process, with different environment and
-trace context for each request.
+Treat the logger as an independent entry point. Do not assume that it runs after managed
+`Program.Main` or the Native AOT bootstrap. Initialize process-wide telemetry and tracing
+when MSBuild loads the logger directly. Use `BuildStarted` and `BuildFinished` for
+request-specific state. `Shutdown` completes one logger instance. It does not necessarily
+end the process. Refresh the environment and trace context for each persistent-server
+request.
 
 ## Three-project command split
 

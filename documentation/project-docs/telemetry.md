@@ -274,13 +274,13 @@ Every telemetry event automatically includes these common properties:
 
 ### SDK-Collected Build Events
 
-These existing events are collected by
-[`MSBuildLogger`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs), which MSBuild
-loads from the SDK as a distributed logger. The logger can run inside the CLI process, in
-a child MSBuild process, or in a persistent MSBuild server. Each build gets its own
-internal activity, parented to the invoking CLI trace when context is available, so server
-reuse changes only telemetry delivery and correlation, not the data points or properties
-listed below.
+[`MSBuildLogger`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) collects the
+existing events below. MSBuild loads the logger from the SDK. The logger can run in the
+CLI process, a child MSBuild process, or a persistent MSBuild server.
+
+The logger creates an internal activity for each build. When trace context is available,
+the activity is a child of the invoking CLI trace. Server reuse changes telemetry delivery
+and correlation only. It does not change the listed data points or properties.
 
 #### `msbuild/targetframeworkeval`
 
