@@ -170,6 +170,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             if (request.Headers.TryGetValue("Sec-Fetch-Dest", out var values) &&
                 !StringValues.IsNullOrEmpty(values) &&
                 !string.Equals(values[0], "document", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "frame", StringComparison.OrdinalIgnoreCase) &&
+                !string.Equals(values[0], "iframe", StringComparison.OrdinalIgnoreCase) &&
                 !IsProgressivelyEnhancedNavigation(context.Request))
             {
                 // See https://github.com/dotnet/aspnetcore/issues/37326.
