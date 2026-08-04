@@ -204,7 +204,7 @@ public class BuildProjects
         var dir = TestAssetsManager.CreateTestDirectory(identifiers: [nonInteractive]);
         var file1 = Path.Combine(dir.Path, "File1.cs");
         File.WriteAllText(file1, """
-            #:property TargetFramework=net9.0
+            #:property TargetFramework=   net9.0    
             Console.WriteLine(1);
             """);
 

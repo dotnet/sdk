@@ -2327,13 +2327,14 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:property Prop1=One=a/b
-                #:property Prop2=Two/a=b
-                #:sdk First@1.0=a/b
-                #:sdk Second@2.0/a=b
-                #:sdk Third@3.0=a/b
-                #:package P1@1.0/a=b
-                #:package P2@2.0/a=b
+                #:property Prop1 = One=a/b
+                #:property Prop2 = Two/a=b
+                #:sdk First @ 1.0=a/b
+                #:sdk Second @ 2.0/a=b
+                #:sdk Third @ 3.0=a/b
+                #:package P1 @ 1.0/a=b
+                #:package P2 @ 2.0/a=b
+                #:package P3@1.0 ab
                 """,
             expectedProject: $"""
                 <Project Sdk="First/1.0=a/b">
@@ -2355,45 +2356,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                   <ItemGroup>
                     <PackageReference Include="P1" Version="1.0/a=b" />
                     <PackageReference Include="P2" Version="2.0/a=b" />
-                  </ItemGroup>
-
-                </Project>
-
-                """,
-            expectedCSharp: "");
-    }
-
-    [TestMethod]
-    public void Directives_WhitespaceLegacy()
-    {
-        // Unquoted whitespace inside a directive value is accepted as a deprecated "legacy" form
-        // (it was valid before quoting/metadata support was added) so no breaking change occurs.
-        // A separate analyzer flags it and offers a code fix to the quoted form.
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        VerifyConversion(
-            baseDirectory: testInstance.Path,
-            inputCSharp: """
-                #:property Prop = Value
-                #:sdk First @ 1.0
-                #:package P1 @ 1.0
-                #:package P2@1.0 ExtraToken
-                """,
-            expectedProject: $"""
-                <Project Sdk="First/1.0">
-
-                  <PropertyGroup>
-                    <OutputType>Exe</OutputType>
-                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
-                    <ImplicitUsings>enable</ImplicitUsings>
-                    <Nullable>enable</Nullable>
-                    <PublishAot>true</PublishAot>
-                    <PackAsTool>true</PackAsTool>
-                    <Prop>Value</Prop>
-                  </PropertyGroup>
-
-                  <ItemGroup>
-                    <PackageReference Include="P1" Version="1.0" />
-                    <PackageReference Include="P2" Version="1.0 ExtraToken" />
+                    <PackageReference Include="P3" Version="1.0 ab" />
                   </ItemGroup>
 
                 </Project>
@@ -2703,10 +2666,13 @@ public sealed class DotnetProjectConvertTests : SdkTest
 
     [TestMethod]
     [DataRow("sdk", "@", "/")]
+    [DataRow("sdk", "@", " ")]
     [DataRow("sdk", "@", "=")]
     [DataRow("package", "@", "/")]
+    [DataRow("package", "@", " ")]
     [DataRow("package", "@", "=")]
     [DataRow("property", "=", "/")]
+    [DataRow("property", "=", " ")]
     [DataRow("property", "=", "@")]
     public void Directives_InvalidName(string directiveKind, string expectedSeparator, string actualSeparator)
     {
@@ -2766,7 +2732,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             baseDirectory: testInstance.Path,
             inputCSharp: """
                     #:   sdk   TestSdk
-                #:property Name=Value
+                #:property Name  =  Value   
                 #:property NugetPackageDescription="My package with spaces"
                  #  !  /test
                   #!  /program   x   

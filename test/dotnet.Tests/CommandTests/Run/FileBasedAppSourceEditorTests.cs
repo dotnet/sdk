@@ -18,7 +18,7 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
 
     [TestMethod]
     [DataRow("#:package MyPackage@1.0.1")]
-    [DataRow("#:package   MyPackage@abc")]
+    [DataRow("#:package   MyPackage @ abc")]
     [DataRow("#:package MYPACKAGE")]
     public void ReplaceExisting(string inputLine)
     {
