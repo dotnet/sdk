@@ -505,6 +505,30 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItSetsDotnetHostPathForDirectDeviceTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "DotnetHostPath")
+            .WithSource();
+
+        new DotnetCommand(Log, "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:Device=test-device-1")
+            .Should().Pass();
+
+        var command = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path);
+        command.EnvironmentToRemove.Add("DOTNET_HOST_PATH");
+
+        command.Execute(
+            "--framework",
+            ToolsetInfo.CurrentTargetFramework,
+            "--device",
+            "test-device-1",
+            "--no-build")
+            .Should().Pass();
+    }
+
+    [TestMethod]
     public void ItCallsDeployToDeviceTargetEvenWithNoBuild()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "NoBuildDeploy")

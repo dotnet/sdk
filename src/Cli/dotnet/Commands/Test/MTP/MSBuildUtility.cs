@@ -33,6 +33,8 @@ internal static class MSBuildUtility
         BuildOptions buildOptions,
         MSBuildSession buildSession)
     {
+        using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
         int buildExitCode = BuildOrRestoreProjectOrSolution(solutionFilePath, buildOptions);
 
         if (buildExitCode != 0)
@@ -83,6 +85,8 @@ internal static class MSBuildUtility
         BuildOptions buildOptions,
         MSBuildSession buildSession)
     {
+        using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
         var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(

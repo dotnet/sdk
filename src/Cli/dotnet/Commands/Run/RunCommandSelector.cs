@@ -199,6 +199,8 @@ internal sealed class RunCommandSelector : IDisposable
         {
             try
             {
+                using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
                 // The global properties are passed explicitly rather than taken from the collection:
                 // they change as the target framework and the device get selected, and the collection
                 // is shared with the projects of the rest of the command.
@@ -227,9 +229,15 @@ internal sealed class RunCommandSelector : IDisposable
     /// </summary>
     [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     private bool BuildTargets(ProjectInstance projectInstance, string[] targets, out IDictionary<string, TargetResult> targetOutputs)
-        => _buildSession is { } buildSession
-            ? buildSession.Build(projectInstance, targets, out targetOutputs)
-            : projectInstance.Build(targets, GetLoggers(), remoteLoggers: null, out targetOutputs);
+    {
+        if (_buildSession is { } buildSession)
+        {
+            return buildSession.Build(projectInstance, targets, out targetOutputs);
+        }
+
+        using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+        return projectInstance.Build(targets, GetLoggers(), remoteLoggers: null, out targetOutputs);
+    }
 
     public void Dispose()
     {
@@ -262,7 +270,10 @@ internal sealed class RunCommandSelector : IDisposable
         // built in the same session as the rest of the command.
         var restoreProperties = new Dictionary<string, string>(_globalProperties, StringComparer.OrdinalIgnoreCase);
         restoreProperties.Remove("TargetFramework");
-        _restoreProject = Collection.LoadProject(_projectFilePath, restoreProperties, toolsVersion: null);
+        using (MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables())
+        {
+            _restoreProject = Collection.LoadProject(_projectFilePath, restoreProperties, toolsVersion: null);
+        }
         return _restoreProject.CreateProjectInstance();
     }
 

@@ -55,6 +55,8 @@ internal sealed class MSBuildSession : IDisposable
     {
         _msbuildArgs = msbuildArgs;
         _logger = logger;
+        using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
         // Deliberately without global properties: MSBuild merges the global properties of a collection
         // into every project loaded from it, and the projects of a command do not all want the same ones
         // (restore, for instance, must run without the TargetFramework the rest of the command uses -
@@ -95,6 +97,7 @@ internal sealed class MSBuildSession : IDisposable
         lock (_lock)
         {
             ObjectDisposedException.ThrowIf(_disposed, this);
+            using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
             // Every ProjectInstance.Build call used to be its own build, which meant a fresh results
             // cache each time. Within a single session MSBuild would instead serve a second request
