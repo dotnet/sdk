@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Commands.Test;
@@ -13,6 +14,20 @@ namespace dotnet.Tests.CommandTests.Test;
 [TestClass]
 public class TerminalTestReporterTests
 {
+    [TestMethod]
+    public void AnsiTerminal_StopUpdate_WritesStringBuilder()
+    {
+        var console = new Mock<IConsole>(MockBehavior.Strict);
+        console.Setup(c => c.Write(It.IsAny<StringBuilder>()));
+        var terminal = new AnsiTerminal(console.Object, baseDirectory: null);
+
+        terminal.StartUpdate();
+        terminal.Append("batched output");
+        terminal.StopUpdate();
+
+        console.Verify(c => c.Write(It.Is<StringBuilder>(builder => builder.ToString() == "batched output")), Times.Once);
+    }
+
     /// <summary>
     /// Regression test for https://github.com/dotnet/sdk/issues/51608: if a test host process exits
     /// before the test session was ever started (so the execution id is never registered with the
