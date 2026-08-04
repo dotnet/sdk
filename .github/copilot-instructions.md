@@ -175,7 +175,8 @@ manually edit:
 ### Preserve CI telemetry correlation
 
 Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point. Set
-the variable at the workflow or pipeline scope. Use the applicable value without changes:
+the variable at the workflow or pipeline scope. Job scope is valid for a single-job
+workflow. Use the applicable value without changes:
 
 - GitHub Actions:
   `gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}`

@@ -179,9 +179,9 @@ taskkill /F /IM msbuild.exe /T
 ## CI workflow telemetry correlation
 
 Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point.
-Set the variable at the workflow or pipeline scope. The CLI uses this value to correlate
-telemetry from separate `dotnet` processes in one run. All steps inherit the value from
-the shared scope.
+Set the variable at the workflow or pipeline scope. You can use job scope in a
+single-job workflow. The CLI uses this value to correlate telemetry from separate
+`dotnet` processes in one run.
 
 Use this value in GitHub Actions workflows under
 [`.github/workflows`](../../.github/workflows):
