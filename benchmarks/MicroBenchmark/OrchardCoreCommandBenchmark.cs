@@ -113,9 +113,6 @@ public abstract class OrchardCoreCommandBenchmark
                 $"Working directory does not reference an existing directory: '{workingDirectory}'.");
         }
 
-        string? packTargetsPath = ResolveOptionalFile(options.PackTargetsPath, "--pack-targets");
-        string? packPropsPath = ResolveOptionalFile(options.PackPropsPath, "--pack-props");
-
         string? generatedPublishSolutionPath = null;
         string solutionPath = fullSolutionPath;
         if (IsPublish)
@@ -129,8 +126,6 @@ public abstract class OrchardCoreCommandBenchmark
             workingDirectory,
             solutionPath,
             generatedPublishSolutionPath,
-            packTargetsPath,
-            packPropsPath,
             TimeSpan.FromMinutes(options.TimeoutMinutes));
     }
 
@@ -174,21 +169,6 @@ public abstract class OrchardCoreCommandBenchmark
             arguments.Add("-f");
             arguments.Add(_options.PublishFramework);
         }
-        else
-        {
-            if (_configuration.PackPropsPath is not null)
-            {
-                arguments.Add(
-                    $"-p:CustomBeforeMicrosoftCommonProps={_configuration.PackPropsPath}");
-            }
-
-            if (_configuration.PackTargetsPath is not null)
-            {
-                arguments.Add(
-                    $"-p:NuGetBuildTasksPackTargets={_configuration.PackTargetsPath}");
-            }
-        }
-
         return RunProcessAsync(arguments, CommandName);
     }
 
@@ -371,20 +351,6 @@ public abstract class OrchardCoreCommandBenchmark
                 $"dotnet executable does not reference an existing file: '{fullPath}'.");
     }
 
-    private static string? ResolveOptionalFile(string? path, string optionName)
-    {
-        if (string.IsNullOrWhiteSpace(path))
-        {
-            return null;
-        }
-
-        string fullPath = ResolvePath(path);
-        return File.Exists(fullPath)
-            ? fullPath
-            : throw new InvalidDataException(
-                $"{optionName} does not reference an existing file: '{fullPath}'.");
-    }
-
     private static string ResolvePath(string path) => Path.GetFullPath(path);
 
     private static string TakeTail(string value)
@@ -403,8 +369,6 @@ public abstract class OrchardCoreCommandBenchmark
         string WorkingDirectory,
         string SolutionPath,
         string? GeneratedPublishSolutionPath,
-        string? PackTargetsPath,
-        string? PackPropsPath,
         TimeSpan Timeout);
 
     private sealed record ProcessMeasurement(
@@ -474,8 +438,6 @@ internal sealed class CommandBenchmarkOptions
     internal string PublishFramework { get; private set; } = "net10.0";
     internal string ResultsPath { get; private set; } =
         Path.Combine("BenchmarkDotNet.Artifacts", "{benchmark}-{label}-{runId}.csv");
-    internal string? PackTargetsPath { get; private set; }
-    internal string? PackPropsPath { get; private set; }
     internal int TimeoutMinutes { get; private set; } = 30;
 
     internal static CommandBenchmarkOptions Parse(IReadOnlyList<string> arguments)
@@ -504,12 +466,6 @@ internal sealed class CommandBenchmarkOptions
                     break;
                 case "--results":
                     options.ResultsPath = value;
-                    break;
-                case "--pack-targets":
-                    options.PackTargetsPath = value;
-                    break;
-                case "--pack-props":
-                    options.PackPropsPath = value;
                     break;
                 case "--timeout-minutes":
                     if (!int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int timeoutMinutes) ||

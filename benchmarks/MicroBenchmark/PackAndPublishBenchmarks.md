@@ -30,11 +30,6 @@ All benchmark options are optional:
 | `--publish-framework` | `net10.0` |
 | `--results` | `BenchmarkDotNet.Artifacts/{benchmark}-{label}-{runId}.csv` |
 | `--timeout-minutes` | `30` |
-| `--pack-targets` | Not set; use the SDK's normal Pack targets |
-| `--pack-props` | Not set; use the SDK's normal Pack task assembly |
-
-Omitting `--pack-targets` and `--pack-props` measures normal SDK Pack behavior without a NuGet
-target override.
 
 ## Combined optimization A/B
 
@@ -56,32 +51,11 @@ The comparison includes:
 - [dotnet/msbuild#14290](https://github.com/dotnet/msbuild/pull/14290), adopted by
   [dotnet/sdk#55271](https://github.com/dotnet/sdk/pull/55271)
 - [dotnet/sdk#55426](https://github.com/dotnet/sdk/pull/55426)
-- [NuGet/NuGet.Client#7603](https://github.com/NuGet/NuGet.Client/pull/7603), Pack only
 
 MSBuild#14274 is excluded because OrchardCore solution Pack/Publish does not meaningfully exercise
 that Restore optimization.
 
 Use separate OrchardCore worktrees for Before and After so they do not share `bin` or `obj`.
-
-## Optional NuGet #7603 target preparation
-
-Prepare compatible Pack targets separately for the Before and After SDK builds:
-
-```powershell
-.\benchmarks\MicroBenchmark\PrepareNuGetPackTargets.ps1 `
-  -DotNetRoot <before-dotnet-root> `
-  -OutputDirectory <before-nuget-output>
-
-.\benchmarks\MicroBenchmark\PrepareNuGetPackTargets.ps1 `
-  -DotNetRoot <after-dotnet-root> `
-  -OutputDirectory <after-nuget-output>
-```
-
-For Before, pass `Pack.baseline.targets` and its generated `override.props`. For After, pass
-`Pack.modified.targets` and its generated `override.props`.
-
-The script discovers the SDK directory containing the Pack targets and task assembly. If a redist
-contains more than one matching SDK, pass `-SdkVersion <version>`.
 
 ## Run Pack
 
@@ -93,8 +67,6 @@ dotnet run --project benchmarks\MicroBenchmark\MicroBenchmark.csproj -c Release 
   --dotnet <before-dotnet-executable> `
   --orchard-core <before-orchardcore-worktree> `
   --label Before `
-  --pack-targets <before-nuget-output>\Pack.baseline.targets `
-  --pack-props <before-nuget-output>\override.props `
   --results <results-directory>\pack-Before-{runId}.csv
 ```
 
@@ -106,12 +78,8 @@ dotnet run --project benchmarks\MicroBenchmark\MicroBenchmark.csproj -c Release 
   --dotnet <after-dotnet-executable> `
   --orchard-core <after-orchardcore-worktree> `
   --label After `
-  --pack-targets <after-nuget-output>\Pack.modified.targets `
-  --pack-props <after-nuget-output>\override.props `
   --results <results-directory>\pack-After-{runId}.csv
 ```
-
-To measure normal Pack behavior without a NuGet override, omit `--pack-targets` and `--pack-props`.
 
 ## Run Publish
 
