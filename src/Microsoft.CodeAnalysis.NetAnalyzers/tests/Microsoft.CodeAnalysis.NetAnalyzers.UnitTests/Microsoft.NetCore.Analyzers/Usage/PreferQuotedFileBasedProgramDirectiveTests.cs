@@ -13,8 +13,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
     [TestClass]
     public class PreferQuotedFileBasedProgramDirectiveTests
     {
-        private const string GlobalConfig = "is_global = true\r\nbuild_property.EntryPointFilePath = Test0.cs";
-
         private static DiagnosticResult Expected(string kind, int line = 1)
             => new DiagnosticResult(PreferQuotedFileBasedProgramDirective.Rule).WithLocation("Test0.cs", line, 1).WithArguments(kind);
 
@@ -32,7 +30,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Program { static void Main() { } }
                             """),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                     ExpectedDiagnostics = { Expected("property") },
                 },
                 FixedState =
@@ -64,7 +61,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Program { static void Main() { } }
                             """),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                     ExpectedDiagnostics = { Expected("property") },
                 },
                 FixedState =
@@ -100,7 +96,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Program { static void Main() { } }
                             """),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                     ExpectedDiagnostics = { Expected(kind) },
                 },
                 FixedState =
@@ -134,7 +129,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Program { static void Main() { } }
                             """),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                     ExpectedDiagnostics = { Expected(kind) },
                 },
                 FixedState =
@@ -167,7 +161,6 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Program { static void Main() { } }
                             """),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                     ExpectedDiagnostics =
                     {
                         Expected("property", line: 1),
@@ -211,16 +204,15 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Program { static void Main() { } }
                             """),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
                 },
                 SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
-        public async Task NoEntryPointFilePath_NoDiagnosticAsync()
+        public async Task NoEntryPointFilePath_StillFiresAsync()
         {
-            // Not a file-based program (no EntryPointFilePath), so the analyzer does nothing.
+            // The analyzer inspects every ignored directive trivia regardless of EntryPointFilePath.
             await new VerifyCS.Test
             {
                 TestState =
@@ -232,15 +224,27 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Program { static void Main() { } }
                             """),
                     },
+                    ExpectedDiagnostics = { Expected("property") },
                 },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            #:property Description="Hello World"
+                            class Program { static void Main() { } }
+                            """),
+                    },
+                },
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
-        public async Task DirectiveInNonEntryPointFile_NoDiagnosticAsync()
+        public async Task DirectiveInNonEntryPointFile_StillFiresAsync()
         {
-            // The legacy directive is in a file that is not the entry point.
+            // A legacy directive in any file is flagged, not only the entry point.
             await new VerifyCS.Test
             {
                 TestState =
@@ -253,8 +257,23 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             class Other { }
                             """),
                     },
-                    AnalyzerConfigFiles = { ("/.globalconfig", GlobalConfig) },
+                    ExpectedDiagnostics =
+                    {
+                        new DiagnosticResult(PreferQuotedFileBasedProgramDirective.Rule).WithLocation("Other.cs", 1, 1).WithArguments("property"),
+                    },
                 },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """class Program { static void Main() { } }"""),
+                        ("Other.cs", """
+                            #:property Description="Hello World"
+                            class Other { }
+                            """),
+                    },
+                },
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(CancellationToken.None);
         }
