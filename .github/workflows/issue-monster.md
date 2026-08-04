@@ -469,11 +469,13 @@ The issue search has already been performed in the pre-activation job with smart
 Issues are scored and sorted by priority:
 - Documentation: +60 points
 - Bug: +55 points
-- Tech-debt/Refactoring: +45 points
+- Tech-debt: +50 points
 - Good first issue: +40 points
+- Small Refactor: +40 points
 - Performance: +30 points
 - Has any priority label: +10 points
 - Age bonus: +0-20 points (older issues get slight priority)
+- Security: -100 points. Never assign an issue related to security changes.
 
 **Issue Count**: ${{ needs.pre_activation.outputs.issue_count }}
 **Issue Numbers**: ${{ needs.pre_activation.outputs.issue_numbers }}
