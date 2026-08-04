@@ -167,7 +167,7 @@ The command generates shell-specific scripts that:
 # This bash script configures the environment for .NET installed at /home/user/.local/share/dotnetup/dotnet
 
 export DOTNET_ROOT='/home/user/.local/share/dotnetup/dotnet'
-export PATH='/home/user/.local/share/dotnetup':'/home/user/.local/share/dotnetup/dotnet':$PATH
+export PATH='/home/user/.dotnetup':'/home/user/.local/share/dotnetup/dotnet':$PATH
 hash -d dotnet 2>/dev/null
 hash -d dotnetup 2>/dev/null
 ```
@@ -177,7 +177,7 @@ hash -d dotnetup 2>/dev/null
 # This fish script configures the environment for .NET installed at /home/user/.local/share/dotnetup/dotnet
 
 set -gx DOTNET_ROOT '/home/user/.local/share/dotnetup/dotnet'
-fish_add_path --global --move --path '/home/user/.local/share/dotnetup' '/home/user/.local/share/dotnetup/dotnet'
+fish_add_path --global --move --path '/home/user/.dotnetup' '/home/user/.local/share/dotnetup/dotnet'
 ```
 
 **PowerShell Example:**
@@ -185,7 +185,7 @@ fish_add_path --global --move --path '/home/user/.local/share/dotnetup' '/home/u
 # This PowerShell script configures the environment for .NET installed at /home/user/.local/share/dotnetup/dotnet
 
 $env:DOTNET_ROOT = '/home/user/.local/share/dotnetup/dotnet'
-$env:PATH = '/home/user/.local/share/dotnetup' + [IO.Path]::PathSeparator + '/home/user/.local/share/dotnetup/dotnet' + [IO.Path]::PathSeparator + $env:PATH
+$env:PATH = '/home/user/.dotnetup' + [IO.Path]::PathSeparator + '/home/user/.local/share/dotnetup/dotnet' + [IO.Path]::PathSeparator + $env:PATH
 ```
 
 ### Shell Detection
