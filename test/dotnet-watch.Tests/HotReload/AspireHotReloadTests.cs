@@ -7,9 +7,11 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class AspireHotReloadTests : DotNetWatchTestBase
 {
-    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
     public async Task Aspire_BuildError_ManualRestart()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAspire")
@@ -54,7 +56,7 @@ public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         await App.WaitUntilOutputContains("Using Aspire process launcher.");
 
         // Only one browser should be launched (dashboard). The child process shouldn't launch a browser.
-        Assert.Equal(1, App.Process.Output.Count(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
+        Assert.HasCount(1, App.Process.Output.Where(line => line.StartsWith("dotnet watch ⌚ Launching browser: ")));
         App.Process.ClearOutput();
 
         // rude edit with build error:
@@ -122,7 +124,8 @@ public class AspireHotReloadTests(ITestOutputHelper logger) : DotNetWatchTestBas
         // It might get cancelled and not delivered on shutdown.
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
+    [TestMethod]
+    [OSCondition(OperatingSystems.Windows)] // https://github.com/dotnet/sdk/issues/53058, https://github.com/dotnet/sdk/issues/53061, https://github.com/dotnet/sdk/issues/53114
     public async Task Aspire_NoEffect_AutoRestart()
     {
         var tfm = ToolsetInfo.CurrentTargetFramework;

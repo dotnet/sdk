@@ -28,12 +28,18 @@ internal sealed class InstallClientElevationContext(ISynchronizingLogger logger)
     {
         if (!IsElevated && !HasElevated)
         {
+            // Pass the unelevated client's temp directory to the elevated server so it can validate
+            // IPC-supplied paths (e.g., the workload pack manifest extracted by the client) against it.
+            // Quoted to handle profile paths that contain spaces. Optional on the server side; if
+            // omitted or unparseable, the server falls back to its own Path.GetTempPath().
+            string clientTemp = Path.GetFullPath(Path.GetTempPath()).TrimEnd(Path.DirectorySeparatorChar);
+
             // Use the path of the current host, otherwise we risk resolving against the wrong SDK version.
             // To trigger UAC, UseShellExecute must be true and Verb must be "runas".
             string currentProcessPath = Environment.ProcessPath
                 ?? throw new InvalidOperationException("Unable to determine the path to the current dotnet process.");
 
-            ProcessStartInfo startInfo = new(currentProcessPath, "workload elevate")
+            ProcessStartInfo startInfo = new(currentProcessPath, $@"workload elevate --client-temp ""{clientTemp}""")
             {
                 Verb = "runas",
                 UseShellExecute = true,

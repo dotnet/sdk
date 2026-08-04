@@ -37,7 +37,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
-                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, formatOptions.BinaryLogPath, logWorkspaceWarnings, logger, formatOptions.TargetFramework, cancellationToken).ConfigureAwait(false);
+                : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, formatOptions.BinaryLogPath, logWorkspaceWarnings, logger, formatOptions.TargetFramework, cancellationToken);
 
             if (workspace is null)
             {
@@ -64,7 +64,7 @@ namespace Microsoft.CodeAnalysis.Tools
             logger.LogTrace(Resources.Determining_formattable_files);
 
             var (fileCount, formatableFiles) = await DetermineFormattableFilesAsync(
-                solution, projectPath, formatOptions, logger, cancellationToken).ConfigureAwait(false);
+                solution, projectPath, formatOptions, logger, cancellationToken);
 
             var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
             logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
@@ -73,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var formattedFiles = new List<FormattedFile>(fileCount);
             var formattedSolution = await RunCodeFormattersAsync(
-                workspace, solution, formatableFiles, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+                workspace, solution, formatableFiles, formatOptions, logger, formattedFiles, cancellationToken);
 
             var formatterRanMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS - determineFilesMS;
             logger.LogTrace(Resources.Complete_in_0_ms, formatterRanMS);
@@ -84,7 +84,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 var documentWithError = solution.GetDocument(documentId);
                 if (documentWithError is null)
                 {
-                    documentWithError = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken).ConfigureAwait(false);
+                    documentWithError = await solution.GetSourceGeneratedDocumentAsync(documentId, cancellationToken);
                 }
 
                 logger.LogInformation(Resources.Formatted_code_file_0, documentWithError!.FilePath);
@@ -157,7 +157,7 @@ namespace Microsoft.CodeAnalysis.Tools
                     continue;
                 }
 
-                formattedSolution = await s_codeFormatters[index].FormatAsync(workspace, formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken).ConfigureAwait(false);
+                formattedSolution = await s_codeFormatters[index].FormatAsync(workspace, formattedSolution, formattableDocuments, formatOptions, logger, formattedFiles, cancellationToken);
             }
 
             return formattedSolution;
@@ -220,13 +220,13 @@ namespace Microsoft.CodeAnalysis.Tools
                         continue;
                     }
 
-                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken).ConfigureAwait(false);
+                    var syntaxTree = await document.GetSyntaxTreeAsync(cancellationToken);
                     if (syntaxTree is null)
                     {
                         throw new Exception($"Unable to get a syntax tree for '{document.Name}'");
                     }
 
-                    if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(syntaxTree, cancellationToken).ConfigureAwait(false))
+                    if (await GeneratedCodeUtilities.IsGeneratedCodeAsync(syntaxTree, cancellationToken))
                     {
                         if (!formatOptions.IncludeGeneratedFiles)
                         {
@@ -256,7 +256,7 @@ namespace Microsoft.CodeAnalysis.Tools
 
                 if (formatOptions.IncludeGeneratedFiles)
                 {
-                    var generatedDocuments = await project.GetSourceGeneratedDocumentsAsync(cancellationToken).ConfigureAwait(false);
+                    var generatedDocuments = await project.GetSourceGeneratedDocumentsAsync(cancellationToken);
                     foreach (var generatedDocument in generatedDocuments)
                     {
                         Debug.WriteLine($"Including source generated file '{generatedDocument.FilePath}'.");

@@ -238,7 +238,7 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
 
                     // We have a line that was rendered previously, compare it and decide how to render.
                     RenderedProgressItem previouslyRenderedLine = previousFrame.RenderedLines[i];
-                    if (previouslyRenderedLine.ProgressId == progressItem.Id && false)
+                    if (previouslyRenderedLine.ProgressId == progressItem.Id && previouslyRenderedLine.ProgressVersion == progressItem.Version)
                     {
                         // This is the same progress item and it was not updated since we rendered it, only update the timestamp if possible to avoid flicker.
                         string durationString = HumanReadableDurationFormatter.Render(progressItem.Stopwatch.Elapsed);
@@ -323,6 +323,8 @@ internal sealed class AnsiTerminalTestProgressFrame(int width, int height)
             // not what I would prefer. But also if someone writes to console, the message will
             // start at the beginning of the new line. Not after the progress bar that is kept on screen.
             terminal.AppendLine();
+
+            i++;
         }
 
         // We rendered more lines in previous frame. Clear them.

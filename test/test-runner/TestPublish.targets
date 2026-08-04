@@ -1,0 +1,17 @@
+<Project>
+  <Target Name="PublishWithOutput" DependsOnTargets="Publish" Returns="$([System.IO.Path]::GetFullPath('$(PublishDir)'))" />
+
+  <!-- Returns 'true' if the project is a Microsoft.Testing.Platform (MTP) project that
+       must be invoked via 'dotnet exec' rather than 'dotnet test'. In this repo,
+       MSTest.Sdk-based projects ship as MTP self-contained executables and set
+       UsingMSTestSdk=true; any remaining non-MSTest projects keep using the VSTest path. -->
+  <Target Name="GetIsMTPProject" Returns="$(UsingMSTestSdk)" />
+
+  <!-- Returns 'true' when the Microsoft.Testing.Extensions.TrxReport extension is
+       enabled on the project. MSTest.Sdk defaults this to 'true' for the Default and
+       AllMicrosoft extension profiles (see microsoft/testfx Runner/Common.targets).
+       The Helix dispatcher uses this to decide whether emitting the report-trx switch on
+       the test command is safe; passing it to an MTP host without the extension fails with
+       an 'unknown argument' error. -->
+  <Target Name="GetTrxReportEnabled" Returns="$(EnableMicrosoftTestingExtensionsTrxReport)" />
+</Project>

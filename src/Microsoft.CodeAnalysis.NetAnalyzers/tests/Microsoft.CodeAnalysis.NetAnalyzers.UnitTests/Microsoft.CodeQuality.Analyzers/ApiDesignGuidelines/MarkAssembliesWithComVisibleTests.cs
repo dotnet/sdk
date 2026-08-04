@@ -1,24 +1,24 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAssembliesWithComVisibleAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAssembliesWithComVisibleFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class MarkAllAssembliesWithComVisibleTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoTypesComVisibleMissingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync("");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoTypesComVisibleTrueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -27,7 +27,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(true)]");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoTypesComVisibleFalseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -36,7 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicTypeComVisibleMissingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +46,7 @@ public class C
                 GetAddComVisibleFalseResult());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicTypeComVisibleTrueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +60,7 @@ public class C
                 GetExposeIndividualTypesResult());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicTypeComVisibleFalseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -73,7 +73,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalTypeComVisibleMissingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -82,7 +82,7 @@ internal class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalTypeComVisibleTrueAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -95,7 +95,7 @@ internal class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalTypeComVisibleFalseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

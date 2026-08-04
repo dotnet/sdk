@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseEventsWhereAppropriateAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpUseEventsWhereAppropriateFixer>;
@@ -14,12 +13,13 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UseEventsWhereAppropriateTests
     {
         #region No Diagnostic Tests
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NamingCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -77,7 +77,7 @@ End Class
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_InterfaceMemberImplementationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -135,7 +135,7 @@ End Interface
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_UnflaggedMethodKindsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -246,7 +246,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task NoDiagnostic_FlaggedMethodKinds_NotExternallyVisibleAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -340,7 +340,7 @@ End Class
         #region Diagnostic Tests
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_FlaggedMethodKindsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -443,7 +443,7 @@ End Class
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_PascalCasedMethodNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -530,7 +530,7 @@ End Class
         }
 
         [WorkItem(380, "https://github.com/dotnet/roslyn-analyzers/issues/380")]
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_LowerCaseMethodNamesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -5,6 +5,7 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAProcessFrameworkReferencesTaskEnvironment
     {
         private const string MinimalRuntimeGraph = """
@@ -20,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
             """;
 
-        [Fact]
+        [TestMethod]
         public void Execute_WithRelativeTargetingPackRoot_DoesNotAbsolutizeOutputMetadata()
         {
             var testRoot = CreateTestRoot();
@@ -51,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Execute_WithRelativeWorkloadPackRoot_DoesNotAbsolutizeOutputMetadata()
         {
             var testRoot = CreateTestRoot();

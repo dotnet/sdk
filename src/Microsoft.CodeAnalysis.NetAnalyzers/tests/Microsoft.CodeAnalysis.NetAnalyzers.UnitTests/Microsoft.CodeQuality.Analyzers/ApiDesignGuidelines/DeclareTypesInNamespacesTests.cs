@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DeclareTypesInNamespacesAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpDeclareTypesInNamespacesFixer>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DeclareTypesInNamespacesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task OuterTypeInGlobalNamespace_Warns()
         {
             var csCode = @"
@@ -31,7 +31,7 @@ End Class";
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnce()
         {
             var csCode = @"
@@ -51,7 +51,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InternalClassInGlobalNamespace_DoesNotWarn()
         {
             var csCode = @"
@@ -69,7 +69,7 @@ End Class";
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicClassInNonGlobalNamespace_DoesNotWarn()
         {
             var csCode = @"
@@ -92,7 +92,7 @@ End Namespace";
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TopLevelProgramClass_DoesNotWarn()
         {
             var csCode = @"
@@ -111,7 +111,7 @@ public partial class Program
                 },
                 FixedCode = csCode,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp10,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotNameEnumValuesReserved,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotNameEnumValuesReservedTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1700_NameContainsReserved_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -40,7 +40,7 @@ End Enum",
                 GetBasicResultAt(5, 5, "Enum1", "ReservedSuffix"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1700_NameContainsReservedWithoutCorrectCase_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +60,7 @@ Public Enum Enum2
 End Enum");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1700_NameContainsReservedWithoutCorrectCase_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -79,7 +79,7 @@ Public Enum Enum1
 End Enum");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1700_EnumIsNotPublicAndNameContainsReserved_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -98,7 +98,7 @@ Friend Enum Enum1
 End Enum");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1700_NameContainsPreserved_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

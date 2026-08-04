@@ -5,9 +5,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenAGetDependsOnNETStandardMultiThreading
     {
-        [Fact]
+        [TestMethod]
         public void ReferencePath_IsResolvedRelativeToProjectDirectory()
         {
             using var env = new TaskTestEnvironment();
@@ -35,9 +36,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "the assembly at the relative path (resolved via TaskEnvironment) references System.Runtime");
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void DependsOnNETStandard_IsConsistent_RegardlessOfCwd(bool useDifferentCwd)
         {
             // Use the test assembly itself as input — it references System.Runtime.

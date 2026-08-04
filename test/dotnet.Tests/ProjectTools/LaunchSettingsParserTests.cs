@@ -5,6 +5,7 @@ using System.Text.Json;
 
 namespace Microsoft.DotNet.ProjectTools.Tests;
 
+[TestClass]
 public class LaunchSettingsParserTests
 {
     private static readonly string s_environmentVariableName1 = $"TEST_VAR1_{GetUniqueName()}";
@@ -24,21 +25,21 @@ public class LaunchSettingsParserTests
     private static string GetUniqueName()
         => Guid.NewGuid().ToString("N");
 
-    [Fact]
+    [TestMethod]
     public void MissingExecutablePath()
     {
         var parser = ExecutableLaunchProfileParser.Instance;
 
-        Assert.Throws<JsonException>(() => parser.ParseProfile("path", "Execute", """
+        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile("path", "Execute", """
             {
                 "commandName": "Executable"
             }
             """));
     }
 
-    [Theory]
-    [InlineData("true", true)]
-    [InlineData("false", false)]
+    [TestMethod]
+    [DataRow("true", true)]
+    [DataRow("false", false)]
     public void DotNetRunMessages_Executable(string value, bool expected)
     {
         var parser = ExecutableLaunchProfileParser.Instance;
@@ -51,17 +52,17 @@ public class LaunchSettingsParserTests
             }
             """);
 
-        Assert.True(result.Successful);
-        Assert.NotNull(result.Profile);
-        Assert.Equal(expected, result.Profile.DotNetRunMessages);
+        Assert.IsTrue(result.Successful);
+        Assert.IsNotNull(result.Profile);
+        Assert.AreEqual(expected, result.Profile.DotNetRunMessages);
     }
 
-    [Fact]
+    [TestMethod]
     public void DotNetRunMessages_Error_Executable()
     {
         var parser = ProjectLaunchProfileParser.Instance;
 
-        Assert.Throws<JsonException>(() => parser.ParseProfile("path", "name", $$"""
+        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile("path", "name", $$"""
             {
                 "commandName": "Executable",
                 "executablePath": "executable",
@@ -70,12 +71,12 @@ public class LaunchSettingsParserTests
             """));
     }
 
-    [Fact]
+    [TestMethod]
     public void DotNetRunMessages_Error_Project()
     {
         var parser = ProjectLaunchProfileParser.Instance;
 
-        Assert.Throws<JsonException>(() => parser.ParseProfile("path", "name", $$"""
+        Assert.ThrowsExactly<JsonException>(() => parser.ParseProfile("path", "name", $$"""
             {
                 "commandName": "Project",
                 "dotnetRunMessages": "true"
@@ -83,7 +84,51 @@ public class LaunchSettingsParserTests
             """));
     }
 
-    [Fact]
+    [TestMethod]
+    public void CommentsAndTrailingCommas_Executable()
+    {
+        var parser = ExecutableLaunchProfileParser.Instance;
+
+        var result = parser.ParseProfile("path", "name", """
+            {
+                // line comment
+                "commandName": "Executable",
+                "executablePath": "executable", /* block comment */
+                "environmentVariables": {
+                    "VAR1": "VALUE1", // trailing comma below
+                },
+            }
+            """);
+
+        Assert.IsTrue(result.Successful);
+        var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(result.Profile);
+        Assert.AreEqual("executable", model.ExecutablePath);
+        Assert.AreSequenceEqual([("VAR1", "VALUE1")], model.EnvironmentVariables.Select(e => (e.Key, e.Value)));
+    }
+
+    [TestMethod]
+    public void CommentsAndTrailingCommas_Project()
+    {
+        var parser = ProjectLaunchProfileParser.Instance;
+
+        var result = parser.ParseProfile("path", "name", """
+            {
+                // line comment
+                "commandName": "Project",
+                "commandLineArgs": "arg1", /* block comment */
+                "environmentVariables": {
+                    "VAR1": "VALUE1", // trailing comma below
+                },
+            }
+            """);
+
+        Assert.IsTrue(result.Successful);
+        var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(result.Profile);
+        Assert.AreEqual("arg1", model.CommandLineArgs);
+        Assert.AreSequenceEqual([("VAR1", "VALUE1")], model.EnvironmentVariables.Select(e => (e.Key, e.Value)));
+    }
+
+    [TestMethod]
     public void EnvironmentVariableExpansion_Executable()
     {
         var root = Path.GetTempPath();
@@ -106,12 +151,12 @@ public class LaunchSettingsParserTests
             }
             """);
 
-        var model = Assert.IsType<ExecutableLaunchProfile>(settings.Profile);
+        var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(settings.Profile);
 
-        Assert.Equal("../path/ENV_VALUE1/executable", model.ExecutablePath);
-        Assert.Equal(Path.Combine(root, "ENV_VALUE1"), model.WorkingDirectory);
-        Assert.Equal("arg1 ENV_VALUE1 arg3", model.CommandLineArgs);
-        Assert.Equal(
+        Assert.AreEqual("../path/ENV_VALUE1/executable", model.ExecutablePath);
+        Assert.AreEqual(Path.Combine(root, "ENV_VALUE1"), model.WorkingDirectory);
+        Assert.AreEqual("arg1 ENV_VALUE1 arg3", model.CommandLineArgs);
+        Assert.AreSequenceEqual(
         [
             (s_environmentVariableNameUnset, "ENV_VALUE2"),
             ("VAR1", EnvironmentVariableReference(s_environmentVariableNameUnset)),
@@ -119,7 +164,7 @@ public class LaunchSettingsParserTests
         ], model.EnvironmentVariables.OrderBy(e => e.Key).Select(e => (e.Key, e.Value)));
     }
 
-    [Fact]
+    [TestMethod]
     public void EnvironmentVariableExpansion_Project()
     {
         var root = Path.GetTempPath();
@@ -140,10 +185,10 @@ public class LaunchSettingsParserTests
             }
             """);
 
-        var model = Assert.IsType<ProjectLaunchProfile>(settings.Profile);
+        var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(settings.Profile);
 
-        Assert.Equal("arg1 ENV_VALUE1 arg3", model.CommandLineArgs);
-        Assert.Equal(
+        Assert.AreEqual("arg1 ENV_VALUE1 arg3", model.CommandLineArgs);
+        Assert.AreSequenceEqual(
         [
             (s_environmentVariableNameUnset, "ENV_VALUE2"),
             ("VAR1", EnvironmentVariableReference(s_environmentVariableNameUnset)),

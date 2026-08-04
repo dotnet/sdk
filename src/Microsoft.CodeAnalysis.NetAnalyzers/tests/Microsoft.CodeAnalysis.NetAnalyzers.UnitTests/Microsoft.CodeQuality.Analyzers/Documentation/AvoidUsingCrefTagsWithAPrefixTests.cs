@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Documentation.CSharpAvoidUsingCrefTagsWithAPrefixAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Documentation.CSharpAvoidUsingCrefTagsWithAPrefixFixer>;
@@ -13,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.Documentation.UnitTests
 {
+    [TestClass]
     public class AvoidUsingCrefTagsWithAPrefixTests
     {
         #region No Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -47,7 +47,7 @@ End Class
 
         #region Diagnostic Tests
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

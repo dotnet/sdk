@@ -158,7 +158,7 @@ When switching to `MSTest.Sdk`, also remove now-redundant properties: `<OutputTy
    - Switching to `MSTest.Sdk` without `UseVSTest=true` silently flips a VSTest project to MTP. Add `<UseVSTest>true</UseVSTest>` to the project (the SDK pulls in `Microsoft.NET.Test.Sdk` automatically -- no manual `PackageReference` needed).
    - `<UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>` only affects the `dotnet run` entry point and is **not** a runner switch in Test Explorer or `dotnet test`. Do not infer the platform from this property in either direction -- defer to the `platform-detection` skill (see Step 1).
 2. Delete `xunit.runner.json` and port any settings you need (parallelization, `[CollectionBehavior]`, `appDomain`) per Step 11's "xunit.runner.json -> MSTest" sub-table. The settings have no direct MSBuild-property mapping.
-3. Remove `using Xunit;` and `using Xunit.Abstractions;` from C# files. For **Option A** (`MSTest` metapackage), Step 4's rewriter will add `using Microsoft.VisualStudio.TestTools.UnitTesting;` per file. For **Option B** (`MSTest.Sdk`), skip the per-file using -- the SDK provides it as an implicit global using.
+3. Remove `using Xunit;` and `using Xunit.Abstractions;` from C# files. For **Option A** (`MSTest` metapackage), add `using Microsoft.VisualStudio.TestTools.UnitTesting;` per file (Step 4 covers this alongside the other rewrites). For **Option B** (`MSTest.Sdk`), skip the per-file using -- the SDK provides it as an implicit global using.
 
 ### Step 4: Convert test classes and methods
 
@@ -168,7 +168,7 @@ Apply these rewrites to every C# test file. Class-level first, then method-level
 
 - Add `[TestClass]` to every class that contained xUnit `[Fact]`/`[Theory]` methods (xUnit had no class-level requirement).
 - **Preserve the original class hierarchy.** xUnit projects often use base/derived test classes (shared setup, helper assertions, generic base fixtures); marking classes `sealed` would break that pattern. Sealing is an optional follow-up handled by `writing-mstest-tests`, not part of the mechanical migration.
-- Replace `using Xunit;` / `using Xunit.Abstractions;` with `using Microsoft.VisualStudio.TestTools.UnitTesting;`.
+- Replace `using Xunit;` / `using Xunit.Abstractions;` with `using Microsoft.VisualStudio.TestTools.UnitTesting;`. **On Option B (`MSTest.Sdk`), skip adding the MSTest using** -- the SDK provides it as an implicit global using, so just remove the `using Xunit;` / `using Xunit.Abstractions;` lines (Step 2 and Step 3 cover this).
 
 **Methods:**
 
@@ -342,7 +342,7 @@ public TestContext TestContext { get; set; } = null!;
 - `TestContext.Current.AddAttachment(name, path)` -> `_testContext.AddResultFile(path)`
 - `TestContext.Current.TestOutputHelper.WriteLine(...)` -> `_testContext.WriteLine(...)`
 
-> **REQUIRED for CancellationToken:** Add the constructor injection from above even if the class only uses `TestContext.Current.CancellationToken` (no `ITestOutputHelper`). Do **NOT** replace `TestContext.Current.CancellationToken` with a new `CancellationTokenSource` -- that loses the test-host's cancellation linkage and changes behavior under timeouts.
+> **REQUIRED for CancellationToken:** Add the constructor injection from above (or property injection if pinned to MSTest < 3.6) even if the class only uses `TestContext.Current.CancellationToken` (no `ITestOutputHelper`). Do **NOT** replace `TestContext.Current.CancellationToken` with `CancellationToken.None` or a freshly-constructed `CancellationTokenSource` -- both lose the test-host's cancellation linkage and change behavior under timeouts.
 
 ```csharp
 // xUnit v3

@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.PropertyNamesShouldNotMatchGetMethodsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpPropertyNamesShouldNotMatchGetMethodsFixer>;
@@ -15,6 +14,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class PropertyNamesShouldNotMatchGetMethodsTests
     {
         private const string CSharpTestTemplate = @"
@@ -75,7 +75,7 @@ Friend Class OuterClass
 End Class
 ";
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -91,16 +91,16 @@ public class Test
 }");
         }
 
-        [Theory]
-        [InlineData("public", "public")]
-        [InlineData("public", "protected")]
-        [InlineData("public", "protected internal")]
-        [InlineData("protected", "public")]
-        [InlineData("protected", "protected")]
-        [InlineData("protected", "protected internal")]
-        [InlineData("protected internal", "public")]
-        [InlineData("protected internal", "protected")]
-        [InlineData("protected internal", "protected internal")]
+        [TestMethod]
+        [DataRow("public", "public")]
+        [DataRow("public", "protected")]
+        [DataRow("public", "protected internal")]
+        [DataRow("protected", "public")]
+        [DataRow("protected", "protected")]
+        [DataRow("protected", "protected internal")]
+        [DataRow("protected internal", "public")]
+        [DataRow("protected internal", "protected")]
+        [DataRow("protected internal", "protected internal")]
         public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Exposed_DiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync(
@@ -115,42 +115,42 @@ public class Test
                 string.Format(CultureInfo.InvariantCulture, CSharpNotExternallyVisibleTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
-        [Theory]
-        [InlineData("private", "private")]
-        [InlineData("private", "internal")]
-        [InlineData("internal", "private")]
-        [InlineData("internal", "internal")]
-        [InlineData("", "")]
+        [TestMethod]
+        [DataRow("private", "private")]
+        [DataRow("private", "internal")]
+        [DataRow("internal", "private")]
+        [DataRow("internal", "internal")]
+        [DataRow("", "")]
         public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
-        [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        [InlineData("public", "private")]
-        [InlineData("protected", "private")]
-        [InlineData("protected internal", "private")]
-        [InlineData("public", "internal")]
-        [InlineData("protected", "internal")]
-        [InlineData("protected internal", "internal")]
-        [InlineData("public", "")]
-        [InlineData("protected", "")]
-        [InlineData("protected internal", "")]
-        [InlineData("private", "public")]
-        [InlineData("private", "protected")]
-        [InlineData("private", "protected internal")]
-        [InlineData("internal", "public")]
-        [InlineData("internal", "protected")]
-        [InlineData("internal", "protected internal")]
-        [InlineData("", "public")]
-        [InlineData("", "protected")]
-        [InlineData("", "protected internal")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [DataRow("public", "private")]
+        [DataRow("protected", "private")]
+        [DataRow("protected internal", "private")]
+        [DataRow("public", "internal")]
+        [DataRow("protected", "internal")]
+        [DataRow("protected internal", "internal")]
+        [DataRow("public", "")]
+        [DataRow("protected", "")]
+        [DataRow("protected internal", "")]
+        [DataRow("private", "public")]
+        [DataRow("private", "protected")]
+        [DataRow("private", "protected internal")]
+        [DataRow("internal", "public")]
+        [DataRow("internal", "protected")]
+        [DataRow("internal", "protected internal")]
+        [DataRow("", "public")]
+        [DataRow("", "protected")]
+        [DataRow("", "protected internal")]
         public async Task CSharp_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyCS.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, CSharpTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -174,7 +174,7 @@ public class SometOtherClass : SomeClass
             GetCA1721CSharpResultAt(line: 14, column: 21, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -198,7 +198,7 @@ public class SometOtherClass : SomeClass
             GetCA1721CSharpResultAt(line: 14, column: 19, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1721_PropertyNameDoesNotMatchGetMethodName_Exposed_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -216,16 +216,16 @@ Public Class Test
 End Class");
         }
 
-        [Theory, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
-        [InlineData("Public", "Public")]
-        [InlineData("Public", "Protected")]
-        [InlineData("Public", "Protected Friend")]
-        [InlineData("Protected", "Public")]
-        [InlineData("Protected", "Protected")]
-        [InlineData("Protected", "Protected Friend")]
-        [InlineData("Protected Friend", "Public")]
-        [InlineData("Protected Friend", "Protected")]
-        [InlineData("Protected Friend", "Protected Friend")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [DataRow("Public", "Public")]
+        [DataRow("Public", "Protected")]
+        [DataRow("Public", "Protected Friend")]
+        [DataRow("Protected", "Public")]
+        [DataRow("Protected", "Protected")]
+        [DataRow("Protected", "Protected Friend")]
+        [DataRow("Protected Friend", "Public")]
+        [DataRow("Protected Friend", "Protected")]
+        [DataRow("Protected Friend", "Protected Friend")]
         public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Exposed_DiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync(
@@ -240,35 +240,35 @@ End Class");
                 string.Format(CultureInfo.InvariantCulture, BasicNotExternallyVisibleTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
-        [Theory]
-        [InlineData("Private", "Private")]
-        [InlineData("Private", "Friend")]
-        [InlineData("Friend", "Private")]
-        [InlineData("Friend", "Friend")]
+        [TestMethod]
+        [DataRow("Private", "Private")]
+        [DataRow("Private", "Friend")]
+        [DataRow("Friend", "Private")]
+        [DataRow("Friend", "Friend")]
         public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_Unexposed_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
-        [Theory]
-        [InlineData("Public", "Private")]
-        [InlineData("Protected", "Private")]
-        [InlineData("Protected Friend", "Private")]
-        [InlineData("Public", "Friend")]
-        [InlineData("Protected", "Friend")]
-        [InlineData("Protected Friend", "Friend")]
-        [InlineData("Private", "Public")]
-        [InlineData("Private", "Protected")]
-        [InlineData("Private", "Protected Friend")]
-        [InlineData("Friend", "Public")]
-        [InlineData("Friend", "Protected")]
-        [InlineData("Friend", "Protected Friend")]
+        [TestMethod]
+        [DataRow("Public", "Private")]
+        [DataRow("Protected", "Private")]
+        [DataRow("Protected Friend", "Private")]
+        [DataRow("Public", "Friend")]
+        [DataRow("Protected", "Friend")]
+        [DataRow("Protected Friend", "Friend")]
+        [DataRow("Private", "Public")]
+        [DataRow("Private", "Protected")]
+        [DataRow("Private", "Protected Friend")]
+        [DataRow("Friend", "Public")]
+        [DataRow("Friend", "Protected")]
+        [DataRow("Friend", "Protected Friend")]
         public async Task Basic_CA1721_PropertyNamesMatchGetMethodNames_MixedExposure_NoDiagnosticsAsync(string propertyAccessibility, string methodAccessibility)
         {
             await VerifyVB.VerifyAnalyzerAsync(string.Format(CultureInfo.InvariantCulture, BasicTestTemplate, propertyAccessibility, methodAccessibility));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1721_PropertyNameMatchesBaseClassGetMethodName_Exposed_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -291,7 +291,7 @@ End Class",
             GetCA1721BasicResultAt(line: 12, column: 30, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA1721_GetMethodNameMatchesBaseClassPropertyName_Exposed_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -313,7 +313,7 @@ End Class",
             GetCA1721BasicResultAt(line: 13, column: 21, identifierName: "Date", otherIdentifierName: "GetDate"));
         }
 
-        [Fact, WorkItem(1374, "https://github.com/dotnet/roslyn-analyzers/issues/1374")]
+        [TestMethod, WorkItem(1374, "https://github.com/dotnet/roslyn-analyzers/issues/1374")]
         public async Task CA1721_TypePropertyNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -331,7 +331,7 @@ Class C
 End Class");
         }
 
-        [Fact, WorkItem(2085, "https://github.com/dotnet/roslyn-analyzers/issues/2085")]
+        [TestMethod, WorkItem(2085, "https://github.com/dotnet/roslyn-analyzers/issues/2085")]
         public async Task CA1721_StaticAndInstanceMismatchNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -366,7 +366,7 @@ Public Class C2
 End Class");
         }
 
-        [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
+        [TestMethod, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
         public async Task CA1721_OverrideNoDiagnosticButVirtualDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -438,7 +438,7 @@ End Class
         GetCA1721BasicResultAt(line: 3, column: 42, identifierName: "Value", otherIdentifierName: "GetValue"));
         }
 
-        [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
+        [TestMethod, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
         public async Task CA1721_OverrideWithLocalMemberDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -511,7 +511,7 @@ End Class
             GetCA1721BasicResultAt(line: 29, column: 30, identifierName: "Value", otherIdentifierName: "GetValue"));
         }
 
-        [Fact, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
+        [TestMethod, WorkItem(2914, "https://github.com/dotnet/roslyn-analyzers/issues/2914")]
         public async Task CA1721_OverrideMultiLevelDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -585,7 +585,7 @@ End Class
             GetCA1721BasicResultAt(line: 15, column: 33, identifierName: "Something", otherIdentifierName: "GetSomething"));
         }
 
-        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        [TestMethod, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
         public async Task CA1721_Obsolete_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -669,7 +669,7 @@ Public Class C3
 End Class");
         }
 
-        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        [TestMethod, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
         public async Task CA1721_OnlyOneOverloadObsolete_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -714,7 +714,7 @@ End Class",
                 GetCA1721BasicResultAt(5, 30, "PropertyValue", "GetPropertyValue"));
         }
 
-        [Fact, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
+        [TestMethod, WorkItem(2956, "https://github.com/dotnet/roslyn-analyzers/issues/2956")]
         public async Task CA1721_AllOverloadsObsolete_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

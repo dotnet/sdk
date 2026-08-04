@@ -28,19 +28,19 @@ namespace Microsoft.TemplateEngine.CommandUtils
 
         internal CommandResultAssertions ExitWith(int expectedExitCode)
         {
-            Assert.IsTrue(expectedExitCode == _commandResult.ExitCode, AppendDiagnosticsTo($"Expected command to exit with {expectedExitCode} but it did not."));
+            Assert.AreEqual(expectedExitCode, _commandResult.ExitCode, AppendDiagnosticsTo($"Expected command to exit with {expectedExitCode} but it did not."));
             return this;
         }
 
         internal CommandResultAssertions Pass()
         {
-            Assert.IsTrue(_commandResult.ExitCode == 0, AppendDiagnosticsTo("Expected command to pass but it did not."));
+            Assert.AreEqual(0, _commandResult.ExitCode, AppendDiagnosticsTo("Expected command to pass but it did not."));
             return this;
         }
 
         internal CommandResultAssertions Fail()
         {
-            Assert.IsFalse(_commandResult.ExitCode == 0, AppendDiagnosticsTo("Expected command to fail but it passed."));
+            Assert.AreNotEqual(0, _commandResult.ExitCode, AppendDiagnosticsTo("Expected command to fail but it passed."));
             return this;
         }
 
@@ -53,7 +53,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
         internal CommandResultAssertions HaveStdOut(string expectedOutput)
         {
             Assert.IsNotNull(_commandResult.StdOut);
-            Assert.IsTrue(expectedOutput == _commandResult.StdOut, AppendDiagnosticsTo($"Expected standard output to be '{expectedOutput}' but it was not."));
+            Assert.AreEqual(expectedOutput, _commandResult.StdOut, AppendDiagnosticsTo($"Expected standard output to be '{expectedOutput}' but it was not."));
             return this;
         }
 
@@ -74,7 +74,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
         internal CommandResultAssertions NotHaveStdOutContaining(string pattern)
         {
             Assert.IsNotNull(_commandResult.StdOut);
-            Assert.IsTrue(!_commandResult.StdOut.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard output to not contain '{pattern}' but it did."));
+            Assert.IsFalse(_commandResult.StdOut.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard output to not contain '{pattern}' but it did."));
             return this;
         }
 
@@ -103,7 +103,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
         internal CommandResultAssertions NotHaveStdOutMatching(string pattern, RegexOptions options = RegexOptions.None)
         {
             Assert.IsNotNull(_commandResult.StdOut);
-            Assert.IsTrue(!Regex.Match(_commandResult.StdOut, pattern, options).Success, AppendDiagnosticsTo($"Expected standard output to not match pattern '{pattern}' but it did."));
+            Assert.IsFalse(Regex.Match(_commandResult.StdOut, pattern, options).Success, AppendDiagnosticsTo($"Expected standard output to not match pattern '{pattern}' but it did."));
             return this;
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
         internal CommandResultAssertions HaveStdErr(string expectedOutput)
         {
             Assert.IsNotNull(_commandResult.StdErr);
-            Assert.IsTrue(expectedOutput == _commandResult.StdErr, AppendDiagnosticsTo($"Expected standard error to be '{expectedOutput}' but it was not."));
+            Assert.AreEqual(expectedOutput, _commandResult.StdErr, AppendDiagnosticsTo($"Expected standard error to be '{expectedOutput}' but it was not."));
             return this;
         }
 
@@ -131,7 +131,7 @@ namespace Microsoft.TemplateEngine.CommandUtils
         internal CommandResultAssertions NotHaveStdErrContaining(string pattern)
         {
             Assert.IsNotNull(_commandResult.StdErr);
-            Assert.IsTrue(!_commandResult.StdErr.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard error to contain '{pattern}' but it did not."));
+            Assert.IsFalse(_commandResult.StdErr.Contains(pattern, StringComparison.Ordinal), AppendDiagnosticsTo($"Expected standard error to contain '{pattern}' but it did not."));
             return this;
         }
 

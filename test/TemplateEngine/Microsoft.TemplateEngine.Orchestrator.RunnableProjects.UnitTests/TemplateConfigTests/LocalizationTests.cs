@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
@@ -12,25 +12,30 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
-    public class LocalizationTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class LocalizationTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
-        public static readonly string DefaultLocalizeConfigRelativePath = ".template.config/localize/templatestrings.{0}.json";
+        public TestContext TestContext { get; set; } = null!;
 
-        public LocalizationTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+        public static readonly string DefaultLocalizeConfigRelativePath = ".template.config/localize/templatestrings.{0}.json";
 
         #region Deserialization Tests
 
-        [Theory]
-        [InlineData("content", true)]
-        [InlineData("", true)]
-        [InlineData("{}", false)]
+        [TestMethod]
+        [DataRow("content", true)]
+        [DataRow("", true)]
+        [DataRow("{}", false)]
         public void CanReadLocalizationFile(string fileContent, bool errorExpected)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
@@ -39,21 +44,21 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
-                Assert.NotNull(localizationModel);
+                Assert.IsNotNull(localizationModel);
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
+                Assert.Throws<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
-        [Theory]
-        [InlineData(/*lang=json,strict*/ """{ "name": "localizedName"}""", false, "localizedName")]
-        [InlineData(/*lang=json,strict*/ """{ "name": ""}""", false, "")]
-        [InlineData(/*lang=json,strict*/ """{ "notName": "localizedName"}""", false, null)]
+        [TestMethod]
+        [DataRow(/*lang=json,strict*/ """{ "name": "localizedName"}""", false, "localizedName")]
+        [DataRow(/*lang=json,strict*/ """{ "name": ""}""", false, "")]
+        [DataRow(/*lang=json,strict*/ """{ "notName": "localizedName"}""", false, null)]
         public void CanReadName(string fileContent, bool errorExpected, string? expectedName)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
@@ -62,22 +67,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             if (!errorExpected)
             {
                 LocalizationModel localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
-                Assert.NotNull(localizationModel);
-                Assert.Equal(expectedName, localizationModel.Name);
+                Assert.IsNotNull(localizationModel);
+                Assert.AreEqual(expectedName, localizationModel.Name);
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
+                Assert.Throws<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
-        [Theory]
-        [InlineData(/*lang=json,strict*/ """{ "description": "localizedDescription"}""", false, "localizedDescription")]
-        [InlineData(/*lang=json,strict*/ """{ "description": ""}""", false, "")]
-        [InlineData(/*lang=json,strict*/ """{ "notdescription": "localizedDescription"}""", false, null)]
+        [TestMethod]
+        [DataRow(/*lang=json,strict*/ """{ "description": "localizedDescription"}""", false, "localizedDescription")]
+        [DataRow(/*lang=json,strict*/ """{ "description": ""}""", false, "")]
+        [DataRow(/*lang=json,strict*/ """{ "notdescription": "localizedDescription"}""", false, null)]
         public void CanReadDescription(string fileContent, bool errorExpected, string? expectedDescription)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
@@ -85,17 +90,17 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             if (!errorExpected)
             {
                 LocalizationModel localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
-                Assert.NotNull(localizationModel);
-                Assert.Equal(expectedDescription, localizationModel.Description);
+                Assert.IsNotNull(localizationModel);
+                Assert.AreEqual(expectedDescription, localizationModel.Description);
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
+                Assert.Throws<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
-        [Theory]
-        [InlineData(
+        [TestMethod]
+        [DataRow(
             "{ " +
                 "\"symbols/someSymbol/displayName\": \"localizedSymbol1\", " +
                 "\"symbols/someSymbol/description\": \"localizedSymbolDescription1\"," +
@@ -106,11 +111,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             "someSymbol|anotherSymbol",
             "localizedSymbol1|localizedSymbol2",
             "localizedSymbolDescription1|localizedSymbolDescription2")]
-        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)")]
-        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription")]
-        [InlineData(/*lang=json,strict*/ """{ "description": ""}""", false, null, null, null)]
+        [DataRow(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)")]
+        [DataRow(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription")]
+        [DataRow(/*lang=json,strict*/ """{ "description": ""}""", false, null, null, null)]
         // Test case for NullReferenceException fix: malformed symbol key with only "symbols/" prefix
-        [InlineData(/*lang=json,strict*/ """{ "symbols/": "test" }""", false, null, null, null)]
+        [DataRow(/*lang=json,strict*/ """{ "symbols/": "test" }""", false, null, null, null)]
         public void CanReadNonChoiceSymbol(
             string fileContent,
             bool errorExpected,
@@ -118,7 +123,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string? expectedSymbolDisplayNamesStr,
             string? expectedDescriptionsStr)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
@@ -127,11 +132,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             if (!errorExpected)
             {
                 LocalizationModel localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
-                Assert.NotNull(localizationModel);
+                Assert.IsNotNull(localizationModel);
 
                 if (string.IsNullOrEmpty(expectedSymbolNamesStr))
                 {
-                    Assert.Empty(localizationModel.ParameterSymbols);
+                    Assert.IsEmpty(localizationModel.ParameterSymbols);
                     return;
                 }
                 string[]? expectedSymbolNames = expectedSymbolNamesStr?.Split('|');
@@ -140,19 +145,19 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
                 for (int i = 0; i < expectedSymbolNames?.Length; i++)
                 {
-                    Assert.True(localizationModel.ParameterSymbols.ContainsKey(expectedSymbolNames[i]));
-                    Assert.Equal(expectedDisplayNames?[i] == "(null)" ? null : expectedDisplayNames?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
-                    Assert.Equal(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
+                    Assert.IsTrue(localizationModel.ParameterSymbols.ContainsKey(expectedSymbolNames[i]));
+                    Assert.AreEqual(expectedDisplayNames?[i] == "(null)" ? null : expectedDisplayNames?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
+                    Assert.AreEqual(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
                 }
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
+                Assert.Throws<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
-        [Theory]
-        [InlineData(
+        [TestMethod]
+        [DataRow(
     "{ " +
         "\"symbols/someSymbol/displayName\": \"localizedSymbol\", " +
         "\"symbols/someSymbol/description\": \"localizedSymbolDescription\"," +
@@ -168,10 +173,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
     "localizedSymbol|localizedSymbol",
     "localizedSymbolDescription|localizedSymbolDescription",
     "one*one-localized*(null)%two*two-localized*(null)|foo*foo-localized*(null)%bar*bar-localized*(null)")]
-        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)", "(null)")]
-        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription", "(null)")]
-        [InlineData(/*lang=json,strict*/ """{ "symbols/someSymbol/choices/one/displayName": "one-localized"}""", false, "someSymbol", "(null)", "(null)", "one*(null)*one-localized")]
-        [InlineData(/*lang=json,strict*/ "{ \"description\": \"\"}", false, null, null, null, null)]
+        [DataRow(/*lang=json,strict*/ """{ "symbols/someSymbol/displayName": "localizedSymbol" }""", false, "someSymbol", "localizedSymbol", "(null)", "(null)")]
+        [DataRow(/*lang=json,strict*/ """{ "symbols/someSymbol/description": "localizedSymbolDescription" }""", false, "someSymbol", "(null)", "localizedSymbolDescription", "(null)")]
+        [DataRow(/*lang=json,strict*/ """{ "symbols/someSymbol/choices/one/displayName": "one-localized"}""", false, "someSymbol", "(null)", "(null)", "one*(null)*one-localized")]
+        [DataRow(/*lang=json,strict*/ "{ \"description\": \"\"}", false, null, null, null, null)]
         public void CanReadChoiceSymbol(
             string fileContent,
             bool errorExpected,
@@ -180,7 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             string? expectedDescriptionsStr,
             string? expectedChoicesStr)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
@@ -189,11 +194,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
-                Assert.NotNull(localizationModel);
+                Assert.IsNotNull(localizationModel);
 
                 if (string.IsNullOrEmpty(expectedSymbolNamesStr))
                 {
-                    Assert.Empty(localizationModel.ParameterSymbols);
+                    Assert.IsEmpty(localizationModel.ParameterSymbols);
                     return;
                 }
                 var expectedSymbolNames = expectedSymbolNamesStr?.Split('|');
@@ -203,13 +208,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
 
                 for (int i = 0; i < expectedSymbolNames?.Length; i++)
                 {
-                    Assert.True(localizationModel.ParameterSymbols.ContainsKey(expectedSymbolNames[i]));
-                    Assert.Equal(expectedDisplayNames?[i] == "(null)" ? null : expectedDisplayNames?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
-                    Assert.Equal(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
+                    Assert.IsTrue(localizationModel.ParameterSymbols.ContainsKey(expectedSymbolNames[i]));
+                    Assert.AreEqual(expectedDisplayNames?[i] == "(null)" ? null : expectedDisplayNames?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].DisplayName);
+                    Assert.AreEqual(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.ParameterSymbols[expectedSymbolNames[i]].Description);
 
                     if (expectedChoices == null || expectedChoices[i] == "(null)")
                     {
-                        Assert.Empty(localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices);
+                        Assert.IsEmpty(localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices);
                         continue;
                     }
                     var expectedChoicePairs = expectedChoices[i].Split('%');
@@ -218,20 +223,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                         var choiceName = pair.Split('*')[0];
                         var choiceDescription = pair.Split('*')[1];
                         var choiceDisplayName = pair.Split('*')[2];
-                        Assert.True(localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices.ContainsKey(choiceName));
-                        Assert.Equal(choiceDescription == "(null)" ? null : choiceDescription, localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices[choiceName].Description);
-                        Assert.Equal(choiceDisplayName == "(null)" ? null : choiceDisplayName, localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices[choiceName].DisplayName);
+                        Assert.IsTrue(localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices.ContainsKey(choiceName));
+                        Assert.AreEqual(choiceDescription == "(null)" ? null : choiceDescription, localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices[choiceName].Description);
+                        Assert.AreEqual(choiceDisplayName == "(null)" ? null : choiceDisplayName, localizationModel.ParameterSymbols[expectedSymbolNames[i]].Choices[choiceName].DisplayName);
                     }
                 }
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
+                Assert.Throws<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
-        [Theory]
-        [InlineData(
+        [TestMethod]
+        [DataRow(
 "{ " +
 "\"postActions/pa0/description\": \"localizedDescription\", " +
 "\"postActions/pa0/manualInstructions/first/text\": \"firstLocalized\"," +
@@ -243,13 +248,13 @@ false,
 "pa0|pa1",
 "localizedDescription|localizedDescription",
 "first*firstLocalized%second*secondLocalized|first*firstLocalized")]
-        [InlineData(/*lang=json,strict*/ """{ "description": ""}""", false, null, null, null)]
-        [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/description": "localizedDescription" }""", false, "pa0", "localizedDescription", "(null)")]
-        [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions/first/text": "localizedDescription" }""", false, "pa0", "(null)", "first*localizedDescription")]
+        [DataRow(/*lang=json,strict*/ """{ "description": ""}""", false, null, null, null)]
+        [DataRow(/*lang=json,strict*/ """{ "postActions/pa0/description": "localizedDescription" }""", false, "pa0", "localizedDescription", "(null)")]
+        [DataRow(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions/first/text": "localizedDescription" }""", false, "pa0", "(null)", "first*localizedDescription")]
         // Test case for NullReferenceException fix: malformed postAction key with only "postActions/" prefix
-        [InlineData(/*lang=json,strict*/ """{ "postActions/": "test" }""", false, null, null, null)]
+        [DataRow(/*lang=json,strict*/ """{ "postActions/": "test" }""", false, null, null, null)]
         // Test case for NullReferenceException fix: malformed manualInstruction key with missing instruction id
-        [InlineData(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions//text": "test" }""", false, "pa0", "(null)", "(null)")]
+        [DataRow(/*lang=json,strict*/ """{ "postActions/pa0/manualInstructions//text": "test" }""", false, "pa0", "(null)", "(null)")]
         public void CanReadPostAction(
     string fileContent,
     bool errorExpected,
@@ -257,7 +262,7 @@ false,
     string? expectedDescriptionsStr,
     string? expectedManualInstructionsStr)
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), fileContent);
@@ -266,11 +271,11 @@ false,
             if (!errorExpected)
             {
                 var localizationModel = LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!);
-                Assert.NotNull(localizationModel);
+                Assert.IsNotNull(localizationModel);
 
                 if (string.IsNullOrEmpty(expectedPostActionsStr))
                 {
-                    Assert.Empty(localizationModel.PostActions);
+                    Assert.IsEmpty(localizationModel.PostActions);
                     return;
                 }
                 var expectedPostActions = expectedPostActionsStr?.Split('|');
@@ -279,12 +284,12 @@ false,
 
                 for (int i = 0; i < expectedPostActions?.Length; i++)
                 {
-                    Assert.True(localizationModel.PostActions.ContainsKey(expectedPostActions[i]));
-                    Assert.Equal(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.PostActions[expectedPostActions[i]].Description);
+                    Assert.IsTrue(localizationModel.PostActions.ContainsKey(expectedPostActions[i]));
+                    Assert.AreEqual(expectedDescriptions?[i] == "(null)" ? null : expectedDescriptions?[i], localizationModel.PostActions[expectedPostActions[i]].Description);
 
                     if (expectedInsturctions == null || expectedInsturctions[i] == "(null)")
                     {
-                        Assert.Empty(localizationModel.PostActions[expectedPostActions[i]].Instructions);
+                        Assert.IsEmpty(localizationModel.PostActions[expectedPostActions[i]].Instructions);
                         continue;
                     }
                     var expectedInstructionPairs = expectedInsturctions[i].Split('%');
@@ -292,14 +297,14 @@ false,
                     {
                         var id = pair.Split('*')[0];
                         var text = pair.Split('*')[1];
-                        Assert.True(localizationModel.PostActions[expectedPostActions[i]].Instructions.ContainsKey(id));
-                        Assert.Equal(text == "(null)" ? null : text, localizationModel.PostActions[expectedPostActions[i]].Instructions[id]);
+                        Assert.IsTrue(localizationModel.PostActions[expectedPostActions[i]].Instructions.ContainsKey(id));
+                        Assert.AreEqual(text == "(null)" ? null : text, localizationModel.PostActions[expectedPostActions[i]].Instructions[id]);
                     }
                 }
             }
             else
             {
-                Assert.ThrowsAny<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
+                Assert.Throws<Exception>(() => LocalizationModelDeserializer.Deserialize(mountPoint.FileInfo(localizationFile)!));
             }
         }
 
@@ -307,10 +312,10 @@ false,
 
         #region Validation Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CanValidatePostActionWithoutLocalization()
         {
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
 
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
@@ -349,22 +354,22 @@ false,
             RunnableProjectGenerator generator = new();
 
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
             IFile? locFile = mountPoint.FileInfo(localizationFile);
-            Assert.NotNull(locFile);
+            Assert.IsNotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
-            Assert.NotNull(runnableProjectConfig.Localization);
-            Assert.True(runnableProjectConfig.Localization.IsValid);
+            Assert.IsNotNull(runnableProjectConfig.Localization);
+            Assert.IsTrue(runnableProjectConfig.Localization.IsValid);
 
             runnableProjectConfig.Localize();
             runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id == "pa0" && model.Description == "localizedDescription");
             runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id != "pa0" && model.Description == "text");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanValidatePostActionWithDefaultInstructionLocalization()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
@@ -385,7 +390,7 @@ false,
                     },
                 }
             };
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
@@ -403,21 +408,21 @@ false,
             RunnableProjectGenerator generator = new();
 
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
             IFile? locFile = mountPoint.FileInfo(localizationFile);
-            Assert.NotNull(locFile);
+            Assert.IsNotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
-            Assert.NotNull(runnableProjectConfig.Localization);
-            Assert.True(runnableProjectConfig.Localization.IsValid);
+            Assert.IsNotNull(runnableProjectConfig.Localization);
+            Assert.IsTrue(runnableProjectConfig.Localization.IsValid);
 
             runnableProjectConfig.Localize();
             runnableProjectConfig.ConfigurationModel.PostActionModels.Single(model => model.Id == "pa0" && model.ManualInstructionInfo[0].Text == "localized");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CannotValidatePostActionWithExtraInstructionLocalization()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
@@ -442,7 +447,7 @@ false,
 
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFilename = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
@@ -469,27 +474,27 @@ false,
             RunnableProjectGenerator generator = new();
 
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
             IFile? locFile = mountPoint.FileInfo(localizationFilename);
-            Assert.NotNull(locFile);
+            Assert.IsNotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
-            Assert.NotNull(runnableProjectConfig.Localization);
-            Assert.False(runnableProjectConfig.Localization.IsValid);
+            Assert.IsNotNull(runnableProjectConfig.Localization);
+            Assert.IsFalse(runnableProjectConfig.Localization.IsValid);
 
-            IValidationEntry validationError = Assert.Single(runnableProjectConfig.Localization.ValidationErrors);
+            IValidationEntry validationError = Assert.ContainsSingle(runnableProjectConfig.Localization.ValidationErrors);
 
-            Assert.Equal(IValidationEntry.SeverityLevel.Error, validationError.Severity);
-            Assert.Equal("LOC001", validationError.Code);
-            Assert.Equal(
+            Assert.AreEqual(IValidationEntry.SeverityLevel.Error, validationError.Severity);
+            Assert.AreEqual("LOC001", validationError.Code);
+            Assert.AreEqual(
                 string.Format(LocalizableStrings.Authoring_InvalidManualInstructionLocalizationIndex, "extra", "pa0"),
                 validationError.ErrorMessage);
-            Assert.Equal("/" + localizationFilename, runnableProjectConfig.Localization.File.FullPath);
+            Assert.AreEqual("/" + localizationFilename, runnableProjectConfig.Localization.File.FullPath);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CannotValidateExtraPostActionLocalization()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
@@ -513,7 +518,7 @@ false,
             };
             List<(LogLevel, string)> loggedMessages = new List<(LogLevel, string)>();
             InMemoryLoggerProvider loggerProvider = new InMemoryLoggerProvider(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
             string tempFolder = environmentSettings.GetTempVirtualizedPath();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
@@ -541,27 +546,27 @@ false,
             RunnableProjectGenerator generator = new();
 
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
             IFile? locFile = mountPoint.FileInfo(localizationFile);
-            Assert.NotNull(locFile);
+            Assert.IsNotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
-            Assert.NotNull(runnableProjectConfig.Localization);
-            Assert.False(runnableProjectConfig.Localization.IsValid);
+            Assert.IsNotNull(runnableProjectConfig.Localization);
+            Assert.IsFalse(runnableProjectConfig.Localization.IsValid);
 
-            IValidationEntry validationError = Assert.Single(runnableProjectConfig.Localization.ValidationErrors);
+            IValidationEntry validationError = Assert.ContainsSingle(runnableProjectConfig.Localization.ValidationErrors);
 
-            Assert.Equal(IValidationEntry.SeverityLevel.Error, validationError.Severity);
-            Assert.Equal("LOC002", validationError.Code);
-            Assert.Equal(
+            Assert.AreEqual(IValidationEntry.SeverityLevel.Error, validationError.Severity);
+            Assert.AreEqual("LOC002", validationError.Code);
+            Assert.AreEqual(
                string.Format(LocalizableStrings.Authoring_InvalidPostActionLocalizationIndex, "pa1"),
                validationError.ErrorMessage);
         }
         #endregion
 
-        [Fact]
+        [TestMethod]
         public async Task CanLocalizeParameters()
         {
             TemplateConfigModel baseConfig = new TemplateConfigModel("Test")
@@ -593,9 +598,9 @@ false,
             }
             """;
 
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(virtualize: true);
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(virtualize: true);
             RunnableProjectGenerator generator = new();
-            string tempFolder = _environmentSettingsHelper.CreateTemporaryFolder();
+            string tempFolder = s_environmentSettingsHelper.CreateTemporaryFolder();
             string localizationFile = string.Format(DefaultLocalizeConfigRelativePath, "de-DE");
 
             environmentSettings.WriteFile(Path.Combine(tempFolder, localizationFile), locContent);
@@ -610,27 +615,27 @@ false,
             environmentSettings.WriteTemplateSource(tempFolder, templateSourceFiles);
 
             IFile? templateConfigFile = mountPoint.FileInfo(TestFileSystemUtils.DefaultConfigRelativePath);
-            Assert.NotNull(templateConfigFile);
+            Assert.IsNotNull(templateConfigFile);
             IFile? locFile = mountPoint.FileInfo(localizationFile);
-            Assert.NotNull(locFile);
+            Assert.IsNotNull(locFile);
 
             using var runnableProjectConfig = new RunnableProjectConfig(environmentSettings, generator, templateConfigFile, localeConfigFile: locFile);
-            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
+            await runnableProjectConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
-            Assert.NotNull(runnableProjectConfig.Localization);
-            Assert.True(runnableProjectConfig.Localization.IsValid);
+            Assert.IsNotNull(runnableProjectConfig.Localization);
+            Assert.IsTrue(runnableProjectConfig.Localization.IsValid);
 
             runnableProjectConfig.Localize();
             ParameterSymbol actualSymbol = runnableProjectConfig.ConfigurationModel.Symbols.OfType<ParameterSymbol>().Single(s => s.Name == "test");
 
-            Assert.Equal("localized displayName", actualSymbol.DisplayName);
-            Assert.Equal("localized description", actualSymbol.Description);
+            Assert.AreEqual("localized displayName", actualSymbol.DisplayName);
+            Assert.AreEqual("localized description", actualSymbol.Description);
 
             ParameterChoice? actualChoice = actualSymbol.Choices?["choiceOne"];
-            Assert.NotNull(actualChoice);
+            Assert.IsNotNull(actualChoice);
 
-            Assert.Equal("localized choiceOne displayName", actualChoice.DisplayName);
-            Assert.Equal("localized choiceOne description", actualChoice.Description);
+            Assert.AreEqual("localized choiceOne displayName", actualChoice.DisplayName);
+            Assert.AreEqual("localized choiceOne description", actualChoice.Description);
         }
     }
 }

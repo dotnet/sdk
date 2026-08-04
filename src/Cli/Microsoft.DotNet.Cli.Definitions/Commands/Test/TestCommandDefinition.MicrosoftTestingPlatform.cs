@@ -3,6 +3,9 @@
 
 using System.Collections.ObjectModel;
 using System.CommandLine;
+using System.CommandLine.Parsing;
+using System.Globalization;
+using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Help;
 
@@ -10,8 +13,10 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal abstract partial class TestCommandDefinition
 {
-    public sealed class MicrosoftTestingPlatform : TestCommandDefinition, ICustomHelp
+    public sealed partial class MicrosoftTestingPlatform : TestCommandDefinition, ICustomHelp
     {
+        private const long MaxSupportedTimeoutMilliseconds = 0xfffffffe;
+
         public readonly Option<string> ProjectOrSolutionOption = new("--project")
         {
             Description = CommandDefinitionStrings.CmdProjectOrSolutionDescriptionFormat,
@@ -77,6 +82,21 @@ internal abstract partial class TestCommandDefinition
             HelpName = CommandDefinitionStrings.CmdNumberName
         };
 
+        public readonly Option<int?> MaximumFailedTestsOption = new("--maximum-failed-tests")
+        {
+            Description = CommandDefinitionStrings.CmdMaximumFailedTestsDescription,
+            HelpName = CommandDefinitionStrings.CmdNumberName,
+            Arity = ArgumentArity.ExactlyOne
+        };
+
+        public readonly Option<TimeSpan?> TimeoutOption = new("--timeout")
+        {
+            Description = CommandDefinitionStrings.CmdTimeoutDescription,
+            HelpName = CommandDefinitionStrings.CmdDurationName,
+            Arity = ArgumentArity.ExactlyOne,
+            CustomParser = ParseTimeout
+        };
+
         public readonly Option<IReadOnlyDictionary<string, string>> EnvOption = CommonOptions.CreateEnvOption();
 
         public readonly Option<ReadOnlyDictionary<string, string>?> PropertiesOption = CommonOptions.CreatePropertyOption();
@@ -87,6 +107,11 @@ internal abstract partial class TestCommandDefinition
         {
             Description = CommandDefinitionStrings.CmdNoBuildDescription
         };
+
+        public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption(
+            defaultValue: false,
+            forwardAs: null,
+            description: CommandDefinitionStrings.TestCmdNoLogo);
 
         public readonly Option<bool> UseCurrentRuntimeOption = CommonOptions.CreateUseCurrentRuntimeOption(CommandDefinitionStrings.CmdCurrentRuntimeOptionDescription);
 
@@ -108,6 +133,12 @@ internal abstract partial class TestCommandDefinition
             Arity = ArgumentArity.Zero
         };
 
+        public readonly Option<bool> NoArtifactPostProcessingOption = new("--no-artifact-post-processing")
+        {
+            Description = CommandDefinitionStrings.CmdNoArtifactPostProcessingDescription,
+            Arity = ArgumentArity.Zero
+        };
+
         public readonly Option<OutputOptions> OutputOption = new("--output")
         {
             Description = CommandDefinitionStrings.CmdTestOutputDescription,
@@ -116,11 +147,16 @@ internal abstract partial class TestCommandDefinition
 
         public const string ListTestsOptionName = "--list-tests";
 
-        public readonly Option<string> ListTestsOption = new(ListTestsOptionName)
+        public const string ListTestsFormatText = "text";
+
+        public const string ListTestsFormatJson = "json";
+
+        public readonly Option<string> ListTestsOption = new Option<string>(ListTestsOptionName)
         {
             Description = CommandDefinitionStrings.CmdListTestsDescription,
-            Arity = ArgumentArity.Zero
-        };
+            HelpName = $"{ListTestsFormatText}|{ListTestsFormatJson}",
+            Arity = ArgumentArity.ZeroOrOne
+        }.AcceptOnlyFromAmong(ListTestsFormatText, ListTestsFormatJson);
 
         public readonly Option<bool> NoLaunchProfileOption = new("--no-launch-profile")
         {
@@ -135,8 +171,14 @@ internal abstract partial class TestCommandDefinition
 
         public readonly Option<string> DeviceOption = new("--device")
         {
-            Description = CommandDefinitionStrings.CommandOptionDeviceDescription,
+            Description = CommandDefinitionStrings.CommandOptionDeviceDescriptionForTest,
             HelpName = CommandDefinitionStrings.CommandOptionDeviceHelpName
+        };
+
+        public readonly Option<bool> ListDevicesOption = new("--list-devices")
+        {
+            Description = CommandDefinitionStrings.CommandOptionListDevicesDescriptionForTest,
+            Arity = ArgumentArity.Zero
         };
 
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
@@ -150,6 +192,9 @@ internal abstract partial class TestCommandDefinition
         public MicrosoftTestingPlatform()
             : base(CommandDefinitionStrings.DotnetTestCommandMTPDescription)
         {
+            MinimumExpectedTestsOption.Validators.Add(ValidatePositiveInteger);
+            MaximumFailedTestsOption.Validators.Add(ValidatePositiveInteger);
+
             Options.Add(ProjectOrSolutionOption);
             Options.Add(SolutionOption);
             Options.Add(TestModulesFilterOption);
@@ -159,6 +204,8 @@ internal abstract partial class TestCommandDefinition
             Options.Add(DiagnosticOutputDirectoryOption);
             Options.Add(MaxParallelTestModulesOption);
             Options.Add(MinimumExpectedTestsOption);
+            Options.Add(MaximumFailedTestsOption);
+            Options.Add(TimeoutOption);
             Options.Add(EnvOption);
             Options.Add(PropertiesOption);
             Options.Add(ConfigurationOption);
@@ -167,20 +214,85 @@ internal abstract partial class TestCommandDefinition
             Options.Add(VerbosityOption);
             Options.Add(NoRestoreOption);
             Options.Add(NoBuildOption);
+            NoLogoOption.Aliases.Add("--no-banner");
+            Options.Add(NoLogoOption);
             Options.Add(NoDependenciesOption);
             Options.Add(ArtifactsPathOption);
             Options.Add(UseCurrentRuntimeOption);
             Options.Add(NoAnsiOption);
             Options.Add(NoProgressOption);
+            Options.Add(NoArtifactPostProcessingOption);
             Options.Add(OutputOption);
             Options.Add(ListTestsOption);
             Options.Add(NoLaunchProfileOption);
             Options.Add(NoLaunchProfileArgumentsOption);
             Options.Add(DeviceOption);
+            Options.Add(ListDevicesOption);
             Options.Add(MTPTargetOption);
         }
 
         public IEnumerable<Action<HelpContext>> CustomHelpLayout()
             => CustomHelpLayoutProvider?.CustomHelpLayout() ?? [];
+
+        private static void ValidatePositiveInteger(OptionResult optionResult)
+        {
+            if (optionResult.Tokens.Count == 1 &&
+                int.TryParse(optionResult.Tokens[0].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int value) &&
+                value <= 0)
+            {
+                optionResult.AddError(CommandDefinitionStrings.CmdTestPositiveIntegerRequired);
+            }
+        }
+
+        private static TimeSpan? ParseTimeout(ArgumentResult argumentResult)
+        {
+            if (argumentResult.Tokens.Count != 1)
+            {
+                return null;
+            }
+
+            string value = argumentResult.Tokens[0].Value;
+            Match match = TimeoutPattern().Match(value);
+            if (!match.Success ||
+                !double.TryParse(match.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out double number))
+            {
+                argumentResult.AddError(CommandDefinitionStrings.CmdTestInvalidTimeout);
+                return null;
+            }
+
+            string suffix = match.Groups["suffix"].Value;
+            TimeSpan timeout;
+            try
+            {
+                timeout = suffix.StartsWith("ms", StringComparison.OrdinalIgnoreCase) ||
+                          suffix.StartsWith("mil", StringComparison.OrdinalIgnoreCase)
+                    ? TimeSpan.FromMilliseconds(number)
+                    : suffix.StartsWith("s", StringComparison.OrdinalIgnoreCase)
+                        ? TimeSpan.FromSeconds(number)
+                        : suffix.StartsWith("m", StringComparison.OrdinalIgnoreCase)
+                            ? TimeSpan.FromMinutes(number)
+                            : suffix.StartsWith("h", StringComparison.OrdinalIgnoreCase)
+                                ? TimeSpan.FromHours(number)
+                                : TimeSpan.FromDays(number);
+            }
+            catch (Exception ex) when (ex is OverflowException or ArgumentException)
+            {
+                argumentResult.AddError(CommandDefinitionStrings.CmdTestInvalidTimeout);
+                return null;
+            }
+
+            if (timeout <= TimeSpan.Zero || timeout.TotalMilliseconds > MaxSupportedTimeoutMilliseconds)
+            {
+                argumentResult.AddError(CommandDefinitionStrings.CmdTestInvalidTimeout);
+                return null;
+            }
+
+            return timeout;
+        }
+
+        [GeneratedRegex(
+            @"^(?<value>\d+(?:\.\d+)?)(?:\s*(?<suffix>ms|mils?|milliseconds?|s|secs?|seconds?|m|mins?|minutes?|h|hours?|d|days?))$",
+            RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex TimeoutPattern();
     }
 }

@@ -51,7 +51,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core
         /// <summary>
         /// Gets the related exception in the case that the operation fails.
         /// Value of this property may be null if the underlying error is detected
-        /// at the application logic and no actual exceptions occured.
+        /// at the application logic and no actual exceptions occurred.
         /// </summary>
         public Exception? InnerException { get; }
 

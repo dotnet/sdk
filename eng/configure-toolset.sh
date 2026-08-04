@@ -51,24 +51,24 @@ function InstallBootstrapSdkWithDotnetup {
 
   if ! ShouldUseCachedDotnetup "$dotnetup_exe"; then
     if ! AcquireDotnetup "$dotnetup_dir"; then
-      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup."
-      ExitWithExitCode 1
+      Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to acquire dotnetup. Will fall back to standard dotnet-install script."
+      return
     fi
   fi
 
   # Keep dotnetup's manifest under artifacts instead of the user's home dir.
   export DOTNET_DOTNETUP_DATA_DIR="$artifacts_dir/.dotnetup"
 
-  "$dotnetup_exe" sdk install "${sdk_versions[@]}" \
+  RunWithoutErrexit "$dotnetup_exe" sdk install "${sdk_versions[@]}" \
     --install-path "$dotnet_root" \
     --untracked \
     --set-default-install false \
     --interactive false
-  local lastexitcode=$?
+  local lastexitcode=$_RunWithoutErrexit
 
   if [[ $lastexitcode != 0 ]]; then
-    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install .NET SDK(s) '${sdk_versions[*]}' to '$dotnet_root' using dotnetup (exit code '$lastexitcode')."
-    ExitWithExitCode $lastexitcode
+    Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install .NET SDK(s) '${sdk_versions[*]}' to '$dotnet_root' using dotnetup (exit code '$lastexitcode'). Will fall back to standard dotnet-install script."
+    return
   fi
 
   # Record the installed SDK so CleanOutStage0ToolsetsAndRuntimes does not

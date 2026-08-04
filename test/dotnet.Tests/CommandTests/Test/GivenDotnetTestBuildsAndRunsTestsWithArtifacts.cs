@@ -8,15 +8,16 @@ using ExitCodes = Microsoft.NET.TestFramework.ExitCode;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestBuildsAndRunsTestsWithArtifacts : SdkTest
     {
-        public GivenDotnetTestBuildsAndRunsTestsWithArtifacts(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestBuildsAndRunsTestsWithArtifacts()
         {
         }
 
-        [InlineData(TestingConstants.Debug)]
-        [InlineData(TestingConstants.Release)]
-        [Theory]
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
         public void RunTestProjectWithFailingTestsAndFileArtifacts_ShouldReturnExitCodeGenericFailure(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithTestsAndArtifacts", Guid.NewGuid().ToString()).WithSource();
@@ -27,7 +28,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             if (!SdkTestContext.IsLocalized())
             {
-                Assert.Matches(@".*Test6.*testNodeFile.txt", result.StdOut);
+                Assert.MatchesRegex(@".*Test6.*testNodeFile.txt", result.StdOut);
 
                 result.StdOut
                     .Should().Contain("In process file artifacts")
@@ -45,11 +46,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
-        [InlineData(TestingConstants.Debug, false)]
-        [InlineData(TestingConstants.Release, false)]
-        [InlineData(TestingConstants.Debug, true)]
-        [InlineData(TestingConstants.Release, true)]
-        [Theory]
+        [DataRow(TestingConstants.Debug, false)]
+        [DataRow(TestingConstants.Release, false)]
+        [DataRow(TestingConstants.Debug, true)]
+        [DataRow(TestingConstants.Release, true)]
+        [TestMethod]
         public void RunTestProjectWithCodeCoverage_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration, bool includeTestAssembly)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectSolutionWithCodeCoverage", Guid.NewGuid().ToString()).WithSource();
@@ -93,7 +94,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             {
                 string pattern = $@"In\sprocess\sfile\sartifacts\sproduced:\s+.*{PathUtility.GetDirectorySeparatorChar()}TestResults{PathUtility.GetDirectorySeparatorChar()}.*\.coverage";
 
-                Assert.Matches(pattern, result.StdOut);
+                Assert.MatchesRegex(pattern, result.StdOut);
 
                 result.StdOut
                     .Should().Contain("Test run summary: Failed!")

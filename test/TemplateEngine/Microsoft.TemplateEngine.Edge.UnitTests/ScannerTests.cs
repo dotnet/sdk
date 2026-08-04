@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
@@ -6,20 +6,24 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Edge.UnitTests
 {
-    public class ScannerTests : TestBase, IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class ScannerTests : TestBase
     {
-        private readonly EnvironmentSettingsHelper _settingsHelper;
+        public TestContext TestContext { get; set; } = null!;
 
-        public ScannerTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _settingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_settingsHelper = null!;
 
-        [Fact]
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_settingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_settingsHelper?.Dispose();
+
+        [TestMethod]
         public async Task CanLogValidationMessagesOnInstall_MissingIdentity()
         {
             string templatesLocation = Path.Combine(TestTemplatesLocation, "Invalid", "MissingIdentity");
@@ -27,22 +31,22 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
-            IEngineEnvironmentSettings settings = _settingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings settings = s_settingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.Current.CancellationToken);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.CancellationToken);
 
-            Assert.Empty(result.Templates);
+            Assert.IsEmpty(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Empty(result.Localizations);
+            Assert.IsEmpty(result.Localizations);
 #pragma warning restore CS0618 // Type or member is obsolete
 
-            string errorMessage = Assert.Single(loggedMessages, l => l.Level is LogLevel.Error).Message;
-            Assert.Equal($"Failed to load template from {Path.GetFullPath(templatesLocation) + Path.DirectorySeparatorChar}.template.config/template.json.{Environment.NewLine}Details: 'identity' is missing or is an empty string.", errorMessage);
+            string errorMessage = Assert.ContainsSingle(l => l.Level is LogLevel.Error, loggedMessages).Message;
+            Assert.AreEqual($"Failed to load template from {Path.GetFullPath(templatesLocation) + Path.DirectorySeparatorChar}.template.config/template.json.{Environment.NewLine}Details: 'identity' is missing or is an empty string.", errorMessage);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanLogValidationMessagesOnInstall_ErrorsInTemplateConfig()
         {
             string templatesLocation = Path.Combine(TestTemplatesLocation, "Invalid", "MissingMandatoryConfig");
@@ -50,27 +54,27 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
-            IEngineEnvironmentSettings settings = _settingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings settings = s_settingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.Current.CancellationToken);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.CancellationToken);
 
-            Assert.Empty(result.Templates);
+            Assert.IsEmpty(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Empty(result.Localizations);
+            Assert.IsEmpty(result.Localizations);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             List<string> errorMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Error).Select(e => e.Message).ToList();
-            Assert.Equal(2, errorMessages.Count);
+            Assert.HasCount(2, errorMessages);
 
             List<string> warningMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Warning).Select(e => e.Message).ToList();
-            Assert.Empty(warningMessages);
+            Assert.IsEmpty(warningMessages);
 
             List<string> debugMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Debug).Select(e => e.Message).ToList();
-            Assert.Equal(4, debugMessages.Count);
+            Assert.HasCount(4, debugMessages);
 
-            Assert.Equal(
+            Assert.AreEqual(
                 """
                 The template '<no name>' (MissingConfigTest) has the following validation errors:
                    [Error][MV002] Missing 'name'.
@@ -78,7 +82,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 """,
                 errorMessages[0]);
-            Assert.Equal("Failed to load the template '<no name>' (MissingConfigTest): the template is not valid.", errorMessages[1]);
+            Assert.AreEqual("Failed to load the template '<no name>' (MissingConfigTest): the template is not valid.", errorMessages[1]);
 
             Assert.Contains(
                 """
@@ -94,7 +98,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 debugMessages);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CanLogValidationMessagesOnInstall_Localization()
         {
             string templatesLocation = Path.Combine(TestTemplatesLocation, "Invalid", "Localization", "ValidationFailure");
@@ -102,26 +106,26 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
             List<(LogLevel Level, string Message)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
 
-            IEngineEnvironmentSettings settings = _settingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings settings = s_settingsHelper.CreateEnvironment(virtualize: true, addLoggerProviders: new[] { loggerProvider });
 
             Scanner scanner = new(settings);
 
-            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.Current.CancellationToken);
+            ScanResult result = await scanner.ScanAsync(templatesLocation, TestContext.CancellationToken);
 
-            Assert.Single(result.Templates);
+            Assert.ContainsSingle(result.Templates);
 #pragma warning disable CS0618 // Type or member is obsolete
-            Assert.Empty(result.Localizations);
+            Assert.IsEmpty(result.Localizations);
 #pragma warning restore CS0618 // Type or member is obsolete
 
             List<string> errorMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Error).Select(e => e.Message).OrderBy(em => em).ToList();
 
-            Assert.Equal(2, errorMessages.Count);
+            Assert.HasCount(2, errorMessages);
 
             List<string> warningMessages = loggedMessages.Where(lm => lm.Level == LogLevel.Warning).Select(e => e.Message).OrderBy(em => em).ToList();
 
-            Assert.Equal(3, warningMessages.Count);
+            Assert.HasCount(3, warningMessages);
 
-            Assert.Equal(
+            Assert.AreEqual(
                """
                 The template 'name' (TestAssets.Invalid.Localization.ValidationFailure) has the following validation errors in 'de-DE' localization:
                    [Error][LOC001] In localization file under the post action with id 'pa1', there are localized strings for manual instruction(s) with ids 'do-not-exist'. These manual instructions do not exist in the template.json file and should be removed from localization file.
@@ -129,7 +133,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
 
                 """,
                errorMessages[0]);
-            Assert.Equal(
+            Assert.AreEqual(
                 """
                 The template 'name' (TestAssets.Invalid.Localization.ValidationFailure) has the following validation errors in 'tr' localization:
                    [Error][LOC002] Post action(s) with id(s) 'pa6' specified in the localization file do not exist in the template.json file. Remove the localized strings from the localization file.
@@ -137,10 +141,10 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests
                 """,
                 errorMessages[1]);
 
-            Assert.Equal("Failed to load the 'de-DE' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[0]);
-            Assert.Equal("Failed to load the 'tr' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[1]);
+            Assert.AreEqual("Failed to load the 'de-DE' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[0]);
+            Assert.AreEqual("Failed to load the 'tr' localization the template 'name' (TestAssets.Invalid.Localization.ValidationFailure): the localization file is not valid. The localization will be skipped.", warningMessages[1]);
 
-            Assert.Equal(
+            Assert.AreEqual(
         """
                 The template 'name' (TestAssets.Invalid.Localization.ValidationFailure) has the following validation warnings:
                    [Warning][CONFIG0201] Id of the post action 'pa2' at index '3' is not unique. Only the first post action that uses this id will be localized.
