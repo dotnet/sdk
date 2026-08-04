@@ -124,7 +124,12 @@ on:
               'on-hold',
               'waiting-for-feedback',
               'needs-more-info',
-              'no-bot'
+              'no-bot',
+              // Security triage marker. When the orchestrator refuses a security-sensitive
+              // issue it removes 'cookie' and adds 'Area-Security', which retires the issue
+              // from all future candidate searches (enforced here at the fetch step so
+              // Area-Security issues are never even considered).
+              'area-security'
             ];
 
             // Labels that indicate an issue is a GOOD candidate for auto-assignment
@@ -475,6 +480,17 @@ safe-outputs:
   add-comment:
     max: 3
     target: "*"
+  # Security-retirement relabeling. When the orchestrator refuses a security-sensitive
+  # issue it retires it from the queue: remove the 'cookie' work-queue label and add
+  # 'Area-Security'. Both target "*" so the specific refused issue number can be addressed.
+  remove-labels:
+    max: 3
+    target: "*"
+    allowed: [cookie]
+  add-labels:
+    max: 3
+    target: "*"
+    allowed: [Area-Security]
   noop:
     report-as-issue: false
   messages:
@@ -582,7 +598,13 @@ For issues with the "task" or "plan" label, check if they are sub-issues linked 
 > - Any report framed as a weakness an attacker could abuse, even if it is filed as a "bug" or "tech debt" and carries the `cookie` label.
 > - When in doubt, treat the issue as security-sensitive and exclude it.
 >
-> A security-relevant candidate must be **dropped entirely**: do not score it, do not dispatch it, and do not post a "selected for assignment" comment on it. If security exclusion removes every candidate, call `noop` explaining that the remaining issues were security-sensitive and left for engineers (e.g. `noop(message="🔒 Remaining candidates are security-sensitive; leaving them for engineers. No assignments this run.")`).
+> A security-relevant candidate must be **dropped entirely**: do not score it, do not dispatch it, and do not post a "selected for assignment" comment on it.
+>
+> 🏷️ **Retire every refused security issue so it never returns to the queue.** For each candidate you exclude under this gate, emit BOTH label mutations for that issue's number:
+> - `remove_labels({ item_number: <issue>, labels: ["cookie"] })` — drops it from the cookie work queue.
+> - `add_labels({ item_number: <issue>, labels: ["Area-Security"] })` — marks it as security-owned. The pre-activation fetch step permanently excludes `Area-Security` issues, so future scheduled runs will not even look at it.
+>
+> If security exclusion removes every candidate, still emit the retirement label mutations for each refused issue, then call `noop` explaining that the remaining issues were security-sensitive and left for engineers (e.g. `noop(message="🔒 Remaining candidates are security-sensitive; retired them to Area-Security and left them for engineers. No assignments this run.")`).
 
 From the prioritized and filtered list (issues WITHOUT Copilot assignments or open PRs, **and after applying the security gate above**):
 - **Select up to three appropriate issues** to assign
