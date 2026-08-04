@@ -629,11 +629,13 @@ Some issues may be blocked by an integrity policy when you try to read them with
 
 ### 4. Dispatch Issues to the Assigner
 
-For each selected issue, call the generated `issue_monster_assigner` tool with the issue number and the concrete base branch you selected:
+For each selected issue, call the `dispatch_workflow` safe-output tool to dispatch the `issue-monster-assigner` workflow, passing the issue number and the concrete base branch you selected in the `inputs` object:
 
 ```
-issue_monster_assigner(issue_number=<issue_number>, base_branch="<base_branch>")
+dispatch_workflow(workflow_name="issue-monster-assigner", inputs={"issue_number": <issue_number>, "base_branch": "<base_branch>"})
 ```
+
+`dispatch_workflow` is the tool listed in your available safe-output tools; it routes to the `issue-monster-assigner` workflow. (gh-aw also registers a convenience alias named `issue_monster_assigner` that takes the same `issue_number` and `base_branch` fields directly; either works, but prefer `dispatch_workflow` since it is always advertised.)
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
@@ -701,7 +703,7 @@ A successful run means:
 1. You used the pre-fetched prioritized list (and body context) without re-searching
 2. You selected up to three issues that are clearly separate in topic
 3. You used body-first validation and only fetched comments when strictly necessary
-4. You dispatched each selected issue and its selected base branch using `issue_monster_assigner`
+4. You dispatched each selected issue and its selected base branch to the `issue-monster-assigner` workflow using `dispatch_workflow`
 5. You commented on each dispatched issue (or called `noop` when no dispatches were made)
 
 ## Error Handling
