@@ -41,13 +41,21 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
         ITestHandler testHandler;
+        MSBuildSession? buildSession = null;
         try
         {
             // --list-devices: list available devices for the project and exit early.
             // Never builds, deploys, or runs tests.
             if (buildOptions.ListDevices)
             {
-                return HandleListDevices(buildOptions, logger);
+                using var listDevicesSession = CreateBuildSession(buildOptions, logger);
+                int listDevicesExitCode = HandleListDevices(buildOptions, listDevicesSession);
+                if (listDevicesExitCode == ExitCode.Success)
+                {
+                    listDevicesSession.Complete();
+                }
+
+                return listDevicesExitCode;
             }
 
             // When --device is specified, force single target framework selection because
@@ -57,18 +65,30 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 buildOptions = HandleDeviceWithTargetFrameworkSelection(buildOptions, logger);
             }
 
+            // Every MSBuild target the test command invokes itself - device selection, deployment and
+            // ComputeRunArguments for every test module - runs inside this single build session, so the
+            // binary log behind -bl holds one well formed build instead of one per target invocation.
+            buildSession = CreateBuildSession(buildOptions, logger);
+
             testHandler = buildOptions.PathOptions.TestModules is { } testModules
                 ? new TestModulesFilterHandler(testModules, parseResult)
-                : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions, logger)
+                : RuntimeFeature.IsDynamicCodeSupported ? new MSBuildHandler(buildOptions, buildSession)
                     : throw new PlatformNotSupportedException("Dynamic code is not supported on this platform.");
 
             if (!testHandler.Initialize())
             {
                 return ExitCode.GenericFailure;
             }
+
+            // Ends the session on the success path, so a failure MSBuild only reports from EndBuild -
+            // a binary logger failing to write, for example - is surfaced rather than swallowed.
+            buildSession.Complete();
         }
         finally
         {
+            // Ends the build session (and so writes its build-finished event) before the binary
+            // logger behind it is shut down. A no-op once Complete() has run.
+            buildSession?.Dispose();
             logger?.ReallyShutdown();
         }
 
@@ -116,10 +136,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 exitCode = ExitCode.TestSessionAborted;
             }
 
-            if (!testOptions.IsHelp
-                && !testOptions.IsDiscovery
-                && !parseResult.GetValue(definition.NoArtifactPostProcessingOption)
-                && !ctrlC.Token.IsCancellationRequested)
+            if (ShouldPostProcessArtifacts(
+                testOptions,
+                parseResult.GetValue(definition.NoArtifactPostProcessingOption),
+                ctrlC.Token.IsCancellationRequested,
+                cancellationReason))
             {
                 artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
             }
@@ -158,6 +179,28 @@ internal partial class MicrosoftTestingPlatformTestCommand
             output.TestExecutionCompleted(DateTimeOffset.Now, exitCode);
         }
     }
+
+    /// <summary>
+    /// Decides whether the artifacts of a finished run should be consolidated.
+    /// </summary>
+    /// <remarks>
+    /// Help and discovery produce no artifacts to merge, and <c>--no-artifact-post-processing</c> is
+    /// the explicit opt-out. The two cancellation cases are the interesting ones: a run stopped by
+    /// Ctrl+C, <c>--maximum-failed-tests</c> or <c>--timeout</c> produced the artifacts of a
+    /// truncated run — modules that never started contributed nothing, and modules killed mid-flight
+    /// wrote whatever they had. Merging those into a single report would hide the truncation behind
+    /// one authoritative-looking artifact, so the per-module artifacts are left as they are.
+    /// </remarks>
+    internal static bool ShouldPostProcessArtifacts(
+        TestOptions testOptions,
+        bool noArtifactPostProcessingRequested,
+        bool cancellationRequested,
+        TestRunCancellationReason cancellationReason)
+        => !testOptions.IsHelp
+            && !testOptions.IsDiscovery
+            && !noArtifactPostProcessingRequested
+            && !cancellationRequested
+            && cancellationReason == TestRunCancellationReason.None;
 
     private static TestListFormat GetListTestsFormat(ParseResult parseResult, TestCommandDefinition.MicrosoftTestingPlatform definition)
     {
@@ -239,6 +282,14 @@ internal partial class MicrosoftTestingPlatformTestCommand
     }
 
     /// <summary>
+    /// Creates the MSBuild session shared by every target the test command invokes itself. It owns the
+    /// project collection all those projects have to be evaluated in; the collection has no global
+    /// properties of its own, so each project passes the ones it needs when it is evaluated.
+    /// </summary>
+    private static MSBuildSession CreateBuildSession(BuildOptions buildOptions, FacadeLogger? logger)
+        => new(SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs), logger);
+
+    /// <summary>
     /// When --device is specified, we need to ensure a single target framework is selected
     /// because a device is platform-specific. If -f/--framework wasn't provided, this method
     /// evaluates the project to get TargetFrameworks and prompts for selection.
@@ -269,6 +320,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // Check if TargetFramework is already specified via -f/--framework or -p:TargetFramework=
         if (!globalProperties.ContainsKey(ProjectProperties.TargetFramework))
         {
+            using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
             // Evaluate the project to get TargetFrameworks
             using var collection = new ProjectCollection(
                 globalProperties,
@@ -323,7 +376,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// <see cref="RunCommandSelector.TrySelectDevice"/>, and exits without
     /// building, deploying, or running tests.
     /// </summary>
-    private static int HandleListDevices(BuildOptions buildOptions, FacadeLogger? logger)
+    private static int HandleListDevices(BuildOptions buildOptions, MSBuildSession buildSession)
     {
         if (!ValidationUtility.ValidateBuildPathOptions(buildOptions.PathOptions, out var projectPath, out bool isSolution))
         {
@@ -350,7 +403,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
             standardArgs,
             buildOptions.EnvironmentVariables,
             commandName: "dotnet test",
-            logger);
+            binaryLogger: null,
+            buildSession: buildSession);
 
         // Step 1: Prompt for TargetFramework if the project is multi-targeted and -f wasn't provided.
         if (!selector.TrySelectTargetFramework(out string? selectedFramework))

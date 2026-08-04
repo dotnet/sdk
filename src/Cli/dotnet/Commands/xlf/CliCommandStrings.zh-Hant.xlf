@@ -87,6 +87,11 @@
         <target state="new">Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</target>
         <note>{0} is the test application path. {1} is the process exit code.</note>
       </trans-unit>
+      <trans-unit id="ArtifactPostProcessingStarted">
+        <source>Merging compatible artifacts produced by different test applications...</source>
+        <target state="new">Merging compatible artifacts produced by different test applications...</target>
+        <note />
+      </trans-unit>
       <trans-unit id="AspireWorkloadDeprecated">
         <source>The Aspire workload is deprecated and no longer necessary. Aspire is now available as NuGet packages that you can add directly to your projects. For more information, see https://aka.ms/aspire/support-policy</source>
         <target state="translated">Aspire 工作負載已棄用，不再需要。Aspire 現已作為 NuGet 套件提供，您可以將它直接新增至專案。如需詳細資訊，請參閱 https://aka.ms/aspire/support-policy</target>

@@ -51,6 +51,18 @@
       Overwrite="true" />
   </Target>
 
+  <Target Name="_AssertDotnetHostPath"
+          BeforeTargets="ComputeAvailableDevices;DeployToDevice;ComputeRunArguments">
+    <Error Condition="'$(DOTNET_HOST_PATH)' == ''" Text="DOTNET_HOST_PATH was not set during direct MSBuild target execution." />
+    <Message Text="DOTNET_HOST_PATH=$(DOTNET_HOST_PATH)" />
+  </Target>
+
+  <Target Name="_FailComputeRunArguments"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(FailComputeRunArguments)' == 'true'">
+    <Error Text="ComputeRunArguments failed as requested." />
+  </Target>
+
   <Target Name="_LogRuntimeEnvironmentVariableDuringBuild"
           BeforeTargets="_MTPBuild"
           Condition="'@(RuntimeEnvironmentVariable)' != ''">

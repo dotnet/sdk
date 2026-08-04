@@ -41,6 +41,7 @@
       "test\\Microsoft.Extensions.DotNetDeltaApplier.Tests\\Microsoft.Extensions.DotNetDeltaApplier.Tests.csproj",
       "test\\Microsoft.NET.Build.Tests\\Microsoft.NET.Build.Tests.csproj",
       "test\\Microsoft.NET.Clean.Tests\\Microsoft.NET.Clean.Tests.csproj",
+      "test\\Microsoft.NET.ILLink.Tests\\Microsoft.NET.ILLink.Tests.csproj",
       "test\\Microsoft.NET.Pack.Tests\\Microsoft.NET.Pack.Tests.csproj",
       "test\\Microsoft.NET.Publish.Tests\\Microsoft.NET.Publish.Tests.csproj",
       "test\\Microsoft.NET.Rebuild.Tests\\Microsoft.NET.Rebuild.Tests.csproj",

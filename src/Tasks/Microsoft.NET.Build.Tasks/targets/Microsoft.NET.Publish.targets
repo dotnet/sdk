@@ -1298,6 +1298,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <NETSdkError Condition="'$(IncludeAllContentForSelfExtract)' == 'true' And '$(IncludeNativeLibrariesForSelfExtract)' != 'true'"
                  ResourceName="CannotIncludeAllContentButNotNativeLibrariesInSingleFile" />
 
+    <NETSdkWarning Condition="'$(IncludeAllContentForSelfExtract)' == 'true'"
+                   ResourceName="IncludeAllContentForSelfExtractIsLegacy" />
+
     <!-- Bundle the files in FilesToBundle (excluded files were already filtered out by PrepareForBundle) -->
     <GenerateBundle FilesToBundle="@(FilesToBundle)"
                     AppHostName="$(PublishedSingleFileName)"

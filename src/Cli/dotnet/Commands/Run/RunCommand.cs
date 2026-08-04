@@ -589,6 +589,7 @@ public class RunCommand
             bool hasRuntimeEnvironmentVariableSupport;
             try
             {
+                using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
                 project = EvaluateProject(ProjectFileFullPath, projectFactory, MSBuildArgs, logger);
                 ValidatePreconditions(project);
                 hasRuntimeEnvironmentVariableSupport = InvokeRunArgumentsTarget(project, NoBuild, logger, MSBuildArgs, EnvironmentVariables);

@@ -505,6 +505,30 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItSetsDotnetHostPathForDirectDeviceTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "DotnetHostPath")
+            .WithSource();
+
+        new DotnetCommand(Log, "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:Device=test-device-1")
+            .Should().Pass();
+
+        var command = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path);
+        command.EnvironmentToRemove.Add("DOTNET_HOST_PATH");
+
+        command.Execute(
+            "--framework",
+            ToolsetInfo.CurrentTargetFramework,
+            "--device",
+            "test-device-1",
+            "--no-build")
+            .Should().Pass();
+    }
+
+    [TestMethod]
     public void ItCallsDeployToDeviceTargetEvenWithNoBuild()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "NoBuildDeploy")
@@ -608,7 +632,33 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 "-p:FailDeployToDevice=true");
 
         result.Should().Fail()
-            .And.HaveStdErrContaining(CliCommandStrings.RunCommandDeployFailed);
+            .And.HaveStdErrContaining(CliCommandStrings.RunCommandDeployFailed)
+            // The MSBuild error itself must be reported, otherwise the user is told to fix errors
+            // that were never printed anywhere.
+            .And.HaveStdOutContaining("DeployToDevice failed as requested.");
+    }
+
+    [TestMethod]
+    public void ItFailsWhenComputeRunArgumentsTargetFails()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "ComputeRunArgumentsFailure")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute(
+                "--framework",
+                ToolsetInfo.CurrentTargetFramework,
+                "--device",
+                "test-device-1",
+                "-p:FailComputeRunArguments=true");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, "ComputeRunArguments"))
+            // The MSBuild error itself must be reported, otherwise the user is told to fix errors
+            // that were never printed anywhere.
+            .And.HaveStdOutContaining("ComputeRunArguments failed as requested.");
     }
 
     [TestMethod]
