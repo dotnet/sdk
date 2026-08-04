@@ -7,6 +7,7 @@ using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
 using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
@@ -556,6 +557,7 @@ internal static class SolutionAndProjectUtility
             runProperties = DeployAndGetRunProperties(
                 project,
                 logger,
+                AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs),
                 buildOptions.EnvironmentVariables,
                 out runtimeEnvironmentVariables);
 
@@ -603,6 +605,7 @@ internal static class SolutionAndProjectUtility
         static RunProperties DeployAndGetRunProperties(
             ProjectInstance project,
             FacadeLogger? logger,
+            MSBuildArgs msbuildArgs,
             IReadOnlyDictionary<string, string> environmentVariables,
             out IReadOnlyDictionary<string, string> runtimeEnvironmentVariables)
         {
@@ -618,20 +621,19 @@ internal static class SolutionAndProjectUtility
             // NOTE: BuildManager is singleton.
             lock (s_buildLock)
             {
-                var loggers = logger is null ? null : new[] { logger };
                 if (project.Targets.ContainsKey(Constants.DeployToDevice))
                 {
                     // Deploy on a fresh ProjectInstance to avoid accumulating state (existing item
                     // groups) that would leak into the ComputeRunArguments build below, which has to
                     // build the original instance since the run properties are read back from it.
                     // Same reason as dotnet run, see RunCommandSelector.OpenProjectIfNeeded.
-                    if (!project.DeepCopy().Build([Constants.DeployToDevice], loggers))
+                    if (!project.DeepCopy().Build([Constants.DeployToDevice], CreateBuildLoggers(msbuildArgs, logger)))
                     {
                         throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
                     }
                 }
 
-                if (!project.Build(s_computeRunArgumentsTarget, loggers))
+                if (!project.Build(s_computeRunArgumentsTarget, CreateBuildLoggers(msbuildArgs, logger)))
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
                 }
@@ -641,6 +643,34 @@ internal static class SolutionAndProjectUtility
                 ? EnvironmentVariablesToMSBuild.ReadFromItems(project)
                 : environmentVariables;
             return RunProperties.FromProject(project);
+        }
+    }
+
+    /// <summary>
+    /// Gets the loggers to attach to an in-process <see cref="ProjectInstance"/> build.
+    /// A console logger is attached (unless <c>-noConsoleLogger</c> was passed) so that MSBuild errors are
+    /// actually reported to the user: the binary logger only forwards events to binlogs, and it is only
+    /// created when <c>-bl</c> was passed, so without a console logger these builds fail silently and the user
+    /// is only told to "fix the errors and warnings" without any error being printed anywhere.
+    /// This mirrors what <c>dotnet run</c> does in <c>RunCommand.InvokeRunArgumentsTarget</c>.
+    /// </summary>
+    /// <remarks>
+    /// A fresh console logger is created for each build to avoid disposal issues when calling
+    /// <see cref="ProjectInstance.Build(string[], IEnumerable{ILogger})"/> multiple times.
+    /// </remarks>
+    private static IEnumerable<ILogger> CreateBuildLoggers(MSBuildArgs msbuildArgs, FacadeLogger? binaryLogger)
+    {
+        if (binaryLogger is not null)
+        {
+            yield return binaryLogger;
+        }
+
+        if (!LoggerUtility.HasNoConsoleLoggerArgument(msbuildArgs.OtherMSBuildArgs))
+        {
+            // These builds only compute run arguments and deploy, so keep them quiet - at this verbosity
+            // MSBuild still reports errors and warnings.
+            yield return CommonRunHelpers.GetConsoleLogger(
+                msbuildArgs.CloneWithExplicitArgs([$"--verbosity:{LoggerVerbosity.Quiet.ToString().ToLowerInvariant()}", .. msbuildArgs.OtherMSBuildArgs]));
         }
     }
 
