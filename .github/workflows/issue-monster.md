@@ -29,7 +29,7 @@ on:
           // Cap how many issues we fetch full details for, and how many detail
           // requests run at once, so a scheduled run does not fan out up to 100
           // concurrent REST + GraphQL calls and trip GitHub secondary rate limiting.
-          const MAX_ISSUES_TO_INSPECT = 40;
+          const MAX_ISSUES_TO_INSPECT = 80;
           const DETAIL_FETCH_CONCURRENCY = 5;
           try {
             const requestedIssueNumberInput = `${{ github.event.inputs.issue_number || '' }}`.trim();
