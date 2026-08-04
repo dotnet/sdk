@@ -34,7 +34,6 @@ public class DefaultHiveMigrationEndToEndTests
         {
             ["DOTNET_DOTNETUP_DATA_DIR"] = dataDirectory,
             ["DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH"] = string.Empty,
-            ["DOTNET_TESTHOOK_DEFAULT_INSTALL_PATH"] = string.Empty,
             ["DOTNET_TESTHOOK_MANIFEST_PATH"] = string.Empty,
         };
         string[] installArguments =
