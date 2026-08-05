@@ -240,8 +240,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
             {
             }
 
-            // ensure process has exited
-            await _processExitAwaiter;
+            // ensure process has exited without allowing cleanup to hang indefinitely
+            if (await Task.WhenAny(_processExitAwaiter, Task.Delay(TimeSpan.FromSeconds(30))) != _processExitAwaiter)
+            {
+                Logger.Log($"Process {Id} did not exit within 30 seconds after kill");
+            }
 
             Process.Dispose();
 
