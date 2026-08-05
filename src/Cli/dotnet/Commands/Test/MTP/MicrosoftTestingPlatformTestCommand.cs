@@ -149,6 +149,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
         };
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        var resultsDirectoryResolver = TestResultsDirectoryResolver.Create(
+            buildOptions.PathOptions,
+            testHandler.EnumerateTestModules(),
+            Directory.GetCurrentDirectory());
+
         using var testRunPolicy = new TestRunPolicy(
             testOptions.IsDiscovery || testOptions.IsHelp
                 ? null
@@ -157,6 +162,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 ? null
                 : parseResult.GetValue(definition.TimeoutOption),
             onCancellation: _ => output.MarkCancelled());
+
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
         using var queueCancellation = CancellationTokenSource.CreateLinkedTokenSource(ctrlC.Token, testRunPolicy.Token);
         var artifactPostProcessingManager = new ArtifactPostProcessingManager();
@@ -167,6 +173,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 degreeOfParallelism,
                 buildOptions,
                 testOptions,
+                resultsDirectoryResolver,
                 output,
                 OnHelpRequested,
                 ctrlC,

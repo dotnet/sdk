@@ -344,7 +344,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void MTPCommandNormalizesAffectedOptionsForwardedAfterDoubleDash()
         {
             var buildOptions = new BuildOptions(
-                new PathOptions(null, null, null, null, null, null),
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
                 HasNoRestore: false,
                 HasNoBuild: false,
                 Verbosity: null,
@@ -373,7 +373,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         public void MTPCommandNormalizesForwardedAffectedOptionSpellings(string option, bool expectedAffectedTests)
         {
             var buildOptions = new BuildOptions(
-                new PathOptions(null, null, null, null, null, null),
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
                 HasNoRestore: false,
                 HasNoBuild: false,
                 Verbosity: null,
@@ -399,7 +399,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string responseFile = Path.Combine(temp.Path, "affected.rsp");
             File.WriteAllText(responseFile, "--affected-tests");
             var buildOptions = new BuildOptions(
-                new PathOptions(null, null, null, null, null, null),
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
                 HasNoRestore: false,
                 HasNoBuild: false,
                 Verbosity: null,
@@ -433,7 +433,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             string responseFile = Path.Combine(temp.Path, "affected.rsp");
             File.WriteAllText(responseFile, "--affected-tests=false");
             var buildOptions = new BuildOptions(
-                new PathOptions(null, null, null, null, null, null),
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
                 HasNoRestore: false,
                 HasNoBuild: false,
                 Verbosity: null,
@@ -468,7 +468,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             File.WriteAllText(inner, "\"--affected-tests\"");
             File.WriteAllText(outer, $"\"@{inner}\"");
             var buildOptions = new BuildOptions(
-                new PathOptions(null, null, null, null, null, null),
+                new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
                 HasNoRestore: false,
                 HasNoBuild: false,
                 Verbosity: null,
@@ -628,6 +628,30 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             var parseResult = command.Parse(["--list-tests", format]);
 
             // Accepted values are constrained to the lowercase 'text'/'json' keys matching MTP.
+            parseResult.Errors.Should().NotBeEmpty();
+        }
+
+        [TestMethod]
+        [DataRow(null, nameof(ResultsDirectoryLayout.Flat))]
+        [DataRow("flat", nameof(ResultsDirectoryLayout.Flat))]
+        [DataRow("per-module", nameof(ResultsDirectoryLayout.PerModule))]
+        public void MTPCommandParsesResultsDirectoryLayout(string? value, string expected)
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = value is null
+                ? command.Parse([])
+                : command.Parse(["--results-directory-layout", value]);
+
+            parseResult.Errors.Should().BeEmpty();
+            MSBuildUtility.GetBuildOptions(parseResult).PathOptions.ResultsDirectoryLayout.ToString().Should().Be(expected);
+        }
+
+        [TestMethod]
+        public void MTPCommandRejectsInvalidResultsDirectoryLayout()
+        {
+            var command = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = command.Parse(["--results-directory-layout", "invalid"]);
+
             parseResult.Errors.Should().NotBeEmpty();
         }
 

@@ -18,6 +18,12 @@ internal enum TestListFormat
     Json,
 }
 
+internal enum ResultsDirectoryLayout
+{
+    Flat,
+    PerModule,
+}
+
 internal record TestOptions(
     bool IsHelp,
     bool IsDiscovery,
@@ -35,7 +41,14 @@ internal record TestOptions(
     public bool IsAffectedTestsMode => CollectTestMap || AffectedTests;
 }
 
-internal record PathOptions(string? ProjectOrSolutionPath, string? SolutionPath, string? TestModules, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
+internal record PathOptions(
+    string? ProjectOrSolutionPath,
+    string? SolutionPath,
+    string? TestModules,
+    string? ResultsDirectoryPath,
+    ResultsDirectoryLayout ResultsDirectoryLayout,
+    string? ConfigFilePath,
+    string? DiagnosticOutputDirectoryPath);
 
 internal record BuildOptions(
     PathOptions PathOptions,

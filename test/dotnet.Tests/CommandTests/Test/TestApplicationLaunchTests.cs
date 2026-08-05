@@ -140,7 +140,7 @@ public sealed class TestApplicationLaunchTests
             DotnetRootArchVariableName: null,
             EnvironmentVariables: environmentVariables ?? ImmutableDictionary<string, string>.Empty);
         var buildOptions = new BuildOptions(
-            new PathOptions(null, null, null, null, null, null),
+            new PathOptions(null, null, null, null, ResultsDirectoryLayout.Flat, null, null),
             HasNoRestore: false,
             HasNoBuild: false,
             Verbosity: null,
@@ -159,6 +159,12 @@ public sealed class TestApplicationLaunchTests
                 ShowProgress = false,
             });
 
-        return new TestApplication(module, buildOptions, testOptions, reporter, _ => { });
+        return new TestApplication(
+            module,
+            buildOptions,
+            testOptions,
+            TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, Directory.GetCurrentDirectory()),
+            reporter,
+            _ => { });
     }
 }
