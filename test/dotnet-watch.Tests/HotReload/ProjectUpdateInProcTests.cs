@@ -122,8 +122,7 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         await hasUpdatedOutput.Task;
 
         Log("Waiting for dependency resolution...");
-        using var dependencyWaitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await hasResolvedDependency.Task.WaitAsync(dependencyWaitCts.Token);
+        await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
         // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
         // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
@@ -193,8 +192,7 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         await hasUpdatedOutput.Task;
 
         Log("Waiting for dependency resolution...");
-        using var dependencyWaitCts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-        await hasResolvedDependency.Task.WaitAsync(dependencyWaitCts.Token);
+        await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
         // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
         // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
