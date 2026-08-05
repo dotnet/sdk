@@ -1,5 +1,5 @@
-# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"d328792260c06fd513141a8f9da8bf3276de990079a2188d141f15d34627e0a1","body_hash":"ee2d3c95c5c3c8869a7a73162ecbbfe27c32e757022172a537bb004bf0eb4c19","compiler_version":"v0.83.1","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.73"}}
-# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"v0.83.1","version":"v0.83.1"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.38","digest":"sha256:cb928eb62d9139a013c2d278dab19af232d35a2d83dca71a3d98eb431f786243","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.38@sha256:cb928eb62d9139a013c2d278dab19af232d35a2d83dca71a3d98eb431f786243"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.38","digest":"sha256:cd6145620d96acee46e1ede25180a13aa36002467e663db0caa453a8bc8eb60c","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.38@sha256:cd6145620d96acee46e1ede25180a13aa36002467e663db0caa453a8bc8eb60c"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.38","digest":"sha256:c30c5319da37505d42f95cb3faa2cfa55e794ccb5cc805dbd9201410d1ac2a3e","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.38@sha256:c30c5319da37505d42f95cb3faa2cfa55e794ccb5cc805dbd9201410d1ac2a3e"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.38","digest":"sha256:6c19094d95aad5f9f128ad5e583f0f2b894b158aa66c3b86dd9bcc90970a2917","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.38@sha256:6c19094d95aad5f9f128ad5e583f0f2b894b158aa66c3b86dd9bcc90970a2917"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.3","digest":"sha256:3c744710ea275cd5ee65db92a1099e0d980754bd9fafda9ce67704c67004dc83","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.3@sha256:3c744710ea275cd5ee65db92a1099e0d980754bd9fafda9ce67704c67004dc83"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.6.0","digest":"sha256:2b0c48b070f61e9d3969269ead600f62d00fb237b60ac849ef3d166ee7de9ad3","pinned_image":"ghcr.io/github/github-mcp-server:v1.6.0@sha256:2b0c48b070f61e9d3969269ead600f62d00fb237b60ac849ef3d166ee7de9ad3"}]}
+# gh-aw-metadata: {"schema_version":"v4","frontmatter_hash":"6246a45d73ee88b77258813329ca595cc9bc53b6a1eb1fa2d7e1724479ff44ed","body_hash":"ee2d3c95c5c3c8869a7a73162ecbbfe27c32e757022172a537bb004bf0eb4c19","compiler_version":"v0.83.1","strict":true,"agent_id":"copilot","engine_versions":{"copilot":"1.0.73"}}
+# gh-aw-manifest: {"version":1,"secrets":["COPILOT_PAT_0","COPILOT_PAT_1","COPILOT_PAT_2","COPILOT_PAT_3","COPILOT_PAT_4","COPILOT_PAT_5","COPILOT_PAT_6","COPILOT_PAT_7","COPILOT_PAT_8","COPILOT_PAT_9","GH_AW_GITHUB_MCP_SERVER_TOKEN","GH_AW_GITHUB_TOKEN","GITHUB_TOKEN"],"actions":[{"repo":"actions/cache/restore","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/cache/save","sha":"55cc8345863c7cc4c66a329aec7e433d2d1c52a9","version":"v6.1.0"},{"repo":"actions/checkout","sha":"9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0","version":"v7.0.0"},{"repo":"actions/download-artifact","sha":"3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c","version":"v8.0.1"},{"repo":"actions/github-script","sha":"3a2844b7e9c422d3c10d287c895573f7108da1b3","version":"v9.0.0"},{"repo":"actions/setup-node","sha":"820762786026740c76f36085b0efc47a31fe5020","version":"v7.0.0"},{"repo":"actions/upload-artifact","sha":"043fb46d1a93c77aae656e7c1c64a875d1fc6a0a","version":"v7.0.1"},{"repo":"github/gh-aw-actions/setup","sha":"8bdba8075360648fe6802302a5b4e016361dc6ac","version":"v0.83.1"}],"containers":[{"image":"ghcr.io/github/gh-aw-firewall/agent:0.27.38","digest":"sha256:cb928eb62d9139a013c2d278dab19af232d35a2d83dca71a3d98eb431f786243","pinned_image":"ghcr.io/github/gh-aw-firewall/agent:0.27.38@sha256:cb928eb62d9139a013c2d278dab19af232d35a2d83dca71a3d98eb431f786243"},{"image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.38","digest":"sha256:cd6145620d96acee46e1ede25180a13aa36002467e663db0caa453a8bc8eb60c","pinned_image":"ghcr.io/github/gh-aw-firewall/api-proxy:0.27.38@sha256:cd6145620d96acee46e1ede25180a13aa36002467e663db0caa453a8bc8eb60c"},{"image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.38","digest":"sha256:c30c5319da37505d42f95cb3faa2cfa55e794ccb5cc805dbd9201410d1ac2a3e","pinned_image":"ghcr.io/github/gh-aw-firewall/cli-proxy:0.27.38@sha256:c30c5319da37505d42f95cb3faa2cfa55e794ccb5cc805dbd9201410d1ac2a3e"},{"image":"ghcr.io/github/gh-aw-firewall/squid:0.27.38","digest":"sha256:6c19094d95aad5f9f128ad5e583f0f2b894b158aa66c3b86dd9bcc90970a2917","pinned_image":"ghcr.io/github/gh-aw-firewall/squid:0.27.38@sha256:6c19094d95aad5f9f128ad5e583f0f2b894b158aa66c3b86dd9bcc90970a2917"},{"image":"ghcr.io/github/gh-aw-mcpg:v0.4.3","digest":"sha256:3c744710ea275cd5ee65db92a1099e0d980754bd9fafda9ce67704c67004dc83","pinned_image":"ghcr.io/github/gh-aw-mcpg:v0.4.3@sha256:3c744710ea275cd5ee65db92a1099e0d980754bd9fafda9ce67704c67004dc83"},{"image":"ghcr.io/github/gh-aw-node","digest":"sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b","pinned_image":"ghcr.io/github/gh-aw-node@sha256:529d02eb970b1161aa25c593a9c3df57fdfad5a8add328cb3b6eccef66f3183b"},{"image":"ghcr.io/github/github-mcp-server:v1.6.0","digest":"sha256:2b0c48b070f61e9d3969269ead600f62d00fb237b60ac849ef3d166ee7de9ad3","pinned_image":"ghcr.io/github/github-mcp-server:v1.6.0@sha256:2b0c48b070f61e9d3969269ead600f62d00fb237b60ac849ef3d166ee7de9ad3"}]}
 # This file was automatically generated by gh-aw (v0.83.1). DO NOT EDIT. To debug this workflow, load the skill at https://github.com/github/gh-aw/blob/main/debug.md
 #
 #    ___                   _   _
@@ -54,7 +54,7 @@
 #   - actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0 (source v9)
 #   - actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
 #   - actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-#   - github/gh-aw-actions/setup@v0.83.1
+#   - github/gh-aw-actions/setup@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
 #
 # Container images used:
 #   - ghcr.io/github/gh-aw-firewall/agent:0.27.38@sha256:cb928eb62d9139a013c2d278dab19af232d35a2d83dca71a3d98eb431f786243
@@ -121,7 +121,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.83.1
+        uses: github/gh-aw-actions/setup@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -482,7 +482,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.83.1
+        uses: github/gh-aw-actions/setup@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1348,7 +1348,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.83.1
+        uses: github/gh-aw-actions/setup@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1623,7 +1623,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.83.1
+        uses: github/gh-aw-actions/setup@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -1869,27 +1869,56 @@ jobs:
       - name: Select Copilot token from pool
         id: select-pat-number
         run: |
-          # Collect pool entries with non-empty secrets from COPILOT_PAT_0..COPILOT_PAT_9.
+          # Collect pool entries that authenticate successfully with GitHub.
           PAT_NUMBERS=()
           POOL_INDICATORS=(➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖ ➖)
+          CONFIGURED_PAT_COUNT=0
 
           for i in $(seq 0 9); do
             var="COPILOT_PAT_${i}"
             val="${!var}"
             if [ -n "$val" ]; then
-              PAT_NUMBERS+=(${i})
-              POOL_INDICATORS[${i}]="🟪"
+              CONFIGURED_PAT_COUNT=$((CONFIGURED_PAT_COUNT + 1))
+              if status=$(printf 'Authorization: Bearer %s\nAccept: application/vnd.github+json\nX-GitHub-Api-Version: 2022-11-28\n' "$val" | \
+                curl --silent --show-error \
+                  --output /dev/null \
+                  --write-out '%{http_code}' \
+                  --connect-timeout 5 \
+                  --max-time 15 \
+                  --proto '=https' \
+                  --tlsv1.2 \
+                  --header @- \
+                  https://api.github.com/user); then
+                if [ "$status" = 200 ]; then
+                  PAT_NUMBERS+=("${i}")
+                  POOL_INDICATORS[${i}]="🟪"
+                else
+                  POOL_INDICATORS[${i}]="❌"
+                  echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check returned HTTP ${status}"
+                fi
+              else
+                POOL_INDICATORS[${i}]="❔"
+                echo "::warning::Ignoring COPILOT_PAT_${i}: authentication check could not reach GitHub"
+              fi
             fi
           done
 
           # If none of the entries in the pool have values, emit a warning
           # and do not set an output value. The consumer can fall back to
           # using COPILOT_GITHUB_TOKEN.
-          if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
+          if [ "$CONFIGURED_PAT_COUNT" -eq 0 ]; then
             warning_message="::warning::None of the PAT pool entries had values "
             warning_message+="(checked COPILOT_PAT_0 through COPILOT_PAT_9)"
             echo "$warning_message"
             exit 0
+          fi
+
+          if [ ${#PAT_NUMBERS[@]} -eq 0 ]; then
+            echo "|0|1|2|3|4|5|6|7|8|9|" >> "$GITHUB_STEP_SUMMARY"
+            echo "|-|-|-|-|-|-|-|-|-|-|" >> "$GITHUB_STEP_SUMMARY"
+            (IFS='|'; printf '|%s' "${POOL_INDICATORS[@]}"; printf '|\n') >> "$GITHUB_STEP_SUMMARY"
+            echo "::error::None of the configured PAT pool entries authenticated successfully"
+            exit 1
           fi
 
           # Select a random index using the seed if specified
@@ -1942,7 +1971,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.83.1
+        uses: github/gh-aw-actions/setup@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
@@ -2020,7 +2049,7 @@ jobs:
     steps:
       - name: Setup Scripts
         id: setup
-        uses: github/gh-aw-actions/setup@v0.83.1
+        uses: github/gh-aw-actions/setup@8bdba8075360648fe6802302a5b4e016361dc6ac # v0.83.1
         with:
           destination: ${{ runner.temp }}/gh-aw/actions
           job-name: ${{ github.job }}
