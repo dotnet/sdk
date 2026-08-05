@@ -142,6 +142,11 @@
         <target state="translated">Значение поля "{1}" в перечислении "{0}" изменено с "{2}" на "{3}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalApiBecomesStable">
+        <source>API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</source>
+        <target state="new">API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">Индекс {0} должен находиться в диапазоне от нуля до {1} включительно.</target>

@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ApiCompatibility
     /// <param name="message"><see cref="string"/> message describing the difference.</param>
     /// <param name="type"><see cref="DifferenceType"/> to describe the type of the difference.</param>
     /// <param name="memberId"><see cref="string"/> containing the member ID for which the difference is associated to.</param>
-    public readonly struct CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId) : IDiagnostic, IEquatable<CompatDifference>
+    public readonly struct CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity = DifferenceSeverity.Error) : IDiagnostic, IEquatable<CompatDifference>
     {
         /// <inheritdoc />
         public string DiagnosticId { get; } = diagnosticId;
@@ -24,6 +24,15 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// The <see cref="DifferenceType"/>.
         /// </summary>
         public DifferenceType Type { get; } = type;
+
+        /// <summary>
+        /// The severity of the compatibility difference.
+        /// </summary>
+        public DifferenceSeverity Severity { get; } = severity;
+
+        internal ISymbol? LeftSymbol { get; }
+
+        internal ISymbol? RightSymbol { get; }
 
         /// <inheritdoc />
         public string Message { get; } = message;
@@ -55,6 +64,19 @@ namespace Microsoft.DotNet.ApiCompatibility
         {
         }
 
+        internal CompatDifference WithSeverity(DifferenceSeverity newSeverity) =>
+            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, newSeverity, LeftSymbol, RightSymbol);
+
+        internal CompatDifference WithSymbols(ISymbol? leftSymbol, ISymbol? rightSymbol) =>
+            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, Severity, leftSymbol, rightSymbol);
+
+        private CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity, ISymbol? leftSymbol, ISymbol? rightSymbol)
+            : this(left, right, diagnosticId, message, type, memberId, severity)
+        {
+            LeftSymbol = leftSymbol;
+            RightSymbol = rightSymbol;
+        }
+
         /// <summary>
         /// Create a compatibility difference object with default left and right metadata for which the difference occurred.
         /// </summary>
@@ -78,6 +100,7 @@ namespace Microsoft.DotNet.ApiCompatibility
             Right.Equals(other.Right) &&
             DiagnosticId.Equals(other.DiagnosticId, StringComparison.InvariantCultureIgnoreCase) &&
             Type.Equals(other.Type) &&
+            Severity.Equals(other.Severity) &&
             string.Equals(ReferenceId, other.ReferenceId, StringComparison.InvariantCultureIgnoreCase);
 
         /// <inheritdoc />
@@ -91,6 +114,7 @@ namespace Microsoft.DotNet.ApiCompatibility
             hashCode = hashCode * -1521134295 + Right.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DiagnosticId.ToLowerInvariant());
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Type.ToString().ToLowerInvariant());
+            hashCode = hashCode * -1521134295 + Severity.GetHashCode();
             if (ReferenceId != null)
             {
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ReferenceId.ToLowerInvariant());

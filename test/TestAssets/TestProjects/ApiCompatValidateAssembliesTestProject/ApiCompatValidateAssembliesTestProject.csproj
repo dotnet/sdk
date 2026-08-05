@@ -4,6 +4,8 @@
     <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
     <DefineConstants Condition="'$(ForceBreakingChange)' == 'true'">$(DefineConstants);ForceBreakingChange</DefineConstants>
     <DefineConstants Condition="'$(AddNewMember)' == 'true'">$(DefineConstants);AddNewMember</DefineConstants>
+    <DefineConstants Condition="'$(IncludeExperimentalApis)' == 'true'">$(DefineConstants);IncludeExperimentalApis</DefineConstants>
+    <DefineConstants Condition="'$(IncludeStablePromotedApi)' == 'true'">$(DefineConstants);IncludeStablePromotedApi</DefineConstants>
   </PropertyGroup>
 
 </Project>

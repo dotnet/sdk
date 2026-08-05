@@ -142,6 +142,11 @@
         <target state="translated">'{0}' sabit listesindeki '{1}' alan değeri, '{2}' öğesinden '{3}' öğesine değiştirildi.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalApiBecomesStable">
+        <source>API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</source>
+        <target state="new">API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">{0} dizini sıfırdan başlayarak {1} dahil olmak üzere bu aralıkta olmalıdır.</target>

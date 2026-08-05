@@ -142,6 +142,11 @@
         <target state="translated">El valor del campo "{1}" en la enumeración "{0}" ha cambiado de "{2}" a "{3}".</target>
         <note />
       </trans-unit>
+      <trans-unit id="ExperimentalApiBecomesStable">
+        <source>API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</source>
+        <target state="new">API '{0}' was previously marked experimental and is now stable. Treat this as a new stable API and complete the required API documentation and review.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="IndexShouldBeWithinSetSizeRange">
         <source>The {0} index should be in the range zero through {1} inclusive.</source>
         <target state="translated">El índice de {0} debe estar comprendido entre cero y {1} inclusive.</target>

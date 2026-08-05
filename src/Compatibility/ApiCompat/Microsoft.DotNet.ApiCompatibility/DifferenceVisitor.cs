@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Mapping;
 
 namespace Microsoft.DotNet.ApiCompatibility
@@ -72,7 +73,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <inheritdoc />
         public void Visit(ITypeMapper type)
         {
-            AddDifferences(type);
+            AddSymbolDifferences(type);
 
             if (type.ShouldDiffMembers)
             {
@@ -91,7 +92,26 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <inheritdoc />
         public void Visit(IMemberMapper member)
         {
-            AddDifferences(member);
+            AddSymbolDifferences(member);
+        }
+
+        private void AddSymbolDifferences<T>(IElementMapper<T> mapper)
+            where T : ISymbol
+        {
+            foreach (CompatDifference item in mapper.GetDifferences())
+            {
+                ApiStability leftStability = ApiStabilityClassifier.Classify(item.LeftSymbol);
+                ApiStability rightStability = ApiStabilityClassifier.Classify(item.RightSymbol);
+
+                bool isExperimentalDifference =
+                    (item.LeftSymbol is null && rightStability == ApiStability.Experimental) ||
+                    (item.RightSymbol is null && leftStability == ApiStability.Experimental) ||
+                    (leftStability == ApiStability.Experimental && rightStability == ApiStability.Experimental);
+
+                _compatDifferences.Add(isExperimentalDifference
+                    ? item.WithSeverity(DifferenceSeverity.Informational)
+                    : item);
+            }
         }
 
         private void AddDifferences<T>(IElementMapper<T> mapper)
