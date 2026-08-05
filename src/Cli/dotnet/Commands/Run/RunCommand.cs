@@ -797,7 +797,7 @@ public class RunCommand
         // (otherwise it should be forwarded to the target application as its command-line argument).
         bool readCodeFromStdin = nonLoggerArgs is ["-", ..] &&
             parseResult.Tokens.TakeWhile(static t => t.Type != TokenType.DoubleDash)
-                .Any(static t => t.Value == "-");
+                .Any(static t => t is { Type: TokenType.Argument, Value: "-" });
 
         string? projectOption = parseResult.GetValue(definition.ProjectOption);
         string? fileOption = parseResult.GetValue(definition.FileOption);

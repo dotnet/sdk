@@ -124,6 +124,31 @@ public class AotRunCommandTests
         }
     }
 
+    /// <summary>Verifies that standard-input source code defers to the managed run implementation.</summary>
+    [TestMethod]
+    public void StandardInputFallsBackBeforePlanning()
+    {
+        var fixture = CreateFixture();
+        try
+        {
+            DateTime oldArtifactsTime = DateTime.UtcNow.AddDays(-1);
+            Directory.SetLastWriteTimeUtc(fixture.ArtifactsPath, oldArtifactsTime);
+            var parseResult = Parser.Parse(["run", "-"]);
+
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() =>
+                AotRunCommand.Execute(
+                    parseResult,
+                    static _ => throw new InvalidOperationException("Launcher should not be called."),
+                    fixture.TestDirectory));
+
+            Assert.AreEqual(oldArtifactsTime, Directory.GetLastWriteTimeUtc(fixture.ArtifactsPath));
+        }
+        finally
+        {
+            DeleteFixture(fixture);
+        }
+    }
+
     /// <summary>Verifies that positional file discovery defers when the current directory contains a project.</summary>
     [TestMethod]
     public void PositionalFileWithProjectInCurrentDirectoryFallsBackBeforePlanning()

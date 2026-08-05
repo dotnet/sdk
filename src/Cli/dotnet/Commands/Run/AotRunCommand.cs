@@ -309,6 +309,12 @@ internal static class AotRunCommand
             return false;
         }
 
+        if (argumentCountBeforeDoubleDash > 0 && parsedApplicationArguments[0] == "-")
+        {
+            fallbackReason = "standard-input source code requires the managed run implementation";
+            return false;
+        }
+
         string? entryPointPath = parseResult.GetValue(definition.FileOption);
         if (string.IsNullOrEmpty(entryPointPath))
         {
