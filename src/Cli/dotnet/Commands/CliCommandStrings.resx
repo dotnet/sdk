@@ -2722,8 +2722,33 @@ Proceed?</value>
   <data name="TotalColon" xml:space="preserve">
     <value>total:</value>
   </data>
-  <data name="Retried" xml:space="preserve">
-    <value>retried</value>
+  <data name="RetriedColon" xml:space="preserve">
+    <value>retried:</value>
+    <comment>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</comment>
+  </data>
+  <data name="RetriedTestsAndRuns" xml:space="preserve">
+    <value>{0} test(s), {1} extra run(s)</value>
+    <comment>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</comment>
+  </data>
+  <data name="FlakyLowercase" xml:space="preserve">
+    <value>flaky: {0} (passed after retry)</value>
+    <comment>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</comment>
+  </data>
+  <data name="FlakyTests" xml:space="preserve">
+    <value>Flaky tests:</value>
+    <comment>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</comment>
+  </data>
+  <data name="FlakyTransition" xml:space="preserve">
+    <value>failed -&gt; passed</value>
+    <comment>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</comment>
+  </data>
+  <data name="FlakyAttempts" xml:space="preserve">
+    <value>{0} attempts</value>
+    <comment>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</comment>
+  </data>
+  <data name="SlowestTests" xml:space="preserve">
+    <value>Slowest tests:</value>
+    <comment>Header of the run summary section that lists the longest-running tests.</comment>
   </data>
   <data name="FailedColon" xml:space="preserve">
     <value>failed:</value>

@@ -64,10 +64,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .Should().Contain("(try 2)")
                     .And.NotContain("(try 3)")
                     .And.NotContain("(try 4)")
-                    .And.Contain("total: 1 (+1 retried)")
+                    .And.Contain("total: 1")
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")
-                    .And.Contain("skipped: 0");
+                    .And.Contain("skipped: 0")
+                    // The test failed on the first attempt and passed on the retry, so it is reported as flaky and
+                    // accounted for by the retry lines that replaced the old 'total: 1 (+1 retried)' suffix.
+                    .And.Contain("flaky: 1 (passed after retry)")
+                    .And.Contain("retried: 1 test(s), 1 extra run(s)")
+                    .And.Contain("Flaky tests:");
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);

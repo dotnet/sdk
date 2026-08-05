@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.CommandLine;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
@@ -617,6 +618,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
             AllowZeroTests = testOptions.IsAffectedTestsMode,
             ListTestsFormat = testOptions.ListTestsFormat,
+            SlowestTestsCount = GetSlowestTestsCount(parseResult.GetArguments()),
+            ShowFlakyTests = GetShowFlakyTests(parseResult.GetArguments()),
         });
 
         // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
@@ -628,6 +631,64 @@ internal partial class MicrosoftTestingPlatformTestCommand
 
         output.TestExecutionStarted(DateTimeOffset.Now, degreeOfParallelism, testOptions.IsDiscovery, testOptions.IsHelp, isRetry);
         return output;
+    }
+
+    /// <summary>
+    /// Reads the Microsoft.Testing.Platform <c>--show-slowest-tests N</c> option out of the raw command line.
+    /// </summary>
+    /// <remarks>
+    /// The option belongs to the test application, not to the 'dotnet test' CLI, so it is forwarded verbatim. Under
+    /// the pipe protocol the test host's own terminal reporter is not plugged in (the SDK owns user-facing output),
+    /// so the section has to be rendered by the SDK's reporter instead — which means the SDK has to observe the
+    /// option. Same approach as the '--retry-failed-tests' detection above. A missing, non-numeric or non-positive
+    /// argument leaves the section off, mirroring the upstream option validator.
+    /// </remarks>
+    internal static int GetSlowestTestsCount(IReadOnlyList<string> arguments)
+    {
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            if (!string.Equals(arguments[i], "--show-slowest-tests", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (i + 1 < arguments.Count &&
+                int.TryParse(arguments[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int count) &&
+                count >= 1)
+            {
+                return count;
+            }
+
+            return 0;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Reads the Microsoft.Testing.Platform <c>--show-flaky-tests [on|off]</c> option out of the raw command line.
+    /// A bare '--show-flaky-tests' means "on", which is also the default when the option is absent.
+    /// See <see cref="GetSlowestTestsCount"/> for why the SDK inspects the forwarded arguments.
+    /// </summary>
+    internal static bool GetShowFlakyTests(IReadOnlyList<string> arguments)
+    {
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            if (!string.Equals(arguments[i], "--show-flaky-tests", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return i + 1 >= arguments.Count || !IsOffValue(arguments[i + 1]);
+        }
+
+        return true;
+
+        static bool IsOffValue(string argument)
+            => string.Equals(argument, "off", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(argument, "false", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(argument, "disable", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(argument, "0", StringComparison.Ordinal);
     }
 
     private static int GetDegreeOfParallelism(ParseResult parseResult, bool collectTestMap)
