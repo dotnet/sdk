@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 public class DotnetupPathsTests
 {
     [TestMethod]
-    public void DefaultDotnetInstallPath_IsChildOfDataDirectory()
+    public void DefaultDotnetInstallPath_IsSubdirectoryOfDataDirectory()
     {
         string dataDirectory = Path.Combine(Path.GetTempPath(), "dotnetup-paths-tests", Guid.NewGuid().ToString("N"));
         DotnetupPaths.SetTestDataDirectoryOverride(dataDirectory);

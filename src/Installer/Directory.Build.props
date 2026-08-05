@@ -12,6 +12,7 @@
          dotnet install root under the dotnetup data directory. -->
     <DotnetupVersionPrefix>0.2.0</DotnetupVersionPrefix>
     <DotnetupPreReleaseVersionLabel>preview</DotnetupPreReleaseVersionLabel>
+    <DotnetupPreReleaseVersionIteration>1</DotnetupPreReleaseVersionIteration>
   </PropertyGroup>
 
   <!-- Shared properties for the dotnetup family of projects (dotnetup, dotnetup.Library,
@@ -25,6 +26,7 @@
     <!-- Versioning -->
     <VersionPrefix>$(DotnetupVersionPrefix)</VersionPrefix>
     <PreReleaseVersionLabel>$(DotnetupPreReleaseVersionLabel)</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>$(DotnetupPreReleaseVersionIteration)</PreReleaseVersionIteration>
 
     <!-- Style/analysis warnings should only break the dedicated style-check leg, not the bootstrap toolset build.
          EnforceCodeStyleInBuild=false  prevents IDE* code-style analyzers from running during build.

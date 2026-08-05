@@ -153,7 +153,7 @@ internal static class DotnetupPaths
 
     /// <summary>
     /// Gets the default dotnet install path managed by dotnetup.
-    /// This is the dotnet child of the dotnetup data directory
+    /// This is the dotnet subdirectory of the dotnetup data directory
     /// (e.g. %LOCALAPPDATA%\dotnetup\dotnet on Windows).
     /// </summary>
     /// <remarks>
