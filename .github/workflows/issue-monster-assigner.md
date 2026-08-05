@@ -3,10 +3,20 @@ emoji: "👾"
 name: Issue Monster Assigner
 description: Assigns one issue to Copilot using an orchestrator-selected base branch
 on:
-  # pat_pool import requires a `pre_activation` job; an empty on.permissions
-  # forces gh-aw to generate a no-op pre_activation job for this dispatch-only
-  # workflow. See shared/pat_pool.README.md "Known Issues".
-  permissions: {}
+  # `roles: all` bypasses gh-aw's pre_activation membership check. The assigner is only
+  # ever dispatched programmatically by the orchestrator, so the workflow_dispatch actor
+  # is github-actions[bot] (repo permission `none`); without this, that actor is rejected
+  # and every agentic job is skipped. GitHub still enforces its own actions:write
+  # requirement to create the dispatch.
+  roles: all
+  # A no-op activation step forces gh-aw to emit a `pre_activation` job, which the
+  # pat_pool import requires (`needs: [pre_activation]`). `roles: all` alone leaves no
+  # activation logic, so gh-aw would otherwise omit pre_activation and compilation fails
+  # with "job 'pat_pool' depends on non-existent job 'pre_activation'".
+  # See shared/pat_pool.README.md "Known Issues".
+  steps:
+    - name: Force pre_activation job for pat_pool dependency
+      run: echo "pre_activation placeholder for PAT pool wiring"
   workflow_dispatch:
     inputs:
       issue_number:
