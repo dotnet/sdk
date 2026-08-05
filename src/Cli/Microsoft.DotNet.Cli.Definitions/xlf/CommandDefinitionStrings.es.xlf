@@ -157,6 +157,21 @@
         <target state="translated">El entorno de tiempo de ejecución para el que se limpia.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Habilita la recopilación del volcado de memoria en la salida del host de prueba esperada e inesperada.</target>
@@ -242,6 +257,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 El valor de tiempo de espera se especifica en el siguiente formato: 1,5 h / 90 m / 5400 s / 5 400 000 ms. Cuando no se usa ninguna unidad (por ejemplo, 5400000), se supone que el valor está en milisegundos.
 Cuando se usa junto con pruebas basadas en datos, el comportamiento del tiempo de espera depende del adaptador de pruebas utilizado. Para xUnit, NUnit y MSTest 2.2.4+ el tiempo de espera se renueva después de cada caso de prueba,
 Para MSTest antes de 2.2.4, el tiempo de espera se usa para todos los casos de prueba.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -1330,6 +1360,11 @@ Si el comando se especifica sin el argumento, muestra todos los paquetes de plan
       <trans-unit id="Option_Install_Force">
         <source>Allows installing template packages from the specified sources even if they would override a template package from another source.</source>
         <target state="translated">Permite instalar paquetes de plantillas desde los orígenes especificados, incluso si invalidarían un paquete de plantillas de otro origen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

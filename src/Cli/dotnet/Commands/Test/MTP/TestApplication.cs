@@ -267,7 +267,7 @@ internal sealed class TestApplication(
         }
     }
 
-    private ProcessStartInfo CreateProcessStartInfo()
+    internal ProcessStartInfo CreateProcessStartInfo()
     {
         var processStartInfo = new ProcessStartInfo
         {
@@ -314,6 +314,19 @@ internal sealed class TestApplication(
             processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
         }
 
+        if (TestOptions.CollectTestMap)
+        {
+            processStartInfo.Environment[TestOptions.AffectedTestsModeEnvironmentVariable] = TestOptions.CollectTestMapMode;
+        }
+        else if (TestOptions.AffectedTests)
+        {
+            processStartInfo.Environment[TestOptions.AffectedTestsModeEnvironmentVariable] = TestOptions.RunAffectedTestsMode;
+        }
+        else
+        {
+            processStartInfo.Environment.Remove(TestOptions.AffectedTestsModeEnvironmentVariable);
+        }
+
         processStartInfo.Environment["DOTNET_CLI_TEST_COMMAND_WORKING_DIRECTORY"] = Directory.GetCurrentDirectory();
         return processStartInfo;
     }
@@ -349,6 +362,16 @@ internal sealed class TestApplication(
         if (TestOptions.IsDiscovery)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
+        }
+
+        if (TestOptions.CollectTestMap && !TestOptions.CollectTestMapForwarded)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.CollectTestMapOptionName}");
+        }
+
+        if (TestOptions.AffectedTests && !TestOptions.AffectedTestsForwarded)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.AffectedTestsOptionName}");
         }
 
         if (_resultsDirectoryResolver.Resolve(Module) is { } resultsDirectoryPath)

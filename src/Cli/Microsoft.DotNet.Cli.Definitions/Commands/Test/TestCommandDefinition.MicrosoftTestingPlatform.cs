@@ -8,6 +8,7 @@ using System.Globalization;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Help;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -188,6 +189,18 @@ internal abstract partial class TestCommandDefinition
             Arity = ArgumentArity.Zero
         };
 
+        public const string EnableAffectedTestsEnvironmentVariable = "DOTNET_CLI_ENABLE_AFFECTED_TESTS";
+
+        public const string CollectTestMapOptionName = "--collect-test-map";
+
+        public readonly Option<bool> CollectTestMapOption;
+
+        public const string AffectedTestsOptionName = "--affected-tests";
+
+        public readonly Option<bool> AffectedTestsOption;
+
+        public bool AffectedTestsEnabled { get; }
+
         public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
 
         public const string BuildTargetName = "_MTPBuild";
@@ -201,6 +214,24 @@ internal abstract partial class TestCommandDefinition
         {
             MinimumExpectedTestsOption.Validators.Add(ValidatePositiveInteger);
             MaximumFailedTestsOption.Validators.Add(ValidatePositiveInteger);
+
+            AffectedTestsEnabled = EnvironmentVariableParser.ParseBool(
+                Environment.GetEnvironmentVariable(EnableAffectedTestsEnvironmentVariable),
+                defaultValue: false);
+
+            CollectTestMapOption = new(CollectTestMapOptionName)
+            {
+                Description = CommandDefinitionStrings.CmdCollectTestMapDescription,
+                Arity = ArgumentArity.Zero,
+                Hidden = !AffectedTestsEnabled,
+            };
+
+            AffectedTestsOption = new(AffectedTestsOptionName)
+            {
+                Description = CommandDefinitionStrings.CmdAffectedTestsDescription,
+                Arity = ArgumentArity.Zero,
+                Hidden = !AffectedTestsEnabled,
+            };
 
             Options.Add(ProjectOrSolutionOption);
             Options.Add(SolutionOption);
@@ -236,7 +267,33 @@ internal abstract partial class TestCommandDefinition
             Options.Add(NoLaunchProfileArgumentsOption);
             Options.Add(DeviceOption);
             Options.Add(ListDevicesOption);
+            Options.Add(CollectTestMapOption);
+            Options.Add(AffectedTestsOption);
             Options.Add(MTPTargetOption);
+
+            Validators.Add(commandResult =>
+            {
+                bool collectTestMap = commandResult.HasOption(CollectTestMapOption);
+                bool affectedTests = commandResult.HasOption(AffectedTestsOption);
+                if (!AffectedTestsEnabled && (collectTestMap || affectedTests))
+                {
+                    commandResult.AddError(string.Format(
+                        CommandDefinitionStrings.CmdAffectedTestsFeatureDisabled,
+                        EnableAffectedTestsEnvironmentVariable));
+                }
+                else if (collectTestMap && affectedTests)
+                {
+                    commandResult.AddError(CommandDefinitionStrings.CmdAffectedTestsOptionsMutuallyExclusive);
+                }
+                else if (collectTestMap && commandResult.HasOption(MaxParallelTestModulesOption))
+                {
+                    commandResult.AddError(CommandDefinitionStrings.CmdCollectTestMapCannotRunModulesInParallel);
+                }
+                else if (collectTestMap && commandResult.HasOption(MinimumExpectedTestsOption))
+                {
+                    commandResult.AddError(CommandDefinitionStrings.CmdCollectTestMapCannotRequireMinimumTests);
+                }
+            });
         }
 
         public IEnumerable<Action<HelpContext>> CustomHelpLayout()

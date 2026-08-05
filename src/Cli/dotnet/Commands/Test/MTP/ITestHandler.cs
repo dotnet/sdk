@@ -13,5 +13,7 @@ internal interface ITestHandler
     /// </summary>
     IEnumerable<TestModule> EnumerateTestModules();
 
+    IEnumerable<string?> GetTestApplicationWorkingDirectories();
+
     int RunTestApplications(TestApplicationActionQueue actionQueue);
 }

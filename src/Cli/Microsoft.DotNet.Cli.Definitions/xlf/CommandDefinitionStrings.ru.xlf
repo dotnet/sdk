@@ -157,6 +157,21 @@
         <target state="translated">Целевая среда выполнения для очистки.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Включает сбор аварийного дампа при ожидаемом и неожиданном завершении работы узла тестирования.</target>
@@ -242,6 +257,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Значение времени ожидания указывается в следующем формате: 1.5h / 90m / 5400s / 5400000ms. Если единица измерения не указана (например, 5400000), предполагается, что время задано в миллисекундах.
 При использовании вместе с тестами под управлением данных время ожидания зависит от используемого адаптера теста. Для xUnit, NUnit и MSTest начиная с версии 2.2.4 отсчет времени ожидания начинается заново для каждого тестового случая,
 В MSTest версии ниже 2.2.4 время ожидания подсчитывается суммарно для всех тестовых случаев.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -1330,6 +1360,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="Option_Install_Force">
         <source>Allows installing template packages from the specified sources even if they would override a template package from another source.</source>
         <target state="translated">Позволяет устанавливать пакеты шаблонов из указанных источников, даже если при этом они переопределят пакет шаблонов из другого источника.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

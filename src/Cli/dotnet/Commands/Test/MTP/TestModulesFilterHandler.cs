@@ -102,6 +102,11 @@ internal sealed class TestModulesFilterHandler : ITestHandler
         return testApplications;
     }
 
+    public IEnumerable<string?> GetTestApplicationWorkingDirectories()
+    {
+        yield return null;
+    }
+
     internal static List<string> GetMatchedModulePaths(string testModules, string? rootDirectory)
     {
         if (string.IsNullOrEmpty(rootDirectory))

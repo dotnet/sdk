@@ -34,13 +34,13 @@
     {
       "id": "dotnet-test-terminal-reporter",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs",
-      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. NOT YET PORTED: the coverage summary (TerminalTestReporter.Coverage.cs), the flaky-test listing (.FlakyTests.cs), the slowest-test listing (.SlowestTests.cs) and the flaky/retried counter lines. Those landed upstream after the .Summary.cs baseline and were then moved into their own partials, so the .Summary.cs drift diff no longer shows them; the newly tracked partials are baselined at the split, so no drift issue will surface this backlog either. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
+      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. NOT YET PORTED: the coverage summary (TerminalTestReporter.Coverage.cs), the flaky-test listing (.FlakyTests.cs), the slowest-test listing (.SlowestTests.cs), the flaky/retried counter lines, their TerminalTestReporterOptions switches, and the TestProgressState retry/flaky accounting. This work remains tracked by #55472 and #55473. Those features landed upstream after the .Summary.cs baseline and were then moved into their own partials, so the .Summary.cs drift diff no longer shows all of them; the newly tracked partials are baselined at the split, so no drift issue will surface this backlog either. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
           "baseline_blob_sha": "51bf9c46545d06d31f2944c88c20c68f76654acc",
           "scope": "reporter partial"
         },
@@ -181,8 +181,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminal.cs",
-          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
-          "baseline_blob_sha": "6d2f09cffe5bfb96ab600aa0bfc77e7f2b7835c7",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "6716c8b983c5ea37ed324f2f3ccc69e5695424fa",
           "scope": "entire file"
         }
       ]
@@ -340,14 +340,14 @@
     {
       "id": "dotnet-test-terminal-terminaltestreporteroptions",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporterOptions.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. ShowFlakyTests and ShowRunSummary are intentionally deferred with reporter reconciliation issues #55472 and #55473.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporterOptions.cs",
-          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
-          "baseline_blob_sha": "42c7a4a688c504966089741d2c7079424b5ad354",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "a5c412ae64d9e719299d8ce77ec04b812af45560",
           "scope": "entire file"
         }
       ]
@@ -376,8 +376,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestNodeResultsState.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "b56f233d182ca8b09d798a0d33a25790385440b2",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "00c340ec43694e6727024dd3e6109bee339e44ab",
           "scope": "entire file"
         }
       ]
@@ -400,14 +400,14 @@
     {
       "id": "dotnet-test-terminal-testprogressstate",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressState.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Retry/flaky accounting and in-process retry attribution are intentionally deferred with reporter reconciliation issues #55472 and #55473.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
-          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
-          "baseline_blob_sha": "e0f365e72626f3479b17887a57c94b9012943967",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "1199c0ba8609a29f615e05d87c6ee91fc958fda0",
           "scope": "entire file"
         }
       ]
@@ -496,8 +496,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/IConsole.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "93a608d60be5697e956bb40225a8914e6232757d",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "25a54b2def43e298a0f7b6d884c3d3a185b834b3",
           "scope": "entire file"
         }
       ]
@@ -526,8 +526,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemConsole.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "93a13204eb4b3f10879fd383a8f2679f57d4b5af",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "90a80fb7fb82b53ad361f777283917b0b4047038",
           "scope": "entire file"
         }
       ]
