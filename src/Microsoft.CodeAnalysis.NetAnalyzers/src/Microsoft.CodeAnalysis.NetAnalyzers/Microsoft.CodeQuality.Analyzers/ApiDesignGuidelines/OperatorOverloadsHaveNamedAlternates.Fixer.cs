@@ -44,8 +44,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             switch (diagnostic.Properties[OperatorOverloadsHaveNamedAlternatesAnalyzer.DiagnosticKindText])
             {
                 case OperatorOverloadsHaveNamedAlternatesAnalyzer.AddAlternateText:
-                    SyntaxNode methodDeclaration = generator.GetDeclaration(node, DeclarationKind.Operator) ?? generator.GetDeclaration(node, DeclarationKind.ConversionOperator);
-                    if (semanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken) is not IMethodSymbol operatorOverloadSymbol)
+                    if ((generator.GetDeclaration(node, DeclarationKind.Operator) ?? generator.GetDeclaration(node, DeclarationKind.ConversionOperator)) is not SyntaxNode methodDeclaration ||
+                        semanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken) is not IMethodSymbol operatorOverloadSymbol)
                     {
                         return;
                     }
@@ -62,8 +62,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     // For C# the following `typeDeclarationSyntax` and `typeDeclaration` nodes are identical, but for VB they're different so in
                     // an effort to keep this as language-agnostic as possible, the heavy-handed approach is used.
                     SyntaxNode typeDeclarationSyntax = await typeReference.GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
-                    SyntaxNode typeDeclaration = generator.GetDeclaration(typeDeclarationSyntax,
-                        typeSymbol.TypeKind == TypeKind.Struct ? DeclarationKind.Struct : DeclarationKind.Class);
+                    if (generator.GetDeclaration(typeDeclarationSyntax,
+                        typeSymbol.TypeKind == TypeKind.Struct ? DeclarationKind.Struct : DeclarationKind.Class) is not SyntaxNode typeDeclaration)
+                    {
+                        return;
+                    }
 
                     SyntaxNode addedMember;
                     IEnumerable<SyntaxNode> bodyStatements = generator.DefaultMethodBody(semanticModel.Compilation);
@@ -113,8 +116,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     editor.AddMember(typeDeclaration, addedMember);
                     return;
                 case OperatorOverloadsHaveNamedAlternatesAnalyzer.FixVisibilityText:
-                    SyntaxNode badVisibilityNode = generator.GetDeclaration(node, DeclarationKind.Method) ?? generator.GetDeclaration(node, DeclarationKind.Property);
-                    if (badVisibilityNode != null)
+                    if ((generator.GetDeclaration(node, DeclarationKind.Method) ?? generator.GetDeclaration(node, DeclarationKind.Property)) is SyntaxNode badVisibilityNode)
                     {
                         editor.SetAccessibility(badVisibilityNode, Accessibility.Public);
                     }

@@ -30,7 +30,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         protected override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            SyntaxNode declaration = editor.Generator.GetDeclaration(node);
+            SyntaxNode? declaration = editor.Generator.GetDeclaration(node);
 
             if (declaration != null)
             {

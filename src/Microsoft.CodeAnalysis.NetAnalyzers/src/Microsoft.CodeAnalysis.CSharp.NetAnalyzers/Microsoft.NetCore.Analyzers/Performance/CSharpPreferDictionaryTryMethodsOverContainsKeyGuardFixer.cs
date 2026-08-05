@@ -221,11 +221,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                 .AddArgumentListArguments(outArgument);
             editor.ReplaceNode(fix.ContainsKeyInvocation, tryGetValueInvocation);
 
-            if (fix.AddStatementNode != null)
+            if (fix.AddStatementNode is not null && fix.ChangedValueNode is not null)
             {
                 editor.InsertBefore(fix.AddStatementNode,
                     generator.ExpressionStatement(generator.AssignmentStatement(identifierName, fix.ChangedValueNode)));
-                editor.ReplaceNode(fix.ChangedValueNode!, identifierName);
+                editor.ReplaceNode(fix.ChangedValueNode, identifierName);
             }
 
             foreach (var dictionaryAccess in fix.DictionaryAccessors)

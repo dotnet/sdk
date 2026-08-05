@@ -47,10 +47,9 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         {
             SyntaxGenerator generator = editor.Generator;
             SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            SyntaxNode targetNode = generator.GetDeclaration(node, DeclarationKind.Class);
-
             SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            if (model.GetDeclaredSymbol(targetNode, cancellationToken) is not INamedTypeSymbol typeSymbol)
+            if (generator.GetDeclaration(node, DeclarationKind.Class) is not SyntaxNode targetNode ||
+                model.GetDeclaredSymbol(targetNode, cancellationToken) is not INamedTypeSymbol typeSymbol)
             {
                 return;
             }
@@ -81,12 +80,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     break;
                 case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithStringAndExceptionParameters:
                     // Add missing CtorWithStringAndExceptionParameters
+                    if (!model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException, out INamedTypeSymbol? exceptionType))
+                    {
+                        return;
+                    }
+
                     SyntaxNode newConstructorNode3 = generator.ConstructorDeclaration(
                                                 containingTypeName: typeSymbol.Name,
                                                 parameters: new[]
                                                 {
                                                 generator.ParameterDeclaration("message", generator.TypeExpression(model.Compilation.GetSpecialType(SpecialType.System_String))),
-                                                generator.ParameterDeclaration("innerException", generator.TypeExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException)))
+                                                generator.ParameterDeclaration("innerException", generator.TypeExpression(exceptionType))
                                                 },
                                                 accessibility: Accessibility.Public,
                                                 baseConstructorArguments: new[]

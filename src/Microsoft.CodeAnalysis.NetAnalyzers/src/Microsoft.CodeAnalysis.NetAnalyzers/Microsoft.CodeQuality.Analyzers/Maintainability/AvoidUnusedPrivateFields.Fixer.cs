@@ -30,7 +30,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            editor.RemoveNode(editor.Generator.GetDeclaration(node));
+            if (editor.Generator.GetDeclaration(node) is SyntaxNode declaration)
+            {
+                editor.RemoveNode(declaration);
+            }
+
             return Task.CompletedTask;
         }
     }

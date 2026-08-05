@@ -31,7 +31,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            SyntaxNode node = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
+            SyntaxNode? node = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
 
             if (node == null)
             {
@@ -39,8 +39,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             SemanticModel semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(
-                semanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute)));
+            if (!semanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSerializableAttribute, out INamedTypeSymbol? serializableAttributeType))
+            {
+                return;
+            }
+
+            SyntaxNode attr = editor.Generator.Attribute(editor.Generator.TypeExpression(serializableAttributeType));
             editor.AddAttribute(node, attr);
         }
     }

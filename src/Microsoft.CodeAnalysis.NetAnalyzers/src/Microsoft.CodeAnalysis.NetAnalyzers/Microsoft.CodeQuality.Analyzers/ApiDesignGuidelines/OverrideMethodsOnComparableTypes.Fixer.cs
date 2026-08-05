@@ -36,7 +36,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(document);
             SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
 
-            SyntaxNode declaration = generator.GetDeclaration(root.FindNode(span));
+            SyntaxNode? declaration = generator.GetDeclaration(root.FindNode(span));
             if (declaration is null)
             {
                 return null;
@@ -51,7 +51,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             SyntaxGenerator generator = editor.Generator;
-            SyntaxNode declaration = generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
+            SyntaxNode? declaration = generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
             if (declaration is null)
             {
                 return;

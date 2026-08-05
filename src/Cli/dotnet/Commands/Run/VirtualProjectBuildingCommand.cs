@@ -262,15 +262,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
         }
 
-        Dictionary<string, string?> savedEnvironmentVariables = [];
+        IDisposable? environmentScope = null;
         try
         {
-            // Set environment variables.
-            foreach (var (key, value) in MSBuildForwardingAppWithoutLogging.GetMSBuildRequiredEnvironmentVariables())
-            {
-                savedEnvironmentVariables[key] = Environment.GetEnvironmentVariable(key);
-                Environment.SetEnvironmentVariable(key, value);
-            }
+            environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
             // Set up MSBuild.
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
@@ -381,11 +376,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
         finally
         {
-            foreach (var (key, value) in savedEnvironmentVariables)
-            {
-                Environment.SetEnvironmentVariable(key, value);
-            }
-
+            environmentScope?.Dispose();
             if (binaryLogger?.IsValueCreated == true) binaryLogger.Value.ReallyShutdown();
             consoleLogger?.Shutdown();
         }

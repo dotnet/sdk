@@ -8,6 +8,7 @@
   - [Common Properties Collected](#common-properties-collected)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
+    - [Test Events](#test-events)
     - [Template Engine Events](#template-engine-events)
     - [SDK-Collected Build Events](#sdk-collected-build-events)
     - [MSBuild Engine Telemetry](#msbuild-engine-telemetry)
@@ -33,6 +34,11 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - Values: `false`, `0`, or `no` to allow messages
   - Default: `false` (messages are displayed)
   - Note: This flag does not affect telemetry collection itself
+- **`DOTNET_CLI_TELEMETRY_SESSIONID`**: Seeds the initial telemetry session ID
+  - When set, the CLI uses this value instead of generating a new GUID for the first `TelemetryClient` created in the process
+  - This is useful for correlating multiple `dotnet` invocations that belong to the same CI workflow, job, or higher-level user session
+  - If not set, the CLI generates a new GUID per process as before
+
 
 - **`DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT`**: Set to `1`, `true`, or `yes` to disable exporting trace
   telemetry to Azure Monitor (both persistence and upload). Metrics/OTLP export and the local disk log are
@@ -125,7 +131,7 @@ Every telemetry event automatically includes these common properties:
 | **Product Type** | Type of .NET product | Product identifier |
 | **Libc Release** | Libc release information | Libc release version |
 | **Libc Version** | Libc version information | Libc version number |
-| **SessionId** | Unique session identifier | GUID |
+| **SessionId** | Unique session identifier | GUID or CI-specific correlation identifier |
 
 ## Telemetry Events
 
@@ -214,6 +220,24 @@ Every telemetry event automatically includes these common properties:
 - `detail`: Exception details (sensitive message removed)
 
 **Description**: Tracks unhandled exceptions for diagnostics
+
+### Test Events
+
+#### `test/artifact-post-processing`
+
+**When fired**: Once per `dotnet test` Microsoft.Testing.Platform run that planned at least one artifact post-processing job. Runs that plan nothing (no mergeable artifacts) emit nothing.
+
+**Properties**:
+
+- `jobs_planned`: Number of elected test-application relaunches planned
+- `jobs_executed`: Number of jobs actually attempted (differs from `jobs_planned` only when the run was cancelled mid-way)
+- `jobs_failed`: Number of jobs that reported a failure
+- `artifact_count`: Total number of input artifacts across all planned groups
+- `kinds`: Semicolon-separated, sorted, distinct artifact kinds that were merged; any kind outside a fixed well-known list is reported as `other`
+- `extensions`: Semicolon-separated, sorted, distinct file extensions from file-extension fallback groups; any extension outside a fixed well-known list is reported as `other`
+- `duration_ms`: Total wall-clock time spent post-processing, in milliseconds
+
+**Description**: Tracks how often artifact post-processing runs and on which shipped formats. No file paths, artifact contents, project names, or user-defined identifiers are collected — that is why unknown kinds and extensions are bucketed as `other`.
 
 ### Template Engine Events
 

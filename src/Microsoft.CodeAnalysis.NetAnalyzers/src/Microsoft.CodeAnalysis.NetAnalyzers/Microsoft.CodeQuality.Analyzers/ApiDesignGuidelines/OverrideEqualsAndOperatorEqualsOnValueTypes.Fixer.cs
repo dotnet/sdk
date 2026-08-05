@@ -62,8 +62,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             CancellationToken cancellationToken)
         {
             SyntaxNode enclosingNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            SyntaxNode declaration = editor.Generator.GetDeclaration(enclosingNode);
-            if (declaration == null || !fixedDeclarations.Add(declaration))
+            SyntaxNode? declaration = editor.Generator.GetDeclaration(enclosingNode);
+            if (declaration is null || !fixedDeclarations.Add(declaration))
             {
                 return;
             }

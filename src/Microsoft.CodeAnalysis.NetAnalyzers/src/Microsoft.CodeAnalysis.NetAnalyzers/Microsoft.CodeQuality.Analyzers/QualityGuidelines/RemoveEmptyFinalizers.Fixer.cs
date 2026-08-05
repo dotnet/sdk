@@ -32,7 +32,11 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
 
             // Get the declaration so that we step up to the methodblocksyntax and not the methodstatementsyntax for VB.
-            editor.RemoveNode(editor.Generator.GetDeclaration(node));
+            if (editor.Generator.GetDeclaration(node) is SyntaxNode declaration)
+            {
+                editor.RemoveNode(declaration);
+            }
+
             return Task.CompletedTask;
         }
     }

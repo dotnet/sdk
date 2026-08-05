@@ -25,8 +25,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         protected sealed override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            SyntaxNode typeDeclaration = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
-            if (typeDeclaration == null)
+            SyntaxNode? typeDeclaration = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
+            if (typeDeclaration is null)
             {
                 return;
             }

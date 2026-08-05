@@ -30,7 +30,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            SyntaxNode enumDeclarationNode = editor.Generator.GetDeclaration(node, DeclarationKind.Enum);
+            if (editor.Generator.GetDeclaration(node, DeclarationKind.Enum) is not SyntaxNode enumDeclarationNode)
+            {
+                return Task.CompletedTask;
+            }
 
             // Find the target syntax node to replace. Was not able to find a language neutral way of doing this. So using the language specific methods
             SyntaxNode? targetNode = GetTargetNode(enumDeclarationNode);

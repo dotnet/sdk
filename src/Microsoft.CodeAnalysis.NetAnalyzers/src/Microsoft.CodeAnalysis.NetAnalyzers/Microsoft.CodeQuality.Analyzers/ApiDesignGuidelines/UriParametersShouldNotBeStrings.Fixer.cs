@@ -117,7 +117,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
-            var newMethod = CreateNewMethod(generator, methodSymbol, parameterIndex, model.Compilation, uriType);
+            if (CreateNewMethod(generator, methodSymbol, parameterIndex, model.Compilation, uriType) is not SyntaxNode newMethod)
+            {
+                return;
+            }
+
             editor.AddMember(targetNode, newMethod);
         }
 
@@ -139,14 +143,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return builder.Append(')').ToString();
         }
 
-        private static SyntaxNode CreateNewMethod(
+        private static SyntaxNode? CreateNewMethod(
             SyntaxGenerator generator, IMethodSymbol methodSymbol, int parameterIndex, Compilation compilation, INamedTypeSymbol uriType)
         {
             // create original parameter decl
             var originalParameter = generator.ParameterDeclaration(methodSymbol.Parameters[parameterIndex]);
+            if (generator.GetType(originalParameter) is not SyntaxNode originalParameterType)
+            {
+                return null;
+            }
 
             // replace original parameter type to System.Uri
-            var newParameter = generator.ReplaceNode(originalParameter, generator.GetType(originalParameter), generator.TypeExpression(uriType));
+            var newParameter = generator.ReplaceNode(originalParameter, originalParameterType, generator.TypeExpression(uriType));
 
             // create original method decl
             var original = generator.MethodDeclaration(methodSymbol, generator.DefaultMethodBody(compilation));

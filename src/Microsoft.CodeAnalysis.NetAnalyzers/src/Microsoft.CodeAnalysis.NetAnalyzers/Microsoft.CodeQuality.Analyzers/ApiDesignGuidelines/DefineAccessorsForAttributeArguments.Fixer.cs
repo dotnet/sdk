@@ -143,8 +143,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             {
                 // Add it to the declaration that has this parameter, since a partial type can be declared
                 // across several documents and the editor only edits this one.
-                SyntaxNode typeDeclaration = editor.Generator.GetDeclaration(parameter, DeclarationKind.Class);
-                if (typeDeclaration == null)
+                SyntaxNode? typeDeclaration = editor.Generator.GetDeclaration(parameter, DeclarationKind.Class);
+                if (typeDeclaration is null)
                 {
                     return;
                 }
@@ -153,7 +153,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                               editor.Generator.TypeExpression(parameterSymbol.Type),
                                                                               Accessibility.Public,
                                                                               DeclarationModifiers.ReadOnly);
-                newProperty = editor.Generator.WithGetAccessorStatements(newProperty, null);
                 editor.AddMember(typeDeclaration, newProperty);
             }
             else
@@ -164,8 +163,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     return;
                 }
 
-                SyntaxNode propertyDeclaration = editor.Generator.GetDeclaration(await reference.GetSyntaxAsync(cancellationToken).ConfigureAwait(false), DeclarationKind.Property);
-                if (propertyDeclaration == null)
+                SyntaxNode? propertyDeclaration = editor.Generator.GetDeclaration(await reference.GetSyntaxAsync(cancellationToken).ConfigureAwait(false), DeclarationKind.Property);
+                if (propertyDeclaration is null)
                 {
                     return;
                 }
@@ -188,8 +187,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 // Having just made the property public, if it has a setter with no Accessibility set, then we've just made the setter public.
                 // Instead restore the setter's original accessibility so that we don't fire a violation with the generated code.
-                SyntaxNode setter = editor.Generator.GetAccessor(property, DeclarationKind.SetAccessor);
-                if (setter != null)
+                SyntaxNode? setter = editor.Generator.GetAccessor(property, DeclarationKind.SetAccessor);
+                if (setter is not null)
                 {
                     Accessibility setterAccessibility = editor.Generator.GetAccessibility(setter);
                     if (setterAccessibility == Accessibility.NotApplicable)

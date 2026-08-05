@@ -40,33 +40,51 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             SyntaxGenerator generator = editor.Generator;
-            SyntaxNode declaration = generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
+            SyntaxNode? declaration = generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
             if (declaration is null)
             {
                 return;
             }
 
             SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            if (!model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable, out INamedTypeSymbol? disposableType) ||
+                model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol typeSymbol)
+            {
+                return;
+            }
 
             // Add the interface to the baselist.
-            SyntaxNode interfaceType = generator.TypeExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable));
+            SyntaxNode interfaceType = generator.TypeExpression(disposableType);
             editor.AddInterfaceType(declaration, interfaceType);
 
             // Find a Dispose method. If one exists make that implement IDisposable, else generate a new method.
-            var typeSymbol = model.GetDeclaredSymbol(declaration, cancellationToken) as INamedTypeSymbol;
-            IMethodSymbol? disposeMethod = (typeSymbol?.GetMembers("Dispose"))?.OfType<IMethodSymbol>()?.Where(m => m.Parameters.IsEmpty).FirstOrDefault();
-            if (disposeMethod != null && disposeMethod.DeclaringSyntaxReferences.Length == 1)
+            IMethodSymbol? disposeMethod = typeSymbol.GetMembers("Dispose").OfType<IMethodSymbol>().Where(m => m.Parameters.IsEmpty).FirstOrDefault();
+            if (disposeMethod is not null && disposeMethod.DeclaringSyntaxReferences.Length == 1)
             {
                 SyntaxNode memberPartNode = await disposeMethod.DeclaringSyntaxReferences.Single().GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
-                memberPartNode = generator.GetDeclaration(memberPartNode);
-                editor.ReplaceNode(memberPartNode, (currentNode, g) => g.AsPublicInterfaceImplementation(currentNode, interfaceType));
+                if (generator.GetDeclaration(memberPartNode) is not SyntaxNode memberDeclaration ||
+                    generator.AsPublicInterfaceImplementation(memberDeclaration, interfaceType) is not SyntaxNode implementation)
+                {
+                    return;
+                }
+
+                editor.ReplaceNode(memberDeclaration, implementation);
             }
             else
             {
-                SyntaxNode throwStatement = generator.ThrowStatement(generator.ObjectCreationExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotImplementedException)));
-                SyntaxNode member = generator.MethodDeclaration(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Dispose, statements: new[] { throwStatement });
-                member = generator.AsPublicInterfaceImplementation(member, interfaceType);
-                editor.AddMember(declaration, member);
+                if (!model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotImplementedException, out INamedTypeSymbol? notImplementedExceptionType))
+                {
+                    return;
+                }
+
+                SyntaxNode throwStatement = generator.ThrowStatement(generator.ObjectCreationExpression(generator.TypeExpression(notImplementedExceptionType)));
+                if (generator.MethodDeclaration(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Dispose, statements: new[] { throwStatement }) is not SyntaxNode member ||
+                    generator.AsPublicInterfaceImplementation(member, interfaceType) is not SyntaxNode implementation)
+                {
+                    return;
+                }
+
+                editor.AddMember(declaration, implementation);
             }
         }
     }

@@ -29,7 +29,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
         protected override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             SyntaxNode enclosingNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
-            SyntaxNode declaration = editor.Generator.GetDeclaration(enclosingNode);
+            SyntaxNode? declaration = editor.Generator.GetDeclaration(enclosingNode);
 
             if (declaration != null)
             {

@@ -154,6 +154,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static void ReplaceCreation(SyntaxEditor editor, IObjectCreationOperation creation, params FixArgument[] arguments)
         {
+            if (creation.Type is not ITypeSymbol creationType)
+            {
+                return;
+            }
+
             foreach (FixArgument argument in arguments)
             {
                 if (argument.Original is SyntaxNode original)
@@ -175,7 +180,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                         : argument.Node;
                 }
 
-                return generator.ObjectCreationExpression(creation.Type, newArguments);
+                return generator.ObjectCreationExpression(creationType, newArguments);
             });
         }
 

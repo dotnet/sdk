@@ -24,9 +24,9 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         {
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            SyntaxNode declaration = root.FindNode(context.Span);
+            SyntaxNode? declaration = root.FindNode(context.Span);
             declaration = SyntaxGenerator.GetGenerator(context.Document).GetDeclaration(declaration, DeclarationKind.Field);
-            if (GetFieldDeclaration(declaration) == null)
+            if (declaration is null || GetFieldDeclaration(declaration) is null)
             {
                 return;
             }
@@ -37,8 +37,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
         protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            SyntaxNode declaration = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            SyntaxNode? declaration = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
             declaration = editor.Generator.GetDeclaration(declaration, DeclarationKind.Field);
+            if (declaration is null)
+            {
+                return Task.CompletedTask;
+            }
+
             var fieldDeclaration = GetFieldDeclaration(declaration);
             if (fieldDeclaration == null)
             {
