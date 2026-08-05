@@ -63,11 +63,17 @@ jobs:
       ado-build-url: ${{ steps.fetch.outputs.ado-build-url }}
       missing-legs: ${{ steps.fetch.outputs.missing-legs }}
     steps:
-      # Slash command only. `author_association` in the job-level `if:` cannot
-      # tell an org member with read-only access apart from a maintainer, so
-      # resolve the real repository permission here — before any download — and
-      # match it against the same `roles: [admin, maintainer, write]` the
-      # command workflow declares. KEEP IN SYNC with that list.
+      # Slash command only. Two things have to be true before this job is
+      # allowed to spend a ~600MB download, and neither can be expressed in the
+      # job-level `if:`: the comment must actually INVOKE the command (not just
+      # mention it — `contains()` is a substring test), and the commenter must
+      # really have write access (`author_association` cannot tell an org member
+      # with read-only access apart from a maintainer). Both are checked here,
+      # before any download. `pre_activation` remains the authoritative role +
+      # command-position check, and `activation` additionally requires
+      # `binlog-found == 'true'`; this step exists because gh-aw schedules
+      # `pre_activation` AFTER this job, so its checks come too late to prevent
+      # the cost. KEEP IN SYNC with `roles:` in build-failure-analysis-command.md.
       #
       # `.permission` is the field to test. The REST docs for this endpoint say
       # it returns the legacy base roles admin|write|read|none, "where the
@@ -84,16 +90,46 @@ jobs:
       #
       # On any API failure the response carries no `.permission`, so the check
       # falls into the deny branch; failing closed is the safe direction here.
-      - name: Verify the commenter has write access
+      - name: Verify the comment invokes the command and the commenter has write access
         id: perm
         if: github.event_name == 'issue_comment'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
           COMMENTER: ${{ github.event.comment.user.login }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMAND_NAME: "analyze-build-failure"
         run: |
           set +e
           authorized=false
+          # --- 1. Command position (free; do this before the API call) ------
+          # The job-level `if:` can only use `contains()`, a plain substring
+          # test, so it also fires on "see /analyze-build-failure above" or on
+          # the command quoted inside an unrelated comment — each of which costs
+          # a runner and, past this gate, a ~600MB download. `pre_activation`
+          # does the real check, but it runs AFTER this job. Reproduce it here.
+          #
+          # gh-aw trims the body and requires the command to be the FIRST token:
+          # `/^\/([a-zA-Z0-9][a-zA-Z0-9._-]*)(?=$|\s)/` over the trimmed text,
+          # then an equality comparison on the captured name
+          # (actions/setup/js/slash_command_matcher.cjs). `awk 'NF {print $1;
+          # exit}'` is the same rule: skip leading whitespace/blank lines, take
+          # the first whitespace-delimited token. The token is delimited by
+          # whitespace or end-of-input, which is exactly the `(?=$|\s)`
+          # lookahead, so `/analyze-build-failure-now` correctly does NOT match.
+          # `tr -d '\r'` is needed because JS `.trim()` and `\s` treat CR as
+          # whitespace while awk's default field splitting does not.
+          # KEEP IN SYNC with `on.command.name` in build-failure-analysis-command.md.
+          first_word=$(printf '%s' "${COMMENT_BODY}" | tr -d '\r' | awk 'NF {print $1; exit}')
+          if [ "${first_word}" != "/${COMMAND_NAME}" ]; then
+            # Never echo the raw token: it is attacker-controlled and `::`-
+            # prefixed text is interpreted by the runner as a workflow command.
+            safe_word=$(printf '%s' "${first_word}" | tr -cd 'A-Za-z0-9/._-' | cut -c1-40)
+            echo "Comment does not start with '/${COMMAND_NAME}' (first token: '${safe_word}'); skipping the binlog download."
+            echo "authorized=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          # --- 2. Repository permission -------------------------------------
           # `github.event.comment.user.login` is GitHub-supplied, so this value
           # is already trustworthy. The shape check is kept anyway so the gate
           # never interpolates anything but a plausible login into an API path
@@ -328,8 +364,16 @@ jobs:
           # NAME depends on the target branch even though the definition id is
           # the same (101):
           #   * `main`      -> `<Leg>_Logs_Attempt<N>` (e.g. `Windows_x64_Logs_Attempt1`,
-          #                    `Linux_arm64_AOT_Logs_Attempt1`; a retried leg adds
-          #                    an `Attempt2` artifact, which is matched too)
+          #                    `Linux_arm64_AOT_Logs_Attempt1`). A retried leg
+          #                    publishes ONE ARTIFACT PER ATTEMPT, so keep only the
+          #                    highest `<N>` per leg: `Attempt1` holds the logs of a
+          #                    superseded run, and a leg that failed on attempt 1 and
+          #                    passed on attempt 2 would otherwise hand the agent a
+          #                    binlog full of errors that no longer exist — it would
+          #                    then confidently report an already-fixed failure.
+          #                    (Real example: build 1535012 publishes both
+          #                    `Windows_x64_FullFramework_Logs_Attempt1` and
+          #                    `..._Attempt2`.)
           #   * `release/*` -> `<Leg>` (e.g. `TestBuild_linux_x64`, `AoT_macOS_x64`)
           # Both carry the same `log/<Configuration>/*.binlog` tree inside, so
           # only the match differs. Matching just the `main` shape would make the
@@ -337,7 +381,16 @@ jobs:
           # -> binlog-found=false -> agent skipped), which is exactly the class of
           # failure that looks green forever, so handle both.
           artifacts_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}/artifacts?api-version=7.1")
-          mapfile -t names < <(printf '%s' "${artifacts_json}" | jq -r '.value // [] | map(select(.name | test("_Logs_Attempt[0-9]+$"))) | .[].name')
+          mapfile -t names < <(printf '%s' "${artifacts_json}" | jq -r '
+            .value // []
+            | map(select(.name | test("_Logs_Attempt[0-9]+$")))
+            | map({ leg:     (.name | sub("_Attempt[0-9]+$"; "")),
+                    attempt: (.name | capture("_Attempt(?<n>[0-9]+)$") | .n | tonumber),
+                    name:    .name })
+            | group_by(.leg)
+            | map(max_by(.attempt).name)
+            | sort
+            | .[]')
           ARTIFACT_LAYOUT="attempt"
           if [ "${#names[@]}" -eq 0 ]; then
             # `release/*` layout. There is no reliable name-only test for "this

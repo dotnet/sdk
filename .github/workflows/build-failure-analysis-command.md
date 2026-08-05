@@ -55,6 +55,33 @@ concurrency:
 timeout-minutes: 30
 
 
+# Narrow the safe-output target for the on-demand path.
+#
+# The rest of `safe-outputs` comes from shared/build-failure-analysis-shared.md;
+# gh-aw lets the main workflow override an individual safe-output type, and only
+# `target` is intended to differ here. Unlike the automatic (check_run/dispatch)
+# workflow, this one HAS a triggering item — the PR the command was typed on —
+# and `fetch-binlog` resolves that very same PR from `github.event.issue.number`,
+# so `triggering` is equivalent by construction while removing the agent's
+# ability to name a different issue/PR. `"*"` stays unavoidable on the automatic
+# path, which has no triggering item; see the note in the shared file.
+#
+# KEEP IN SYNC with `safe-outputs` in shared/build-failure-analysis-shared.md:
+# overriding a type replaces it wholesale, so `max` and `hide-older-comments`
+# are restated verbatim and must not be allowed to drift.
+safe-outputs:
+  add-comment:
+    max: 5
+    target: "triggering"
+    hide-older-comments:
+      enabled: true
+      match:
+        - build-failure-analysis
+        - build-failure-analysis-command
+  create-pull-request-review-comment:
+    max: 25
+    target: "triggering"
+
 imports:
   - uses: shared/pat_pool.md
     with:
