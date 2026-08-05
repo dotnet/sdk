@@ -176,6 +176,33 @@ taskkill /F /IM VSTest.Console.exe /T ||
 taskkill /F /IM msbuild.exe /T
 ```
 
+## CI workflow telemetry correlation
+
+Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point.
+Set the variable at the workflow or pipeline scope. You can use job scope in a
+single-job workflow. The CLI uses this value to correlate telemetry from separate
+`dotnet` processes in one run.
+
+Use this value in GitHub Actions workflows under
+[`.github/workflows`](../../.github/workflows):
+
+```yaml
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+```
+
+Use this value in Azure DevOps pipeline entry points:
+
+```yaml
+variables:
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+```
+
+When you add or change a CI entry point, preserve this variable and its provider-specific
+format. For CLI behavior, see the
+[telemetry documentation](telemetry.md#related-environment-variables).
+
 ## Automated PR Maintenance Commands
 
 The SDK repository includes GitHub Actions workflows that automate common maintenance tasks directly from pull requests.

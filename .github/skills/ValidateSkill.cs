@@ -1,4 +1,8 @@
 #!/usr/bin/env dotnet
+
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
 #:property ManagePackageVersionsCentrally=false
 #:property PublishAot=false
 #:package YamlDotNet@16.3.0

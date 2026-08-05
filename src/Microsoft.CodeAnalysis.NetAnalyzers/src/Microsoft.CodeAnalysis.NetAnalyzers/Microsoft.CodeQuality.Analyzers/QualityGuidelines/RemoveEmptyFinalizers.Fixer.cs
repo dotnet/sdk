@@ -44,8 +44,12 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
 
             // Get the declaration so that we step up to the methodblocksyntax and not the methodstatementsyntax for VB.
-            node = editor.Generator.GetDeclaration(node);
-            editor.RemoveNode(node);
+            if (editor.Generator.GetDeclaration(node) is not SyntaxNode declaration)
+            {
+                return document;
+            }
+
+            editor.RemoveNode(declaration);
             return editor.GetChangedDocument();
         }
 

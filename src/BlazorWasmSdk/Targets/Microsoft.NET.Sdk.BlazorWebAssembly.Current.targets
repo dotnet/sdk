@@ -23,6 +23,22 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- EnableConfigurationBindingGenerator is enabled by default for trimmed apps, but Blazor WASM disables it by default -->
     <EnableConfigurationBindingGenerator Condition="'$(EnableConfigurationBindingGenerator)' == ''">false</EnableConfigurationBindingGenerator>
+
+    <!--
+      Enable diagnostics infrastructure (metrics, event sources, and HTTP activity propagation) by default for Blazor
+      WebAssembly apps. The low-level WASM runtime defaults these to 'false' to reduce download size via aggressive
+      trimming, but Blazor apps commonly use HttpClient with distributed tracing, structured logging, and metrics
+      (especially with .NET Aspire). Developers who want smaller binaries can opt out by setting
+      BlazorWebAssemblyDiagnosticsEnabled to 'false' or by setting the individual properties explicitly.
+
+      These defaults are evaluated at Sdk.targets time (rather than Sdk.props time) so that the values can be set from
+      the project body of a .csproj, which is read before the SDK targets are imported. They must also be configured
+      before the feature switches are initialized to 'false' by the imported SDK targets below.
+    -->
+    <BlazorWebAssemblyDiagnosticsEnabled Condition="'$(BlazorWebAssemblyDiagnosticsEnabled)' == ''">true</BlazorWebAssemblyDiagnosticsEnabled>
+    <MetricsSupport Condition="'$(MetricsSupport)' == '' and '$(BlazorWebAssemblyDiagnosticsEnabled)' == 'true'">true</MetricsSupport>
+    <EventSourceSupport Condition="'$(EventSourceSupport)' == '' and '$(BlazorWebAssemblyDiagnosticsEnabled)' == 'true'">true</EventSourceSupport>
+    <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == '' and '$(BlazorWebAssemblyDiagnosticsEnabled)' == 'true'">true</HttpActivityPropagationSupport>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.Razor" Project="Sdk.targets" />

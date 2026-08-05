@@ -33,7 +33,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
             SyntaxNode enclosingNode = root.FindNode(context.Span);
-            SyntaxNode declaration = generator.GetDeclaration(enclosingNode);
+            SyntaxNode? declaration = generator.GetDeclaration(enclosingNode);
             if (declaration == null)
             {
                 return;

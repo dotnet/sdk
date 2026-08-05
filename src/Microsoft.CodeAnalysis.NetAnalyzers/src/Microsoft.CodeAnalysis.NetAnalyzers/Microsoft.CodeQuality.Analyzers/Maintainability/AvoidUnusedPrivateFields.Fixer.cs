@@ -51,8 +51,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static async Task<Document> RemoveFieldAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
         {
             DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            node = editor.Generator.GetDeclaration(node);
-            editor.RemoveNode(node);
+            if (editor.Generator.GetDeclaration(node) is not SyntaxNode declaration)
+            {
+                return document;
+            }
+
+            editor.RemoveNode(declaration);
             return editor.GetChangedDocument();
         }
     }

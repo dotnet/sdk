@@ -84,6 +84,7 @@ Major source areas under [`src/`](../src/):
 | [`Containers/`](../src/Containers/) | `dotnet publish` container image support. |
 | [`Dotnet.Watch/`](../src/Dotnet.Watch/), [`Dotnet.Format/`](../src/Dotnet.Format/) | `dotnet watch` and `dotnet format` tools. |
 | [`Compatibility/`](../src/Compatibility/) | ApiCompat, GenAPI, API diff, and package validation tooling. |
+| [`Microsoft.CodeAnalysis.NetAnalyzers/`](../src/Microsoft.CodeAnalysis.NetAnalyzers/) | The .NET code analyzers (`CA####` rules and their fixers), migrated from the retired `dotnet/roslyn-analyzers`. |
 | [`TemplateEngine/`](../src/TemplateEngine/) | Template engine libraries and authoring/discovery tools; see the [Template Engine overview](../documentation/TemplateEngine/README.md). |
 | [`Workloads/`](../src/Workloads/), [`Microsoft.DotNet.TemplateLocator/`](../src/Microsoft.DotNet.TemplateLocator/) | Workload manifests and installation, plus workload-provided template pack location. |
 | [`Layout/`](../src/Layout/) | Composes the final `dotnet` layout through [`redist.csproj`](../src/Layout/redist/redist.csproj). |
@@ -140,7 +141,7 @@ Canonical scenarios:
   - The built SDK is output to `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
   - The first build is slow; subsequent builds are incremental.
 - Run tests: prefer targeted runs — a single test project or test (see the
-  [Testing](#testing) section) and the `incremental-test` skill. `build.cmd -test` /
+  [Testing](#testing) section) and the `targeted-test` skill. `build.cmd -test` /
   `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
   avoid running the full suite for routine local or agent work.
 - Release build: `build.cmd -c Release`.
@@ -149,8 +150,10 @@ Canonical scenarios:
   See the [Testing](#testing) section for assembly filtering and more examples.
 - Validate changes locally using the SDK you built at
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
-- For fast inner-loop runs of `dotnet.Tests` without a full rebuild, use the
-  `incremental-test` skill.
+- Use the `targeted-test` skill to select projects from the shared
+  `test/ConditionalTests.props` scopes when available and retain detailed failure output,
+  a TRX, and a binlog. For fast inner-loop runs of `dotnet.Tests` without a full rebuild,
+  use `incremental-test`.
 
 ## Guardrails
 
@@ -170,6 +173,21 @@ manually edit:
   documentation; change the upstream documentation in https://github.com/dotnet/docs instead.
 - **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
 - More broadly, any file marked `linguist-generated=true` in `.gitattributes`.
+
+### Preserve CI telemetry correlation
+
+Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point. Set
+the variable at the workflow or pipeline scope. Job scope is valid for a single-job
+workflow. Use the applicable value without changes:
+
+- GitHub Actions:
+  `gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}`
+- Azure DevOps:
+  `azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)`
+
+When you change shared CI environment variables, preserve this variable. See
+the [developer guide](../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation)
+for the required YAML and the reason for this variable.
 
 ## External Dependencies
 
@@ -227,12 +245,10 @@ property:
 
 - Large changes should always include test changes.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
-- To run tests in this repo (after a full build, invoke the repo-local bootstrap SDK directly):
-  - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
-  - To run a built test assembly directly: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll --filter "TestMethodName"`
-  - Examples:
-    - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
-    - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll --filter "ItShowsTheAppropriateMessageToTheUser"`
+- Use the `targeted-test` skill to choose projects from `test/ConditionalTests.props`
+  when the changed paths match a configured scope, or use its fallback mappings for
+  unscoped common areas. Run one project, class, or method with detailed live output and
+  retained TRX/binlog diagnostics.
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
 - This repo uses conditional test filtering to skip expensive test suites on PRs when
   relevant source files have not changed. When adding new test projects, consider

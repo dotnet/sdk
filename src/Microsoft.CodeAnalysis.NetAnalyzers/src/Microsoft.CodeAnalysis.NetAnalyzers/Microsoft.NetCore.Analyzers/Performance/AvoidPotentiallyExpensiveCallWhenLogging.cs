@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -110,7 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 return null;
             }
 
-            if (ICollectionExpressionOperationWrapper.IsInstance(operation))
+            if (operation is ICollectionExpressionOperation)
             {
                 return MicrosoftNetCoreAnalyzersResources.AvoidPotentiallyExpensiveCallWhenLoggingReasonCollectionExpression;
             }

@@ -113,19 +113,23 @@ public class MSBuildEvaluationTests
                 loggers: [binlog],
                 toolsetDefinitionLocations: ToolsetDefinitionLocations.Default
             );
-            var project = Project.FromXmlReader(
+            var projectRoot = Microsoft.Build.Construction.ProjectRootElement.Create(
                 XmlReader.Create(projectContent),
+                projectCollection);
+            var project = Microsoft.Build.Execution.ProjectInstance.FromProjectRootElement(
+                projectRoot,
                 new()
                 {
                     ProjectCollection = projectCollection,
+                    GlobalProperties = projectCollection.GlobalProperties,
                     EvaluationStage = ProjectEvaluationStage.Properties,
                 });
             Assert.AreEqual("net11.0", project.GetPropertyValue("TargetFramework"));
             Assert.Contains(import =>
-                import.ImportedProject.FullPath.EndsWith(
+                import.EndsWith(
                     Path.Combine("Microsoft.NET.Sdk", "Sdk", "Sdk.targets"),
                     StringComparison.OrdinalIgnoreCase),
-                project.Imports);
+                project.ImportPaths);
         }
         finally
         {
