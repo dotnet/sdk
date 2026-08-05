@@ -158,11 +158,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
                     .AddArgumentListArguments(outArgument);
                 editor.ReplaceNode(containsKeyInvocation, tryGetValueInvocation);
 
-                if (addStatementNode != null)
+                if (addStatementNode is not null && changedValueNode is not null)
                 {
                     editor.InsertBefore(addStatementNode,
                         generator.ExpressionStatement(generator.AssignmentStatement(identifierName, changedValueNode)));
-                    editor.ReplaceNode(changedValueNode!, identifierName);
+                    editor.ReplaceNode(changedValueNode, identifierName);
                 }
 
                 foreach (var dictionaryAccess in dictionaryAccessors)

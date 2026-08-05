@@ -28,7 +28,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            SyntaxNode declaration = root.FindNode(context.Span);
+            SyntaxNode? declaration = root.FindNode(context.Span);
             declaration = generator.GetDeclaration(declaration);
 
             if (declaration == null)
@@ -49,8 +49,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             SyntaxGenerator generator = editor.Generator;
             SemanticModel model = editor.SemanticModel;
 
+            if (!model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable, out INamedTypeSymbol? iDisposableType))
+            {
+                return document;
+            }
+
             // Add the interface to the baselist.
-            SyntaxNode interfaceType = generator.TypeExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIDisposable));
+            SyntaxNode interfaceType = generator.TypeExpression(iDisposableType);
             editor.AddInterfaceType(declaration, interfaceType);
 
             // Find a Dispose method. If one exists make that implement IDisposable, else generate a new method.
@@ -59,15 +64,29 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             if (disposeMethod != null && disposeMethod.DeclaringSyntaxReferences.Length == 1)
             {
                 SyntaxNode memberPartNode = await disposeMethod.DeclaringSyntaxReferences.Single().GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
-                memberPartNode = generator.GetDeclaration(memberPartNode);
-                editor.ReplaceNode(memberPartNode, generator.AsPublicInterfaceImplementation(memberPartNode, interfaceType));
+                if (generator.GetDeclaration(memberPartNode) is not SyntaxNode disposeDeclaration ||
+                    generator.AsPublicInterfaceImplementation(disposeDeclaration, interfaceType) is not SyntaxNode disposeImplementation)
+                {
+                    return document;
+                }
+
+                editor.ReplaceNode(disposeDeclaration, disposeImplementation);
             }
             else
             {
-                SyntaxNode throwStatement = generator.ThrowStatement(generator.ObjectCreationExpression(model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotImplementedException)));
+                if (!model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemNotImplementedException, out INamedTypeSymbol? notImplementedExceptionType))
+                {
+                    return document;
+                }
+
+                SyntaxNode throwStatement = generator.ThrowStatement(generator.ObjectCreationExpression(generator.TypeExpression(notImplementedExceptionType)));
                 SyntaxNode member = generator.MethodDeclaration(TypesThatOwnDisposableFieldsShouldBeDisposableAnalyzer.Dispose, statements: new[] { throwStatement });
-                member = generator.AsPublicInterfaceImplementation(member, interfaceType);
-                editor.AddMember(declaration, member);
+                if (generator.AsPublicInterfaceImplementation(member, interfaceType) is not SyntaxNode memberImplementation)
+                {
+                    return document;
+                }
+
+                editor.AddMember(declaration, memberImplementation);
             }
 
             return editor.GetChangedDocument();
