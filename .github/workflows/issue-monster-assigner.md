@@ -36,14 +36,10 @@ sandbox:
   agent:
     sudo: false
 
-# Pin the agent to an explicitly priced model. Under the PAT pool the agent runs
-# behind the AWF api-proxy, whose AI-credits pricing check rejects the implicit
-# `auto` model ("Model \"auto\" has no AI credits pricing") for pool PATs on
-# credits-based billing, skipping the assignment. Use the concrete model that
-# `auto` resolves to in the working orchestrator run (`auto` -> `claude-sonnet-5`):
-# it is a valid Copilot CLI model id (unlike `gpt-5.6-luna`, which the backend
-# rejects with 400) and is priced, so the assignment path completes.
-model: claude-sonnet-5
+# The PAT-backed API proxy cannot price the implicit `auto` alias. Pin the
+# explicitly priced Sol model for both this assignment workflow and the coding
+# agent session it starts.
+model: gpt-5.6-sol
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
@@ -69,27 +65,36 @@ timeout-minutes: 10
 tools:
   github: false
 
+jobs:
+  conclusion:
+    pre-steps:
+      - name: Verify Copilot assignment
+        shell: bash
+        run: |
+          if ! grep -Fqx "issue:${{ inputs.issue_number }}:copilot" <<< "${{ needs.safe_outputs.outputs.assign_to_agent_assigned }}"; then
+            echo "::error::Copilot assignment was not created for issue ${{ inputs.issue_number }}."
+            exit 1
+          fi
+
 safe-outputs:
+  # The inference PAT pool intentionally grants only Copilot Requests access.
+  # Process the assignment in the separate environment that owns the
+  # repository-write PAT instead of broadening every PAT in the inference pool.
+  environment: issue-monster
   assign-to-agent:
     max: 1
     target: "*"
+    issue-intent: false
     model: gpt-5.6-sol
     pull-request-repo: "${{ github.repository }}"
     # Copilot branches from this ref and targets it when opening the pull request.
     base-branch: "${{ inputs.base_branch }}"
-    # Copilot assignment requires a user token rather than an installation token.
-    # The alternative is to startup a copilot session ourselves rather than use assign_to_agent
-    # Tentatively this now 'works' without a token but it just adds a UI dialogue to accept the request on the issue which defeats the point of auto-assignment
-    # This MUST be a dedicated repo-write PAT, NOT a Copilot PAT pool secret. The pool PATs
-    # (COPILOT_PAT_*) are Copilot model-API tokens and lack repo scopes: assigning with one
-    # returns HTTP 403 "Copilot assignment permission requirements not met" and the request
-    # silently falls back to a UI "accept" dialogue that never auto-triggers the coding agent.
-    # The PAT must have (fine-grained) metadata: read and issues/pull-requests/contents/actions: write,
-    # or (classic) the repo scope. Create it as the ISSUE_MONSTER_ASSIGNMENT_TOKEN secret.
+    # GitHub App installation tokens and the read-only inference PATs cannot assign
+    # Copilot. This fine-grained PAT is scoped to the issue-monster environment and
+    # must have metadata: read plus actions, contents, issues, and pull requests: write.
     # https://github.github.com/gh-aw/reference/copilot-cloud-agent/#using-a-personal-access-token-pat
     github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}"
     allowed: [copilot]
-    ignore-if-error: true
   # Pin the threat-detection engine to a capable model. The default detection
   # alias resolves to a small model that false-positively flags gh-aw's own
   # anti-injection preamble as prompt_injection, which under the warn policy
