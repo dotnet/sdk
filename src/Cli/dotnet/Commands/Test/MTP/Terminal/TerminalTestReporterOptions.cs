@@ -31,6 +31,11 @@ internal sealed class TerminalTestReporterOptions
     public int MinimumExpectedTests { get; init; }
 
     /// <summary>
+    /// Gets a value indicating whether a run with no selected tests is successful.
+    /// </summary>
+    public bool AllowZeroTests { get; init; }
+
+    /// <summary>
     /// Gets a value indicating whether we should write the progress periodically to screen. When ANSI is allowed we update the progress as often as we can.
     /// When ANSI is not allowed we never have progress.
     /// </summary>

@@ -18,7 +18,22 @@ internal enum TestListFormat
     Json,
 }
 
-internal record TestOptions(bool IsHelp, bool IsDiscovery, TestListFormat ListTestsFormat, bool IsArtifactPostProcessing = false);
+internal record TestOptions(
+    bool IsHelp,
+    bool IsDiscovery,
+    TestListFormat ListTestsFormat,
+    bool IsArtifactPostProcessing = false)
+{
+    internal const string AffectedTestsModeEnvironmentVariable = "DOTNET_CLI_TEST_AFFECTED_TESTS_MODE";
+    internal const string CollectTestMapMode = "collect";
+    internal const string RunAffectedTestsMode = "run";
+
+    public bool CollectTestMap { get; init; }
+    public bool AffectedTests { get; init; }
+    public bool CollectTestMapForwarded { get; init; }
+    public bool AffectedTestsForwarded { get; init; }
+    public bool IsAffectedTestsMode => CollectTestMap || AffectedTests;
+}
 
 internal record PathOptions(string? ProjectOrSolutionPath, string? SolutionPath, string? TestModules, string? ResultsDirectoryPath, string? ConfigFilePath, string? DiagnosticOutputDirectoryPath);
 

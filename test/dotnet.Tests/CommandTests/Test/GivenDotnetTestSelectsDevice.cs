@@ -442,6 +442,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    [DataRow("--collect-test-map")]
+    [DataRow("--affected-tests")]
+    public void ItErrorsWhenListDevicesAndAffectedTestOperationAreCombined(string affectedTestOption)
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", $"ListDevicesWith{affectedTestOption.TrimStart('-')}")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("DOTNET_CLI_ENABLE_AFFECTED_TESTS", "1")
+            .Execute("--list-devices", affectedTestOption, "-f", "net11.0-android");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.CmdListDevicesAndAffectedTestsMutuallyExclusive);
+    }
+
+    [TestMethod]
     public void ItListsDevicesForExplicitFrameworkOnMultiTargetedProject()
     {
         // DotnetTestDevices targets both net9.0 and $(CurrentTargetFramework) with different
