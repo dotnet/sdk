@@ -5,6 +5,10 @@
 
     This file defines which tests can be skipped on PRs that don't touch relevant source.
     See documentation/project-docs/pr-test-filtering.md for design details and usage guide.
+
+    The targeted-test agent skill reads these scopes directly. When changing them, also
+    reconcile its fallback table for common unscoped areas: remove entries now covered by
+    a scope, and update entries when test-project ownership changes.
   -->
 
   <!-- ======== Global trigger paths ========
@@ -45,6 +49,39 @@
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>
 
+    <ConditionalTestScope Include="DotnetFormat">
+      <Mechanism>project</Mechanism>
+      <TestProjects>test/dotnet-format.*/**/*.csproj</TestProjects>
+      <TriggerPaths>
+        src/Cli/dotnet/Commands/Format/**;
+        src/Dotnet.Format/**;
+        test/dotnet-format.*/**;
+        test/TestAssets/dotnet-format/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
+    <ConditionalTestScope Include="ILLink">
+      <Mechanism>project</Mechanism>
+      <TestProjects>test/Microsoft.NET.ILLink.Tests/Microsoft.NET.ILLink.Tests.csproj</TestProjects>
+      <TriggerPaths>
+        src/Tasks/Microsoft.NET.Build.Tasks/**;
+        test/Microsoft.NET.ILLink.Tests/**;
+        test/TestAssets/TestProjects/TrimmableNetstandardLibrary/**;
+        test/TestAssets/TestProjects/TrimmedAppWithReferences/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
+    <ConditionalTestScope Include="NetAnalyzers">
+      <Mechanism>project</Mechanism>
+      <TestProjects>src/Microsoft.CodeAnalysis.NetAnalyzers/tests/**/*.csproj</TestProjects>
+      <TriggerPaths>
+        src/Microsoft.CodeAnalysis.NetAnalyzers/**
+      </TriggerPaths>
+      <RunAlways>CI</RunAlways>
+    </ConditionalTestScope>
+
     <ConditionalTestScope Include="TemplateEngine">
       <Mechanism>project</Mechanism>
       <TestProjects>test/TemplateEngine/**/*.csproj</TestProjects>
@@ -54,14 +91,6 @@
         template_feed/Microsoft.TemplateEngine.Authoring.Templates/**;
         test/TemplateEngine/**;
         test/TestAssets/TestPackages/TemplateEngine/**
-      </TriggerPaths>
-      <RunAlways>CI</RunAlways>
-    </ConditionalTestScope>
-    <ConditionalTestScope Include="NetAnalyzers">
-      <Mechanism>project</Mechanism>
-      <TestProjects>src/Microsoft.CodeAnalysis.NetAnalyzers/tests/**/*.csproj</TestProjects>
-      <TriggerPaths>
-        src/Microsoft.CodeAnalysis.NetAnalyzers/**
       </TriggerPaths>
       <RunAlways>CI</RunAlways>
     </ConditionalTestScope>

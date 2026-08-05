@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -68,9 +68,42 @@ internal sealed class ArtifactPostProcessingManager
         TerminalTestReporter output,
         CtrlCCancellationManager ctrlC)
     {
+        try
+        {
+            await ExecuteCoreAsync(buildOptions, output, ctrlC);
+        }
+        catch (Exception ex)
+        {
+            // Individual jobs already degrade their own failures to warnings. This guard covers
+            // everything around them — planning, the progress line, telemetry — so that no part of a
+            // best-effort convenience layered on a finished run can escape and turn that run into a
+            // CLI crash with a different exit code.
+            Logger.LogTrace($"Artifact post-processing failed: {ex}");
+        }
+    }
+
+    private async Task ExecuteCoreAsync(
+        BuildOptions buildOptions,
+        TerminalTestReporter output,
+        CtrlCCancellationManager ctrlC)
+    {
         ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
             SnapshotApplications(),
             SnapshotArtifacts());
+
+        if (plan.Jobs.Count == 0)
+        {
+            return;
+        }
+
+        // Post-processing runs after the last test application has exited and before the run summary
+        // is rendered, so without this line a merge that takes a while is indistinguishable from a
+        // hung CLI: the progress area is empty and no assembly is still running.
+        output.WriteInformationMessage(CliCommandStrings.ArtifactPostProcessingStarted);
+
+        long startTimestamp = Stopwatch.GetTimestamp();
+        int executedJobs = 0;
+        int failedJobs = 0;
 
         foreach (ArtifactPostProcessingJob job in plan.Jobs)
         {
@@ -82,6 +115,8 @@ internal sealed class ArtifactPostProcessingManager
             string tempDirectory = Path.Combine(
                 Path.GetTempPath(),
                 $"dotnet-test-postproc-{Guid.NewGuid():N}");
+
+            executedJobs++;
 
             try
             {
@@ -102,6 +137,9 @@ internal sealed class ArtifactPostProcessingManager
                     job.Application.Module,
                     buildOptions,
                     toolOptions,
+                    // Post-processing merges artifacts across modules, so it keeps writing to the
+                    // shared results directory even when the run uses a per-module layout.
+                    TestResultsDirectoryResolver.CreateShared(buildOptions.PathOptions, Directory.GetCurrentDirectory()),
                     output,
                     onHelpRequested: _ => { },
                     artifactPostProcessingManager: this,
@@ -112,33 +150,33 @@ internal sealed class ArtifactPostProcessingManager
 
                 if (invocation.FailureMessage is { } failureMessage)
                 {
-                    output.WriteWarningMessage(string.Format(
+                    failedJobs += ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                         CultureInfo.CurrentCulture,
                         CliCommandStrings.ArtifactPostProcessingFailed,
                         job.Application.Module.TargetPath,
-                        failureMessage));
+                        failureMessage)) ? 1 : 0;
                 }
                 else if (exitCode != ExitCode.Success)
                 {
-                    output.WriteWarningMessage(string.Format(
+                    failedJobs += ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                         CultureInfo.CurrentCulture,
                         CliCommandStrings.ArtifactPostProcessingProcessFailed,
                         job.Application.Module.TargetPath,
-                        exitCode));
+                        exitCode)) ? 1 : 0;
                 }
             }
-            catch (Exception ex) when (ex is IOException
-                or UnauthorizedAccessException
-                or InvalidOperationException
-                or Win32Exception
-                or NotSupportedException
-                or TimeoutException)
+            catch (Exception ex)
             {
-                output.WriteWarningMessage(string.Format(
+                // Post-processing is a best-effort convenience on top of a completed test run: the
+                // original artifacts are always still on disk and still reported, so no failure here
+                // may escape and turn a finished run into a CLI crash with a different exit code.
+                Logger.LogTrace($"Artifact post-processing with '{job.Application.Module.TargetPath}' failed: {ex}");
+
+                failedJobs += ReportFailureUnlessCancelled(output, ctrlC, string.Format(
                     CultureInfo.CurrentCulture,
                     CliCommandStrings.ArtifactPostProcessingFailed,
                     job.Application.Module.TargetPath,
-                    ex.Message));
+                    ex.Message)) ? 1 : 0;
             }
             finally
             {
@@ -155,6 +193,32 @@ internal sealed class ArtifactPostProcessingManager
                 }
             }
         }
+
+        ArtifactPostProcessingTelemetry.TrackPostProcessing(
+            plan,
+            executedJobs,
+            failedJobs,
+            Stopwatch.GetElapsedTime(startTimestamp));
+    }
+
+    /// <summary>
+    /// Reports a post-processing failure, unless the user cancelled the run, and returns whether it
+    /// was reported. Cancellation kills the post-processing process the same way it kills a test
+    /// application, so the resulting failure is the cancellation the user asked for rather than a
+    /// post-processing problem worth reporting — or counting as a failure in telemetry.
+    /// </summary>
+    internal static bool ReportFailureUnlessCancelled(
+        TerminalTestReporter output,
+        CtrlCCancellationManager ctrlC,
+        string message)
+    {
+        if (ctrlC.Token.IsCancellationRequested)
+        {
+            return false;
+        }
+
+        output.WriteWarningMessage(message);
+        return true;
     }
 
     internal IReadOnlyList<ArtifactPostProcessingApplication> SnapshotApplications()
@@ -190,20 +254,31 @@ internal sealed class ArtifactPostProcessingManager
                 .Distinct(StringComparer.Ordinal)
                 .ToArray();
 
-    private static string GetOutputDirectory(BuildOptions buildOptions, ArtifactPostProcessingJob job)
+    internal static string GetOutputDirectory(BuildOptions buildOptions, ArtifactPostProcessingJob job)
     {
         if (buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectory)
         {
             return Path.GetFullPath(resultsDirectory);
         }
 
-        string firstInputPath = job.Groups
-            .SelectMany(group => group.Artifacts)
-            .Select(artifact => artifact.Path)
-            .OrderBy(path => path, FileUtilities.PathComparer)
-            .First();
+        ArtifactPostProcessingArtifact[] inputs =
+        [
+            .. job.Groups
+                .SelectMany(group => group.Artifacts)
+                .OrderBy(artifact => artifact.Path, FileUtilities.PathComparer)
+        ];
 
-        return Path.GetDirectoryName(Path.GetFullPath(firstInputPath))!;
+        // Without --results-directory every test application writes its artifacts next to its own
+        // binaries, so no directory belongs to the run as a whole. Prefer one the elected application
+        // already writes to: the merged artifact then lands beside the reports it summarizes instead
+        // of inside an unrelated project's output. An application can be elected purely for the kinds
+        // it advertises without having produced any of the inputs, so fall back to the first input
+        // directory in path order.
+        ArtifactPostProcessingArtifact preferredInput = inputs.FirstOrDefault(artifact =>
+            FileUtilities.PathComparer.Equals(artifact.ProducingTestModule, job.Application.Module.TargetPath))
+            ?? inputs[0];
+
+        return Path.GetDirectoryName(Path.GetFullPath(preferredInput.Path))!;
     }
 
     private static void WriteManifest(

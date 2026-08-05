@@ -11,11 +11,16 @@ Options:
   --root-directory <ROOT_PATH>                    The test modules have the specified root directory.
   --results-directory <RESULTS_DIR>               The directory where the test results will be placed.
                                                   The specified directory will be created if it does not exist.
+  --results-directory-layout <LAYOUT>             Specifies how test results are organized within the results directory.
+                                                  'flat' (the default) places the results of every test project directly in the results directory.
+                                                  'per-module' gives every test project its own '<project>/<target-framework>_<runtime>' subdirectory, so reports with the same file name cannot overwrite each other.
   --config-file <CONFIG_FILE>                     Specifies a testconfig.json file.
   --diagnostic-output-directory <DIAGNOSTIC_DIR>  Output directory of the diagnostic logging.
                                                   If not specified the file will be generated inside the default 'TestResults' directory.
   --max-parallel-test-modules <NUMBER>            The max number of test modules that can run in parallel.
-  --minimum-expected-tests <NUMBER>               Specifies the minimum number of tests that are expected to run.
+  --minimum-expected-tests <NUMBER>               Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.
+  --maximum-failed-tests <NUMBER>                 Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.
+  --timeout <DURATION>                            Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.
   -e, --environment <NAME="VALUE">                Sets the value of an environment variable. 
                                                   Creates the variable if it does not exist, overrides if it does. 
                                                   This argument can be specified multiple times to provide multiple variables.
@@ -39,6 +44,7 @@ Options:
   --ucr, --use-current-runtime                    Use current runtime as the target runtime. [default: False]
   --no-ansi                                       Disable ANSI output. [default: False]
   --no-progress                                   Disable progress reporting. [default: False]
+  --no-artifact-post-processing                   Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications. [default: False]
   --output <Detailed|Normal>                      Verbosity of test output.
   --list-tests <text|json>                        List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.
   --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
@@ -72,13 +78,14 @@ Platform Options:
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
                                   'auto' shows progress unless the terminal cannot update in place (for example with --no-ansi or in CI).
                                   This option takes precedence over the deprecated --no-progress flag.
+  --show-flaky-tests              Control whether tests that failed at least once but eventually passed after a retry are listed in the run summary.
+                                  Valid values are 'on' (the default, also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
+                                  Passing the option without a value turns it on.
   --show-slowest-tests            Show the specified number of slowest tests (by reported execution duration) in the run summary. Expects a positive integer.
   --show-stderr                   Determines when to show captured error output of a test.
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
   --show-stdout                   Determines when to show captured standard output of a test.
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).
-  --timeout                       A global test execution timeout.
-                                  Takes one argument as a time value with an explicit unit suffix. Accepted suffixes are 'ms'/'mil(s)'/'millisecond(s)', 's'/'sec(s)'/'second(s)', 'm'/'min(s)'/'minute(s)', 'h'/'hour(s)', and 'd'/'day(s)', e.g. '500ms', '5400s', '90m', '1.5h', '1d'.
   --zero-tests-policy             Specifies how a run that executed no tests is treated.
                                   Valid values are 'allow-skipped' (the default) which counts skipped tests as run, so only a run where no test was found at all fails with exit code 8, and 'strict' which treats skipped tests as not run, so a run where every test was skipped (or no test was found) fails with exit code 8.
 

@@ -1,0 +1,7 @@
+{
+  "mstest": {
+    "output": {
+      "captureTrace": "Live"
+    }
+  }
+}

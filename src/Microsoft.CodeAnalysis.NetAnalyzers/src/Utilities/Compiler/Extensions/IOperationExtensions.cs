@@ -11,7 +11,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
-using Analyzer.Utilities.Lightup;
 using Analyzer.Utilities.PooledObjects;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.FlowAnalysis;
@@ -178,7 +177,7 @@ namespace Analyzer.Utilities.Extensions
                 }
                 else
                 {
-                    foreach (var child in operation.Children)
+                    foreach (var child in operation.ChildOperations)
                     {
                         operationsToProcess.Enqueue(child);
                     }
@@ -489,7 +488,7 @@ namespace Analyzer.Utilities.Extensions
                     // Attribute blocks have OperationKind.None (prior to IAttributeOperation support) or
                     // OperationKind.Attribute, but we do not support flow analysis for attributes.
                     // Gracefully return null for this case and fire an assert for any other OperationKind.
-                    Debug.Assert(operation.Kind is OperationKind.None or OperationKindEx.Attribute, $"Unexpected root operation kind: {operation.Kind}");
+                    Debug.Assert(operation.Kind is OperationKind.None or OperationKind.Attribute, $"Unexpected root operation kind: {operation.Kind}");
                     return null;
             }
         }
@@ -797,8 +796,8 @@ namespace Analyzer.Utilities.Extensions
 
         public static bool HasAnyExplicitDescendant(this IOperation operation, Func<IOperation, bool>? descendIntoOperation = null)
         {
-            using var stack = ArrayBuilder<IEnumerator<IOperation>>.GetInstance();
-            stack.Add(operation.Children.GetEnumerator());
+            using var stack = ArrayBuilder<IOperation.OperationList.Enumerator>.GetInstance();
+            stack.Add(operation.ChildOperations.GetEnumerator());
 
             while (stack.Any())
             {
@@ -819,7 +818,7 @@ namespace Analyzer.Utilities.Extensions
                             return true;
                         }
 
-                        stack.Add(current.Children.GetEnumerator());
+                        stack.Add(current.ChildOperations.GetEnumerator());
                     }
                 }
             }

@@ -172,7 +172,8 @@ internal static class SolutionAndProjectUtility
         string projectFilePath,
         string? tfm,
         string? configuration,
-        string? platform)
+        string? platform,
+        IReadOnlyDictionary<string, string>? additionalGlobalProperties)
     {
         Debug.Assert(projectFilePath is not null);
 
@@ -213,6 +214,21 @@ internal static class SolutionAndProjectUtility
             }
         }
 
+        // Properties that apply to this project only - for example the device and runtime identifier
+        // selected for a target framework. They are passed explicitly rather than through a dedicated
+        // project collection, because all the projects of the run share the collection of the build
+        // session so that they can be built together.
+        if (additionalGlobalProperties is not null)
+        {
+            foreach (var property in additionalGlobalProperties)
+            {
+                if (!(globalProperties ??= new Dictionary<string, string>()).ContainsKey(property.Key))
+                {
+                    globalProperties.Add(property.Key, property.Value);
+                }
+            }
+        }
+
         // Merge the global properties from the project collection.
         // It's unclear why MSBuild isn't considering the global properties defined in the ProjectCollection when
         // the collection is passed in ProjectOptions below.
@@ -238,13 +254,14 @@ internal static class SolutionAndProjectUtility
         ProjectCollection projectCollection,
         EvaluationContext evaluationContext,
         BuildOptions buildOptions,
-        FacadeLogger? logger,
+        MSBuildSession buildSession,
         string? configuration,
         string? platform,
+        IReadOnlyDictionary<string, string>? additionalGlobalProperties = null,
         HashSet<string>? visitedTraversalProjects = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform);
+        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform, additionalGlobalProperties);
 
         // Traversal projects (e.g. Microsoft.Build.Traversal "dirs.proj") are not test projects themselves.
         // They act as a container that forwards build/test operations to their ProjectReference items.
@@ -269,7 +286,7 @@ internal static class SolutionAndProjectUtility
                     continue;
                 }
 
-                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, logger, reference.Configuration, reference.Platform, visitedTraversalProjects));
+                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, buildSession, reference.Configuration, reference.Platform, additionalGlobalProperties, visitedTraversalProjects));
             }
 
             return projects;
@@ -282,7 +299,7 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
-            if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+            if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
             }
@@ -307,10 +324,10 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
+                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
                     {
                         projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
                     }
@@ -321,10 +338,10 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform);
+                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
-                    if (GetModuleFromProject(projectInstance, buildOptions, logger) is { } module)
+                    if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
                     {
                         innerModules ??= new List<TestModule>();
                         innerModules.Add(module);
@@ -398,14 +415,15 @@ internal static class SolutionAndProjectUtility
     /// <summary>
     /// RuntimeIdentifiers are included in the build. Returns a result with device mappings
     /// and TestTfmsInParallel setting, or null if no device selection is needed.
-    /// When projectCollection/evaluationContext are provided, reuses them to avoid redundant evaluation.
+    /// The evaluation happens in the collection of <paramref name="buildSession"/>, which is the one
+    /// every project of the run has to share; pass an <paramref name="evaluationContext"/> to reuse an
+    /// existing one and avoid redundant evaluation.
     /// </summary>
     internal static DeviceSelectionResult? SelectDevicesBeforeBuild(
         string projectFilePath,
         BuildOptions buildOptions,
-        ProjectCollection? projectCollection = null,
-        EvaluationContext? evaluationContext = null,
-        FacadeLogger? logger = null)
+        MSBuildSession buildSession,
+        EvaluationContext? evaluationContext = null)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -423,16 +441,12 @@ internal static class SolutionAndProjectUtility
             return null;
         }
 
-        // Create a ProjectCollection if one wasn't provided
-        using var ownedCollection = projectCollection is null
-            ? new ProjectCollection(globalProperties, loggers: logger is null ? null : [logger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default)
-            : null;
-        var collection = projectCollection ?? ownedCollection!;
+        var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
         var projectInstance = ProjectInstance.FromFile(projectFilePath, new ProjectOptions
         {
-            GlobalProperties = collection.GlobalProperties,
+            GlobalProperties = globalProperties,
             EvaluationContext = evaluationContext,
             ProjectCollection = collection,
         });
@@ -473,7 +487,7 @@ internal static class SolutionAndProjectUtility
         var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
         foreach (var framework in frameworks)
         {
-            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive, logger);
+            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive, buildSession);
             devicesByTfm[framework] = (device, rid);
         }
 
@@ -495,7 +509,7 @@ internal static class SolutionAndProjectUtility
         BuildOptions buildOptions,
         string? tfm,
         bool isInteractive,
-        FacadeLogger? logger)
+        MSBuildSession buildSession)
     {
         var msbuildArgsToAppend = buildOptions.MSBuildArgs;
         if (!string.IsNullOrEmpty(tfm))
@@ -511,7 +525,8 @@ internal static class SolutionAndProjectUtility
             msbuildArgs,
             buildOptions.EnvironmentVariables,
             commandName: "dotnet test",
-            logger);
+            binaryLogger: null,
+            buildSession: buildSession);
 
         lock (s_buildLock)
         {
@@ -534,7 +549,7 @@ internal static class SolutionAndProjectUtility
     private static TestModule? GetModuleFromProject(
         ProjectInstance project,
         BuildOptions buildOptions,
-        FacadeLogger? logger)
+        MSBuildSession buildSession)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
@@ -555,7 +570,7 @@ internal static class SolutionAndProjectUtility
         {
             runProperties = DeployAndGetRunProperties(
                 project,
-                logger,
+                buildSession,
                 buildOptions.EnvironmentVariables,
                 out runtimeEnvironmentVariables);
 
@@ -602,7 +617,7 @@ internal static class SolutionAndProjectUtility
         [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
         static RunProperties DeployAndGetRunProperties(
             ProjectInstance project,
-            FacadeLogger? logger,
+            MSBuildSession buildSession,
             IReadOnlyDictionary<string, string> environmentVariables,
             out IReadOnlyDictionary<string, string> runtimeEnvironmentVariables)
         {
@@ -612,23 +627,24 @@ internal static class SolutionAndProjectUtility
                 EnvironmentVariablesToMSBuild.AddAsItems(project, environmentVariables);
             }
 
-            // Build API cannot be called in parallel, even if the projects are different.
-            // Otherwise, BuildManager in MSBuild will fail:
-            // System.InvalidOperationException: The operation cannot be completed because a build is already in progress.
-            // NOTE: BuildManager is singleton.
-            lock (s_buildLock)
+            // Every project of the run shares the same build session, which serializes the requests
+            // internally: the MSBuild build APIs cannot be called in parallel, even for different
+            // projects ("The operation cannot be completed because a build is already in progress.").
+            if (project.Targets.ContainsKey(Constants.DeployToDevice))
             {
-                var loggers = logger is null ? null : new[] { logger };
-                if (project.Targets.ContainsKey(Constants.DeployToDevice) &&
-                    !project.Build([Constants.DeployToDevice], loggers))
+                // Deploy on a fresh ProjectInstance to avoid accumulating state (existing item
+                // groups) that would leak into the ComputeRunArguments build below, which has to
+                // build the original instance since the run properties are read back from it.
+                // Same reason as dotnet run, see RunCommandSelector.OpenProjectIfNeeded.
+                if (!buildSession.Build(project.DeepCopy(), [Constants.DeployToDevice]))
                 {
                     throw new GracefulException(CliCommandStrings.RunCommandDeployFailed);
                 }
+            }
 
-                if (!project.Build(s_computeRunArgumentsTarget, loggers))
-                {
-                    throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
-                }
+            if (!buildSession.Build(project, s_computeRunArgumentsTarget))
+            {
+                throw new GracefulException(CliCommandStrings.RunCommandEvaluationExceptionBuildFailed, s_computeRunArgumentsTarget[0]);
             }
 
             runtimeEnvironmentVariables = hasRuntimeEnvironmentVariableSupport

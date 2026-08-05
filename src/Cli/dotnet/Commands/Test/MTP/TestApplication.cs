@@ -19,33 +19,52 @@ internal sealed class TestApplication(
     TestModule module,
     BuildOptions buildOptions,
     TestOptions testOptions,
+    TestResultsDirectoryResolver resultsDirectoryResolver,
     TerminalTestReporter output,
     Action<CommandLineOptionMessages> onHelpRequested,
     ArtifactPostProcessingManager? artifactPostProcessingManager = null,
-    ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null) : IDisposable
+    ArtifactPostProcessingInvocation? artifactPostProcessingInvocation = null,
+    TestRunPolicy? testRunPolicy = null) : IDisposable
 {
     private static readonly Version ProtocolVersion_1_1 = new(1, 1, 0);
-    private static readonly TimeSpan ArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
+    private static readonly TimeSpan DefaultArtifactPostProcessingTimeout = TimeSpan.FromMinutes(15);
+
+    /// <summary>
+    /// Largest timeout <see cref="Task.WaitAsync(TimeSpan)"/> accepts, in seconds. Anything above
+    /// <c>Timer.MaxSupportedTimeout</c> (0xFFFFFFFE milliseconds) throws instead of waiting.
+    /// </summary>
+    private const int MaximumArtifactPostProcessingTimeoutSeconds = (int)(0xFFFFFFFE / 1000);
+
+    private static readonly TimeSpan ArtifactPostProcessingTimeout = GetArtifactPostProcessingTimeout();
     private const int LiveOutputTailLineCount = 200;
 
     private readonly Lock _requestLock = new();
+    private readonly Lock _controlRequestLock = new();
+    private readonly Lock _pipeConnectionsLock = new();
     private readonly BuildOptions _buildOptions = buildOptions;
+    private readonly TestResultsDirectoryResolver _resultsDirectoryResolver = resultsDirectoryResolver;
     private readonly Action<CommandLineOptionMessages> _onHelpRequested = onHelpRequested;
     private readonly TestApplicationHandler _handler = new(
         output,
         module,
         testOptions,
         artifactPostProcessingManager,
-        artifactPostProcessingInvocation);
+        artifactPostProcessingInvocation,
+        testRunPolicy);
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
+    private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
+    private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
+    private readonly string _controlPipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
 
     private readonly List<NamedPipeServer> _testAppPipeConnections = [];
     private readonly Dictionary<NamedPipeServer, HandshakeMessage> _handshakes = new();
+    private readonly List<TaskCompletionSource<IResponse>> _pendingControlRequests = [];
 
     private int _hasRun;
     private int _protocolNegotiated;
+    private int _sessionCancellationRequested;
     private Version? _negotiatedProtocolVersion;
     private ProcessOutputCollector? _standardOutputCollector;
     private ProcessOutputCollector? _standardErrorCollector;
@@ -68,16 +87,19 @@ internal sealed class TestApplication(
 
         var processStartInfo = CreateProcessStartInfo();
 
-        var cancellationTokenSource = new CancellationTokenSource();
-        var cancellationToken = cancellationTokenSource.Token;
+        var cancellationToken = _pipeCancellationTokenSource.Token;
         var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
+        var controlPipeConnectionLoop = Task.Run(async () => await WaitControlConnectionAsync(cancellationToken));
 
         Process? process = null;
+        bool testApplicationStarted = false;
         try
         {
             Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
 
             process = Process.Start(processStartInfo)!;
+            _testRunPolicy?.OnTestApplicationStarted();
+            testApplicationStarted = true;
 
             // Register with the Ctrl+C manager so a force-exit (second Ctrl+C) kills this process
             // tree even if the child's own cooperative cancellation hangs.
@@ -119,7 +141,44 @@ internal sealed class TestApplication(
             bool artifactPostProcessingTimedOut = false;
             if (_artifactPostProcessingInvocation is null)
             {
-                await process.WaitForExitAsync();
+                Task processExitTask = process.WaitForExitAsync();
+                if (_testRunPolicy is { } testRunPolicy)
+                {
+                    Task firstCompletedTask = await Task.WhenAny(processExitTask, testRunPolicy.Cancellation);
+                    if (firstCompletedTask != processExitTask)
+                    {
+                        RequestSessionCancellation();
+                        try
+                        {
+                            await processExitTask.WaitAsync(testRunPolicy.CancellationGracePeriod);
+                        }
+                        catch (TimeoutException)
+                        {
+                            try
+                            {
+                                if (!process.HasExited)
+                                {
+                                    process.Kill(entireProcessTree: true);
+                                }
+                            }
+                            catch (InvalidOperationException ex)
+                            {
+                                // The process exited between the HasExited check and Kill.
+                                Logger.LogTrace($"Test process exited before it could be killed after cancellation:\n{ex}");
+                            }
+
+                            await processExitTask;
+                        }
+                    }
+                    else
+                    {
+                        await processExitTask;
+                    }
+                }
+                else
+                {
+                    await processExitTask;
+                }
             }
             else
             {
@@ -139,6 +198,9 @@ internal sealed class TestApplication(
                 }
             }
 
+            _testRunPolicy?.OnTestApplicationExited();
+            testApplicationStarted = false;
+
             // At this point, process already exited. Allow for 5 seconds to consume stdout/stderr.
             // We might not be able to consume all the output if the test app has exited but left a child process alive.
             try
@@ -155,7 +217,22 @@ internal sealed class TestApplication(
             }
 
             var exitCode = process.ExitCode;
-            _handler.OnTestProcessExited(exitCode, stdOutBuilder.GetOutput(), stdErrBuilder.GetOutput());
+            string outputToReport = stdOutBuilder.GetOutputToReport();
+            string errorToReport = stdErrBuilder.GetOutputToReport();
+
+            // Output that was streamed live is not reported again - it is already on the terminal, and
+            // replaying it printed everything twice (https://github.com/dotnet/sdk/issues/55549). The trace
+            // file has no console sink and is collected on its own, though, so it would silently lose that
+            // output. Record it here, where the full capture is still available, for the streams the
+            // handler is not going to log. Guarded so nothing is materialized unless tracing is enabled,
+            // which it is not by default.
+            if (Logger.TraceEnabled)
+            {
+                LogStreamedProcessOutput("Output Data", outputToReport, stdOutBuilder);
+                LogStreamedProcessOutput("Error Data", errorToReport, stdErrBuilder);
+            }
+
+            _handler.OnTestProcessExited(exitCode, outputToReport, errorToReport);
 
             // This condition is to prevent considering the test app as successful when we didn't receive test session end.
             // We don't produce the exception if the exit code is already non-zero to avoid surfacing this exception when there is already a known failure.
@@ -171,6 +248,11 @@ internal sealed class TestApplication(
         }
         finally
         {
+            if (testApplicationStarted)
+            {
+                _testRunPolicy?.OnTestApplicationExited();
+            }
+
             if (process is not null)
             {
                 ctrlC.Unregister(process);
@@ -180,12 +262,12 @@ internal sealed class TestApplication(
             Volatile.Write(ref _standardOutputCollector, null);
             Volatile.Write(ref _standardErrorCollector, null);
 
-            cancellationTokenSource.Cancel();
-            await testAppPipeConnectionLoop;
+            _pipeCancellationTokenSource.Cancel();
+            await Task.WhenAll(testAppPipeConnectionLoop, controlPipeConnectionLoop);
         }
     }
 
-    private ProcessStartInfo CreateProcessStartInfo()
+    internal ProcessStartInfo CreateProcessStartInfo()
     {
         var processStartInfo = new ProcessStartInfo
         {
@@ -232,6 +314,19 @@ internal sealed class TestApplication(
             processStartInfo.Environment[Module.DotnetRootArchVariableName] = Path.GetDirectoryName(new Muxer().MuxerPath);
         }
 
+        if (TestOptions.CollectTestMap)
+        {
+            processStartInfo.Environment[TestOptions.AffectedTestsModeEnvironmentVariable] = TestOptions.CollectTestMapMode;
+        }
+        else if (TestOptions.AffectedTests)
+        {
+            processStartInfo.Environment[TestOptions.AffectedTestsModeEnvironmentVariable] = TestOptions.RunAffectedTestsMode;
+        }
+        else
+        {
+            processStartInfo.Environment.Remove(TestOptions.AffectedTestsModeEnvironmentVariable);
+        }
+
         processStartInfo.Environment["DOTNET_CLI_TEST_COMMAND_WORKING_DIRECTORY"] = Directory.GetCurrentDirectory();
         return processStartInfo;
     }
@@ -252,16 +347,11 @@ internal sealed class TestApplication(
 
         if (_artifactPostProcessingInvocation is not null)
         {
-            builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
-            builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(_artifactPostProcessingInvocation.ManifestPath)}");
-
-            if (_buildOptions.PathOptions.DiagnosticOutputDirectoryPath is { } toolDiagnosticOutputDirectoryPath)
-            {
-                builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(toolDiagnosticOutputDirectoryPath)}");
-            }
-
-            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
-            return builder.ToString();
+            return BuildArtifactPostProcessingArguments(
+                builder,
+                _buildOptions.PathOptions,
+                _artifactPostProcessingInvocation.ManifestPath,
+                _pipeName);
         }
 
         if (TestOptions.IsHelp)
@@ -274,7 +364,17 @@ internal sealed class TestApplication(
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ListTestsOptionName}");
         }
 
-        if (_buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectoryPath)
+        if (TestOptions.CollectTestMap && !TestOptions.CollectTestMapForwarded)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.CollectTestMapOptionName}");
+        }
+
+        if (TestOptions.AffectedTests && !TestOptions.AffectedTestsForwarded)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.AffectedTestsOptionName}");
+        }
+
+        if (_resultsDirectoryResolver.Resolve(Module) is { } resultsDirectoryPath)
         {
             builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ResultsDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(resultsDirectoryPath)}");
         }
@@ -307,6 +407,72 @@ internal sealed class TestApplication(
             ? $"exec {ArgumentEscaper.EscapeSingleArg(module.TargetPath)}"
             : string.Empty;
 
+    /// <summary>
+    /// Appends the arguments that put a relaunched test application into merge-host mode. None of the
+    /// options describing the test run itself are forwarded — the host discovers nothing and runs no
+    /// tests — but the options deciding which extensions load, and where they write diagnostics, must
+    /// match the run that produced the artifacts.
+    /// </summary>
+    internal static string BuildArtifactPostProcessingArguments(
+        StringBuilder builder,
+        PathOptions pathOptions,
+        string manifestPath,
+        string pipeName)
+    {
+        builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
+        builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(manifestPath)}");
+
+        // A merge host resolves and enables its extensions exactly like a test host does, so a
+        // configuration file that governs which extensions load has to reach it too. Without this
+        // the merge runs with a different extension set than the run that produced the artifacts,
+        // and a post-processor disabled by configuration silently comes back for the merge.
+        if (pathOptions.ConfigFilePath is { } configFilePath)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.ConfigFileOptionName} {ArgumentEscaper.EscapeSingleArg(configFilePath)}");
+        }
+
+        if (pathOptions.DiagnosticOutputDirectoryPath is { } diagnosticOutputDirectoryPath)
+        {
+            builder.Append($" {TestCommandDefinition.MicrosoftTestingPlatform.DiagnosticOutputDirectoryOptionName} {ArgumentEscaper.EscapeSingleArg(diagnosticOutputDirectoryPath)}");
+        }
+
+        // The results directory is deliberately not forwarded: the merged output location travels in
+        // the manifest instead, so the SDK keeps control of it even when it has to be derived.
+        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}");
+        return builder.ToString();
+    }
+
+    /// <summary>
+    /// Resolves how long a relaunched merge host may run before it is killed. The bound exists so a
+    /// hung merge host cannot hold an already-finished test run open indefinitely, but no single
+    /// value fits every repository — merging the coverage of a large solution legitimately takes far
+    /// longer than merging two TRX reports. The override also accepts '0' to remove the bound, which
+    /// is what makes it possible to attach a debugger to a merge host.
+    /// </summary>
+    private static TimeSpan GetArtifactPostProcessingTimeout()
+        => ParseArtifactPostProcessingTimeout(
+            Environment.GetEnvironmentVariable(CliConstants.TestArtifactPostProcessingTimeoutEnvVar));
+
+    internal static TimeSpan ParseArtifactPostProcessingTimeout(string? configuredTimeout)
+    {
+        // Parsed as long rather than int so that a value chosen to mean 'a very long time' lands in
+        // the 'effectively never' branch below instead of overflowing the parse and silently falling
+        // back to the default. Anything above long.MaxValue seconds is not a duration anyone means,
+        // so it keeps the default along with the other unusable values.
+        if (!long.TryParse(configuredTimeout, NumberStyles.Integer, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
+        {
+            return DefaultArtifactPostProcessingTimeout;
+        }
+
+        // Task.WaitAsync rejects a timeout above Timer.MaxSupportedTimeout (~49.7 days) with an
+        // ArgumentOutOfRangeException, which would escape the TimeoutException-only catch around the
+        // wait and fail every merge. A caller asking for a timeout that long means "effectively
+        // never", so give them that instead of a broken run.
+        return seconds == 0 || seconds > MaximumArtifactPostProcessingTimeoutSeconds
+            ? Timeout.InfiniteTimeSpan
+            : TimeSpan.FromSeconds(seconds);
+    }
+
     private async Task WaitConnectionAsync(CancellationToken token)
     {
         try
@@ -317,7 +483,7 @@ internal sealed class TestApplication(
                 pipeConnection.RegisterAllSerializers();
 
                 await pipeConnection.WaitConnectionAsync(token);
-                _testAppPipeConnections.Add(pipeConnection);
+                AddPipeConnection(pipeConnection);
             }
         }
         catch (OperationCanceledException ex)
@@ -330,6 +496,91 @@ internal sealed class TestApplication(
             var exAsString = ex.ToString();
             Logger.LogTrace(exAsString);
             Environment.FailFast(exAsString);
+        }
+    }
+
+    private async Task WaitControlConnectionAsync(CancellationToken token)
+    {
+        try
+        {
+            while (!token.IsCancellationRequested)
+            {
+                NamedPipeServer? pipeConnection = new(
+                    _controlPipeName,
+                    OnControlRequest,
+                    NamedPipeServerStream.MaxAllowedServerInstances,
+                    token,
+                    skipUnknownMessages: false);
+                try
+                {
+                    pipeConnection.RegisterAllSerializers();
+
+                    await pipeConnection.WaitConnectionAsync(token);
+                    AddPipeConnection(pipeConnection);
+                    pipeConnection = null;
+                }
+                finally
+                {
+                    pipeConnection?.Dispose();
+                }
+            }
+        }
+        catch (OperationCanceledException ex) when (ex.CancellationToken == token)
+        {
+            Logger.LogTrace("WaitControlConnectionAsync() was cancelled.");
+        }
+        catch (Exception ex)
+        {
+            // The reverse channel is an optional capability. A failure here must not replace
+            // the test application's result; policy cancellation can still use the kill fallback.
+            Logger.LogTrace($"The server-control pipe stopped accepting connections:\n{ex}");
+        }
+    }
+
+    private Task<IResponse> OnControlRequest(NamedPipeServer _, IRequest request)
+    {
+        if (request is not WaitForServerControlRequest)
+        {
+            throw new NotSupportedException(string.Format(CliCommandStrings.CmdUnsupportedMessageRequestTypeException, request.GetType()));
+        }
+
+        lock (_controlRequestLock)
+        {
+            if (Volatile.Read(ref _sessionCancellationRequested) != 0)
+            {
+                return Task.FromResult<IResponse>(new ServerControlMessage(ServerControlKinds.CancelSession));
+            }
+
+            var completion = new TaskCompletionSource<IResponse>(TaskCreationOptions.RunContinuationsAsynchronously);
+            _pendingControlRequests.Add(completion);
+            _pipeCancellationTokenSource.Token.Register(
+                () => completion.TrySetCanceled(_pipeCancellationTokenSource.Token));
+            return completion.Task;
+        }
+    }
+
+    private void AddPipeConnection(NamedPipeServer pipeConnection)
+    {
+        lock (_pipeConnectionsLock)
+        {
+            _testAppPipeConnections.Add(pipeConnection);
+        }
+    }
+
+    private void RequestSessionCancellation()
+    {
+        if (Interlocked.Exchange(ref _sessionCancellationRequested, 1) != 0)
+        {
+            return;
+        }
+
+        lock (_controlRequestLock)
+        {
+            var message = new ServerControlMessage(ServerControlKinds.CancelSession);
+            foreach (TaskCompletionSource<IResponse> request in _pendingControlRequests)
+            {
+                request.TrySetResult(message);
+            }
         }
     }
 
@@ -463,15 +714,24 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    private static HandshakeMessage CreateHandshakeMessage(string version) =>
-        new HandshakeMessage(new Dictionary<byte, string>(capacity: 5)
+    private HandshakeMessage CreateHandshakeMessage(string version)
+    {
+        var properties = new Dictionary<byte, string>(capacity: 6)
         {
             { HandshakeMessagePropertyNames.PID, Environment.ProcessId.ToString(CultureInfo.InvariantCulture) },
             { HandshakeMessagePropertyNames.Architecture, RuntimeInformation.ProcessArchitecture.ToString() },
             { HandshakeMessagePropertyNames.Framework, RuntimeInformation.FrameworkDescription },
             { HandshakeMessagePropertyNames.OS, RuntimeInformation.OSDescription },
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
-        });
+        };
+
+        if (version.Length > 0)
+        {
+            properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
+        }
+
+        return new HandshakeMessage(properties);
+    }
 
     private void SetNegotiatedProtocolVersion(string negotiatedVersion)
     {
@@ -487,6 +747,25 @@ internal sealed class TestApplication(
 
     private bool? GetLiveOutputStreamingState() =>
         Volatile.Read(ref _protocolNegotiated) == 0 ? null : IsProtocol_1_1_OrHigher;
+
+    /// <summary>
+    /// Records process output that is not being reported to the user because it already reached the
+    /// terminal as live output, so that an enabled trace file still contains it.
+    /// </summary>
+    private static void LogStreamedProcessOutput(string label, string reportedOutput, ProcessOutputCollector collector)
+    {
+        if (reportedOutput.Length > 0)
+        {
+            // The output is being reported, so the handler traces it as usual.
+            return;
+        }
+
+        string capturedOutput = collector.GetCapturedOutput();
+        if (capturedOutput.Length > 0)
+        {
+            Logger.LogTrace($"{label} (already streamed live): {capturedOutput}");
+        }
+    }
 
     private void FlushBufferedOutputIfLiveStreamingEnabled()
     {
@@ -529,60 +808,105 @@ internal sealed class TestApplication(
     private void OnDisplayMessage(DisplayMessage displayMessage)
         => _handler.OnDisplayMessageReceived(displayMessage);
 
-    private sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
+    internal sealed class ProcessOutputCollector(int liveOutputTailLineCount, Action<string> writeOutput)
     {
+        // Serializes "decide what to write, then write it" so live output reaches the terminal in the
+        // order the test process produced it. Without it the protocol-negotiation flush and a reader
+        // thread can interleave and put a later line ahead of the buffered lines that precede it, and
+        // live output is the only copy the user gets. This is deliberately separate from _lock so a
+        // capture read never waits on terminal IO - RunAsync reads the capture on a timeout path that
+        // exists precisely because a reader may be stuck. Always taken before _lock, never after.
+        private readonly object _writeLock = new();
         private readonly object _lock = new();
         private readonly Queue<string> _lines = [];
         private bool _liveStreamingEnabled;
 
         public void AddLine(string line, bool? liveOutputStreamingState)
         {
-            string? outputToWrite = null;
-            lock (_lock)
+            lock (_writeLock)
             {
-                _lines.Enqueue(line);
-                if (liveOutputStreamingState == true)
+                string outputToWrite;
+                lock (_lock)
                 {
+                    _lines.Enqueue(line);
+
                     if (_liveStreamingEnabled)
                     {
+                        // The caller sampled the streaming state before taking this lock, so it can be
+                        // stale: negotiation may have enabled streaming in between. Once streaming is on
+                        // it never turns back off, and the capture is reported as already shown, so this
+                        // line has to be written even when the stale sample says otherwise - skipping it
+                        // would drop it from the terminal entirely.
                         outputToWrite = line + Environment.NewLine;
                     }
                     else
                     {
+                        if (liveOutputStreamingState != true)
+                        {
+                            return;
+                        }
+
                         _liveStreamingEnabled = true;
                         outputToWrite = JoinLinesWithTrailingNewLine(_lines);
                     }
 
                     TrimToBoundedTail();
                 }
-            }
 
-            if (outputToWrite is not null)
-            {
                 writeOutput(outputToWrite);
             }
         }
 
         public void FlushBufferedOutputIfLiveStreamingEnabled(bool? liveOutputStreamingState)
         {
-            string? outputToWrite = null;
-            lock (_lock)
+            lock (_writeLock)
             {
-                if (liveOutputStreamingState == true && !_liveStreamingEnabled)
+                string outputToWrite;
+                lock (_lock)
                 {
+                    if (liveOutputStreamingState != true || _liveStreamingEnabled)
+                    {
+                        return;
+                    }
+
                     _liveStreamingEnabled = true;
                     outputToWrite = JoinLinesWithTrailingNewLine(_lines);
                     TrimToBoundedTail();
                 }
-            }
 
-            if (!string.IsNullOrEmpty(outputToWrite))
-            {
-                writeOutput(outputToWrite);
+                if (outputToWrite.Length > 0)
+                {
+                    writeOutput(outputToWrite);
+                }
             }
         }
 
-        public string GetOutput()
+        /// <summary>
+        /// Returns the captured tail of the stream for the caller to report, or an empty string when
+        /// that content already reached the terminal as live output.
+        /// </summary>
+        /// <remarks>
+        /// Live streaming engages only once for a stream, and everything buffered up to that point is
+        /// flushed in the same step, so from then on the whole capture - including lines later evicted
+        /// by <see cref="TrimToBoundedTail"/> - has been shown. Reporting it again would print it twice
+        /// (https://github.com/dotnet/sdk/issues/55549). Until streaming engages the capture is the only
+        /// copy there is, so it is returned in full: older Microsoft.Testing.Platform versions that
+        /// don't negotiate protocol 1.1.0, and processes that fail before the handshake, depend on it.
+        /// </remarks>
+        public string GetOutputToReport()
+        {
+            lock (_lock)
+            {
+                return _liveStreamingEnabled ? string.Empty : string.Join(Environment.NewLine, _lines);
+            }
+        }
+
+        /// <summary>
+        /// Returns the captured tail of the stream whether or not it was already streamed live. Only for
+        /// diagnostics that record the output without showing it to the user - anything rendered on the
+        /// terminal must go through <see cref="GetOutputToReport"/> instead, or it will be printed twice.
+        /// </summary>
+        public string GetCapturedOutput()
         {
             lock (_lock)
             {
@@ -676,5 +1000,7 @@ internal sealed class TestApplication(
                 Reporter.Error.WriteLine(messageBuilder.ToString());
             }
         }
+
+        _pipeCancellationTokenSource.Dispose();
     }
 }

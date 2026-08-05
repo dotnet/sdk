@@ -149,13 +149,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                             return false;
                         }
 
-                        SyntaxAnnotation renameIdentiferAnnotation = RenameAnnotation.Create();
+                        SyntaxAnnotation renameIdentifierAnnotation = RenameAnnotation.Create();
 
                         IdentifierNameSyntax nonNullPtrIdentifierNode = SyntaxFactory.IdentifierName(nonNullPtrIdentifier);
 
                         if (addRenameAnnotation)
                         {
-                            nonNullPtrIdentifierNode = nonNullPtrIdentifierNode.WithAdditionalAnnotations(renameIdentiferAnnotation);
+                            nonNullPtrIdentifierNode = nonNullPtrIdentifierNode.WithAdditionalAnnotations(renameIdentifierAnnotation);
                         }
 
                         var pointerCast = editor.Generator.CastExpression(
@@ -200,7 +200,10 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static void AddUnsafeModifierToEnclosingMethod(DocumentEditor editor, SyntaxNode syntax)
         {
-            var enclosingMethod = FindEnclosingMethod(syntax);
+            if (FindEnclosingMethod(syntax) is BaseMethodDeclarationSyntax enclosingMethod)
+            {
+                editor.SetModifiers(enclosingMethod, editor.Generator.GetModifiers(enclosingMethod).WithIsUnsafe(true));
+            }
 
             static BaseMethodDeclarationSyntax? FindEnclosingMethod(SyntaxNode syntax)
             {
@@ -211,8 +214,6 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 return (BaseMethodDeclarationSyntax?)syntax.Parent;
             }
-
-            editor.SetModifiers(enclosingMethod, editor.Generator.GetModifiers(enclosingMethod).WithIsUnsafe(true));
         }
     }
 }

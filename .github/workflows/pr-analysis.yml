@@ -5,6 +5,9 @@ on:
 permissions:
   contents: read
   pull-requests: read
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   allowed-labels:
     runs-on: ubuntu-latest
