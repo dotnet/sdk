@@ -3,6 +3,7 @@
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
+using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Text;
 
 namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
@@ -156,6 +157,26 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers.UnitTests
             ImmutableArray<Diagnostic> diagnostics = ImmutableArray.Create(DiagnosticAt(10, 5));
 
             Assert.AreEqual("10", Starts(SyntaxEditorFixAllProvider.Order(diagnostics)));
+        }
+
+        [TestMethod]
+        public void TheSpanScopesAreOffered()
+        {
+            //  DocumentBasedFixAllProvider offers document, project and solution by default. The two span
+            //  scopes narrow to part of one document, which is what a shared editor already fixes, so they
+            //  are offered as well - and they are lost silently if the base constructor stops being called.
+            FixAllProvider provider = SyntaxEditorFixAllProvider.Create((document, diagnostic, editor) => { });
+
+            Assert.AreSequenceEqual(
+                new[]
+                {
+                    FixAllScope.Document,
+                    FixAllScope.Project,
+                    FixAllScope.Solution,
+                    FixAllScope.ContainingMember,
+                    FixAllScope.ContainingType,
+                },
+                provider.GetSupportedFixAllScopes());
         }
     }
 }

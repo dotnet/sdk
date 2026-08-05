@@ -60,8 +60,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             CodeAnalysis.Text.TextSpan diagnosticSpan = diagnostics.First().Location.SourceSpan; // All the diagnostics are reported at the same location -- the name of the declared class -- so it doesn't matter which one we pick
             SyntaxNode node = root.FindNode(diagnosticSpan);
-            SyntaxNode targetNode = editor.Generator.GetDeclaration(node, DeclarationKind.Class);
-            if (model.GetDeclaredSymbol(targetNode, cancellationToken) is not INamedTypeSymbol typeSymbol)
+            if (editor.Generator.GetDeclaration(node, DeclarationKind.Class) is not SyntaxNode targetNode ||
+                model.GetDeclaredSymbol(targetNode, cancellationToken) is not INamedTypeSymbol typeSymbol)
             {
                 return document;
             }
@@ -93,13 +93,18 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         editor.AddMember(targetNode, newConstructorNode2);
                         break;
                     case ImplementStandardExceptionConstructorsAnalyzer.MissingCtorSignature.CtorWithStringAndExceptionParameters:
+                        if (!editor.SemanticModel.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException, out INamedTypeSymbol? exceptionType))
+                        {
+                            return document;
+                        }
+
                         // Add missing CtorWithStringAndExceptionParameters
                         SyntaxNode newConstructorNode3 = generator.ConstructorDeclaration(
                                                     containingTypeName: typeSymbol.Name,
                                                     parameters: new[]
                                                     {
                                                     generator.ParameterDeclaration("message", generator.TypeExpression(editor.SemanticModel.Compilation.GetSpecialType(SpecialType.System_String))),
-                                                    generator.ParameterDeclaration("innerException", generator.TypeExpression(editor.SemanticModel.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemException)))
+                                                    generator.ParameterDeclaration("innerException", generator.TypeExpression(exceptionType))
                                                     },
                                                     accessibility: Accessibility.Public,
                                                     baseConstructorArguments: new[]

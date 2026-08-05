@@ -47,9 +47,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         };
                         if (implementation is not null)
                         {
-                            generatedMembers.Add(generator.AsPrivateInterfaceImplementation(
+                            if (generator.AsPrivateInterfaceImplementation(
                                 implementation,
-                                generator.NameExpression(member.ContainingType)));
+                                generator.NameExpression(member.ContainingType)) is not SyntaxNode privateImplementation)
+                            {
+                                return document;
+                            }
+
+                            generatedMembers.Add(privateImplementation);
                         }
                     }
                 }
@@ -148,7 +153,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
                         setAccessor.SemicolonToken)));
         }
 
-        private static SyntaxNode GenerateEventImplementation(
+        private static SyntaxNode? GenerateEventImplementation(
             IEventSymbol evt,
             SyntaxGenerator generator,
             SyntaxNode[] defaultMethodBodyStatements)
@@ -156,14 +161,20 @@ namespace Microsoft.NetCore.CSharp.Analyzers.InteropServices
             var eventDeclaration = generator.CustomEventDeclaration(evt);
             eventDeclaration = generator.WithModifiers(eventDeclaration, generator.GetModifiers(eventDeclaration).WithIsAbstract(false));
 
+            if (generator.GetAccessor(eventDeclaration, DeclarationKind.AddAccessor) is not SyntaxNode addAccessor ||
+                generator.GetAccessor(eventDeclaration, DeclarationKind.RemoveAccessor) is not SyntaxNode removeAccessor)
+            {
+                return null;
+            }
+
             // Explicitly use the C# syntax APIs to work around https://github.com/dotnet/roslyn/issues/53649
             return ((EventDeclarationSyntax)eventDeclaration).WithAccessorList(
                 SyntaxFactory.AccessorList(
                     SyntaxFactory.List(
                 new[]
                 {
-                        (AccessorDeclarationSyntax)generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.AddAccessor), defaultMethodBodyStatements),
-                        (AccessorDeclarationSyntax)generator.WithStatements(generator.GetAccessor(eventDeclaration, DeclarationKind.RemoveAccessor), defaultMethodBodyStatements),
+                        (AccessorDeclarationSyntax)generator.WithStatements(addAccessor, defaultMethodBodyStatements),
+                        (AccessorDeclarationSyntax)generator.WithStatements(removeAccessor, defaultMethodBodyStatements),
                 })));
         }
 

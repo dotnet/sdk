@@ -52,6 +52,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             var diagnosticSpan = diagnostic.Location.SourceSpan;
             var node = root.FindNode(diagnosticSpan);
             var enumDeclarationNode = generator.GetDeclaration(node, DeclarationKind.Enum);
+            if (enumDeclarationNode is null)
+            {
+                return document;
+            }
 
             // Find the target syntax node to replace. Was not able to find a language neutral way of doing this. So using the language specific methods
             var targetNode = GetTargetNode(enumDeclarationNode);
