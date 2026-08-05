@@ -521,24 +521,6 @@ public static class Parser
                 base.Write(context);
             }
         }
-<<<<<<< HEAD
-
-        private static bool IsInNuGetCommandTree(Command command)
-        {
-            Command current = command;
-            while (current is not null)
-            {
-                if (current is NuGetCommandDefinition)
-                {
-                    return true;
-                }
-                current = current.Parents.FirstOrDefault(p => p is Command) as Command;
-            }
-            return false;
-        }
-    }
-=======
->>>>>>> origin/main
 
         private static bool IsInNuGetCommandTree(Command command)
         {

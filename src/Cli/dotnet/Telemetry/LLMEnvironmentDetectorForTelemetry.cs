@@ -18,13 +18,6 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         // Cursor AI
         new EnvironmentDetectionRuleWithResult<string>("cursor", new AnyPresentEnvironmentRule("CURSOR_EDITOR", "CURSOR_AI", "CURSOR_TRACE_ID", "CURSOR_AGENT")),
         // Gemini
-<<<<<<< HEAD
-        new EnvironmentDetectionRuleWithResult<string>("gemini", new BooleanEnvironmentRule("GEMINI_CLI")),
-        // GitHub Copilot
-        new EnvironmentDetectionRuleWithResult<string>("copilot", new BooleanEnvironmentRule("GITHUB_COPILOT_CLI_MODE", "COPILOT_CLI")),
-        // GitHub Copilot desktop application running as an AI agent
-        new EnvironmentDetectionRuleWithResult<string>("copilot-app", new EnvironmentVariableValueRule("AI_AGENT", "github_copilot_app_agent")),
-=======
         new EnvironmentDetectionRuleWithResult<string>("gemini", new AnyPresentEnvironmentRule("GEMINI_CLI")),
         // GitHub Copilot CLI (legacy gh extension: GITHUB_COPILOT_CLI_MODE; new Copilot CLI: GH_COPILOT_WORKING_DIRECTORY, COPILOT_CLI, COPILOT_MODEL, COPILOT_ALLOW_ALL, or COPILOT_GITHUB_TOKEN is set).
         new EnvironmentDetectionRuleWithResult<string>("copilot-cli", new AnyPresentEnvironmentRule(
@@ -37,7 +30,6 @@ internal class LLMEnvironmentDetectorForTelemetry : ILLMEnvironmentDetector
         new EnvironmentDetectionRuleWithResult<string>("copilot-vscode", new AnyMatchEnvironmentRule(
             new EnvironmentVariableValueRule("AI_AGENT", "github_copilot_vscode_agent"),
             new AnyPresentEnvironmentRule("COPILOT_AGENT"))),
->>>>>>> origin/main
         // Codex CLI
         new EnvironmentDetectionRuleWithResult<string>("codex", new AnyPresentEnvironmentRule("CODEX_CLI", "CODEX_SANDBOX", "CODEX_CI", "CODEX_THREAD_ID")),
         // Aider

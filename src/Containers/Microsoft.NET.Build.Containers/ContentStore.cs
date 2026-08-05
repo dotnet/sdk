@@ -22,12 +22,8 @@ internal static class ContentStore
 
     public static string PathForDescriptor(Descriptor descriptor)
     {
-<<<<<<< HEAD
-        string digestValue = DigestUtils.GetEncoded(descriptor.Digest);
-=======
         string digestString = descriptor.Digest;
         string digestValue = DigestUtils.GetEncoded(digestString);
->>>>>>> origin/main
 
         string extension = descriptor.MediaType switch
         {
@@ -41,35 +37,10 @@ internal static class ContentStore
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), descriptor.MediaType))
         };
 
-<<<<<<< HEAD
-        return GetPathForHash(digestValue) + extension;
-=======
         string descriptorPath = Path.Combine(ContentRoot, digestValue) + extension;
         return descriptorPath;
->>>>>>> origin/main
     }
 
-    public static string GetTempFile() => Path.Join(TempPath, Path.GetRandomFileName());
-
-    /// <summary>
-    /// Gets the path to the user cache directory for SDK container builds, creating it if it does
-    /// not already exist.
-    /// </summary>
-    private static string EnsureCacheDirectory()
-    {
-        string userCacheDir = GetUserCacheDirectoryPath();
-        CreateCacheDirectory(userCacheDir);
-
-        string dotnetCacheDir = Path.Join(userCacheDir, "dotnet");
-        CreateCacheDirectory(dotnetCacheDir);
-
-        string containersCacheDir = Path.Join(dotnetCacheDir, "Containers");
-        CreateCacheDirectory(containersCacheDir);
-
-        return containersCacheDir;
-    }
-
-<<<<<<< HEAD
     public static string GetTempFile() => Path.Join(TempPath, Path.GetRandomFileName());
 
     /// <summary>
@@ -99,17 +70,6 @@ internal static class ContentStore
     /// </remarks>
     private static void CreateCacheDirectory(string path)
     {
-=======
-    /// <summary>
-    /// Creates a cache directory with user-scoped permissions based on the OS.
-    /// </summary>
-    /// <remarks>
-    /// Permissions are only set for the leaf directory. The caller is expected to handle
-    /// permissions for intermediate directories.
-    /// </remarks>
-    private static void CreateCacheDirectory(string path)
-    {
->>>>>>> origin/main
         if (OperatingSystem.IsWindows())
         {
             Directory.CreateDirectory(path);

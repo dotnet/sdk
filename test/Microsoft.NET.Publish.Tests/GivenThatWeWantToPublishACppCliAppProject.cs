@@ -8,16 +8,9 @@ namespace Microsoft.NET.Build.Tests
     [TestClass]
     public class GivenThatWeWantToPublishACppCliAppProject : SdkTest
     {
-<<<<<<< HEAD
-        public GivenThatWeWantToPublishACppCliAppProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/54145")]
-=======
         [TestMethod]
         [FullMSBuildOnly]
->>>>>>> origin/main
+        [Ignore("https://github.com/dotnet/sdk/issues/54145")]
         public void It_should_fail_with_error_message()
         {
             var testAsset = TestAssetsManager

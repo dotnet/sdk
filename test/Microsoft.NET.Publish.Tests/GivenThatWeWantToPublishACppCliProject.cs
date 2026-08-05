@@ -8,17 +8,8 @@ namespace Microsoft.NET.Build.Tests
     [TestClass]
     public class GivenThatWeWantToPublishACppCliProject : SdkTest
     {
-<<<<<<< HEAD
-        public GivenThatWeWantToPublishACppCliProject(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [FullMSBuildOnlyFact]
-=======
         [TestMethod]
         [FullMSBuildOnly]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
->>>>>>> origin/main
         public void When_referenced_by_csharp_project_it_publishes_and_runs()
         {
             var testAsset = TestAssetsManager

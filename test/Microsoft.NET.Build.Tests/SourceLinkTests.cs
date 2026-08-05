@@ -288,13 +288,8 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-<<<<<<< HEAD
-        [FullMSBuildOnlyFact]
-=======
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
         [FullMSBuildOnly]
->>>>>>> origin/main
         public void Cpp()
         {
             var testAsset = TestAssetsManager

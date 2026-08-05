@@ -284,12 +284,7 @@
         <Destination>r</Destination>
       </HelixCorrelationPayload>
 
-<<<<<<< HEAD
-      <HelixCorrelationPayload Include="$(ArtifactsShippingPackages)">
-        <PayloadDirectory>$(ArtifactsShippingPackages)</PayloadDirectory>
-=======
       <HelixCorrelationPayload Include="$(HelixNuGetPayload)">
->>>>>>> origin/main
         <Destination>d/.nuget</Destination>
       </HelixCorrelationPayload>
     </ItemGroup>

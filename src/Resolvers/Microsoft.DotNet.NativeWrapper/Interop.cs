@@ -68,11 +68,7 @@ namespace Microsoft.DotNet.NativeWrapper
                 return IntPtr.Zero;
             }
 
-<<<<<<< HEAD
-            string? hostFxrPath = HostFxrPath;
-=======
             string? hostFxrPath = s_hostFxrPath;
->>>>>>> origin/main
 
             // The host only publishes the HOSTFXR_PATH runtime property for first-class SDK
             // commands (e.g. `dotnet build`). When the SDK is launched via `dotnet exec dotnet.dll`

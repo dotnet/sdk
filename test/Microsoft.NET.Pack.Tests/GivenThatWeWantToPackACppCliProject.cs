@@ -9,13 +9,8 @@ namespace Microsoft.NET.Build.Tests
     public class GivenThatWeWantToPackACppCliProject : SdkTest
     {
 
-<<<<<<< HEAD
-        [FullMSBuildOnlyFact]
-=======
         [TestMethod]
         [FullMSBuildOnly]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
->>>>>>> origin/main
         public void It_cannot_pack_the_cppcliproject()
         {
             var testAsset = TestAssetsManager

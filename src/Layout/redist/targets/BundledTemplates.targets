@@ -1,14 +1,5 @@
 <Project>
 
-<<<<<<< HEAD
-  <ItemGroup Label=".NET 10.0 templates">
-    <Bundled100Templates Include="Microsoft.DotNet.Web.ItemTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebItemTemplates100PackageVersion)" />
-    <Bundled100Templates Include="Microsoft.DotNet.Web.ProjectTemplates.10.0" PackageVersion="$(MicrosoftDotNetWebProjectTemplates100PackageVersion)" UseVersionForTemplateInstallPath="true" />
-    <Bundled100Templates Include="Microsoft.McpServer.ProjectTemplates.10.0" PackageVersion="$(MicrosoftMcpServerProjectTemplates100PackageVersion)" />
-    <!-- Per the comment about the vmr in the version.details.xml file, using the platforms version instead -->
-    <Bundled100Templates Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftNETCorePlatformsPackageVersion)" />
-    <Bundled100Templates Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftNETCorePlatformsPackageVersion)" />
-=======
   <!-- Set TemplateFrameworkVersion to a different value than '$(MajorMinorVersion)' during rebranding. -->
   <PropertyGroup>
     <TemplateFrameworkVersion>$(MajorMinorVersion)</TemplateFrameworkVersion>
@@ -20,7 +11,6 @@
     <BundledTemplate Include="Microsoft.McpServer.ProjectTemplates.11.0" PackageVersion="$(MicrosoftMcpServerProjectTemplates110PackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.WinForms.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWinFormsProjectTemplatesPackageVersion)" />
     <BundledTemplate Include="Microsoft.Dotnet.Wpf.ProjectTemplates" PackageVersion="$(MicrosoftDotnetWpfProjectTemplatesPackageVersion)" />
->>>>>>> origin/main
   </ItemGroup>
 
   <ItemGroup>

@@ -11,13 +11,9 @@ namespace Microsoft.NET.Build.Tests
     public class GivenThatWeWantToBuildACppCliNonLibraryProject : SdkTest
     {
 
-<<<<<<< HEAD
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/54145")]
-=======
         [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/54145")]
         [FullMSBuildOnly]
->>>>>>> origin/main
         public void Given_an_exe_project_It_should_fail_with_error_message()
         {
             var testAsset = TestAssetsManager
@@ -31,13 +27,9 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining(Strings.NoSupportCppNonDynamicLibraryDotnetCore);
         }
 
-<<<<<<< HEAD
-        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/54145")]
-=======
         [TestMethod]
         [Ignore("https://github.com/dotnet/sdk/issues/54145")]
         [FullMSBuildOnly]
->>>>>>> origin/main
         public void Given_an_StaticLibrary_project_It_should_fail_with_error_message()
         {
             var testAsset = TestAssetsManager

@@ -334,21 +334,12 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-<<<<<<< HEAD
-        [Theory]
-        [InlineData("q", false)]
-        [InlineData("m", false)]
-        [InlineData("n", true)]
-        [InlineData("d", true)]
-        [InlineData("diag", true, Skip = "https://github.com/dotnet/sdk/issues/54781")]
-=======
         [TestMethod]
         [DataRow("q", false)]
         [DataRow("m", false)]
         [DataRow("n", true)]
         [DataRow("d", true)]
-        [DataRow("diag", true)]
->>>>>>> origin/main
+        [DataRow("diag", true, IgnoreMessage = "https://github.com/dotnet/sdk/issues/54781")]
         public void ItUsesVerbosityPassedToDefineVerbosityOfConsoleLoggerOfTheTests(string verbosity, bool shouldShowPassedTests)
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests
