@@ -1,0 +1,111 @@
+name: Issue Monster Assigner
+
+on:
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: Issue number to assign to Copilot.
+        required: true
+        type: number
+      base_branch:
+        description: Base branch for the Copilot pull request.
+        required: true
+        type: string
+
+permissions:
+  contents: read
+  copilot-requests: write
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  assign:
+    runs-on: ubuntu-latest
+    environment: issue-monster
+    timeout-minutes: 10
+
+    steps:
+      - name: Assign issue to Copilot
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        env:
+          ISSUE_NUMBER: ${{ inputs.issue_number }}
+          BASE_BRANCH: ${{ inputs.base_branch }}
+        with:
+          github-token: ${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}
+          script: |
+            const issueNumber = Number.parseInt(process.env.ISSUE_NUMBER, 10);
+            const baseBranch = process.env.BASE_BRANCH.trim();
+            const { owner, repo } = context.repo;
+
+            if (!Number.isSafeInteger(issueNumber) || issueNumber <= 0) {
+              core.setFailed(`Invalid issue number: ${process.env.ISSUE_NUMBER}`);
+              return;
+            }
+            if (!baseBranch) {
+              core.setFailed('Base branch must not be empty.');
+              return;
+            }
+
+            const { data: issue } = await github.rest.issues.get({
+              owner,
+              repo,
+              issue_number: issueNumber,
+            });
+            if (issue.pull_request) {
+              core.setFailed(`#${issueNumber} is a pull request, not an issue.`);
+              return;
+            }
+
+            await github.rest.repos.getBranch({ owner, repo, branch: baseBranch });
+
+            const copilotAliases = [
+              'copilot-swe-agent[bot]',
+              'github-copilot-enterprise[bot]',
+              'github-copilot[bot]',
+              'copilot-swe-agent',
+              'github-copilot-enterprise',
+              'github-copilot',
+            ];
+
+            if ((issue.assignees ?? []).some(({ login }) => copilotAliases.includes(login))) {
+              core.info(`Copilot is already assigned to issue #${issueNumber}.`);
+              return;
+            }
+
+            let copilotLogin;
+            for (const alias of copilotAliases) {
+              try {
+                await github.request('GET /repos/{owner}/{repo}/issues/{issue_number}/assignees/{assignee}', {
+                  owner,
+                  repo,
+                  issue_number: issueNumber,
+                  assignee: alias,
+                });
+                copilotLogin = alias;
+                break;
+              } catch (error) {
+                if (error.status !== 404) {
+                  throw error;
+                }
+              }
+            }
+
+            if (!copilotLogin) {
+              core.setFailed(`Copilot coding agent is not available for ${owner}/${repo}.`);
+              return;
+            }
+
+            await github.request('POST /repos/{owner}/{repo}/issues/{issue_number}/assignees', {
+              owner,
+              repo,
+              issue_number: issueNumber,
+              assignees: [copilotLogin],
+              agent_assignment: {
+                target_repo: `${owner}/${repo}`,
+                base_branch: baseBranch,
+                model: 'gpt-5.6-sol',
+              },
+            });
+
+            core.info(`Assigned ${copilotLogin} to issue #${issueNumber} with base branch ${baseBranch}.`);
