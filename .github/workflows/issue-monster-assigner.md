@@ -3,11 +3,10 @@ emoji: "👾"
 name: Issue Monster Assigner
 description: Assigns one issue to Copilot using an orchestrator-selected base branch
 on:
-  # `roles: all` bypasses gh-aw's pre_activation membership check. The assigner is only
-  # ever dispatched programmatically by the orchestrator, so the workflow_dispatch actor
-  # is github-actions[bot] (repo permission `none`); without this, that actor is rejected
-  # and every agentic job is skipped. GitHub still enforces its own actions:write
-  # requirement to create the dispatch.
+  # `roles: all` bypasses gh-aw's pre_activation membership check because orchestrator
+  # dispatches run as github-actions[bot] (repo permission `none`); without this, every
+  # agentic job is skipped. The workflow_dispatch API still requires Actions write
+  # permission, so unprivileged users cannot trigger the assignment workflow.
   roles: all
   # A no-op activation step forces gh-aw to emit a `pre_activation` job, which the
   # pat_pool import requires (`needs: [pre_activation]`). `roles: all` alone leaves no
