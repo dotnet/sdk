@@ -152,6 +152,26 @@
         <target state="new">The required property '{0}' was missing or empty in the message of type '{1}'.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FlakyAttempts">
+        <source>{0} attempts</source>
+        <target state="new">{0} attempts</target>
+        <note>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</note>
+      </trans-unit>
+      <trans-unit id="FlakyLowercase">
+        <source>flaky: {0} (passed after retry)</source>
+        <target state="new">flaky: {0} (passed after retry)</target>
+        <note>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</note>
+      </trans-unit>
+      <trans-unit id="FlakyTests">
+        <source>Flaky tests:</source>
+        <target state="new">Flaky tests:</target>
+        <note>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</note>
+      </trans-unit>
+      <trans-unit id="FlakyTransition">
+        <source>failed -&gt; passed</source>
+        <target state="new">failed -&gt; passed</target>
+        <note>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</note>
+      </trans-unit>
       <trans-unit id="HandshakeFailuresHeader">
         <source>Handshake failures:</source>
         <target state="new">Handshake failures:</target>
@@ -2658,10 +2678,15 @@ El valor predeterminado es publicar una aplicación dependiente del marco.</targ
         <target state="translated">Se restauró la herramienta "{0}" (versión "{1}"). Comandos disponibles: {2}</target>
         <note />
       </trans-unit>
-      <trans-unit id="Retried">
-        <source>retried</source>
-        <target state="translated">volver a intentarlo</target>
-        <note />
+      <trans-unit id="RetriedColon">
+        <source>retried:</source>
+        <target state="new">retried:</target>
+        <note>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</note>
+      </trans-unit>
+      <trans-unit id="RetriedTestsAndRuns">
+        <source>{0} test(s), {1} extra run(s)</source>
+        <target state="new">{0} test(s), {1} extra run(s)</target>
+        <note>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</note>
       </trans-unit>
       <trans-unit id="RollForwardDefinition">
         <source>Roll forward to framework version  (LatestPatch, Minor, LatestMinor, Major, LatestMajor, Disable).</source>
@@ -3041,6 +3066,11 @@ Su proyecto tiene como destino varias plataformas. Especifique la que quiere usa
         <source>.slnx file {0} generated.</source>
         <target state="translated">Archivo .slnx {0} generado.</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SlowestTests">
+        <source>Slowest tests:</source>
+        <target state="new">Slowest tests:</target>
+        <note>Header of the run summary section that lists the longest-running tests.</note>
       </trans-unit>
       <trans-unit id="SolutionAddReferencedProjectsOptionDescription">
         <source>Recursively add projects' ReferencedProjects to solution</source>

@@ -50,6 +50,31 @@ internal sealed class TerminalTestReporterOptions
     /// Gets the format used when listing discovered tests ('--list-tests'). Only relevant in discovery mode.
     /// </summary>
     public TestListFormat ListTestsFormat { get; init; }
+
+    /// <summary>
+    /// Gets the number of slowest tests to list in the run summary. When greater than zero, a "Slowest tests"
+    /// section ranking the longest-running tests (by their reported execution duration) is appended to the summary.
+    /// Zero (the default) disables the section.
+    /// </summary>
+    public int SlowestTestsCount { get; init; }
+
+    /// <summary>
+    /// Gets a value indicating whether tests that failed at least once but eventually passed after a retry are
+    /// reported (the "flaky: N" summary line and the "Flaky tests" section). On by default; turned off by
+    /// <c>--show-flaky-tests off</c>. Has no effect on a run where nothing was retried.
+    /// </summary>
+    public bool ShowFlakyTests { get; init; } = true;
+
+    /// <summary>
+    /// Gets a value indicating whether the run-summary verdict and its counts are rendered. Upstream
+    /// (Microsoft.Testing.Platform) turns this off for the second and later attempts of its in-process
+    /// <c>--retry-failed-tests</c> orchestrator, whose summary would otherwise report the filtered subset that
+    /// attempt re-ran as if it were the whole run. The 'dotnet test' orchestrator keeps a single reporter for the
+    /// whole execution and aggregates every attempt into one tally, so it never turns this off; the property is
+    /// kept so the hard fork stays shape-compatible with upstream. Everything else — produced artifacts, the
+    /// slowest-tests section and the error recaps — is rendered regardless.
+    /// </summary>
+    public bool ShowRunSummary { get; init; } = true;
 }
 
 internal enum AnsiMode
