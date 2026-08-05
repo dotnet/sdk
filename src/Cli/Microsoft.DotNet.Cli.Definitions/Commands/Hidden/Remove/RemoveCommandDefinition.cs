@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Reference;
+using Microsoft.DotNet.Cli.Commands.Hidden.Remove.Sdk;
 using Microsoft.DotNet.Cli.Commands.Package;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Remove;
@@ -19,6 +20,7 @@ internal sealed class RemoveCommandDefinition : Command
 
     public readonly RemovePackageCommandDefinition PackageCommand = new();
     public readonly RemoveReferenceCommandDefinition ReferenceCommand = new();
+    public readonly RemoveSdkCommandDefinition SdkCommand = new();
 
     public RemoveCommandDefinition()
         : base(Name, CommandDefinitionStrings.NetRemoveCommand)
@@ -29,5 +31,6 @@ internal sealed class RemoveCommandDefinition : Command
         Arguments.Add(ProjectOrFileArgument);
         Subcommands.Add(PackageCommand);
         Subcommands.Add(ReferenceCommand);
+        Subcommands.Add(SdkCommand);
     }
 }

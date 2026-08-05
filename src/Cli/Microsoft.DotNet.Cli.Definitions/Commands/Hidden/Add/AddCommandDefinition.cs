@@ -5,6 +5,7 @@ using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Reference;
+using Microsoft.DotNet.Cli.Commands.Hidden.Add.Sdk;
 using Microsoft.DotNet.Cli.Commands.Package;
 
 namespace Microsoft.DotNet.Cli.Commands.Hidden.Add;
@@ -16,6 +17,7 @@ internal sealed class AddCommandDefinition : Command
 
     public readonly AddPackageCommandDefinition PackageCommand = new();
     public readonly AddReferenceCommandDefinition ReferenceCommand = new();
+    public readonly AddSdkCommandDefinition SdkCommand = new();
 
     public readonly Argument<string> ProjectOrFileArgument = PackageCommandDefinition.CreateProjectOrFileArgument();
 
@@ -28,5 +30,6 @@ internal sealed class AddCommandDefinition : Command
         Arguments.Add(ProjectOrFileArgument);
         Subcommands.Add(PackageCommand);
         Subcommands.Add(ReferenceCommand);
+        Subcommands.Add(SdkCommand);
     }
 }
