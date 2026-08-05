@@ -39,6 +39,9 @@ safe-outputs:
     pull-request-repo: "${{ github.repository }}"
     # Copilot branches from this ref and targets it when opening the pull request.
     base-branch: "${{ inputs.base_branch }}"
+    # Copilot assignment requires a user token, not an installation token such as GITHUB_TOKEN.
+    # GitHub documents Metadata: read plus Actions, Contents, Issues, and Pull requests: read/write.
+    github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}"
     allowed: [copilot]
     ignore-if-error: true
   # Pin the threat-detection engine to a capable model. The default detection
