@@ -394,6 +394,42 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to bearer realm &apos;{0}&apos; uses scheme &apos;{1}&apos; which is not allowed; only &apos;https&apos; is accepted (or &apos;http&apos; when the registry is configured as insecure).
+        /// </summary>
+        internal static string InvalidAuthResponse_DisallowedScheme {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_DisallowedScheme", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to bearer realm &apos;{0}&apos; resolves to &apos;{1}&apos; which is a private, loopback, link-local, or unspecified IP literal address.
+        /// </summary>
+        internal static string InvalidAuthResponse_PrivateIpLiteralRealm {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_PrivateIpLiteralRealm", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to bearer realm &apos;{0}&apos; is not a valid absolute URI.
+        /// </summary>
+        internal static string InvalidAuthResponse_RelativeOrUnparseableRealm {
+            get {
+                return ResourceManager.GetString("InvalidAuthResponse_RelativeOrUnparseableRealm", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1019: The registry &apos;{0}&apos; returned an invalid authentication response: {1}.
+        /// </summary>
+        internal static string InvalidRegistryAuthResponse {
+            get {
+                return ResourceManager.GetString("InvalidRegistryAuthResponse", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to CONTAINER2031: The container image format &apos;{0}&apos; is not supported. Supported formats are &apos;{1}&apos;..
         /// </summary>
         internal static string InvalidContainerImageFormat {
@@ -457,20 +493,20 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Image index creation for Podman is not supported..
-        /// </summary>
-        internal static string ImageIndex_PodmanNotSupported {
-            get {
-                return ResourceManager.GetString("ImageIndex_PodmanNotSupported", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings..
         /// </summary>
         internal static string ImageLoadFailed_ContainerdStoreDisabled {
             get {
                 return ResourceManager.GetString("ImageLoadFailed_ContainerdStoreDisabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry..
+        /// </summary>
+        internal static string ImageLoadFailed_WslcMultiArchUnsupported {
+            get {
+                return ResourceManager.GetString("ImageLoadFailed_WslcMultiArchUnsupported", resourceCulture);
             }
         }
 

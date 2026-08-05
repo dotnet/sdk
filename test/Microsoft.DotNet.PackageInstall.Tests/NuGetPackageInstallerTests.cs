@@ -14,10 +14,12 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Signing;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
+    [TestClass]
     public class NuGetPackageInstallerTests : SdkTest
     {
         private const string TestPackageVersion = "1.0.4";
@@ -31,7 +33,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private readonly string _testTargetframework = BundledTargetFramework.GetTargetFrameworkMoniker();
         private readonly NuGetTestLogger _logger;
 
-        public NuGetPackageInstallerTests(ITestOutputHelper log) : base(log)
+        public NuGetPackageInstallerTests()
         {
             _tempDirectory = GetUniqueTempProjectPathEachTest();
             _logger = new NuGetTestLogger();
@@ -43,12 +45,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     restoreActionConfig: new RestoreActionConfig(NoCache: true), timer: () => ExponentialRetry.Timer(ExponentialRetry.TestingIntervals), shouldUsePackageSourceMapping: true);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenNoFeedInstallFailsWithException() =>
-            await Assert.ThrowsAsync<NuGetPackageNotFoundException>(() =>
+            await Assert.ThrowsExactlyAsync<NuGetPackageNotFoundException>(() =>
                 _installer.DownloadPackageAsync(TestPackageId, new NuGetVersion(TestPackageVersion)));
 
-        [Fact]
+        [TestMethod]
         public async Task GivenASourceInstallSucceeds()
         {
             string packagePath = await _installer.DownloadPackageAsync(
@@ -59,20 +61,20 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenAFailedSourceItShouldError()
         {
             DirectoryPath nonExistFeed =
                 new DirectoryPath(Path.GetTempPath()).WithSubDirectories(Path.GetRandomFileName());
 
-            await Assert.ThrowsAsync<NuGetPackageNotFoundException>(() =>
+            await Assert.ThrowsExactlyAsync<NuGetPackageNotFoundException>(() =>
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
                     new PackageSourceLocation(sourceFeedOverrides: new[] { nonExistFeed.Value })));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenAFailedSourceAndIgnoreFailedSourcesItShouldNotThrowFatalProtocolException()
         {
             var installer =
@@ -82,7 +84,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             // should not throw FatalProtocolException
             // when there is at least one valid source, it should pass.
             // but it is hard to set up that in unit test
-            await Assert.ThrowsAsync<NuGetPackageNotFoundException>(() =>
+            await Assert.ThrowsExactlyAsync<NuGetPackageNotFoundException>(() =>
                 installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
@@ -92,7 +94,23 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     })));
         }
 
-        [Fact]
+        [TestMethod]
+        public async Task GivenAFailedSourceItShouldIncludeSourceInError()
+        {
+            const string source = "https://example.invalid/F/nonexist/api/v3/index.json";
+            Func<Task> downloadAction = () =>
+                _installer.DownloadPackageAsync(
+                    TestPackageId,
+                    new NuGetVersion(TestPackageVersion),
+                    new PackageSourceLocation(sourceFeedOverrides: new[] { source }));
+
+            var exception = await Assert.ThrowsExactlyAsync<NuGetPackageInstallerException>(downloadAction);
+            exception.Message.Should().Contain(string.Format(CliStrings.FailedToLoadNuGetSource, source));
+            exception.InnerException.Should().BeOfType<FatalProtocolException>();
+            exception.Message.Should().Contain(exception.InnerException.Message);
+        }
+
+        [TestMethod]
         public async Task GivenNugetConfigInstallSucceeds()
         {
             FilePath nugetConfigPath = GenerateRandomNugetConfigFilePath();
@@ -106,7 +124,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenAValidNugetConfigAndFailedSourceItShouldError()
         {
             DirectoryPath nonExistFeed =
@@ -117,7 +135,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             WriteNugetConfigFileToPointToTheFeed(fileSystem, validNugetConfigPath);
 
             // "source" option will override everything like nuget.config just like "dotner restore --source ..."
-            await Assert.ThrowsAsync<NuGetPackageNotFoundException>(() =>
+            await Assert.ThrowsExactlyAsync<NuGetPackageNotFoundException>(() =>
                 _installer.DownloadPackageAsync(
                     TestPackageId,
                     new NuGetVersion(TestPackageVersion),
@@ -125,7 +143,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         sourceFeedOverrides: new[] { nonExistFeed.Value })));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenAConfigFileRootDirectoryPackageInstallSucceedsViaFindingNugetConfigInParentDir()
         {
             FilePath nugetConfigPath = GenerateRandomNugetConfigFilePath();
@@ -142,7 +160,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenNoPackageVersionItCanInstallLatestVersionOfPackage()
         {
             NuGetVersion packageVersion = null;
@@ -154,7 +172,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenARelativeSourcePathInstallSucceeds()
         {
             new RunExeCommand(Log, "dotnet", "nuget", "locals", "all", "--list")
@@ -171,7 +189,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             packagePath.Should().Contain(_tempDirectory.Value, "Package should be downloaded to the input folder");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenNoPackageSourceMappingItShouldError()
         {
             string testFeed = GetTestLocalFeedPath();
@@ -200,7 +218,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             (await downloadAction.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToFindSourceUnderPackageSourceMapping, TestPackageId));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GivenPackageSourceMappingFeedNotFoundItShouldError()
         {
             string testFeed = GetTestLocalFeedPath();
@@ -229,7 +247,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             (await downloadAction.Should().ThrowAsync<NuGetPackageInstallerException>()).And.Message.Should().Contain(string.Format(CliStrings.FailedToMapSourceUnderPackageSourceMapping, TestPackageId));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task WhenPassedIncludePreviewItInstallSucceeds()
         {
             string getTestLocalFeedPath = GetTestLocalFeedPath();
@@ -244,7 +262,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 "Package should download higher package version");
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenPackageOverrideSourceWithCredentialsNugetFeedReturnsSelectedSource()
         {
             PackageSource source = new PackageSource("NuGet")
@@ -259,7 +277,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             selectedSources.Should().HaveCount(1).And.Contain(x => x.Credentials != null);
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public async Task GivenANonSignedSdkItShouldPrintMessageOnce()
         {
             BufferedReporter bufferedReporter = new();
@@ -283,7 +302,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public async Task GivenANonSignedSdkItShouldNotPrintMessageInQuiet()
         {
             BufferedReporter bufferedReporter = new BufferedReporter();
@@ -305,7 +325,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             File.Exists(packagePath).Should().BeTrue();
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         // https://aka.ms/netsdkinternal-certificate-rotate
         public void ItShouldHaveUpdateToDateCertificateSha()
         {
@@ -350,7 +371,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             }
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void GivenFirstPartyPackageItShouldReturnTrue()
         {
             var iosSamplePackage = DownloadSamplePackage(new PackageId("Microsoft.iOS.Ref"));
@@ -423,7 +445,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         private static string GetTestLocalFeedPath() =>
             Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "TestAssetLocalNugetFeed");
 
-        [Fact]
+        [TestMethod]
         public async Task RejectsAdditionalSourceFeedsWhenMappingActive()
         {
             var mappingRules = new Dictionary<string, IReadOnlyList<string>>

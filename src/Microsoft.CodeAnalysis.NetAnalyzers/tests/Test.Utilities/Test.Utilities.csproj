@@ -1,9 +1,14 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <DefineConstants>TEST_UTILITIES</DefineConstants>
     <IsTestUtilityProject>true</IsTestUtilityProject>
+    <!-- Shared test library, not a runnable test application. IsTestApplication=false makes
+         MSTest.Sdk bring only the Core MSTest.TestFramework reference (Assert/TestContext, version
+         in sync with the SDK) while skipping the adapter, runner and testing platform. -->
+    <IsTestApplication>false</IsTestApplication>
+    <IsTestProject>false</IsTestProject>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
     <!-- RS1024: Compare symbols correctly https://github.com/dotnet/roslyn-analyzers/issues/6381 -->
     <NoWarn>$(NoWarn);RS1024</NoWarn>
@@ -15,8 +20,6 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeFix.Testing" />
     <PackageReference Include="System.ComponentModel.Composition" />
-    <PackageReference Include="xunit.assert" />
-    <PackageReference Include="Xunit.Combinatorial" />
   </ItemGroup>
 
   <ItemGroup>

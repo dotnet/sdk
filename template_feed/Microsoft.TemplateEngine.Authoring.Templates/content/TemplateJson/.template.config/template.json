@@ -1,0 +1,90 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [
+    "Template Authoring"
+  ],
+  "name": "template.json configuration file",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A template for template.json configuration file for .NET template. See https://aka.ms/template-json-reference for complete configuration description.",
+  "groupIdentity": "Microsoft.TemplateEngine.Authoring.TemplateJson",
+  "precedence": "0",
+  "identity": "Microsoft.TemplateEngine.Authoring.TemplateJson.1.0",
+  "shortName": "template.json",
+  "tags": {
+    "language": "JSON",
+    "type": "item"
+  },
+  "symbols": {
+    "CreateTemplateConfigFolder": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "True when template.json should be created in .template.config folder.",
+      "defaultValue": "true",
+      "displayName": "Create .template.config folder"
+    },
+    "TemplateName": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "The template name.",
+      "defaultValue": "New Template",
+      "replaces": "New Template",
+      "displayName": "Template name"
+    },
+    "TemplateShortName": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "The template short name.",
+      "defaultValue": "new-template",
+      "replaces": "new-template",
+      "displayName": "Template short name"
+    },
+    "TemplateIdentity": {
+      "type": "parameter",
+      "datatype": "string",
+      "description": "The template identity (should be unique).",
+      "defaultValue": "New.Template.Identity",
+      "replaces": "New.Template.Identity",
+      "displayName": "Template identity"
+    }
+  },
+  "sources": [
+    {
+      "condition": "CreateTemplateConfigFolder == true",
+      "target": ".template.config/",
+      "rename": {
+        "_template.json": "template.json"
+      }
+    },
+    {
+      "condition": "CreateTemplateConfigFolder == false",
+      "target": "./",
+      "rename": {
+        "_template.json": "template.json"
+      }
+    }
+  ],
+  "primaryOutputs": [
+    {
+      "condition": "CreateTemplateConfigFolder == true",
+      "path": ".template.config/template.json"
+    },
+    {
+      "condition": "CreateTemplateConfigFolder != true",
+      "path": "template.json"
+    }
+  ],
+  "postActions": [
+    {
+      "id": "instructions",
+      "description": "Manual actions required",
+      "manualInstructions": [
+        {
+          "text": "Open template.json in the editor and complete the configuration."
+        }
+      ],
+      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+      "continueOnError": true
+    }
+  ]
+}

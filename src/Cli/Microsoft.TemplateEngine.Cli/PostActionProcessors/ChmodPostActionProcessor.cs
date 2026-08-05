@@ -4,7 +4,7 @@
 using System.Diagnostics;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Abstractions;
-using Newtonsoft.Json.Linq;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
 {
@@ -22,12 +22,12 @@ namespace Microsoft.TemplateEngine.Cli.PostActionProcessors
                 string[] values;
                 try
                 {
-                    JArray valueArray = JArray.Parse(entry.Value);
+                    JsonArray valueArray = JsonNode.Parse(entry.Value)!.AsArray();
                     values = new string[valueArray.Count];
 
                     for (int i = 0; i < valueArray.Count; ++i)
                     {
-                        values[i] = valueArray[i].ToString();
+                        values[i] = valueArray[i]?.GetValue<string>() ?? "";
                     }
                 }
                 catch

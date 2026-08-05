@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTaskCompletionSourceWithWrongArguments,
     Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTaskCompletionSourceWithWrongArgumentsFixer>;
@@ -11,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
+    [TestClass]
     public class DoNotCreateTaskCompletionSourceWithWrongArgumentsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -63,7 +64,7 @@ class Derived : TaskCompletionSource<int>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_BasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -105,7 +106,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -149,7 +150,7 @@ class Derived : TaskCompletionSource<int>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_CSharp_NonGenericAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -211,7 +212,7 @@ class Derived : TaskCompletionSource
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_BasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -259,7 +260,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixDoesntApply_CSharpAsync()
         {
             const string Input = @"

@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseExceptionThrowHelpers,
     Microsoft.NetCore.Analyzers.Runtime.UseExceptionThrowHelpersFixer>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseExceptionThrowHelpersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullExceptionThrowIfNull_DoesntExist_NoDiagnostics()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -71,7 +72,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullExceptionThrowIfNull_FixAppliesAsAppropriate()
         {
             await new VerifyCS.Test()
@@ -350,10 +351,10 @@ class GenericType<T>
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentNullExceptionThrowIfNull_EnsureSystemIsUsed()
         {
             await new VerifyCS.Test()
@@ -379,10 +380,10 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentExceptionThrowIfNullOrEmpty_DoesntExist_NoDiagnostics()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -421,7 +422,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentExceptionThrowIfNullOrEmpty_FixAppliesAsAppropriate()
         {
             await new VerifyCS.Test()
@@ -629,10 +630,10 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeExceptionThrowIf_DoesntExist_NoDiagnostics()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -688,7 +689,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeExceptionThrowIf_FixAppliesAsAppropriate()
         {
             await new VerifyCS.Test()
@@ -909,10 +910,10 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArgumentOutOfRangeExceptionThrowIf_NoDiagnosticForMissingHelper()
         {
             await new VerifyCS.Test()
@@ -953,10 +954,10 @@ class C
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObjectDisposedExceptionThrowIf_DoesntExist_NoDiagnostics()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1005,7 +1006,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ObjectDisposedExceptionThrowIf_FixesAppliedAsAppropriate()
         {
             var test = new VerifyCS.Test()
@@ -1144,10 +1145,10 @@ struct S
 "
             };
             test.FixedState.MarkupHandling = CodeAnalysis.Testing.MarkupMode.Allow;
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ValidateAllThrowHelpers()
         {
             await VerifyVB.VerifyCodeFixAsync(

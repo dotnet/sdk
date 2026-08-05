@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json.schemastore.org/ide.host",
+  "icon": "ide/icon.ico",
+  "symbolInfo": [
+    {
+      "id": "XUnitVersion",
+      "isVisible": true,
+      "persistenceScope": "shared"
+    },
+    {
+      "id": "TestRunner",
+      "isVisible": true,
+      "persistenceScope": "shared"
+    }
+  ],
+  "tags": [
+    {
+      "type": "platform",
+      "add": [ "Linux", "macOS", "Windows" ]
+    }
+  ]
+}

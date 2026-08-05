@@ -5,13 +5,10 @@
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishIncrementally : SdkTest
     {
-        public GivenThatWeWantToPublishIncrementally(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_cleans_before_single_file_publish()
         {
             var testProject = new TestProject()
@@ -21,7 +18,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
 
 
@@ -50,7 +47,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_between_renames()
         {
             var testProject = new TestProject()
@@ -60,7 +57,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
                 Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_between_renames)}.binlog") :
@@ -95,7 +92,7 @@ namespace Microsoft.NET.Publish.Tests
                 expectedSingleExeFileExtensions.Select(ending => testProject.Name + ending));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_between_single_file_publishes()
         {
             var testProject = new TestProject()
@@ -105,7 +102,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var binlogDestPath = Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is { } ciOutputRoot && Environment.GetEnvironmentVariable("HELIX_WORKITEM_ID") is { } helixGuid ?
                 Path.Combine(ciOutputRoot, "binlog", helixGuid, $"{nameof(It_cleans_between_single_file_publishes)}.binlog") :
@@ -134,7 +131,8 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append(testProject.Name + ".dll"), null);
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/50784")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/50784")]
         public void It_cleans_before_trimmed_single_file_publish()
         {
             var testProject = new TestProject()
@@ -147,7 +145,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             testProject.AdditionalProperties["PublishTrimmed"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             // Publish trimmed
             var publishCommand = new PublishCommand(testAsset);
@@ -174,11 +172,12 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_cleans_for_mvc_projects()
         {
             // Create new mvc app from template
-            var testDir = _testAssetsManager.CreateTestDirectory();
+            var testDir = TestAssetsManager.CreateTestDirectory();
             var assetName = "MVCPublishProject";
             var runtimeId = "win-x86";
             new DotnetNewCommand(Log)
@@ -213,7 +212,7 @@ namespace Microsoft.NET.Publish.Tests
             Directory.Exists(Path.Combine(publishDir, "wwwroot"));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_with_custom_output_dir()
         {
             var testProject = new TestProject()
@@ -223,7 +222,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishOutputFolder = "publishOutput";
             var publishDir = Path.Combine(testAsset.TestRoot, testProject.Name, publishOutputFolder);
@@ -248,7 +247,7 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir, expectedSingleExeFiles.Append("UserData.txt"), expectedNonSingleExeFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_cleans_with_multiple_output_dirs()
         {
             var testProject = new TestProject()
@@ -258,7 +257,7 @@ namespace Microsoft.NET.Publish.Tests
                 IsExe = true,
                 RuntimeIdentifier = "win-x86"
             };
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishOutputFolder1 = "publishOutput1";
             var publishOutputFolder2 = "publishOutput2";
@@ -297,8 +296,8 @@ namespace Microsoft.NET.Publish.Tests
             CheckPublishOutput(publishDir2, expectedSingleExeFiles, expectedNonSingleExeFiles);
         }
 
-        [Theory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void GeneratePublishDependencyFile_runs_incrementally(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
@@ -311,7 +310,7 @@ namespace Microsoft.NET.Publish.Tests
             };
 
             testProject.PackageReferences.Add(new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion(), publish: "false"));
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var publishCommand = new PublishCommand(testAsset);
             var publishDir = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid).FullName;

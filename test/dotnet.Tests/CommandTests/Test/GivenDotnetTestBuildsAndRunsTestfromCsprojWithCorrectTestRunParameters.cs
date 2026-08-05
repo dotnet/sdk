@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
@@ -7,15 +7,16 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnetTestBuildsAndRunsTestfromCsprojWithCorrectTestRunParameters : SdkTest
     {
-        public GivenDotnetTestBuildsAndRunsTestfromCsprojWithCorrectTestRunParameters(ITestOutputHelper log) : base(log)
+        public GivenDotnetTestBuildsAndRunsTestfromCsprojWithCorrectTestRunParameters()
         {
         }
 
         private readonly string[] ConsoleLoggerOutputNormal = new[] { "--logger", "console;verbosity=normal" };
 
-        [Fact]
+        [TestMethod]
         public void GivenAProjectAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("2");
@@ -41,7 +42,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenADllAndMultipleTestRunParametersItPassesThemToVStestConsoleInTheCorrectFormat()
         {
             var testProjectDirectory = CopyAndRestoreVSTestDotNetCoreTestApp("3");
@@ -80,7 +81,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             // Copy VSTestCore project in output directory of project dotnet-vstest.Tests
             string testAppName = "VSTestTestRunParameters";
 
-            var testInstance = _testAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
+            var testInstance = TestAssetsManager.CopyTestAsset(testAppName, callingMethod: callingMethod)
                             .WithSource()
                             .WithVersionVariables();
 

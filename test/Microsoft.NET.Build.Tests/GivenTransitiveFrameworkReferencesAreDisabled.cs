@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -7,21 +7,19 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenTransitiveFrameworkReferencesAreDisabled : SdkTest
     {
-        public GivenTransitiveFrameworkReferencesAreDisabled(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void TargetingPacksAreNotDownloadedIfNotDirectlyReferenced(bool referenceAspNet)
         {
             TestPackagesNotDownloaded(referenceAspNet, selfContained: false);
         }
 
-        [Fact]
+        [TestMethod]
         public void RuntimePacksAreNotDownloadedIfNotDirectlyReferenced()
         {
             TestPackagesNotDownloaded(referenceAspNet: false, selfContained: true);
@@ -29,7 +27,7 @@ namespace Microsoft.NET.Build.Tests
 
         void TestPackagesNotDownloaded(bool referenceAspNet, bool selfContained, [CallerMemberName] string testName = null)
         {
-            string nugetPackagesFolder = _testAssetsManager.CreateTestDirectory(testName, identifier: "packages_" + referenceAspNet).Path;
+            string nugetPackagesFolder = TestAssetsManager.CreateTestDirectory(testName, identifier: "packages_" + referenceAspNet).Path;
 
             var testProject = new TestProject(testName)
             {
@@ -65,7 +63,7 @@ namespace Microsoft.NET.Build.Tests
             //  root, we need to allow it to succeed even if it can't find that data.
             testProject.AdditionalProperties["AllowMissingPrunePackageData"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testName, identifier: referenceAspNet.ToString());
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testName, identifier: referenceAspNet.ToString());
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -104,10 +102,10 @@ namespace Microsoft.NET.Build.Tests
                 .Should().BeEquivalentTo(expectedPackages);
         }
 
-        [Fact]
+        [TestMethod]
         public void TransitiveFrameworkReferenceGeneratesError()
         {
-            string nugetPackagesFolder = _testAssetsManager.CreateTestDirectory(identifier: "packages").Path;
+            string nugetPackagesFolder = TestAssetsManager.CreateTestDirectory(identifier: "packages").Path;
 
             var referencedProject = new TestProject()
             {
@@ -138,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 
@@ -149,10 +147,10 @@ namespace Microsoft.NET.Build.Tests
                 .And.HaveStdOutContaining("NETSDK1184:");
         }
 
-        [Fact]
+        [TestMethod]
         public void TransitiveFrameworkReferenceGeneratesRuntimePackError()
         {
-            string nugetPackagesFolder = _testAssetsManager.CreateTestDirectory(identifier: "packages").Path;
+            string nugetPackagesFolder = TestAssetsManager.CreateTestDirectory(identifier: "packages").Path;
 
             var referencedProject = new TestProject()
             {
@@ -174,7 +172,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.ReferencedProjects.Add(referencedProject);
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var buildCommand = new BuildCommand(testAsset);
 

@@ -9,9 +9,10 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [TestClass]
     public class GivenMSBuildLogger
     {
-        [Fact]
+        [TestMethod]
         public void ItBlocksTelemetryThatIsNotInTheList()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotMasksExceptionTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -52,7 +53,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["detail"].Should().Be("Exception detail");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotMaskPublishPropertiesTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -74,7 +75,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["otherProperty"].Should().Be("otherProperty value");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotMaskReadyToRunTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -97,7 +98,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         // Reproduce https://github.com/dotnet/sdk/issues/3868
-        [Fact]
+        [TestMethod]
         public void ItCanSendProperties()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -119,7 +120,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItAggregatesEvents()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -186,7 +187,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             tasksEntry.Properties["TaskHostTasksExecutedCount"].Should().Be("2"); // 2 + 0
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIgnoresNonIntegerPropertiesDuringAggregation()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -213,6 +214,31 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["AssemblyTaskFactoryTasksExecutedCount"].Should().Be("3");
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty");
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty2");
+        }
+
+        [TestMethod]
+        public void ItForwardsTaskDetailsEvent()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.TasksDetailsTelemetryEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "Tasks", "[{\"Name\":\"Copy\",\"ExecutionsCount\":10}]" },
+                    { "TaskCount", "1" },
+                    { "TotalTaskCount", "1" }
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be($"msbuild/{MSBuildLogger.TasksDetailsTelemetryEventName}");
+            fakeTelemetry.LogEntry.Properties.Keys.Count.Should().Be(3);
+            fakeTelemetry.LogEntry.Properties["Tasks"].Should().Be("[{\"Name\":\"Copy\",\"ExecutionsCount\":10}]");
+            fakeTelemetry.LogEntry.Properties["TaskCount"].Should().Be("1");
+            fakeTelemetry.LogEntry.Properties["TotalTaskCount"].Should().Be("1");
         }
     }
 }

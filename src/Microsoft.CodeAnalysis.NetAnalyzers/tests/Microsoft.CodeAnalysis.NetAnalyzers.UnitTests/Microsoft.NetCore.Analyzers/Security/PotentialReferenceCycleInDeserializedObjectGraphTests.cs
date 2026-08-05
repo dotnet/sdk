@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.PotentialReferenceCycleInDeserializedObjectGraph,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class PotentialReferenceCycleInDeserializedObjectGraphTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +47,7 @@ End Namespace",
             GetBasicResultAt(7, 17, "testClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestParentChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +76,7 @@ class TestClassB
             GetCSharpResultAt(17, 24, "testClassA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestParentGrandchildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -125,7 +126,7 @@ class TestClassD
             GetCSharpResultAt(29, 24, "testClassAInC"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -153,7 +154,7 @@ class TestClassB
             GetCSharpResultAt(7, 24, "testClassAInA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildGrandchildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -192,7 +193,7 @@ class TestClassC
             GetCSharpResultAt(27, 24, "testClassBInC"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestClassReferedInTwoLoopsDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -267,7 +268,7 @@ class TestClassC2
             GetCSharpResultAt(59, 24, "testClassAInC2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMultiFieldsWithSameTypeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -302,7 +303,7 @@ class TestClassB
             GetCSharpResultAt(21, 24, "testClassA2InB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestChildCircleWithParentChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -334,7 +335,7 @@ class TestClassB
             GetCSharpResultAt(19, 24, "testClassBInB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTwoIndependentParentChildCirclesDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -385,7 +386,7 @@ class TestClassB2
             GetCSharpResultAt(37, 25, "testClassA2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyByPropertyDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -403,7 +404,7 @@ class TestClass
             GetCSharpResultAt(7, 22, "TestClassProperty"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithGenericTypeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -426,7 +427,7 @@ class TestClass
             GetCSharpResultAt(12, 37, "testClasses"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -444,7 +445,7 @@ class TestClass
             GetCSharpResultAt(7, 25, "testClasses"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -462,7 +463,7 @@ class TestClass
             GetCSharpResultAt(7, 27, "testClasses"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithListDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -481,7 +482,7 @@ class TestClass
             GetCSharpResultAt(8, 29, "testClasses"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithListListDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -500,7 +501,7 @@ class TestClass
             GetCSharpResultAt(8, 35, "testClasses"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithListListListDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -519,7 +520,7 @@ class TestClass
             GetCSharpResultAt(8, 41, "testClasses"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericChildCircleDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -548,7 +549,7 @@ class TestClassB
             GetCSharpResultAt(8, 30, "testClassAInA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyByPropertyWithArrayDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -566,7 +567,7 @@ class TestClass
             GetCSharpResultAt(7, 24, "TestClassProperty"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithinGenericTypeDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -584,7 +585,7 @@ class TestClass<T>
             GetCSharpResultAt(7, 26, "testClass"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithDictionaryDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -608,7 +609,7 @@ class TestClass
             GetCSharpResultAt(13, 48, "testClasses"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestParentClassSubclassCirlceDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -660,7 +661,7 @@ End Namespace",
             GetBasicResultAt(7, 17, "testClassB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestParentClassIndirectSubclassCirlceDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -700,7 +701,7 @@ class TestClassC : TestClassB
             GetCSharpResultAt(27, 24, "testClassA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestWithoutSelfReferNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -727,7 +728,7 @@ class TestClassB
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStaticSelfReferNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -744,7 +745,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStaticParentChildCircleNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -771,7 +772,7 @@ class TestClassB
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStaticParentGrandchildCircleNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -818,7 +819,7 @@ class TestClassD
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonSerializedAttributeSelfReferNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -836,7 +837,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithArrayNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -858,7 +859,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithDoubleDimensionalArrayNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -880,7 +881,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithListNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -903,7 +904,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestSelfReferDirectlyWithListListNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

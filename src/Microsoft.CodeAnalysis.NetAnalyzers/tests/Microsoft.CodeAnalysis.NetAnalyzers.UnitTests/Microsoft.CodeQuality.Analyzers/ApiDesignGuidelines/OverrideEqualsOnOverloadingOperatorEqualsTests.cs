@@ -1,18 +1,19 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideEqualsOnOverloadingOperatorEqualsAnalyzer,
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideEqualsOnOverloadingOperatorEqualsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OverrideEqualsOnOverloadingOperatorEqualsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Good_Class_OperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -31,7 +32,7 @@ Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Good_Class_NoOperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -39,7 +40,7 @@ Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Good_Structure_OperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -58,7 +59,7 @@ Structure C
 End Structure");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Good_Structure_NoOperatorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -66,7 +67,7 @@ Structure C
 End Structure");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn/issues/7305")]
         public async Task Ignored_InterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -77,7 +78,7 @@ Interface I
 End Interface");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn/issues/7305")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn/issues/7305")]
         public async Task Ignored_TopLevelAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -86,7 +87,7 @@ Public Shared Operator =(a As I, b As I)
 End Operator");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_ClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -103,7 +104,7 @@ End Class",
             GetBasicResultAt(2, 7));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_StructureAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -120,7 +121,7 @@ End Structure",
             GetBasicResultAt(2, 11));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_NotOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -141,7 +142,7 @@ End Class",
             GetBasicResultAt(2, 7));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_FalseOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -168,7 +169,7 @@ End Class",
             GetBasicResultAt(8, 7));
         }
 
-        [Fact, WorkItem(6778, "https://github.com/dotnet/roslyn-analyzers/issues/6778")]
+        [TestMethod, WorkItem(6778, "https://github.com/dotnet/roslyn-analyzers/issues/6778")]
         public async Task Bad_Structure_WithNonMethodMember_Async()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

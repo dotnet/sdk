@@ -47,9 +47,6 @@
     <PackageReference Include="Microsoft.DotNet.Build.Tasks.Installers" />
   </ItemGroup>
 
-  <ItemGroup>
-    <LinuxPackageSymlink Include="/usr/bin/dnx" LinkTarget="../share/dotnet/dnx" />
-  </ItemGroup>
 
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
 
@@ -64,17 +61,13 @@
       <CLISdkFiles Include="$(RedistInstallerLayoutPath)sdk/**/*" />
       <TemplatesFiles Include="$(RedistInstallerLayoutPath)templates/**/*" />
       <ManifestFiles Include="$(RedistInstallerLayoutPath)sdk-manifests/**/*" />
-      <DnxShimSource Include="$(RedistInstallerLayoutPath)dnx*" />
     </ItemGroup>
 
     <!-- Create layout: Binaries -->
     <Error Condition="'@(CLISdkFiles)' == ''" Text="The 'CLISdkFiles' items are empty. This shouldn't happen!" />
-    <Copy
-      DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')"
+    <CopyPreservingRelativeSymlinks
       SourceFiles="@(CLISdkFiles)"
-      OverwriteReadOnlyFiles="True"
-      SkipUnchangedFiles="False"
-      UseHardlinksIfPossible="False" />
+      DestinationFiles="@(CLISdkFiles->'$(OutputPath)/sdk/%(RecursiveDir)%(Filename)%(Extension)')" />
 
     <!-- Create layout: Templates -->
     <Error Condition="'@(TemplatesFiles)' == ''" Text="The 'TemplatesFiles' items are empty. This shouldn't happen!" />
@@ -93,9 +86,6 @@
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
-
-    <!-- Create layout: DNX shim -->
-    <Copy SourceFiles="@(DnxShimSource)" DestinationFolder="$(OutputPath)" />
   </Target>
 
   <Target Name="SetCustomPackagingProperties" AfterTargets="_GetInstallerProperties">

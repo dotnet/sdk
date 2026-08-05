@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.ProvideStreamMemoryBasedAsyncOverrides,
@@ -14,10 +14,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class ProvideStreamMemoryBasedAsyncOverridesTests
     {
         #region Reports Diagnostic
-        [Fact]
+        [TestMethod]
         public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_CSAsync()
         {
             string code = $@"
@@ -40,10 +41,10 @@ namespace Testopolis
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ReadAsyncArray_NoReadAsyncMemory_ReportsDiagnostic_VBAsync()
         {
             string code = $@"
@@ -64,10 +65,10 @@ End Namespace";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_CSAsync()
         {
             string code = $@"
@@ -90,10 +91,10 @@ namespace Testopolis
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task WriteAsyncArray_NoWriteAsyncMemory_ReportsDiagnostic_VBAsync()
         {
             string code = $@"
@@ -114,10 +115,10 @@ End Namespace";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleBiagnostics_CSAsync()
         {
             string code = $@"
@@ -146,10 +147,10 @@ namespace Testopolis
                         .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task BothArrayOverrides_MissingAllMemoryOverrides_ReportsMultipleDiagnostics_VBAsync()
         {
             string code = $@"
@@ -177,12 +178,12 @@ End Namespace";
 
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
-        [InlineData(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [DataRow(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
         public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_CSAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
@@ -215,12 +216,12 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod),
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
-        [InlineData(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
+        [DataRow(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
         public Task SingleArrayOverride_MultiplePartialsInSameFile_ReportsAllLocations_VBAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
@@ -249,12 +250,12 @@ End Namespace";
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
-        [InlineData(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(CSReadAsyncArray, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [DataRow(CSWriteAsyncArray, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
         public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_CSAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string fooSource = $@"
@@ -296,12 +297,12 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
-        [InlineData(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(VBReadAsyncArray, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
+        [DataRow(VBWriteAsyncArray, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
         public Task SingleArrayOverride_MultiplePartialsInSeparateFiles_ReportsAllLocations_VBAsync(string arrayMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string fooSource = $@"
@@ -338,10 +339,10 @@ End Namespace";
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_CSAsync()
         {
             string code = $@"
@@ -388,10 +389,10 @@ namespace Testopolis
                         .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task BothArrayOverrides_MultiplePartialsInSameFile_ReportsAllLocations_VBAsync()
         {
             string code = $@"
@@ -432,10 +433,10 @@ End Namespace";
                         .WithArguments("River", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_CSAsync()
         {
             string fooSource = $@"
@@ -484,10 +485,10 @@ namespace Testopolis
                         .WithArguments("River", CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task BothArrayOverrides_MultiplePartialsInSeparateFiles_ReportsAllLocations_VBAsync()
         {
             string fooSource = $@"
@@ -530,14 +531,14 @@ End Namespace";
                         .WithArguments("River", VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         //  This test has no VB counterpart because in Visual Basic it is illegal to override one overload
         //  of a base-class method while implicitly hiding another overload.
-        [Theory]
-        [InlineData(CSReadAsyncArray, CSHideReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
-        [InlineData(CSWriteAsyncArray, CSHideWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(CSReadAsyncArray, CSHideReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [DataRow(CSWriteAsyncArray, CSHideWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
         public Task WhenMemoryMethodNotDeclaredOverride_ReportsDiagnosticAsync(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
@@ -565,12 +566,12 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSReadAsyncArray, CSHideExplicitReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
-        [InlineData(CSWriteAsyncArray, CSHideExplicitWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(CSReadAsyncArray, CSHideExplicitReadAsyncMemory, CSDisplayReadAsyncArray, CSDisplayReadAsyncMemory)]
+        [DataRow(CSWriteAsyncArray, CSHideExplicitWriteAsyncMemory, CSDisplayWriteAsyncArray, CSDisplayWriteAsyncMemory)]
         public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_CSAsync(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
@@ -596,12 +597,12 @@ namespace Testopolis
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBReadAsyncArray, VBHideExplicitReadAsyncMemory, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
-        [InlineData(VBWriteAsyncArray, VBHideExplicitWriteAsyncMemory, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(VBReadAsyncArray, VBHideExplicitReadAsyncMemory, VBDisplayReadAsyncArray, VBDisplayReadAsyncMemory)]
+        [DataRow(VBWriteAsyncArray, VBHideExplicitWriteAsyncMemory, VBDisplayWriteAsyncArray, VBDisplayWriteAsyncMemory)]
         public Task WhenMemoryMethodDeclaredNew_ReportsDiagnostic_VBAsync(string arrayMethod, string memoryMethod, string displayArrayMethod, string displayMemoryMethod)
         {
             string code = $@"
@@ -625,12 +626,12 @@ End Namespace";
                         .WithArguments("River", displayArrayMethod, displayMemoryMethod)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 
         #region No Diagnostic
-        [Fact]
+        [TestMethod]
         public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_CSAsync()
         {
             string code = $@"
@@ -650,10 +651,10 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ReadAsyncArray_WithReadAsyncMemory_NoDiagnostic_VBAsync()
         {
             string code = $@"
@@ -671,10 +672,10 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_CSAsync()
         {
             string code = $@"
@@ -694,10 +695,10 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task WriteAsyncArray_WithWriteAsyncMemory_NoDiagnostic_VBAsync()
         {
             string code = $@"
@@ -715,10 +716,10 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_CSAsync()
         {
             string code = $@"
@@ -737,10 +738,10 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ReadAsyncMemory_WithoutReadAsyncArray_NoDiagnostic_VBAsync()
         {
             string code = $@"
@@ -757,10 +758,10 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_CSAsync()
         {
             string code = $@"
@@ -779,10 +780,10 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task WriteAsyncMemory_WithoutWriteAsyncArray_NoDiagnostic_VBAsync()
         {
             string code = $@"
@@ -799,12 +800,12 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSReadAsyncArray)]
-        [InlineData(CSWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(CSReadAsyncArray)]
+        [DataRow(CSWriteAsyncArray)]
         public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_CSAsync(string arrayMethodDefinition)
         {
             string @base = $@"
@@ -831,12 +832,12 @@ namespace Testopolis
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBReadAsyncArray)]
-        [InlineData(VBWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(VBReadAsyncArray)]
+        [DataRow(VBWriteAsyncArray)]
         public Task WhenStreamIsGrandBase_andBaseDoesNotOverrideArrayMethod_NoDiagnostic_VBAsync(string arrayMethodDefinition)
         {
             string @base = $@"
@@ -859,12 +860,12 @@ End Namespace";
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSReadAsyncArray)]
-        [InlineData(CSWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(CSReadAsyncArray)]
+        [DataRow(CSWriteAsyncArray)]
         public Task WhenStreamIsGrandBase_andBaseOverridesArrayMethod_NoDiagnostic_CSAsync(string arrayMethodDefinition)
         {
             string @base = $@"
@@ -893,12 +894,12 @@ namespace Testopolis
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBReadAsyncArray)]
-        [InlineData(VBWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(VBReadAsyncArray)]
+        [DataRow(VBWriteAsyncArray)]
         public Task WhenStreamIsGrandBase_andBaseOverridesArray_NoDiagnostic_VBAsync(string arrayMethodDefinition)
         {
             string @base = $@"
@@ -923,12 +924,12 @@ End Namespace";
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSReadAsyncArray)]
-        [InlineData(CSWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(CSReadAsyncArray)]
+        [DataRow(CSWriteAsyncArray)]
         public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_CSAsync(string arrayMethodDefinition)
         {
             string @base = $@"
@@ -958,12 +959,12 @@ namespace Testopolis
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBReadAsyncArray)]
-        [InlineData(VBWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(VBReadAsyncArray)]
+        [DataRow(VBWriteAsyncArray)]
         public Task WhenStreamIsGrandBase_andBothBaseAndDerivedOverrideArrayMethod_NoDiagnostic_VBAsync(string arrayMethodDefinition)
         {
             string @base = $@"
@@ -989,12 +990,12 @@ End Namespace";
                 TestState = { Sources = { @base, derived } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSHideReadAsyncArray)]
-        [InlineData(CSHideWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(CSHideReadAsyncArray)]
+        [DataRow(CSHideWriteAsyncArray)]
         public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_CSAsync(string arrayMethod)
         {
             string code = $@"
@@ -1015,12 +1016,12 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBHideReadAsyncArray)]
-        [InlineData(VBHideWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(VBHideReadAsyncArray)]
+        [DataRow(VBHideWriteAsyncArray)]
         public Task WhenArrayMethodNotDeclaredOverride_NoDiagnostic_VBAsync(string arrayMethod)
         {
             string code = $@"
@@ -1039,12 +1040,12 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSHideExplicitReadAsyncArray)]
-        [InlineData(CSHideExplicitWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(CSHideExplicitReadAsyncArray)]
+        [DataRow(CSHideExplicitWriteAsyncArray)]
         public Task WhenArrayMethodDeclaredNew_NoDiagnostic_CSAsync(string arrayMethod)
         {
             string code = $@"
@@ -1063,12 +1064,12 @@ namespace Testopolis
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBHideExplicitReadAsyncArray)]
-        [InlineData(VBHideExplicitWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(VBHideExplicitReadAsyncArray)]
+        [DataRow(VBHideExplicitWriteAsyncArray)]
         public Task WhenArrayMethodDeclaredNew_NoDiagnostic_VBAsync(string arrayMethod)
         {
             string code = $@"
@@ -1085,14 +1086,14 @@ End Namespace";
                 TestCode = code,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 
         #region Does Not Crash On Illegal Code
-        [Theory]
-        [InlineData(ReadAsyncName, CSReadAsyncArray)]
-        [InlineData(WriteAsyncName, CSWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, CSReadAsyncArray)]
+        [DataRow(WriteAsyncName, CSWriteAsyncArray)]
         public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_CSAsync(string methodName, string methodDefinition)
         {
             string code = $@"
@@ -1119,12 +1120,12 @@ namespace Testopolis
                         .WithLocation(1)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(ReadAsyncName, VBReadAsyncArray)]
-        [InlineData(WriteAsyncName, VBWriteAsyncArray)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, VBReadAsyncArray)]
+        [DataRow(WriteAsyncName, VBWriteAsyncArray)]
         public Task DuplicateArrayOverrides_WithoutMemoryOverride_ReportsDiagnosticWithoutCrashing_VBAsync(string methodName, string methodDefinition)
         {
             string code = $@"
@@ -1149,12 +1150,12 @@ End Namespace";
                         .WithLocation(1)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
-        [InlineData(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
+        [DataRow(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
         public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_CSAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
@@ -1180,12 +1181,12 @@ namespace Testopolis
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
-        [InlineData(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
+        [DataRow(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
         public Task DuplicateArrayOverrides_WithMemoryOverride_NoDiagnostic_NoCrash_VBAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
@@ -1209,12 +1210,12 @@ End Namespace";
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
-        [InlineData(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, CSReadAsyncArray, CSReadAsyncMemory)]
+        [DataRow(WriteAsyncName, CSWriteAsyncArray, CSWriteAsyncMemory)]
         public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_CSAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
@@ -1240,12 +1241,12 @@ namespace Testopolis
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
-        [InlineData(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, VBReadAsyncArray, VBReadAsyncMemory)]
+        [DataRow(WriteAsyncName, VBWriteAsyncArray, VBWriteAsyncMemory)]
         public Task DuplicateMemoryOverrides_WithArrayOverride_NoDiagnostic_NoCrash_VBAsync(string methodName, string arrayMethodDefinition, string memoryMethodDefinition)
         {
             string code = $@"
@@ -1270,12 +1271,12 @@ End Namespace";
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(ReadAsyncName, CSReadAsyncMemory)]
-        [InlineData(WriteAsyncName, CSWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, CSReadAsyncMemory)]
+        [DataRow(WriteAsyncName, CSWriteAsyncMemory)]
         public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_CSAsync(string methodName, string memoryMethodDefinition)
         {
             string code = $@"
@@ -1300,12 +1301,12 @@ namespace Testopolis
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(ReadAsyncName, VBReadAsyncMemory)]
-        [InlineData(WriteAsyncName, VBWriteAsyncMemory)]
+        [TestMethod]
+        [DataRow(ReadAsyncName, VBReadAsyncMemory)]
+        [DataRow(WriteAsyncName, VBWriteAsyncMemory)]
         public Task DuplicateMemoryOverrides_NoArrayOverride_NoDiagnostic_NoCrash_VBAsync(string methodName, string memoryMethodDefinition)
         {
             string code = $@"
@@ -1328,7 +1329,7 @@ End Namespace";
                         .WithLocation(0)
                 }
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 

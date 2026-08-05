@@ -1,0 +1,127 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Net;
+using System.Text.Json;
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TemplateEngine;
+using Microsoft.TemplateSearch.Common;
+using Microsoft.TemplateSearch.TemplateDiscovery.AdditionalData;
+using Microsoft.TemplateSearch.TemplateDiscovery.Filters;
+using Microsoft.TemplateSearch.TemplateDiscovery.PackChecking;
+
+namespace Microsoft.TemplateSearch.TemplateDiscovery.NuGet
+{
+    internal class NuGetPackSourceCheckerFactory : IPackCheckerFactory
+    {
+        private static readonly Dictionary<SupportedQueries, string> SupportedProviders = new Dictionary<SupportedQueries, string>()
+        {
+            { SupportedQueries.PackageTypeQuery, "packageType=Template" },
+            { SupportedQueries.TemplateQuery, "q=template" }
+        };
+
+        public async Task<PackSourceChecker> CreatePackSourceCheckerAsync(CommandArgs config, CancellationToken cancellationToken)
+        {
+            List<IPackProvider> providers = new List<IPackProvider>();
+
+            if (!config.Queries.Any())
+            {
+                providers.AddRange(SupportedProviders.Select(kvp => new NuGetPackProvider(kvp.Key.ToString(), kvp.Value, config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks)));
+            }
+            else
+            {
+                foreach (SupportedQueries provider in config.Queries.Distinct())
+                {
+                    providers.Add(new NuGetPackProvider(provider.ToString(), SupportedProviders[provider], config.OutputPath, config.PageSize, config.RunOnlyOnePage, config.IncludePreviewPacks));
+                }
+            }
+
+            List<Func<IDownloadedPackInfo, PreFilterResult>> preFilterList = new List<Func<IDownloadedPackInfo, PreFilterResult>>();
+
+            if (!config.DontFilterOnTemplateJson)
+            {
+                preFilterList.Add(TemplateJsonExistencePackFilter.SetupPackFilter());
+            }
+            preFilterList.Add(SkipTemplatePacksFilter.SetupPackFilter());
+            preFilterList.Add(FilterNonMicrosoftAuthors.SetupPackFilter());
+
+            PackPreFilterer preFilterer = new PackPreFilterer(preFilterList);
+
+            IReadOnlyList<IAdditionalDataProducer> additionalDataProducers = new List<IAdditionalDataProducer>()
+            {
+                new CliHostDataProducer()
+            };
+
+            TemplateSearchCache? existingCache = config.DiffMode ? await LoadExistingCacheAsync(config, cancellationToken).ConfigureAwait(false) : null;
+            IEnumerable<FilteredPackageInfo>? knownPackages = config.DiffMode ? await LoadKnownPackagesListAsync(config, cancellationToken).ConfigureAwait(false) : null;
+
+            return new PackSourceChecker(providers, preFilterer, additionalDataProducers, config.SaveCandidatePacks, existingCache, knownPackages);
+        }
+
+        private static async Task<IEnumerable<FilteredPackageInfo>?> LoadKnownPackagesListAsync(CommandArgs config, CancellationToken cancellationToken)
+        {
+            Verbose.WriteLine($"Loading existing non-packages information.");
+            const string uri = "https://dotnettemplating.blob.core.windows.net/search/nonTemplatePacks.json";
+
+            FileInfo? fileLocation = config.DiffOverrideKnownPackagesLocation;
+            if (fileLocation == null)
+            {
+                await DownloadUriToFileAsync(uri, "non-packages.json", cancellationToken).ConfigureAwait(false);
+                fileLocation = new FileInfo("non-packages.json");
+            }
+            Verbose.WriteLine($"Opening {fileLocation.FullName}");
+
+            using var fileStream = fileLocation.OpenRead();
+            return JsonSerializer.Deserialize<IEnumerable<FilteredPackageInfo>>(fileStream);
+        }
+
+        private static async Task<TemplateSearchCache?> LoadExistingCacheAsync(CommandArgs config, CancellationToken cancellationToken)
+        {
+            Verbose.WriteLine($"Loading existing cache information.");
+            // aka.ms link should point to https://dotnet-templating-hrdkctdrgkacbyek.b01.azurefd.net/search/NuGetTemplateSearchInfoVer2.json or
+            // whatever the future absolute URL for the JSON file is.
+            const string uri = "https://aka.ms/dotnet/templating/searchcacheurl";
+
+            FileInfo? cacheFileLocation = config.DiffOverrideSearchCacheLocation;
+
+            if (cacheFileLocation == null)
+            {
+                await DownloadUriToFileAsync(uri, "currentSearchCache.json", cancellationToken).ConfigureAwait(false);
+                cacheFileLocation = new FileInfo("currentSearchCache.json");
+            }
+            Verbose.WriteLine($"Opening {cacheFileLocation.FullName}");
+            using var fileStream = cacheFileLocation.OpenRead();
+            JsonObject cacheObject = JExtensions.ParseJsonObject(new StreamReader(fileStream, System.Text.Encoding.UTF8, true).ReadToEnd());
+            return TemplateSearchCache.FromJObject(cacheObject, NullLogger.Instance, new Dictionary<string, Func<object, object>>() { { CliHostSearchCacheData.DataName, CliHostSearchCacheData.Reader } });
+        }
+
+        private static async Task DownloadUriToFileAsync(string uri, string filePath, CancellationToken cancellationToken)
+        {
+            try
+            {
+                HttpClientHandler handler = new HttpClientHandler()
+                {
+                    CheckCertificateRevocationList = true,
+                    AutomaticDecompression = DecompressionMethods.GZip | DecompressionMethods.Deflate
+                };
+                using HttpClient client = new HttpClient(handler);
+                using HttpResponseMessage response = await client.GetAsync(uri, cancellationToken).ConfigureAwait(false);
+                response.EnsureSuccessStatusCode();
+                string resultText = await response.Content.ReadAsStringAsync(cancellationToken).ConfigureAwait(false);
+                File.WriteAllText(filePath, resultText);
+                Verbose.WriteLine($"{uri} was successfully downloaded to {filePath}.");
+                return;
+            }
+            catch (TaskCanceledException)
+            {
+                throw;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Failed to download {0}, details: {1}", uri, e);
+                throw;
+            }
+        }
+    }
+}

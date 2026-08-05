@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidUnsealedAttributesAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidUnsealedAttributesFixer>;
@@ -11,11 +11,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class AvoidUnsealedAttributeFixerTests
     {
         #region CodeFix Tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813CSharpCodeFixProviderTestFiredAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -31,7 +32,7 @@ public sealed class AttributeClass : Attribute
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1813VisualBasicCodeFixProviderTestFiredAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"

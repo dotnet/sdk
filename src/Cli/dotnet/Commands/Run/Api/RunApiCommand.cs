@@ -4,12 +4,12 @@
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.CommandLine;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -17,6 +17,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 /// Takes JSON from stdin lines, produces JSON on stdout lines, doesn't perform any changes.
 /// Can be used by IDEs to see the project file behind a file-based program.
 /// </summary>
+[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 internal sealed class RunApiCommand(ParseResult parseResult) : CommandBase(parseResult)
 {
     public override int Execute()
@@ -56,6 +57,7 @@ internal abstract class RunApiInput
 {
     private RunApiInput() { }
 
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public abstract RunApiOutput Execute();
 
     public sealed class GetProject : RunApiInput
@@ -63,27 +65,26 @@ internal abstract class RunApiInput
         public string? ArtifactsPath { get; init; }
         public required string EntryPointFileFullPath { get; init; }
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         public override RunApiOutput Execute()
         {
             var builder = new VirtualProjectBuilder(
+                BuildService.Instance,
                 entryPointFileFullPath: EntryPointFileFullPath,
                 targetFramework: VirtualProjectBuildingCommand.TargetFramework,
                 artifactsPath: ArtifactsPath);
 
             var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
 
-            builder.CreateProjectInstance(
-                new ProjectCollection(),
+            var result = builder.CreateProjectInstanceAsync(
+                new ProjectCollection().Wrap(),
                 errorReporter,
-                project: out _,
-                out var projectRootElement,
-                out var evaluatedDirectives,
-                validateAllDirectives: true);
+                validateAllDirectives: true).AsTask().GetAwaiter().GetResult();
 
             var csprojWriter = new StringWriter();
             VirtualProjectBuilder.WriteProjectFile(
                 csprojWriter,
-                evaluatedDirectives,
+                result.EvaluatedDirectives,
                 VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
@@ -92,7 +93,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
-                ProjectPath = projectRootElement.FullPath,
+                ProjectPath = result.ProjectRootElement.FullPath!,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }
@@ -103,6 +104,7 @@ internal abstract class RunApiInput
         public string? ArtifactsPath { get; init; }
         public required string EntryPointFileFullPath { get; init; }
 
+        [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         public override RunApiOutput Execute()
         {
             var msbuildArgs = MSBuildArgs.FromVerbosity(VerbosityOptions.quiet);

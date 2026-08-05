@@ -287,7 +287,7 @@ For project-based programs, `#:` directives are an error (reported by Roslyn whe
 Along with `#:`, the language also ignores `#!` which could be then used for [shebang][shebang] support.
 
 ```cs
-#!/usr/bin/dotnet run
+#!/usr/bin/env dotnet
 Console.WriteLine("Hello");
 ```
 
@@ -359,13 +359,15 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
-#!/usr/bin/env dotnet run
-// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
-```
-```cs
 #!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
+
+```cs
+#!/usr/bin/env dotnet run
+// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
+```
+
 ```cs
 #!/usr/bin/env -S dotnet run
 // ^ Works in some shells.
@@ -400,6 +402,6 @@ Instead of implicitly including files from the target directory, the importing c
 
 [artifacts-output]: https://learn.microsoft.com/dotnet/core/sdk/artifacts-output
 [verbose-env]: https://learn.microsoft.com/dotnet/core/tools/dotnet-environment-variables#dotnet_cli_context_
-[ignored-directives]: https://github.com/dotnet/csharplang/blob/main/proposals/ignored-directives.md
+[ignored-directives]: https://github.com/dotnet/csharplang/blob/c85bbf501958fa86ee2db94b14c82ee8fd2066b9/proposals/csharp-14.0/ignored-directives.md
 [shebang]: https://en.wikipedia.org/wiki/Shebang_%28Unix%29
 [temp-guidelines]: https://github.com/dotnet/runtime/blob/d0e6ce8332a514d70b635ca4829bf863157256fe/docs/design/security/unix-tmp.md

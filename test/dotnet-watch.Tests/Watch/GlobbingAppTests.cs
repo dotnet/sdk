@@ -5,7 +5,8 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(logger)
+[TestClass]
+public class GlobbingAppTests : DotNetWatchTestBase
 {
     private async Task ValidateOperation(
         Action<string> operation,
@@ -28,7 +29,7 @@ public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
         await App.WaitUntilOutputContains($"Defined types = {expectedTypesAfterOperation}");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeCompiledFile()
     {
         await ValidateOperation(
@@ -39,7 +40,7 @@ public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
             expectedTypesAfterOperation: 2);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DeleteCompiledFile()
     {
         await ValidateOperation(
@@ -50,7 +51,7 @@ public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
             expectedTypesAfterOperation: 1);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task DeleteSourceFolder()
     {
         await ValidateOperation(
@@ -61,7 +62,7 @@ public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
             expectedTypesAfterOperation: 1);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task RenameCompiledFile()
     {
         await ValidateOperation(
@@ -74,7 +75,7 @@ public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
             expectedTypesAfterOperation: 2);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ChangeExcludedFile()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")
@@ -91,11 +92,11 @@ public class GlobbingAppTests(ITestOutputHelper logger) : DotNetWatchTestBase(lo
 
         // no file change within timeout:
         var fileChanged = App.AssertOutputLineStartsWith("dotnet watch ⌚ File changed:");
-        var finished = await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5)), fileChanged);
-        Assert.NotSame(fileChanged, finished);
+        var finished = await Task.WhenAny(Task.Delay(TimeSpan.FromSeconds(5), TestContext.CancellationToken), fileChanged);
+        Assert.AreNotSame(fileChanged, finished);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ListsFiles()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchGlobbingApp")

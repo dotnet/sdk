@@ -1,0 +1,12 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+    "author": "Test Asset",
+    "classifications": [ "Test Asset" ],
+    "name": "TemplateWithBinaryFile",
+    "tags": { "type": "project" },
+    "generatorVersions": "[1.0.0.0-*)",
+    "groupIdentity": "TestAssets.TemplateWithBinaryFile",
+    "precedence": "100",
+    "identity": "TestAssets.TemplateWithBinaryFile",
+    "shortName": "TestAssets.TemplateWithBinaryFile"
+}

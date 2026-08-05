@@ -1,0 +1,10 @@
+{
+  // This is a solution filter with trailing commas and comments
+  "solution": {
+    "path": "App.slnx", // Path to the main solution
+    "projects": [
+      "App\\App.csproj",
+      "Lib\\Lib.csproj",
+    ]
+  }
+}

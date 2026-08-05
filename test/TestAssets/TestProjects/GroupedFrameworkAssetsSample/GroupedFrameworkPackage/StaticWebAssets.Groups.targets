@@ -1,0 +1,7 @@
+<Project>
+  <!-- Group membership is opt-in: only consumers that set IncludeGroupedFrameworkAssets=true
+       include the grouped (framework) asset. This lets the test validate conditional inclusion. -->
+  <ItemGroup Condition="'$(IncludeGroupedFrameworkAssets)' == 'true'">
+    <StaticWebAssetGroup Include="GroupedFramework" Value="enabled" SourceId="GroupedFrameworkPackage" />
+  </ItemGroup>
+</Project>

@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -24,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseDtdProcessingOverloads).WithLocation(line, column).WithArguments("Load");
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -66,7 +66,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -110,7 +110,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -166,7 +166,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -216,7 +216,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -265,7 +265,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -315,7 +315,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -368,7 +368,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -410,7 +410,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -448,7 +448,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -493,7 +493,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadInTryBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -543,7 +543,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -592,7 +592,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -642,7 +642,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -696,7 +696,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -738,7 +738,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDocumentLoadWithXmlReaderParameterShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -775,7 +775,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlDataDocumentLoadWithXmlReaderParameterShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(

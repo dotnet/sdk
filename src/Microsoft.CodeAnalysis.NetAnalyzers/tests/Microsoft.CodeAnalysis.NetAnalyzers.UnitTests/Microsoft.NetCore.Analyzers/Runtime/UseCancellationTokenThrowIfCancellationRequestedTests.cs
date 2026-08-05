@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -6,7 +7,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseCancellationTokenThrowIfCancellationRequested,
@@ -17,6 +17,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseCancellationTokenThrowIfCancellationRequestedTests
     {
         private static IEnumerable<string> LanguageVersionsToTest_CS
@@ -59,8 +60,8 @@ if ({0})
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_CS))]
+        [TestMethod]
+        [DynamicData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_CS))]
         public Task SimpleAffirmativeCheck_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string simpleConditionalFormatString, string languageVersion)
         {
             string testStatements = Markup(
@@ -79,7 +80,7 @@ if ({0})
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = parsedVersion,
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_SimpleAffirmativeCheck_ReportedAndFixed_VB
@@ -99,8 +100,8 @@ End If";
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_VB))]
+        [TestMethod]
+        [DynamicData(nameof(Data_SimpleAffirmativeCheck_ReportedAndFixed_VB))]
         public Task SimpleAffirmativeCheck_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             string testStatements = Markup(
@@ -118,7 +119,7 @@ End If";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_CS
@@ -164,7 +165,7 @@ else
             }
         }
 
-        [Fact]
+        [TestMethod]
         public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_CSAsync()
         {
             var test = new VerifyCS.Test
@@ -210,10 +211,10 @@ public class C
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task SimpleAffirmativeCheckWithElseClause_ReportedAndFixed_VBAsync()
         {
             var test = new VerifyVB.Test
@@ -254,10 +255,10 @@ End Class",
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TriviaInIfBlock_IsPreserved_CSAsync()
         {
             var test = new VerifyCS.Test
@@ -296,11 +297,11 @@ public class C
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
+        [TestMethod]
+        [DynamicData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_CS))]
         public Task NegatedCheckWithElse_ReportedAndFixed_CSAsync(string operationCanceledExceptionCtor, string conditionalFormatString, string languageVersion)
         {
             var parsedVersion = (CodeAnalysis.CSharp.LanguageVersion)Enum.Parse(typeof(CodeAnalysis.CSharp.LanguageVersion), languageVersion);
@@ -327,7 +328,7 @@ DoSomething();";
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 LanguageVersion = parsedVersion,
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NegatedCheckWithElse_ReportedAndFixed_VB
@@ -348,8 +349,8 @@ End If", 1);
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_VB))]
+        [TestMethod]
+        [DynamicData(nameof(Data_NegatedCheckWithElse_ReportedAndFixed_VB))]
         public Task NegatedCheckWithElse_ReportedAndFixed_VBAsync(string operationCanceledExceptionCtor, string conditionalFormatString)
         {
             const string members = @"
@@ -374,10 +375,10 @@ DoSomething()";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task NegatedCheckWithElse_MultipleOperationsInTrueBranch_ReportedAndFixed_CSAsync()
         {
             const string members = @"
@@ -406,10 +407,10 @@ Barble();";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task NegatedCheckWithElse_MultpleOperationsInTrueBranch_ReportedAndFixed_VBAsync()
         {
             const string members = @"
@@ -437,12 +438,12 @@ Barble()";
                 ExpectedDiagnostics = { VB.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 
         #region No Diagnostic
-        [Fact]
+        [TestMethod]
         public Task MultipleConditions_NoDiagnostic_CSAsync()
         {
             const string members = @"
@@ -457,10 +458,10 @@ if (token.IsCancellationRequested && otherCondition)
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task MultipleConditions_NoDiagnostic_VBAsync()
         {
             const string members = @"
@@ -476,10 +477,10 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_CSAsync()
         {
             const string members = @"
@@ -497,10 +498,10 @@ if (token.IsCancellationRequested)
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task OtherStatementsInSimpleAffirmativeCheck_NoDiagnostic_VBAsync()
         {
             const string members = @"
@@ -518,7 +519,7 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_OperationCanceledExceptionCtorArguments
@@ -532,8 +533,8 @@ End If";
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_CSAsync(string ctorArguments)
         {
             const string members = @"
@@ -549,11 +550,11 @@ if (token.IsCancellationRequested)
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public Task OtherExceptionCtorOverloads_SimpleAffirmativeCheck_NoDiagnostic_VBAsync(string ctorArguments)
         {
             const string members = @"
@@ -570,11 +571,11 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_CSAsync(string ctorArguments)
         {
             const string members = @"
@@ -593,11 +594,11 @@ else
                 TestCode = CS.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_OperationCanceledExceptionCtorArguments))]
+        [TestMethod]
+        [DynamicData(nameof(Data_OperationCanceledExceptionCtorArguments))]
         public Task OtherExceptionCtorOverloads_NegatedCheckWithElse_NoDiagnostic_VBAsync(string ctorArguments)
         {
             const string members = @"
@@ -618,7 +619,7 @@ End If";
                 TestCode = VB.CreateBlock(testStatements, members),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            return test.RunAsync(CancellationToken.None);
         }
         #endregion
 

@@ -7,33 +7,34 @@ using Microsoft.Extensions.DependencyModel;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildAnAppWithTransitiveNonSdkProjectRefs : SdkTest
     {
-        public GivenThatWeWantToBuildAnAppWithTransitiveNonSdkProjectRefs(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_builds_the_project_successfully()
         {
             // NOTE the projects created by CreateTestProject:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary (non-SDK)
             // (TestApp transitively depends on AuxLibrary)
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(CreateTestProject());
 
             VerifyAppBuilds(testAsset, string.Empty);
         }
 
-        [WindowsOnlyTheory]
-        [InlineData("")]
-        [InlineData("TestApp.")]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow("")]
+        [DataRow("TestApp.")]
+        [Ignore("https://github.com/dotnet/sdk/issues/55263")]
         public void It_builds_deps_correctly_when_projects_do_not_get_restored(string prefix)
         {
             // NOTE the projects created by CreateTestProject:
             // TestApp --depends on--> MainLibrary --depends on--> AuxLibrary
             // (TestApp transitively depends on AuxLibrary)
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CreateTestProject(CreateTestProject())
                 .WithProjectChanges(
                     (projectName, project) =>
@@ -172,6 +173,7 @@ namespace Microsoft.NET.Build.Tests
                 $"TestApp{EnvironmentInfo.ExecutableExtension}",
                 "TestApp.deps.json",
                 "TestApp.runtimeconfig.json",
+                "TestApp.runtimeconfig.dev.json",
                 prefix + "MainLibrary.dll",
                 prefix + "MainLibrary.pdb",
                 prefix + "AuxLibrary.dll",

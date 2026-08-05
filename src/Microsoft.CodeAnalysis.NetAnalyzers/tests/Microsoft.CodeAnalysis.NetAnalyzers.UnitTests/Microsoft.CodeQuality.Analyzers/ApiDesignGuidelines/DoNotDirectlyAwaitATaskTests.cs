@@ -1,11 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.Testing;
-using Test.Utilities;
-using Xunit;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDirectlyAwaitATaskFixer>;
@@ -15,14 +13,15 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotDirectlyAwaitATaskTests
     {
-        [Theory]
+        [TestMethod]
         [WorkItem(1962, "https://github.com/dotnet/roslyn-analyzers/issues/1962")]
-        [InlineData("Task")]
-        [InlineData("Task<int>")]
-        [InlineData("ValueTask")]
-        [InlineData("ValueTask<int>")]
+        [DataRow("Task")]
+        [DataRow("Task<int>")]
+        [DataRow("ValueTask")]
+        [DataRow("ValueTask<int>")]
         public async Task CSharpSimpleAwaitTaskAsync(string typeName)
         {
             var code = $@"
@@ -56,7 +55,7 @@ public class C
                 FixedState = { Sources = { fixedCode(configureAwait: false) } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyCS.Test
             {
@@ -64,10 +63,10 @@ public class C
                 FixedState = { Sources = { fixedCode(configureAwait: true) } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleAwaitTaskWithTriviaAsync()
         {
             var code = @"
@@ -97,7 +96,7 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
         public async Task CSharpAsyncDisposableAsync()
         {
@@ -177,15 +176,15 @@ public class C
                 LanguageVersion = LanguageVersion.CSharp8,
                 TestCode = code,
                 FixedCode = fixedCode,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(1962, "https://github.com/dotnet/roslyn-analyzers/issues/1962")]
-        [InlineData("Task")]
-        [InlineData("Task(Of Integer)")]
-        [InlineData("ValueTask")]
-        [InlineData("ValueTask(Of Integer)")]
+        [DataRow("Task")]
+        [DataRow("Task(Of Integer)")]
+        [DataRow("ValueTask")]
+        [DataRow("ValueTask(Of Integer)")]
         public async Task BasicSimpleAwaitTaskAsync(string typeName)
         {
             var code = $@"
@@ -215,7 +214,7 @@ End Class
                 FixedState = { Sources = { fixedCode(configureAwait: false) } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitFalse),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -223,10 +222,10 @@ End Class
                 FixedState = { Sources = { fixedCode(configureAwait: true) } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftCodeQualityAnalyzersResources.AppendConfigureAwaitTrue),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleAwaitTaskWithTriviaAsync()
         {
             var code = @"
@@ -253,7 +252,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticAsync()
         {
             var code = @"
@@ -308,7 +307,7 @@ public class SomeAwaiter : INotifyCompletion
             await VerifyCS.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticAsync()
         {
             var code = @"
@@ -361,7 +360,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpAwaitAwaitTaskAsync()
         {
             var code = @"
@@ -411,7 +410,7 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicAwaitAwaitTaskAsync()
         {
             var code = @"
@@ -456,7 +455,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpComplexAwaitTaskAsync()
         {
             var code = @"
@@ -495,7 +494,7 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicComplexAwaitTaskAsync()
         {
             var code = @"
@@ -532,7 +531,7 @@ End Class
             await VerifyVB.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
+        [TestMethod, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
         public async Task CSharpAsyncVoidMethod_DiagnosticAsync()
         {
             var code = @"
@@ -571,9 +570,9 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
-        [InlineData("dotnet_code_quality.exclude_async_void_methods = true")]
-        [InlineData("dotnet_code_quality.CA2007.exclude_async_void_methods = true")]
+        [TestMethod, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
+        [DataRow("dotnet_code_quality.exclude_async_void_methods = true")]
+        [DataRow("dotnet_code_quality.CA2007.exclude_async_void_methods = true")]
         public async Task CSharpAsyncVoidMethod_AnalyzerOption_NoDiagnosticAsync(string editorConfigText)
         {
             var code = @"
@@ -603,12 +602,12 @@ public class C
 {editorConfigText}
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
-        [InlineData("dotnet_code_quality.exclude_async_void_methods = false")]
-        [InlineData("dotnet_code_quality.CA2007.exclude_async_void_methods = false")]
+        [TestMethod, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
+        [DataRow("dotnet_code_quality.exclude_async_void_methods = false")]
+        [DataRow("dotnet_code_quality.CA2007.exclude_async_void_methods = false")]
         public async Task CSharpAsyncVoidMethod_AnalyzerOption_DiagnosticAsync(string editorConfigText)
         {
             var code = @"
@@ -659,15 +658,15 @@ public class C
                 {
                     Sources = { fixedCode },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
-        [InlineData("", true)]
-        [InlineData("dotnet_code_quality.output_kind = ConsoleApplication", false)]
-        [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, WindowsApplication", false)]
-        [InlineData("dotnet_code_quality.output_kind = DynamicallyLinkedLibrary", true)]
-        [InlineData("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary", true)]
+        [TestMethod, WorkItem(1953, "https://github.com/dotnet/roslyn-analyzers/issues/1953")]
+        [DataRow("", true)]
+        [DataRow("dotnet_code_quality.output_kind = ConsoleApplication", false)]
+        [DataRow("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, WindowsApplication", false)]
+        [DataRow("dotnet_code_quality.output_kind = DynamicallyLinkedLibrary", true)]
+        [DataRow("dotnet_code_quality.CA2007.output_kind = ConsoleApplication, DynamicallyLinkedLibrary", true)]
         public async Task CSharpSimpleAwaitTask_AnalyzerOption_OutputKindAsync(string editorConfigText, bool isExpectingDiagnostic)
         {
             var csharpTest = new VerifyCS.Test
@@ -702,10 +701,10 @@ public class C
                 csharpTest.ExpectedDiagnostics.Add(VerifyCS.Diagnostic().WithLocation(0));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(2393, "https://github.com/dotnet/roslyn-analyzers/issues/2393")]
+        [TestMethod, WorkItem(2393, "https://github.com/dotnet/roslyn-analyzers/issues/2393")]
         public async Task CSharpSimpleAwaitTaskInLocalFunctionAsync()
         {
             var code = @"
@@ -742,7 +741,7 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
         public Task CsharpAwaitIAsyncEnumerable_DiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -774,12 +773,12 @@ public class C
 	}
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
-        [InlineData("true")]
-        [InlineData("false")]
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        [DataRow("true")]
+        [DataRow("false")]
         public Task CsharpAwaitIAsyncEnumerable_NoDiagnosticAsync(string continueOnCapturedContext)
         {
             return new VerifyCS.Test
@@ -798,10 +797,10 @@ public class C
 	}}
 }}",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
         public Task CsharpForEachEnumerable_NoDiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -820,7 +819,89 @@ public class C
 	}
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingStatement()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncDisposable
+                    {
+                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
+                    }
+
+                    public static class Class
+                    {
+                        public static async Task Test()
+                        {
+                            await using (var cad = new CustomAsyncDisposable())
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpNoDiagnosticForPatternBasedAwaitUsing_UsingDeclaration()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncDisposable
+                    {
+                        public ConfiguredValueTaskAwaitable DisposeAsync() => default;
+                    }
+
+                    public static class Class
+                    {
+                        public static async Task Test()
+                        {
+                            await using var cad = new CustomAsyncDisposable();
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(53461, "https://github.com/dotnet/sdk/issues/53461")]
+        public Task CSharpNoDiagnosticForPatternBasedAwaitForEach()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+                    using System.Threading.Tasks;
+
+                    public struct CustomAsyncEnumerable<T>
+                    {
+                        public ConfiguredCancelableAsyncEnumerable<T>.Enumerator GetAsyncEnumerator() => default;
+                    }
+
+                    public static class Class
+                    {
+                        public static async Task Test()
+                        {
+                            await foreach (var i in new CustomAsyncEnumerable<int>())
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp8
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

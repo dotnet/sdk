@@ -330,6 +330,12 @@
   <data name="Cannot_specify_the_folder_option_when_writing_a_binary_log" xml:space="preserve">
     <value>Cannot specify the '--folder' option when writing a binary log.</value>
   </data>
+  <data name="The_target_framework_to_use_when_loading_the_workspace" xml:space="preserve">
+    <value>The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</value>
+  </data>
+  <data name="Cannot_specify_the_folder_option_with_framework" xml:space="preserve">
+    <value>Cannot specify the '--folder' option with '--framework'.</value>
+  </data>
   <data name="SolutionOrProjectArgumentName" xml:space="preserve">
     <value>PROJECT | SOLUTION</value>
   </data>

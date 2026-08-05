@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CollectionsShouldImplementGenericInterfaceAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpCollectionsShouldImplementGenericInterfaceFixer>;
@@ -13,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class CollectionsShouldImplementGenericInterfaceTests
     {
         private static DiagnosticResult GetCA1010CSharpResultAt(int markupKey, string typeName, string interfaceName, string genericInterfaceName)
@@ -35,7 +36,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 .WithLocation(markupKey)
                 .WithArguments(typeName, interfaceName, string.Join("', '", genericInterfaceNames));
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithCollectionBaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -54,7 +55,7 @@ End Class
                 GetCA1010MultipleBasicResultAt(0, "TestClass", "IList", "IList(Of T)", "IReadOnlyList(Of T)"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task Test_WithCollectionBase_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -71,7 +72,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -113,7 +114,7 @@ End Class
                 GetCA1010MultipleBasicResultAt(0, "TestClass", "ICollection", "ICollection(Of T)", "IReadOnlyCollection(Of T)"));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task Test_WithCollection_InternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -153,7 +154,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithEnumerableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -182,7 +183,7 @@ End Class
                 GetCA1010BasicResultAt(0, "TestClass", "IEnumerable", "IEnumerable(Of T)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithListAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -278,7 +279,7 @@ End Class
                 GetCA1010MultipleBasicResultAt(0, "TestClass", "IList", "IList(Of T)", "IReadOnlyList(Of T)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithGenericCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -343,7 +344,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithGenericEnumerableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -377,7 +378,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithGenericListAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -472,7 +473,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithCollectionBaseAndGenericsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -568,7 +569,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithCollectionAndGenericCollectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -654,7 +655,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithBaseAndDerivedClassFailureCaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -706,7 +707,7 @@ End Class
                 GetCA1010MultipleBasicResultAt(1, "IntCollection", "ICollection", "ICollection(Of T)", "IReadOnlyCollection(Of T)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -734,7 +735,7 @@ End Class
                 GetCA1010MultipleBasicResultAt(1, "R", "ICollection", "ICollection(Of T)", "IReadOnlyCollection(Of T)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBase_DoesFullyImplementGenericsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -843,7 +844,7 @@ End Class
                 GetCA1010MultipleBasicResultAt(1, "R", "ICollection", "ICollection(Of T)", "IReadOnlyCollection(Of T)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_InheritsCollectionBaseAndReadOnlyCollectionBaseAndGenericIEnumerable_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -891,19 +892,19 @@ End Class
 ");
         }
 
-        [Theory, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = invalid")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary`2->System.Collections.Generic.IDictionary`2")]
+        [TestMethod, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = invalid")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary`2->System.Collections.Generic.IDictionary`2")]
         // Not fully qualified
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->IDictionary`2")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->IDictionary`2")]
         // Not an interface
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->N:System.Collections")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->N:System.Collections")]
         // Not a generic interface
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.IDictionary")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.IDictionary")]
         // Cannot use <T>
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary<TKey, TValue>")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary<TKey, TValue>")]
         public async Task AdditionalGenericInterfaces_InvalidSyntax_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -950,7 +951,7 @@ public class {|#0:C|} : IDictionary
 ") },
                     ExpectedDiagnostics = { GetCA1010MultipleCSharpResultAt(0, "C", "ICollection", "ICollection<T>", "IReadOnlyCollection<T>") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1052,17 +1053,17 @@ End Class"
 ") },
                     ExpectedDiagnostics = { GetCA1010MultipleBasicResultAt(0, "C", "ICollection", "ICollection(Of T)", "IReadOnlyCollection(Of T)") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary`2")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary ->System.Collections.Generic.IDictionary`2")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary-> System.Collections.Generic.IDictionary`2")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary -> System.Collections.Generic.IDictionary`2")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->T:System.Collections.Generic.IDictionary`2")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->System.Collections.Generic.IDictionary`2")]
-        [InlineData("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2")]
+        [TestMethod, WorkItem(1490, "https://github.com/dotnet/roslyn-analyzers/issues/1490")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->System.Collections.Generic.IDictionary`2")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary ->System.Collections.Generic.IDictionary`2")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary-> System.Collections.Generic.IDictionary`2")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary -> System.Collections.Generic.IDictionary`2")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = IDictionary->T:System.Collections.Generic.IDictionary`2")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->System.Collections.Generic.IDictionary`2")]
+        [DataRow("dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IDictionary->T:System.Collections.Generic.IDictionary`2")]
         public async Task AdditionalGenericInterfaces_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -1109,7 +1110,7 @@ public class {|#0:C|} : IDictionary
 ") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(0, "C", "IDictionary", "IDictionary<TKey, TValue>") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1211,10 +1212,10 @@ End Class"
 ") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(0, "C", "IDictionary", "IDictionary(Of TKey, TValue)") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UserMappingWinsOverHardcoded_NoDiagnosticAsync()
         {
             const string editorConfigText = "dotnet_code_quality.CA1010.additional_required_generic_interfaces = T:System.Collections.IList->T:System.Collections.Generic.IDictionary`2";
@@ -1237,7 +1238,7 @@ public class {|#0:TestClass|} : CollectionBase { }"
 ") },
                     ExpectedDiagnostics = { GetCA1010CSharpResultAt(0, "TestClass", "IList", "IDictionary<TKey, TValue>") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1260,10 +1261,10 @@ End Class
 ") },
                     ExpectedDiagnostics = { GetCA1010BasicResultAt(0, "TestClass", "IList", "IDictionary(Of TKey, TValue)") },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithCollectionAndGenericReadOnlyCollection()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1324,7 +1325,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithListAndReadOnlyList()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

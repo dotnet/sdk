@@ -44,7 +44,10 @@ internal static class Signature
 
         // We don't use X509Chain because it doesn't support verifying the specific policy and because we defer
         // that to the WinTrust provider as it performs timestamp and revocation checks.
-        HCERTCHAINENGINE HCCE_LOCAL_MACHINE = (HCERTCHAINENGINE)0x01;
+
+        // #define HCCE_LOCAL_MACHINE ((HCERTCHAINENGINE)0x1)
+        HCERTCHAINENGINE HCCE_LOCAL_MACHINE = (HCERTCHAINENGINE)0x01u;
+
         CERT_CHAIN_PARA pChainPara = default;
         CERT_CHAIN_CONTEXT* pChainContext = default;
         CERT_CONTEXT* pCertContext = (CERT_CONTEXT*)certificate.Handle;
@@ -61,7 +64,7 @@ internal static class Signature
             CERT_CHAIN_POLICY_STATUS policyStatus = default;
 
             policyCriteria.cbSize = (uint)sizeof(CERT_CHAIN_POLICY_PARA);
-            policyCriteria.dwFlags = (CERT_CHAIN_POLICY_FLAGS)MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
+            policyCriteria.dwFlags = CERT_CHAIN_POLICY_FLAGS.MICROSOFT_ROOT_CERT_CHAIN_POLICY_CHECK_APPLICATION_ROOT_FLAG;
 
             if (!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_MICROSOFT_ROOT, pChainContext, &policyCriteria, &policyStatus))
             {

@@ -26,18 +26,24 @@ public class FileList
 
     public static FileList Deserialize(string pathToXml)
     {
-        var serializer = new XmlSerializer(typeof(FileList));
-
+        var files = new List<FileListFile>();
         using var fs = new FileStream(pathToXml, FileMode.Open);
-        var reader = XmlReader.Create(fs);
-        FileList fileList = (FileList)serializer.Deserialize(reader);
-        return fileList;
+        using var reader = XmlReader.Create(fs);
+        while (reader.Read())
+        {
+            if (reader.NodeType == XmlNodeType.Element && reader.LocalName == "File")
+            {
+                files.Add(new FileListFile
+                {
+                    Path = reader.GetAttribute("Path"),
+                    Permission = reader.GetAttribute("Permission")
+                });
+            }
+        }
+        return new FileList { File = files.ToArray() };
     }
 }
 
-[Serializable]
-[DesignerCategory("code")]
-[XmlType(AnonymousType = true)]
 public class FileListFile
 {
     private string pathField;

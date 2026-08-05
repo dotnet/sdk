@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingInApiDesignAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
+    [TestClass]
     public partial class DoNotUseInsecureDtdProcessingInApiDesignAnalyzerTests
     {
         private static DiagnosticResult GetCA3077ConstructorCSharpResultAt(int line, int column, string name)
@@ -25,7 +26,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic().WithLocation(line, column).WithArguments(string.Format(CultureInfo.CurrentCulture, MicrosoftNetFrameworkAnalyzersResources.XmlDocumentDerivedClassConstructorNoSecureXmlResolverMessage, name));
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeWithEmptyConstructorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -56,7 +57,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetResolverToNullInOnlyCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -88,7 +89,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetInsecureResolverInOnlyCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -123,7 +124,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetInsecureResolverInCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -167,7 +168,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetSecureResolverForVariableInCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -202,7 +203,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetSecureResolverWithOutThisInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -236,7 +237,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetSecureResolverToAXmlDocumentFieldInCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -273,7 +274,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetSecureResolverAtLeastOnceInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -316,7 +317,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetNullToHidingFieldInCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -353,7 +354,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetNullToBaseXmlResolverInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -387,7 +388,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetUrlResolverToBaseXmlResolverInCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -424,7 +425,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetNullToHidingPropertyInCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -471,7 +472,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetNullToBaseWithHidingPropertyInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -515,7 +516,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlDocumentDerivedTypeSetUrlResolverToBaseWithHidingPropertyInCtorShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -571,7 +572,7 @@ End Namespace",
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private async Task VerifyVisualBasicAnalyzerAsync(string source, params DiagnosticResult[] expected)
@@ -583,7 +584,7 @@ End Namespace",
             };
 
             test.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

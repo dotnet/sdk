@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Balíček šablony",
+  "description": "Projekt pro balíček šablony obsahující šablony .NET.",
+  "postActions/instructions/description": "Vyžadují se ruční akce",
+  "postActions/instructions/manualInstructions/default/text": "Otevřete soubor *.csproj v editoru a dokončete konfiguraci metadat balíčku. Zkopírujte šablony do složky content. Vyplňte README.md."
+}

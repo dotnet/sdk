@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyCultureForToLowerAndToUpperAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyCultureForToLowerAndToUpperFixer>;
@@ -11,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class SpecifyCultureForToLowerAndToUpperFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToLowerCSharpAsync_SpecifyCurrentCulture()
         {
             const string source = @"
@@ -50,10 +51,10 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToLowerCSharpAsync_UseInvariantVersion()
         {
             const string source = @"
@@ -86,10 +87,10 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_SpecifyCurrentCulture()
         {
             var source = @"
@@ -121,10 +122,10 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_SpecifyCurrentCulture_MemberAccessSyntax()
         {
             var source = @"
@@ -158,10 +159,10 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_UseInvariantVersion()
         {
             const string source = @"
@@ -190,10 +191,10 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToLowerBasicAsync_UseInvariantVersion_MemberAccessSyntax()
         {
             const string source = @"
@@ -226,10 +227,10 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToUpperCSharpAsync_SpecifyCurrentCulture()
         {
             const string source = @"
@@ -266,10 +267,10 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToUpperCSharpAsync_UseInvariantVersion()
         {
             const string source = @"
@@ -302,10 +303,10 @@ class C
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_SpecifyCurrentCulture()
         {
             var source = @"
@@ -337,10 +338,10 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_SpecifyCurrentCulture_MemberAccessSyntax()
         {
             var source = @"
@@ -374,10 +375,10 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 0,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.SpecifyCurrentCulture),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_UseInvariantVersion()
         {
             const string source = @"
@@ -406,10 +407,10 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_FixToUpperBasicAsync_UseInvariantVersion_MemberAccessSyntax()
         {
             const string source = @"
@@ -442,7 +443,7 @@ End Class
                 FixedState = { Sources = { fixedSource } },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = nameof(MicrosoftNetCoreAnalyzersResources.UseInvariantVersion),
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.ProvidePublicParameterlessSafeHandleConstructorAnalyzer,
     Microsoft.NetCore.Analyzers.InteropServices.ProvidePublicParameterlessSafeHandleConstructorFixer>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public class ProvidePublicParameterlessSafeHandleConstructorTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NonSafeHandleDerivedType_NoDiagnostics_CSAsync()
         {
             string source = @"
@@ -27,7 +28,7 @@ class Foo
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonSafeHandleDerivedType_NoDiagnostics_VBAsync()
         {
             string source = @"
@@ -38,7 +39,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_CSAsync()
         {
             string source = @"
@@ -55,7 +56,7 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_VBAsync()
         {
             string source = @"
@@ -73,7 +74,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_CSAsync()
         {
             string source = @"
@@ -102,7 +103,7 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_VBAsync()
         {
             string source = @"
@@ -135,7 +136,7 @@ End Class";
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_CS()
         {
             string source = @"
@@ -154,7 +155,7 @@ abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_VBAsync()
         {
             string source = @"
@@ -175,7 +176,7 @@ End Class";
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
         public async Task SafeHandleDerived_WithInternalParameterlessConstructor_InternalType_NoDiagnostic_CSAsync()
         {
@@ -196,7 +197,7 @@ internal class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
         public async Task SafeHandleDerived_WithInternalParameterlessConstructor_DefaultAccessibilityType_NoDiagnostic_CSAsync()
         {
@@ -217,7 +218,7 @@ class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
         public async Task SafeHandleDerived_WithPrivateProtectedParameterlessConstructor_PrivateProtectedType_NoDiagnostic_CSAsync()
         {

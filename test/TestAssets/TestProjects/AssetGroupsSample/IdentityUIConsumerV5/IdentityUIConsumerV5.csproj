@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+    <!-- Explicitly select V5 (which is also the default from the IdentityUILib package) -->
+    <IdentityUIFrameworkVersion>V5</IdentityUIFrameworkVersion>
+  </PropertyGroup>
+
+  <Target Name="EnsurePackagesExist" BeforeTargets="Restore">
+    <ItemGroup>
+      <LocalPackages Include="$(AspNetTestPackageSource)\IdentityUILib.1.0.0.nupkg" />
+    </ItemGroup>
+
+    <Error Condition="!Exists('%(LocalPackages.Identity)')"
+      Text="Package %(LocalPackages.Identity) does not exist. Ensure the test calls CreatePackCommand(ProjectDirectory, &quot;IdentityUILib&quot;)" />
+
+    <Error Condition="'$(RestorePackagesPath)' != '$(AspNetNugetIsolationPath)'"
+      Text="Packages are not being restored into the expected directory. Ensure that NUGET_PACKAGES and AspNetNugetIsolationPath are set as environment variables. The test should extend IsolatedNuGetPackageFolderAspNetSdkBaselineTest. RestorePackagesPath = '$(RestorePackagesPath)', AspNetNugetIsolationPath = '$(AspNetNugetIsolationPath)'" />
+  </Target>
+
+  <ItemGroup>
+    <PackageReference Include="IdentityUILib" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>

@@ -193,6 +193,10 @@
     <value>CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings.</value>
     <comment>{StrBegin="CONTAINER1020: "}</comment>
   </data>
+  <data name="ImageLoadFailed_WslcMultiArchUnsupported" xml:space="preserve">
+    <value>CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry.</value>
+    <comment>{StrBegins="CONTAINER1021: "}</comment>
+  </data>
   <data name="InvalidEnvVar" xml:space="preserve">
     <value>CONTAINER2015: {0}: '{1}' was not a valid Environment Variable. Ignoring.</value>
     <comment>{StrBegins="CONTAINER2015: "}</comment>
@@ -231,6 +235,22 @@
   <data name="InvalidTags" xml:space="preserve">
     <value>CONTAINER2010: Invalid {0} provided: {1}. {0} must be a semicolon-delimited list of valid image tags. Image tags must be alphanumeric, underscore, hyphen, or period.</value>
     <comment>{StrBegins="CONTAINER2010: "}</comment>
+  </data>
+  <data name="InvalidRegistryAuthResponse" xml:space="preserve">
+    <value>CONTAINER1019: The registry '{0}' returned an invalid authentication response: {1}</value>
+    <comment>{StrBegins="CONTAINER1019: "} {0} is the registry name; {1} is a localized reason fragment from one of the InvalidAuthResponse_* strings.</comment>
+  </data>
+  <data name="InvalidAuthResponse_DisallowedScheme" xml:space="preserve">
+    <value>bearer realm '{0}' uses scheme '{1}' which is not allowed; only 'https' is accepted (or 'http' when the registry is configured as insecure)</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the URI scheme.</comment>
+  </data>
+  <data name="InvalidAuthResponse_RelativeOrUnparseableRealm" xml:space="preserve">
+    <value>bearer realm '{0}' is not a valid absolute URI</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the raw realm value.</comment>
+  </data>
+  <data name="InvalidAuthResponse_PrivateIpLiteralRealm" xml:space="preserve">
+    <value>bearer realm '{0}' resolves to '{1}' which is a private, loopback, link-local, or unspecified IP literal address</value>
+    <comment>Reason fragment included in InvalidRegistryAuthResponse. {0} is the realm URI; {1} is the host portion.</comment>
   </data>
   <data name="InvalidTokenResponse" xml:space="preserve">
     <value>CONTAINER1003: Token response had neither token nor access_token.</value>
@@ -399,10 +419,6 @@
   </data>
   <data name="ImageConfigMissingOs" xml:space="preserve">
     <value>Cannot create image index because at least one of the provided images' config is missing 'os'.</value>
-    <comment/>
-  </data>
-  <data name="ImageIndex_PodmanNotSupported" xml:space="preserve">
-    <value>Image index creation for Podman is not supported.</value>
     <comment/>
   </data>
   <data name="LocalDocker_FailedToGetConfig" xml:space="preserve">

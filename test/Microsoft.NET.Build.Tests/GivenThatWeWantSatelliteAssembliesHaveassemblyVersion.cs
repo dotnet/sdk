@@ -9,17 +9,15 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantSatelliteAssembliesHaveAssemblyVersion : SdkTest
     {
         private string _mainAssemblyPath;
         private string _satelliteAssemblyPath;
-        public GivenThatWeWantSatelliteAssembliesHaveAssemblyVersion(ITestOutputHelper log) : base(log)
-        {
-        }
 
         private void RestoreAndBuildTestAssets([CallerMemberName] string callingMethod = "")
         {
-            TestAsset testAsset = _testAssetsManager
+            TestAsset testAsset = TestAssetsManager
               .CopyTestAsset("AllResourcesInSatelliteDisableVersionGenerate", callingMethod)
               .WithSource();
 
@@ -42,7 +40,7 @@ namespace Microsoft.NET.Build.Tests
             _satelliteAssemblyPath = Path.Combine(outputDirectory.FullName, "en", "AllResourcesInSatellite.resources.dll");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_produce_same_satelliteAssembly_FileVersionInfo_as_main()
         {
             RestoreAndBuildTestAssets();
@@ -59,7 +57,7 @@ namespace Microsoft.NET.Build.Tests
             satelliteAssemblyFileVersioninfo.FileDescription.Should().Be(mainAssemblyFileVersioninfo.FileDescription);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_should_produce_same_satelliteAssembly_AssemblyVersions_as_main()
         {
             RestoreAndBuildTestAssets();

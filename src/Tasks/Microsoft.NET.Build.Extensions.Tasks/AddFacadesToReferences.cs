@@ -6,6 +6,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks
 {
+    [MSBuildMultiThreadableTask]
     public class AddFacadesToReferences : TaskBase
     {
         [Required]

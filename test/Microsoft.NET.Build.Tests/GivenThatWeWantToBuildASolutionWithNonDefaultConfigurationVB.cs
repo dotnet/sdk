@@ -5,21 +5,19 @@
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToBuildASolutionWithNonDefaultConfigurationVB : SdkTest
     {
-        public GivenThatWeWantToBuildASolutionWithNonDefaultConfigurationVB(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("Release With Spaces", "RELEASE_WITH_SPACES")]
-        [InlineData("Release-With-Hyphens", "RELEASE_WITH_HYPHENS")]
-        [InlineData("Release.With.Dots", "RELEASE_WITH_DOTS")]
-        [InlineData("Release.With-A Mix", "RELEASE_WITH_A_MIX")]
+        [TestMethod]
+        [DataRow("Release With Spaces", "RELEASE_WITH_SPACES")]
+        [DataRow("Release-With-Hyphens", "RELEASE_WITH_HYPHENS")]
+        [DataRow("Release.With.Dots", "RELEASE_WITH_DOTS")]
+        [DataRow("Release.With-A Mix", "RELEASE_WITH_A_MIX")]
         public void Properly_changes_implicit_defines(string configuration, string expected)
         {
             var targetFramework = "netcoreapp1.0";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("HelloWorldVB", configuration)
                 .WithSource()
                 .WithProjectChanges(project =>

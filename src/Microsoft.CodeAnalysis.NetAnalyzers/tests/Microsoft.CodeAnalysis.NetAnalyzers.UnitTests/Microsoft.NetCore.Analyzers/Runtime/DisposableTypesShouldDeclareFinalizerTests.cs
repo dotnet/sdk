@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DisposableTypesShouldDeclareFinalizerAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDisposableTypesShouldDeclareFinalizerFixer>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DisposableTypesShouldDeclareFinalizerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExistsAsync()
         {
             var code = @"
@@ -45,7 +46,7 @@ public class A : IDisposable
                 GetCSharpDiagnostic(11, 14));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndNoFinalizerExistsAsync()
         {
             var code = @"
@@ -75,7 +76,7 @@ End Class
                 GetBasicDiagnostic(11, 14));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExistsAsync()
         {
             var code = @"
@@ -109,7 +110,7 @@ public class A : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromNativeCodeAndFinalizerExistsAsync()
         {
             var code = @"
@@ -141,7 +142,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -171,7 +172,7 @@ public struct A : IDisposable // Although disposable structs are evil
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldInValueTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -200,7 +201,7 @@ End Structure
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -226,7 +227,7 @@ public class A
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldInNonDisposableTypeIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -253,7 +254,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCodeAsync()
         {
             var code = @"
@@ -284,7 +285,7 @@ public class A : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticIfIntPtrFieldIsAssignedFromManagedCodeAsync()
         {
             var code = @"
@@ -312,7 +313,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticIfUIntPtrFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -343,7 +344,7 @@ public class A : IDisposable
                 GetCSharpDiagnostic(11, 14));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticIfUIntPtrFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -373,7 +374,7 @@ End Class
                 GetBasicDiagnostic(11, 14));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticIfHandleRefFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -404,7 +405,7 @@ public class A : IDisposable
                 GetCSharpDiagnostic(11, 14));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticIfHandleRefFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -434,7 +435,7 @@ End Class
                 GetBasicDiagnostic(11, 14));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"
@@ -464,7 +465,7 @@ public class A : IDisposable
             await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticIfNonNativeResourceFieldIsAssignedFromNativeCodeAsync()
         {
             var code = @"

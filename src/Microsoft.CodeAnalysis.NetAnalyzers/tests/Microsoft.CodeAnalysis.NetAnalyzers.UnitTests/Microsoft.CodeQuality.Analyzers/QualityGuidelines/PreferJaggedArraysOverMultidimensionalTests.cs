@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.PreferJaggedArraysOverMultidimensionalAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpPreferJaggedArraysOverMultidimensionalFixer>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class PreferJaggedArraysOverMultidimensionalTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -59,7 +60,7 @@ public interface IInterface
             GetCSharpDefaultResultAt(29, 35, "array"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -101,7 +102,7 @@ End Interface
             GetBasicDefaultResultAt(27, 30, "array"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -124,7 +125,7 @@ public class Class1
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiangnosticsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -147,7 +148,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpOverridenMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -181,7 +182,7 @@ public class Class2 : Class1
             GetCSharpReturnResultAt(9, 27, "MethodReturningMultidimensionalArray", "int[*,*]"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicOverriddenMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -214,7 +215,7 @@ End Class
             GetBasicReturnResultAt(9, 33, "MethodReturningMultidimensionalArray", "Integer(*,*)"));
         }
 
-        [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
+        [TestMethod, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
         public async Task Method_WhenInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -248,7 +249,7 @@ End Class
                 VerifyVB.Diagnostic(PreferJaggedArraysOverMultidimensionalAnalyzer.DefaultRule).WithLocation(1).WithArguments("array"));
         }
 
-        [Fact, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
+        [TestMethod, WorkItem(3650, "https://github.com/dotnet/roslyn-analyzers/issues/3650")]
         public async Task Property_WhenInterfaceImplementation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

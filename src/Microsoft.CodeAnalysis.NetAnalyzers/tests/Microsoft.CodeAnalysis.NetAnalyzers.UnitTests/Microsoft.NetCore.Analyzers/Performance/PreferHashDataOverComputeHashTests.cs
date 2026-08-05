@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferHashDataOverComputeHashAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferHashDataOverComputeHashFixer>;
@@ -13,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferHashDataOverComputeHashTests
     {
         private const string HashTypeMD5 = "MD5";
@@ -21,7 +22,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         private const string HashTypeSHA384 = "SHA384";
         private const string HashTypeSHA512 = "SHA512";
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpBailOutNoFixCase()
         {
             await TestWithType(HashTypeMD5);
@@ -51,7 +52,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicBailOutNoFixCase()
         {
             await TestWithType(HashTypeMD5);
@@ -79,7 +80,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperUnknownMethodBailOutNoFixCase()
         {
             await TestWithType(HashTypeMD5);
@@ -114,7 +115,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperUnknownMethodBailOutNoFixCase()
         {
             await TestWithType(HashTypeMD5);
@@ -146,7 +147,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperBailOutNoFixCase()
         {
             await TestWithType(HashTypeMD5);
@@ -176,7 +177,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperBailOutNoFixCase()
         {
             await TestWithType(HashTypeMD5);
@@ -204,7 +205,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperChainCase()
         {
             await TestWithType(HashTypeMD5);
@@ -295,7 +296,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperChainCase()
         {
             await TestWithType(HashTypeMD5);
@@ -372,7 +373,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperChainNamedParameterCase()
         {
             await TestWithType(HashTypeMD5);
@@ -463,7 +464,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperChainNamedParameterCase()
         {
             await TestWithType(HashTypeMD5);
@@ -540,7 +541,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperNoUsingStatement2Case()
         {
             await TestWithType(HashTypeMD5);
@@ -651,7 +652,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperNoUsingBlock2Case()
         {
             await TestWithType(HashTypeMD5);
@@ -745,7 +746,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperNoUsingStatementCase()
         {
             await TestWithType(HashTypeMD5);
@@ -838,7 +839,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperNoUsingBlockCase()
         {
             await TestWithType(HashTypeMD5);
@@ -920,7 +921,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperManualDisposeCase()
         {
             await TestWithType(HashTypeMD5);
@@ -1016,7 +1017,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperManualDisposeCase()
         {
             await TestWithType(HashTypeMD5);
@@ -1101,7 +1102,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperUsingStatement2Case()
         {
             await TestWithType(HashTypeMD5);
@@ -1218,7 +1219,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperUsingBlock2Case()
         {
             await TestWithType(HashTypeMD5);
@@ -1315,7 +1316,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperUsingDeclarationCase()
         {
             await TestWithType(HashTypeMD5);
@@ -1408,7 +1409,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpFullyQualifiedCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -1477,7 +1478,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicFullyQualifiedCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -1549,7 +1550,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperUsingStatementCase()
         {
             await TestWithType(HashTypeMD5);
@@ -1648,7 +1649,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperUsingBlockCase()
         {
             await TestWithType(HashTypeMD5);
@@ -1733,7 +1734,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperUsingStatementCastedCase()
         {
             await TestWithType(HashTypeMD5);
@@ -1832,7 +1833,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperUsingBlockCastedCase()
         {
             await TestWithType(HashTypeMD5);
@@ -1917,7 +1918,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpCreateHelperUsingStatements2Case()
         {
             await TestWithType(HashTypeMD5);
@@ -2016,7 +2017,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCreateHelperUsingBlocks2Case()
         {
             await TestWithType(HashTypeMD5);
@@ -2107,7 +2108,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpObjectCreationBailOutNoFixCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -2136,7 +2137,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpObjectCreationChainCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -2226,7 +2227,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicObjectCreationChainCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -2302,7 +2303,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpObjectCreationChainInArgumentCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -2380,7 +2381,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicObjectCreationChainInArgumentCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -2446,7 +2447,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpObjectCreationUsingStatement2Case()
         {
             await TestWithType(HashTypeSHA1);
@@ -2562,7 +2563,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicObjectCreationUsingBlock2Case()
         {
             await TestWithType(HashTypeSHA1);
@@ -2658,7 +2659,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpObjectCreationUsingStatementCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -2756,7 +2757,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpObjectCreationUsingStatementCaseTopLevel()
         {
             await TestWithType(HashTypeSHA1);
@@ -2830,7 +2831,7 @@ int line43 = 10;
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicObjectCreationUsingBlockCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -2914,7 +2915,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpObjectCreationUsingStatementCastedCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -3012,7 +3013,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicObjectCreationUsingBlockCastedCase()
         {
             await TestWithType(HashTypeSHA1);
@@ -3096,7 +3097,7 @@ End Class
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpTriviaCase()
         {
             await TestWithType(HashTypeMD5);
@@ -3171,7 +3172,7 @@ public class Test
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicTriviaCase()
         {
             await TestWithType(HashTypeMD5);
@@ -3271,8 +3272,8 @@ End Class
 
         private static async Task TestCSAsync(string source)
         {
-            await GetTestCS(source, source, ReferenceAssemblies.Net.Net50).RunAsync();
-            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await GetTestCS(source, source, ReferenceAssemblies.Net.Net50).RunAsync(CancellationToken.None);
+            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(CancellationToken.None);
         }
 
         private static async Task TestCSAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -3285,8 +3286,8 @@ End Class
                 test.ExpectedDiagnostics.Add(expected);
             }
 
-            await test.RunAsync();
-            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await test.RunAsync(CancellationToken.None);
+            await GetTestCS(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(CancellationToken.None);
         }
 
         private static async Task TestCSTopLevelAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -3299,7 +3300,7 @@ End Class
                 test.ExpectedDiagnostics.Add(expected);
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static VerifyVB.Test GetTestVB(string source, string corrected, ReferenceAssemblies referenceAssemblies)
@@ -3316,8 +3317,8 @@ End Class
 
         private static async Task TestVBAsync(string source)
         {
-            await GetTestVB(source, source, ReferenceAssemblies.Net.Net50).RunAsync();
-            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await GetTestVB(source, source, ReferenceAssemblies.Net.Net50).RunAsync(CancellationToken.None);
+            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(CancellationToken.None);
         }
 
         private static async Task TestVBAsync(string source, string corrected, params DiagnosticResult[] diagnosticResults)
@@ -3330,8 +3331,8 @@ End Class
                 test.ExpectedDiagnostics.Add(expected);
             }
 
-            await test.RunAsync();
-            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync();
+            await test.RunAsync(CancellationToken.None);
+            await GetTestVB(source, source, ReferenceAssemblies.NetCore.NetCoreApp31).RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult[] GetChainedCSDiagnostics(string hashAlgorithmTypeName)

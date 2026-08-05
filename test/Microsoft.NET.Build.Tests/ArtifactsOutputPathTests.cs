@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -10,11 +10,9 @@ namespace Microsoft.NET.Build.Tests
     using System.Runtime.InteropServices;
     using ArtifactsTestExtensions;
 
+    [TestClass]
     public class ArtifactsOutputPathTests : SdkTest
     {
-        public ArtifactsOutputPathTests(ITestOutputHelper log) : base(log)
-        {
-        }
 
         (List<TestProject> testProjects, TestAsset testAsset) GetTestProjects(bool putArtifactsInProjectFolder = false, [CallerMemberName] string callingMethod = "")
         {
@@ -45,7 +43,7 @@ namespace Microsoft.NET.Build.Tests
                 testProject.UseArtifactsOutput = true;
             }
 
-            var testAsset = _testAssetsManager.CreateTestProjects(testProjects, callingMethod: callingMethod, identifier: putArtifactsInProjectFolder.ToString());
+            var testAsset = TestAssetsManager.CreateTestProjects(testProjects, callingMethod: callingMethod, identifier: putArtifactsInProjectFolder.ToString());
 
             if (putArtifactsInProjectFolder)
             {
@@ -74,7 +72,7 @@ namespace Microsoft.NET.Build.Tests
             return (testProjects, testAsset);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUsesArtifactsOutputPathForBuild()
         {
             var (testProjects, testAsset) = GetTestProjects();
@@ -96,7 +94,8 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/45057")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/45057")]
         public void ItUsesArtifactsOutputPathForPublish()
         {
             var (testProjects, testAsset) = GetTestProjects();
@@ -121,7 +120,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ItUseArtifactsOutputPathForPack()
         {
             var (testProjects, testAsset) = GetTestProjects();
@@ -160,7 +159,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ArtifactsPathCanBeInProjectFolder()
         {
             var (testProjects, testAsset) = GetTestProjects(putArtifactsInProjectFolder: true);
@@ -187,7 +186,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectsCanSwitchOutputFormats()
         {
             var testProject = new TestProject()
@@ -195,7 +194,7 @@ namespace Microsoft.NET.Build.Tests
                 IsExe = true,
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             //  Build without artifacts format
             new BuildCommand(testAsset)
@@ -234,7 +233,7 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectsCanCustomizeOutputPathBasedOnTargetFramework()
         {
             var testProject = new TestProject("CustomizeArtifactsPath")
@@ -243,7 +242,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "net7.0;net8.0;netstandard2.0"
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"), """
                 <Project>
@@ -314,7 +313,7 @@ namespace Microsoft.NET.Build.Tests
                 UseArtifactsOutput = true
             };
 
-            var testAsset = _testAssetsManager.CreateTestProjects(new[] { testProject }, callingMethod: callingMethod);
+            var testAsset = TestAssetsManager.CreateTestProjects(new[] { testProject }, callingMethod: callingMethod);
 
             File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
                 $"""
@@ -329,10 +328,10 @@ namespace Microsoft.NET.Build.Tests
             return testAsset;
         }
 
-        [Fact]
+        [TestMethod]
         public void ArtifactsPathCanBeSet()
         {
-            var artifactsFolder = _testAssetsManager.CreateTestDirectory(identifier: "ArtifactsPath").Path;
+            var artifactsFolder = TestAssetsManager.CreateTestDirectory(identifier: "ArtifactsPath").Path;
 
             var testAsset = CreateCustomizedTestProject("ArtifactsPath", artifactsFolder);
 
@@ -348,7 +347,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void BinOutputNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsBinOutputName", "binaries");
@@ -363,7 +362,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void PublishOutputNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsPublishOutputName", "published_app");
@@ -379,7 +378,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void PackageOutputNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsPackageOutputName", "package_output");
@@ -395,7 +394,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectNameCanBeSet()
         {
             var testAsset = CreateCustomizedTestProject("ArtifactsProjectName", "Apps\\MyApp");
@@ -411,7 +410,7 @@ namespace Microsoft.NET.Build.Tests
                 .Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void PackageValidationSucceeds()
         {
             var testProject = new TestProject()
@@ -423,7 +422,7 @@ namespace Microsoft.NET.Build.Tests
 
             testProject.UseArtifactsOutput = true;
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
                     $"""
@@ -441,13 +440,13 @@ namespace Microsoft.NET.Build.Tests
                 .Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItErrorsIfArtifactsPathIsSetInProject()
         {
             var testProject = new TestProject();
             testProject.AdditionalProperties["ArtifactsPath"] = "$(MSBuildThisFileDirectory)\\..\\artifacts";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()
@@ -461,13 +460,13 @@ namespace Microsoft.NET.Build.Tests
                 .NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItErrorsIfUseArtifactsOutputIsSetInProject()
         {
             var testProject = new TestProject();
             testProject.AdditionalProperties["UseArtifactsOutput"] = "true";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .Execute()
@@ -481,12 +480,12 @@ namespace Microsoft.NET.Build.Tests
                 .NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItErrorsIfUseArtifactsOutputIsSetAndThereIsNoDirectoryBuildProps()
         {
             var testProject = new TestProject();
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
                 .DisableDirectoryBuildProps()
@@ -497,10 +496,11 @@ namespace Microsoft.NET.Build.Tests
                 .HaveStdOutContaining("NETSDK1200");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/40160")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/40160")]
         public void ItCanBuildWithMicrosoftBuildArtifactsSdk()
         {
-            var testAsset = _testAssetsManager.CopyTestAsset("ArtifactsSdkTest")
+            var testAsset = TestAssetsManager.CopyTestAsset("ArtifactsSdkTest")
                 .WithSource();
 
             new DotnetBuildCommand(testAsset)
@@ -532,7 +532,8 @@ namespace Microsoft.NET.Build.Tests
 
         }
 
-        [Fact(Skip = "https://github.com/dotnet/sdk/issues/50140")]
+        [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/50140")]
         public void PublishingRegistersWrittenFilesForProperCleanup()
         {
             var testProject = new TestProject()
@@ -546,7 +547,7 @@ namespace Microsoft.NET.Build.Tests
                 RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? "libhostfxr.so" :
                 "libhostfxr.dylib";
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             //  Now add a Directory.Build.props file setting UseArtifactsOutput to true
             File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"), """
@@ -603,6 +604,91 @@ namespace Microsoft.NET.Build.Tests
                     .Should()
                     .Pass();
             }
+        }
+
+        [TestMethod]
+        public void ArtifactsPathIsAddedAsSourceRoot()
+        {
+            var testProject = new TestProject()
+            {
+                IsExe = true
+            };
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <UseArtifactsOutput>true</UseArtifactsOutput>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProject.Name),
+                ToolsetInfo.CurrentTargetFramework, "SourceRoot", GetValuesCommand.ValueType.Item)
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var sourceRoots = getValuesCommand.GetValues();
+
+            // The ArtifactsPath should be added as a SourceRoot item with a canonicalized path
+            var expectedArtifactsPath = Path.GetFullPath(Path.Combine(testAsset.Path, "artifacts")) + Path.DirectorySeparatorChar;
+            sourceRoots.Should().Contain(s => s.Equals(expectedArtifactsPath, StringComparison.OrdinalIgnoreCase),
+                $"SourceRoot should contain the artifacts path: {expectedArtifactsPath}");
+        }
+
+        [TestMethod]
+        public void ArtifactsPathIsAddedAsSourceRootWithRelativePath()
+        {
+            // This tests the scenario from the issue where ArtifactsPath with relative paths should be canonicalized
+            var testProject = new TestProject()
+            {
+                IsExe = true
+            };
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            // Set an ArtifactsPath that uses relative path portions (..\)
+            File.WriteAllText(Path.Combine(testAsset.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <ArtifactsPath>$(MSBuildThisFileDirectory)subdir\..\artifacts</ArtifactsPath>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            var getValuesCommand = new GetValuesCommand(Log, Path.Combine(testAsset.Path, testProject.Name),
+                ToolsetInfo.CurrentTargetFramework, "SourceRoot", GetValuesCommand.ValueType.Item)
+            {
+                ShouldCompile = false,
+                DependsOnTargets = ""
+            };
+
+            getValuesCommand
+                .Execute()
+                .Should()
+                .Pass();
+
+            var sourceRoots = getValuesCommand.GetValues();
+
+            // The ArtifactsPath should be canonicalized (no relative path portions like ..\)
+            var expectedArtifactsPath = Path.GetFullPath(Path.Combine(testAsset.Path, "artifacts")) + Path.DirectorySeparatorChar;
+            sourceRoots.Should().Contain(s => s.Equals(expectedArtifactsPath, StringComparison.OrdinalIgnoreCase),
+                $"SourceRoot should contain the canonicalized artifacts path: {expectedArtifactsPath}");
+
+            // Verify that there's no SourceRoot with relative path portions
+            var pathsWithRelativePortions = sourceRoots.Where(s => s.Contains(@"..\") || s.Contains("../")).ToList();
+            pathsWithRelativePortions.Should().BeEmpty(
+                $"SourceRoot should not contain relative path portions, but found: {string.Join(", ", pathsWithRelativePortions)}");
         }
     }
 

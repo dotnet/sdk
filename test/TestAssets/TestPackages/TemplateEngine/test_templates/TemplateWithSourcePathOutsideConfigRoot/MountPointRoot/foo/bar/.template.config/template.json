@@ -1,0 +1,31 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TemplateWithSourcePathOutsideConfigRoot",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithSourcePathOutsideConfigRoot",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithSourcePathOutsideConfigRoot",
+  "shortName": "TestAssets.TemplateWithSourcePathOutsideConfigRoot",
+  "sourceName": "foo",
+  "sources": [
+    {
+      "source": "../../../", // This is MountPointRoot
+      "target": "./blah/"
+    }
+  ],
+  "primaryOutputs": [
+    {
+      "path": "blah/MountPointRoot/mount.foo.cs"
+    },
+    {
+      "path": "blah/MountPointRoot/foo/foo.foo.cs"
+    },
+    {
+      "path": "blah/MountPointRoot/foo/bar/bar.foo.cs"
+    }
+  ]
+}
+

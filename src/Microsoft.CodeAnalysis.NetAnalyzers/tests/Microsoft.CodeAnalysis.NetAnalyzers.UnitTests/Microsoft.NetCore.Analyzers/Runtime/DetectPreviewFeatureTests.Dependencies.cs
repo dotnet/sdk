@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -10,9 +10,9 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public partial class DetectPreviewFeatureUnitTests
     {
-        [Theory]
-        [InlineData("assembly")]
-        [InlineData("module")]
+        [TestMethod]
+        [DataRow("assembly")]
+        [DataRow("module")]
         public async Task TestAssemblyDoesntUsePreviewDependency(string assemblyOrModule)
         {
             // No diagnostic when we don't use any APIs from an assembly marked with Preview
@@ -29,12 +29,12 @@ public class Program
             string csDepedencyCode = @$"[{assemblyOrModule}: System.Runtime.Versioning.RequiresPreviewFeatures]";
 
             var test = SetupDependencyAndTestCSWithOneSourceFile(csCurrentAssemblyCode, csDepedencyCode);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("assembly")]
-        [InlineData("module")]
+        [TestMethod]
+        [DataRow("assembly")]
+        [DataRow("module")]
         public async Task TestCallAPIsFromAssemblyMarkedAsPreview(string assemblyOrModule)
         {
             string csDependencyCode = @"
@@ -70,12 +70,12 @@ public class Program
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("AMethod", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("Library", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("AProperty", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("assembly")]
-        [InlineData("module")]
+        [TestMethod]
+        [DataRow("assembly")]
+        [DataRow("module")]
         public async Task TestNoCallsToPreviewDependency(string assemblyOrModule)
         {
             string csDependencyCode = @"
@@ -104,10 +104,10 @@ public class Program
     }
 }";
             var test = SetupDependencyAndTestCSWithOneSourceFile(csCurrentAssemblyCode, csDependencyCode);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestMixtureOfPreviewAPIsInDependency()
         {
             string csDependencyCode = @"
@@ -139,10 +139,10 @@ public class Program
 }";
             var test = SetupDependencyAndTestCSWithOneSourceFile(csCurrentAssemblyCode, csDependencyCode);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("APreviewMethod", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDeepNestingOfPreviewAPIsInDependency()
         {
             string csDependencyCode = @"
@@ -179,7 +179,7 @@ public class Program
             var test = SetupDependencyAndTestCSWithOneSourceFile(csCurrentAssemblyCode, csDependencyCode);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("NestedClass3", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("APreviewMethod", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

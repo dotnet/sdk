@@ -11,11 +11,12 @@
     <Compile Include="$(SdkSrcRoot)Common\WorkloadSetVersion.cs" LinkBase="Common" />
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\EnvironmentProvider.cs" LinkBase="Common\NativeWrapper" />
     <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\Constants.cs" LinkBase="Common\NativeWrapper" />
-    <Compile Include="$(SdkSrcRoot)Resolvers\Microsoft.DotNet.NativeWrapper\FileInterop.cs" LinkBase="Common\NativeWrapper" />
   </ItemGroup>
 
   <ItemGroup>
     <InternalsVisibleTo Include="dotnet" />
+    <InternalsVisibleTo Include="dotnet-aot" />
+    <InternalsVisibleTo Include="dotnet-aot.Tests" />
     <InternalsVisibleTo Include="dotnet-watch" />
     <InternalsVisibleTo Include="dotnet.Tests" />
   </ItemGroup>

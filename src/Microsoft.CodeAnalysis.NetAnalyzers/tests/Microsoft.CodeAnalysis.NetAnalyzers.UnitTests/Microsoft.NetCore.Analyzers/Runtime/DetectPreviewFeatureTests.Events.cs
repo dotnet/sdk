@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -10,7 +10,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public partial class DetectPreviewFeatureUnitTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestEventWithPreviewRemove()
         {
             var csInput = @" 
@@ -47,10 +47,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("remove_RaiseCustomEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEventWithPreviewAdd()
         {
             var csInput = @" 
@@ -87,10 +87,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("add_RaiseCustomEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEventWithPreviewAddAndRemove()
         {
             var csInput = @" 
@@ -129,10 +129,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("add_RaiseCustomEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("remove_RaiseCustomEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEventWithCustomAddAndRemove()
         {
             var csInput = @" 
@@ -172,10 +172,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("RaiseCustomEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("RaiseCustomEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEvent()
         {
             var csInput = @" 
@@ -216,10 +216,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("StaticSampleEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("SampleEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(2).WithArguments("SampleEvent", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEventWithPreviewEventHandler()
         {
             var csInput = @" 
@@ -289,7 +289,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(1).WithArguments("PreviewEventArgs", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(2).WithArguments("PreviewEventArgs", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(3).WithArguments("PreviewEventArgs", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+<<<<<<< HEAD
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     public class McpServerTemplateTests : BaseIntegrationTest, IClassFixture<McpServerTemplateFixture>
@@ -21,6 +22,35 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         [InlineData("mcpserver_remote_no_selfcontained", "mcpserver", "--transport", "remote", "--self-contained", "false")]
         [InlineData("mcpserver_local_aot", "mcpserver", "--transport", "local", "--aot", "true")]
         [InlineData("mcpserver_remote_aot", "mcpserver", "--transport", "remote", "--aot", "true")]
+=======
+
+namespace Microsoft.DotNet.Cli.New.IntegrationTests
+{
+    [TestClass]
+    public class McpServerTemplateTests : BaseIntegrationTest
+    {
+        private ITestOutputHelper _log => Log;
+        private static McpServerTemplateFixture s_fixture = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext ctx)
+        {
+            s_fixture = new McpServerTemplateFixture(new TestContextOutputHelper(ctx));
+        }
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_fixture?.Dispose();
+
+        private McpServerTemplateFixture _fixture => s_fixture;
+
+        [TestMethod]
+        [DataRow("mcpserver_local", "mcpserver", "--transport", "local")]
+        [DataRow("mcpserver_remote", "mcpserver", "--transport", "remote")]
+        [DataRow("mcpserver_local_no_selfcontained", "mcpserver", "--transport", "local", "--self-contained", "false")]
+        [DataRow("mcpserver_remote_no_selfcontained", "mcpserver", "--transport", "remote", "--self-contained", "false")]
+        [DataRow("mcpserver_local_aot", "mcpserver", "--transport", "local", "--aot", "true")]
+        [DataRow("mcpserver_remote_aot", "mcpserver", "--transport", "remote", "--aot", "true")]
+>>>>>>> origin/main
         public void AllMcpServerProjectsRestoreAndBuild(string testName, params string[] args)
         {
             string workingDir = Path.Combine(_fixture.BaseWorkingDirectory, testName);
@@ -57,7 +87,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
     public sealed class McpServerTemplateFixture : SharedHomeDirectory
     {
+<<<<<<< HEAD
         public McpServerTemplateFixture(IMessageSink messageSink) : base(messageSink)
+=======
+        public McpServerTemplateFixture(ITestOutputHelper log) : base(log)
+>>>>>>> origin/main
         {
             BaseWorkingDirectory = Utilities.CreateTemporaryFolder(nameof(McpServerTemplateTests));
         }

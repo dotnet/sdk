@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -19,12 +19,13 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzerTests
     {
         private readonly DiagnosticDescriptor castRule = DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer.CastRule;
         private readonly DiagnosticDescriptor ofTypeRule = DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer.OfTypeRule;
 
-        [Fact]
+        [TestMethod]
         public async Task CanCastRoundtripStructToInterface()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -48,7 +49,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OnlyWellKnownIEnumerable()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +76,7 @@ namespace System.Linq
 ");
         }
 
-        [Fact()]
+        [TestMethod]
         public async Task UnrelatedMethodsDontTrigger()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -111,7 +112,7 @@ namespace System.Linq
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DynamicCSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -131,7 +132,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ValueTupleCasesCSharp()
         {
             var x = from (int min, int max) pair in new[] { (1, 2), (-10, -3) } select pair;
@@ -150,7 +151,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RegExCasesCSharp()
         {
             var actualSet = new HashSet<(int start, int end)>(
@@ -175,7 +176,7 @@ class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleTypesCasesCSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -199,7 +200,7 @@ public sealed class MultiContainer : IEnumerable<int>, IEnumerable<long>
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonGenericCasesCSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -314,28 +315,28 @@ VerifyCS.Diagnostic(castRule).WithLocation(53).WithArguments("Grass", "ITree")
 );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ArrayCSharp()
         {
-            Assert.Throws<InvalidCastException>(()
+            Assert.ThrowsExactly<InvalidCastException>(()
                 => (new int[][] { new int[] { 1 } }).Cast<object[]>().ToArray());
 #pragma warning disable CA2021 // Type 'int' is incompatible with type 'System.Enum' and cast attempts will throw InvalidCastException
-            Assert.Throws<InvalidCastException>(()
+            Assert.ThrowsExactly<InvalidCastException>(()
                 => (new[] { 1 }).Cast<string>().ToArray());
 #pragma warning restore CA2021
-            Assert.Throws<InvalidCastException>(()
+            Assert.ThrowsExactly<InvalidCastException>(()
                 => (new object[][] { Array.Empty<object>() }).Cast<int[]>().ToArray());
 
-            Assert.Throws<InvalidCastException>(()
+            Assert.ThrowsExactly<InvalidCastException>(()
                 => (new ValueType[][] { Array.Empty<ValueType>() }).Cast<int[]>().ToArray());
 
-            Assert.Throws<InvalidCastException>(()
+            Assert.ThrowsExactly<InvalidCastException>(()
                 => (new object[][] { Array.Empty<ValueType>() }).Cast<int[]>().ToArray());
 
-            Assert.Throws<InvalidCastException>(()
+            Assert.ThrowsExactly<InvalidCastException>(()
                 => (new ValueType[][] { Array.Empty<ValueType>() }).Cast<int[]>().ToArray());
 
-            Assert.Throws<InvalidCastException>(()
+            Assert.ThrowsExactly<InvalidCastException>(()
                 => (new int[][] { Array.Empty<int>() }).Cast<ValueType[]>().ToArray());
 
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -428,11 +429,11 @@ class C
 );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EnumCasesCSharp()
         {
 #pragma warning disable CA2021 // Type 'int' is incompatible with type 'System.Enum' and cast attempts will throw InvalidCastException
-            Assert.Throws<InvalidCastException>(() => new int[] { 1 }.Cast<Enum>().ToArray());
+            Assert.ThrowsExactly<InvalidCastException>(() => new int[] { 1 }.Cast<Enum>().ToArray());
 #pragma warning restore CA2021
 
             // this is ok!
@@ -523,7 +524,7 @@ class C
 );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NullableValueTypeCasesCSharp()
         {
             _ = Enumerable.Range(1, 5).Cast<int?>().ToArray();
@@ -656,7 +657,7 @@ class C
 );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GenericCastsCSharp()
         {
             await new VerifyCS.Test
@@ -827,10 +828,10 @@ class C : IInterface
     VerifyCS.Diagnostic(castRule).WithLocation(55).WithArguments("TStruct?", "string?"),
     VerifyCS.Diagnostic(castRule).WithLocation(56).WithArguments("string", "TStruct?"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7153, "https://github.com/dotnet/roslyn-analyzers/issues/7153")]
+        [TestMethod, WorkItem(7153, "https://github.com/dotnet/roslyn-analyzers/issues/7153")]
         public async Task GenericRecordsAndInterfaces()
         {
             var test = new VerifyCS.Test
@@ -866,10 +867,10 @@ public interface INodeUpdate<out T>
 public abstract record class NodeUpdate<T>(T Updated) : INodeUpdate<T> where T : GraphNode;
 public sealed record class DataNodeUpdate(DataNode Updated) : NodeUpdate<DataNode>(Updated);"
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7357, "https://github.com/dotnet/roslyn-analyzers/issues/7357")]
+        [TestMethod, WorkItem(7357, "https://github.com/dotnet/roslyn-analyzers/issues/7357")]
         public async Task GenericDerivedType()
         {
             var test = new VerifyCS.Test
@@ -910,10 +911,10 @@ class GenericDerived : GenericBase<int>
 {
 }"
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7031, "https://github.com/dotnet/roslyn-analyzers/issues/7031")]
+        [TestMethod, WorkItem(7031, "https://github.com/dotnet/roslyn-analyzers/issues/7031")]
         public async Task GenericConstraints()
         {
             // ensure runtime behavior is matches
@@ -986,10 +987,10 @@ public static class Program
                     VerifyCS.Diagnostic(castRule).WithLocation(3).WithArguments("TIn", "TOut"),
                 }
             };
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonGenericCasesVB()
         {
             var castRule = DoNotCallEnumerableCastOrOfTypeWithIncompatibleTypesAnalyzer.CastRule;

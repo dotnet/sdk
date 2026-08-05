@@ -8,18 +8,19 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 /// <summary>
 /// These tests cover the behavior of <c>dotnet run</c> when invoking the new <c>ComputeRunArguments</c> target.
 /// </summary>
+[TestClass]
 public class GivenDotnetRunUsesTargetExtension : SdkTest
 {
 
-    public GivenDotnetRunUsesTargetExtension(ITestOutputHelper log) : base(log)
+    public GivenDotnetRunUsesTargetExtension()
     {
     }
 
-    [Fact]
+    [TestMethod]
     public void ItInvokesTheTargetAndRunsCustomLogic()
     {
         var testAppName = "DotnetRunTargetExtension";
-        var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
             .WithSource();
         var testProjectDirectory = testInstance.Path;
 
@@ -41,11 +42,11 @@ public class GivenDotnetRunUsesTargetExtension : SdkTest
             .HaveStdOutContaining($"CWD: {testProjectDirectory}");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItShowsErrorsDuringCustomLogicExecution()
     {
         var testAppName = "DotnetRunTargetExtensionWithError";
-        var testInstance = _testAssetsManager.CopyTestAsset(testAppName)
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
             .WithSource();
         var testProjectDirectory = testInstance.Path;
 

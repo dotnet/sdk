@@ -68,7 +68,13 @@ internal class SdkOutputWriter(
 
     private ReleaseVersion? NewestSdkPatchVersion(NetSdkInfo bundle)
     {
-        var product = _productCollection.First(product => product.ProductVersion.Equals($"{bundle.Version.Major}.{bundle.Version.Minor}"));
+        var product = _productCollection.FirstOrDefault(product => product.ProductVersion.Equals($"{bundle.Version.Major}.{bundle.Version.Minor}"));
+        if (product == null)
+        {
+            // No release information available for this SDK version
+            return null;
+        }
+
         if (product.LatestSdkVersion.SdkFeatureBand == bundle.Version.SdkFeatureBand)
         {
             // This is the latest feature band
@@ -88,11 +94,24 @@ internal class SdkOutputWriter(
 
     private bool NewFeatureBandAvailable()
     {
-        return NewestFeatureBandAvailable() > _sdkInfo.Select(sdk => sdk.Version).Max();
+        if (!_sdkInfo.Any())
+        {
+            return false;
+        }
+
+        var newestAvailable = NewestFeatureBandAvailable();
+        return newestAvailable != null && newestAvailable > _sdkInfo.Select(sdk => sdk.Version).Max();
     }
 
-    private ReleaseVersion NewestFeatureBandAvailable()
+    private ReleaseVersion? NewestFeatureBandAvailable()
     {
-        return _productCollection.OrderByDescending(product => product.ProductVersion).First().LatestSdkVersion;
+        var newestProduct = _productCollection.OrderByDescending(product => product.ProductVersion).FirstOrDefault();
+        if (newestProduct != null)
+        {
+            return newestProduct.LatestSdkVersion;
+        }
+
+        // Fallback to the newest installed SDK if no product collection is available
+        return _sdkInfo.Any() ? _sdkInfo.Select(sdk => sdk.Version).Max() : null;
     }
 }

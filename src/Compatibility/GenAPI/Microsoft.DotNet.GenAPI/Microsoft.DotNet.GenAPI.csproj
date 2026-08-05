@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>$(NetToolMinimum);$(NetFrameworkToolCurrent)</TargetFrameworks>
+    <TargetFramework>$(NetMinimum)</TargetFramework>
   </PropertyGroup>
 
   <ItemGroup>

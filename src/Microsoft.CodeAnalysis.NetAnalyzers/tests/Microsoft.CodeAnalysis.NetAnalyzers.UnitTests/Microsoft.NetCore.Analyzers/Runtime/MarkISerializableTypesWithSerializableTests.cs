@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.SerializationRulesDiagnosticAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.MarkTypesWithSerializableFixer>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public partial class MarkISerializableTypesWithSerializableTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2237SerializableMissingAttrAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +47,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 GetCA2237BasicResultAt(4, 30, "CA2237SerializableMissingAttr"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2237SerializableInternalAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +76,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2237SerializableWithBaseAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -108,7 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2237SerializableWithBaseAttrAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -145,7 +146,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 GetCA2237BasicResultAt(4, 30, "CA2237SerializableWithBaseAttr"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2237_CA2229_NoDiagnosticForInterfaceAndDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -178,7 +179,7 @@ Public Interface I
 End Interface");
         }
 
-        [Fact, WorkItem(6916, "https://github.com/dotnet/roslyn-analyzers/issues/6916")]
+        [TestMethod, WorkItem(6916, "https://github.com/dotnet/roslyn-analyzers/issues/6916")]
         public async Task CA2237_NoDiagnosticForSerializableImplementedOnBaseClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

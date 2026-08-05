@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,7 +13,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public partial class DetectPreviewFeatureUnitTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestNonPreviewMethodWithGenericPreviewParameter()
         {
             var csInput = @" 
@@ -44,10 +44,10 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(0).WithArguments("Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericMethodWithPreviewClass()
         {
             var csInput = @" 
@@ -71,7 +71,7 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
 
             var vbInput = @" 
 Imports System.Runtime.Versioning
@@ -91,10 +91,10 @@ End Namespace
 ";
             var vbTest = TestVB(vbInput);
             vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericMethodHavingConstraintsWithPreviewInterface()
         {
             var csInput = @" 
@@ -118,7 +118,7 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "IFoo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
 
             var vbInput = @" 
 Imports System.Runtime.Versioning
@@ -138,10 +138,10 @@ End Namespace
 ";
             var vbTest = TestVB(vbInput);
             vbTest.ExpectedDiagnostics.Add(VerifyVB.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("GenericMethod", "IFoo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericMethodWithNullablePreviewClass()
         {
             var csInput = @" 
@@ -173,10 +173,10 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(0).WithArguments("GenericMethod", "Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericClassWithNullablePreviewClass()
         {
             var csInput = @" 
@@ -202,10 +202,10 @@ namespace Preview_Feature_Scratch
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(0).WithArguments("Program", "Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericMethodInsidePreviewClass()
         {
             var csInput = @" 
@@ -235,10 +235,10 @@ namespace Preview_Feature_Scratch
 }";
 
             var test = TestCS(csInput);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestTwoLevelGenericMethodInsidePreviewClass()
         {
             var csInput = @" 
@@ -271,10 +271,10 @@ namespace Preview_Feature_Scratch
 }";
 
             var test = TestCS(csInput);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericClassWithoutPreviewInterface()
         {
             var csInput = @" 
@@ -312,10 +312,10 @@ interface IFoo
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericClassWithCustomMessageAndUrl()
         {
             var csInput = @" 
@@ -357,10 +357,10 @@ interface IFoo
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRuleWithCustomMessage).WithLocation(1).WithArguments("A", "IFoo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRuleWithCustomMessage).WithLocation(2).WithArguments("Foo", "IFoo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(3).WithArguments("Bar", "IFoo.Bar", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericClass()
         {
             var csInput = @" 
@@ -402,10 +402,10 @@ interface IFoo
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(1).WithArguments("A", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(2).WithArguments("Foo", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(3).WithArguments("Bar", "IFoo.Bar", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestClassImplementsGenericInterface()
         {
             var csInput = @" 
@@ -432,10 +432,10 @@ class PreviewClass
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(0).WithArguments("A", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestClassExtendsGenericPreviewClass()
         {
             var csInput = @" 
@@ -457,10 +457,10 @@ class PreviewClass<T>
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.DerivesFromPreviewClassRule).WithLocation(0).WithArguments("A", "PreviewClass", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGenericClassWithPreviewDependency()
         {
             var csInput = @" 
@@ -507,7 +507,7 @@ public interface IFoo
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.UsesPreviewTypeParameterRule).WithLocation(1).WithArguments("A", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewInterfaceRule).WithLocation(2).WithArguments("Foo", "IFoo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.ImplementsPreviewMethodRule).WithLocation(3).WithArguments("Bar", "IFoo.Bar", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -1,39 +1,58 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTestFixture(IMessageSink sink) : IAsyncLifetime
+public sealed class RunFileTestFixture
 {
-    public System.Threading.Tasks.Task InitializeAsync()
+    private static bool s_initialized;
+    private static readonly object s_lock = new();
+
+    public static void EnsureInitialized(ITestOutputHelper log)
     {
-        RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
+        if (s_initialized)
+        {
+            return;
+        }
 
-        // Ensure a simple app runs fully with MSBuild before running other csc-only tests
-        // so we have packages like ILLink.Tasks restored and csc-only optimization can kick in.
-        new DotnetCommand(new SharedTestOutputHelper(sink), "run", "-")
-            .WithStandardInput("""
-                Console.WriteLine("Hello");
-                """)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello");
+        lock (s_lock)
+        {
+            if (s_initialized)
+            {
+                return;
+            }
 
-        return System.Threading.Tasks.Task.CompletedTask;
+            RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
+
+            new DotnetCommand(log, "run", "-")
+                .WithStandardInput("""
+                    Console.WriteLine("Hello");
+                    """)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOut("Hello");
+
+            s_initialized = true;
+        }
     }
-
-    public System.Threading.Tasks.Task DisposeAsync() => System.Threading.Tasks.Task.CompletedTask;
 }
 
-public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), IClassFixture<RunFileTestFixture>
+public abstract class RunFileTestBase : SdkTest
 {
+    [TestInitialize]
+    public void EnsureRunFileWarmup()
+    {
+        RunFileTestFixture.EnsureInitialized(Log);
+    }
+
     internal static string s_includeExcludeDefaultKnownExtensions
         => field ??= string.Join(", ", CSharpDirective.IncludeOrExclude.DefaultMapping.Select(static e => e.Extension));
 
@@ -192,7 +211,6 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
             """);
     }
 
-
     internal static void VerifyBinLogEvaluationDataCount(string binaryLogPath, int expectedCount)
     {
         var records = BinaryLog.ReadRecords(binaryLogPath).ToList();
@@ -218,7 +236,9 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
         };
 
         var command = new DotnetCommand(Log, ["run", programFileName, "-bl", .. args])
-            .WithWorkingDirectory(workDir ?? testInstance.Path);
+            .WithWorkingDirectory(workDir ?? testInstance.Path)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.Verbose, bool.TrueString)
+            .WithEnvironmentVariable(CommandLoggingContext.Variables.VerboseToStdErr, bool.TrueString);
 
         if (customizeCommand != null)
         {
@@ -246,5 +266,4 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
             binlog.Delete();
         }
     }
-
 }

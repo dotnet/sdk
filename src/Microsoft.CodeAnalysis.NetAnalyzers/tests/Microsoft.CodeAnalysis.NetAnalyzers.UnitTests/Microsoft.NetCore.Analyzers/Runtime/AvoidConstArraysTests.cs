@@ -1,10 +1,10 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.AvoidConstArraysAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidConstArraysFixer>;
@@ -14,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class AvoidConstArraysTests
     {
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_ImplicitInitialization()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -73,7 +74,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_ExplicitInitialization()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -160,7 +161,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_NestedArgs()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -217,7 +218,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_TriviaTest()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -259,7 +260,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_LambdaArrayCreation()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -297,7 +298,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_LambdaArrayCreationTwoParams()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -335,7 +336,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_LambdaInvokedArrayCreation()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -373,7 +374,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_ExtensionMethod()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -438,7 +439,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_ParamsArrayOfLiterals()
         {
             // A params argument passed as an array of literals
@@ -477,7 +478,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_ParamsArrays()
         {
             // A params array of arrays
@@ -520,10 +521,10 @@ namespace Z
     }
 }
 "
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IdentifyConstArrays_MemberExtractionTest()
         {
             // Member extraction tests
@@ -602,7 +603,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreOtherArgs_NoDiagnostic()
         {
             // A string
@@ -692,7 +693,7 @@ End Namespace
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreReadonlySpan_NoDiagnostic()
         {
             // A ReadOnlySpan, which is already optimized
@@ -716,7 +717,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreParams_NoDiagnostic()
         {
             // Params arguments
@@ -738,7 +739,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreReadonlyFieldAssignment_NoDiagnostic()
         {
             // Ignore when we're an argument used in a method/constructor that is assigned to a readonly field
@@ -760,7 +761,7 @@ namespace Z
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreReadOnlyProperties_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -784,7 +785,7 @@ public class A
 }");
         }
 
-        [Fact, WorkItem(6629, "https://github.com/dotnet/roslyn-analyzers/issues/6629")]
+        [TestMethod, WorkItem(6629, "https://github.com/dotnet/roslyn-analyzers/issues/6629")]
         public Task StaticReadonlyCollection_NoDiagnostic()
         {
             return new VerifyCS.Test
@@ -803,10 +804,10 @@ public class Test
     }
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6686")]
+        [TestMethod, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6686")]
         public Task ArrayWithoutInitializer_NoDiagnostic()
         {
             return new VerifyCS.Test
@@ -818,10 +819,10 @@ public class MyClass
     public List<object> Cases => new() { new object[0] };
 }",
                 LanguageVersion = LanguageVersion.CSharp10
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6697")]
+        [TestMethod, WorkItem(6686, "https://github.com/dotnet/roslyn-analyzers/issues/6697")]
         public async Task ArrayWithoutInitializer_NoDiagnostic2()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -837,7 +838,7 @@ public class MyClass
 }");
         }
 
-        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        [TestMethod, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
         public Task UseUniqueIdentifier_Parameter()
         {
             const string source = """
@@ -864,7 +865,7 @@ public class MyClass
             return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        [TestMethod, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
         public Task UseUniqueIdentifier_Local()
         {
             const string source = """
@@ -895,7 +896,7 @@ public class MyClass
             return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        [TestMethod, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
         public Task UseUniqueIdentifier_Field()
         {
             const string source = """
@@ -927,7 +928,7 @@ public class MyClass
             return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
+        [TestMethod, WorkItem(6981, "https://github.com/dotnet/roslyn-analyzers/issues/6981")]
         public Task UseUniqueIdentifier_FieldAndParameter()
         {
             const string source = """
@@ -959,7 +960,7 @@ public class MyClass
             return VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
 
-        [Fact, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
+        [TestMethod, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
         public Task ArrayAsAttributeParameter_NoDiagnostic()
         {
             const string source = """
@@ -982,7 +983,7 @@ public class MyClass
             return VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
+        [TestMethod, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
         public Task ArrayAsNamedAttributeParameter_NoDiagnostic()
         {
             const string source = """
@@ -1005,7 +1006,7 @@ public class MyClass
             return VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
+        [TestMethod, WorkItem(7033, "https://github.com/dotnet/roslyn-analyzers/issues/7033")]
         public Task ArrayAsAttributeParameter_Xunit_NoDiagnostic()
         {
             const string source = """
@@ -1021,10 +1022,10 @@ public class MyClass
             {
                 TestCode = source,
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithXUnit
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7111, "https://github.com/dotnet/roslyn-analyzers/issues/7111")]
+        [TestMethod, WorkItem(7111, "https://github.com/dotnet/roslyn-analyzers/issues/7111")]
         public Task TopLevelStatements_Diagnostic()
         {
             const string source = """
@@ -1051,10 +1052,10 @@ public class MyClass
                 {
                     OutputKind = OutputKind.ConsoleApplication
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7216, "https://github.com/dotnet/roslyn-analyzers/issues/7216")]
+        [TestMethod, WorkItem(7216, "https://github.com/dotnet/roslyn-analyzers/issues/7216")]
         public Task BaseDeclaration_Diagnostic()
         {
             const string code = """
@@ -1087,7 +1088,7 @@ public class MyClass
             return VerifyCS.VerifyCodeFixAsync(code, fixedCode);
         }
 
-        [Fact, WorkItem(7365, "https://github.com/dotnet/roslyn-analyzers/issues/7365")]
+        [TestMethod, WorkItem(7365, "https://github.com/dotnet/roslyn-analyzers/issues/7365")]
         public Task InlineStaticProperties_NoDiagnostic()
         {
             const string code = """

@@ -1,0 +1,10 @@
+{
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "description":  "Test description",
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithSourceName",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithSourceName",
+  "sourceName": "bar"
+}

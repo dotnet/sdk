@@ -7,13 +7,6 @@ namespace Microsoft.DotNet.Build.Tasks
 {
     public sealed class Crossgen : ToolTask
     {
-        public Crossgen()
-        {
-            // Disable partial NGEN to avoid excess JIT-compilation.
-            // The intention is to pre-compile as much as possible.
-            EnvironmentVariables = new string[] { "COMPlus_PartialNGen=0" };
-        }
-
         [Required]
         public string SourceAssembly { get;set; }
 
@@ -21,13 +14,14 @@ namespace Microsoft.DotNet.Build.Tasks
         public string DestinationPath { get; set; }
 
         [Required]
-        public string Architecture { get; set; }
+        public string TargetArchitecture { get; set; }
+
+        [Required]
+        public string TargetOS { get; set; }
 
         public string CrossgenPath { get; set; }
 
         public bool CreateSymbols { get; set; }
-
-        public bool ReadyToRun { get; set; }
 
         public ITaskItem[] PlatformAssemblyPaths { get; set; }
 
@@ -111,9 +105,11 @@ namespace Microsoft.DotNet.Build.Tasks
 
         protected override string GenerateFullPathToTool() => CrossgenPath ?? "crossgen2";
 
-        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
+        protected override string GenerateCommandLineCommands() => $"{GetInPath()} {GetOutPath()} {GetTargetOS()} {GetArchitecture()} {GetPlatformAssemblyPaths()} {GetCreateSymbols()}";
 
-        private string GetArchitecture() => $"--targetarch {Architecture}";
+        private string GetArchitecture() => $"--targetarch {TargetArchitecture}";
+
+        private string GetTargetOS() => $"--targetos {TargetOS}";
 
         private string GetCreateSymbols() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "--pdb" : "--perfmap";
 

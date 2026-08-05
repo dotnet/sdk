@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriate,
     Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines.CSharpUseLiteralsWhereAppropriateFixer>;
@@ -14,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class UseLiteralsWhereAppropriateTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1802_Diagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -38,7 +39,7 @@ public class Class1
                 GetCSharpDefaultResultAt(line: 10, column: 34, symbolName: "f8"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1802_NoDiagnostics_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -59,7 +60,7 @@ public class Class1
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1802_Diagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -80,7 +81,7 @@ End Class",
                 GetBasicDefaultResultAt(line: 9, column: 28, symbolName: "f8"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1802_NoDiagnostics_VisualBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -105,12 +106,12 @@ Public Class Class1
 End Class");
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2772, "https://github.com/dotnet/roslyn-analyzers/issues/2772")]
-        [InlineData("", false)]
-        [InlineData("dotnet_code_quality.required_modifiers = static", false)]
-        [InlineData("dotnet_code_quality.required_modifiers = none", true)]
-        [InlineData("dotnet_code_quality." + UseLiteralsWhereAppropriateAnalyzer.RuleId + ".required_modifiers = none", true)]
+        [DataRow("", false)]
+        [DataRow("dotnet_code_quality.required_modifiers = static", false)]
+        [DataRow("dotnet_code_quality.required_modifiers = none", true)]
+        [DataRow("dotnet_code_quality." + UseLiteralsWhereAppropriateAnalyzer.RuleId + ".required_modifiers = none", true)]
         public async Task EditorConfigConfiguration_RequiredModifiersOptionAsync(string editorConfigText, bool reportDiagnostic)
         {
             var expected = Array.Empty<DiagnosticResult>();
@@ -143,7 +144,7 @@ public class Test
                 },
             };
             csTest.ExpectedDiagnostics.AddRange(expected);
-            await csTest.RunAsync();
+            await csTest.RunAsync(CancellationToken.None);
 
             expected = Array.Empty<DiagnosticResult>();
             if (reportDiagnostic)
@@ -174,10 +175,10 @@ End Class
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1802_CSharp_IntPtr_UIntPtr_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -192,10 +193,10 @@ public class Class1
 	internal static readonly IntPtr field1 = (nint)0;
 	internal static readonly UIntPtr field2 = (nuint)0;
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1802_CSharp_nint_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -220,10 +221,10 @@ public class Class1
 {
     internal const nint field = (nint)0;
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1802_CSharp_nuint_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -248,10 +249,10 @@ public class Class1
 {
     internal const nuint field = (nuint)0;
 }",
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
+        [TestMethod, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
         public Task CA1802_CSharp_EnumsWithSameNameAsField_NoDiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -263,10 +264,10 @@ public class Class
 {
     private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
+        [TestMethod, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
         public Task CA1802_CSharp_EnumsWithSameNameAsField2_NoDiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -278,10 +279,10 @@ public class Class
 {
     private static readonly BindingFlags BindingFlags = (BindingFlags)(BindingFlags.Public | BindingFlags.NonPublic);
 }"
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
+        [TestMethod, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
         public Task CA1802_CSharp_EnumsWithDifferentNameAsField_DiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -301,10 +302,10 @@ public class Class
     private const BindingFlags B = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
 }",
                 ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("B") }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
+        [TestMethod, WorkItem(6681, "https://github.com/dotnet/roslyn-analyzers/issues/6681")]
         public Task CA1802_CSharp_EnumsWithSameNameAsField_DiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -324,7 +325,7 @@ public class Class
     private const BindingFlags BindingFlags = (BindingFlags)5;
 }",
                 ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("BindingFlags") }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpDefaultResultAt(int line, int column, string symbolName)

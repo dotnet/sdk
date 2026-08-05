@@ -1,0 +1,14 @@
+{
+  "author": "Sayed I. Hashimi",
+  "classifications": [ "Console" ], 
+  "name": "Contoso Sample 06",
+  "identity": "MyProject.06.Sample.CSharp",         
+  "groupIdentity":"MyProject.06.Sample",
+  "shortName": "sample06",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "sourceName": "MyProject.Console",
+  "preferNameDirectory": true
+}

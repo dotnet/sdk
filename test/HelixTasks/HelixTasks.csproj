@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net472</TargetFrameworks>
-    <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">net8.0</TargetFrameworks>
+    <TargetFramework>$(BundledNETCoreAppTargetFramework)</TargetFramework>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <RootNamespace>Microsoft.DotNet.SDK.Build.Helix</RootNamespace>
   </PropertyGroup>

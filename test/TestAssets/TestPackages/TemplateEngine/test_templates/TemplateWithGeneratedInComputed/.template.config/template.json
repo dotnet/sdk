@@ -1,0 +1,97 @@
+{
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "TestAssets.TemplateWithGeneratedInComputed",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.TemplateWithGeneratedInComputed",
+  "precedence": "100",
+  "identity": "TestAssets.TemplateWithGeneratedInComputed",
+  "shortName": "TestAssets.TemplateWithGeneratedInComputed",
+  "defaultName": "theDefaultName",
+  "symbols": {
+    "preset": {
+      "displayName": "Preset",
+      "type": "parameter",
+      "datatype": "choice",
+      "defaultValue": "recommended",
+      "description": "Selects setup type",
+      "choices": [
+        {
+          "choice": "recommended",
+          "description": "Recommended set of options to create a production-ready app targeting multiple platforms",
+          "displayName": "Default"
+        },
+        {
+          "choice": "blank",
+          "description": "Smallest set of options, with no extra dependencies, to create an app targeting multiple platforms",
+          "displayName": "Blank"
+        }
+      ]
+    },
+    "navigation": {
+      "displayName": "Navigation",
+      "description": "Configures navigation in the application",
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "regions",
+          "displayName": "Regions",
+          "description": "Uses Uno.Extensions.Navigation to navigate using regions"
+        },
+        {
+          "choice": "blank",
+          "displayName": "Blank",
+          "description": "Provides Blank App experience with default WinUI Frame Navigation"
+        }
+      ]
+    },
+    "presetDependencyInjectionDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "false"
+      }
+    },
+    "presetNavigationDefault": {
+      "type": "generated",
+      "generator": "constant",
+      "parameters": {
+        "value": "blank"
+      }
+    },
+    "dependencyInjection": {
+      "displayName": "Dependency Injection",
+      "description": "Use dependency injection for registering and accessing services",
+      "type": "parameter",
+      "datatype": "bool"
+    },
+    "navigationEvaluator": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "navigation",
+        "fallbackVariableName": "presetNavigationDefault"
+      }
+    },
+    "useDependencyInjection": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "dependencyInjection",
+        "fallbackVariableName": "presetDependencyInjectionDefault"
+      }
+    },
+    "useExtensionsNavigation": {
+      "type": "computed",
+      "datatype": "bool",
+      "value": "useDependencyInjection && navigationEvaluator != 'blank'"
+    },
+    "useFrameNav": {
+      "type": "computed",
+      "datatype": "bool",
+      "value": "!useDependencyInjection || navigationEvaluator == 'blank'"
+    }
+  }
+}

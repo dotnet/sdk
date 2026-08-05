@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriParametersShouldNotBeStringsFixer>;
@@ -11,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UriParametersShouldNotBeStringsFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1054WarningWithUrlAsync()
         {
             var code = @"
@@ -42,7 +43,7 @@ public class A
             await VerifyCS.VerifyCodeFixAsync(code, fix);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054MultipleWarningWithUrlAsync()
         {
             var code = @"
@@ -83,10 +84,10 @@ public class A
                 FixedState = { Sources = { fix } },
                 NumberOfIncrementalIterations = 3,
                 NumberOfFixAllIterations = 3,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054MultipleWarningWithUrlWithOverloadAsync()
         {
             // Following original FxCop implementation. but this seems strange.
@@ -124,10 +125,10 @@ public class A
                 FixedState = { Sources = { fix } },
                 NumberOfIncrementalIterations = 2,
                 NumberOfFixAllIterations = 2,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1054WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test

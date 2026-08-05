@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json.schemastore.org/template.json",
+  "author": "Test Asset",
+  "classifications": [ "Test Asset" ],
+  "name": "ValueForms.DerivedSymbol",
+  "tags": { "type": "project" },
+  "generatorVersions": "[1.0.0.0-*)",
+  "groupIdentity": "TestAssets.ValueForms.DerivedSymbol",
+  "precedence": "100",
+  "identity": "TestAssets.ValueForms.DerivedSymbol",
+  "shortName": "TestAssets.ValueForms.DerivedSymbol",
+  "sourceName": "My.Web.App",
+  "symbols": {
+    "nameUpperSnake": {
+      "type": "derived",
+      "valueSource": "name",
+      "valueTransform": "identity", //avoids transformation
+      "replaces": "My.Web.App",
+      "forms": {
+        "global": [ "UpperCaseForm", "UpperCaseSnake" ]
+      }
+    }
+  },
+  "forms": {
+    "DotToSnake": {
+      "identifier": "replace",
+      "pattern": "\\.",
+      "replacement": "_"
+    },
+    "UpperCaseForm": {
+      "identifier": "upperCase"
+    },
+    "UpperCaseSnake": {
+      "identifier": "chain",
+      "steps": [ "UpperCaseForm", "DotToSnake" ]
+    }
+  }
+}

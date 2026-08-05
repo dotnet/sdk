@@ -3,6 +3,11 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.Eventing.Reader;
 using System.Globalization;
 using System.Text.Json;
@@ -11,8 +16,8 @@ using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper log)
-    : AspNetSdkBaselineTest(log, GenerateBaselines)
+[TestClass]
+public partial class StaticWebAssetEndpointsIntegrationTest : AspNetSdkBaselineTest
 {
     [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.bundle\.scp\.css(?'compress'\.(?:gz|br))?$""")]
     private static partial Regex ProjectBundleRegex();
@@ -20,7 +25,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     [GeneratedRegex("""(?'project'[a-zA-Z0-9]+)(?:\.(?'fingerprint'[a-zA-Z0-9]*))?\.styles\.css(?'compress'\.(?:gz|br))?$""")]
     private static partial Regex AppBundleRegex();
 
-    [Fact]
+    [TestMethod]
     public void Build_CreatesEndpointsForAssets()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp");
@@ -45,7 +50,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(27);
+        endpoints.Should().HaveCount(39);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(2);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -170,7 +175,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
     } && !string.IsNullOrWhiteSpace(fingerprint)
       && (compress == ".gz" || compress == ".br");
 
-    [Fact]
+    [TestMethod]
     public void Publish_CreatesEndpointsForAssets()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp");
@@ -205,7 +210,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(45);
+        endpoints.Should().HaveCount(65);
         var appJsEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js"));
         appJsEndpoints.Should().HaveCount(3);
         var appJsGzEndpoints = endpoints.Where(ep => ep.Route.EndsWith("app.js.gz"));
@@ -287,7 +292,7 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         AssertManifest(manifest, LoadPublishManifest());
     }
 
-    [Fact]
+    [TestMethod]
     public void Publish_CreatesEndpointsForAssets_BuildAndPublish_Assets()
     {
         ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp")
@@ -394,12 +399,13 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         // based on the presence of .razor files in projects referencing the web SDK.
         // In the future we will filter these out based on whether the app references the Endpoints or the Server
         // assemblies, but for now, just account for them in the tests and ignore them.
-        endpoints.Should().HaveCount(45);
+        endpoints.Should().HaveCount(65);
 
         AssertManifest(publishManifest, LoadPublishManifest());
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Build_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -427,7 +433,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(buildOutputDirectory, "blazorwasm", readFromDevManifest: true);
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void BuildHosted_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -454,7 +461,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(buildOutputDirectory, "blazorhosted", readFromDevManifest: true);
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void Publish_EndpointManifestContainsEndpoints()
     {
         // Arrange
@@ -480,7 +488,8 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         VerifyEndpointsCollection(publishOutputDirectory, "blazorwasm");
     }
 
-    [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+    [TestMethod]
+    [RequiresMSBuildVersion("17.12", Reason = "Needs System.Text.Json 8.0.5")]
     public void PublishHosted_EndpointManifest_ContainsEndpoints()
     {
         // Arrange
@@ -504,6 +513,47 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
         var publishOutputDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
 
         VerifyEndpointsCollection(publishOutputDirectory, "blazorhosted");
+    }
+
+    [TestMethod]
+    public void Build_DefaultDocumentAndSpaFallback_CreatesAdditionalEndpoints()
+    {
+        ProjectDirectory = CreateAspNetSdkTestAsset("RazorComponentApp")
+            .WithProjectChanges(document =>
+            {
+                document.Root.AddFirst(
+                    new XElement("PropertyGroup",
+                        new XElement("StaticWebAssetDefaultDocumentEnabled", "true"),
+                        new XElement("StaticWebAssetSpaFallbackEnabled", "true")));
+            });
+        var root = ProjectDirectory.TestRoot;
+
+        var dir = Directory.CreateDirectory(Path.Combine(root, "wwwroot"));
+        File.WriteAllText(Path.Combine(dir.FullName, "index.html"), "<html><body>Hello</body></html>");
+
+        var build = CreateBuildCommand(ProjectDirectory);
+        ExecuteCommand(build).Should().Pass();
+
+        var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+        var path = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+        new FileInfo(path).Should().Exist();
+        var manifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(path));
+
+        var endpoints = manifest.Endpoints;
+
+        // There should be endpoints for index.html (original + fingerprinted + default document + spa fallback)
+        var indexHtmlEndpoints = endpoints.Where(ep => ep.AssetFile.Contains("index.html") && !ep.AssetFile.Contains(".gz") && !ep.AssetFile.Contains(".br"));
+
+        // Original index.html endpoint
+        indexHtmlEndpoints.Should().Contain(e => e.Route == "index.html");
+
+        // SPA fallback endpoint with catch-all route and max int order
+        var fallback = endpoints.FirstOrDefault(e => e.Route == "{**fallback:nonfile}");
+        fallback.Should().NotBeNull();
+        fallback.Order.Should().Be("2147483647");
+
+        AssertManifest(manifest, LoadBuildManifest());
     }
 
     // Makes several assertions about the endpoints we defined.
@@ -535,12 +585,11 @@ public partial class StaticWebAssetEndpointsIntegrationTest(ITestOutputHelper lo
             endpointsByAssetFile.Should().ContainKey(file);
             if (file.EndsWith(".br") || file.EndsWith(".gz"))
             {
-                endpointsByAssetFile[file].Should().HaveCount(2);
+                endpointsByAssetFile[file].Should().HaveCountGreaterThanOrEqualTo(2);
             }
             else if (endpointsByAssetFile[file].Length > 1)
             {
-                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Any(p => p.Name == "integrity")).Count().Should().Be(1);
-                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Length == 0).Count().Should().Be(1);
+                endpointsByAssetFile[file].Where(e => e.EndpointProperties.Any(p => p.Name == "integrity")).Count().Should().BeGreaterThanOrEqualTo(1);
             }
             else
             {

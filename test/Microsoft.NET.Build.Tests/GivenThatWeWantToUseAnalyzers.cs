@@ -6,19 +6,17 @@ using Microsoft.DotNet.Configurer;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToUseAnalyzers : SdkTest
     {
-        public GivenThatWeWantToUseAnalyzers(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Theory]
-        [InlineData("WebApp", false)]
-        [InlineData("WebApp", true)]
-        [InlineData("WebApp", null)]
+        [TestMethod]
+        [DataRow("WebApp", false)]
+        [DataRow("WebApp", true)]
+        [DataRow("WebApp", null)]
         public void It_resolves_requestdelegategenerator_correctly(string testAssetName, bool? isEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -34,13 +32,13 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.AspNetCore.Http.Generated");
         }
 
-        [Theory]
-        [InlineData("WebApp", false)]
-        [InlineData("WebApp", true)]
-        [InlineData("WebApp", null)]
+        [TestMethod]
+        [DataRow("WebApp", false)]
+        [DataRow("WebApp", true)]
+        [DataRow("WebApp", null)]
         public void It_resolves_configbindinggenerator_correctly(string testAssetName, bool? isEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: isEnabled.ToString())
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -56,10 +54,10 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, isEnabled, "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishAot()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -73,13 +71,13 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, expectEnabled: true, "Microsoft.AspNetCore.Http.Generated", "Microsoft.Extensions.Configuration.Binder.SourceGeneration");
         }
 
-        [Theory]
-        [InlineData("net10.0", true)]
-        [InlineData("net9.0", false)]
-        [InlineData("net8.0", false)]
+        [TestMethod]
+        [DataRow("net10.0", true)]
+        [DataRow("net9.0", false)]
+        [DataRow("net8.0", false)]
         public void It_enables_validationsgenerator_correctly_for_TargetFramework(string targetFramework, bool expectEnabled)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -88,10 +86,10 @@ namespace Microsoft.NET.Build.Tests
             VerifyInterceptorsFeatureProperties(asset, expectEnabled, "Microsoft.Extensions.Validation.Generated");
         }
 
-        [Fact]
+        [TestMethod]
         public void It_enables_requestdelegategenerator_and_configbindinggenerator_for_PublishTrimmed()
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -110,7 +108,7 @@ namespace Microsoft.NET.Build.Tests
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
-                ToolsetInfo.CurrentTargetFramework,
+                targetFramework: null,
                 "Analyzer",
                 GetValuesCommand.ValueType.Item);
 
@@ -121,7 +119,7 @@ namespace Microsoft.NET.Build.Tests
 
             var analyzers = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
+            Assert.AreEqual(expectEnabled ?? false, analyzers.Any(analyzer => analyzer.Contains(generatorName)));
         }
 
         private void VerifyRequestDelegateGeneratorIsUsed(TestAsset asset, bool? expectEnabled)
@@ -138,7 +136,7 @@ namespace Microsoft.NET.Build.Tests
             var command = new GetValuesCommand(
                 Log,
                 asset.Path,
-                ToolsetInfo.CurrentTargetFramework,
+                targetFramework: null,
                 "InterceptorsPreviewNamespaces",
                 GetValuesCommand.ValueType.Property);
 
@@ -149,10 +147,10 @@ namespace Microsoft.NET.Build.Tests
 
             var namespaces = command.GetValues();
 
-            Assert.Equal(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
+            Assert.AreEqual(expectEnabled ?? false, expectedNamespaces.All(expectedNamespace => namespaces.Contains(expectedNamespace)));
         }
 
-        [Fact]
+        [TestMethod]
         public void It_enables_aspnet_generators_for_non_web_projects_with_framework_reference()
         {
             var testProject = new TestProject()
@@ -193,8 +191,8 @@ namespace Microsoft.NET.Build.Tests
                 class C { public int Value { get; set; } }
                 """;
 
-            // Create a simple non-web project with ASP.NET FrameworkReference 
-            var asset = _testAssetsManager
+            // Create a simple non-web project with ASP.NET FrameworkReference
+            var asset = TestAssetsManager
                 .CreateTestProject(testProject);
 
             new BuildCommand(asset)
@@ -215,20 +213,20 @@ namespace Microsoft.NET.Build.Tests
                 .Should().Pass();
 
             var namespaces = command.GetValues();
-            
+
             // This should work correctly - the non-web project should get the InterceptorsPreviewNamespaces
             // because the logic was moved from Web SDK to FrameworkReferenceResolution targets
-            Assert.True(namespaces.Contains("Microsoft.Extensions.Configuration.Binder.SourceGeneration"), 
+            Assert.Contains("Microsoft.Extensions.Configuration.Binder.SourceGeneration", namespaces,
                 $"Expected InterceptorsPreviewNamespaces to contain 'Microsoft.Extensions.Configuration.Binder.SourceGeneration' but got: [{string.Join(", ", namespaces)}]");
         }
 
-        [Theory]
-        [InlineData("C#", "AppWithLibrary")]
-        [InlineData("VB", "AppWithLibraryVB")]
-        [InlineData("F#", "AppWithLibraryFS")]
+        [TestMethod]
+        [DataRow("C#", "AppWithLibrary")]
+        [DataRow("VB", "AppWithLibraryVB")]
+        [DataRow("F#", "AppWithLibraryFS")]
         public void It_resolves_analyzers_correctly(string language, string testAssetName)
         {
-            var asset = _testAssetsManager
+            var asset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: language)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -270,6 +268,8 @@ namespace Microsoft.NET.Build.Tests
                                 ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/cs/Microsoft.CodeQuality.Analyzers.dll"),
                                 ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/cs/Microsoft.CodeQuality.CSharp.Analyzers.dll"),
                                 ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Extensions.Logging.Generators.dll"),
+                                ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Extensions.Options.SourceGeneration.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.LibraryImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.JavaScript.JSImportGenerator.dll"),
                                 ("microsoft.netcore.app.ref", (string)null, "analyzers/dotnet/cs/Microsoft.Interop.SourceGeneration.dll"),
@@ -280,13 +280,13 @@ namespace Microsoft.NET.Build.Tests
 
                 case "VB":
                     analyzers.Select(x => GetPackageAndPath(x)).Should().BeEquivalentTo(new[]
-                        {
-                            ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
-                            ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
-                            ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.Analyzers.dll"),
-                            ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.VisualBasic.Analyzers.dll"),
-                            ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll")
-                        }
+                            {
+                                ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.dll"),
+                                ("microsoft.net.sdk", (string)null, "analyzers/Microsoft.CodeAnalysis.NetAnalyzers.dll"),
+                                ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.Analyzers.dll"),
+                                ("microsoft.codequality.analyzers", "2.6.0", "analyzers/dotnet/vb/Microsoft.CodeQuality.VisualBasic.Analyzers.dll"),
+                                ("microsoft.dependencyvalidation.analyzers", "0.9.0", "analyzers/dotnet/Microsoft.DependencyValidation.Analyzers.dll")
+                            }
                         );
                     break;
 
@@ -299,7 +299,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_resolves_multitargeted_analyzers()
         {
             var testProject = new TestProject()
@@ -323,7 +323,7 @@ namespace Microsoft.NET.Build.Tests
                 project.Root.Add(itemGroup);
             });
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             List<(string package, string version, string path)> GetAnalyzersForTargetFramework(string targetFramework)
             {

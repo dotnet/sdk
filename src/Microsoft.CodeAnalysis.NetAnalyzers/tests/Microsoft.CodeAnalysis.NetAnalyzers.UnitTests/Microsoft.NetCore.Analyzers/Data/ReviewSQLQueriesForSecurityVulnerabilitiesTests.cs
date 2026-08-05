@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Data.ReviewSqlQueriesForSecurityVulnerabilities,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Data.UnitTests
 {
+    [TestClass]
     public class ReviewSQLQueriesForSecurityVulnerabilitiesTests
     {
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string invokedSymbol, string containingMethod)
@@ -235,7 +236,7 @@ Class Adapter
     End Function
 End Class";
 
-        [Fact]
+        [TestMethod]
         public async Task Unrelated_ConstructorParameter_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -251,7 +252,7 @@ class Test
 }}");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_CommandText_StringLiteral_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -277,7 +278,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_StringLiteral_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -317,7 +318,7 @@ End Module");
 
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_StringLiteral_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -356,7 +357,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_CommandText_ClassConstant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -385,7 +386,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_ClassConstant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -427,7 +428,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_ClassConstant_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -469,7 +470,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_CallingAnotherConstructor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -517,7 +518,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_CallingAnotherConstructor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -564,7 +565,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_BaseConstructor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -618,7 +619,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_BaseConstructor_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -673,7 +674,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_PropertyAssignment_NotCommandText_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -713,7 +714,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_CommandTextUsage_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -740,7 +741,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_CommandTextUsage_InClass_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -784,7 +785,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_OtherMethodInvocation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -827,7 +828,7 @@ End Module");
 
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_OtherMethodInvocation_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -869,7 +870,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_SingleConstructorParameter_NotCmdOrCommandAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -910,7 +911,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_MultipleParameters_NeitherNamedCommandOrCmd_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -951,7 +952,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_MultipleParameters_NeitherNamedCommandOrCmd_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -992,7 +993,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_MultipleParameters_OneNamedCmd_WithStringLiteral_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1033,7 +1034,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_MultipleParameters_OneNamedCmd_WithStringLiteral_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1074,7 +1075,7 @@ Module Test
 End Module");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_CommandText_LocalVariable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1104,7 +1105,7 @@ End Module",
             GetBasicResultAt(128, 9, "Property Command.CommandText As String", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AutoGeneratedCode_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1136,7 +1137,7 @@ End Module",
             GetBasicResultAt(129, 9, "Property Command.CommandText As String", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_LocalVariable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1178,7 +1179,7 @@ End Module",
             GetBasicResultAt(133, 18, "Sub Command1.New(parameter As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_LocalVariableName_DiagnosticAsync()
         {
             // Constructor Parameter named command
@@ -1260,7 +1261,7 @@ End Module",
             GetBasicResultAt(133, 18, "Sub Adapter1.New(cmd As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_CommandText_Parameter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1289,7 +1290,7 @@ End Module",
 
         }
 
-        [Fact, WorkItem(1625, "https://github.com/dotnet/roslyn-analyzers/issues/1625")]
+        [TestMethod, WorkItem(1625, "https://github.com/dotnet/roslyn-analyzers/issues/1625")]
         public async Task DbCommand_CommandText_PropertyOverride_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1330,7 +1331,7 @@ End Module",
             GetBasicResultAt(133, 9, "Property Command1.CommandText As String", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_Parameter_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1370,7 +1371,7 @@ End Module",
             GetBasicResultAt(132, 18, "Sub Command1.New(parameter As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_Parameter_DiagnosticAsync()
         {
             // Constructor parameter named command
@@ -1449,7 +1450,7 @@ End Module",
             GetBasicResultAt(132, 18, "Sub Adapter1.New(cmD As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_MultipleParameters_OneNamedCmd_WithLocal_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1492,7 +1493,7 @@ End Module",
             GetBasicResultAt(134, 18, "Sub Command1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_MultipleParameters_OneNamedCmd_WithLocal_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1535,7 +1536,7 @@ End Module",
             GetBasicResultAt(134, 18, "Sub Adapter1.New(cmd As String, parameter2 As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DbCommand_ConstructorParameter_MultipleParameters_NonConstants_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1578,7 +1579,7 @@ End Module",
             GetBasicResultAt(134, 18, "Sub Command1.New(cmd As String, command As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataAdapter_ConstructorParameter_MultipleParameters_NonConstants_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync($@"
@@ -1621,7 +1622,7 @@ End Module",
             GetBasicResultAt(134, 18, "Sub Adapter1.New(cmd As String, command As String)", "M1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MissingWellKnownTypes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1632,7 +1633,7 @@ Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalString_DiagnosticAsync()
         {
             var source = $@"
@@ -1673,15 +1674,15 @@ End Class");
                         GetCSharpResultAt(102, 21, "string Command.CommandText", "Page_Load")
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
-        [InlineData("dotnet_code_quality.CA2100.excluded_symbol_names = M*")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.CA2100.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = M1")]
+        [DataRow("dotnet_code_quality.CA2100.excluded_symbol_names = M*")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -1718,7 +1719,7 @@ class Test
                 );
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var vbTest = new VerifyVB.Test
             {
@@ -1752,10 +1753,10 @@ End Module"
                 );
             }
 
-            await vbTest.RunAsync();
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3613, "https://github.com/dotnet/roslyn-analyzers/issues/3613")]
+        [TestMethod, WorkItem(3613, "https://github.com/dotnet/roslyn-analyzers/issues/3613")]
         public async Task GlobalAssemblyAttributes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

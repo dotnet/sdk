@@ -24,7 +24,7 @@ public static class RestoreCommand
         result.HandleDebugSwitch();
         result.ShowHelpOrErrorIfAppropriate();
 
-        return CommandFactory.CreateVirtualOrPhysicalCommand(
+        return DotNetCommandFactory.CreateVirtualOrPhysicalCommand(
             definition,
             definition.SlnOrProjectOrFileArgument,
             static (msbuildArgs, appFilePath) =>

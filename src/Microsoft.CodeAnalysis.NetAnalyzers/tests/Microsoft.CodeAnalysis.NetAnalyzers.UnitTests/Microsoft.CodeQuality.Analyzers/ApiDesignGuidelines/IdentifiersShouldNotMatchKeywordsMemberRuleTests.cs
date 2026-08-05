@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.IdentifiersShouldNotMatchKeywordsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpIdentifiersShouldNotMatchKeywordsFixer>;
@@ -17,9 +17,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
     /// Contains those unit tests for the IdentifiersShouldNotMatchKeywords analyzer that
     /// pertain to the MemberRule, which applies to the names of type members.
     /// </summary>
+    [TestClass]
     public class IdentifiersShouldNotMatchKeywordsMemberRuleTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -30,7 +31,7 @@ public class C
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -42,7 +43,7 @@ End Class
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassWithDifferentCasingAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -52,7 +53,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassWithDifferentCasingAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -62,7 +63,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForCaseInsensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -74,7 +75,7 @@ public class C
                 GetCSharpResultAt(5, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.aDdHaNdLeR()", "AddHandler"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForCaseInsensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -86,7 +87,7 @@ End Class",
                 GetBasicResultAt(4, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.aDdHaNdLeR()", "AddHandler"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedProtectedVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -97,7 +98,7 @@ public class C
                 GetCSharpResultAt(4, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedProtectedVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -108,7 +109,7 @@ End Class",
                 GetBasicResultAt(3, 31, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedInternalVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -118,7 +119,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedInternalVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -128,7 +129,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedPublicNonVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -138,7 +139,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedPublicNonVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -148,7 +149,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForNonKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -158,7 +159,7 @@ public class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForNonKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -168,7 +169,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedVirtualMethodInInternalClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -178,7 +179,7 @@ internal class C
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedVirtualMethodInInternalClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -188,7 +189,7 @@ Friend Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedMethodInPublicInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -199,7 +200,7 @@ public interface I
                 GetCSharpResultAt(4, 10, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "I.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedMethodInPublicInterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -209,7 +210,7 @@ End Interface",
                 GetBasicResultAt(3, 9, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "I.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedMethodOfInternalInterfaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -219,7 +220,7 @@ internal interface I
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedMethodOfInternalInterfaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -228,7 +229,7 @@ Friend Interface I
 End Interface");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualPropertyOfPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -250,7 +251,7 @@ public class C
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualPropertyOfPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -268,7 +269,7 @@ End Class",
                 GetBasicResultAt(4, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualAutoPropertyOfPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -279,7 +280,7 @@ public class C
                 GetCSharpResultAt(4, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualAutoPropertyOfPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -289,7 +290,7 @@ End Class",
                 GetBasicResultAt(3, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualReadOnlyPropertyOfPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -307,7 +308,7 @@ public class C
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualReadOnlyPropertyOfPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -322,7 +323,7 @@ End Class",
                 GetBasicResultAt(4, 42, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualWriteOnlyPropertyOfPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -340,7 +341,7 @@ public class C
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeyWordNamedPublicVirtualWriteOnlyPropertyOfPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -355,7 +356,7 @@ End Class",
                 GetBasicResultAt(4, 43, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeyWordNamedPublicVirtualExpressionBodyPropertyOfPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -367,7 +368,7 @@ public class C
                 GetCSharpResultAt(5, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -384,7 +385,7 @@ public class D : C
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -402,7 +403,7 @@ End Class",
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForSealedOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -419,7 +420,7 @@ public class D : C
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForSealedOverrideOfKeywordNamedPublicVirtualMethodOfPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -437,7 +438,7 @@ End Class",
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.friend()", "friend"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForEachOverloadOfCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -450,7 +451,7 @@ public class C
                 GetCSharpResultAt(5, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal(int)", "internal"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForEachOverloadOfCaseSensitiveKeywordNamedPublicVirtualMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -464,7 +465,7 @@ End Class",
                 GetBasicResultAt(5, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal(Integer)", "internal"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnosticForKeywordNamedNewMethodInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -481,7 +482,7 @@ public class D : C
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnosticForKeywordNamedNewMethodInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -500,7 +501,7 @@ End Class",
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForVirtualNewMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -518,7 +519,7 @@ public class D : C
                 GetCSharpResultAt(9, 29, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "D.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForVirtualNewMethodAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -538,7 +539,7 @@ End Class",
                 GetBasicResultAt(10, 36, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "D.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedProtectedVirtualMethodInProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -552,7 +553,7 @@ public class C
                 GetCSharpResultAt(6, 32, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.D.protected()", "protected"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForKeywordNamedProtectedVirtualMethodInProtectedTypeNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -565,7 +566,7 @@ End Class",
                 GetBasicResultAt(4, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.D.Protected()", "Protected"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForKeywordNamedPublicVirtualEventInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -580,7 +581,7 @@ public class C
 
         // These tests are just to verify that the formatting of the displayed member name
         // is consistent with FxCop, for the case where the class is in a namespace.
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForVirtualPublicMethodInPublicClassInNamespaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -595,7 +596,7 @@ namespace N
                 GetCSharpResultAt(6, 29, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForVirtualPublicMethodInPublicClassInNamespaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -611,7 +612,7 @@ End Namespace",
 
         // These tests are just to verify that the formatting of the displayed member name
         // is consistent with FxCop, for the case where the class is generic.
-        [Fact]
+        [TestMethod]
         public async Task CSharpDiagnosticForVirtualPublicMethodInPublicGenericClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -623,7 +624,7 @@ public class C<T> where T : class
                 GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C<T>.for()", "for"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicDiagnosticForVirtualPublicMethodInPublicGenericClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -635,11 +636,11 @@ End Class",
                 GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C(Of T).for()", "for"));
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
         public async Task UserOptionDoesNotIncludeMethod_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -661,7 +662,7 @@ public class C
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -681,14 +682,14 @@ End Class",
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Method")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Method")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = Method")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Method")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Method")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method")]
         public async Task UserOptionIncludesMethod_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -711,7 +712,7 @@ public class C
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(4, 25, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -732,14 +733,14 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetBasicResultAt(3, 28, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.internal()", "internal"), },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Method")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Method")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Method")]
         public async Task UserOptionDoesNotIncludeProperty_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -761,7 +762,7 @@ public class C
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -780,14 +781,14 @@ End Class",
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Property")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Property")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = Property")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Property")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
         public async Task UserOptionIncludesProperty_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -810,7 +811,7 @@ public class C
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(4, 24, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.for", "for"), },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -830,14 +831,14 @@ End Class",
 ") },
                     ExpectedDiagnostics = { GetBasicResultAt(3, 33, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.Sub", "Sub"), },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Property")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Property")]
         public async Task UserOptionDoesNotIncludeEvent_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -860,14 +861,14 @@ public class C
 {editorConfigText}
 ") },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = Event")]
-        [InlineData("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Event")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Event")]
-        [InlineData("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Event")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = Event")]
+        [DataRow("dotnet_code_quality.analyzed_symbol_kinds = NamedType, Event")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = Event")]
+        [DataRow("dotnet_code_quality.CA1716.analyzed_symbol_kinds = NamedType, Event")]
         public async Task UserOptionIncludesEvent_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -891,7 +892,7 @@ public class C
 ") },
                     ExpectedDiagnostics = { GetCSharpResultAt(5, 35, IdentifiersShouldNotMatchKeywordsAnalyzer.MemberRule, "C.float", "float"), },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

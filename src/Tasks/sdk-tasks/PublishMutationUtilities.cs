@@ -3,56 +3,47 @@
 
 #nullable disable
 
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Microsoft.DotNet.Build.Tasks
 {
     public class PublishMutationUtilities
     {
+        private static readonly JsonSerializerOptions s_writeOptions = new() { WriteIndented = true };
+
         public static void ChangeEntryPointLibraryName(string depsFile, string newName)
         {
-            JToken deps;
-            using (var file = File.OpenText(depsFile))
-            using (JsonTextReader reader = new(file))
-            {
-                deps = JToken.ReadFrom(reader);
-            }
+            var deps = JsonNode.Parse(File.ReadAllText(depsFile));
 
             string version = null;
-            foreach (JProperty target in deps["targets"])
+            foreach (var target in deps["targets"]!.AsObject())
             {
-                var targetLibrary = target.Value.Children<JProperty>().FirstOrDefault();
-                if (targetLibrary == null)
+                var targetObj = target.Value!.AsObject();
+                var targetLibrary = targetObj.FirstOrDefault();
+                if (targetLibrary.Key == null)
                 {
                     continue;
                 }
-                version = targetLibrary.Name.Substring(targetLibrary.Name.IndexOf('/') + 1);
-                if (newName == null)
+                version = targetLibrary.Key.Substring(targetLibrary.Key.IndexOf('/') + 1);
+                var targetLibraryValue = targetLibrary.Value;
+                targetObj.Remove(targetLibrary.Key);
+                if (newName != null)
                 {
-                    targetLibrary.Remove();
-                }
-                else
-                {
-                    targetLibrary.Replace(new JProperty(newName + '/' + version, targetLibrary.Value));
+                    targetObj.Add(newName + '/' + version, targetLibraryValue);
                 }
             }
             if (version != null)
             {
-                var library = deps["libraries"].Children<JProperty>().First();
-                if (newName == null)
+                var librariesObj = deps["libraries"]!.AsObject();
+                var library = librariesObj.First();
+                var libraryValue = library.Value;
+                librariesObj.Remove(library.Key);
+                if (newName != null)
                 {
-                    library.Remove();
+                    librariesObj.Add(newName + '/' + version, libraryValue);
                 }
-                else
-                {
-                    library.Replace(new JProperty(newName + '/' + version, library.Value));
-                }
-                using (var file = File.CreateText(depsFile))
-                using (var writer = new JsonTextWriter(file) { Formatting = Formatting.Indented })
-                {
-                    deps.WriteTo(writer);
-                }
+                File.WriteAllText(depsFile, deps.ToJsonString(s_writeOptions));
             }
         }
     }

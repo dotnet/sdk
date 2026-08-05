@@ -27,6 +27,7 @@ namespace Microsoft.NET.Build.Tasks
         public const string FrameworkVersion = "FrameworkVersion";
         public const string IsTrimmable = "IsTrimmable";
         public const string RuntimeFrameworkName = "RuntimeFrameworkName";
+        public const string Profile = "Profile";
 
         // SDK Metadata
         public const string SDKPackageItemSpec = "SDKPackageItemSpec";
@@ -129,6 +130,10 @@ namespace Microsoft.NET.Build.Tasks
         public const string IsVersion5 = "IsVersion5";
         public const string CreateCompositeImage = "CreateCompositeImage";
         public const string PerfmapFormatVersion = "PerfmapFormatVersion";
+        public const string RequiresNativeLink = "RequiresNativeLink";
+        public const string NativeLinkerInputPath = "NativeLinkerInputPath";
+        public const string PartialCompile = "PartialCompile";
+        public const string R2RHeaderSymbolName = "R2RHeaderSymbolName";
 
         // Debug symbols
         public const string RelatedProperty = "related";

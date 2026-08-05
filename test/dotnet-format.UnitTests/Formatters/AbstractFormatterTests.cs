@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -55,7 +56,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
         private protected abstract ICodeFormatter Formatter { get; }
 
-        protected ITestOutputHelper? TestOutputHelper { get; set; }
+        public TestContext TestContext { get; set; } = null!;
+
+        private ITestOutputHelper? _testOutputHelper;
+        protected ITestOutputHelper? TestOutputHelper => _testOutputHelper ??= new TestContextOutputHelper(TestContext);
 
         protected AbstractFormatterTest()
         {
@@ -103,10 +107,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             try
             {
                 // Ensure the code is unchanged
-                Assert.Equal(code, formattedText.ToString());
+                Assert.AreEqual(code, formattedText.ToString());
 
                 // Ensure no non-fixable diagnostics were reported
-                Assert.Empty(formattedFiles);
+                Assert.IsEmpty(formattedFiles);
             }
             catch
             {
@@ -145,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
             try
             {
                 // Ensure the code is unchanged
-                Assert.Equal(code, formattedText.ToString());
+                Assert.AreEqual(code, formattedText.ToString());
             }
             catch
             {
@@ -185,7 +189,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             try
             {
-                Assert.Equal(expectedCode, formattedText.ToString());
+                Assert.AreEqual(expectedCode, formattedText.ToString());
             }
             catch
             {
@@ -229,7 +233,8 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
                 fileMatcher,
                 ReportPath: string.Empty,
                 IncludeGeneratedFiles: false,
-                BinaryLogPath: null);
+                BinaryLogPath: null,
+                TargetFramework: null);
 
             var pathsToFormat = GetOnlyFileToFormat(solution);
 
@@ -238,7 +243,7 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.Formatters
 
             var formattedSolution = await Formatter.FormatAsync(workspace, solution, pathsToFormat, formatOptions, logger, formattedFiles, default);
             var formattedDocument = GetOnlyDocument(formattedSolution);
-            var formattedText = await formattedDocument.GetTextAsync();
+            var formattedText = await formattedDocument.GetTextAsync(TestContext.CancellationToken);
 
             return (formattedText, formattedFiles, logger);
         }

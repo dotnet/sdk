@@ -1,18 +1,19 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Security.CSharpDataSetDataTableInSerializableTypeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DataSetDataTableInSerializableTypeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Serializable_Field_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -30,7 +31,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(10, 24, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_Field_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -49,7 +50,7 @@ namespace Blah
                 GetNonIFormatterCSharpResultAt(11, 24, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreDataMemberOnDataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -68,7 +69,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IgnoreDataMemberOnNotDataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -88,7 +89,7 @@ namespace Blah
                 GetNonIFormatterCSharpResultAt(9, 26, "DataTable", "DataTable BlahClass.DT"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_PrivateProperty_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -107,7 +108,7 @@ namespace Blah
                 GetNonIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_KnownType_DataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -127,7 +128,7 @@ namespace Blah
                 GetNonIFormatterCSharpResultAt(8, 6, "DataTable", "typeof(System.Data.DataTable)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataContract_InheritedKnownType_DataTable_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -150,7 +151,7 @@ namespace Blah
                 GetNonIFormatterCSharpResultAt(7, 6, "DataTable", "typeof(System.Data.DataTable)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_FieldDerivedClass_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -172,7 +173,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(14, 26, "DataSet", "MyDataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PrivateField_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -190,7 +191,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(10, 25, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_Property_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -208,7 +209,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyDerived_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -230,7 +231,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(14, 9, "DataSet", "MyDataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyList_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -249,7 +250,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(11, 9, "DataSet", "List<DataSet> BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyListListList_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -268,7 +269,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(11, 9, "DataSet", "List<List<List<DataSet>>> BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyArray_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -286,7 +287,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet[] BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_Property2DArray_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -304,7 +305,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet[,] BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyArrayArray_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -322,7 +323,7 @@ namespace Blah
                 GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet[][] BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Serializable_PropertyNoExplicitSetter_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -340,7 +341,7 @@ namespace Blah
             GetIFormatterCSharpResultAt(10, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlElement_Property_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -358,7 +359,7 @@ namespace Blah
             GetNonIFormatterCSharpResultAt(9, 9, "DataSet", "DataSet BlahClass.DS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlIgnore_Property_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -376,7 +377,7 @@ namespace Blah
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GeneratedCode_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -400,7 +401,7 @@ namespace Blah
                 GetAutogeneratedIFormatterCSharpResultAt(15, 27, "DataTable", "DataTable BlahClass.table"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OtherGeneratedCode_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -423,7 +424,7 @@ namespace Blah
         }
 
 #if !NETCOREAPP
-        [Fact]
+        [TestMethod]
         public async Task MessageContract_Diagnostic()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -455,7 +456,7 @@ namespace Blah
         }
 #endif
 
-        [Fact]
+        [TestMethod]
         public async Task TypedTableBase_DiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(@"
@@ -505,7 +506,7 @@ namespace Blah
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetNonIFormatterCSharpResultAt(int line, int column, params string[] arguments)

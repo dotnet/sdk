@@ -1,15 +1,14 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class Net50Targeting : SdkTest
     {
-        public Net50Targeting(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void Net50TargetFrameworkParsesAsNetCoreAppTargetFrameworkIdentifier()
         {
             var testProject = new TestProject()
@@ -18,7 +17,7 @@ namespace Microsoft.NET.Build.Tests
                 TargetFrameworks = "net5.0",
             };
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, testProject.Name);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, testProject.Name);
 
             var buildCommand = new BuildCommand(testAsset);
 

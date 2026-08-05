@@ -5,19 +5,20 @@ using Microsoft.DotNet.Tools.Test.Utilities;
 
 namespace Microsoft.DotNet.Cli.Test.Tests
 {
+    [TestClass]
     public class GivenDotnettestBuildsAndRunsTestFromDll : SdkTest
     {
-        public GivenDotnettestBuildsAndRunsTestFromDll(ITestOutputHelper log) : base(log)
+        public GivenDotnettestBuildsAndRunsTestFromDll()
         {
         }
 
         private readonly string[] ConsoleLoggerOutputNormal = new[] { "--logger", "console;verbosity=normal" };
 
-        [Fact]
+        [TestMethod]
         public void TestsFromAGivenContainerShouldRunWithExpectedOutput()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -49,11 +50,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItSetsDotnetRootToTheLocationOfDotnetExecutableWhenRunningDotnetTestWithDll()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -79,11 +80,11 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.StartInfo.EnvironmentVariables[dotnetRoot].Should().Be(Path.GetDirectoryName(dotnet));
         }
 
-        [Fact]
+        [TestMethod]
         public void TestsFromAGivenContainerAndArchSwitchShouldFlowToVsTestConsole()
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 
@@ -108,13 +109,13 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(1);
         }
 
-        [Theory]
-        [InlineData("-e:foo=bardll")]
-        [InlineData("-e:foo=barexe")]
+        [TestMethod]
+        [DataRow("-e:foo=bardll")]
+        [DataRow("-e:foo=barexe")]
         public void MissingOutputDllAndArgumentsEndWithDllOrExeShouldFailInMSBuild(string arg)
         {
             var testAppName = "VSTestCore";
-            var testAsset = _testAssetsManager.CopyTestAsset(testAppName)
+            var testAsset = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource()
                 .WithVersionVariables();
 

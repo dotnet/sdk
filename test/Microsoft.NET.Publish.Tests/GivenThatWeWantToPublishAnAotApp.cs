@@ -11,18 +11,17 @@ using static Microsoft.NET.Publish.Tests.PublishTestUtils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAnAotApp : SdkTest
     {
         private readonly string RuntimeIdentifier = $"/p:RuntimeIdentifier={RuntimeInformation.RuntimeIdentifier}";
 
         private const string NetCurrentExplicitPackageVersion = "10.0.0-preview.6.25316.103";
 
-        public GivenThatWeWantToPublishAnAotApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [RequiresMSBuildVersionTheory("17.12.0", Skip = "https://github.com/dotnet/sdk/issues/46006")]
-        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12.0")]
+        [Ignore("https://github.com/dotnet/sdk/issues/46006")]
+        [DynamicData(nameof(Net7Plus), typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_enabled(string targetFramework)
         {
             if (targetFramework == "net7.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -42,7 +41,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -77,8 +76,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [RequiresMSBuildVersionTheory("17.12.0")]
-        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12.0")]
+        [DynamicData(nameof(Net7Plus), typeof(PublishTestUtils))]
         public void NativeAot_hw_runs_with_no_warnings_when_PublishAot_is_false(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -88,7 +88,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "false";
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -112,8 +112,9 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_debug_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
             // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
@@ -132,7 +133,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -165,8 +166,9 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute().Should().Pass();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_runs_in_release_with_no_config_when_PublishAot_is_enabled(string targetFramework)
         {
             var projectName = "NativeAotAppForConfigTestRel";
@@ -183,7 +185,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
 
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -217,8 +219,9 @@ namespace Microsoft.NET.Publish.Tests
                 .Execute().Should().Pass();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_app_builds_with_config_when_PublishAot_is_enabled(string targetFramework)
         {
             // NativeAOT application publish directory should not contain any <App>.deps.json or <App>.runtimeconfig.json
@@ -228,7 +231,7 @@ namespace Microsoft.NET.Publish.Tests
             var testProject = CreateAppForConfigCheck(targetFramework, projectName, true);
             testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                 // populate a runtime config file with a key value pair
                 // <RuntimeHostConfigurationOption Include="key1" Value="value1" />
                 .WithProjectChanges(project => AddRuntimeConfigOption(project));
@@ -253,16 +256,13 @@ namespace Microsoft.NET.Publish.Tests
 
         private const string Net7ExplicitPackageVersion = "7.0.0";
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/51361")]
-        [InlineData("net7.0")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [Ignore("https://github.com/dotnet/sdk/issues/51361")]
+        [DataRow("net7.0")]
         public void NativeAot_hw_runs_with_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // Test uses net7 package of Native AOT, which didn't exist in .NET 7
-                return;
-            }
-
             var projectName = "HellowWorldNativeAotApp";
 
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
@@ -278,7 +278,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -309,8 +309,9 @@ namespace Microsoft.NET.Publish.Tests
             CheckIlcVersions(testAsset, targetFramework, rid, Net7ExplicitPackageVersion, useRuntimePackLayout: false);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_PackageReference_PublishAot_is_empty(string targetFramework)
         {
             var projectName = "HellowWorldNativeAotApp";
@@ -327,7 +328,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 testProject.AdditionalProperties["StripSymbols"] = "true";
             }
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -346,8 +347,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello World");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_target_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
@@ -358,7 +360,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -376,8 +378,9 @@ namespace Microsoft.NET.Publish.Tests
         }
 
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
@@ -397,7 +400,7 @@ namespace Microsoft.NET.Publish.Tests
                     { "Version", $"[$(BundledNETCoreAppPackageVersion)]" }
                 });
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -420,8 +423,9 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_runs_with_cross_PackageReference_PublishAot_is_empty(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && (RuntimeInformation.OSArchitecture == Architecture.X64))
@@ -435,7 +439,7 @@ namespace Microsoft.NET.Publish.Tests
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
                 testProject.PackageReferences.Add(new TestPackageReference("runtime.win-x64.Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(testAsset);
                 publishCommand
@@ -449,7 +453,8 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.0.0.32901")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
         public void NativeAot_hw_fails_with_sdk6_PublishAot_is_enabled()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -459,7 +464,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject("net6.0", projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
@@ -469,8 +474,9 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_fails_with_sdk6_PackageReference_PublishAot_is_enabled(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
@@ -483,7 +489,7 @@ namespace Microsoft.NET.Publish.Tests
 
                 testProject.PackageReferences.Add(new TestPackageReference("Microsoft.DotNet.ILCompiler", NetCurrentExplicitPackageVersion));
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
                 publishCommand
@@ -493,8 +499,9 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_fails_with_unsupported_target_rid(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.X64)
@@ -506,7 +513,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                     .WithProjectChanges(project => OverrideKnownILCompilerPackRuntimeIdentifiers(project, $"{rid};"));
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -517,8 +524,9 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAot_hw_fails_with_unsupported_host_rid(string targetFramework)
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux) && RuntimeInformation.OSArchitecture == Architecture.X64)
@@ -529,7 +537,7 @@ namespace Microsoft.NET.Publish.Tests
                 var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
                 testProject.AdditionalProperties["PublishAot"] = "true";
 
-                var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
+                var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework)
                     .WithProjectChanges(project => OverrideKnownILCompilerPackRuntimeIdentifiers(project, $"{supportedTargetRid};"));
 
                 var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
@@ -550,8 +558,9 @@ namespace Microsoft.NET.Publish.Tests
                     new XElement(ns + "ILCompilerPortableRuntimeIdentifiers", runtimeIdentifiers))));
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void Only_Aot_warnings_are_produced_if_EnableAotAnalyzer_is_set(string targetFramework)
         {
             var projectName = "WarningAppWithAotAnalyzer";
@@ -560,7 +569,7 @@ namespace Microsoft.NET.Publish.Tests
             // unless PublishAot is also set.
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -572,14 +581,15 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void IsAotCompatible_implies_enable_analyzers(string targetFramework)
         {
             var projectName = "WarningAppWithAotAnalyzer";
             var testProject = CreateTestProjectWithAnalysisWarnings(targetFramework, projectName, true);
             testProject.AdditionalProperties["IsAotCompatible"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             buildCommand
@@ -606,18 +616,15 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/51361")]
-        [InlineData("net5.0", true)]
-        [InlineData("net6.0", true)]
-        [InlineData("net7.0", false)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [Ignore("https://github.com/dotnet/sdk/issues/51361")]
+        [DataRow("net5.0", true)]
+        [DataRow("net6.0", true)]
+        [DataRow("net7.0", false)]
         public void PublishAot_fails_for_unsupported_target_framework(string targetFramework, bool shouldFail)
         {
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                // OSX wasn't supported before net8
-                return;
-            }
-
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = new TestProject()
@@ -626,7 +633,7 @@ namespace Microsoft.NET.Publish.Tests
                 TargetFrameworks = targetFramework
             };
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             var result = publishCommand.Execute($"/p:RuntimeIdentifier={rid}", "/p:SelfContained=true");
@@ -639,19 +646,20 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.8.0")]
-        [InlineData("netstandard2.0", true)]
-        [InlineData("net6.0", true)]
-        [InlineData("net7.0", false)]
-        [InlineData("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
-        [InlineData("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
-        [InlineData("netstandard2.0;net8.0", false)] // net8.0 is supported for AOT and targeting.
-        [InlineData("netstandard2.0;net9.0", true)] // Net9.0 is supported for AOT, but leaves a "gap" for the supported net8.0 TFMs.
-        [InlineData("alias-ns2", true)]
-        [InlineData("alias-n6", true)]
-        [InlineData("alias-n7", false)]
-        [InlineData("alias-n7;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
-        [InlineData("alias-ns2;alias-n7", true)] // This is correctly multi-targeted, but the logic can't detect this due to the alias so it still warns.
+        [TestMethod]
+        [RequiresMSBuildVersion("17.8.0")]
+        [DataRow("netstandard2.0", true)]
+        [DataRow("net6.0", true)]
+        [DataRow("net7.0", false)]
+        [DataRow("netstandard2.0;net5.0", true)] // None of these TFMs are supported for AOT
+        [DataRow("netstandard2.0;net7.0", false)] // Net7.0 is the min TFM supported for AOT and targeting.
+        [DataRow("netstandard2.0;net8.0", false)] // net8.0 is supported for AOT and targeting.
+        [DataRow("netstandard2.0;net9.0", true)] // Net9.0 is supported for AOT, but leaves a "gap" for the supported net8.0 TFMs.
+        [DataRow("alias-ns2", true)]
+        [DataRow("alias-n6", true)]
+        [DataRow("alias-n7", false)]
+        [DataRow("alias-n7;alias-n8", false)] // If all TFMs are supported, there's no warning even though the project uses aliases.
+        [DataRow("alias-ns2;alias-n7", true)] // This is correctly multi-targeted, but the logic can't detect this due to the alias so it still warns.
         public void IsAotCompatible_warns_when_expected_for_not_correctly_multitarget_libraries(string targetFrameworks, bool shouldWarn)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFrameworks);
@@ -663,7 +671,7 @@ namespace Microsoft.NET.Publish.Tests
             };
             testProject.AdditionalProperties["IsAotCompatible"] = "true";
             testProject.AdditionalProperties["CheckEolTargetFramework"] = "false"; // Silence warning about targeting EOL TFMs
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFrameworks)
                 .WithProjectChanges(AddTargetFrameworkAliases);
 
             var buildCommand = new BuildCommand(testAsset);
@@ -680,8 +688,9 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void Requires_analyzers_produce_warnings_without_PublishAot_being_set(string targetFramework)
         {
             var projectName = "WarningAppWithRequiresAnalyzers";
@@ -694,7 +703,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -706,8 +715,10 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901", Skip = "https://github.com/dotnet/sdk/issues/51361")]
-        [MemberData(nameof(Net7Plus), MemberType = typeof(PublishTestUtils))]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [Ignore("https://github.com/dotnet/sdk/issues/51361")]
+        [DynamicData(nameof(Net7Plus), typeof(PublishTestUtils))]
         public void NativeAot_compiler_runs_when_PublishAot_is_enabled(string targetFramework)
         {
             if (targetFramework == "net7.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -725,7 +736,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -751,8 +762,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello world");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void Warnings_are_generated_in_build_with_analyzers_enabled(string targetFramework)
         {
 
@@ -766,7 +778,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "true";
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "true";
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -778,8 +790,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void Warnings_are_not_generated_in_build_with_analyzers_disabled(string targetFramework)
         {
 
@@ -792,7 +805,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["EnableAotAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableTrimAnalyzer"] = "false";
             testProject.AdditionalProperties["EnableSingleFileAnalyzer"] = "false";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -804,8 +817,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("warning IL3002");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void Warnings_are_generated_even_with_analyzers_disabled(string targetFramework)
         {
 
@@ -822,7 +836,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SuppressTrimAnalysisWarnings"] = "false";
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -846,8 +860,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("Hello world");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotStaticLib_only_runs_when_switch_is_enabled(string targetFramework)
         {
             var projectName = "AotStaticLibraryPublish";
@@ -859,7 +874,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["SelfContained"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Static";
             testProject.SelfContained = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -870,16 +885,17 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var staticLibSuffix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ".lib" : ".a";
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{staticLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{staticLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
             IsNativeImage(publishedDll).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData("Static")]
-        [InlineData("Shared")]
+        [TestMethod]
+        [DataRow("Static")]
+        [DataRow("Shared")]
         public void NativeAotLib_warns_when_eventpipe_is_enabled(string libType)
         {
             var projectName = "AotStaticLibraryPublishWithEventPipe";
@@ -891,7 +907,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["NativeLib"] = libType;
             testProject.AdditionalProperties["SelfContained"] = "true";
             testProject.AdditionalProperties["EventSourceSupport"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -900,8 +916,9 @@ namespace Microsoft.NET.Publish.Tests
                 .And.HaveStdOutContaining("EventSource is not supported or recommended when compiling to a native library");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void NativeAotSharedLib_only_runs_when_switch_is_enabled(string targetFramework)
         {
             var projectName = "AotSharedLibraryPublish";
@@ -912,7 +929,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.AdditionalProperties["UseCurrentRuntimeIdentifier"] = "true";
             testProject.AdditionalProperties["NativeLib"] = "Shared";
             testProject.AdditionalProperties["SelfContained"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
@@ -923,21 +940,23 @@ namespace Microsoft.NET.Publish.Tests
             var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
             var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: targetFramework, runtimeIdentifier: rid).FullName;
             var sharedLibSuffix = GetSharedLibSuffix();
-            var publishedDll = Path.Combine(publishDirectory, $"{projectName}{sharedLibSuffix}");
+            var nativeLibPrefix = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "" : "lib";
+            var publishedDll = Path.Combine(publishDirectory, $"{nativeLibPrefix}{projectName}{sharedLibSuffix}");
 
             // The lib exist and should be native
             File.Exists(publishedDll).Should().BeTrue();
             IsNativeImage(publishedDll).Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_with_implicit_rid_with_NativeAotApp(string targetFramework)
         {
             var projectName = "ImplicitRidNativeAotApp";
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var publishCommand = new DotnetPublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
             publishCommand
@@ -946,14 +965,15 @@ namespace Microsoft.NET.Publish.Tests
                 .Pass();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_with_dynamiccodesupport_false_when_publishaot_true(string targetFramework)
         {
             var projectName = "DynamicCodeSupportFalseApp";
             var testProject = CreateHelloWorldTestProject(targetFramework, projectName, true);
             testProject.AdditionalProperties["PublishAot"] = "true";
-            var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: targetFramework);
 
             var buildCommand = new BuildCommand(testAsset);
             buildCommand
@@ -971,13 +991,14 @@ namespace Microsoft.NET.Publish.Tests
                 .Should().BeFalse();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_accepts_option_to_show_all_warnings(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource();
 
@@ -991,13 +1012,14 @@ namespace Microsoft.NET.Publish.Tests
                 .And.NotHaveStdOutContaining("IL2104");
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData(ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        [DataRow(ToolsetInfo.CurrentTargetFramework)]
         public void It_can_show_single_warning_per_assembly(string targetFramework)
         {
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
             var testAssetName = "TrimmedAppWithReferences";
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(testAssetName, identifier: targetFramework)
                 .WithSource()
                 .WithProjectChanges(project =>
@@ -1031,13 +1053,13 @@ namespace Microsoft.NET.Publish.Tests
             if (target == null)
             {
                 target = new XElement(ns + "Target",
-                    new XAttribute("BeforeTargets", "PrepareForILLink"),
+                    new XAttribute("AfterTargets", "ComputeResolvedFilesToPublishList"),
                     new XAttribute("Name", targetName));
                 project.Root.Add(target);
             }
 
             target.Add(new XElement(ns + "ItemGroup",
-                new XElement("ManagedAssemblyToLink",
+                new XElement("ResolvedFileToPublish",
                     new XAttribute("Condition", $"'%(FileName)' == '{assemblyName}'"),
                     new XAttribute(key, value))));
         }
@@ -1054,6 +1076,100 @@ namespace Microsoft.NET.Publish.Tests
                 .Where(i => i.metadata["TargetFramework"] == targetFramework)
                 .Select(i => i.metadata["ILCompilerPackVersion"])
                 .Single();
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("17.0.0.32901")]
+        public void NativeAot_app_publishes_with_app_and_package_satellite_assemblies()
+        {
+            var projectName = "NativeAotAppWithSatellites";
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, projectName, true);
+            testProject.RecordProperties("NETCoreSdkPortableRuntimeIdentifier");
+            testProject.AdditionalProperties["PublishAot"] = "true";
+            testProject.AdditionalProperties["SatelliteResourceLanguages"] = "fr;de";
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                testProject.AdditionalProperties["StripSymbols"] = "true";
+            }
+            testProject.PackageReferences.Add(new TestPackageReference("System.Spatial", "5.8.3"));
+
+            // Override Program.cs to look up French resource strings at runtime
+            // from both app-authored and package-provided satellite assemblies
+            testProject.SourceFiles[$"{projectName}.cs"] = $@"
+using System;
+using System.Globalization;
+using System.Resources;
+class Test
+{{
+    static int Main()
+    {{
+        // Verify app-authored satellite resources resolve in French
+        var appRm = new ResourceManager(""{projectName}.Strings"", typeof(Test).Assembly);
+        var appValue = appRm.GetString(""HelloWorld"", CultureInfo.GetCultureInfo(""fr""));
+        Console.WriteLine(appValue);
+        if (appValue != ""Bonjour"") return 1;
+
+        // Verify package (System.Spatial) satellite resources resolve in French
+        var spatialAsm = typeof(System.Spatial.GeographyPoint).Assembly;
+        var pkgRm = new ResourceManager(""System.Spatial"", spatialAsm);
+        var pkgValue = pkgRm.GetString(""Validator_SridMismatch"", CultureInfo.GetCultureInfo(""fr""));
+        if (string.IsNullOrEmpty(pkgValue)) return 2;
+        Console.WriteLine(""PackageSatelliteOK"");
+        return 0;
+    }}
+}}";
+
+            // Neutral-culture fallback resource
+            testProject.EmbeddedResources["Strings.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<root>
+  <resheader name=""resmimetype""><value>text/microsoft-resx</value></resheader>
+  <resheader name=""version""><value>2.0</value></resheader>
+  <resheader name=""reader""><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name=""writer""><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name=""HelloWorld"" xml:space=""preserve""><value>Hello</value></data>
+</root>";
+
+            // French satellite resource
+            testProject.EmbeddedResources["Strings.fr.resx"] = @"<?xml version=""1.0"" encoding=""utf-8""?>
+<root>
+  <resheader name=""resmimetype""><value>text/microsoft-resx</value></resheader>
+  <resheader name=""version""><value>2.0</value></resheader>
+  <resheader name=""reader""><value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <resheader name=""writer""><value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value></resheader>
+  <data name=""HelloWorld"" xml:space=""preserve""><value>Bonjour</value></data>
+</root>";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(Log, Path.Combine(testAsset.TestRoot, testProject.Name));
+            publishCommand
+                .Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Should().Pass();
+
+            var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
+            var rid = buildProperties["NETCoreSdkPortableRuntimeIdentifier"];
+            var publishDirectory = publishCommand.GetOutputDirectory(targetFramework: ToolsetInfo.CurrentTargetFramework, runtimeIdentifier: rid).FullName;
+
+            // NativeAOT embeds satellite assemblies into the native binary, so they
+            // should NOT appear as separate files in the publish directory (dotnet/runtime#124191).
+            File.Exists(Path.Combine(publishDirectory, "fr", $"{projectName}.resources.dll")).Should().BeFalse("fr app satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "fr", "System.Spatial.resources.dll")).Should().BeFalse("fr package satellite should be embedded, not published separately");
+            File.Exists(Path.Combine(publishDirectory, "de", "System.Spatial.resources.dll")).Should().BeFalse("de package satellite should be embedded, not published separately");
+
+            // Satellite for a non-selected culture (ja) should be absent
+            File.Exists(Path.Combine(publishDirectory, "ja", "System.Spatial.resources.dll")).Should().BeFalse("ja System.Spatial satellite should be filtered out");
+
+            // Published output should be a native image
+            var publishedExe = Path.Combine(publishDirectory, $"{projectName}{Constants.ExeSuffix}");
+            File.Exists(publishedExe).Should().BeTrue();
+            IsNativeImage(publishedExe).Should().BeTrue();
+
+            // Running the native image should resolve French resources correctly
+            // from both app-authored and package-provided satellites
+            new RunExeCommand(Log, publishedExe)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Bonjour")
+                .And.HaveStdOutContaining("PackageSatelliteOK");
         }
 
         private void CheckIlcVersions(TestAsset testAsset, string targetFramework, string rid, string expectedVersion, bool useRuntimePackLayout)
