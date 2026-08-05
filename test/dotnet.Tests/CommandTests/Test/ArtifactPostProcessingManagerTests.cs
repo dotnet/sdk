@@ -289,6 +289,26 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
+    public void GetOutputDirectory_WithArtifactsOutput_UsesArtifactsResultsDirectory()
+    {
+        string artifactsDirectory = Path.Combine(Path.GetTempPath(), "artifacts");
+        TestModule module = CreateModule() with
+        {
+            UseArtifactsOutput = true,
+            ArtifactsPath = artifactsDirectory,
+        };
+        ArtifactPostProcessingJob job = CreateJob(
+            module,
+            CreateArtifact(Path.Combine(artifactsDirectory, "test-results", "project", "result.trx"), "microsoft.testing.trx"));
+
+        string outputDirectory = ArtifactPostProcessingManager.GetOutputDirectory(
+            CreateBuildOptions(),
+            job);
+
+        outputDirectory.Should().Be(Path.Combine(artifactsDirectory, "test-results"));
+    }
+
+    [TestMethod]
     public void GetOutputDirectory_WithoutResultsDirectory_PrefersDirectoryOfElectedApplicationInput()
     {
         // 'aaa' sorts before 'zzz', so an implementation that just takes the first input in path
@@ -344,8 +364,16 @@ public class ArtifactPostProcessingManagerTests
     }
 
     private static ArtifactPostProcessingJob CreateJob(params ArtifactPostProcessingArtifact[] artifacts)
+        => CreateJob(CreateModule(), artifacts);
+
+    private static ArtifactPostProcessingJob CreateJob(TestModule module, params ArtifactPostProcessingArtifact[] artifacts)
     {
-        ArtifactPostProcessingApplication application = CreateApplication();
+        var application = new ArtifactPostProcessingApplication(
+            module,
+            "net10.0",
+            "x64",
+            new HashSet<string>(StringComparer.Ordinal) { "microsoft.testing.trx", "microsoft.codecoverage" },
+            new HashSet<string>(StringComparer.Ordinal));
         return new ArtifactPostProcessingJob(
             application,
             [new ArtifactPostProcessingGroup("microsoft.testing.trx", IsKind: true, artifacts, [application])]);

@@ -261,6 +261,15 @@ internal sealed class ArtifactPostProcessingManager
             return Path.GetFullPath(resultsDirectory);
         }
 
+        if (job.Application.Module.UseArtifactsOutput
+            && TestResultsDirectoryResolver.GetResultsDirectoryRoot(
+                buildOptions.PathOptions,
+                job.Application.Module,
+                Directory.GetCurrentDirectory()) is { } artifactsResultsDirectory)
+        {
+            return Path.GetFullPath(artifactsResultsDirectory);
+        }
+
         ArtifactPostProcessingArtifact[] inputs =
         [
             .. job.Groups

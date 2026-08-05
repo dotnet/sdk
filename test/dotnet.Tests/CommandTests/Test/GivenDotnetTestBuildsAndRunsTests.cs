@@ -364,6 +364,34 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void RunMultipleTestProjectsWithArtifactsOutput_ShouldKeepReportsUnderArtifacts()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Combine(testInstance.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <UseArtifactsOutput>true</UseArtifactsOutput>
+                  </PropertyGroup>
+                </Project>
+                """);
+            string resultsDirectory = Path.Combine(testInstance.Path, "artifacts", "test-results");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2, "artifacts output defaults to a collision-safe per-module layout");
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["TestProjectA", "TestProjectB"]);
+            Directory.Exists(Path.Combine(testInstance.Path, "TestResults")).Should().BeFalse();
+        }
+
+        [TestMethod]
         public void RunTestProjectsWithTheSameNameAndPerModuleLayout_ShouldDisambiguateAndKeepBothReports()
         {
             // Two distinct projects both named 'Tests' would share a project folder, so the layout

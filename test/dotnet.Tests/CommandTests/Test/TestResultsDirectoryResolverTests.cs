@@ -53,6 +53,49 @@ public class TestResultsDirectoryResolverTests
     }
 
     [TestMethod]
+    public void ResolveUsesArtifactsOutputRootAndPerModuleLayoutByDefault()
+    {
+        string artifactsPath = Path.Combine(WorkingDirectory, "artifacts");
+        TestModule module = CreateModule(
+            "ProjectA",
+            useArtifactsOutput: true,
+            artifactsPath: artifactsPath,
+            artifactsProjectName: "CustomProject",
+            artifactsPivots: "debug_net10.0");
+        TestResultsDirectoryResolver resolver = CreateResolver(null, ResultsDirectoryLayout.Flat, module);
+
+        resolver.Resolve(module).Should().Be(
+            Path.Combine(artifactsPath, "test-results", "CustomProject", "debug_net10.0"));
+    }
+
+    [TestMethod]
+    public void ResolveKeepsConfiguredResultsDirectoryFlatInArtifactsOutputMode()
+    {
+        string resultsDirectory = Path.Combine(WorkingDirectory, "custom-results");
+        TestModule module = CreateModule(
+            "ProjectA",
+            useArtifactsOutput: true,
+            artifactsPath: Path.Combine(WorkingDirectory, "artifacts"));
+        TestResultsDirectoryResolver resolver = CreateResolver(resultsDirectory, ResultsDirectoryLayout.Flat, module);
+
+        resolver.Resolve(module).Should().Be(resultsDirectory);
+    }
+
+    [TestMethod]
+    public void ResolveHonorsExplicitFlatLayoutInArtifactsOutputMode()
+    {
+        string artifactsPath = Path.Combine(WorkingDirectory, "artifacts");
+        TestModule module = CreateModule("ProjectA", useArtifactsOutput: true, artifactsPath: artifactsPath);
+        TestResultsDirectoryResolver resolver = CreateResolver(
+            null,
+            ResultsDirectoryLayout.Flat,
+            layoutSpecified: true,
+            module);
+
+        resolver.Resolve(module).Should().Be(Path.Combine(artifactsPath, "test-results"));
+    }
+
+    [TestMethod]
     public void ResolveNestsTargetFrameworksOfTheSameProjectUnderOneProjectDirectory()
     {
         TestModule net10 = CreateModule("ProjectA");
@@ -169,10 +212,32 @@ public class TestResultsDirectoryResolverTests
 
     private static string WorkingDirectory => Path.GetFullPath("repo");
 
-    private static TestResultsDirectoryResolver CreateResolver(string? resultsDirectory, ResultsDirectoryLayout layout, params TestModule[] modules)
-        => CreateResolver(resultsDirectory, layout, WorkingDirectory, modules);
+    private static TestResultsDirectoryResolver CreateResolver(
+        string? resultsDirectory,
+        ResultsDirectoryLayout layout,
+        params TestModule[] modules)
+        => CreateResolver(resultsDirectory, layout, WorkingDirectory, layoutSpecified: false, modules);
 
-    private static TestResultsDirectoryResolver CreateResolver(string? resultsDirectory, ResultsDirectoryLayout layout, string workingDirectory, params TestModule[] modules)
+    private static TestResultsDirectoryResolver CreateResolver(
+        string? resultsDirectory,
+        ResultsDirectoryLayout layout,
+        bool layoutSpecified,
+        params TestModule[] modules)
+        => CreateResolver(resultsDirectory, layout, WorkingDirectory, layoutSpecified, modules);
+
+    private static TestResultsDirectoryResolver CreateResolver(
+        string? resultsDirectory,
+        ResultsDirectoryLayout layout,
+        string workingDirectory,
+        params TestModule[] modules)
+        => CreateResolver(resultsDirectory, layout, workingDirectory, layoutSpecified: false, modules);
+
+    private static TestResultsDirectoryResolver CreateResolver(
+        string? resultsDirectory,
+        ResultsDirectoryLayout layout,
+        string workingDirectory,
+        bool layoutSpecified,
+        params TestModule[] modules)
         => TestResultsDirectoryResolver.Create(
             new PathOptions(
                 ProjectOrSolutionPath: null,
@@ -181,11 +246,19 @@ public class TestResultsDirectoryResolverTests
                 ResultsDirectoryPath: resultsDirectory,
                 ResultsDirectoryLayout: layout,
                 ConfigFilePath: null,
-                DiagnosticOutputDirectoryPath: null),
+                DiagnosticOutputDirectoryPath: null,
+                ResultsDirectoryLayoutSpecified: layoutSpecified),
             modules,
             workingDirectory);
 
-    private static TestModule CreateModule(string projectName = "ProjectA", string? parentDirectory = null, string runtimeIdentifier = "")
+    private static TestModule CreateModule(
+        string projectName = "ProjectA",
+        string? parentDirectory = null,
+        string runtimeIdentifier = "",
+        bool useArtifactsOutput = false,
+        string? artifactsPath = null,
+        string? artifactsProjectName = null,
+        string? artifactsPivots = null)
     {
         string projectDirectory = parentDirectory is null
             ? Path.Combine(WorkingDirectory, projectName)
@@ -206,6 +279,10 @@ public class TestResultsDirectoryResolverTests
             LaunchSettings: null,
             TargetPath: targetPath,
             DotnetRootArchVariableName: null,
-            EnvironmentVariables: ImmutableDictionary<string, string>.Empty);
+            EnvironmentVariables: ImmutableDictionary<string, string>.Empty,
+            UseArtifactsOutput: useArtifactsOutput,
+            ArtifactsPath: artifactsPath,
+            ArtifactsProjectName: artifactsProjectName,
+            ArtifactsPivots: artifactsPivots);
     }
 }

@@ -151,4 +151,8 @@ internal static class ProjectProperties
     internal const string BuildInParallel = "BuildInParallel";
     internal const string IsTraversal = "IsTraversal";
     internal const string ProjectReferenceItemName = "ProjectReference";
+    internal const string UseArtifactsOutput = "UseArtifactsOutput";
+    internal const string ArtifactsPath = "ArtifactsPath";
+    internal const string ArtifactsProjectName = "ArtifactsProjectName";
+    internal const string ArtifactsPivots = "ArtifactsPivots";
 }
