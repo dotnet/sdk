@@ -183,7 +183,7 @@ on:
               candidateIssues = response.data.items;
             }
 
-            // Fetch full details for each issue to get labels, assignees, sub-issues, and linked PRs
+            // Fetch full details for each issue to get labels, sub-issues, and linked PRs
             // Track integrity-filtered issues to emit a diagnostic summary
             const integrityFilteredIssues = [];
             const fetchIssueDetails = async (issue) => {
@@ -300,9 +300,14 @@ on:
             // Filter and score issues
             const scoredIssues = issuesWithDetails
               .filter(issue => {
-                // Exclude issues that already have assignees
-                if (issue.assignees && issue.assignees.length > 0) {
-                  core.info(`Skipping #${issue.number}: already has assignees`);
+                // Human assignees are ownership routing from triage, not evidence that
+                // implementation has started. Only a Copilot assignee indicates that an
+                // assignment was already dispatched but may not have produced a PR yet.
+                const copilotAssignees = issue.assignees?.filter(assignee =>
+                  assignee.login === 'copilot-swe-agent' || assignee.login?.includes('copilot')
+                ) || [];
+                if (copilotAssignees.length > 0) {
+                  core.info(`Skipping #${issue.number}: already assigned to Copilot`);
                   return false;
                 }
 
@@ -319,20 +324,10 @@ on:
                   return false;
                 }
 
-                // Exclude issues with closed PRs (treat as complete)
-                const closedPRs = issue.linkedPRs?.filter(pr => pr.state === 'CLOSED' || pr.state === 'MERGED') || [];
-                if (closedPRs.length > 0) {
-                  core.info(`Skipping #${issue.number}: has ${closedPRs.length} closed/merged PR(s) - treating as complete`);
-                  return false;
-                }
-
-                // Exclude issues with open PRs from Copilot coding agent
-                const openCopilotPRs = issue.linkedPRs?.filter(pr =>
-                  pr.state === 'OPEN' &&
-                  (pr.author === 'copilot-swe-agent' || pr.author?.includes('copilot'))
-                ) || [];
-                if (openCopilotPRs.length > 0) {
-                  core.info(`Skipping #${issue.number}: has ${openCopilotPRs.length} open PR(s) from Copilot - already being worked on`);
+                // Any linked PR means the issue is already being or has been worked on,
+                // regardless of the PR author or state.
+                if (issue.linkedPRs?.length > 0) {
+                  core.info(`Skipping #${issue.number}: has ${issue.linkedPRs.length} linked PR(s)`);
                   return false;
                 }
 
@@ -542,10 +537,10 @@ The issue search has already been performed in the pre-activation job with smart
 **Filtering Applied:**
 - ✅ Only open issues **with "cookie" label** (indicating approved work queue items from automated workflows)
 - ✅ Excluded issues with labels: wontfix, duplicate, invalid, question, discussion, needs-discussion, blocked, on-hold, waiting-for-feedback, needs-more-info, no-bot
-- ✅ Excluded issues that already have assignees
+- ✅ Allowed issues with human assignees (triage ownership routing does not mean implementation has started)
+- ✅ Excluded issues already assigned to Copilot
 - ✅ Excluded issues that have sub-issues (parent/organizing issues)
-- ✅ Excluded issues with merged PRs (treating those as complete)
-- ✅ Excluded issues with open PRs from Copilot coding agent (already being worked on)
+- ✅ Excluded issues with any linked PR, regardless of author or state
 - ✅ Prioritized issues with labels: documentation, bug, Area-Infrastructure, Test Debt, Known Build Error, Cost:S, good first issue, help wanted, enhancement, fit-n-finish, performance
 
 **Scoring System:**
@@ -618,7 +613,7 @@ For issues with the "task" or "plan" label, check if they are sub-issues linked 
 >
 > If security exclusion removes every candidate, still emit the retirement label mutations for each refused issue, then call `noop` explaining that the remaining issues were security-sensitive and left for engineers (e.g. `noop(message="🔒 Remaining candidates are security-sensitive; retired them to Area-Security and left them for engineers. No assignments this run.")`).
 
-From the prioritized and filtered list (issues WITHOUT Copilot assignments or open PRs, **and after applying the security gate above**):
+From the prioritized and filtered list (issues without Copilot assignments or linked PRs, **and after applying the security gate above**):
 - **Select up to three appropriate issues** to assign
 - **Use the priority scoring**: Issues are already sorted by score, so prefer higher-scored issues
 - **Topic Separation Required**: Issues MUST be completely separate in topic to avoid conflicts:
