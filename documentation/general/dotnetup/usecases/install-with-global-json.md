@@ -18,7 +18,7 @@ $ cat global.json
 $ dotnetup sdk install
 SDK 10.0.1xx will be installed since C:\src\myproject\global.json specifies that version.
 Downloading .NET SDK 10.0.102...  ████████████████████████ 100%
-Installed .NET SDK 10.0.102 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.102 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 These SDKs are installed into the 'dotnetup install root' and are available for use in your projects. `dotnetup` tracks which versions and channels are required by your projects and ensures that when you install or update new versions that none of your existing projects needs are broken.
@@ -52,7 +52,7 @@ $ cd ~/src/my-project
 $ dotnetup sdk install
 SDK 10.0.1xx will be installed since /home/you/src/my-project/global.json specifies that version.
 Downloading .NET SDK 10.0.102...  ████████████████████████ 100%
-Installed .NET SDK 10.0.102 to /home/you/.dotnet
+Installed .NET SDK 10.0.102 to /home/you/.local/share/dotnetup/dotnet
 ```
 
 ### Install an explicit channel alongside global.json
@@ -62,7 +62,7 @@ You can override the global.json by specifying a channel explicitly:
 ```
 $ dotnetup sdk install 9.0
 Downloading .NET SDK 9.0.304...  ████████████████████████ 100%
-Installed .NET SDK 9.0.304 to C:\Users\you\.dotnet
+Installed .NET SDK 9.0.304 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 ### Install and update global.json
@@ -81,7 +81,7 @@ $ cat global.json
 $ dotnetup sdk install --update-global-json
 SDK 10.0.1xx will be installed since C:\src\myproject\global.json specifies that version.
 Downloading .NET SDK 10.0.102...  ████████████████████████ 100%
-Installed .NET SDK 10.0.102 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.102 to C:\Users\you\AppData\Local\dotnetup\dotnet
 
 $ cat global.json
 {
@@ -100,8 +100,8 @@ You can install multiple SDK channels in a single command:
 $ dotnetup sdk install 9.0 10.0
 Downloading .NET SDK 9.0.304...  ████████████████████████ 100%
 Downloading .NET SDK 10.0.100... ████████████████████████ 100%
-Installed .NET SDK 9.0.304 to C:\Users\you\.dotnet
-Installed .NET SDK 10.0.100 to C:\Users\you\.dotnet
+Installed .NET SDK 9.0.304 to C:\Users\you\AppData\Local\dotnetup\dotnet
+Installed .NET SDK 10.0.100 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 ### Install when no global.json exists
@@ -111,7 +111,7 @@ When there's no `global.json` and no channel is specified, dotnetup defaults to 
 ```
 $ dotnetup sdk install
 Downloading .NET SDK 10.0.100...  ████████████████████████ 100%
-Installed .NET SDK 10.0.100 to C:\Users\you\.dotnet
+Installed .NET SDK 10.0.100 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 ## Viewing What's Tracked
@@ -123,7 +123,7 @@ $ dotnetup list
 
 Installations (managed by dotnetup):
 
-  C:\Users\you\.dotnet
+  C:\Users\you\AppData\Local\dotnetup\dotnet
 
     Tracked channels:
       SDK 10.0.1xx                        (source: C:\src\myproject\global.json)

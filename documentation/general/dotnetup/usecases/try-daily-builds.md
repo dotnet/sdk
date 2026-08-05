@@ -40,7 +40,7 @@ Daily builds are expressed as channels — the same mental model you already use
 $ dotnetup sdk install daily
 ⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.
 Downloading .NET SDK 11.0.100-preview.1.25310.1...  ████████████████████████ 100%
-Installed .NET SDK 11.0.100-preview.1.25310.1 to <dotnetup install root>\.dotnet
+Installed .NET SDK 11.0.100-preview.1.25310.1 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 ### Installing a daily runtime
@@ -49,7 +49,7 @@ Installed .NET SDK 11.0.100-preview.1.25310.1 to <dotnetup install root>\.dotnet
 $ dotnetup runtime install 10.0-daily
 ⚠ Daily builds are not code-signed. Only the SHA-512 hash is verified.
 Downloading .NET Runtime 10.0.0-preview.7.25351.1...  ████████████████████████ 100%
-Installed .NET Runtime 10.0.0-preview.7.25351.1 to <dotnetup install root>\.dotnet
+Installed .NET Runtime 10.0.0-preview.7.25351.1 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 ### Installing a specific pre-release version
@@ -59,7 +59,7 @@ If you know the exact version (e.g. from a GitHub issue or a colleague), you can
 ```
 $ dotnetup sdk install 10.0.100-preview.7.25351.1
 Downloading .NET SDK 10.0.100-preview.7.25351.1...  ████████████████████████ 100%
-Installed .NET SDK 10.0.100-preview.7.25351.1 to <dotnetup install root>\.dotnet
+Installed .NET SDK 10.0.100-preview.7.25351.1 to C:\Users\you\AppData\Local\dotnetup\dotnet
 ```
 
 When you provide a fully specified pre-release version that isn't in the official release manifest, dotnetup automatically falls back to the daily build feed.
@@ -106,7 +106,7 @@ $ dotnetup list
 
 Installations (managed by dotnetup):
 
-  C:\Users\you\.dotnet
+  C:\Users\you\AppData\Local\dotnetup\dotnet
 
     Tracked channels:
       SDK latest                          (source: explicit)
@@ -128,7 +128,7 @@ Daily channel installs support updates, just like any other tracked channel:
 ```
 $ dotnetup update
 Downloading .NET SDK 11.0.100-preview.1.25315.1... ████████████████████████ 100%
-Installed .NET SDK 11.0.100-preview.1.25315.1 to C:\Users\you\.dotnet
+Installed .NET SDK 11.0.100-preview.1.25315.1 to C:\Users\you\AppData\Local\dotnetup\dotnet
 SDK 10.0.100 is already up to date.
 ```
 
@@ -154,7 +154,7 @@ $ dotnetup sdk install
 SDK 11.0.100-preview.1.25310.1 will be installed since ~/src/myproject/global.json
 specifies that version.
 Downloading .NET SDK 11.0.100-preview.1.25310.1...  ████████████████████████ 100%
-Installed .NET SDK 11.0.100-preview.1.25310.1 to /home/you/.dotnet
+Installed .NET SDK 11.0.100-preview.1.25310.1 to /home/you/.local/share/dotnetup/dotnet
 ```
 
 ## Trust and Security

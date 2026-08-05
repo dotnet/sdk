@@ -40,7 +40,7 @@ When you run `dotnetup` for the first time (or run `dotnetup init` explicitly), 
 ```
 $ dotnetup
 ╭─────────────────────────────────────────────────╮
-│ dotnetup v0.1.3-dev                             │
+│ dotnetup v0.2.0-dev                             │
 │ .NET toolchain manager for user level installs. │
 ╰─────────────────────────────────────────────────╯
 
@@ -122,7 +122,7 @@ Accepting this migration downloads the same versions into the dotnetup-managed d
 
 ```
 Downloading .NET SDK 10.0.100...  ████████████████████████ 100%
-Installed .NET SDK 10.0.100 to <dotnet install root>\.dotnet
+Installed .NET SDK 10.0.100 to C:\Users\you\AppData\Local\dotnetup\dotnet
 
 Your shell profile has been updated. Restart your terminal or source your profile
 to use 'dotnet' directly.
@@ -147,7 +147,7 @@ $ dotnetup list
 
 Installations (managed by dotnetup):
 
-  C:\Users\you\.dotnet
+  C:\Users\you\AppData\Local\dotnetup\dotnet
 
     Tracked channels:
       SDK latest                          (source: explicit)

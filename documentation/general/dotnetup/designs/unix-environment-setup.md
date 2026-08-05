@@ -129,7 +129,7 @@ dotnetup print-env-script [--shell <shell>] [--dotnet-install-path <path>]
   - On Windows, defaults to PowerShell (`pwsh`)
 
 - `--dotnet-install-path` / `-d`: The path to the .NET installation directory
-  - Optional: If not specified, uses the default user install path (`~/.local/share/dotnet` on Unix)
+  - Optional: If not specified, uses the default user install path (`~/.local/share/dotnetup/dotnet` on Unix)
 
 ### Usage Examples
 
@@ -164,28 +164,28 @@ The command generates shell-specific scripts that:
 
 **Bash/Zsh Example:**
 ```bash
-# This bash script configures the environment for .NET installed at /home/user/.local/share/dotnet
+# This bash script configures the environment for .NET installed at /home/user/.local/share/dotnetup/dotnet
 
-export DOTNET_ROOT='/home/user/.local/share/dotnet'
-export PATH='/home/user/.local/share/dotnetup':'/home/user/.local/share/dotnet':$PATH
+export DOTNET_ROOT='/home/user/.local/share/dotnetup/dotnet'
+export PATH='/home/user/.dotnetup':'/home/user/.local/share/dotnetup/dotnet':$PATH
 hash -d dotnet 2>/dev/null
 hash -d dotnetup 2>/dev/null
 ```
 
 **Fish Example:**
 ```fish
-# This fish script configures the environment for .NET installed at /home/user/.local/share/dotnet
+# This fish script configures the environment for .NET installed at /home/user/.local/share/dotnetup/dotnet
 
-set -gx DOTNET_ROOT '/home/user/.local/share/dotnet'
-fish_add_path --global --move --path '/home/user/.local/share/dotnetup' '/home/user/.local/share/dotnet'
+set -gx DOTNET_ROOT '/home/user/.local/share/dotnetup/dotnet'
+fish_add_path --global --move --path '/home/user/.dotnetup' '/home/user/.local/share/dotnetup/dotnet'
 ```
 
 **PowerShell Example:**
 ```powershell
-# This PowerShell script configures the environment for .NET installed at /home/user/.local/share/dotnet
+# This PowerShell script configures the environment for .NET installed at /home/user/.local/share/dotnetup/dotnet
 
-$env:DOTNET_ROOT = '/home/user/.local/share/dotnet'
-$env:PATH = '/home/user/.local/share/dotnetup' + [IO.Path]::PathSeparator + '/home/user/.local/share/dotnet' + [IO.Path]::PathSeparator + $env:PATH
+$env:DOTNET_ROOT = '/home/user/.local/share/dotnetup/dotnet'
+$env:PATH = '/home/user/.dotnetup' + [IO.Path]::PathSeparator + '/home/user/.local/share/dotnetup/dotnet' + [IO.Path]::PathSeparator + $env:PATH
 ```
 
 ### Shell Detection
