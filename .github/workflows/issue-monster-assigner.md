@@ -3,6 +3,10 @@ emoji: "👾"
 name: Issue Monster Assigner
 description: Assigns one issue to Copilot using an orchestrator-selected base branch
 on:
+  # pat_pool import requires a `pre_activation` job; an empty on.permissions
+  # forces gh-aw to generate a no-op pre_activation job for this dispatch-only
+  # workflow. See shared/pat_pool.README.md "Known Issues".
+  permissions: {}
   workflow_dispatch:
     inputs:
       issue_number:
@@ -22,10 +26,24 @@ sandbox:
   agent:
     sudo: false
 
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
 engine:
   id: copilot
+  env:
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
-environment: issue-monster
+environment: copilot-pat-pool
+
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
 
 timeout-minutes: 10
 
