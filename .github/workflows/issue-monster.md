@@ -473,7 +473,7 @@ safe-outputs:
   threat-detection:
     engine:
       id: copilot
-      model: claude-sonnet-4.6
+      model: gpt-5.6-luna
   dispatch-workflow:
     max: 3
     workflows: [issue-monster-assigner]
