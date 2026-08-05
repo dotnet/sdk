@@ -74,21 +74,24 @@ class Entry:
     local_path: str
     notes: str
     sources: list[Source]
-    area_labels: list[str]
+    area_labels: object
 
     @classmethod
-    def from_dict(cls, d: dict[str, Any], default_area_labels: list[str]) -> "Entry":
+    def from_dict(cls, d: dict[str, Any], default_area_labels: object) -> "Entry":
+        area_labels = d.get("area_labels", default_area_labels)
         return cls(
             id=d["id"],
             local_path=d["local_path"],
             notes=d.get("notes", ""),
             sources=[Source.from_dict(s) for s in d["sources"]],
-            area_labels=list(d.get("area_labels", default_area_labels)),
+            area_labels=area_labels.copy() if isinstance(area_labels, list) else area_labels,
         )
 
     @property
     def issue_labels(self) -> list[str]:
         """Labels applied to this entry's drift issues, sync label first."""
+        if not isinstance(self.area_labels, list):
+            raise ValueError(f"{self.id}: area_labels must be a list.")
         return [ISSUE_LABEL, *self.area_labels]
 
 
@@ -119,9 +122,11 @@ def validate(entries: list[Entry]) -> int:
         if not entry.sources:
             errors.append(f"{entry.id}: must declare at least one source.")
 
-        if not all(isinstance(label, str) and label.strip() for label in entry.area_labels):
+        if not isinstance(entry.area_labels, list):
+            errors.append(f"{entry.id}: area_labels must be a list.")
+        elif not all(isinstance(label, str) and label.strip() for label in entry.area_labels):
             errors.append(f"{entry.id}: area_labels must contain only non-empty strings.")
-        if ISSUE_LABEL in entry.area_labels:
+        elif ISSUE_LABEL in entry.area_labels:
             errors.append(f"{entry.id}: area_labels must not repeat '{ISSUE_LABEL}'.")
 
         for index, source in enumerate(entry.sources):
@@ -419,7 +424,7 @@ def find_existing_issue(marker: str) -> dict[str, Any] | None:
     return None
 
 
-def ensure_label(entries: list[Entry]) -> None:
+def ensure_labels(entries: list[Entry]) -> bool:
     """Ensure the labels applied to drift issues exist.
 
     The sync label is owned by this workflow, so it is force-created (idempotent
@@ -427,15 +432,43 @@ def ensure_label(entries: list[Entry]) -> None:
     repo's regular triage taxonomy, so they are only created when missing and
     never overwritten.
     """
-    _gh([
+    rc, _, err = _gh([
         "label", "create", ISSUE_LABEL,
         "--repo", ISSUE_REPO,
         "--description", "Drift detected between a vendored source file and its upstream copy",
         "--color", "fbca04",
         "--force",
     ])
-    for label in sorted({label for entry in entries for label in entry.area_labels}):
-        _gh(["label", "create", label, "--repo", ISSUE_REPO])
+    if rc != 0:
+        print(f"Failed to ensure label '{ISSUE_LABEL}': {err}", file=sys.stderr)
+        return False
+
+    rc, out, err = _gh([
+        "label", "list",
+        "--repo", ISSUE_REPO,
+        "--limit", "1000",
+        "--json", "name",
+    ])
+    if rc != 0:
+        print(f"Failed to list labels: {err}", file=sys.stderr)
+        return False
+    try:
+        existing_labels = {item["name"] for item in json.loads(out)}
+    except (json.JSONDecodeError, KeyError, TypeError):
+        print("Failed to parse labels returned by gh.", file=sys.stderr)
+        return False
+
+    area_labels = {
+        label
+        for entry in entries
+        for label in entry.issue_labels[1:]
+    }
+    for label in sorted(area_labels - existing_labels):
+        rc, _, err = _gh(["label", "create", label, "--repo", ISSUE_REPO])
+        if rc != 0:
+            print(f"Failed to create area label '{label}': {err}", file=sys.stderr)
+            return False
+    return True
 
 
 _STATUS_TITLES = {
@@ -530,8 +563,8 @@ def cmd_check(args: argparse.Namespace) -> int:
     if validate(entries) != 0:
         return 1
 
-    if not args.dry_run:
-        ensure_label(entries)
+    if not args.dry_run and not ensure_labels(entries):
+        return 1
 
     drift_count = 0
     error_count = 0
