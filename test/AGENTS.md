@@ -32,6 +32,27 @@ Guidance for changes under `test/`.
 - **Don't raise parallelism.** MSTest is repo-defaulted to `None` in
   `test/Directory.Build.props` because of concurrency flakiness; a few projects opt
   into `ClassLevel`. Cranking it up causes Helix over-subscription/timeouts.
+- **In parallelized projects, prefer `[ResourceLock]` over `[DoNotParallelize]`.** In the
+  projects that do opt in (`Microsoft.NET.Build.Tests`, `dotnet-watch.Tests`,
+  `Microsoft.NET.Build.Containers.UnitTests`), MSTest's parallel-safety analyzers
+  (MSTEST0073–MSTEST0077) are active, and `MSTestAnalysisMode=Recommended` plus
+  `TreatWarningsAsErrors` makes them build errors. Fix them in this order:
+  1. **Eliminate the shared state** — pass an environment variable to the child process
+     via `TestCommand.WithEnvironmentVariable(...)` instead of
+     `Environment.SetEnvironmentVariable`, and give each test its own scratch directory
+     with a distinct `identifier:` on `TestAssetsManager`.
+  2. **Declare `[ResourceLock(...)]`** on the specific tests that must serialize, and
+     restore the previous value in a `finally`. A lock serializes only against tests
+     declaring the same key. `WellKnownResources` exposes `EnvironmentVariables`,
+     `CurrentDirectory` and `Console` as `const string`s (not `[Flags]`), and the
+     attribute takes a single resource, so stack it when a test needs several:
+     ```csharp
+     [ResourceLock(WellKnownResources.EnvironmentVariables)]
+     [ResourceLock(WellKnownResources.CurrentDirectory)]
+     ```
+  3. **`[DoNotParallelize]`** only when the code under test also shares state a lock cannot
+     cover (a process-wide static cache, for example) — it defers the whole class to a
+     serial tail. Say in a comment why a lock is insufficient.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
