@@ -34,7 +34,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                     switch (fixCase)
                     {
                         case DefineAccessorsForAttributeArgumentsAnalyzer.AddAccessorCase:
-                            SyntaxNode parameter = generator.GetDeclaration(node, DeclarationKind.Parameter);
+                            SyntaxNode? parameter = generator.GetDeclaration(node, DeclarationKind.Parameter);
                             if (parameter != null)
                             {
                                 title = MicrosoftCodeQualityAnalyzersResources.CreatePropertyAccessorForParameter;
@@ -47,7 +47,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             return;
 
                         case DefineAccessorsForAttributeArgumentsAnalyzer.MakePublicCase:
-                            SyntaxNode property = generator.GetDeclaration(node, DeclarationKind.Property);
+                            SyntaxNode? property = generator.GetDeclaration(node, DeclarationKind.Property);
                             if (property != null)
                             {
                                 title = MicrosoftCodeQualityAnalyzersResources.MakeGetterPublic;
@@ -101,7 +101,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                                                                                                                       editor.Generator.TypeExpression(parameterSymbol.Type),
                                                                                                                       Accessibility.Public,
                                                                                                                       DeclarationModifiers.ReadOnly);
-                                                               newProperty = editor.Generator.WithGetAccessorStatements(newProperty, null);
                                                                editor.AddMember(typeDeclaration, newProperty);
                                                            },
                                                            cancellationToken).ConfigureAwait(false);
@@ -134,7 +133,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
                 // Having just made the property public, if it has a setter with no Accessibility set, then we've just made the setter public.
                 // Instead restore the setter's original accessibility so that we don't fire a violation with the generated code.
-                SyntaxNode setter = editor.Generator.GetAccessor(property, DeclarationKind.SetAccessor);
+                SyntaxNode? setter = editor.Generator.GetAccessor(property, DeclarationKind.SetAccessor);
                 if (setter != null)
                 {
                     Accessibility setterAccessibility = editor.Generator.GetAccessibility(setter);
