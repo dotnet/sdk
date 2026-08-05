@@ -80,6 +80,10 @@ internal sealed class MSBuildHandler(BuildOptions buildOptions, MSBuildSession b
         return actionQueue.CompleteEnqueueAndWait();
     }
 
+    public IEnumerable<string?> GetTestApplicationWorkingDirectories()
+        => _testApplications.SelectMany(static group => group)
+            .Select(static module => module.RunProperties.WorkingDirectory);
+
     private static void LogProjectProperties(IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> moduleGroups)
     {
         if (!Logger.TraceEnabled)

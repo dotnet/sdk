@@ -157,6 +157,21 @@
         <target state="translated">Die Zielruntime für die Bereinigung.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Aktiviert die Erfassung von Absturzabbildern bei einer erwarteten und einer unerwarteten Beendigung des Testhosts.</target>
@@ -242,6 +257,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 Der Timeoutwert wird im folgenden Format angegeben: 1.5h. / 90m / 5400s / 5400000ms. Wenn keine Einheit verwendet wird (z. B. 5400000), wird davon ausgegangen, dass der Wert in Millisekunden angegeben ist.
 Wenn dies zusammen mit datengesteuerten Tests verwendet wird, hängt das Timeoutverhalten vom verwendeten Testadapter ab. Für xUnit, NUnit und MSTest 2.2.4+ wird das Timeout nach jedem Testfall erneuert,
 Für MSTest vor 2.2.4 wird das Timeout für alle Testfälle verwendet.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">

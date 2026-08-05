@@ -703,9 +703,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdErr.Should().Contain("System.InvalidOperationException: A test session start event was received without a corresponding test session end.");
 
-                // TODO: It's much better to introduce a new kind of "summary" indicating
-                // that the test app exited with zero exit code before sending test session end event
-                result.StdOut.Should().Contain("Test run summary: Passed!")
+                result.StdOut.Should().Contain("Test run summary: Failed!")
                     .And.Contain("total: 1")
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")

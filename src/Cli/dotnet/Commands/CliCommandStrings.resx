@@ -456,6 +456,9 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdListDevicesAndListTestsMutuallyExclusive" xml:space="preserve">
     <value>The '--list-devices' and '--list-tests' options cannot be used together.</value>
   </data>
+  <data name="CmdListDevicesAndAffectedTestsMutuallyExclusive" xml:space="preserve">
+    <value>The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</value>
+  </data>
   <data name="CmdDeviceOptionsRequireProject" xml:space="preserve">
     <value>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</value>
   </data>
@@ -2777,5 +2780,20 @@ Proceed?</value>
   <data name="WorkloadSetVersionSpecifiedInGlobalJson" xml:space="preserve">
     <value> (Specified in '{0}')</value>
     <comment>{0} is the path to the global.json file.</comment>
+  </data>
+  <data name="CmdAffectedTestsFeatureDisabled" xml:space="preserve">
+    <value>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</value>
+  </data>
+  <data name="CmdAffectedTestsOptionsMutuallyExclusive" xml:space="preserve">
+    <value>The options '--collect-test-map' and '--affected-tests' cannot be used together.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRunModulesInParallel" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRequireMinimumTests" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</value>
+  </data>
+  <data name="CmdAffectedTestsResponseFilesMustBeConsistent" xml:space="preserve">
+    <value>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</value>
   </data>
 </root>

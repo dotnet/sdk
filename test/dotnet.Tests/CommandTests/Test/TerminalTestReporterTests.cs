@@ -199,6 +199,87 @@ public class TerminalTestReporterTests
         output.Should().NotContain("error:");
     }
 
+    [TestMethod]
+    public void TestExecutionCompleted_WithAllowedZeroTests_PrintsPassingAssemblyAndRunSummary()
+    {
+        var capturingConsole = new CapturingConsole();
+        var options = new TerminalTestReporterOptions
+        {
+            AllowZeroTests = true,
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = true,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+
+        const string assembly = "/repo/bin/Debug/net9.0/Affected.Tests.dll";
+        reporter.AssemblyRunStarted(assembly, "net9.0", "x64", executionId: "exec-empty", instanceId: "inst-empty");
+        reporter.AssemblyRunCompleted(
+            executionId: "exec-empty",
+            exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.ZeroTests,
+            outputData: null,
+            errorData: null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.Success);
+
+        string output = StripAnsi(capturingConsole.GetOutput());
+        output.Should().Contain("Test run summary: Passed!");
+        GetAssemblySummaryLine(output, assembly).Should().Contain("passed");
+        output.Should().NotContain("Zero tests ran");
+        output.Should().NotContain("Test run returned non-zero exit code");
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithAllowedZeroTestsAndAllSelectedTestsSkipped_RemainsZeroTests()
+    {
+        var capturingConsole = new CapturingConsole();
+        var options = new TerminalTestReporterOptions
+        {
+            AllowZeroTests = true,
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+            ShowAssembly = true,
+            ShowAssemblyStartAndComplete = false,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+
+        const string assembly = "/repo/bin/Debug/net9.0/Affected.Tests.dll";
+        reporter.AssemblyRunStarted(assembly, "net9.0", "x64", executionId: "exec-skipped", instanceId: "inst-skipped");
+        ReportTest(reporter, assembly, executionId: "exec-skipped", instanceId: "inst-skipped", testUid: "skipped-1", TestOutcome.Skipped);
+        reporter.AssemblyRunCompleted(
+            executionId: "exec-skipped",
+            exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.Success,
+            outputData: null,
+            errorData: null);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.Success);
+
+        StripAnsi(capturingConsole.GetOutput()).Should().Contain("Zero tests ran");
+    }
+
+    [TestMethod]
+    public void TestExecutionCompleted_WithAllowedZeroTestsAndUnexpectedNonZeroExit_PrintsFailedSummary()
+    {
+        var capturingConsole = new CapturingConsole();
+        var options = new TerminalTestReporterOptions
+        {
+            AllowZeroTests = true,
+            AnsiMode = AnsiMode.SimpleAnsi,
+            ShowProgress = false,
+        };
+
+        using var reporter = new TerminalTestReporter(capturingConsole, options);
+        reporter.TestExecutionStarted(DateTimeOffset.UtcNow, workerCount: 1, isDiscovery: false, isHelp: false, isRetry: false);
+        reporter.TestExecutionCompleted(
+            DateTimeOffset.UtcNow,
+            exitCode: Microsoft.DotNet.Cli.Commands.Test.ExitCode.GenericFailure);
+
+        StripAnsi(capturingConsole.GetOutput()).Should().Contain("Test run summary: Failed!");
+    }
+
     /// <summary>
     /// When an assembly's tests were retried, the per-assembly summary should append a
     /// "/r{N}" segment to the compact counts block so users can tell the final counts came from retries.

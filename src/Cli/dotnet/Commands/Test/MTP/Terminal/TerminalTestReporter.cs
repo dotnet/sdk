@@ -72,6 +72,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     public bool HasHandshakeFailure => _handshakeFailuresCount > 0;
     public int TotalTests => _assemblies.Values.Sum(a => a.TotalTests);
+    public int SkippedTests => _assemblies.Values.Sum(a => a.SkippedTests);
 
     // Specifying no timeout, the regex is linear. And the timeout does not measure the regex only, but measures also any
     // thread suspends, so the regex gets blamed incorrectly.
@@ -306,10 +307,15 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         bool notEnoughTests = totalTests < _options.MinimumExpectedTests;
-        bool allTestsWereSkipped = totalTests == 0 || totalTests == totalSkippedTests;
+        bool allTestsWereSkipped = (totalTests == 0 && !_options.AllowZeroTests)
+            || (totalTests > 0 && totalTests == totalSkippedTests);
         bool anyTestFailed = totalFailedTests > 0;
         bool anyAssemblyFailed = anyAssemblyUnsuccessful || HasHandshakeFailure;
-        bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || _wasCancelled;
+        bool unexpectedNonZeroExitCode = exitCode is not null
+            && exitCode != ExitCode.Success
+            && exitCode != ExitCode.ZeroTests
+            && exitCode != ExitCode.MinimumExpectedTestsPolicyViolation;
+        bool runFailed = anyAssemblyFailed || anyTestFailed || notEnoughTests || allTestsWereSkipped || unexpectedNonZeroExitCode || _wasCancelled;
         terminal.SetColor(runFailed ? TerminalColor.DarkRed : TerminalColor.DarkGreen);
 
         terminal.Append(CliCommandStrings.TestRunSummary);
@@ -323,7 +329,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
-        else if (anyTestFailed || HasHandshakeFailure)
+        else if (anyTestFailed || HasHandshakeFailure || unexpectedNonZeroExitCode)
         {
             // Handshake failures take precedence over "Zero tests ran": when an assembly failed to
             // hand-shake we want the headline to reflect that the run failed, not that no tests ran
@@ -676,12 +682,12 @@ internal sealed partial class TerminalTestReporter : IDisposable
     /// <summary>
     /// Print a build result summary to the output.
     /// </summary>
-    private static void AppendAssemblyResult(ITerminal terminal, TestProgressState state)
+    private void AppendAssemblyResult(ITerminal terminal, TestProgressState state)
     {
         if (state.ExitCode == ExitCode.ZeroTests)
         {
-            terminal.SetColor(TerminalColor.DarkRed);
-            terminal.Append(CliCommandStrings.ZeroTestsRan);
+            terminal.SetColor(_options.AllowZeroTests ? TerminalColor.DarkGreen : TerminalColor.DarkRed);
+            terminal.Append(_options.AllowZeroTests ? CliCommandStrings.PassedLowercase : CliCommandStrings.ZeroTestsRan);
             terminal.ResetColor();
         }
         else if (!state.Success)
@@ -1078,7 +1084,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             _terminalWithProgress.WriteToTerminal(terminal => AppendAssemblySummary(assemblyRun, terminal));
         }
 
-        if (exitCode == 0)
+        if (exitCode == 0 || (_options.AllowZeroTests && exitCode == ExitCode.ZeroTests))
         {
             // Report nothing, we don't want to report on success, because then we will also report on test-discovery etc.
             return;
@@ -1189,7 +1195,7 @@ internal sealed partial class TerminalTestReporter : IDisposable
             // escape char
             .Replace('\x001b', '\x241b');
 
-    private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
+    private void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {
         terminal.ResetColor();
 
