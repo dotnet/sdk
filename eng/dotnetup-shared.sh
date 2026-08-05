@@ -67,7 +67,7 @@ function AcquireDotnetup {
   # Prefer the repo-local script when available (e.g. on release/dnup).
   if [[ -f "$local_getter" ]]; then
     echo "Using local get-dotnetup.sh from '$local_getter'."
-    bash "$local_getter" --install-dir "$dotnetup_dir"
+    bash "$local_getter" --install-dir "$dotnetup_dir" --quality daily
     return $?
   fi
 
@@ -87,7 +87,7 @@ function AcquireDotnetup {
   fi
 
   local result=0
-  if [[ "$downloaded" != true ]] || ! bash "$getter_script" --install-dir "$dotnetup_dir"; then
+  if [[ "$downloaded" != true ]] || ! bash "$getter_script" --install-dir "$dotnetup_dir" --quality daily; then
     result=1
   fi
 
