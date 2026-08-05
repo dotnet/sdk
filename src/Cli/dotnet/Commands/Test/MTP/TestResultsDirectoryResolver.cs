@@ -22,7 +22,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal sealed class TestResultsDirectoryResolver
 {
     private const string DefaultResultsDirectoryName = "TestResults";
-    private const string ArtifactsResultsDirectoryName = "test-results";
+    private const string ArtifactsTestDirectoryName = "test";
     private const string UnknownComponent = "unknown";
     private const int MaxPathComponentLength = 255;
 
@@ -129,7 +129,7 @@ internal sealed class TestResultsDirectoryResolver
 
         if (module.UseArtifactsOutput && module.ArtifactsPath is { } artifactsPath)
         {
-            return Path.Combine(artifactsPath, ArtifactsResultsDirectoryName);
+            return Path.Combine(artifactsPath, ArtifactsTestDirectoryName);
         }
 
         return GetResultsDirectoryLayout(pathOptions, module) == ResultsDirectoryLayout.PerModule

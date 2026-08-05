@@ -377,7 +377,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                   </PropertyGroup>
                 </Project>
                 """);
-            string resultsDirectory = Path.Combine(testInstance.Path, "artifacts", "test-results");
+            string resultsDirectory = Path.Combine(testInstance.Path, "artifacts", "test");
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                 .WithWorkingDirectory(testInstance.Path)

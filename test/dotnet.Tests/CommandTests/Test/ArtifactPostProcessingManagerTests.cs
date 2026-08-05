@@ -289,7 +289,7 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
-    public void GetOutputDirectory_WithArtifactsOutput_UsesArtifactsResultsDirectory()
+    public void GetOutputDirectory_WithArtifactsOutput_UsesArtifactsTestDirectory()
     {
         string artifactsDirectory = Path.Combine(Path.GetTempPath(), "artifacts");
         TestModule module = CreateModule() with
@@ -299,13 +299,13 @@ public class ArtifactPostProcessingManagerTests
         };
         ArtifactPostProcessingJob job = CreateJob(
             module,
-            CreateArtifact(Path.Combine(artifactsDirectory, "test-results", "project", "result.trx"), "microsoft.testing.trx"));
+            CreateArtifact(Path.Combine(artifactsDirectory, "test", "project", "result.trx"), "microsoft.testing.trx"));
 
         string outputDirectory = ArtifactPostProcessingManager.GetOutputDirectory(
             CreateBuildOptions(),
             job);
 
-        outputDirectory.Should().Be(Path.Combine(artifactsDirectory, "test-results"));
+        outputDirectory.Should().Be(Path.Combine(artifactsDirectory, "test"));
     }
 
     [TestMethod]

@@ -65,7 +65,7 @@ public class TestResultsDirectoryResolverTests
         TestResultsDirectoryResolver resolver = CreateResolver(null, ResultsDirectoryLayout.Flat, module);
 
         resolver.Resolve(module).Should().Be(
-            Path.Combine(artifactsPath, "test-results", "CustomProject", "debug_net10.0"));
+            Path.Combine(artifactsPath, "test", "CustomProject", "debug_net10.0"));
     }
 
     [TestMethod]
@@ -92,7 +92,7 @@ public class TestResultsDirectoryResolverTests
             layoutSpecified: true,
             module);
 
-        resolver.Resolve(module).Should().Be(Path.Combine(artifactsPath, "test-results"));
+        resolver.Resolve(module).Should().Be(Path.Combine(artifactsPath, "test"));
     }
 
     [TestMethod]
