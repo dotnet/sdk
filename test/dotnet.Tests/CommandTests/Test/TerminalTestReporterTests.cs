@@ -422,13 +422,6 @@ public class TerminalTestReporterTests
     }
 
     /// <summary>
-    /// Finds the per-assembly summary line for the given assembly. Multiple lines may mention the
-    /// assembly (e.g. the "Running tests from ..." banner and the summary line). The summary line
-    /// is the one that contains the compact counts block written by <c>AppendAssemblyTestCounts</c>.
-    /// ANSI color escape sequences are stripped so callers can use plain-text assertions like
-    /// <c>Contain("[+3/x0/?1]")</c> (SimpleAnsi/SimpleTerminal mode uses the ASCII glyph set).
-    /// </summary>
-    /// <summary>
     /// A test that failed on its first attempt and passed on a retry is "flaky": the run summary reports it in the
     /// dedicated <c>flaky:</c> counter line, in the <c>retried:</c> accounting line, and by name in the
     /// "Flaky tests:" section. See dotnet/sdk#55472 / dotnet/sdk#55473.
@@ -689,6 +682,13 @@ public class TerminalTestReporterTests
     public void GetShowFlakyTests_ParsesForwardedOption(string[] arguments, bool expected)
         => MicrosoftTestingPlatformTestCommand.GetShowFlakyTests(arguments).Should().Be(expected);
 
+    /// <summary>
+    /// Finds the per-assembly summary line for the given assembly. Multiple lines may mention the
+    /// assembly (e.g. the "Running tests from ..." banner and the summary line). The summary line
+    /// is the one that contains the compact counts block written by <c>AppendAssemblyTestCounts</c>.
+    /// ANSI color escape sequences are stripped so callers can use plain-text assertions like
+    /// <c>Contain("[+3/x0/?1]")</c> (SimpleAnsi/SimpleTerminal mode uses the ASCII glyph set).
+    /// </summary>
     private static string GetAssemblySummaryLine(string output, string assemblyPath)
     {
         foreach (string line in output.Split('\n'))
