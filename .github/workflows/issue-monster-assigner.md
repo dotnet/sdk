@@ -36,6 +36,7 @@ safe-outputs:
   assign-to-agent:
     max: 1
     target: "*"
+    issue-intent: false
     pull-request-repo: "${{ github.repository }}"
     # Copilot branches from this ref and targets it when opening the pull request.
     base-branch: "${{ inputs.base_branch }}"
