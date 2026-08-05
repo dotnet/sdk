@@ -43,6 +43,10 @@ safe-outputs:
     base-branch: "${{ inputs.base_branch }}"
     allowed: [copilot]
     ignore-if-error: true
+  # Included for the permission experiment only; the prompt never invokes it.
+  add-reviewer:
+    max: 1
+    target: "*"
   # Pin the threat-detection engine to a capable model. The default detection
   # alias resolves to a small model that false-positively flags gh-aw's own
   # anti-injection preamble as prompt_injection, which under the warn policy
