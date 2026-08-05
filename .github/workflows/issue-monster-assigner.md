@@ -39,8 +39,11 @@ sandbox:
 # Pin the agent to an explicitly priced model. Under the PAT pool the agent runs
 # behind the AWF api-proxy, whose AI-credits pricing check rejects the implicit
 # `auto` model ("Model \"auto\" has no AI credits pricing") for pool PATs on
-# credits-based billing, skipping the assignment. A named model resolves this.
-model: gpt-5.6-luna
+# credits-based billing, skipping the assignment. Use the concrete model that
+# `auto` resolves to in the working orchestrator run (`auto` -> `claude-sonnet-5`):
+# it is a valid Copilot CLI model id (unlike `gpt-5.6-luna`, which the backend
+# rejects with 400) and is priced, so the assignment path completes.
+model: claude-sonnet-5
 
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
