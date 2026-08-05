@@ -80,12 +80,14 @@ safe-outputs:
     # Copilot assignment requires a user token rather than an installation token.
     # The alternative is to startup a copilot session ourselves rather than use assign_to_agent
     # Tentatively this now 'works' without a token but it just adds a UI dialogue to accept the request on the issue which defeats the point of auto-assignment
-    # Reuse the Copilot PAT pool secret so assignment uses a real user PAT (with Copilot
-    # access) rather than the installation token. Without a user PAT the assignment only adds
-    # a UI "accept" dialogue on the issue and never auto-triggers the coding agent.
-    # The PAT must have issues: write, pr: write, contents: write, actions: write, metadata: read
+    # This MUST be a dedicated repo-write PAT, NOT a Copilot PAT pool secret. The pool PATs
+    # (COPILOT_PAT_*) are Copilot model-API tokens and lack repo scopes: assigning with one
+    # returns HTTP 403 "Copilot assignment permission requirements not met" and the request
+    # silently falls back to a UI "accept" dialogue that never auto-triggers the coding agent.
+    # The PAT must have (fine-grained) metadata: read and issues/pull-requests/contents/actions: write,
+    # or (classic) the repo scope. Create it as the ISSUE_MONSTER_ASSIGNMENT_TOKEN secret.
     # https://github.github.com/gh-aw/reference/copilot-cloud-agent/#using-a-personal-access-token-pat
-    github-token: "${{ secrets.COPILOT_PAT_0 }}"
+    github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}"
     allowed: [copilot]
     ignore-if-error: true
   # Pin the threat-detection engine to a capable model. The default detection
