@@ -21,6 +21,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageDownload Include="Microsoft.TemplateSearch.TemplateDiscovery" Version="[$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)]" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
@@ -74,6 +75,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
     <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
     <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_9_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(NuGetPackageRoot)microsoft.templatesearch.templatediscovery\$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <Target Name="AddGeneratedFile" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)GeneratedFile.cs">
