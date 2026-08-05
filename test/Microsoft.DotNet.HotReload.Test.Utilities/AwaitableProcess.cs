@@ -234,10 +234,13 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             try
             {
+                Logger.Log($"Killing process tree for process {Id}");
                 Process.Kill(entireProcessTree: true);
+                Logger.Log($"Killed process tree for process {Id}");
             }
-            catch
+            catch (Exception e)
             {
+                Logger.Log($"Failed to kill process tree for process {Id}: {e}");
             }
 
             // ensure process has exited without allowing cleanup to hang indefinitely
