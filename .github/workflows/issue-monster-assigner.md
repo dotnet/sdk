@@ -36,6 +36,12 @@ sandbox:
   agent:
     sudo: false
 
+# Pin the agent to an explicitly priced model. Under the PAT pool the agent runs
+# behind the AWF api-proxy, whose AI-credits pricing check rejects the implicit
+# `auto` model ("Model \"auto\" has no AI credits pricing") for pool PATs on
+# credits-based billing, skipping the assignment. A named model resolves this.
+model: gpt-5.6-luna
+
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
 # Run agentic jobs in an isolated `copilot-pat-pool` environment.
