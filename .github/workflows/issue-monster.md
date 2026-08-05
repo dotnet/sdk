@@ -677,7 +677,7 @@ dispatch_workflow(workflow_name="issue-monster-assigner", inputs={"issue_number"
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
-**Important**: Only dispatch **issues**, never pull requests. The deterministic assigner validates the issue and `base_branch`, then performs the Copilot assignment.
+**Important**: Only dispatch **issues**, never pull requests. The assigner workflow will bind `base_branch` into its `assign-to-agent` configuration and perform the actual Copilot assignment.
 
 ### 5. Add Comment to Each Dispatched Issue
 
