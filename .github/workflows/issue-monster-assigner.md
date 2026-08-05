@@ -41,7 +41,9 @@ safe-outputs:
     # Copilot branches from this ref and targets it when opening the pull request.
     base-branch: "${{ inputs.base_branch }}"
     # Copilot assignment requires a user token rather than an installation token.
-    github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN_IW }}"
+    # The alternative is to startup a copilot session ourselves rather than use assign_to_agent
+    # Tentatively this now 'works' without a token but it just adds a UI dialogue to accept the request on the issue which defeats the point of auto-assignment
+    github-token: "${{ secrets.ISSUE_MONSTER_ASSIGNMENT_TOKEN }}" # must have issues: write, pr: write, contents: write, actions: write, metdata: read https://github.github.com/gh-aw/reference/copilot-cloud-agent/#using-a-personal-access-token-pat
     allowed: [copilot]
     ignore-if-error: true
   # Pin the threat-detection engine to a capable model. The default detection
