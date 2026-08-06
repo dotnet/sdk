@@ -762,6 +762,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             var projectInstance = ProjectInstance.FromFile(projectPath, new ProjectOptions
             {
                 GlobalProperties = globalProperties,
+                EvaluationStage = ProjectEvaluationStage.Properties,
                 ProjectCollection = collection,
             });
 

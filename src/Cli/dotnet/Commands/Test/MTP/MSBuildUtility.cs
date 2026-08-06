@@ -389,6 +389,7 @@ internal static class MSBuildUtility
                 var project = ProjectInstance.FromFile(filePath, new ProjectOptions
                 {
                     GlobalProperties = globalProperties,
+                    EvaluationStage = ProjectEvaluationStage.Items,
                     ProjectCollection = collection,
                 });
 
