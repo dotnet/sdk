@@ -331,7 +331,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                 {
                     if (operation.Parent is IAssignmentOperation assignment)
                     {
-                        foreach (IOperation children in assignment.Children)
+                        foreach (IOperation children in assignment.ChildOperations)
                         {
                             if (children is IFieldReferenceOperation or IPropertyReferenceOperation)
                             {

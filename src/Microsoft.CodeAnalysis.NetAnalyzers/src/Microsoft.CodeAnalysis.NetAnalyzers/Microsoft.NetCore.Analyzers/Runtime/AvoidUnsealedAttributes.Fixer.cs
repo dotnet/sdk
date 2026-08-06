@@ -25,7 +25,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             DocumentEditor editor = await DocumentEditor.CreateAsync(context.Document, context.CancellationToken).ConfigureAwait(false);
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
             SyntaxNode node = root.FindNode(context.Span);
-            SyntaxNode declaration = editor.Generator.GetDeclaration(node);
+            SyntaxNode? declaration = editor.Generator.GetDeclaration(node);
 
             if (declaration != null)
             {

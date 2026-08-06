@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
@@ -17,11 +19,29 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 
 internal partial class MicrosoftTestingPlatformTestCommand
 {
+    private const string MinimumExpectedTestsOptionName = "--minimum-expected-tests";
+
     public int Run(ParseResult parseResult, bool isHelp)
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+        string invocationWorkingDirectory = Directory.GetCurrentDirectory();
 
         BuildOptions buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+        (buildOptions, bool forwardedCollectTestMap, bool forwardedAffectedTests) =
+            NormalizeForwardedAffectedTestsOptions(buildOptions);
+        bool forwardedMinimumExpectedTests = HasForwardedOption(
+            buildOptions.TestApplicationArguments,
+            MinimumExpectedTestsOptionName);
+
+        bool collectTestMap = parseResult.HasOption(definition.CollectTestMapOption) || forwardedCollectTestMap;
+        bool affectedTests = parseResult.HasOption(definition.AffectedTestsOption) || forwardedAffectedTests;
+        ValidateAffectedTestsOptions(
+            definition,
+            parseResult,
+            collectTestMap,
+            affectedTests,
+            forwardedMinimumExpectedTests);
+
         ValidationUtility.ValidateMutuallyExclusiveOptions(parseResult, buildOptions.PathOptions);
 
         // --list-devices and --list-tests describe incompatible behaviors: the former lists
@@ -29,6 +49,11 @@ internal partial class MicrosoftTestingPlatformTestCommand
         if (buildOptions.ListDevices && parseResult.HasOption(definition.ListTestsOption))
         {
             throw new GracefulException(CliCommandStrings.CmdListDevicesAndListTestsMutuallyExclusive);
+        }
+
+        if (buildOptions.ListDevices && (collectTestMap || affectedTests))
+        {
+            throw new GracefulException(CliCommandStrings.CmdListDevicesAndAffectedTestsMutuallyExclusive);
         }
 
         // --list-devices and --device require a project to evaluate; --test-modules bypasses
@@ -80,6 +105,17 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 return ExitCode.GenericFailure;
             }
 
+            (bool responseFileCollectTestMap, bool responseFileAffectedTests, bool responseFileMinimumExpectedTests) =
+                DetectAffectedTestsOptionsInForwardedResponseFiles(
+                    buildOptions.TestApplicationArguments,
+                    testHandler.GetTestApplicationWorkingDirectories(),
+                    invocationWorkingDirectory);
+            collectTestMap |= responseFileCollectTestMap;
+            affectedTests |= responseFileAffectedTests;
+            forwardedCollectTestMap |= responseFileCollectTestMap;
+            forwardedAffectedTests |= responseFileAffectedTests;
+            forwardedMinimumExpectedTests |= responseFileMinimumExpectedTests;
+
             // Ends the session on the success path, so a failure MSBuild only reports from EndBuild -
             // a binary logger failing to write, for example - is surfaced rather than swallowed.
             buildSession.Complete();
@@ -92,14 +128,32 @@ internal partial class MicrosoftTestingPlatformTestCommand
             logger?.ReallyShutdown();
         }
 
-        int degreeOfParallelism = GetDegreeOfParallelism(parseResult);
+        ValidateAffectedTestsOptions(
+            definition,
+            parseResult,
+            collectTestMap,
+            affectedTests,
+            forwardedMinimumExpectedTests);
+
+        int degreeOfParallelism = GetDegreeOfParallelism(parseResult, collectTestMap);
 
         var testOptions = new TestOptions(
             IsHelp: isHelp,
             IsDiscovery: parseResult.HasOption(definition.ListTestsOption),
-            ListTestsFormat: GetListTestsFormat(parseResult, definition));
+            ListTestsFormat: GetListTestsFormat(parseResult, definition))
+        {
+            CollectTestMap = collectTestMap,
+            AffectedTests = affectedTests,
+            CollectTestMapForwarded = forwardedCollectTestMap,
+            AffectedTestsForwarded = forwardedAffectedTests,
+        };
 
         var output = InitializeOutput(degreeOfParallelism, parseResult, testOptions);
+        var resultsDirectoryResolver = TestResultsDirectoryResolver.Create(
+            buildOptions.PathOptions,
+            testHandler.EnumerateTestModules(),
+            Directory.GetCurrentDirectory());
+
         using var testRunPolicy = new TestRunPolicy(
             testOptions.IsDiscovery || testOptions.IsHelp
                 ? null
@@ -108,6 +162,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 ? null
                 : parseResult.GetValue(definition.TimeoutOption),
             onCancellation: _ => output.MarkCancelled());
+
         using var ctrlC = new CtrlCCancellationManager(output.StartCancelling);
         using var queueCancellation = CancellationTokenSource.CreateLinkedTokenSource(ctrlC.Token, testRunPolicy.Token);
         var artifactPostProcessingManager = new ArtifactPostProcessingManager();
@@ -118,6 +173,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
                 degreeOfParallelism,
                 buildOptions,
                 testOptions,
+                resultsDirectoryResolver,
                 output,
                 OnHelpRequested,
                 ctrlC,
@@ -161,7 +217,7 @@ internal partial class MicrosoftTestingPlatformTestCommand
             else if (exitCode == ExitCode.Success &&
                 !isHelp &&
                 !parseResult.HasOption(definition.MinimumExpectedTestsOption) &&
-                output.TotalTests == 0)
+                ShouldFailForNoExecutedTests(testOptions.IsAffectedTestsMode, output.TotalTests, output.SkippedTests))
             {
                 // Whole-run "zero tests ran" verdict. Individual modules that matched no tests return exit
                 // code 8, but TestApplicationActionQueue normalizes that to success so a single empty module
@@ -201,6 +257,316 @@ internal partial class MicrosoftTestingPlatformTestCommand
             && !noArtifactPostProcessingRequested
             && !cancellationRequested
             && cancellationReason == TestRunCancellationReason.None;
+
+    internal static (BuildOptions BuildOptions, bool CollectTestMap, bool AffectedTests) NormalizeForwardedAffectedTestsOptions(
+        BuildOptions buildOptions)
+    {
+        bool collectTestMap = false;
+        bool affectedTests = false;
+        ImmutableArray<string>.Builder remainingArguments = ImmutableArray.CreateBuilder<string>();
+        foreach (string argument in buildOptions.TestApplicationArguments)
+        {
+            if (IsAffectedTestsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.CollectTestMapOptionName))
+            {
+                collectTestMap = true;
+                remainingArguments.Add(argument);
+            }
+            else if (IsAffectedTestsOption(argument, TestCommandDefinition.MicrosoftTestingPlatform.AffectedTestsOptionName))
+            {
+                affectedTests = true;
+                remainingArguments.Add(argument);
+            }
+            else
+            {
+                remainingArguments.Add(argument);
+            }
+        }
+
+        return (
+            buildOptions with { TestApplicationArguments = remainingArguments.ToImmutable() },
+            collectTestMap,
+            affectedTests);
+    }
+
+    private static void ValidateAffectedTestsOptions(
+        TestCommandDefinition.MicrosoftTestingPlatform definition,
+        ParseResult parseResult,
+        bool collectTestMap,
+        bool affectedTests,
+        bool forwardedMinimumExpectedTests)
+    {
+        if (!definition.AffectedTestsEnabled && (collectTestMap || affectedTests))
+        {
+            throw new GracefulException(
+                string.Format(
+                    CliCommandStrings.CmdAffectedTestsFeatureDisabled,
+                    TestCommandDefinition.MicrosoftTestingPlatform.EnableAffectedTestsEnvironmentVariable));
+        }
+
+        if (collectTestMap && affectedTests)
+        {
+            throw new GracefulException(CliCommandStrings.CmdAffectedTestsOptionsMutuallyExclusive);
+        }
+
+        if (collectTestMap && parseResult.HasOption(definition.MaxParallelTestModulesOption))
+        {
+            throw new GracefulException(CliCommandStrings.CmdCollectTestMapCannotRunModulesInParallel);
+        }
+
+        if (collectTestMap &&
+            (parseResult.HasOption(definition.MinimumExpectedTestsOption) || forwardedMinimumExpectedTests))
+        {
+            throw new GracefulException(CliCommandStrings.CmdCollectTestMapCannotRequireMinimumTests);
+        }
+    }
+
+    internal static (bool CollectTestMap, bool AffectedTests, bool MinimumExpectedTests) DetectAffectedTestsOptionsInForwardedResponseFiles(
+        ImmutableArray<string> testApplicationArguments,
+        IEnumerable<string?> testApplicationWorkingDirectories,
+        string invocationWorkingDirectory)
+    {
+        var workingDirectories = testApplicationWorkingDirectories
+            .Select(directory => string.IsNullOrEmpty(directory)
+                ? invocationWorkingDirectory
+                : Path.GetFullPath(directory, invocationWorkingDirectory))
+            .Distinct(StringComparer.Ordinal)
+            .ToArray();
+
+        ForwardedOptionState? commonState = null;
+        bool foundInvalidResponseFile = false;
+        foreach (string workingDirectory in workingDirectories)
+        {
+            ForwardedOptionState workingDirectoryState = default;
+            foreach (string argument in testApplicationArguments)
+            {
+                if (argument.Length > 1 && argument[0] == '@')
+                {
+                    if (!TryDetectAffectedTestsOptionsInResponseFile(
+                        argument[1..],
+                        workingDirectory,
+                        new HashSet<string>(StringComparer.Ordinal),
+                        out ForwardedOptionState responseFileState))
+                    {
+                        foundInvalidResponseFile = true;
+                        continue;
+                    }
+
+                    workingDirectoryState = workingDirectoryState.Merge(responseFileState);
+                }
+            }
+
+            if (commonState is { } previousState &&
+                (previousState.CollectTestMap != workingDirectoryState.CollectTestMap ||
+                 previousState.AffectedTests != workingDirectoryState.AffectedTests))
+            {
+                throw new GracefulException(CliCommandStrings.CmdAffectedTestsResponseFilesMustBeConsistent);
+            }
+
+            commonState = workingDirectoryState with
+            {
+                MinimumExpectedTests =
+                    (commonState?.MinimumExpectedTests ?? false) || workingDirectoryState.MinimumExpectedTests,
+            };
+        }
+
+        ForwardedOptionState state = commonState ?? default;
+        if (foundInvalidResponseFile && (state.CollectTestMap || state.AffectedTests))
+        {
+            throw new GracefulException(CliCommandStrings.CmdAffectedTestsResponseFilesMustBeConsistent);
+        }
+
+        if (foundInvalidResponseFile)
+        {
+            // MTP will report the response-file error. Do not partially activate a mode
+            // or replace its diagnostic with an SDK validation error.
+            return default;
+        }
+
+        return (state.CollectTestMap, state.AffectedTests, state.MinimumExpectedTests);
+    }
+
+    private static bool TryDetectAffectedTestsOptionsInResponseFile(
+        string responseFilePath,
+        string workingDirectory,
+        HashSet<string> recursionStack,
+        out ForwardedOptionState state)
+    {
+        state = default;
+        string fullPath = Path.GetFullPath(responseFilePath, workingDirectory);
+        if (!recursionStack.Add(fullPath) || !File.Exists(fullPath))
+        {
+            return false;
+        }
+
+        try
+        {
+            string[] tokens = [..
+                File.ReadAllLines(fullPath)
+                    .Select(static line => line.Trim())
+                    .Where(static line => line.Length > 0 && line[0] != '#')
+                    .SelectMany(SplitResponseFileLine)];
+
+            ForwardedOptionState detectedState = default;
+            foreach (string token in tokens)
+            {
+                if (token.Length > 1 && token[0] == '@')
+                {
+                    if (!TryDetectAffectedTestsOptionsInResponseFile(
+                        token[1..],
+                        workingDirectory,
+                        recursionStack,
+                        out ForwardedOptionState nestedState))
+                    {
+                        return false;
+                    }
+
+                    detectedState = detectedState.Merge(nestedState);
+                }
+                else
+                {
+                    if (IsAffectedTestsOption(token, TestCommandDefinition.MicrosoftTestingPlatform.CollectTestMapOptionName))
+                    {
+                        detectedState = detectedState with { CollectTestMap = true };
+                    }
+                    else if (IsAffectedTestsOption(token, TestCommandDefinition.MicrosoftTestingPlatform.AffectedTestsOptionName))
+                    {
+                        detectedState = detectedState with { AffectedTests = true };
+                    }
+                    else if (IsOption(token, MinimumExpectedTestsOptionName, allowValue: true))
+                    {
+                        detectedState = detectedState with { MinimumExpectedTests = true };
+                    }
+                }
+            }
+
+            state = detectedState;
+            return true;
+        }
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or FormatException)
+        {
+            // MTP reports response-file read and format errors. Do not replace its diagnostic here.
+            return false;
+        }
+        finally
+        {
+            recursionStack.Remove(fullPath);
+        }
+    }
+
+    private static bool HasForwardedOption(ImmutableArray<string> arguments, string canonicalOption)
+        => arguments.Any(argument => IsOption(argument, canonicalOption, allowValue: true));
+
+    private static bool IsAffectedTestsOption(string argument, string canonicalOption)
+        => IsOption(argument, canonicalOption, allowValue: false);
+
+    private static bool IsOption(string argument, string canonicalOption, bool allowValue)
+    {
+        if (argument.Length < 2 ||
+            argument[0] != '-' ||
+            (argument[1] == '-' && (argument.Length < 3 || argument[2] == '-')))
+        {
+            return false;
+        }
+
+        string option = argument[1] == '-' ? argument[2..] : argument[1..];
+        int separatorIndex = option.IndexOfAny('=', ':');
+        if (separatorIndex >= 0 && !allowValue)
+        {
+            return false;
+        }
+
+        ReadOnlySpan<char> optionName = separatorIndex >= 0 ? option.AsSpan(0, separatorIndex) : option;
+        return optionName.Equals(canonicalOption.AsSpan().TrimStart('-'), StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static IEnumerable<string> SplitResponseFileLine(string line)
+    {
+        int tokenStart = 0;
+        int position = 0;
+        bool seekingTokenStart = true;
+        bool insideQuotes = false;
+
+        while (position < line.Length)
+        {
+            char character = line[position];
+
+            if (char.IsWhiteSpace(character))
+            {
+                if (!insideQuotes)
+                {
+                    if (!seekingTokenStart)
+                    {
+                        yield return CurrentToken();
+                        tokenStart = position;
+                        seekingTokenStart = true;
+                    }
+                    else
+                    {
+                        tokenStart = position;
+                    }
+                }
+            }
+            if (character == '"')
+            {
+                if (seekingTokenStart)
+                {
+                    if (insideQuotes)
+                    {
+                        yield return CurrentToken();
+                        tokenStart = position;
+                        insideQuotes = false;
+                    }
+                    else
+                    {
+                        tokenStart = position + 1;
+                        insideQuotes = true;
+                    }
+                }
+                else
+                {
+                    insideQuotes = !insideQuotes;
+                }
+            }
+            else if (seekingTokenStart && !insideQuotes && !char.IsWhiteSpace(character))
+            {
+                seekingTokenStart = false;
+                tokenStart = position;
+            }
+
+            position++;
+
+            if (position == line.Length)
+            {
+                if (insideQuotes)
+                {
+                    throw new FormatException();
+                }
+
+                if (!seekingTokenStart)
+                {
+                    yield return CurrentToken();
+                }
+            }
+        }
+
+        string CurrentToken() => line.Substring(tokenStart, position - tokenStart).Replace("\"", string.Empty);
+    }
+
+    private readonly record struct ForwardedOptionState(
+        bool CollectTestMap,
+        bool AffectedTests,
+        bool MinimumExpectedTests)
+    {
+        public ForwardedOptionState Merge(ForwardedOptionState other)
+            => new(
+                CollectTestMap || other.CollectTestMap,
+                AffectedTests || other.AffectedTests,
+                MinimumExpectedTests || other.MinimumExpectedTests);
+    }
+
+    internal static bool ShouldFailForNoExecutedTests(bool isAffectedTestsMode, int totalTests, int skippedTests)
+        => (!isAffectedTestsMode && totalTests == 0) ||
+            (totalTests > 0 && totalTests == skippedTests);
 
     private static TestListFormat GetListTestsFormat(ParseResult parseResult, TestCommandDefinition.MicrosoftTestingPlatform definition)
     {
@@ -257,7 +623,10 @@ internal partial class MicrosoftTestingPlatformTestCommand
             ShowAssembly = !isJsonDiscovery,
             ShowAssemblyStartAndComplete = !isJsonDiscovery,
             MinimumExpectedTests = parseResult.GetValue(definition.MinimumExpectedTestsOption),
+            AllowZeroTests = testOptions.IsAffectedTestsMode,
             ListTestsFormat = testOptions.ListTestsFormat,
+            SlowestTestsCount = GetSlowestTestsCount(parseResult.GetArguments()),
+            ShowFlakyTests = GetShowFlakyTests(parseResult.GetArguments()),
         });
 
         // Ctrl+C handling is wired in Run() through CtrlCCancellationManager so that
@@ -271,8 +640,71 @@ internal partial class MicrosoftTestingPlatformTestCommand
         return output;
     }
 
-    private static int GetDegreeOfParallelism(ParseResult parseResult)
+    /// <summary>
+    /// Reads the Microsoft.Testing.Platform <c>--show-slowest-tests N</c> option out of the raw command line.
+    /// </summary>
+    /// <remarks>
+    /// The option belongs to the test application, not to the 'dotnet test' CLI, so it is forwarded verbatim. Under
+    /// the pipe protocol the test host's own terminal reporter is not plugged in (the SDK owns user-facing output),
+    /// so the section has to be rendered by the SDK's reporter instead — which means the SDK has to observe the
+    /// option. Same approach as the '--retry-failed-tests' detection above. A missing, non-numeric or non-positive
+    /// argument leaves the section off, mirroring the upstream option validator.
+    /// </remarks>
+    internal static int GetSlowestTestsCount(IReadOnlyList<string> arguments)
     {
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            if (!string.Equals(arguments[i], "--show-slowest-tests", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            if (i + 1 < arguments.Count &&
+                int.TryParse(arguments[i + 1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int count) &&
+                count >= 1)
+            {
+                return count;
+            }
+
+            return 0;
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Reads the Microsoft.Testing.Platform <c>--show-flaky-tests [on|off]</c> option out of the raw command line.
+    /// A bare '--show-flaky-tests' means "on", which is also the default when the option is absent.
+    /// See <see cref="GetSlowestTestsCount"/> for why the SDK inspects the forwarded arguments.
+    /// </summary>
+    internal static bool GetShowFlakyTests(IReadOnlyList<string> arguments)
+    {
+        for (int i = 0; i < arguments.Count; i++)
+        {
+            if (!string.Equals(arguments[i], "--show-flaky-tests", StringComparison.Ordinal))
+            {
+                continue;
+            }
+
+            return i + 1 >= arguments.Count || !IsOffValue(arguments[i + 1]);
+        }
+
+        return true;
+
+        static bool IsOffValue(string argument)
+            => string.Equals(argument, "off", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(argument, "false", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(argument, "disable", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(argument, "0", StringComparison.Ordinal);
+    }
+
+    private static int GetDegreeOfParallelism(ParseResult parseResult, bool collectTestMap)
+    {
+        if (collectTestMap)
+        {
+            return 1;
+        }
+
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
         var degreeOfParallelism = parseResult.GetValue(definition.MaxParallelTestModulesOption);
@@ -320,6 +752,8 @@ internal partial class MicrosoftTestingPlatformTestCommand
         // Check if TargetFramework is already specified via -f/--framework or -p:TargetFramework=
         if (!globalProperties.ContainsKey(ProjectProperties.TargetFramework))
         {
+            using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+
             // Evaluate the project to get TargetFrameworks
             using var collection = new ProjectCollection(
                 globalProperties,

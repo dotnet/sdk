@@ -30,8 +30,13 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
         {
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            SyntaxNode declaration = root.FindNode(context.Span);
+            SyntaxNode? declaration = root.FindNode(context.Span);
             declaration = SyntaxGenerator.GetGenerator(context.Document).GetDeclaration(declaration, DeclarationKind.Field);
+            if (declaration is null)
+            {
+                return;
+            }
+
             var fieldFeclaration = GetFieldDeclaration(declaration);
             if (fieldFeclaration == null)
             {

@@ -54,6 +54,13 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
     /// overload rather than building a replacement out of <see cref="SyntaxEditor.OriginalRoot"/>.
     /// </para>
     /// <para>
+    /// Every provider this creates offers <see cref="FixAllScope.ContainingMember"/> and
+    /// <see cref="FixAllScope.ContainingType"/> alongside the document, project and solution scopes
+    /// <see cref="DocumentBasedFixAllProvider"/> offers by default. Both narrow to a span within a single
+    /// document, which is what this already fixes through one editor, so they need nothing beyond being
+    /// offered - the host maps the span and hands over only the diagnostics inside it.
+    /// </para>
+    /// <para>
     /// <see cref="DocumentBasedFixAllProvider"/> hands over every diagnostic it collected, including ones the
     /// user's chosen action does not apply to - unlike <see cref="WellKnownFixAllProviders.BatchFixer"/>, it
     /// does not filter by <see cref="FixAllContext.CodeActionEquivalenceKey"/>. A fixer that registers more
@@ -63,6 +70,21 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
     /// </remarks>
     public static class SyntaxEditorFixAllProvider
     {
+        /// <summary>
+        /// The scopes every provider this creates offers.
+        /// </summary>
+        /// <remarks>
+        /// <see cref="DocumentBasedFixAllProvider"/>'s default set stops at
+        /// <see cref="FixAllScope.Solution"/>; the two span scopes have to be asked for through its
+        /// constructor, because <see cref="FixAllProvider.GetSupportedFixAllScopes"/> is sealed there.
+        /// </remarks>
+        private static readonly ImmutableArray<FixAllScope> SupportedFixAllScopes = ImmutableArray.Create(
+            FixAllScope.Document,
+            FixAllScope.Project,
+            FixAllScope.Solution,
+            FixAllScope.ContainingMember,
+            FixAllScope.ContainingType);
+
         /// <summary>
         /// Creates a provider for a fix that needs nothing beyond the editor and the diagnostic.
         /// </summary>
@@ -151,7 +173,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
             ImmutableArray<Diagnostic> distinctDiagnostics = diagnostics.Distinct().ToImmutableArray();
 
             SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var editor = new SyntaxEditor(root, document.Project.Solution.Workspace);
+            var editor = new SyntaxEditor(root, document.Project.Solution.Workspace.Services);
 
             foreach (Diagnostic diagnostic in Order(distinctDiagnostics))
             {
@@ -175,6 +197,7 @@ namespace Microsoft.CodeAnalysis.NetAnalyzers
                 Func<Document, Diagnostic, SyntaxEditor, TState, CancellationToken, Task> applyFixAsync,
                 string? fixAllTitle,
                 Func<Document, SyntaxEditor, TState, Document>? getFixedDocument = null)
+                : base(SupportedFixAllScopes)
             {
                 _createDocumentState = createDocumentState;
                 _applyFixAsync = applyFixAsync;
