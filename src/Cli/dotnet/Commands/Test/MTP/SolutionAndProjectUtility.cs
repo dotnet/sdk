@@ -173,7 +173,8 @@ internal static class SolutionAndProjectUtility
         string? tfm,
         string? configuration,
         string? platform,
-        IReadOnlyDictionary<string, string>? additionalGlobalProperties)
+        IReadOnlyDictionary<string, string>? additionalGlobalProperties,
+        ProjectEvaluationStage evaluationStage)
     {
         Debug.Assert(projectFilePath is not null);
 
@@ -244,6 +245,7 @@ internal static class SolutionAndProjectUtility
         {
             GlobalProperties = globalProperties,
             EvaluationContext = evaluationContext,
+            EvaluationStage = evaluationStage,
             ProjectCollection = collection,
         });
     }
@@ -261,7 +263,25 @@ internal static class SolutionAndProjectUtility
         HashSet<string>? visitedTraversalProjects = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform, additionalGlobalProperties);
+        ProjectInstance Evaluate(string? tfm, ProjectEvaluationStage evaluationStage)
+            => EvaluateProject(
+                projectCollection,
+                evaluationContext,
+                projectFilePath,
+                tfm,
+                configuration,
+                platform,
+                additionalGlobalProperties,
+                evaluationStage);
+
+        ProjectInstance EnsureFullEvaluationForTestingPlatformApplication(ProjectInstance project, string? tfm)
+            // Reuse the same collection and shared context so the full evaluation benefits from the
+            // project XML, SDK resolution, and file-system observations cached by the properties pass.
+            => IsTestingPlatformApplication(project)
+                ? Evaluate(tfm, ProjectEvaluationStage.Full)
+                : project;
+
+        ProjectInstance projectInstance = Evaluate(tfm: null, ProjectEvaluationStage.Properties);
 
         // Traversal projects (e.g. Microsoft.Build.Traversal "dirs.proj") are not test projects themselves.
         // They act as a container that forwards build/test operations to their ProjectReference items.
@@ -269,6 +289,8 @@ internal static class SolutionAndProjectUtility
         // evaluate each of them. This is done recursively so that nested traversal projects work as well.
         if (IsTraversalProject(projectInstance))
         {
+            projectInstance = Evaluate(tfm: null, ProjectEvaluationStage.Items);
+
             // Track visited (project, configuration, platform) tuples across the whole traversal graph so
             // that a project referenced by multiple traversal projects with the same configuration/platform
             // (a "diamond") is only tested once, while the same project referenced with a *different*
@@ -299,6 +321,8 @@ internal static class SolutionAndProjectUtility
 
         if (!string.IsNullOrEmpty(targetFramework) || string.IsNullOrEmpty(targetFrameworks))
         {
+            projectInstance = EnsureFullEvaluationForTestingPlatformApplication(projectInstance, tfm: null);
+
             if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
             {
                 projects.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(module));
@@ -324,7 +348,8 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
+                    projectInstance = Evaluate(framework, ProjectEvaluationStage.Properties);
+                    projectInstance = EnsureFullEvaluationForTestingPlatformApplication(projectInstance, framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
@@ -338,7 +363,8 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
+                    projectInstance = Evaluate(framework, ProjectEvaluationStage.Properties);
+                    projectInstance = EnsureFullEvaluationForTestingPlatformApplication(projectInstance, framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
@@ -366,6 +392,10 @@ internal static class SolutionAndProjectUtility
     /// </summary>
     private static bool IsTraversalProject(ProjectInstance projectInstance)
         => bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.IsTraversal), out bool isTraversal) && isTraversal;
+
+    private static bool IsTestingPlatformApplication(ProjectInstance projectInstance)
+        => bool.TryParse(projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication)
+            && isTestingPlatformApplication;
 
     /// <summary>
     /// Builds a stable key identifying a (project, configuration, platform) combination for
@@ -552,7 +582,7 @@ internal static class SolutionAndProjectUtility
         MSBuildSession buildSession)
     {
         _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestProject), out bool isTestProject);
-        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication), out bool isTestingPlatformApplication);
+        bool isTestingPlatformApplication = IsTestingPlatformApplication(project);
 
         if (!isTestProject && !isTestingPlatformApplication)
         {

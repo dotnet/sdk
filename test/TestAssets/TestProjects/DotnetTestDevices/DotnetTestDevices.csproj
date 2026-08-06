@@ -1,5 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+  <Import Project="post-build-discovery.props" Condition="Exists('post-build-discovery.props')" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,7 +12,7 @@
     <Nullable>enable</Nullable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <IsTestingPlatformApplication Condition="'$(GeneratePostBuildDiscoveryProps)' != 'true'">true</IsTestingPlatformApplication>
   </PropertyGroup>
 
   <ItemGroup>
@@ -67,6 +68,22 @@
           BeforeTargets="_MTPBuild"
           Condition="'@(RuntimeEnvironmentVariable)' != ''">
     <Message Text="Build: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+  <Target Name="_GeneratePostBuildDiscoveryProps"
+          BeforeTargets="_MTPBuild"
+          Condition="'$(GeneratePostBuildDiscoveryProps)' == 'true'">
+    <ItemGroup>
+      <_PostBuildDiscoveryPropsLines Include="&lt;Project&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="  &lt;PropertyGroup&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="    &lt;IsTestingPlatformApplication&gt;true&lt;/IsTestingPlatformApplication&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="  &lt;/PropertyGroup&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(MSBuildProjectDirectory)\post-build-discovery.props"
+      Lines="@(_PostBuildDiscoveryPropsLines)"
+      Overwrite="true" />
   </Target>
 
   <Target Name="_ModifyRuntimeEnvironmentVariable"
