@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
@@ -15,8 +16,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// <param name="AccessMode">The recommended access mode.</param>
 /// <param name="Migrations">The system installs eligible for migration under the recommended mode.</param>
 /// <param name="ChannelDisplay">Display information for the SDK channel line.</param>
+/// <param name="ShellProvider">The resolved shell provider used to recommend and describe terminal mode.</param>
 internal sealed record WalkthroughPlan(
     DotnetInstallRoot InstallRoot,
     DotnetAccessMode AccessMode,
     List<MigrationWorkflow.MigrationSelection> Migrations,
-    DefaultChannelDisplay ChannelDisplay);
+    DefaultChannelDisplay ChannelDisplay,
+    IEnvShellProvider? ShellProvider);

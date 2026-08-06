@@ -2,7 +2,10 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FluentAssertions;
+using Microsoft.Dotnet.Installation;
+using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -55,4 +58,61 @@ public class WalkthroughSummaryTests
 
         choices[index].Decision.Should().Be(WalkthroughDecision.Customize);
     }
+
+    [TestMethod]
+    public void BuildModeDescription_TerminalMode_ShowsProfilePathsAndInstallRoot()
+    {
+        var shellProvider = new TestShellProvider("profile-root", ".bashrc", ".profile");
+        var plan = CreatePlan(DotnetAccessMode.Shell, shellProvider);
+
+        string description = WalkthroughSummary.BuildModeDescription(plan);
+
+        description.Should().Contain(DotnetupTheme.Accent("Terminal Mode"));
+        foreach (string path in shellProvider.GetProfilePaths())
+        {
+            description.Should().Contain(DotnetupTheme.Accent(path));
+        }
+
+        description.Should().Contain(DotnetupTheme.Accent("PATH"));
+        description.Should().Contain(DotnetupTheme.Accent("DOTNET_ROOT"));
+        description.Should().Contain(DotnetupTheme.Accent(plan.InstallRoot.Path));
+    }
+
+    [TestMethod]
+    public void BuildModeDescription_EverywhereMode_ShowsSystemEnvironmentVariablesAndInstallRoot()
+    {
+        var plan = CreatePlan(DotnetAccessMode.Everywhere, shellProvider: null);
+
+        string description = WalkthroughSummary.BuildModeDescription(plan);
+
+        description.Should().Contain(DotnetupTheme.Accent("Everywhere Mode"));
+        description.Should().Contain(DotnetupTheme.Accent(
+            Microsoft.DotNet.Tools.Bootstrapper.Strings.SummaryModeSystemEnvironmentVariables));
+        description.Should().Contain(DotnetupTheme.Accent("PATH"));
+        description.Should().Contain(DotnetupTheme.Accent("DOTNET_ROOT"));
+        description.Should().Contain(DotnetupTheme.Accent(plan.InstallRoot.Path));
+    }
+
+    [TestMethod]
+    public void BuildModeDescription_IsolationMode_ExplainsUnsupportedShell()
+    {
+        var plan = CreatePlan(DotnetAccessMode.None, shellProvider: null);
+
+        string description = WalkthroughSummary.BuildModeDescription(plan);
+
+        description.Should().Contain(DotnetupTheme.Accent("Isolation Mode"));
+        description.Should().Contain("cannot be detected or is not supported");
+        foreach (IEnvShellProvider supportedShell in ShellDetection.s_supportedShells)
+        {
+            description.Should().Contain(supportedShell.ArgumentName);
+        }
+    }
+
+    private static WalkthroughPlan CreatePlan(DotnetAccessMode accessMode, IEnvShellProvider? shellProvider)
+        => new(
+            new DotnetInstallRoot("dotnetup-hive", InstallArchitecture.x64),
+            accessMode,
+            [],
+            new DefaultChannelDisplay("latest", GlobalJsonPath: null),
+            shellProvider);
 }
