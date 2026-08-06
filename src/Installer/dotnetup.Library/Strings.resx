@@ -450,6 +450,17 @@ Or open a new terminal.</value>
     <value>current: {0}</value>
     <comment>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</comment>
   </data>
+  <data name="SummaryModeConfiguration" xml:space="preserve">
+    <value>{0} modifies {1} to set {2} and {3} to {4}.</value>
+    <comment>{0} is the suggested mode name; {1} is one or more shell profile paths or the system environment variables; {2} is PATH; {3} is DOTNET_ROOT; {4} is the dotnetup install path.</comment>
+  </data>
+  <data name="SummaryModeSystemEnvironmentVariables" xml:space="preserve">
+    <value>the system environment variables</value>
+  </data>
+  <data name="SummaryModeUnsupportedShell" xml:space="preserve">
+    <value>{0} is suggested because the current shell ({1}) cannot be detected or is not supported. Supported shells: {2}.</value>
+    <comment>{0} is the suggested isolation mode name; {1} is the current SHELL value or "(not set)"; {2} is the list of supported shell names.</comment>
+  </data>
   <data name="SummaryMigrateHeader" xml:space="preserve">
     <value>System installs to migrate:</value>
   </data>
