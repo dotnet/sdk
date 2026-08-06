@@ -20,7 +20,7 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData(true, false)]
-        [InlineData(true, true)]
+        [InlineData(true, true, Skip = "https://github.com/dotnet/sdk/issues/49926")]
         [InlineData(false, false)]
         public void RunPublishItemsOutputGroupOutputsTest(bool specifyRid, bool singleFile)
         {
@@ -62,7 +62,7 @@ namespace Microsoft.NET.Publish.Tests
                 MetadataNames = { "OutputPath" },
             };
 
-            command.Execute().Should().Pass();
+            command.WithWorkingDirectory(testAsset.TestRoot).Execute("/bl:{}.binlog").Should().Pass();
             var items = from item in command.GetValuesWithMetadata()
                         select new
                         {

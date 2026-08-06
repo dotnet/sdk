@@ -1,5 +1,7 @@
 namespace Microsoft.ComponentDetection.Detectors.NuGet;
 
+#nullable disable
+
 using static global::NuGet.Frameworks.FrameworkConstants.CommonFrameworks;
 
 /// <summary>
@@ -157,7 +159,6 @@ internal partial class FrameworkPackages
             { "Microsoft.Net.Http.Headers", "7.0.0" },
             { "System.Diagnostics.EventLog", "7.0.0" },
             { "System.IO.Pipelines", "7.0.0" },
-            { "System.Security.Cryptography.Pkcs", "7.0.0" },
             { "System.Security.Cryptography.Xml", "7.0.0" },
             { "System.Threading.RateLimiting", "7.0.0" },
         };
@@ -170,6 +171,7 @@ internal partial class FrameworkPackages
             { "System.Configuration.ConfigurationManager", "7.0.0" },
             { "System.Diagnostics.EventLog", "7.0.0" },
             { "System.Diagnostics.PerformanceCounter", "7.0.0" },
+            { "System.DirectoryServices", "7.0.0" },
             { "System.Drawing.Common", "7.0.0" },
             { "System.IO.Packaging", "7.0.0" },
             { "System.Resources.Extensions", "7.0.0" },

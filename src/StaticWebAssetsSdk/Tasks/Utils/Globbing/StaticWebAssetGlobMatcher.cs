@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -477,7 +479,10 @@ public class StaticWebAssetGlobMatcher(GlobNode includes, GlobNode excludes)
             return MatchStage.Done;
         }
 
-        internal readonly MatchState NextExtension(int extensionIndex) => new(Node, MatchStage.Extension, SegmentIndex, extensionIndex, ComplexSegmentIndex);
+        internal readonly MatchState NextExtension(int extensionIndex) => new(Node, MatchStage.Extension, SegmentIndex, extensionIndex, ComplexSegmentIndex)
+        {
+            StemStartIndex = StemStartIndex
+        };
 
         internal readonly MatchState NextComplex() => new(Node, MatchStage.Complex, SegmentIndex, ExtensionSegmentIndex, ComplexSegmentIndex + 1);
 

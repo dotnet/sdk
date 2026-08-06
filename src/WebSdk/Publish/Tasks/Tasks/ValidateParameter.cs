@@ -7,12 +7,12 @@ using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks
 {
-    public class ValidateParameter : Build.Utilities.Task
+    public class ValidateParameter : Task
     {
         [Required]
-        public string ParameterName { get; set; }
+        public string? ParameterName { get; set; }
 
-        public string ParameterValue { get; set; }
+        public string? ParameterValue { get; set; }
 
         public override bool Execute()
         {

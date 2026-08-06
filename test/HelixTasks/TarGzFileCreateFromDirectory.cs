@@ -12,13 +12,13 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// The path to the directory to be archived.
         /// </summary>
         [Required]
-        public string SourceDirectory { get; set; }
+        public string? SourceDirectory { get; set; }
 
         /// <summary>
         /// The path of the archive to be created.
         /// </summary>
         [Required]
-        public string DestinationArchive { get; set; }
+        public string? DestinationArchive { get; set; }
 
         /// <summary>
         /// Indicates if the destination archive should be overwritten if it already exists.
@@ -33,7 +33,7 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
         /// <summary>
         /// An item group of regular expressions for content to exclude from the archive.
         /// </summary>
-        public ITaskItem[] ExcludePatterns { get; set; }
+        public ITaskItem[]? ExcludePatterns { get; set; }
 
         public bool IgnoreExitCode { get; set; }
 
@@ -69,16 +69,18 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
                     retVal = false;
                 }
             }
+            if (SourceDirectory is not null)
+            {
+                SourceDirectory = Path.GetFullPath(SourceDirectory);
 
-            SourceDirectory = Path.GetFullPath(SourceDirectory);
-
-            SourceDirectory = SourceDirectory.EndsWith(Path.DirectorySeparatorChar.ToString())
-                ? SourceDirectory
-                : SourceDirectory + Path.DirectorySeparatorChar;
+                SourceDirectory = SourceDirectory.EndsWith(Path.DirectorySeparatorChar.ToString())
+                    ? SourceDirectory
+                    : SourceDirectory + Path.DirectorySeparatorChar;
+            }
 
             if (!Directory.Exists(SourceDirectory))
             {
-                Log.LogError($"SourceDirectory '{SourceDirectory} does not exist.");
+                Log.LogError($"SourceDirectory '{SourceDirectory}' does not exist.");
 
                 retVal = false;
             }
@@ -113,9 +115,9 @@ namespace Microsoft.DotNet.SdkCustomHelix.Sdk
 
         private string GetSourceSpecification()
         {
-            if (IncludeBaseDirectory)
+            if (SourceDirectory is not null && IncludeBaseDirectory)
             {
-                var parentDirectory = Directory.GetParent(SourceDirectory).Parent.FullName;
+                var parentDirectory = Directory.GetParent(SourceDirectory)?.Parent?.FullName;
 
                 var sourceDirectoryName = Path.GetFileName(Path.GetDirectoryName(SourceDirectory));
 

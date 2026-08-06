@@ -1,8 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.ToolPackage;
-using Microsoft.DotNet.Tools;
+using Microsoft.DotNet.Cli;
+using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
 {
@@ -23,7 +23,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMalformed.xml");
             a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
-                .Contain(string.Format(CommonLocalizableStrings.ToolSettingsInvalidXml, string.Empty));
+                .Contain(string.Format(CliStrings.ToolSettingsInvalidXml, string.Empty));
         }
 
         [Fact]
@@ -32,7 +32,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             Action a = () => ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissing.xml");
             a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
-                .Contain(CommonLocalizableStrings.ToolSettingsMissingCommandName);
+                .Contain(CliStrings.ToolSettingsMissingCommandName);
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMissingVersion.xml");
 
-            toolConfiguration.Warnings.First().Should().Be(CommonLocalizableStrings.FormatVersionIsMissing);
+            toolConfiguration.Warnings.First().Should().Be(CliStrings.FormatVersionIsMissing);
         }
 
         [Fact]
@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         {
             ToolConfiguration toolConfiguration = ToolConfigurationDeserializer.Deserialize("DotnetToolSettingsMajorHigherVersion.xml");
 
-            toolConfiguration.Warnings.First().Should().Be(CommonLocalizableStrings.FormatVersionIsHigher);
+            toolConfiguration.Warnings.First().Should().Be(CliStrings.FormatVersionIsHigher);
         }
 
         [Fact]
@@ -63,12 +63,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenInvalidCharAsFileNameItThrows()
         {
             var invalidCommandName = "na\0me";
-            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll");
+            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll", "dotnet");
             a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(
                     string.Format(
-                        CommonLocalizableStrings.ToolSettingsInvalidCommandName,
+                        CliStrings.ToolSettingsInvalidCommandName,
                         invalidCommandName,
                         string.Join(", ", Path.GetInvalidFileNameChars().Select(c => $"'{c}'"))));
         }
@@ -77,11 +77,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         public void GivenALeadingDotAsFileNameItThrows()
         {
             var invalidCommandName = ".mytool";
-            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll");
+            Action a = () => new ToolConfiguration(invalidCommandName, "my.dll", "dotnet");
             a.Should().Throw<ToolConfigurationException>()
                 .And.Message.Should()
                 .Contain(string.Format(
-                        CommonLocalizableStrings.ToolSettingsInvalidLeadingDotCommandName,
+                        CliStrings.ToolSettingsInvalidLeadingDotCommandName,
                         invalidCommandName));
         }
     }

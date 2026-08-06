@@ -4,7 +4,6 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using FluentAssertions.Execution;
 
 namespace Microsoft.NET.TestFramework.Assertions
 {
@@ -21,26 +20,19 @@ namespace Microsoft.NET.TestFramework.Assertions
 
         public AndConstraint<FileInfoAssertions> Exist(string because = "", params object[] reasonArgs)
         {
-            Execute.Assertion
-                .ForCondition(_fileInfo.Exists)
-                .BecauseOf(because, reasonArgs)
-                .FailWith($"Expected File {_fileInfo.FullName} to exist, but it does not.");
+            _fileInfo.Exists.Should().BeTrue($"Expected File {_fileInfo.FullName} to exist, but it does not.");
             return new AndConstraint<FileInfoAssertions>(this);
         }
 
         public AndConstraint<FileInfoAssertions> NotExist(string because = "", params object[] reasonArgs)
         {
-            Execute.Assertion
-                .ForCondition(!_fileInfo.Exists)
-                .BecauseOf(because, reasonArgs)
-                .FailWith($"Expected File {_fileInfo.FullName} to not exist, but it does.");
+            _fileInfo.Exists.Should().BeFalse($"Expected File {_fileInfo.FullName} to not exist, but it does.");
             return new AndConstraint<FileInfoAssertions>(this);
         }
 
         public AndWhichConstraint<FileInfoAssertions, DateTimeOffset> HaveLastWriteTimeUtc(string because = "", params object[] reasonArgs)
         {
             var lastWriteTimeUtc = _fileInfo.LastWriteTimeUtc;
-
             return new AndWhichConstraint<FileInfoAssertions, DateTimeOffset>(this, lastWriteTimeUtc);
         }
 
@@ -50,21 +42,14 @@ namespace Microsoft.NET.TestFramework.Assertions
             var actualSha256 = algorithm.ComputeHash(File.ReadAllBytes(_fileInfo.FullName));
             var actualSha256Base64 = Convert.ToBase64String(actualSha256);
 
-            Execute.Assertion
-                .ForCondition(actualSha256Base64 == expectedSha)
-                .FailWith($"File {_fileInfo.FullName} did not have SHA matching {expectedSha}. Found {actualSha256Base64}.");
-
+            actualSha256Base64.Should().Be(expectedSha, $"File {_fileInfo.FullName} did not have SHA matching {expectedSha}. Found {actualSha256Base64}.");
             return new AndConstraint<FileInfoAssertions>(this);
         }
 
         public AndConstraint<FileInfoAssertions> Contain(string expectedContent)
         {
             var actualContent = File.ReadAllText(_fileInfo.FullName);
-
-            Execute.Assertion
-                .ForCondition(actualContent.Contains(expectedContent))
-                .FailWith($"File {_fileInfo.FullName} did not have content: {expectedContent}.");
-
+            actualContent.Should().Contain(expectedContent, $"File {_fileInfo.FullName} did not have content: {expectedContent}.");
             return new AndConstraint<FileInfoAssertions>(this);
         }
 
@@ -76,22 +61,14 @@ namespace Microsoft.NET.TestFramework.Assertions
         {
             var regex = new Regex(pattern, RegexOptions.Multiline | RegexOptions.CultureInvariant);
             var actualContent = File.ReadAllText(_fileInfo.FullName);
-
-            Execute.Assertion
-                .ForCondition(regex.IsMatch(actualContent))
-                .FailWith($"File {_fileInfo.FullName} did not match pattern: {pattern}.");
-
+            actualContent.Should().MatchRegex(pattern, $"File {_fileInfo.FullName} did not match pattern: {pattern}.");
             return new AndConstraint<FileInfoAssertions>(this);
         }
 
         public AndConstraint<FileInfoAssertions> NotContain(string expectedContent)
         {
             var actualContent = File.ReadAllText(_fileInfo.FullName);
-
-            Execute.Assertion
-                .ForCondition(!actualContent.Contains(expectedContent))
-                .FailWith($"File {_fileInfo.FullName} had content: {expectedContent}.");
-
+            actualContent.Should().NotContain(expectedContent, $"File {_fileInfo.FullName} had content: {expectedContent}.");
             return new AndConstraint<FileInfoAssertions>(this);
         }
 

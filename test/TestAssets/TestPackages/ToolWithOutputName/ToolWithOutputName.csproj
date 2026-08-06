@@ -8,6 +8,7 @@
     <PackageId>ToolWithOutputName</PackageId>
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
+    <RollForward>LatestMajor</RollForward>
   </PropertyGroup>
 
 </Project>

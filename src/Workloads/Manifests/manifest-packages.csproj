@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.Build.Traversal" DefaultTargets="Pack">
+
+  <ItemGroup>
+    <ProjectReference Include="**\*.Manifest.proj" />
+  </ItemGroup>
+
+  <Target Name="LayoutBuiltinManifests">
+    <MSBuild Projects="@(ProjectReference)"
+             Targets="LayoutManifest"
+             Properties="ManifestDirectory=$(ManifestDirectory)" />
+  </Target>
+
+</Project>

@@ -9,7 +9,7 @@ namespace Microsoft.CodeAnalysis.Tools
         private static async Task<int> Main(string[] args)
         {
             var rootCommand = RootFormatCommand.GetCommand();
-            return await rootCommand.Parse(args).InvokeAsync(CancellationToken.None);
+            return await rootCommand.Parse(args).InvokeAsync(null, CancellationToken.None);
         }
     }
 }

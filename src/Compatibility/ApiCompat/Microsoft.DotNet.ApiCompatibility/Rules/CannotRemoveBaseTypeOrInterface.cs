@@ -48,11 +48,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             if (leftBaseType == null)
                 return;
 
-            if (leftBaseType.TypeKind == TypeKind.Error && _settings.WithReferences)
-            {
-                AddAssemblyLoadError(leftMetadata, rightMetadata, differences, leftBaseType);
-            }
-
             while (rightBaseType != null)
             {
                 // If we found the immediate left base type on right we can assume
@@ -60,11 +55,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // when validating the type which it's base type was actually removed.
                 if (_settings.SymbolEqualityComparer.Equals(leftBaseType, rightBaseType))
                     return;
-
-                if (rightBaseType.TypeKind == TypeKind.Error && _settings.WithReferences)
-                {
-                    AddAssemblyLoadError(leftMetadata, rightMetadata, differences, rightBaseType);
-                }
 
                 rightBaseType = rightBaseType.BaseType;
             }
@@ -84,11 +74,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
             foreach (ITypeSymbol leftInterface in left.GetAllBaseInterfaces())
             {
-                if (leftInterface.TypeKind == TypeKind.Error && _settings.WithReferences)
-                {
-                    AddAssemblyLoadError(leftMetadata, rightMetadata, differences, leftInterface);
-                }
-
                 // Ignore non visible interfaces based on the run Settings
                 // If TypeKind == Error it means the Roslyn couldn't resolve it,
                 // so we are running with a missing assembly reference to where that type ef is defined.
@@ -108,25 +93,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     return;
                 }
             }
-
-            foreach (ITypeSymbol rightInterface in rightInterfaces)
-            {
-                if (rightInterface.TypeKind == TypeKind.Error && _settings.WithReferences)
-                {
-                    AddAssemblyLoadError(leftMetadata, rightMetadata, differences, rightInterface);
-                }
-            }
-        }
-
-        private static void AddAssemblyLoadError(MetadataInformation leftMetadata, MetadataInformation rightMetadata, IList<CompatDifference> differences, ITypeSymbol type)
-        {
-            differences.Add(new CompatDifference(
-                leftMetadata,
-                rightMetadata,
-                DiagnosticIds.AssemblyReferenceNotFound,
-                string.Format(Resources.MatchingAssemblyNotFound, $"{type.ContainingAssembly.Name}.dll"),
-                DifferenceType.Changed,
-                type.ContainingAssembly.Identity.GetDisplayName()));
         }
     }
 }

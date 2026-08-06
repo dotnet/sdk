@@ -25,5 +25,11 @@
   "symbols/RollForward/choices/latestMajor/displayName": "最新主要",
   "symbols/RollForward/choices/disable/description": "不向前復原。需要完全相符。",
   "symbols/RollForward/choices/disable/displayName": "停用向前復原",
+  "symbols/TestRunner/description": "要使用的測試執行器。",
+  "symbols/TestRunner/displayName": "測試執行器",
+  "symbols/TestRunner/choices/VSTest/description": "使用 VSTest 作為測試執行器",
+  "symbols/TestRunner/choices/VSTest/displayName": "VSTest",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "使用 Microsoft.Testing.Platform 測試執行器",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/displayName": "Microsoft.Testing.Platform",
   "postActions/open-file/description": "在編輯器中開啟 global.json"
 }

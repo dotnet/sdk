@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Configurer
         private readonly IAspNetCoreCertificateGenerator _aspNetCoreCertificateGenerator;
         private readonly IFileSentinel _toolPathSentinel;
         private readonly IEnvironmentPath _pathAdder;
-        private readonly Dictionary<string, double> _performanceMeasurements;
+        private readonly Dictionary<string, double>? _performanceMeasurements;
         private readonly bool _skipFirstTimeUseCheck;
 
         public DotnetFirstTimeUseConfigurer(
@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.Configurer
             DotnetFirstRunConfiguration dotnetFirstRunConfiguration,
             IReporter reporter,
             IEnvironmentPath pathAdder,
-            Dictionary<string, double> performanceMeasurements = null,
+            Dictionary<string, double>? performanceMeasurements = null,
             bool skipFirstTimeUseCheck = false)
         {
             _firstTimeUseNoticeSentinel = firstTimeUseNoticeSentinel;

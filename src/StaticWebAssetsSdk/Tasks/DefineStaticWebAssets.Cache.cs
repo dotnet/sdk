@@ -41,7 +41,7 @@ public partial class DefineStaticWebAssets : Task
         var patternMetadata = new[] { nameof(FingerprintPattern.Pattern), nameof(FingerprintPattern.Expression) };
         var fingerprintPatternsHash = HashingUtils.ComputeHash(memoryStream, FingerprintPatterns ?? [], patternMetadata);
 
-        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides, nameof(ITaskItem.GetMetadata));
+        var propertyOverridesHash = HashingUtils.ComputeHash(memoryStream, PropertyOverrides ?? []);
 
 #if NET9_0_OR_GREATER
         Span<string> candidateAssetMetadata = [
@@ -71,15 +71,15 @@ public partial class DefineStaticWebAssets : Task
     {
         private readonly List<ITaskItem> _assets = [];
         private readonly List<ITaskItem> _copyCandidates = [];
-        private string _manifestPath;
-        private IDictionary<string, ITaskItem> _inputByHash;
-        private ITaskItem[] _noCacheCandidates;
+        private string? _manifestPath;
+        private IDictionary<string, ITaskItem>? _inputByHash;
+        private ITaskItem[]? _noCacheCandidates;
         private bool _cacheUpToDate;
-        private TaskLoggingHelper _log;
+        private TaskLoggingHelper? _log;
 
         public DefineStaticWebAssetsCache() { }
 
-        internal DefineStaticWebAssetsCache(TaskLoggingHelper log, string manifestPath) : this()
+        internal DefineStaticWebAssetsCache(TaskLoggingHelper log, string? manifestPath) : this()
             => SetPathAndLogger(manifestPath, log);
 
         // Inputs for the cache
@@ -173,7 +173,13 @@ public partial class DefineStaticWebAssets : Task
 
         private void PartialUpdate(Dictionary<string, ITaskItem> inputHashes)
         {
-            var newHashes = new HashSet<string>(inputHashes.Keys);
+            var newHashes = new HashSet<string>(inputHashes.Count);
+            foreach (var kvp in inputHashes)
+            {
+                var hash = kvp.Key;
+                newHashes.Add(hash);
+            }
+
             var oldHashes = InputHashes;
 
             if (newHashes.SetEquals(oldHashes))
@@ -225,7 +231,7 @@ public partial class DefineStaticWebAssets : Task
             _inputByHash = remainingCandidates;
         }
 
-        internal void SetPathAndLogger(string manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
+        internal void SetPathAndLogger(string? manifestPath, TaskLoggingHelper log) => (_manifestPath, _log) = (manifestPath, log);
 
         public (IList<ITaskItem> CopyCandidates, IList<ITaskItem> Assets) GetComputedOutputs() => (_copyCandidates, _assets);
 
@@ -267,6 +273,8 @@ public partial class DefineStaticWebAssets : Task
     }
 
     [JsonSerializable(typeof(DefineStaticWebAssetsCache))]
-    [JsonSourceGenerationOptions(WriteIndented = false)]
+    [JsonSourceGenerationOptions(
+        GenerationMode = JsonSourceGenerationMode.Metadata | JsonSourceGenerationMode.Serialization,
+        WriteIndented = false)]
     internal partial class DefineStaticWebAssetsSerializerContext : JsonSerializerContext { }
 }

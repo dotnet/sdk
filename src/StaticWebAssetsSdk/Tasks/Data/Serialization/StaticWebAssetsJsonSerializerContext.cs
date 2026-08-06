@@ -1,16 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.NET.Sdk.StaticWebAssets.Tasks;
 
 namespace Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 [JsonSerializable(typeof(StaticWebAssetsManifest))]
 [JsonSerializable(typeof(GenerateStaticWebAssetsDevelopmentManifest.StaticWebAssetsDevelopmentManifest))]
 [JsonSerializable(typeof(StaticWebAssetEndpointsManifest))]
+[JsonSourceGenerationOptions(
+    GenerationMode = JsonSourceGenerationMode.Metadata | JsonSourceGenerationMode.Serialization,
+    WriteIndented = false)]
 public partial class StaticWebAssetsJsonSerializerContext : JsonSerializerContext
 {
     // Since the manifest is only used at development time, it's ok for it to use the relaxed

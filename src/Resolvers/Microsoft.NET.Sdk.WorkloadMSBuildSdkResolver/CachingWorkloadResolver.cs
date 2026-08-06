@@ -11,7 +11,6 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.DotNetSdkResolver;
 #endif
 
-#nullable enable
 namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
 {
 

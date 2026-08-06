@@ -8,7 +8,7 @@ on:
     inputs:
       daysBeforeStale:
         required: true
-        default: "2192"
+        default: "1827"
       daysBeforeClose:
         required: true
         default: "30"

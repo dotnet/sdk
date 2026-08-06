@@ -28,6 +28,38 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [Fact]
+        public void It_does_not_display_preview_message_with_explicit_opt_out()
+        {
+            TestAsset testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource();
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute("/p:_NETCoreSdkIsPreview=true", "/p:SuppressNETCoreSdkPreviewMessage=true")
+                .Should()
+                .Pass()
+                .And.NotHaveStdOutContaining(Strings.UsingPreviewSdk);
+        }
+
+        [Fact]
+        public void It_does_not_display_preview_message_with_nowarn_opt_out()
+        {
+            TestAsset testAsset = _testAssetsManager
+                .CopyTestAsset("HelloWorld")
+                .WithSource();
+
+            var buildCommand = new BuildCommand(testAsset);
+
+            buildCommand
+                .Execute("/p:_NETCoreSdkIsPreview=true", "/p:NoWarn=NETSDK1057")
+                .Should()
+                .Pass()
+                .And.NotHaveStdOutContaining(Strings.UsingPreviewSdk);
+        }
+
+        [Fact]
         public void It_does_not_display_a_preview_message_when_using_a_release_Sdk()
         {
             TestAsset testAsset = _testAssetsManager

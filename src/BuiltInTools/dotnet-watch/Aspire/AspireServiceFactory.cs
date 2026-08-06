@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Threading.Channels;
 using Aspire.Tools.Service;
 using Microsoft.Build.Graph;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -31,6 +32,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         private readonly ProjectLauncher _projectLauncher;
         private readonly AspireServerService _service;
         private readonly ProjectOptions _hostProjectOptions;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Lock to access:
@@ -41,17 +43,19 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
 
         private readonly Dictionary<string, Session> _sessions = [];
         private int _sessionIdDispenser;
+
         private volatile bool _isDisposed;
 
         public SessionManager(ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
         {
             _projectLauncher = projectLauncher;
             _hostProjectOptions = hostProjectOptions;
+            _logger = projectLauncher.LoggerFactory.CreateLogger(AspireLogComponentName);
 
             _service = new AspireServerService(
                 this,
                 displayName: ".NET Watch Aspire Server",
-                m => projectLauncher.Reporter.Verbose(m, MessageEmoji));
+                m => _logger.LogDebug(m));
         }
 
         public async ValueTask DisposeAsync()
@@ -79,17 +83,11 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 _sessions.Clear();
             }
 
-            foreach (var session in sessions)
-            {
-                await TerminateSessionAsync(session, cancellationToken);
-            }
+            await Task.WhenAll(sessions.Select(TerminateSessionAsync)).WaitAsync(cancellationToken);
         }
 
         public IEnumerable<(string name, string value)> GetEnvironmentVariables()
             => _service.GetServerConnectionEnvironment().Select(kvp => (kvp.Key, kvp.Value));
-
-        private IReporter Reporter
-            => _projectLauncher.Reporter;
 
         /// <summary>
         /// Implements https://github.com/dotnet/aspire/blob/445d2fc8a6a0b7ce3d8cc42def4d37b02709043b/docs/specs/IDE-execution.md#create-session-request.
@@ -108,18 +106,35 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         {
             ObjectDisposedException.ThrowIf(_isDisposed, this);
 
-            Reporter.Verbose($"Starting project: {projectOptions.ProjectPath}", MessageEmoji);
+            _logger.LogDebug("Starting project: {Path}", projectOptions.ProjectPath);
 
             var processTerminationSource = new CancellationTokenSource();
             var outputChannel = Channel.CreateUnbounded<OutputLine>(s_outputChannelOptions);
 
-            var runningProject = await _projectLauncher.TryLaunchProcessAsync(
+            RunningProject? runningProject = null;
+
+            runningProject = await _projectLauncher.TryLaunchProcessAsync(
                 projectOptions,
                 processTerminationSource,
                 onOutput: line =>
                 {
                     var writeResult = outputChannel.Writer.TryWrite(line);
                     Debug.Assert(writeResult);
+                },
+                onExit: async (processId, exitCode) =>
+                {
+                    // Project can be null if the process exists while it's being initialized.
+                    if (runningProject?.IsRestarting == false)
+                    {
+                        try
+                        {
+                            await _service.NotifySessionEndedAsync(dcpId, sessionId, processId, exitCode, cancellationToken);
+                        }
+                        catch (OperationCanceledException)
+                        {
+                            // canceled on shutdown, ignore
+                        }
+                    }
                 },
                 restartOperation: cancellationToken =>
                     StartProjectAsync(dcpId, sessionId, projectOptions, isRestart: true, cancellationToken),
@@ -134,7 +149,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             await _service.NotifySessionStartedAsync(dcpId, sessionId, runningProject.ProcessId, cancellationToken);
 
             // cancel reading output when the process terminates:
-            var outputReader = StartChannelReader(processTerminationSource.Token);
+            var outputReader = StartChannelReader(runningProject.ProcessExitedCancellationToken);
 
             lock (_guard)
             {
@@ -145,7 +160,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 _sessions[sessionId] = new Session(dcpId, sessionId, runningProject, outputReader);
             }
 
-            Reporter.Verbose($"Session started: #{sessionId}", MessageEmoji);
+            _logger.LogDebug("Session started: #{SessionId}", sessionId);
             return runningProject;
 
             async Task StartChannelReader(CancellationToken cancellationToken)
@@ -157,13 +172,12 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                         await _service.NotifyLogMessageAsync(dcpId, sessionId, isStdErr: line.IsError, data: line.Content, cancellationToken);
                     }
                 }
-                catch (OperationCanceledException)
-                {
-                    // nop
-                }
                 catch (Exception e)
                 {
-                    Reporter.Error($"Unexpected error reading output of session '{sessionId}': {e}");
+                    if (!cancellationToken.IsCancellationRequested)
+                    {
+                        _logger.LogError("Unexpected error reading output of session '{SessionId}': {Exception}", sessionId, e);
+                    }
                 }
             }
         }
@@ -186,18 +200,15 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
                 _sessions.Remove(sessionId);
             }
 
-            await TerminateSessionAsync(session, cancellationToken);
+            await TerminateSessionAsync(session);
             return true;
         }
 
-        private async ValueTask TerminateSessionAsync(Session session, CancellationToken cancellationToken)
+        private async Task TerminateSessionAsync(Session session)
         {
-            Reporter.Verbose($"Stop session #{session.Id}", MessageEmoji);
+            _logger.LogDebug("Stop session #{SessionId}", session.Id);
 
-            var exitCode = await _projectLauncher.TerminateProcessAsync(session.RunningProject, cancellationToken);
-
-            // Wait until the started notification has been sent so that we don't send out of order notifications:
-            await _service.NotifySessionEndedAsync(session.DcpId, session.Id, session.RunningProject.ProcessId, exitCode, cancellationToken);
+            await session.RunningProject.TerminateAsync();
 
             // process termination should cancel output reader task:
             await session.OutputReader;
@@ -211,7 +222,7 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
             {
                 IsRootProject = false,
                 ProjectPath = projectLaunchInfo.ProjectPath,
-                WorkingDirectory = _projectLauncher.EnvironmentOptions.WorkingDirectory,
+                WorkingDirectory = Path.GetDirectoryName(projectLaunchInfo.ProjectPath) ?? throw new InvalidOperationException(),
                 BuildArguments = _hostProjectOptions.BuildArguments,
                 Command = "run",
                 CommandArguments = GetRunCommandArguments(projectLaunchInfo, hostLaunchProfile),
@@ -265,10 +276,10 @@ internal class AspireServiceFactory : IRuntimeProcessLauncherFactory
         }
     }
 
-    public const string MessageEmoji = "⭐";
-
     public static readonly AspireServiceFactory Instance = new();
-    public const string AppHostProjectCapability = "Aspire";
+
+    public const string AspireLogComponentName = "Aspire";
+    public const string AppHostProjectCapability = ProjectCapability.Aspire;
 
     public IRuntimeProcessLauncher? TryCreate(ProjectGraphNode projectNode, ProjectLauncher projectLauncher, ProjectOptions hostProjectOptions)
         => projectNode.GetCapabilities().Contains(AppHostProjectCapability)

@@ -13,9 +13,9 @@ namespace Microsoft.NET.TestFramework
             "An error occurred while sending the request"
         };
 
-        public static bool IsTransientError(string errorMessage)
+        public static bool IsTransientError(string? errorMessage)
         {
-            return errorMessage.Contains("NuGet.targets") && _errorSubstrings.Any(errorMessage.Contains);
+            return errorMessage is not null && errorMessage.Contains("NuGet.targets") && _errorSubstrings.Any(errorMessage.Contains);
         }
     }
 }

@@ -117,8 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="AssemblyLoaded" xml:space="preserve">
+    <value>Assembly '{0}' loaded.</value>
+  </data>
+  <data name="AssemblyReferenceLoaded" xml:space="preserve">
+    <value>Assembly '{0}' referenced by '{1}' loaded.</value>
+  </data>
   <data name="CouldNotResolveReference" xml:space="preserve">
-    <value>Could not resolve reference '{0}' in any of the provided search directories.</value>
+    <value>Could not resolve reference '{0}' directly or transitively referenced by {1} in any of the provided search directories.</value>
+  </data>
+  <data name="LoadingAssemblies" xml:space="preserve">
+    <value>Loading assemblies '{0}'.</value>
+  </data>
+  <data name="LoadingAssembliesFromArchive" xml:space="preserve">
+    <value>Loading assemblies '{0}' ({1}).</value>
+  </data>
+  <data name="LoadingAssembly" xml:space="preserve">
+    <value>Loading assembly '{0}'.</value>
+  </data>
+  <data name="LoadingAssemblyFromStream" xml:space="preserve">
+    <value>Loading assembly '{0}' from stream.</value>
   </data>
   <data name="MatchingAssemblyNotFound" xml:space="preserve">
     <value>Could not find matching assembly: '{0}' in any of the search directories.</value>
@@ -128,6 +146,12 @@
   </data>
   <data name="ProvidedStreamDoesNotHaveMetadata" xml:space="preserve">
     <value>Provided stream for assembly '{0}' doesn't have any metadata to read. from.</value>
+  </data>
+  <data name="RootAssemblyDisplayString" xml:space="preserve">
+    <value>'{0}'</value>
+  </data>
+  <data name="RootAssemblyFromPackageDisplayString" xml:space="preserve">
+    <value>'{0}' ({1})</value>
   </data>
   <data name="ShouldNotBeNullAndContainAtLeastOneElement" xml:space="preserve">
     <value>Should not be null and contain at least one element.</value>

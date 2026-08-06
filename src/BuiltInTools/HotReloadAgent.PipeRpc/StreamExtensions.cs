@@ -1,5 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation. All rights reserved.
 
+#nullable enable
+
 using System;
 using System.Buffers;
 using System.Buffers.Binary;

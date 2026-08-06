@@ -1,6 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
+  <PropertyGroup>
+    <MajorMinorVersion>$([System.Version]::Parse('17.12.11.10').ToString(2))</MajorMinorVersion>
+    <String_Replace>$([System.Text.RegularExpressions.Regex]::Replace('abc123def', 'abc', ''))</String_Replace>
+    <String_Equals>$([System.String]::new('Hi').Equals('Hi'))</String_Equals>
+    <FileName>$([System.IO.Path]::GetFileNameWithoutExtension('C:\folder\file.txt'))</FileName>
+    <NumberToString>$([System.Int32]::new(123).ToString('mm')</NumberToString>
+    <Directory>$([Microsoft.Build.Evaluation.IntrinsicFunctions]::NormalizeDirectory('C:/folder1/./folder2/'))</Directory>
+    <IsWindows>$([Microsoft.Build.Evaluation.IntrinsicFunctions]::IsOSPlatform('Windows'))</IsWindows>
+    <!-- Functions from Microsoft.Build.Utilities.ToolLocationHelper are pending to add fast path, tracked by https://github.com/dotnet/msbuild/issues/10411.
+    Comment out this for testing once it's done.
+    <PlatformSdkLocation>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSDKLocation('Windows', ''))</PlatformSdkLocation>
+    <PlatformDisplayName>$([Microsoft.Build.Utilities.ToolLocationHelper]::GetPlatformSDKDisplayName('Windows', ''))</PlatformDisplayName>
+    -->
+  </PropertyGroup>
+
   <Target Name="SayHello">
     <Message Importance="high" Text="Hello, from MSBuild!" />
   </Target>

@@ -25,7 +25,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             return tempFileFullPath;
         }
 
-        public static bool UpdateDestinationConnectionStringEntries(string destinationAppSettingsFilePath, ITaskItem[] destinationConnectionStrings)
+        public static bool UpdateDestinationConnectionStringEntries(string destinationAppSettingsFilePath, ITaskItem[]? destinationConnectionStrings)
         {
             if (!File.Exists(destinationAppSettingsFilePath))
             {
@@ -39,7 +39,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
 
             string appSettingsJsonContent = File.ReadAllText(destinationAppSettingsFilePath);
             var appSettingsModel = FromJson<AppSettingsModel>(appSettingsJsonContent);
-            if (appSettingsModel.ConnectionStrings == null)
+            if (appSettingsModel is not null && appSettingsModel.ConnectionStrings is null)
             {
                 appSettingsModel.ConnectionStrings = new Dictionary<string, string>();
             }
@@ -48,7 +48,10 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
             {
                 string key = destinationConnectionString.ItemSpec;
                 string Value = destinationConnectionString.GetMetadata("Value");
-                appSettingsModel.ConnectionStrings[key] = Value;
+                if (appSettingsModel?.ConnectionStrings is not null)
+                {
+                    appSettingsModel.ConnectionStrings[key] = Value;
+                }
             }
 
             File.WriteAllText(destinationAppSettingsFilePath, ToJson(appSettingsModel));
@@ -65,7 +68,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks
                 });
         }
 
-        private static T FromJson<T>(string jsonString)
+        private static T? FromJson<T>(string jsonString)
         {
             return JsonSerializer.Deserialize<T>(jsonString,
                 new JsonSerializerOptions

@@ -27,16 +27,21 @@ Copyright (c) .NET Foundation. All rights reserved.
   <PropertyGroup>
     <!-- Paths to tools, tasks, and extensions are calculated relative to the BlazorWebAssemblySdkDirectoryRoot. This can be modified to test a local build. -->
     <BlazorWebAssemblySdkDirectoryRoot Condition="'$(BlazorWebAssemblySdkDirectoryRoot)'==''">$(MSBuildThisFileDirectory)..\</BlazorWebAssemblySdkDirectoryRoot>
-    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net9.0</_BlazorWebAssemblySdkTasksTFM>
+    <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' == 'Core'">net10.0</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksTFM Condition=" '$(MSBuildRuntimeType)' != 'Core'">net472</_BlazorWebAssemblySdkTasksTFM>
     <_BlazorWebAssemblySdkTasksAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\$(_BlazorWebAssemblySdkTasksTFM)\Microsoft.NET.Sdk.BlazorWebAssembly.Tasks.dll</_BlazorWebAssemblySdkTasksAssembly>
-    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net9.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
+    <_BlazorWebAssemblySdkToolAssembly>$(BlazorWebAssemblySdkDirectoryRoot)tools\net10.0\Microsoft.NET.Sdk.BlazorWebAssembly.Tool.dll</_BlazorWebAssemblySdkToolAssembly>
   </PropertyGroup>
 
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.CreateBlazorTrimmerRootDescriptorFile" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
   <UsingTask TaskName="Microsoft.NET.Sdk.BlazorWebAssembly.GenerateBlazorBootExtensionJson" AssemblyFile="$(_BlazorWebAssemblySdkTasksAssembly)" />
 
   <PropertyGroup>
+    <_TargetingNETBefore80>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '8.0'))</_TargetingNETBefore80>
+    <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
+    <_TargetingNETBefore100>$([MSBuild]::VersionLessThan('$(TargetFrameworkVersion)', '10.0'))</_TargetingNETBefore100>
+    <_TargetingNET100OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))</_TargetingNET100OrLater>
+
     <SelfContained>true</SelfContained>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 
@@ -44,18 +49,23 @@ Copyright (c) .NET Foundation. All rights reserved.
     <InvariantGlobalization Condition="'$(InvariantGlobalization)' == ''">false</InvariantGlobalization>
     <EventSourceSupport Condition="'$(EventSourceSupport)' == ''">false</EventSourceSupport>
     <UseSystemResourceKeys Condition="'$(UseSystemResourceKeys)' == ''">true</UseSystemResourceKeys>
+    <UseSizeOptimizedLinq Condition="'$(UseSizeOptimizedLinq)' == ''">true</UseSizeOptimizedLinq>
     <EnableUnsafeUTF7Encoding Condition="'$(EnableUnsafeUTF7Encoding)' == ''">false</EnableUnsafeUTF7Encoding>
+    <Http3Support Condition="'$(Http3Support)' == ''">false</Http3Support>
     <HttpActivityPropagationSupport Condition="'$(HttpActivityPropagationSupport)' == ''">false</HttpActivityPropagationSupport>
     <DebuggerSupport Condition="'$(DebuggerSupport)' == '' and '$(Configuration)' != 'Debug'">false</DebuggerSupport>
-    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == ''">true</BlazorCacheBootResources>
+    <BlazorCacheBootResources Condition="'$(BlazorCacheBootResources)' == '' and '$(_TargetingNET100OrLater)' != 'true'">true</BlazorCacheBootResources>
+    <BlazorFingerprintBlazorJs Condition="'$(BlazorFingerprintBlazorJs)' == '' and '$(OverrideHtmlAssetPlaceholders)' == 'true'">true</BlazorFingerprintBlazorJs>
 
-    <_TargetingNET80OrLater>$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '8.0'))</_TargetingNET80OrLater>
-    <WasmFingerprintDotnetJs>true</WasmFingerprintDotnetJs>
-    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true'">false</WasmFingerprintDotnetJs>
+    <!--  8 <  .NET      we want to fingerprint dotnet.js because it's part of the blazor.boot.json which is loaded from blazor.webassembly.js -->
+    <!--  8 <= .NET < 10 we don't want to fingerprint dotnet.js because it's path is hardcoded in blazor.webassembly.js -->
+    <!-- 10 <= .NET      we want to leave fingerprinting to WasmSDK because it knows if import maps where applied -->
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNETBefore80)' == 'true'">true</WasmFingerprintDotnetJs>
+    <WasmFingerprintDotnetJs Condition="'$(_TargetingNET80OrLater)' == 'true' and '$(_TargetingNETBefore100)' == 'true'">false</WasmFingerprintDotnetJs>
     <WasmEnableWebcil Condition="'$(WasmEnableWebcil)' == '' and ('$(TargetFrameworkIdentifier)' != '.NETCoreApp' or '$(_TargetingNET80OrLater)' != 'true')">false</WasmEnableWebcil>
 
-    <!-- Turn off parts of the build that do not apply to Blazor projects -->
-    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <!-- Turn off parts of the build that do not apply to Blazor projects until Net10 -->
+    <GenerateRuntimeConfigurationFiles Condition="'$(_TargetingNETBefore100)' == 'true'">false</GenerateRuntimeConfigurationFiles>
 
     <!-- Don't generate a NETSDK1151 error if a non self-contained Exe references a Blazor Exe -->
     <ShouldBeValidatedAsExecutableReference>false</ShouldBeValidatedAsExecutableReference>
@@ -75,6 +85,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       $(GenerateBuildWasmBootJsonDependsOn);
       GenerateBuildBlazorBootExtensionJson;
     </GenerateBuildWasmBootJsonDependsOn>
+
+    <ResolvePublishRelatedStaticWebAssetsDependsOn>
+      $(ResolvePublishRelatedStaticWebAssetsDependsOn);
+    </ResolvePublishRelatedStaticWebAssetsDependsOn>
+    <ResolveCompressedFilesForPublishDependsOn>
+      $(ResolveCompressedFilesForPublishDependsOn);
+    </ResolveCompressedFilesForPublishDependsOn>
 
     <GeneratePublishWasmBootJsonDependsOn>
       $(GeneratePublishWasmBootJsonDependsOn);
@@ -97,6 +114,8 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_BlazorJsFile>
         <RelativePath>_framework/%(Filename)%(Extension)</RelativePath>
       </_BlazorJsFile>
+      <!-- Fingerprint only javascript files -->
+      <_BlazorJSFingerprintPattern Include="Js" Pattern="*.js" Expression="#[.{fingerprint}]!" />
 
       <!-- A missing blazor.webassembly.js is our packaging error. Produce an error so it's discovered early. -->
       <Error
@@ -107,6 +126,8 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <DefineStaticWebAssets
       CandidateAssets="@(_BlazorJSFile)"
+      FingerprintCandidates="$(BlazorFingerprintBlazorJs)"
+      FingerprintPatterns="@(_BlazorJSFingerprintPattern)"
       SourceId="$(PackageId)"
       SourceType="Computed"
       AssetKind="All"

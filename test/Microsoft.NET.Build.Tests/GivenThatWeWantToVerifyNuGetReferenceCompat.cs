@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
@@ -39,16 +41,16 @@ namespace Microsoft.NET.Build.Tests
 
             // Process all dependencies in parallel
             Parallel.ForEach(
-                rawDependencyTargets.Split(',', ';', ' ').Where(s => !string.IsNullOrWhiteSpace(s)), 
+                rawDependencyTargets.Split(',', ';', ' ').Where(s => !string.IsNullOrWhiteSpace(s)),
                 new ParallelOptions { MaxDegreeOfParallelism = Environment.ProcessorCount },
-                dependencyTarget => 
+                dependencyTarget =>
                 {
                     // Create the dependency project and package
                     TestProject dependencyProject = GetTestProject(
-                        ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'), 
-                        dependencyTarget, 
+                        ConstantStringValues.DependencyDirectoryNamePrefix + dependencyTarget.Replace('.', '_'),
+                        dependencyTarget,
                         true);
-                        
+
                     TestPackageReference dependencyPackageReference = new(
                         dependencyProject.Name,
                         "1.0.0",
@@ -206,7 +208,7 @@ namespace Microsoft.NET.Build.Tests
             buildCommand.Execute().Should().Pass();
 
             var referencedDll = buildCommand.GetOutputDirectory().File("net462_net472_pkg.dll").FullName;
-            var referencedTargetFramework = AssemblyInfo.Get(referencedDll)["TargetFrameworkAttribute"];
+            var referencedTargetFramework = AssemblyInfo.Get(referencedDll).Where(i => i.Key == "TargetFrameworkAttribute").Single().Value;
             referencedTargetFramework.Should().Be(".NETFramework,Version=v4.6.2");
         }
 
