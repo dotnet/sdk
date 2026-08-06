@@ -10,7 +10,7 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
 {
     private readonly Func<CancellationToken, Task<TelemetryDrainResult>> _drainAsync;
     private readonly SemaphoreSlim _drainSignal = new(0, 1);
-    private readonly object _sync = new();
+    private readonly object _syncLock = new();
     private CancellationTokenSource? _cancellation;
     private int _drainRequested;
     private bool _shutdown;
@@ -32,7 +32,7 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
 
     public void RequestDrain()
     {
-        lock (_sync)
+        lock (_syncLock)
         {
             if (_shutdown)
             {
@@ -56,7 +56,7 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
     {
         CancellationTokenSource? cancellation;
         Task? task;
-        lock (_sync)
+        lock (_syncLock)
         {
             _shutdown = true;
             cancellation = _cancellation;
