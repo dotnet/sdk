@@ -37,6 +37,7 @@ namespace Microsoft.DotNet.Watch
         private readonly TaskCompletionSource _terminateWebSocket;
         private readonly TaskCompletionSource _browserConnected;
         private readonly string? _environmentHostName;
+        private readonly ImmutableArray<string> _autoReloadWebSocketOrigins;
 
         // initialized by StartAsync
         private IHost? _refreshServer;
@@ -52,6 +53,7 @@ namespace Microsoft.DotNet.Watch
             _terminateWebSocket = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _browserConnected = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             _environmentHostName = EnvironmentVariables.AutoReloadWSHostName;
+            _autoReloadWebSocketOrigins = EnvironmentVariables.AutoReloadWSOrigins;
         }
 
         public async ValueTask DisposeAsync()
@@ -118,10 +120,21 @@ namespace Microsoft.DotNet.Watch
                         builder.UseUrls($"http://{hostName}:0");
                     }
 
+                    var allowedHosts = new List<string>() { "localhost", "127.0.0.1" };
+                    if (!_autoReloadWebSocketOrigins.IsDefault)
+                    {
+                        allowedHosts.AddRange(_autoReloadWebSocketOrigins);
+                    }
+
+                    if (_environmentHostName != null)
+                    {
+                        allowedHosts.Add(_environmentHostName);
+                    }
+
                     builder.Configure(app =>
                     {
                         app.UseWebSockets();
-                        app.Run(context => WebSocketRequestAsync(context, allowedHosts: autoReloadWebSocketHostName != null ? [hostName] : [hostName, "localhost"]));
+                        app.Run(context => WebSocketRequestAsync(context, [.. allowedHosts]));
                     });
                 })
                 .Build();
