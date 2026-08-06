@@ -84,6 +84,10 @@ internal sealed class StartupHook
                 var payloadType = (RequestType)await pipeClient.ReadByteAsync(cancellationToken);
                 switch (payloadType)
                 {
+                    case RequestType.SetEnvironmentVariables:
+                        await SetEnvironmentVariablesAsync(pipeClient, cancellationToken).ConfigureAwait(false);
+                        break;
+
                     case RequestType.ManagedCodeUpdate:
                         // Shouldn't get initial managed code updates when the debugger is attached.
                         // The debugger itself applies these updates when launching process with the debugger attached.
@@ -121,6 +125,29 @@ internal sealed class StartupHook
                 agent.Dispose();
             }
         }
+    }
+
+    private static async Task SetEnvironmentVariablesAsync(NamedPipeClientStream pipeClient, CancellationToken cancellationToken)
+    {
+        var environmentVariableCount = await pipeClient.ReadInt32Async(cancellationToken).ConfigureAwait(false);
+
+        Log($"Setting environment variables ({environmentVariableCount})");
+
+        for (var i = 0; i < environmentVariableCount; i++)
+        {
+            var name = await pipeClient.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            var value = await pipeClient.ReadStringAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                Environment.SetEnvironmentVariable(name, value);
+            }
+            catch (Exception e)
+            {
+                Log($"Unable to set environment variable '{name}' = '{value}': {e.Message}");
+            }
+        }
+
+        await pipeClient.WriteAsync([(byte)ResponseType.EnvironmentVariablesSet], cancellationToken).ConfigureAwait(false);
     }
 
     private static async ValueTask ReadAndApplyManagedCodeUpdateAsync(

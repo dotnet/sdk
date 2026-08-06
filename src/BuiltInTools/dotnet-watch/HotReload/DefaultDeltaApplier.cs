@@ -17,7 +17,7 @@ namespace Microsoft.DotNet.Watch
         private NamedPipeServerStream? _pipe;
         private bool _managedCodeUpdateFailedOrCancelled;
 
-        public override void CreateConnection(string namedPipeName, CancellationToken cancellationToken)
+        public override void CreateConnection(string namedPipeName, IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
         {
             _pipe = new NamedPipeServerStream(namedPipeName, PipeDirection.InOut, 1, PipeTransmissionMode.Byte, PipeOptions.Asynchronous | PipeOptions.CurrentUserOnly);
 
@@ -38,6 +38,10 @@ namespace Microsoft.DotNet.Watch
 
                     var capabilities = (await ClientInitializationResponse.ReadAsync(_pipe, cancellationToken)).Capabilities;
                     Reporter.Verbose($"Capabilities: '{capabilities}'");
+
+                    // Initialize process:
+                    await SetEnvironmentVariablesAsync(environmentVariables, cancellationToken);
+
                     return [.. capabilities.Split(' ')];
                 }
                 catch (EndOfStreamException)
@@ -50,11 +54,37 @@ namespace Microsoft.DotNet.Watch
                     // pipe might throw another exception when forcibly closed on process termination:
                     if (!cancellationToken.IsCancellationRequested)
                     {
-                        Reporter.Error($"Failed to read capabilities: {e.Message}");
+                        Reporter.Error($"Failed to read capabilities: {e}");
                     }
 
                     return [];
                 }
+            }
+        }
+
+        public async ValueTask SetEnvironmentVariablesAsync(IReadOnlyCollection<(string name, string value)> environmentVariables, CancellationToken cancellationToken)
+        {
+            if (environmentVariables.Count == 0)
+            {
+                return;
+            }
+
+            Debug.Assert(_pipe != null);
+
+            // Send a request to set environment variables:
+            await _pipe.WriteAsync((byte)RequestType.SetEnvironmentVariables, cancellationToken);
+            await _pipe.WriteAsync(environmentVariables.Count, cancellationToken);
+            foreach (var (name, value) in environmentVariables)
+            {
+                await _pipe.WriteAsync(name, cancellationToken);
+                await _pipe.WriteAsync(value, cancellationToken);
+            }
+
+            // Wait until the environment variables are set in the target process:
+            var responseType = (ResponseType)await _pipe.ReadByteAsync(cancellationToken);
+            if (responseType != ResponseType.EnvironmentVariablesSet)
+            {
+                throw new InvalidOperationException($"Unexpected response received from the agent: {responseType}");
             }
         }
 
