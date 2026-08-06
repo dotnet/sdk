@@ -502,8 +502,8 @@ Or open a new terminal.</target>
         <note>{0} is the count of additional migration candidates not individually listed.</note>
       </trans-unit>
       <trans-unit id="SummaryModeConfiguration">
-        <source>{0} modifies {1} to set {2} and {3} to {4}.</source>
-        <target state="new">{0} modifies {1} to set {2} and {3} to {4}.</target>
+        <source>{0} modifies {1} to set {2} and {3} to prefer {4}.</source>
+        <target state="new">{0} modifies {1} to set {2} and {3} to prefer {4}.</target>
         <note>{0} is the suggested mode name; {1} is one or more shell profile paths or the system environment variables; {2} is PATH; {3} is DOTNET_ROOT; {4} is the dotnetup install path.</note>
       </trans-unit>
       <trans-unit id="SummaryModeCurrent">

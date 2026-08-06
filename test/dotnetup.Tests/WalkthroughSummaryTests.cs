@@ -108,6 +108,17 @@ public class WalkthroughSummaryTests
         }
     }
 
+    [TestMethod]
+    public void BuildModeDescription_TerminalModeWithoutShellProvider_ThrowsProductException()
+    {
+        var plan = CreatePlan(DotnetAccessMode.Shell, shellProvider: null);
+
+        var exception = Assert.ThrowsExactly<DotnetInstallException>(
+            () => WalkthroughSummary.BuildModeDescription(plan));
+
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.Unknown);
+    }
+
     private static WalkthroughPlan CreatePlan(DotnetAccessMode accessMode, IEnvShellProvider? shellProvider)
         => new(
             new DotnetInstallRoot("dotnetup-hive", InstallArchitecture.x64),

@@ -109,8 +109,7 @@ internal static class WalkthroughSummary
     {
         string mode = DotnetupTheme.Accent(DotnetAccessModeDisplay.GetName(plan.AccessMode).EscapeMarkup());
 
-        if (plan.AccessMode is DotnetAccessMode.None
-            || (plan.AccessMode is DotnetAccessMode.Shell && plan.ShellProvider is null))
+        if (plan.AccessMode is DotnetAccessMode.None)
         {
             string currentShell = DotnetupTheme.Accent(ShellDetection.GetCurrentShellDisplayName().EscapeMarkup());
             string supportedShells = DotnetupTheme.Accent(
@@ -131,7 +130,9 @@ internal static class WalkthroughSummary
                 shellProvider.GetProfilePaths().Select(path => DotnetupTheme.Accent(path.EscapeMarkup()))),
             DotnetAccessMode.Everywhere => DotnetupTheme.Accent(
                 Strings.SummaryModeSystemEnvironmentVariables.EscapeMarkup()),
-            _ => throw new InvalidOperationException($"Unsupported access mode '{plan.AccessMode}'."),
+            _ => throw new DotnetInstallException(
+                DotnetInstallErrorCode.Unknown,
+                $"Unable to describe access mode '{plan.AccessMode}' with the resolved shell provider."),
         };
 
         return string.Format(
