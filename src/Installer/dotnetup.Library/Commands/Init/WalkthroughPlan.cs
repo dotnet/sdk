@@ -17,9 +17,11 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// <param name="Migrations">The system installs eligible for migration under the recommended mode.</param>
 /// <param name="ChannelDisplay">Display information for the SDK channel line.</param>
 /// <param name="ShellProvider">The resolved shell provider used to recommend and describe terminal mode.</param>
+/// <param name="InstallRootGlobalJsonPath">The global.json that supplied the install root, if any.</param>
 internal sealed record WalkthroughPlan(
     DotnetInstallRoot InstallRoot,
     DotnetAccessMode AccessMode,
     List<MigrationWorkflow.MigrationSelection> Migrations,
     DefaultChannelDisplay ChannelDisplay,
-    IEnvShellProvider? ShellProvider);
+    IEnvShellProvider? ShellProvider,
+    string? InstallRootGlobalJsonPath);

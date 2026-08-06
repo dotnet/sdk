@@ -511,6 +511,11 @@ Or open a new terminal.</target>
         <target state="new">current: {0}</target>
         <note>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</note>
       </trans-unit>
+      <trans-unit id="SummaryModeInstallRootGlobalJsonSuffix">
+        <source>(inferred from {0})</source>
+        <target state="new">(inferred from {0})</target>
+        <note>{0} is the path to the global.json file that supplied the dotnetup install root.</note>
+      </trans-unit>
       <trans-unit id="SummaryModeLabel">
         <source>Mode:</source>
         <target state="new">Mode:</target>

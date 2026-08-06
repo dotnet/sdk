@@ -94,6 +94,21 @@ public class WalkthroughSummaryTests
     }
 
     [TestMethod]
+    public void BuildModeDescription_GlobalJsonInstallRoot_ShowsSourcePath()
+    {
+        const string globalJsonPath = "repo-root/global.json";
+        var plan = CreatePlan(
+            DotnetAccessMode.Everywhere,
+            shellProvider: null,
+            installRootGlobalJsonPath: globalJsonPath);
+
+        string description = WalkthroughSummary.BuildModeDescription(plan);
+
+        description.Should().Contain("inferred from");
+        description.Should().Contain(DotnetupTheme.Accent(globalJsonPath));
+    }
+
+    [TestMethod]
     public void BuildModeDescription_IsolationMode_ExplainsUnsupportedShell()
     {
         var plan = CreatePlan(DotnetAccessMode.None, shellProvider: null);
@@ -119,11 +134,15 @@ public class WalkthroughSummaryTests
         exception.ErrorCode.Should().Be(DotnetInstallErrorCode.Unknown);
     }
 
-    private static WalkthroughPlan CreatePlan(DotnetAccessMode accessMode, IEnvShellProvider? shellProvider)
+    private static WalkthroughPlan CreatePlan(
+        DotnetAccessMode accessMode,
+        IEnvShellProvider? shellProvider,
+        string? installRootGlobalJsonPath = null)
         => new(
             new DotnetInstallRoot("dotnetup-hive", InstallArchitecture.x64),
             accessMode,
             [],
             new DefaultChannelDisplay("latest", GlobalJsonPath: null),
-            shellProvider);
+            shellProvider,
+            installRootGlobalJsonPath);
 }

@@ -135,6 +135,15 @@ internal static class WalkthroughSummary
                 $"Unable to describe access mode '{plan.AccessMode}' with the resolved shell provider."),
         };
 
+        string installRoot = DotnetupTheme.Accent(plan.InstallRoot.Path.EscapeMarkup());
+        if (plan.InstallRootGlobalJsonPath is { } globalJsonPath)
+        {
+            installRoot += " " + string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.SummaryModeInstallRootGlobalJsonSuffix,
+                DotnetupTheme.Accent(globalJsonPath.EscapeMarkup()));
+        }
+
         return string.Format(
             CultureInfo.InvariantCulture,
             Strings.SummaryModeConfiguration,
@@ -142,7 +151,7 @@ internal static class WalkthroughSummary
             configurationTarget,
             DotnetupTheme.Accent("PATH"),
             DotnetupTheme.Accent("DOTNET_ROOT"),
-            DotnetupTheme.Accent(plan.InstallRoot.Path.EscapeMarkup()));
+            installRoot);
     }
 
     private static void RenderChannelLine(DefaultChannelDisplay channel)

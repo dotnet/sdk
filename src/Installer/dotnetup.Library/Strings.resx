@@ -457,6 +457,10 @@ Or open a new terminal.</value>
   <data name="SummaryModeSystemEnvironmentVariables" xml:space="preserve">
     <value>the system environment variables</value>
   </data>
+  <data name="SummaryModeInstallRootGlobalJsonSuffix" xml:space="preserve">
+    <value>(inferred from {0})</value>
+    <comment>{0} is the path to the global.json file that supplied the dotnetup install root.</comment>
+  </data>
   <data name="SummaryModeUnsupportedShell" xml:space="preserve">
     <value>{0} is suggested because the current shell ({1}) cannot be detected or is not supported. Supported shells: {2}.</value>
     <comment>{0} is the suggested isolation mode name; {1} is the current SHELL value or "(not set)"; {2} is the list of supported shell names.</comment>
