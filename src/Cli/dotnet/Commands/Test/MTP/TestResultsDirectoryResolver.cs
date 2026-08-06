@@ -93,9 +93,10 @@ internal sealed class TestResultsDirectoryResolver
     }
 
     /// <summary>
-    /// A resolver that always yields the configured results directory, whatever the requested
-    /// layout. Used by internal invocations such as artifact post-processing, which merge results
-    /// across modules and so must not be scoped to a single module's directory.
+    /// A resolver that always yields the run-level results directory root, whatever the requested
+    /// layout. The root can come from an explicit results directory, artifacts output, or the
+    /// default results directory. Used by internal invocations such as artifact post-processing,
+    /// which merge results across modules and so must not be scoped to a single module's directory.
     /// </summary>
     public static TestResultsDirectoryResolver CreateShared(PathOptions pathOptions, string workingDirectory)
         => new(pathOptions, workingDirectory, workingDirectory, [], shared: true);
@@ -229,10 +230,10 @@ internal sealed class TestResultsDirectoryResolver
     }
 
     /// <summary>
-    /// The pivot folder distinguishing runs of the same project across target frameworks and
-    /// runtimes. Multiple elements are joined by an underscore, following the artifacts layout.
-    /// The configuration is deliberately not part of the pivot: a single test run targets one
-    /// configuration, so it would only ever add a constant level to every path.
+    /// The pivot folder distinguishing runs of the same project. Artifacts output reuses the
+    /// evaluated <c>ArtifactsPivots</c>, including configuration and any applicable target framework
+    /// or runtime identifier. An explicitly requested per-module layout instead uses target
+    /// framework and runtime or architecture.
     /// </summary>
     private string GetPivotDirectoryName(TestModule module)
     {
