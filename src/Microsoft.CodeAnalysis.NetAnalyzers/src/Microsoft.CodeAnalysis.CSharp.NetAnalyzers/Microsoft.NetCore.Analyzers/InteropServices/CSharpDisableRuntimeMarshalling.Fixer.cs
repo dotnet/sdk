@@ -107,15 +107,20 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
             }
 
-            if (operation.TargetMethod.Name == "StructureToPtr" && operation.Arguments[0].Value.Type!.IsUnmanagedType)
+            if (operation.TargetMethod.Name == "StructureToPtr")
             {
-                editor.ReplaceNode(syntax,
-                    editor.Generator.AssignmentStatement(
-                        SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression,
-                            (ExpressionSyntax)editor.Generator.CastExpression(editor.SemanticModel.Compilation.CreatePointerTypeSymbol(operation.Arguments[0].Value.Type!),
-                                operation.Arguments[1].Value.Syntax)),
-                        operation.Arguments[0].Value.Syntax));
-                return true;
+                IOperation structure = operation.Arguments.GetArgumentForParameterAtIndex(0).Value;
+                if (structure.Type!.IsUnmanagedType)
+                {
+                    IOperation destination = operation.Arguments.GetArgumentForParameterAtIndex(1).Value;
+                    editor.ReplaceNode(syntax,
+                        editor.Generator.AssignmentStatement(
+                            SyntaxFactory.PrefixUnaryExpression(SyntaxKind.PointerIndirectionExpression,
+                                (ExpressionSyntax)editor.Generator.CastExpression(editor.SemanticModel.Compilation.CreatePointerTypeSymbol(structure.Type!),
+                                    destination.Syntax)),
+                            structure.Syntax));
+                    return true;
+                }
             }
 
             if (operation.TargetMethod.Name == "PtrToStructure")
@@ -127,7 +132,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 }
                 else if (operation.TargetMethod.ReturnType.SpecialType == SpecialType.System_Object
                         && operation.Arguments.Length == 2
-                        && operation.Arguments[1].Value is ITypeOfOperation typeOf)
+                        && operation.Arguments.GetArgumentForParameterAtIndex(1).Value is ITypeOfOperation typeOf)
                 {
                     type = typeOf.TypeOperand;
                 }
@@ -139,7 +144,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 if (operation.Arguments.Length > 0)
                 {
                     SyntaxNode replacementNode;
-                    IOperation pointer = operation.Arguments[0].Value;
+                    IOperation pointer = operation.Arguments.GetArgumentForParameterAtIndex(0).Value;
                     if (type.IsNullableValueType() && type.GetNullableValueTypeUnderlyingType() is ITypeSymbol { IsUnmanagedType: true } underlyingType)
                     {
                         var nonNullPtrIdentifier = pointerIdentifierGenerator.NextIdentifier();
