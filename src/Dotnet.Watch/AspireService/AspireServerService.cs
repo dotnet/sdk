@@ -395,14 +395,16 @@ internal partial class AspireServerService : IAsyncDisposable
         }
 
         var success = false;
+        var lockAcquired = false;
         try
         {
             using var cancelTokenSource = CancellationTokenSource.CreateLinkedTokenSource(
                 cancellationToken, _shutdownCancellationSource.Token, connection.HttpRequestAborted);
 
             await _webSocketAccess.WaitAsync(cancelTokenSource.Token);
-            await connection.Socket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, endOfMessage: true, cancelTokenSource.Token);
+            lockAcquired = true;
 
+            await connection.Socket.SendAsync(new ArraySegment<byte>(messageBytes), WebSocketMessageType.Text, endOfMessage: true, cancelTokenSource.Token);
             success = true;
         }
         finally
@@ -413,7 +415,10 @@ internal partial class AspireServerService : IAsyncDisposable
                 _socketConnectionManager.RemoveSocketConnection(connection);
             }
 
-            _webSocketAccess.Release();
+            if (lockAcquired)
+            {
+                _webSocketAccess.Release();
+            }
         }
 
         return success;
