@@ -1,22 +1,28 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !CLI_AOT
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+#endif
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+#if !CLI_AOT
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
+#endif
 using Microsoft.DotNet.Cli.Utils;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.Utils.Extensions;
+#endif
 using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -26,6 +32,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
+#if !CLI_AOT
     /// <summary>
     /// A file put into the artifacts directory when build starts.
     /// It contains full path to the original source file to allow tracking down the input corresponding to the output.
@@ -80,6 +87,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         "RestoreUseSkipNonexistentTargets",
         "ProvideCommandLineArgs",
     ];
+#endif
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
     public static string TargetFramework => $"net{Product.TargetFrameworkVersion}";
@@ -94,6 +102,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public bool NoBuild { get; init; }
 
+#if !CLI_AOT
     /// <summary>
     /// Filled during <see cref="Execute"/>.
     /// </summary>
@@ -103,6 +112,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// Filled during <see cref="Execute"/>.
     /// </summary>
     public RunProperties? LastRunProperties { get; private set; }
+#endif
 
     /// <summary>
     /// If <see langword="true"/>, no build markers are written
@@ -117,6 +127,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
 
+#if !CLI_AOT
     public ImmutableArray<CSharpDirective> Directives
     {
         get
@@ -138,6 +149,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     public ImmutableArray<CSharpDirective> EvaluatedDirectives { get; private set; }
+#endif
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
@@ -686,9 +698,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
     }
-
+#else
+    public override int Execute() => throw new CommandNotAvailableInAotException();
 #endif
 
+#if !CLI_AOT
     /// <summary>
     /// Common info needed by <see cref="ComputeCacheEntry"/> but also later stages.
     /// </summary>
@@ -1176,16 +1190,33 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
+#endif
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, additionalGlobalProperties: null);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+#if !CLI_AOT
+    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The managed CLI supports Roslyn-based file directives; the Native AOT implementation uses the no-directive project builder.")]
+#endif
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
+#if CLI_AOT
+        // Roslyn's directive parser roots Assembly.Location, which is not Native AOT-compatible.
+        // Remove this fallback when https://github.com/dotnet/roslyn/issues/84574 is fixed.
+        if (File.ReadLines(Builder.EntryPointFileFullPath)
+            .Any(static line => line.TrimStart().StartsWith("#:", StringComparison.Ordinal)))
+        {
+            throw new CommandNotAvailableInAotException();
+        }
+
+        IProjectInstance project = Builder.CreateProjectInstanceWithoutDirectivesAsync(
+            projectCollection.Wrap(),
+            additionalGlobalProperties).AsTask().GetAwaiter().GetResult();
+
+        return project.Unwrap();
+#else
         var projectCollectionWrapped = projectCollection.Wrap();
 
         var result = Builder.CreateProjectInstanceAsync(
@@ -1197,6 +1228,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         EvaluatedDirectives = result.EvaluatedDirectives;
 
         return result.Project.Unwrap();
+#endif
     }
 
     /// <summary>
@@ -1218,6 +1250,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+#if !CLI_AOT
     public static readonly ErrorReporter ThrowingReporter =
         static (text, path, textSpan, message, innerException) =>
             throw new GracefulException(
@@ -1241,8 +1274,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var modifiedFile = RemoveDirectivesFromFile(sourceFile);
         (modifiedFile with { Path = targetFilePath }).Save();
     }
+#endif
 }
 
+#if !CLI_AOT
 internal sealed class RunFileBuildCacheEntry
 {
     private static StringComparer GlobalPropertiesComparer => StringComparer.OrdinalIgnoreCase;
@@ -1331,3 +1366,4 @@ internal enum BuildLevel
     /// </summary>
     All,
 }
+#endif

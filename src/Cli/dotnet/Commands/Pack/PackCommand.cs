@@ -1,22 +1,24 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !CLI_AOT
 using System.Collections.ObjectModel;
-using System.CommandLine;
 using System.CommandLine.Parsing;
-using System.Diagnostics.CodeAnalysis;
+#endif
+using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Restore;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
+#if !CLI_AOT
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using NuGet.Commands;
 using NuGet.Common;
+#endif
 
 namespace Microsoft.DotNet.Cli.Commands.Pack;
 
-[RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class PackCommand(
     MSBuildArgs msbuildArgs,
     bool noRestore,
@@ -74,6 +76,7 @@ public class PackCommand(
             });
     }
 
+#if !CLI_AOT
     private static LogLevel MappingVerbosityToNugetLogLevel(VerbosityOptions? verbosity)
     {
         return verbosity switch
@@ -129,6 +132,7 @@ public class PackCommand(
             return 1;
         return 0;
     }
+#endif
 
     public static int Run(ParseResult parseResult)
     {
@@ -141,7 +145,11 @@ public class PackCommand(
 
         if (args.Count > 0 && Path.GetExtension(args[0]).Equals(".nuspec", StringComparison.OrdinalIgnoreCase))
         {
+#if CLI_AOT
+            throw new CommandNotAvailableInAotException();
+#else
             return RunPackCommand(parseResult);
+#endif
         }
 
         // Fallback to MSBuild-based packing

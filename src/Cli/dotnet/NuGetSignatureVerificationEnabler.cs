@@ -1,9 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !CLI_AOT
 using Microsoft.DotNet.Cli.Commands.MSBuild;
-#endif
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli;
@@ -28,7 +26,6 @@ public static class NuGetSignatureVerificationEnabler
         forwardingApp.WithEnvironmentVariable(DotNetNuGetSignatureVerification, value);
     }
 
-#if !CLI_AOT
     public static void ConditionallyEnable(MSBuildForwardingApp forwardingApp, IEnvironmentProvider? environmentProvider = null)
     {
         ArgumentNullException.ThrowIfNull(forwardingApp, nameof(forwardingApp));
@@ -42,7 +39,6 @@ public static class NuGetSignatureVerificationEnabler
 
         forwardingApp.EnvironmentVariable(DotNetNuGetSignatureVerification, value);
     }
-#endif
 
     private static string GetSignatureVerificationEnablementValue(IEnvironmentProvider? environmentProvider)
     {

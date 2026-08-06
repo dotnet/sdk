@@ -122,7 +122,8 @@ bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
 can run entirely in AOT (`--version`, `--info`, and the AOT-capable `sln`
-subcommands) execute immediately and return.
+subcommands, plus `build`, `clean`, `msbuild`, `restore`, `pack`, and `publish` setup)
+execute immediately and return.
 Every other built-in command is wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
@@ -145,16 +146,27 @@ its full resolver set, deferral produces identical user-facing behavior. Out-of-
 process invocation only happens after a non-null spec, so a command is never
 executed twice.
 
-**MSBuild evaluation infrastructure** — The Native AOT closure includes the
-SDK-shipped workload and NuGet SDK resolvers and a reflection-free project evaluator
-that uses MSBuild's static resolver registration APIs. SDK-relative paths
-(`MSBuild.dll`, `Sdks`, `MSBuildExtensionsPath`, and the telemetry logger) come from
-`SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. This infrastructure is
-available to command handlers but is not registered or invoked during Native AOT
-startup yet. The shared `RestoringCommand` starts workload advertising and
-vulnerability-cache maintenance in both modes. Its AOT closure reuses the existing
-NuGet downloader, file-based and administrative-MSI manifest extraction, and read-only
-workload records without linking workload install/repair or elevated MSI IPC.
+**MSBuild evaluation and project commands** — The AOT bridge registers the
+SDK-shipped workload and NuGet SDK resolvers through MSBuild's static registration APIs.
+For a physical project, solution, current directory, or file-based app passed to
+`dotnet build`, `dotnet clean`, `dotnet msbuild`, `dotnet restore`, `dotnet pack`, or
+`dotnet publish`, it forwards the command target to the selected SDK's `MSBuild.dll` out of
+process. Build, pack, and publish also forward restore when requested; pack and publish first
+evaluate the project properties needed to honor `PackRelease` or `PublishRelease`. File-based
+apps without `#:` directives use
+an AOT-safe subset of the existing virtual-project builder for evaluation, including SDK
+imports and implicit files such as `Directory.Build.props`; compilation and
+directive-aware project construction still defer to the managed CLI. SDK-relative paths
+(`MSBuild.dll`, `Sdks`,
+`MSBuildExtensionsPath`, and the telemetry logger) come from
+`SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. `.nuspec` inputs also defer
+because they use the in-process NuGet pack engine. The shared `RestoringCommand` starts
+workload advertising and vulnerability-cache maintenance in both modes. Its AOT closure
+reuses the existing NuGet downloader, file-based and administrative-MSI manifest
+extraction, and read-only workload records without linking workload install/repair or
+elevated MSI IPC. The `dotnet clean file-based-apps` maintenance
+subcommand also remains managed-only because it discovers and removes artifacts directly
+rather than forwarding an MSBuild target.
 
 **Slow path** — When `DOTNET_CLI_ENABLEAOT` is disabled (`false`/`0`/`no`/`off`)
 or the AOT bridge does

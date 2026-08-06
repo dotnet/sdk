@@ -191,10 +191,26 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
   </ItemGroup>
 
-  <!-- Project-backed command completions. -->
+  <!-- MSBuild-backed commands: physical project/solution evaluation and out-of-process forwarding. -->
   <ItemGroup>
+    <Compile Include="$(RepoRoot)src\Common\MSBuildPropertyNames.cs" Link="MSBuildPropertyNames.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ReleasePropertyProjectLocator.cs" Link="ReleasePropertyProjectLocator.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliCompletion.cs" Link="CliCompletion.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ProjectInstanceExtensions.cs" Link="Extensions\ProjectInstanceExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\BuildCommand.cs" Link="Commands\Build\BuildCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\BuildCommandParser.cs" Link="Commands\Build\BuildCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\CleanCommand.cs" Link="Commands\Clean\CleanCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\CleanCommandParser.cs" Link="Commands\Clean\CleanCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildCommand.cs" Link="Commands\MSBuild\MSBuildCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildCommandParser.cs" Link="Commands\MSBuild\MSBuildCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\VirtualProjectBuildingCommand.cs" Link="Commands\Run\VirtualProjectBuildingCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommand.cs" Link="Commands\Pack\PackCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Pack\PackCommandParser.cs" Link="Commands\Pack\PackCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Publish\PublishCommand.cs" Link="Commands\Publish\PublishCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Publish\PublishCommandParser.cs" Link="Commands\Publish\PublishCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommand.cs" Link="Commands\Restore\RestoreCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommandParser.cs" Link="Commands\Restore\RestoreCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoringCommand.cs" Link="Commands\Restore\RestoringCommand.cs" />
   </ItemGroup>
 
   <!--
