@@ -242,6 +242,8 @@ internal sealed class TestApplicationHandler
             HandshakeMessagePropertyNames.AttemptNumber => nameof(HandshakeMessagePropertyNames.AttemptNumber),
             HandshakeMessagePropertyNames.SupportedPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorKinds),
             HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy),
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds),
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy => nameof(HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy),
             _ => string.Empty,
         };
 

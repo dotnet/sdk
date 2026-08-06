@@ -123,7 +123,6 @@ internal static class ArtifactPostProcessingPlanner
                 groups.Add(new ArtifactPostProcessingGroup(key, isKind, inputs, candidates));
             }
         }
-
     }
 
     private static IReadOnlySet<string> GetCapabilities(
