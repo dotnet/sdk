@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Configurer;
 
@@ -394,10 +395,24 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             string projectFile = Directory.GetFiles(testAssetPath, "*.*proj", SearchOption.AllDirectories).Single();
             string projectDirectory = Path.GetDirectoryName(projectFile)
                 ?? throw new InvalidOperationException($"Could not determine the project directory for '{projectFile}'.");
-            string assetsFile = File.ReadAllText(Path.Combine(projectDirectory, "obj", "project.assets.json"));
+            using JsonDocument assetsFile = JsonDocument.Parse(
+                File.ReadAllText(Path.Combine(projectDirectory, "obj", "project.assets.json")));
 
-            assetsFile.Should().Contain(@"""restoreEnableAnalyzerAssets"": true");
-            assetsFile.Should().Contain(@"""analyzers"": {");
+            assetsFile.RootElement
+                .GetProperty("project")
+                .GetProperty("restore")
+                .GetProperty("restoreEnableAnalyzerAssets")
+                .GetBoolean()
+                .Should()
+                .BeTrue();
+
+            bool hasAnalyzerGroup = assetsFile.RootElement
+                .GetProperty("targets")
+                .EnumerateObject()
+                .SelectMany(target => target.Value.EnumerateObject())
+                .Any(library => library.Value.TryGetProperty("analyzers", out _));
+
+            hasAnalyzerGroup.Should().BeTrue();
         }
 
         static readonly List<string?> nugetRoots = new()
