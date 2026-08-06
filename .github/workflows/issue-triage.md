@@ -52,6 +52,9 @@ imports:
 
 environment: copilot-pat-pool
 
+concurrency:
+  group: issue-triage-${{ github.event.issue.number || github.event.inputs.issue_number || github.run_id }}
+
 engine:
   id: copilot
   env:

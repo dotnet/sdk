@@ -1,0 +1,99 @@
+name: Issue Triage Fallback
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: "Issue number to triage immediately"
+        required: false
+        type: string
+      triage_ref:
+        description: "Branch or tag containing the Issue Triage workflow"
+        required: false
+        type: string
+
+permissions:
+  actions: write
+  issues: read
+
+concurrency:
+  group: issue-triage-fallback
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+jobs:
+  dispatch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Dispatch missed issue triage runs
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const workflow_id = "issue-triage.lock.yml";
+            const requestedIssue = context.payload.inputs?.issue_number;
+            const requestedRef = context.payload.inputs?.triage_ref;
+            const ref = requestedRef
+              || (context.eventName === "workflow_dispatch"
+                ? context.ref.replace("refs/heads/", "")
+                : context.payload.repository.default_branch);
+
+            if (requestedIssue) {
+              await github.rest.actions.createWorkflowDispatch({
+                ...context.repo,
+                workflow_id,
+                ref,
+                inputs: { issue_number: requestedIssue },
+              });
+              core.info(`Dispatched issue #${requestedIssue} using ${ref}.`);
+              return;
+            }
+
+            const cutoff = Date.now() - 20 * 60 * 1000;
+            const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+              .toISOString()
+              .slice(0, 10);
+            const { data } = await github.rest.search.issuesAndPullRequests({
+              q: `repo:${context.repo.owner}/${context.repo.repo} is:issue is:open label:untriaged created:>=${since}`,
+              sort: "created",
+              order: "asc",
+              per_page: 100,
+            });
+
+            let dispatched = 0;
+            for (const issue of data.items) {
+              if (Date.parse(issue.created_at) > cutoff) {
+                continue;
+              }
+
+              const comments = await github.paginate(
+                github.rest.issues.listComments,
+                {
+                  ...context.repo,
+                  issue_number: issue.number,
+                  per_page: 100,
+                });
+              const alreadyTriaged = comments.some(comment =>
+                comment.body?.includes("gh-aw-workflow-call-id: ")
+                && comment.body.includes("/issue-triage"));
+              if (alreadyTriaged) {
+                continue;
+              }
+
+              await github.rest.actions.createWorkflowDispatch({
+                ...context.repo,
+                workflow_id,
+                ref,
+                inputs: { issue_number: String(issue.number) },
+              });
+              core.info(`Dispatched missed issue #${issue.number} using ${ref}.`);
+
+              dispatched++;
+              if (dispatched === 10) {
+                break;
+              }
+            }
+
+            core.info(`Dispatched ${dispatched} missed issue triage run(s).`);
