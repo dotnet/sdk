@@ -105,8 +105,7 @@ public class WalkthroughSummaryTests
 
         string description = WalkthroughSummary.BuildModeDescription(plan);
 
-        description.Should().Contain("inferred from");
-        description.Should().Contain(DotnetupTheme.Accent(globalJsonPath));
+        description.Should().Contain(DotnetupTheme.Dim($"(inferred from {globalJsonPath})"));
     }
 
     [TestMethod]

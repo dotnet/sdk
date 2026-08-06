@@ -138,10 +138,10 @@ internal static class WalkthroughSummary
         string installRoot = DotnetupTheme.Accent(plan.InstallRoot.Path.EscapeMarkup());
         if (plan.InstallRootGlobalJsonPath is { } globalJsonPath)
         {
-            installRoot += " " + string.Format(
+            installRoot += " " + DotnetupTheme.Dim(string.Format(
                 CultureInfo.InvariantCulture,
                 Strings.SummaryModeInstallRootGlobalJsonSuffix,
-                DotnetupTheme.Accent(globalJsonPath.EscapeMarkup()));
+                globalJsonPath.EscapeMarkup()));
         }
 
         return string.Format(
