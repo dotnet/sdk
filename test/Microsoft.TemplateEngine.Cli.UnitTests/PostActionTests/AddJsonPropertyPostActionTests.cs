@@ -14,6 +14,8 @@ using Moq;
 namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
 {
     [TestClass]
+    // These tests mutate the process-global Microsoft.DotNet.Cli.Utils.Reporter.
+    [ResourceLock(nameof(Reporter))]
     public class AddJsonPropertyPostActionTests
     {
         // MSTest has no IClassFixture equivalent; a lazily-initialized static helper
@@ -22,13 +24,21 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.PostActionTests
             new(() => new EnvironmentSettingsHelper());
 
         private IEngineEnvironmentSettings _engineEnvironmentSettings = null!;
+        private IReporter _originalErrorReporter = null!;
 
         [TestInitialize]
         public void TestInitialize()
         {
+            _originalErrorReporter = Reporter.Error;
             _engineEnvironmentSettings = s_environmentSettingsHelper.Value.CreateEnvironment(
                 hostIdentifier: GetType().Name,
                 virtualize: true);
+        }
+
+        [TestCleanup]
+        public void TestCleanup()
+        {
+            Reporter.SetError(_originalErrorReporter);
         }
 
         [ClassCleanup]
