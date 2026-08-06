@@ -27,20 +27,19 @@ public sealed class MSBuildLogger : INodeLogger
     /// The process-wide telemetry client used by this logger instance.
     /// </summary>
     /// <remarks>
-    /// The managed CLI initializes this client for in-process builds. Other hosts use the
-    /// parameterless constructor to initialize the same process-wide client.
+    /// The managed CLI initializes this client before it runs MSBuild in the same process.
+    /// Other processes use the parameterless constructor to initialize their own client.
     /// </remarks>
     private readonly ITelemetryClient? _telemetry;
 
     /// <summary>
-    /// Whether this logger must shut down the telemetry providers that it created.
+    /// Whether this logger initialized the process-wide telemetry client.
     /// </summary>
     /// <remarks>
-    /// A one-shot child MSBuild process owns its telemetry configuration. The logger shuts
-    /// down those providers before the process exits. The managed CLI owns providers for an
-    /// in-process build. A persistent server must retain its providers for later builds.
+    /// The initializer controls provider shutdown. If this logger did not initialize the
+    /// client, the managed CLI controls its lifetime.
     /// </remarks>
-    private readonly bool _shutdownTelemetryProviders;
+    private readonly bool _initializedTelemetryClient;
 
     /// <summary>
     /// The activity owned by the current build.
@@ -104,27 +103,23 @@ public sealed class MSBuildLogger : INodeLogger
     /// </summary>
     /// <remarks>
     /// MSBuild uses the parameterless constructor to create loggers. The managed CLI can
-    /// initialize telemetry before an in-process build. A child process or persistent
-    /// server cannot depend on that initialization. The constructor reuses an existing
-    /// client to preserve CLI state. If no client exists, it creates one with the same
-    /// enablement and session behavior. Telemetry failures must not fail the build.
+    /// initialize telemetry before it runs MSBuild in the same process. When another process
+    /// loads the logger without an existing client, the constructor initializes one. It
+    /// reuses an existing client to preserve CLI state. Telemetry failures must not fail the
+    /// build.
     /// </remarks>
     public MSBuildLogger()
     {
         try
         {
             string? sessionId = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
-            bool initializeTelemetry = !TelemetryClient.IsInitialized;
-
-            if (initializeTelemetry)
+            if (!TelemetryClient.IsInitialized)
             {
                 _ = new TelemetryClient(sessionId);
+                _initializedTelemetryClient = true;
             }
 
             _telemetry = TelemetryClient.Instance;
-            _shutdownTelemetryProviders = ShouldShutdownTelemetryProviders(
-                initializeTelemetry,
-                Environment.GetEnvironmentVariable("MSBUILDUSESERVER"));
         }
         catch (Exception)
         {
@@ -139,16 +134,6 @@ public sealed class MSBuildLogger : INodeLogger
     {
         _telemetry = telemetry;
     }
-
-    /// <summary>
-    /// Determines whether this logger owns the telemetry provider lifetime.
-    /// </summary>
-    /// <remarks>
-    /// Only the value <c>1</c> enables the MSBuild server. A reusable server keeps its
-    /// providers active after logger shutdown because a later build can reuse the process.
-    /// </remarks>
-    internal static bool ShouldShutdownTelemetryProviders(bool initializedTelemetry, string? useMSBuildServer) =>
-        initializedTelemetry && useMSBuildServer != "1";
 
     /// <summary>
     /// Connects this node logger to MSBuild's event lifecycle.
@@ -206,9 +191,10 @@ public sealed class MSBuildLogger : INodeLogger
     /// <remarks>
     /// A persistent server can receive different environment and trace context for each
     /// request. This method resolves the parent at <c>BuildStarted</c>, not in the
-    /// constructor. It uses the ambient activity for an in-process build. Otherwise, it
-    /// reads the context that the invoking CLI forwarded. The activity is internal because
-    /// it represents SDK work in the invoking command, not a remote client call.
+    /// constructor. It uses the ambient activity when the managed CLI runs MSBuild in the
+    /// same process. Otherwise, it reads the context that the invoking CLI forwarded. The
+    /// activity is internal because it represents SDK work in the invoking command, not a
+    /// remote client call.
     /// </remarks>
     private void OnBuildStarted(object sender, BuildStartedEventArgs e)
     {
@@ -406,10 +392,9 @@ public sealed class MSBuildLogger : INodeLogger
     /// <c>BuildFinished</c> normally stops the build activity. <see cref="Shutdown"/> also
     /// stops the activity if an aborted build did not deliver <c>BuildFinished</c>. MSBuild
     /// calls this method when the logger instance ends. The method waits for queued events
-    /// before it writes the diagnostic log. In a persistent server, logger shutdown does not
-    /// end the process. A later logger instance can reuse the process-wide telemetry client.
-    /// A one-shot child process shuts down providers that this logger created. An in-process
-    /// build leaves provider shutdown to the managed CLI.
+    /// before it writes the diagnostic log. If this logger initialized the telemetry client,
+    /// it owns provider shutdown. When the managed CLI runs MSBuild in the same process,
+    /// provider shutdown remains with the CLI that initialized the client.
     /// </remarks>
     public void Shutdown()
     {
@@ -417,7 +402,7 @@ public sealed class MSBuildLogger : INodeLogger
 
         if (_telemetry is TelemetryClient telemetryClient)
         {
-            if (_shutdownTelemetryProviders)
+            if (_initializedTelemetryClient)
             {
                 TelemetryClient.FlushProviders();
             }
