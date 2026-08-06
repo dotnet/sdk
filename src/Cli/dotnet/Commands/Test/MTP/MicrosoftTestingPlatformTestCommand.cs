@@ -195,10 +195,9 @@ internal partial class MicrosoftTestingPlatformTestCommand
             if (ShouldPostProcessArtifacts(
                 testOptions,
                 parseResult.GetValue(definition.NoArtifactPostProcessingOption),
-                ctrlC.Token.IsCancellationRequested,
-                cancellationReason))
+                ctrlC.Token.IsCancellationRequested))
             {
-                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC).GetAwaiter().GetResult();
+                artifactPostProcessingManager.ExecuteAsync(buildOptions, output, ctrlC, cancellationReason).GetAwaiter().GetResult();
             }
 
             // If all test apps exited with 0 exit code, but we detected that handshake didn't happen correctly, map that to generic failure.
@@ -240,23 +239,19 @@ internal partial class MicrosoftTestingPlatformTestCommand
     /// Decides whether the artifacts of a finished run should be consolidated.
     /// </summary>
     /// <remarks>
-    /// Help and discovery produce no artifacts to merge, and <c>--no-artifact-post-processing</c> is
-    /// the explicit opt-out. The two cancellation cases are the interesting ones: a run stopped by
-    /// Ctrl+C, <c>--maximum-failed-tests</c> or <c>--timeout</c> produced the artifacts of a
-    /// truncated run — modules that never started contributed nothing, and modules killed mid-flight
-    /// wrote whatever they had. Merging those into a single report would hide the truncation behind
-    /// one authoritative-looking artifact, so the per-module artifacts are left as they are.
+    /// Help and discovery produce no artifacts to merge, <c>--no-artifact-post-processing</c> is the
+    /// explicit opt-out, and Ctrl+C is an unconditional user cancellation. Policy-truncated runs
+    /// continue into planning, which selects only processors that explicitly advertised support for
+    /// the incomplete set of complete artifacts observed before cancellation.
     /// </remarks>
     internal static bool ShouldPostProcessArtifacts(
         TestOptions testOptions,
         bool noArtifactPostProcessingRequested,
-        bool cancellationRequested,
-        TestRunCancellationReason cancellationReason)
+        bool cancellationRequested)
         => !testOptions.IsHelp
             && !testOptions.IsDiscovery
             && !noArtifactPostProcessingRequested
-            && !cancellationRequested
-            && cancellationReason == TestRunCancellationReason.None;
+            && !cancellationRequested;
 
     internal static (BuildOptions BuildOptions, bool CollectTestMap, bool AffectedTests) NormalizeForwardedAffectedTestsOptions(
         BuildOptions buildOptions)

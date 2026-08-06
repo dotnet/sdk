@@ -755,7 +755,8 @@ internal sealed class TestApplicationHandler
         {
             logMessageBuilder.AppendLine($"FileArtifact: {fileArtifactMessage.FullPath}, {fileArtifactMessage.DisplayName}, " +
                 $"{fileArtifactMessage.Description}, {fileArtifactMessage.TestUid}, {fileArtifactMessage.TestDisplayName}, " +
-                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}");
+                $"{fileArtifactMessage.SessionUid}, {fileArtifactMessage.Kind}, " +
+                $"InputArtifactPaths=[{string.Join(", ", fileArtifactMessage.InputArtifactPaths ?? [])}]");
         }
 
         Logger.LogTrace(logMessageBuilder, static logMessageBuilder => logMessageBuilder.ToString());
