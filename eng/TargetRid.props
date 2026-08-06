@@ -1,0 +1,44 @@
+<!--
+  Default TargetRid calculation. Imported by /Directory.Build.props (for repo project
+  evaluations) and by eng/Signing.props (for Arcade's Sign.proj / Publish.proj which don't
+  import Directory.Build.props).
+
+  Conditions check for '' so a value already passed via /p:TargetRid or /p:TargetArchitecture
+  (e.g. in CI matrix legs) always wins over the host-derived default.
+-->
+<Project>
+  <PropertyGroup Label="CalculateArch">
+    <BuildArchitecture Condition="'$(BuildArchitecture)' == ''">$([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture.ToString().ToLowerInvariant())</BuildArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == '' AND ('$(BuildArchitecture)' == 'arm64' OR '$(BuildArchitecture)' == 's390x' OR '$(BuildArchitecture)' == 'ppc64le' OR '$(BuildArchitecture)' == 'loongarch64')">$(BuildArchitecture)</TargetArchitecture>
+    <TargetArchitecture Condition="'$(TargetArchitecture)' == ''">x64</TargetArchitecture>
+  </PropertyGroup>
+
+  <!-- Host and target OS detection.
+       Uses full OS names (windows, linux, osx, freebsd, etc.) matching the VMR convention.
+       See https://github.com/dotnet/dotnet/blob/main/docs/VMR-Controls.md#output-controls -->
+  <PropertyGroup Label="CalculateTargetOS">
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('WINDOWS'))">windows</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OSX'))">osx</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('FREEBSD'))">freebsd</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('OPENBSD'))">openbsd</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('ILLUMOS'))">illumos</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('SOLARIS'))">solaris</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('HAIKU'))">haiku</HostOS>
+    <HostOS Condition="'$(HostOS)' == '' AND $([MSBuild]::IsOSPlatform('LINUX'))">linux</HostOS>
+    <IsLinux Condition="'$(HostOS)' == 'linux'">true</IsLinux>
+
+    <!-- TargetOS defaults to HostOS; overridable via /p:TargetOS from build scripts. -->
+    <TargetOS Condition="'$(TargetOS)' == ''">$(HostOS)</TargetOS>
+
+    <!-- OSName uses RID-style names (win, not windows) for downstream RID construction. -->
+    <OSName Condition="'$(OSName)' == '' AND '$(PortableTargetRid)' != ''">$(PortableTargetRid.Substring(0, $(PortableTargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetRid)' != ''">$(TargetRid.Substring(0, $(TargetRid.LastIndexOf('-'))))</OSName>
+    <OSName Condition="'$(OSName)' == '' AND '$(TargetOS)' == 'windows'">win</OSName>
+    <OSName Condition="'$(OSName)' == ''">$(TargetOS)</OSName>
+
+    <TargetRid Condition="'$(TargetRid)' == ''">$(OSName)-$(TargetArchitecture)</TargetRid>
+    <PortableTargetRid Condition="'$(PortableTargetRid)' == ''">$(OSName)-$(TargetArchitecture)</PortableTargetRid>
+  </PropertyGroup>
+</Project>
+
+

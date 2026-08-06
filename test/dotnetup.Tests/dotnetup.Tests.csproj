@@ -1,0 +1,26 @@
+<Project Sdk="MSTest.Sdk">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+  </PropertyGroup>
+
+  <!-- Exclude test asset apps from test compilation -->
+  <ItemGroup>
+    <Compile Remove="TestAssets\**\*.cs" />
+  </ItemGroup>
+
+  <!-- Embed the test assets path so tests can locate assets regardless of output directory -->
+  <ItemGroup>
+    <AssemblyMetadata Include="TestAssetsDir" Value="$(MSBuildProjectDirectory)\TestAssets" />
+    <!-- Embed the repo root so tests can read repo scripts (e.g. ConvertToRidArchitectureSyncTests). -->
+    <AssemblyMetadata Include="RepoRoot" Value="$(MSBuildProjectDirectory)\..\.." />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Installer\dotnetup.Library\dotnetup.Library.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+  </ItemGroup>
+
+</Project>
