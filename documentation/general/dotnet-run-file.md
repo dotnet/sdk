@@ -193,11 +193,17 @@ and any leading and trailing white space is not considered part of the name and 
 
 The remainder of a directive (after the kind) is split into whitespace-separated tokens.
 Whitespace inside a value is not allowed unless the value is enclosed in double quotes (`"`).
-A value is written either bare or wrapped entirely in double quotes; the quotes are removed and the
-quoted text (which may contain whitespace) becomes the value, e.g., `#:property Description="Hello World"`
-sets the value to `Hello World`. Quotes can only enclose a whole value, so `#:property A=B` and
-`#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
+A value is written either bare or wrapped entirely in double quotes. A quoted value is lexed as a
+regular C# string literal (the same way `#r`/`#load` directives lex their argument), so its escape
+sequences are decoded, e.g., `#:property Description="Hello World"` sets the value to `Hello World`,
+`#:property Path="a\\b"` sets it to `a\b`, and `#:property Text="a\"b"` sets it to `a"b`. Verbatim
+(`@"..."`) and raw (`"""..."""`) string literals are not supported. Quotes can only enclose a whole
+value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
 It is an error if a quote is left unterminated.
+
+Because a bare value keeps a backslash literal while a quoted value follows C# escape rules, a Windows
+path is simplest written bare (`#:project C:\src\lib`) or with forward slashes if quoting is needed
+(`#:project "C:/src/my lib"`); quoting a backslash path requires escaping it (`"C:\\src\\my lib"`).
 
 For backward compatibility, a directive whose value contains no double quotes is still accepted in a
 *legacy mode*: the entire remainder after the name and separator is taken verbatim as a single value

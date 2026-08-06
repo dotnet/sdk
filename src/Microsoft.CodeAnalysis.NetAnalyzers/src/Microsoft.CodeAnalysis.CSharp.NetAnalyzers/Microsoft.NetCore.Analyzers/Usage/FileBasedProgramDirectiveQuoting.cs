@@ -193,7 +193,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             return IndexOfWhitespace(value) >= 0 ? Quote(value) : value;
         }
 
-        private static string Quote(string value) => "\"" + value + "\"";
+        // Produce a properly escaped C# string literal so the quoted value round-trips through the parser,
+        // which lexes it as a regular string literal (e.g. a backslash becomes "\\" and a quote "\"").
+        private static string Quote(string value) => SymbolDisplay.FormatLiteral(value, quote: true);
 
         private static int IndexOfWhitespace(string text)
         {

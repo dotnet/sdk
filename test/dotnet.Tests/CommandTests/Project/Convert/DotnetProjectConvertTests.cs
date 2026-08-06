@@ -2477,6 +2477,46 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    public void Directives_QuoteEscapes()
+    {
+        // A quoted value is lexed as a regular C# string literal, so escape sequences are decoded.
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property Quote="a\"b"
+                #:property Backslash="a\\b"
+                #:property Tab="a\tb c"
+                #:package Foo@1.0.0 Note="quote\"and\\slash"
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <Quote>a&quot;b</Quote>
+                    <Backslash>a\b</Backslash>
+                    <Tab>a{"\t"}b c</Tab>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Foo" Version="1.0.0">
+                      <Note>quote&quot;and\slash</Note>
+                    </PackageReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
     public void Directives_UnterminatedQuote()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();

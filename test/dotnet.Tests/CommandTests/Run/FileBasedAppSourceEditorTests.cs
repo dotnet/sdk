@@ -335,6 +335,28 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     }
 
     [TestMethod]
+    public void AddWithSpecialCharactersEscapes()
+    {
+        // Values containing a double quote are emitted as an escaped C# string literal; a bare backslash
+        // (no whitespace or quote) needs no quoting and round-trips as-is.
+        Verify(
+            """
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default)
+            {
+                Name = "MyPackage",
+                Version = "1.0.0",
+                Metadata = ImmutableArray.Create(("Quote", "a\"b"), ("Path", "a\\b"), ("Spaced", "a\"b c")),
+            }),
+            """
+            #:package MyPackage@1.0.0 Quote="a\"b" Path=a\b Spaced="a\"b c"
+
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
     public void RefWithMetadataRoundTrips()
     {
         // A #:ref directive with trailing metadata is parsed and preserved verbatim when other edits happen.

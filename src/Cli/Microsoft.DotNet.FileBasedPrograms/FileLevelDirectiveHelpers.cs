@@ -322,11 +322,14 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// <summary>
     /// Splits <see cref="ParseContext.DirectiveText"/> into whitespace-separated tokens.
     /// A value is written either bare or wrapped entirely in double quotes (<c>"</c>), which lets it
-    /// contain whitespace; the quotes themselves are removed. A quote may therefore open only at the
-    /// start of a token (e.g., <c>"a b"</c>) or immediately after a single <c>Name=</c> separator
-    /// (e.g., <c>A="b c"</c>), and it must close at the end of the token. So <c>A=B</c> and
-    /// <c>A="B"</c> are allowed, but <c>A=B"C"</c> and <c>A="B"C</c> are errors. Returns
-    /// <see langword="null"/> and reports an error if a quote is misplaced or left unterminated.
+    /// contain whitespace. A quoted value is lexed as a regular C# string literal (the same way
+    /// <c>#r</c>/<c>#load</c> lex their argument), so escape sequences like <c>\"</c>, <c>\\</c> and
+    /// <c>\t</c> are decoded; verbatim (<c>@"..."</c>) and raw (<c>"""..."""</c>) literals are not
+    /// supported. A quote may open only at the start of a token (e.g., <c>"a b"</c>) or immediately
+    /// after a single <c>Name=</c> separator (e.g., <c>A="b c"</c>), and nothing may follow the
+    /// closing quote within the token. So <c>A=B</c> and <c>A="B"</c> are allowed, but <c>A=B"C"</c>
+    /// and <c>A="B"C</c> are errors. Returns <see langword="null"/> and reports an error if a quote is
+    /// misplaced or left unterminated.
     /// </summary>
     private static ImmutableArray<string>? Tokenize(in ParseContext context)
     {
@@ -334,7 +337,6 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         var tokens = ImmutableArray.CreateBuilder<string>();
         var current = new StringBuilder();
         var tokenStarted = false;
-        var inQuotes = false;
         var quoteClosed = false;
         var equalsCount = 0;
 
@@ -344,32 +346,42 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             if (c == '"')
             {
-                if (inQuotes)
+                // A quoted value must be the whole token or the value right after a single 'Name=' separator.
+                var atTokenStart = current.Length == 0;
+                var afterNameSeparator = current.Length > 0 && current[current.Length - 1] == '=' && equalsCount == 1;
+                if (quoteClosed || !(atTokenStart || afterNameSeparator))
                 {
-                    // Closing quote: nothing more may follow it within this token.
-                    inQuotes = false;
-                    quoteClosed = true;
-                }
-                else
-                {
-                    // A quoted value must be the whole token or the value after a single 'Name=' separator.
-                    var atTokenStart = current.Length == 0;
-                    var afterNameSeparator = current.Length > 0 && current[current.Length - 1] == '=' && equalsCount == 1;
-                    if (quoteClosed || !(atTokenStart || afterNameSeparator))
-                    {
-                        context.ReportError(FileBasedProgramsResources.InvalidQuoteInDirective);
-                        return null;
-                    }
-
-                    inQuotes = true;
+                    context.ReportError(FileBasedProgramsResources.InvalidQuoteInDirective);
+                    return null;
                 }
 
-                // A quote starts a token even if it is empty (e.g., '""' is an empty token).
+                // Lex a regular C# string literal (like '#r') so the value can contain whitespace and use
+                // escape sequences. Verbatim (@"...") literals can't start here (the '@' would precede the
+                // quote and fail the check above), and raw ("""...""") literals lex to a different token kind
+                // and are rejected below.
+                var token = SyntaxFactory.ParseToken(text, offset: i);
+                if (token.ContainsDiagnostics)
+                {
+                    context.ReportError(FileBasedProgramsResources.UnterminatedQuoteInDirective);
+                    return null;
+                }
+
+                if (!token.IsKind(SyntaxKind.StringLiteralToken))
+                {
+                    context.ReportError(FileBasedProgramsResources.InvalidQuoteInDirective);
+                    return null;
+                }
+
+                // The decoded value is appended to the current token (which may already hold a 'Name='
+                // prefix); a quote starts a token even if it is empty (e.g., '""' is an empty token).
+                current.Append(token.ValueText);
                 tokenStarted = true;
+                quoteClosed = true;
+                i += token.Text.Length - 1;
                 continue;
             }
 
-            if (!inQuotes && char.IsWhiteSpace(c))
+            if (char.IsWhiteSpace(c))
             {
                 if (tokenStarted)
                 {
@@ -383,25 +395,19 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 continue;
             }
 
-            if (!inQuotes && quoteClosed)
+            if (quoteClosed)
             {
                 context.ReportError(FileBasedProgramsResources.InvalidQuoteInDirective);
                 return null;
             }
 
-            if (!inQuotes && c == '=')
+            if (c == '=')
             {
                 equalsCount++;
             }
 
             current.Append(c);
             tokenStarted = true;
-        }
-
-        if (inQuotes)
-        {
-            context.ReportError(FileBasedProgramsResources.UnterminatedQuoteInDirective);
-            return null;
         }
 
         if (tokenStarted)
@@ -603,14 +609,17 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         return tokens[0];
     }
 
-    /// <summary>Quotes <paramref name="value"/> with double quotes if it contains whitespace so it round-trips through <see cref="Tokenize"/>.</summary>
+    /// <summary>Wraps <paramref name="value"/> in a C# string literal if it contains characters (whitespace
+    /// or a double quote) that cannot appear in a bare token, so it round-trips through <see cref="Tokenize"/>.</summary>
     private static string QuoteIfNeeded(string value)
     {
         foreach (var c in value)
         {
-            if (char.IsWhiteSpace(c))
+            if (char.IsWhiteSpace(c) || c == '"')
             {
-                return $"\"{value}\"";
+                // FormatLiteral produces a properly escaped C# string literal (e.g. "a\"b", "a\tb") that
+                // Tokenize decodes back to the original value.
+                return SymbolDisplay.FormatLiteral(value, quote: true);
             }
         }
 

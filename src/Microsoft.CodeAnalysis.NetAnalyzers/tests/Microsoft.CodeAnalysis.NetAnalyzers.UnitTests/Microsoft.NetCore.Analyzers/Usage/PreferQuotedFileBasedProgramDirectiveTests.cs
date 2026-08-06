@@ -114,6 +114,39 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
+        public async Task WholeValueWithBackslash_FixEscapesAsync()
+        {
+            // The quoted form is a regular C# string literal, so a backslash in the value must be
+            // escaped for the fix to round-trip (an unescaped '\M' would be an invalid escape sequence).
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            #:project ..\My Library
+                            class Program { static void Main() { } }
+                            """),
+                    },
+                    ExpectedDiagnostics = { Expected("project") },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            #:project "..\\My Library"
+                            class Program { static void Main() { } }
+                            """),
+                    },
+                },
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                SolutionTransforms = { EnableFileBasedProgramFeature },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         [DataRow("sdk")]
         [DataRow("package")]
         public async Task SpacesAroundNameVersionSeparator_FixCollapsesAsync(string kind)
