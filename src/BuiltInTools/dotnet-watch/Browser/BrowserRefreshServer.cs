@@ -90,7 +90,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                         builder.UseUrls($"http://{hostName}:0");
                     }
 
-                    var allowedHosts = new List<string>() { "localhost", "127.0.0.1" };
+                    var allowedHosts = new List<string>() { "localhost", "127.0.0.1", "[::1]" };
                     if (!_autoReloadWebSocketOrigins.IsDefault)
                     {
                         allowedHosts.AddRange(_autoReloadWebSocketOrigins);
