@@ -40,6 +40,7 @@ from typing import Any
 REPO_ROOT = Path(__file__).resolve().parents[2]
 MANIFEST_PATH = REPO_ROOT / "eng" / "vendored-files.json"
 ISSUE_LABEL = "area-vendored-sync"
+AREA_LABEL_PREFIX = "Area-"
 ISSUE_REPO = os.environ.get("VENDORED_SYNC_REPO", "dotnet/sdk")
 MAX_DIFF_LINES = 300
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -424,24 +425,24 @@ def find_existing_issue(marker: str) -> dict[str, Any] | None:
     return None
 
 
-def ensure_labels(entries: list[Entry]) -> bool:
+def ensure_labels(entries: list[Entry], create_sync_label: bool = True) -> bool:
     """Ensure the labels applied to drift issues exist.
 
-    The sync label is owned by this workflow, so it is force-created (idempotent
-    and self-healing). Area labels come from the manifest and are owned by the
-    repo's regular triage taxonomy, so they are only created when missing and
-    never overwritten.
+    The sync label is owned by this workflow, so it is force-created when issue
+    mutation is enabled. Area labels come from the manifest and are owned by the
+    repo's regular triage taxonomy, so they must already exist.
     """
-    rc, _, err = _gh([
-        "label", "create", ISSUE_LABEL,
-        "--repo", ISSUE_REPO,
-        "--description", "Drift detected between a vendored source file and its upstream copy",
-        "--color", "fbca04",
-        "--force",
-    ])
-    if rc != 0:
-        print(f"Failed to ensure label '{ISSUE_LABEL}': {err}", file=sys.stderr)
-        return False
+    if create_sync_label:
+        rc, _, err = _gh([
+            "label", "create", ISSUE_LABEL,
+            "--repo", ISSUE_REPO,
+            "--description", "Drift detected between a vendored source file and its upstream copy",
+            "--color", "fbca04",
+            "--force",
+        ])
+        if rc != 0:
+            print(f"Failed to ensure label '{ISSUE_LABEL}': {err}", file=sys.stderr)
+            return False
 
     rc, out, err = _gh([
         "label", "list",
@@ -463,11 +464,13 @@ def ensure_labels(entries: list[Entry]) -> bool:
         for entry in entries
         for label in entry.issue_labels[1:]
     }
-    for label in sorted(area_labels - existing_labels):
-        rc, _, err = _gh(["label", "create", label, "--repo", ISSUE_REPO])
-        if rc != 0:
-            print(f"Failed to create area label '{label}': {err}", file=sys.stderr)
-            return False
+    missing_labels = sorted(area_labels - existing_labels)
+    if missing_labels:
+        print(
+            f"Missing area labels in {ISSUE_REPO}: {', '.join(missing_labels)}",
+            file=sys.stderr,
+        )
+        return False
     return True
 
 
@@ -485,9 +488,16 @@ def _label_flags(labels: list[str]) -> list[str]:
     return flags
 
 
-def _missing_labels(issue: dict[str, Any], labels: list[str]) -> list[str]:
+def _label_changes(issue: dict[str, Any], labels: list[str]) -> tuple[list[str], list[str]]:
     present = {(item.get("name") or "") for item in (issue.get("labels") or [])}
-    return [label for label in labels if label not in present]
+    desired = set(labels)
+    add = sorted(desired - present)
+    remove = sorted(
+        label
+        for label in present - desired
+        if label.startswith(AREA_LABEL_PREFIX)
+    )
+    return add, remove
 
 
 def upsert_issue(result: DriftResult, dry_run: bool) -> None:
@@ -520,21 +530,30 @@ def upsert_issue(result: DriftResult, dry_run: bool) -> None:
             print(f"Created issue for {result.entry.id}#{result.source_index}: {out.strip()}")
         return
 
-    # Issues opened before the entry's label set changed are backfilled here.
-    missing = _missing_labels(existing, labels)
-    if missing:
+    # Keep the workflow-managed area routing in sync while preserving other labels.
+    add_labels, remove_labels = _label_changes(existing, labels)
+    labels_up_to_date = not add_labels and not remove_labels
+    if not labels_up_to_date:
         rc, _, err = _gh([
             "issue", "edit", str(existing["number"]),
             "--repo", ISSUE_REPO,
-            *[arg for label in missing for arg in ("--add-label", label)],
+            *[arg for label in add_labels for arg in ("--add-label", label)],
+            *[arg for label in remove_labels for arg in ("--remove-label", label)],
         ])
         if rc != 0:
-            print(f"Failed to add labels to issue #{existing['number']}: {err}", file=sys.stderr)
+            print(f"Failed to reconcile labels on issue #{existing['number']}: {err}", file=sys.stderr)
         else:
-            print(f"Added labels to issue #{existing['number']}: {', '.join(missing)}")
+            changes: list[str] = []
+            if add_labels:
+                changes.append(f"added {', '.join(add_labels)}")
+            if remove_labels:
+                changes.append(f"removed {', '.join(remove_labels)}")
+            print(f"Reconciled labels on issue #{existing['number']}: {'; '.join(changes)}")
+            labels_up_to_date = True
 
     if (existing.get("body") or "").strip() == body.strip():
-        print(f"Issue #{existing['number']} already up to date for {result.entry.id}#{result.source_index}.")
+        if labels_up_to_date:
+            print(f"Issue #{existing['number']} already up to date for {result.entry.id}#{result.source_index}.")
         return
 
     rc, _, err = _gh([
@@ -563,7 +582,7 @@ def cmd_check(args: argparse.Namespace) -> int:
     if validate(entries) != 0:
         return 1
 
-    if not args.dry_run and not ensure_labels(entries):
+    if not ensure_labels(entries, create_sync_label=not args.dry_run):
         return 1
 
     drift_count = 0

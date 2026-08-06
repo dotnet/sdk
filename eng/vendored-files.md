@@ -74,7 +74,11 @@ differ".
 The drift-detection mechanism itself is upstream-agnostic — a source may point at
 any repo — so area routing is manifest data rather than something hard-coded in
 the script. If you vendor a file for a different area, set `area_labels` on that
-entry so its issues are not misrouted to the default area's triage queue.
+entry so its issues are not misrouted to the default area's triage queue. Every
+declared area label must already exist in the repository's triage taxonomy; the
+workflow only creates its own `area-vendored-sync` label. Existing sync issues
+are reconciled to the entry's current area-label set while retaining unrelated
+labels.
 
 A single local file may declare multiple upstream sources. For example the
 terminal reporter is one file in this repo
@@ -118,7 +122,8 @@ reconciliation PR is merged.
    - `baseline_blob_sha`: the upstream file's blob SHA at that ref
      (`gh api "repos/{repo}/contents/{path}?ref={ref}" --jq .sha`).
 3. If the file does not belong to the area in `default_area_labels`, set
-   `area_labels` on the entry so its drift issues reach the right triage queue.
+   `area_labels` on the entry to existing repository triage labels so its drift
+   issues reach the right triage queue.
 4. Run `python .github/scripts/check_vendored_files.py validate` locally to
    confirm the structure is correct.
 
