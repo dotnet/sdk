@@ -65,7 +65,7 @@ namespace Microsoft.CodeAnalysis.Tools.Workspaces
                 && workspaceExtension.EndsWith("proj", StringComparison.OrdinalIgnoreCase)
                 && !workspaceExtension.Equals(DnxProjectExtension, StringComparison.OrdinalIgnoreCase);
             var isFileBasedApp = !isSolution && !isProject
-                && VirtualProjectBuilder.IsValidEntryPointPath(workspacePath);
+                && VirtualProjectBuilder.IsValidEntryPointPath(workspacePath, requireFileToExist: false);
 
             if (!isSolution && !isProject && !isFileBasedApp)
             {
