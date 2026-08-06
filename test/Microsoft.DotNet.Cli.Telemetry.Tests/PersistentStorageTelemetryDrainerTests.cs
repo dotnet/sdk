@@ -11,8 +11,8 @@ public class PersistentStorageTelemetryDrainerTests
     [TestMethod]
     public async Task RunCoreAsync_EscalatesRetryDelaysAndHonorsRetryAfter()
     {
-        var storage = new FakeBlobStorage(new FakeBlob([1]));
-        var transport = new FakeTransport(
+        var storage = new FakeTelemetryBlobStorage(new FakeTelemetryBlob([1]));
+        var transport = new FakeTelemetryUploadTransport(
             TelemetryUploadResult.Rejected,
             TelemetryUploadResult.Rejected,
             TelemetryUploadResult.RejectedRetryAfter(TimeSpan.FromSeconds(7)),
@@ -38,8 +38,8 @@ public class PersistentStorageTelemetryDrainerTests
     [TestMethod]
     public async Task RunCoreAsync_StopsWhenRetryDelayIsCancelled()
     {
-        var storage = new FakeBlobStorage(new FakeBlob([1]));
-        var transport = new FakeTransport(TelemetryUploadResult.Rejected, TelemetryUploadResult.Rejected);
+        var storage = new FakeTelemetryBlobStorage(new FakeTelemetryBlob([1]));
+        var transport = new FakeTelemetryUploadTransport(TelemetryUploadResult.Rejected, TelemetryUploadResult.Rejected);
         var uploader = new PersistentStorageTelemetryUploader(storage, transport);
         using var cancellation = new CancellationTokenSource();
         var delays = new CancellingDelay(cancellation);
@@ -57,8 +57,8 @@ public class PersistentStorageTelemetryDrainerTests
     [TestMethod]
     public async Task RunCoreAsync_DrainsBacklogBeforePostDrainGracePeriod()
     {
-        var storage = new FakeBlobStorage(new FakeBlob([1]), new FakeBlob([2]));
-        var transport = new FakeTransport(
+        var storage = new FakeTelemetryBlobStorage(new FakeTelemetryBlob([1]), new FakeTelemetryBlob([2]));
+        var transport = new FakeTelemetryUploadTransport(
             TelemetryUploadResult.Accepted,
             TelemetryUploadResult.Accepted);
         var uploader = new PersistentStorageTelemetryUploader(storage, transport, maxBlobsPerDrain: 1);
@@ -143,44 +143,4 @@ public class PersistentStorageTelemetryDrainerTests
         public override double NextDouble() => value;
     }
 
-    private sealed class FakeBlobStorage(params FakeBlob[] blobs) : ITelemetryBlobStorage
-    {
-        public IEnumerable<ITelemetryBlob> GetBlobs() => blobs.Where(blob => !blob.Deleted);
-
-        public bool TryPersist(byte[] data) => true;
-    }
-
-    private sealed class FakeBlob(byte[] data) : ITelemetryBlob
-    {
-        public bool Deleted { get; private set; }
-
-        public bool TryLease(int leasePeriodMilliseconds) => !Deleted;
-
-        public bool TryRead(out byte[]? buffer)
-        {
-            buffer = data;
-            return true;
-        }
-
-        public bool TryRelease() => true;
-
-        public bool TryDelete()
-        {
-            Deleted = true;
-            return true;
-        }
-    }
-
-    private sealed class FakeTransport(params TelemetryUploadResult[] results) : ITelemetryUploadTransport
-    {
-        private readonly Queue<TelemetryUploadResult> _results = new(results);
-
-        public int UploadCount { get; private set; }
-
-        public Task<TelemetryUploadResult> TryUploadAsync(byte[] payload, CancellationToken cancellationToken)
-        {
-            UploadCount++;
-            return Task.FromResult(_results.Dequeue());
-        }
-    }
 }
