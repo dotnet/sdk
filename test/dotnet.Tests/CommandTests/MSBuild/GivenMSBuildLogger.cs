@@ -331,5 +331,21 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 return activity;
             }
         }
+
+        [TestMethod]
+        [DataRow(false, null, false)]
+        [DataRow(false, "0", false)]
+        [DataRow(false, "1", false)]
+        [DataRow(true, null, true)]
+        [DataRow(true, "0", true)]
+        [DataRow(true, "1", false)]
+        public void ItShutsDownOnlyProvidersOwnedByAOneShotProcess(
+            bool initializedTelemetry,
+            string useMSBuildServer,
+            bool expected)
+        {
+            MSBuildLogger.ShouldShutdownTelemetryProviders(initializedTelemetry, useMSBuildServer)
+                .Should().Be(expected);
+        }
     }
 }

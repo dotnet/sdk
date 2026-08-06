@@ -67,6 +67,8 @@ Changes under `src/Cli` must support three process entry points of equal importa
 | Native AOT CLI | [`src/Cli/dotnet-aot/NativeEntryPoint.cs`](../../src/Cli/dotnet-aot/NativeEntryPoint.cs) | The native `dotnet` host calls the exported `dotnet_execute`. Unsupported operations can continue in the managed CLI. See the [NativeAOT design](../../src/Cli/dotnet-aot/DESIGN.md). |
 | MSBuild logger | [`src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) | MSBuild loads the logger type from `dotnet.dll` as an `INodeLogger`. [`MSBuildForwardingApp`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildForwardingApp.cs) adds the `-distributedlogger` argument. |
 
+### MSBuild logger lifecycle
+
 The MSBuild logger is a separate process entry point. It is not a standalone executable.
 The logger can run in the managed CLI process, a child MSBuild process, or a persistent
 MSBuild server. Code called through the logger must not assume that a CLI bootstrap

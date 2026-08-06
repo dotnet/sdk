@@ -33,6 +33,16 @@ public sealed class MSBuildLogger : INodeLogger
     private readonly ITelemetryClient? _telemetry;
 
     /// <summary>
+    /// Whether this logger must shut down the telemetry providers that it created.
+    /// </summary>
+    /// <remarks>
+    /// A one-shot child MSBuild process owns its telemetry configuration. The logger shuts
+    /// down those providers before the process exits. The managed CLI owns providers for an
+    /// in-process build. A persistent server must retain its providers for later builds.
+    /// </remarks>
+    private readonly bool _shutdownTelemetryProviders;
+
+    /// <summary>
     /// The activity owned by the current build.
     /// </summary>
     /// <remarks>
@@ -104,13 +114,17 @@ public sealed class MSBuildLogger : INodeLogger
         try
         {
             string? sessionId = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
+            bool initializeTelemetry = !TelemetryClient.IsInitialized;
 
-            if (!TelemetryClient.IsInitialized)
+            if (initializeTelemetry)
             {
                 _ = new TelemetryClient(sessionId);
             }
 
             _telemetry = TelemetryClient.Instance;
+            _shutdownTelemetryProviders = ShouldShutdownTelemetryProviders(
+                initializeTelemetry,
+                Environment.GetEnvironmentVariable("MSBUILDUSESERVER"));
         }
         catch (Exception)
         {
@@ -125,6 +139,16 @@ public sealed class MSBuildLogger : INodeLogger
     {
         _telemetry = telemetry;
     }
+
+    /// <summary>
+    /// Determines whether this logger owns the telemetry provider lifetime.
+    /// </summary>
+    /// <remarks>
+    /// Only the value <c>1</c> enables the MSBuild server. A reusable server keeps its
+    /// providers active after logger shutdown because a later build can reuse the process.
+    /// </remarks>
+    internal static bool ShouldShutdownTelemetryProviders(bool initializedTelemetry, string? useMSBuildServer) =>
+        initializedTelemetry && useMSBuildServer != "1";
 
     /// <summary>
     /// Connects this node logger to MSBuild's event lifecycle.
@@ -384,6 +408,8 @@ public sealed class MSBuildLogger : INodeLogger
     /// calls this method when the logger instance ends. The method waits for queued events
     /// before it writes the diagnostic log. In a persistent server, logger shutdown does not
     /// end the process. A later logger instance can reuse the process-wide telemetry client.
+    /// A one-shot child process shuts down providers that this logger created. An in-process
+    /// build leaves provider shutdown to the managed CLI.
     /// </remarks>
     public void Shutdown()
     {
@@ -391,7 +417,14 @@ public sealed class MSBuildLogger : INodeLogger
 
         if (_telemetry is TelemetryClient telemetryClient)
         {
-            telemetryClient.WaitForPendingEvents();
+            if (_shutdownTelemetryProviders)
+            {
+                TelemetryClient.FlushProviders();
+            }
+            else
+            {
+                telemetryClient.WaitForPendingEvents();
+            }
         }
 
         TelemetryClient.WriteLogIfNecessary();
