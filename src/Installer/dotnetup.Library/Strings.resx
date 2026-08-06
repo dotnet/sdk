@@ -451,7 +451,7 @@ Or open a new terminal.</value>
     <comment>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</comment>
   </data>
   <data name="SummaryModeConfiguration" xml:space="preserve">
-    <value>{0} modifies {1} to set {2} and {3} to {4}.</value>
+    <value>{0} modifies {1} to set {2} and {3} to prefer {4}.</value>
     <comment>{0} is the suggested mode name; {1} is one or more shell profile paths or the system environment variables; {2} is PATH; {3} is DOTNET_ROOT; {4} is the dotnetup install path.</comment>
   </data>
   <data name="SummaryModeSystemEnvironmentVariables" xml:space="preserve">
