@@ -1059,7 +1059,11 @@ namespace Microsoft.NET.Build.Tasks
                     if (_compilerName == null
                         || !asset.Properties.TryGetValue(LockFileItem.CompilerApiVersionProperty, out string compilerApiVersion)
                         || !ParseCompilerApiVersion(compilerApiVersion, out ReadOnlyMemory<char> compilerName, out Version compilerVersion)
+#if NET
+                        || !compilerName.Span.Equals(_compilerName.AsSpan(), StringComparison.Ordinal))
+#else
                         || !string.Equals(_compilerName, compilerName.ToString(), StringComparison.Ordinal))
+#endif
                     {
                         return null;
                     }
