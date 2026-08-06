@@ -13,7 +13,7 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
     private readonly object _syncLock = new();
     private CancellationTokenSource? _cancellation;
     private int _drainRequested;
-    private bool _shutdown;
+    private bool _isShutdown;
     private Task? _task;
 
     public PersistentStorageTelemetryBackgroundWorker(
@@ -34,7 +34,7 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
     {
         lock (_syncLock)
         {
-            if (_shutdown)
+            if (_isShutdown)
             {
                 return;
             }
@@ -58,7 +58,7 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
         Task? task;
         lock (_syncLock)
         {
-            _shutdown = true;
+            _isShutdown = true;
             cancellation = _cancellation;
             task = _task;
         }
