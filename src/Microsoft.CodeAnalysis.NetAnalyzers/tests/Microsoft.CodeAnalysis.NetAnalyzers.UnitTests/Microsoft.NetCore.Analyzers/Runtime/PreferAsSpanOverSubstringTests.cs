@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -52,7 +52,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         [TestMethod]
         [DynamicData(nameof(Data_SubstringAsSpanPair_CS))]
-        public Task SingleArgumentStaticMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
+        public async Task SingleArgumentStaticMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
         {
             string thing = @"
 using System;
@@ -78,12 +78,12 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DynamicData(nameof(Data_SubstringAsSpanPair_VB))]
-        public Task SingleArgumentStaticMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
+        public async Task SingleArgumentStaticMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
         {
             //  'Thing' needs to be in a C# project because VB doesn't support spans in exposed APIs.
             string thing = @"
@@ -118,12 +118,12 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DynamicData(nameof(Data_SubstringAsSpanPair_CS))]
-        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
+        public async Task SingleArgumentInstanceMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
         {
             string thing = @"
 using System;
@@ -154,12 +154,12 @@ public partial class Body
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DynamicData(nameof(Data_SubstringAsSpanPair_VB))]
-        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
+        public async Task SingleArgumentInstanceMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
         {
             //  'Thing' needs to be in a C# project besause VB doesn't support spans in exposed APIs.
             string thing = @"
@@ -199,7 +199,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleArguments_WithAvailableSpanOverloads
@@ -238,7 +238,7 @@ public class Thing
 
         [TestMethod]
         [DynamicData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
-        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_CSAsync(string receiverClass, string testArguments, string fixedArguments)
+        public async Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_CSAsync(string receiverClass, string testArguments, string fixedArguments)
         {
             string fields = @"
 public partial class Body
@@ -261,12 +261,12 @@ public partial class Body
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DynamicData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
-        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_VBAsync(string receiverClass, string testArguments, string fixedArguments)
+        public async Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_VBAsync(string receiverClass, string testArguments, string fixedArguments)
         {
             //  Use C# project because VB doesn't support spans in APIs.
             var thingProject = new ProjectState("ThingProject", LanguageNames.CSharp, "thing", "cs")
@@ -298,7 +298,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NamedArguments_CS
@@ -407,7 +407,7 @@ public class Thing
 
         [TestMethod]
         [DynamicData(nameof(Data_NamedArguments_CS))]
-        public Task NamedArguments_AreHandledCorrectly_CSAsync(string receiverClass, string testExpression, string fixedExpression)
+        public async Task NamedArguments_AreHandledCorrectly_CSAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = CS.WithBody(WithKey(testExpression, 0) + ';');
             string fixedCode = CS.WithBody(fixedExpression + ';');
@@ -425,7 +425,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NamedArguments_VB
@@ -534,7 +534,7 @@ public class Thing
 
         [TestMethod]
         [DynamicData(nameof(Data_NamedArguments_VB))]
-        public Task NamedArguments_AreHandledCorrectly_VBAsync(string receiverClass, string testExpression, string fixedExpression)
+        public async Task NamedArguments_AreHandledCorrectly_VBAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             string fixedCode = VB.WithBody(fixedExpression);
@@ -560,7 +560,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan
@@ -597,7 +597,7 @@ public class Thing
 
         [TestMethod]
         [DynamicData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
-        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_CSAsync(string receiverClass, string testExpression, string fixedExpression)
+        public async Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_CSAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = CS.WithBody(WithKey(testExpression, 0) + ';');
             string fixedCode = CS.WithBody(fixedExpression + ';');
@@ -615,12 +615,12 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DynamicData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
-        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_VBAsync(string receiverClass, string testExpression, string fixedExpression)
+        public async Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_VBAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             string fixedCode = VB.WithBody(fixedExpression);
@@ -646,7 +646,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NestedViolations
@@ -695,7 +695,7 @@ public class C
 
         [TestMethod]
         [DynamicData(nameof(Data_NestedViolations))]
-        public Task NestedViolations_AreAllReportedAndFixed_CSAsync(
+        public async Task NestedViolations_AreAllReportedAndFixed_CSAsync(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
             int? incrementalIterations)
         {
@@ -716,12 +716,12 @@ public class C
                 NumberOfIncrementalIterations = incrementalIterations,
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(CS.DiagnosticAt));
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DynamicData(nameof(Data_NestedViolations))]
-        public Task NestedViolations_AreAllReportedAndFixed_VBAsync(
+        public async Task NestedViolations_AreAllReportedAndFixed_VBAsync(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
             int? incrementalIterations)
         {
@@ -750,11 +750,11 @@ public class C
                 NumberOfIncrementalIterations = incrementalIterations,
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(VB.DiagnosticAt));
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
-        public Task SystemNamespace_IsAdded_WhenMissing_CSAsync()
+        public async Task SystemNamespace_IsAdded_WhenMissing_CSAsync()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -778,11 +778,11 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
-        public Task SystemNamespace_IsAdded_WhenNotIncludedGlobally_VBAsync()
+        public async Task SystemNamespace_IsAdded_WhenNotIncludedGlobally_VBAsync()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -814,11 +814,87 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
-        public Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VBAsync()
+        public async Task SystemNamespace_IsAddedOnce_WhenTwoViolationsAreFixed_CSAsync()
+        {
+            string receiver = CS.Usings + @"
+public class C
+{
+    public static void Consume(string text) { }
+    public static void Consume(Roschar span) { }
+}";
+            string testCode = CS.WithBody(
+                WithKey(@"C.Consume(foo.Substring(1))", 0) + ';' + Environment.NewLine +
+                WithKey(@"C.Consume(foo.Substring(2))", 1) + ';',
+                includeUsings: false);
+            string fixedCode = CS.WithBody(
+                @"C.Consume(foo.AsSpan(1));" + Environment.NewLine +
+                @"C.Consume(foo.AsSpan(2));",
+                includeUsings: true);
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode, receiver },
+                    ExpectedDiagnostics = { CS.DiagnosticAt(0), CS.DiagnosticAt(1) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode, receiver }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            await test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SystemNamespace_IsAddedOnce_WhenTwoViolationsAreFixed_VBAsync()
+        {
+            string receiver = CS.Usings + @"
+public class C
+{
+    public static void Consume(string text) { }
+    public static void Consume(Roschar span) { }
+}";
+            string testCode = VB.WithBody(
+                WithKey(@"C.Consume(foo.Substring(1))", 0) + Environment.NewLine +
+                WithKey(@"C.Consume(foo.Substring(2))", 1),
+                includeImports: false);
+            string fixedCode = VB.WithBody(
+                @"C.Consume(foo.AsSpan(1))" + Environment.NewLine +
+                @"C.Consume(foo.AsSpan(2))",
+                includeImports: true);
+            var receiverProject = new ProjectState("Receiver", LanguageNames.CSharp, "receiver", "cs")
+            {
+                Sources = { receiver }
+            };
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { receiverProject.Name, receiverProject } },
+                    AdditionalProjectReferences = { receiverProject.Name },
+                    ExpectedDiagnostics = { VB.DiagnosticAt(0), VB.DiagnosticAt(1) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    AdditionalProjects = { { receiverProject.Name, receiverProject } },
+                    AdditionalProjectReferences = { receiverProject.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            await test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VBAsync()
         {
             string receiver = CS.Usings + @"
 public class C
@@ -860,12 +936,12 @@ public class C
                 options = options.WithGlobalImports(globalSystemImport);
                 return solution.WithProjectCompilationOptions(id, options);
             });
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         //  No VB counterpart because imports must precede all declarations in VB.
         [TestMethod]
-        public Task SystemNamespace_IsNotAdded_WhenImportedWithinNamespaceDeclaration_CSAsync()
+        public async Task SystemNamespace_IsNotAdded_WhenImportedWithinNamespaceDeclaration_CSAsync()
         {
             string format = @"
 using Roschar = System.ReadOnlySpan<char>;
@@ -894,13 +970,13 @@ namespace Testopolis
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DataRow("System")]
         [DataRow("System.Widgets")]
-        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_CSAsync(string namespaceDeclaration)
+        public async Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_CSAsync(string namespaceDeclaration)
         {
             string format = @"
 using Roschar = System.ReadOnlySpan<char>;
@@ -927,13 +1003,13 @@ namespace " + namespaceDeclaration + @"
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
         [DataRow("System")]
         [DataRow("System.Widgets")]
-        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_VBAsync(string namespaceDeclaration)
+        public async Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_VBAsync(string namespaceDeclaration)
         {
             string helper = @"
 using Roschar = System.ReadOnlySpan<char>;
@@ -979,7 +1055,7 @@ End Namespace";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_SingleBestCandidate_CS
@@ -1011,7 +1087,7 @@ public void Consume(int n, string b, Roschar c) { }";
 
         [TestMethod]
         [DynamicData(nameof(Data_MultipleCandidateOverloads_SingleBestCandidate_CS))]
-        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_CSAsync(string testCode, string fixedCode)
+        public async Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_CSAsync(string testCode, string fixedCode)
         {
             var test = new VerifyCS.Test
             {
@@ -1020,7 +1096,7 @@ public void Consume(int n, string b, Roschar c) { }";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOVerloads_SingleBestCandidate_VB
@@ -1060,7 +1136,7 @@ public class R
 
         [TestMethod]
         [DynamicData(nameof(Data_MultipleCandidateOVerloads_SingleBestCandidate_VB))]
-        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_VBAsync(string receiverClass, string testCode, string fixedCode)
+        public async Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_VBAsync(string receiverClass, string testCode, string fixedCode)
         {
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
             {
@@ -1084,7 +1160,7 @@ public class R
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_CS
@@ -1115,7 +1191,7 @@ public void Consume(string a, Roschar b, Roschar c) { }";
 
         [TestMethod]
         [DynamicData(nameof(Data_MultipleCandidateOverloads_Ambiguous_CS))]
-        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_CSAsync(string testCode)
+        public async Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_CSAsync(string testCode)
         {
             var test = new VerifyCS.Test
             {
@@ -1123,7 +1199,7 @@ public void Consume(string a, Roschar b, Roschar c) { }";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_VB
@@ -1162,7 +1238,7 @@ public class R
 
         [TestMethod]
         [DynamicData(nameof(Data_MultipleCandidateOverloads_Ambiguous_VB))]
-        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_VBAsync(string receiverClass, string testCode)
+        public async Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_VBAsync(string receiverClass, string testCode)
         {
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
             {
@@ -1180,7 +1256,7 @@ public class R
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NoRoscharOverload_CS
@@ -1216,7 +1292,7 @@ public class Thing
 
         [TestMethod]
         [DynamicData(nameof(Data_NoRoscharOverload_CS))]
-        public Task NoRoscharOverload_NoDiagnostic_CSAsync(string receiverClass, string testExpression)
+        public async Task NoRoscharOverload_NoDiagnostic_CSAsync(string receiverClass, string testExpression)
         {
             string testCode = CS.WithBody(testExpression + ';');
 
@@ -1228,7 +1304,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NoRoscharOverload_VB
@@ -1263,7 +1339,7 @@ public class Thing
 
         [TestMethod]
         [DynamicData(nameof(Data_NoRoscharOverload_VB))]
-        public Task NoRoscharOverload_NoDiagnostic_VBAsync(string receiverClass, string testExpression)
+        public async Task NoRoscharOverload_NoDiagnostic_VBAsync(string receiverClass, string testExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             var receiverProject = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
@@ -1281,7 +1357,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_InvalidOverloads_CS
@@ -1330,7 +1406,7 @@ public class WrongReturnType
 
         [TestMethod]
         [DynamicData(nameof(Data_InvalidOverloads_CS))]
-        public Task InvalidOverloads_NoDiagnostic_CSAsync(string receiverClass, string testStatements, string extraFields = "")
+        public async Task InvalidOverloads_NoDiagnostic_CSAsync(string receiverClass, string testStatements, string extraFields = "")
         {
             string testCode = CS.WithBody(testStatements);
 
@@ -1342,7 +1418,7 @@ public class WrongReturnType
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_InvalidOverloads_VB
@@ -1391,7 +1467,7 @@ public class WrongReturnType
 
         [TestMethod]
         [DynamicData(nameof(Data_InvalidOverloads_VB))]
-        public Task InvalidOverloads_NoDiagnostic_VBAsync(string receiverClass, string testStatements, string extraFields = "")
+        public async Task InvalidOverloads_NoDiagnostic_VBAsync(string receiverClass, string testStatements, string extraFields = "")
         {
             string testCode = VB.WithBody(testStatements);
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
@@ -1409,7 +1485,7 @@ public class WrongReturnType
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
@@ -1430,7 +1506,7 @@ public class WrongReturnType
         [DataRow("Internal")]
         [DataRow("parent.Protected")]
         [DataRow("parent.ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        public async Task Accessibility_ExternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class ExternalSubclass : External
@@ -1458,7 +1534,7 @@ public class ExternalSubclass : External
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
@@ -1478,7 +1554,7 @@ public class ExternalSubclass : External
         [DataRow("Me.Internal")]
         [DataRow("parent.Protected")]
         [DataRow("parent.ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_VBAsync(string methodCallWithoutArgumentList)
+        public async Task Accessibility_ExternalBaseClass_WithoutDiagnostics_VBAsync(string methodCallWithoutArgumentList)
         {
             string testCode = VB.Usings + @"
 Public Class ExternalSubclass : Inherits External
@@ -1506,7 +1582,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
@@ -1518,7 +1594,7 @@ End Class";
         [DataRow("base.ProtectedOrInternal")]
         [DataRow("this.ProtectedOrInternal")]
         [DataRow("ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        public async Task Accessibility_ExternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class ExternalSubclass : External
@@ -1562,7 +1638,7 @@ public class ExternalSubclass : External
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
@@ -1574,7 +1650,7 @@ public class ExternalSubclass : External
         [DataRow("MyBase.ProtectedOrInternal")]
         [DataRow("Me.ProtectedOrInternal")]
         [DataRow("ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithDiagnostics_VBAsync(string methodCallWithoutArgumentList)
+        public async Task Accessibility_ExternalBaseClass_WithDiagnostics_VBAsync(string methodCallWithoutArgumentList)
         {
             string testCode = VB.Usings + @"
 Public Class ExternalSubclass : Inherits External
@@ -1618,7 +1694,7 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         //  No VB counterpart because VB doesn't support ref-like types in APIs.
@@ -1629,7 +1705,7 @@ End Class";
         [DataRow("this.Private")]
         [DataRow("Private")]
         [DataRow("parent.Protected")]
-        public Task Accessibility_InternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        public async Task Accessibility_InternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class InternalSubclass : Internal
@@ -1651,7 +1727,7 @@ public class InternalSubclass : Internal
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         //  No VB counterpart because VB doesn't support ref-like types in APIs.
@@ -1660,7 +1736,7 @@ public class InternalSubclass : Internal
         [DataRow("base.Protected")]
         [DataRow("this.Protected")]
         [DataRow("Protected")]
-        public Task Accessibility_InternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        public async Task Accessibility_InternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
             string testCode = CS.Usings + @"
 public class InternalSubclass : Internal
@@ -1696,11 +1772,11 @@ public class InternalSubclass : Internal
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
-        public Task ConditionalSubstringAccess_NoDiagnostic_CSAsync()
+        public async Task ConditionalSubstringAccess_NoDiagnostic_CSAsync()
         {
             string testCode = CS.Usings + @"
 public class Body
@@ -1718,11 +1794,11 @@ public class Body
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         [TestMethod]
-        public Task ConditionalSubstringAccess_NoDiagnostic_VBAsync()
+        public async Task ConditionalSubstringAccess_NoDiagnostic_VBAsync()
         {
             string receiver = CS.Usings + @"
 public class Receiver
@@ -1749,7 +1825,7 @@ receiver.Consume(foo?.Substring(1))");
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync(CancellationToken.None);
+            await test.RunAsync(CancellationToken.None);
         }
 
         #region Helpers
