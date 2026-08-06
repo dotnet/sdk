@@ -318,6 +318,18 @@ internal static class DotnetupTestUtilities
             $"or 'dotnet build src/Installer/dotnetup/dotnetup.csproj -c {configuration}' for the managed binary.");
     }
 
+    public static string GetNativeDotnetupExecutablePath()
+    {
+        string path = GetDotnetupExecutablePath();
+        if (!string.Equals(Path.GetFileName(Path.GetDirectoryName(path)), "publish", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new FileNotFoundException(
+                $"Native AOT dotnetup executable not found. Expected a published executable, but resolved '{path}'.");
+        }
+
+        return path;
+    }
+
     /// <summary>
     /// Runs the dotnetup executable as a separate process
     /// </summary>
