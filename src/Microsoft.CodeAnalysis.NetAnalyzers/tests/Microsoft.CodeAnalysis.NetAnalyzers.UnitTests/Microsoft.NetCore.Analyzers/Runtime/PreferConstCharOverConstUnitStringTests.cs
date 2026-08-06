@@ -518,5 +518,125 @@ End Module
 ";
             await VerifyVB.VerifyAnalyzerAsync(interpolatedString_vb);
         }
+
+        [TestMethod]
+        public async Task TestFixAllSharedConstLocal_CSharpAsync()
+        {
+            const string input = @"
+using System.Text;
+
+class TestClass
+{
+    private void TestMethod()
+    {
+        StringBuilder sb = new StringBuilder();
+        const string ch = ""a"";
+        sb.Append([|ch|]);
+        sb.Append([|ch|]);
+    }
+}";
+
+            const string fix = @"
+using System.Text;
+
+class TestClass
+{
+    private void TestMethod()
+    {
+        StringBuilder sb = new StringBuilder();
+        const char ch = 'a';
+        sb.Append(ch);
+        sb.Append(ch);
+    }
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(input, fix);
+        }
+
+        [TestMethod]
+        public async Task TestFixAllSharedConstLocal_VisualBasicAsync()
+        {
+            const string input = @"
+Module Program
+    Sub Main()
+        Const ch As String = ""a""
+        Dim builder As New System.Text.StringBuilder
+        builder.Append([|ch|])
+        builder.Append([|ch|])
+    End Sub
+End Module
+";
+
+            const string fix = @"
+Module Program
+    Sub Main()
+        Const ch As Char = ""a""c
+        Dim builder As New System.Text.StringBuilder
+        builder.Append(ch)
+        builder.Append(ch)
+    End Sub
+End Module
+";
+
+            await VerifyVB.VerifyCodeFixAsync(input, fix);
+        }
+
+        [TestMethod]
+        public async Task TestFixAllLiterals_CSharpAsync()
+        {
+            const string input = @"
+using System.Text;
+
+class TestClass
+{
+    private void TestMethod()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append([|""a""|]);
+        sb.Append([|""b""|]);
+    }
+}";
+
+            const string fix = @"
+using System.Text;
+
+class TestClass
+{
+    private void TestMethod()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.Append('a');
+        sb.Append('b');
+    }
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(input, fix);
+        }
+
+        [TestMethod]
+        public async Task TestFixAllLiterals_VisualBasicAsync()
+        {
+            const string input = @"
+Module Program
+    Sub Main()
+        Dim builder As New System.Text.StringBuilder
+        builder.Append([|""a""|])
+        builder.Append([|""b""|])
+    End Sub
+End Module
+";
+
+            const string fix = @"
+Module Program
+    Sub Main()
+        Dim builder As New System.Text.StringBuilder
+        builder.Append(""a""c)
+        builder.Append(""b""c)
+    End Sub
+End Module
+";
+
+            await VerifyVB.VerifyCodeFixAsync(input, fix);
+        }
     }
 }
