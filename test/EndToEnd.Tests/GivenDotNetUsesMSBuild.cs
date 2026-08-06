@@ -39,7 +39,7 @@ namespace EndToEnd.Tests
             binDirectory.Should().NotHaveFilesMatching("*.dll", SearchOption.AllDirectories);
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void ItCanRunToolsInACSProj()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")
@@ -71,7 +71,7 @@ namespace EndToEnd.Tests
                     .And.HaveStdOutContaining("Hello Portable World!");
         }
 
-        [RequiresMSBuildVersionFact("16.8.0")]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void ItCanRunToolsThatPrefersTheCliRuntimeEvenWhenTheToolItselfDeclaresADifferentRuntime()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("MSBuildTestApp")

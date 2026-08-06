@@ -55,8 +55,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netcoreapp3.0", true)]
-        [InlineData("netcoreapp3.0", false)]
         [InlineData("net5.0", false)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
         public void ILLink_runs_and_creates_linked_app(string targetFramework, bool referenceClassLibAsPackage)
@@ -1222,7 +1220,6 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
-        [InlineData("netcoreapp3.1")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         public void ILLink_old_defaults_keep_nonframework(string targetFramework)
@@ -1608,7 +1605,6 @@ namespace Microsoft.NET.Publish.Tests
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
         [InlineData("net5.0")]
-        [InlineData("netcoreapp3.1")]
         public void ILLink_displays_informational_warning_up_to_net5_by_default(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -1683,7 +1679,7 @@ namespace Microsoft.NET.Publish.Tests
         [Fact()]
         public void ILLink_and_crossgen_process_razor_assembly()
         {
-            var targetFramework = "netcoreapp3.0";
+            var targetFramework = "net6.0";
             var rid = EnvironmentInfo.GetCompatibleRid(targetFramework);
 
             var testProject = new TestProject
@@ -1720,7 +1716,8 @@ namespace Microsoft.NET.Publish.Tests
 
             var publishDir = publishCommand.GetOutputDirectory(targetFramework, runtimeIdentifier: rid);
             publishDir.Should().HaveFile("System.IO.Compression.ZipFile.dll");
-            GivenThatWeWantToPublishReadyToRun.DoesImageHaveR2RInfo(publishDir.File("TestWeb.Views.dll").FullName);
+            // In net6.0+, Razor views are compiled into the main assembly instead of a separate Views.dll
+            GivenThatWeWantToPublishReadyToRun.DoesImageHaveR2RInfo(publishDir.File("TestWeb.dll").FullName);
         }
 
         [RequiresMSBuildVersionTheory("17.0.0.32901")]
@@ -2193,7 +2190,7 @@ namespace HelloWorld
                 // NOTE: If using a package reference for the reference project, it will be retrieved
                 // from the nuget cache. Set the reference project TFM to the lowest common denominator
                 // of these tests to prevent conflicts.
-                TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFrameworks,
+                TargetFrameworks = usePackageReference ? "net5.0" : targetFrameworks,
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;
