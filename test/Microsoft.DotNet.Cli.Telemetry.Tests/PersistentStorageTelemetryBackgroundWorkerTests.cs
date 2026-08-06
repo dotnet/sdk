@@ -84,4 +84,45 @@ public class PersistentStorageTelemetryBackgroundWorkerTests
         worker.Shutdown(1_000).Should().BeTrue();
         passes.Should().Be(3);
     }
+
+    [TestMethod]
+    public async Task RequestDrain_HonorsRetryAfterBeforeDrainingAgain()
+    {
+        var expectedDelay = TimeSpan.FromSeconds(17);
+        var delayStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var releaseDelay = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var secondDrain = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+        var passes = 0;
+        var worker = new PersistentStorageTelemetryBackgroundWorker(
+            _ =>
+            {
+                if (Interlocked.Increment(ref passes) == 1)
+                {
+                    return Task.FromResult(new TelemetryDrainResult(
+                        deletedBlobCount: 0,
+                        shouldBackOff: true,
+                        retryAfter: expectedDelay));
+                }
+
+                secondDrain.SetResult();
+                return Task.FromResult(new TelemetryDrainResult(0, shouldBackOff: false, retryAfter: null));
+            },
+            (delay, _) =>
+            {
+                delay.Should().Be(expectedDelay);
+                delayStarted.SetResult();
+                return releaseDelay.Task;
+            });
+
+        worker.RequestDrain();
+        await delayStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        worker.RequestDrain();
+
+        secondDrain.Task.IsCompleted.Should().BeFalse();
+        releaseDelay.SetResult();
+        await secondDrain.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+
+        worker.Shutdown(1_000).Should().BeTrue();
+        passes.Should().Be(2);
+    }
 }

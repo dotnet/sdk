@@ -9,6 +9,7 @@ namespace Microsoft.DotNet.Cli.Telemetry.Implementation;
 internal sealed class PersistentStorageTelemetryBackgroundWorker
 {
     private readonly Func<CancellationToken, Task<TelemetryDrainResult>> _drainAsync;
+    private readonly Func<TimeSpan, CancellationToken, Task> _delayAsync;
     private readonly SemaphoreSlim _drainSignal = new(0, 1);
     private readonly object _syncLock = new();
     private CancellationTokenSource? _cancellation;
@@ -26,8 +27,16 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
     }
 
     internal PersistentStorageTelemetryBackgroundWorker(Func<CancellationToken, Task<TelemetryDrainResult>> drainAsync)
+        : this(drainAsync, static (delay, cancellationToken) => Task.Delay(delay, cancellationToken))
+    {
+    }
+
+    internal PersistentStorageTelemetryBackgroundWorker(
+        Func<CancellationToken, Task<TelemetryDrainResult>> drainAsync,
+        Func<TimeSpan, CancellationToken, Task> delayAsync)
     {
         _drainAsync = drainAsync;
+        _delayAsync = delayAsync;
     }
 
     public void RequestDrain()
@@ -95,6 +104,13 @@ internal sealed class PersistentStorageTelemetryBackgroundWorker
                 while (result.DeletedBlobCount > 0
                     && !result.ShouldBackOff
                     && !cancellationToken.IsCancellationRequested);
+
+                if (result.RetryAfter is { } retryAfter)
+                {
+                    await _delayAsync(
+                        PersistentStorageTelemetryDrainer.ClampToSupportedTimerDelay(retryAfter),
+                        cancellationToken).ConfigureAwait(false);
+                }
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
