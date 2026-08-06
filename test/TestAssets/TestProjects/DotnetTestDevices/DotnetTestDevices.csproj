@@ -1,6 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
-  <Import Project="post-build-discovery.props" Condition="Exists('post-build-discovery.props')" />
+  <PropertyGroup>
+    <_PostBuildDiscoveryPropsPath>$(MSBuildProjectDirectory)\post-build-discovery.props</_PostBuildDiscoveryPropsPath>
+  </PropertyGroup>
+  <Import Project="$(_PostBuildDiscoveryPropsPath)" Condition="Exists('$(_PostBuildDiscoveryPropsPath)')" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -81,7 +84,7 @@
       <_PostBuildDiscoveryPropsLines Include="&lt;/Project&gt;" />
     </ItemGroup>
     <WriteLinesToFile
-      File="$(MSBuildProjectDirectory)\post-build-discovery.props"
+      File="$(_PostBuildDiscoveryPropsPath)"
       Lines="@(_PostBuildDiscoveryPropsLines)"
       Overwrite="true" />
   </Target>
