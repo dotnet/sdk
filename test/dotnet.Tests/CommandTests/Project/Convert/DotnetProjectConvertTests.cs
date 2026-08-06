@@ -2560,7 +2560,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                 """,
             expectedErrors:
             [
-                (1, string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, "Name cannot begin with the '1' character, hexadecimal value 0x31.")),
+                (1, string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, "1Invalid", "Name cannot begin with the '1' character, hexadecimal value 0x31.")),
             ]);
     }
 

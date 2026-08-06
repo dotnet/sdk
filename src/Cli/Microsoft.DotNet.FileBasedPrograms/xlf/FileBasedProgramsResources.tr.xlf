@@ -28,9 +28,9 @@
         <note>Used when reporting directive errors like "file(location): error: message".</note>
       </trans-unit>
       <trans-unit id="DirectiveMetadataInvalidName">
-        <source>Invalid directive metadata name: {0}</source>
-        <target state="new">Invalid directive metadata name: {0}</target>
-        <note>{0} is an inner exception message.</note>
+        <source>Invalid directive metadata name '{0}': {1}</source>
+        <target state="new">Invalid directive metadata name '{0}': {1}</target>
+        <note>{0} is the metadata name. {1} is the inner exception message.</note>
       </trans-unit>
       <trans-unit id="DuplicateDirective">
         <source>Duplicate directives are not supported: {0}</source>

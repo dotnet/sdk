@@ -571,7 +571,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             }
             catch (XmlException ex)
             {
-                context.ReportError(string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, ex.Message));
+                context.ReportError(string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, name, ex.Message));
                 return null;
             }
 

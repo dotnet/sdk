@@ -170,8 +170,8 @@
     <comment>{Locked="'Name=Value'"}{0} is the offending metadata text.</comment>
   </data>
   <data name="DirectiveMetadataInvalidName" xml:space="preserve">
-    <value>Invalid directive metadata name: {0}</value>
-    <comment>{0} is an inner exception message.</comment>
+    <value>Invalid directive metadata name '{0}': {1}</value>
+    <comment>{0} is the metadata name. {1} is the inner exception message.</comment>
   </data>
   <data name="UnexpectedDirectiveText" xml:space="preserve">
     <value>The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</value>
