@@ -9,8 +9,8 @@
     <VersionSDKMinorPatch>0</VersionSDKMinorPatch>
     <VersionFeature>$([System.String]::Copy('$(VersionSDKMinorPatch)').PadLeft(2, '0'))</VersionFeature>
     <VersionPrefix>$(VersionMajor).$(VersionMinor).$(VersionSDKMinor)$(VersionFeature)</VersionPrefix>
-    <PreReleaseVersionLabel>preview</PreReleaseVersionLabel>
-    <PreReleaseVersionIteration>7</PreReleaseVersionIteration>
+    <PreReleaseVersionLabel>rc</PreReleaseVersionLabel>
+    <PreReleaseVersionIteration>1</PreReleaseVersionIteration>
     <!-- Allowed values: '', 'prerelease', 'release'. Set to 'release' when stabilizing. -->
     <DotNetFinalVersionKind></DotNetFinalVersionKind>
 
@@ -53,6 +53,7 @@
     <SystemDataSqlClientPackageVersion>4.8.6</SystemDataSqlClientPackageVersion>
     <WebDeploymentPackageVersion>4.0.5</WebDeploymentPackageVersion>
     <SystemCommandLineNamingConventionBinderVersion>2.0.0-beta5.25279.2</SystemCommandLineNamingConventionBinderVersion>
+    <MicrosoftCodeAnalysisAnalyzersVersion>5.10.0-1.26363.117</MicrosoftCodeAnalysisAnalyzersVersion>
     <MicrosoftCodeAnalysisAnalyzerTestingVersion>1.1.2</MicrosoftCodeAnalysisAnalyzerTestingVersion>
     <MicrosoftVisualBasicVersion>10.3.0</MicrosoftVisualBasicVersion>
     <MicrosoftVisualStudioSetupConfigurationInteropVersion>3.2.2146</MicrosoftVisualStudioSetupConfigurationInteropVersion>
@@ -149,19 +150,19 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Workload manifest package versions">
-    <MauiFeatureBand>11.0.100-preview.1</MauiFeatureBand>
+    <MauiFeatureBand>11.0.100-preview.6</MauiFeatureBand>
 
     <!--
       Updates to any of these versions will require the updating of that package version in the
       source-build-assets repo as a text-only package.
       See https://github.com/dotnet/source-build-assets?tab=readme-ov-file#text-only
     -->
-    <MauiWorkloadManifestVersion>11.0.0-preview.1.26102.3</MauiWorkloadManifestVersion>
-    <XamarinAndroidWorkloadManifestVersion>36.1.99-preview.1.119</XamarinAndroidWorkloadManifestVersion>
-    <XamarinIOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinIOSWorkloadManifestVersion>
-    <XamarinMacCatalystWorkloadManifestVersion>26.2.11310-net11-p1</XamarinMacCatalystWorkloadManifestVersion>
-    <XamarinMacOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinMacOSWorkloadManifestVersion>
-    <XamarinTvOSWorkloadManifestVersion>26.2.11310-net11-p1</XamarinTvOSWorkloadManifestVersion>
+    <MauiWorkloadManifestVersion>11.0.0-preview.6.26360.8</MauiWorkloadManifestVersion>
+    <XamarinAndroidWorkloadManifestVersion>37.0.0-preview.6.59</XamarinAndroidWorkloadManifestVersion>
+    <XamarinIOSWorkloadManifestVersion>26.5.11720-net11-p6</XamarinIOSWorkloadManifestVersion>
+    <XamarinMacCatalystWorkloadManifestVersion>26.5.11720-net11-p6</XamarinMacCatalystWorkloadManifestVersion>
+    <XamarinMacOSWorkloadManifestVersion>26.5.11720-net11-p6</XamarinMacOSWorkloadManifestVersion>
+    <XamarinTvOSWorkloadManifestVersion>26.5.11720-net11-p6</XamarinTvOSWorkloadManifestVersion>
   </PropertyGroup>
 
   <PropertyGroup Label="Pinned dependency">

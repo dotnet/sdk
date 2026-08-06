@@ -199,18 +199,9 @@ public class Program
     {
         // If we didn't match any built-in commands, and a C# file path is the first argument,
         // parse as `dotnet run file.cs ..rest_of_args` instead.
-        if (parseResult.GetFileBasedAppEntryPointToken() is { } unmatchedCommandOrFile)
+        if (parseResult.TryParseFileBasedAppAsRun() is { } runParseResult)
         {
-            List<string> otherTokens = new(parseResult.Tokens.Count - 1);
-            foreach (var token in parseResult.Tokens)
-            {
-                if (token.Type != TokenType.Argument || token != unmatchedCommandOrFile)
-                {
-                    otherTokens.Add(token.Value);
-                }
-            }
-            parseResult = Parser.Parse(["run", "--file", unmatchedCommandOrFile.Value, .. otherTokens]);
-            return CommandInvocation.ExecuteInternalCommand(parseResult);
+            return CommandInvocation.ExecuteInternalCommand(runParseResult);
         }
 
         return null;

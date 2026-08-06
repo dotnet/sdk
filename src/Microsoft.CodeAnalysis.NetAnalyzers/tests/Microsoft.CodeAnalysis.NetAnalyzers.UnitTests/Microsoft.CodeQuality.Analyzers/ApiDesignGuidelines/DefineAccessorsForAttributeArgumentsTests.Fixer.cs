@@ -49,6 +49,49 @@ public sealed class NoAccessorTestAttribute : Attribute
         }
 
         [TestMethod]
+        public async Task CSharp_CA1019_TwoParametersOnOneAttribute_FixAllAddsEveryAccessorAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+
+[AttributeUsage(AttributeTargets.All)]
+public sealed class NoAccessorTestAttribute : Attribute
+{
+    private string m_name;
+    private int m_order;
+
+    public NoAccessorTestAttribute(string name, int order)
+    {
+        m_name = name;
+        m_order = order;
+    }
+}",
+                new[]
+                {
+                    VerifyCS.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.DefaultRule).WithSpan(10, 43, 10, 47).WithArguments("name", "NoAccessorTestAttribute"),
+                    VerifyCS.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.DefaultRule).WithSpan(10, 53, 10, 58).WithArguments("order", "NoAccessorTestAttribute"),
+                },
+@"
+using System;
+
+[AttributeUsage(AttributeTargets.All)]
+public sealed class NoAccessorTestAttribute : Attribute
+{
+    private string m_name;
+    private int m_order;
+
+    public NoAccessorTestAttribute(string name, int order)
+    {
+        m_name = name;
+        m_order = order;
+    }
+
+    public string Name { get; }
+    public int Order { get; }
+}");
+        }
+
+        [TestMethod]
         public async Task CSharp_CA1019_AddAccessor1Async()
         {
             await new VerifyCS.Test
@@ -318,6 +361,54 @@ Public NotInheritable Class NoAccessorTestAttribute
     End Sub
 
     Public ReadOnly Property Name As String
+        Get
+        End Get
+    End Property
+End Class");
+        }
+
+        [TestMethod]
+        public async Task VisualBasic_CA1019_TwoParametersOnOneAttribute_FixAllAddsEveryAccessorAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+
+<AttributeUsage(AttributeTargets.All)> _
+Public NotInheritable Class NoAccessorTestAttribute
+    Inherits Attribute
+    Private m_name As String
+    Private m_order As Integer
+    
+    Public Sub New(name As String, order As Integer)
+        m_name = name
+        m_order = order
+    End Sub
+End Class",
+                new[]
+                {
+                    VerifyVB.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.DefaultRule).WithSpan(10, 20, 10, 24).WithArguments("name", "NoAccessorTestAttribute"),
+                    VerifyVB.Diagnostic(DefineAccessorsForAttributeArgumentsAnalyzer.DefaultRule).WithSpan(10, 36, 10, 41).WithArguments("order", "NoAccessorTestAttribute"),
+                },
+@"
+Imports System
+
+<AttributeUsage(AttributeTargets.All)> _
+Public NotInheritable Class NoAccessorTestAttribute
+    Inherits Attribute
+    Private m_name As String
+    Private m_order As Integer
+    
+    Public Sub New(name As String, order As Integer)
+        m_name = name
+        m_order = order
+    End Sub
+
+    Public ReadOnly Property Name As String
+        Get
+        End Get
+    End Property
+
+    Public ReadOnly Property Order As Integer
         Get
         End Get
     End Property
