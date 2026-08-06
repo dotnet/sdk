@@ -2532,6 +2532,22 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    public void Directives_InvalidEscapeSequence()
+    {
+        // A terminated literal with a bad escape reports the underlying C# lexer error (not "unterminated").
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:property Description="a\qb"
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.InvalidStringLiteralInDirective, "Unrecognized escape sequence")),
+            ]);
+    }
+
+    [TestMethod]
     [DataRow("#:property A=B\"C\"")]
     [DataRow("#:property A=B\"C\"D")]
     [DataRow("#:property A=\"B\"C")]

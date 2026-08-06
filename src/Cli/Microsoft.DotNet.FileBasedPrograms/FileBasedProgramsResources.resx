@@ -165,6 +165,10 @@
     <value>Double quotes (") in a directive must enclose an entire value, for example: 'Name="a b"' or '"a b"'.</value>
     <comment>{Locked="Name=&quot;a b&quot;"}{Locked="&quot;a b&quot;"}</comment>
   </data>
+  <data name="InvalidStringLiteralInDirective" xml:space="preserve">
+    <value>Invalid quoted value in directive: {0}</value>
+    <comment>{0} is the underlying C# string literal error message, for example 'Unrecognized escape sequence.'.</comment>
+  </data>
   <data name="InvalidDirectiveMetadata" xml:space="preserve">
     <value>Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</value>
     <comment>{Locked="'Name=Value'"}{0} is the offending metadata text.</comment>

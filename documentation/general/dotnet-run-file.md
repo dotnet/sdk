@@ -199,7 +199,8 @@ sequences are decoded, e.g., `#:property Description="Hello World"` sets the val
 `#:property Path="a\\b"` sets it to `a\b`, and `#:property Text="a\"b"` sets it to `a"b`. Verbatim
 (`@"..."`) and raw (`"""..."""`) string literals are not supported. Quotes can only enclose a whole
 value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
-It is an error if a quote is left unterminated.
+It is an error if a quote is left unterminated or if a quoted value contains an invalid escape
+sequence (e.g., `"a\q"`).
 
 Because a bare value keeps a backslash literal while a quoted value follows C# escape rules, a Windows
 path is simplest written bare (`#:project C:\src\lib`) or with forward slashes if quoting is needed

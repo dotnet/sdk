@@ -360,9 +360,21 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 // quote and fail the check above), and raw ("""...""") literals lex to a different token kind
                 // and are rejected below.
                 var token = SyntaxFactory.ParseToken(text, offset: i);
-                if (token.ContainsDiagnostics)
+                var errors = token.GetDiagnostics().Where(static d => d.Severity == DiagnosticSeverity.Error).ToList();
+                if (errors.Count > 0)
                 {
-                    context.ReportError(FileBasedProgramsResources.UnterminatedQuoteInDirective);
+                    // CS1010 ("Newline in constant") means the literal was left unterminated; give it our
+                    // clearer directive-specific message. Any other lexer error (e.g. CS1009 for an invalid
+                    // escape sequence) forwards Roslyn's already-localized message so it stays accurate.
+                    if (errors.Any(static d => d.Id == "CS1010"))
+                    {
+                        context.ReportError(FileBasedProgramsResources.UnterminatedQuoteInDirective);
+                    }
+                    else
+                    {
+                        context.ReportError(string.Format(FileBasedProgramsResources.InvalidStringLiteralInDirective, errors[0].GetMessage()));
+                    }
+
                     return null;
                 }
 
