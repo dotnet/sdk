@@ -6,6 +6,7 @@ using Microsoft.Dotnet.Installation;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+using Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -131,7 +132,8 @@ public class WalkthroughSummaryTests
         var exception = Assert.ThrowsExactly<DotnetInstallException>(
             () => WalkthroughSummary.BuildModeDescription(plan));
 
-        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.Unknown);
+        exception.ErrorCode.Should().Be(DotnetInstallErrorCode.InvalidModeSelection);
+        ErrorCategoryClassifier.ClassifyInstallError(exception.ErrorCode).Should().Be(ErrorCategory.Product);
     }
 
     private static WalkthroughPlan CreatePlan(

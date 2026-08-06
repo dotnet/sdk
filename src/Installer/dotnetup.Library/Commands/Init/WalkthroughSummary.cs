@@ -131,7 +131,7 @@ internal static class WalkthroughSummary
             DotnetAccessMode.Everywhere => DotnetupTheme.Accent(
                 Strings.SummaryModeSystemEnvironmentVariables.EscapeMarkup()),
             _ => throw new DotnetInstallException(
-                DotnetInstallErrorCode.Unknown,
+                DotnetInstallErrorCode.InvalidModeSelection,
                 $"Unable to describe access mode '{plan.AccessMode}' with the resolved shell provider."),
         };
 
