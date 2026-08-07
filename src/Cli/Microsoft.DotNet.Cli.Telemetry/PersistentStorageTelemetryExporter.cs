@@ -47,13 +47,12 @@ internal abstract class PersistentStorageTelemetryExporter<T> : BaseExporter<T>
                 return ExportResult.Success;
             }
 
-            if (!_storage.TryPersist(bytes))
-            {
-                return ExportResult.Failure;
-            }
-
+            var persisted = _storage.TryPersist(bytes);
             _backgroundWorker?.RequestDrain();
-            return ExportResult.Success;
+
+            return persisted
+                ? ExportResult.Success
+                : ExportResult.Failure;
         }
         catch (Exception e)
         {

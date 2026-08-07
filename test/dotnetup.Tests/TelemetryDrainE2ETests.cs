@@ -14,9 +14,8 @@ public class TelemetryDrainE2ETests
     private static readonly TimeSpan s_timeout = TimeSpan.FromSeconds(20);
 
     [TestMethod]
-    public async Task NativeAotDrainMode_UploadsAndDeletesPersistedTelemetry()
+    public async Task DrainMode_UploadsAndDeletesPersistedTelemetry()
     {
-        DotnetupTestUtilities.GetNativeDotnetupExecutablePath();
         using var server = new MockTelemetryIngestionServer();
         using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
 
@@ -32,9 +31,8 @@ public class TelemetryDrainE2ETests
     }
 
     [TestMethod]
-    public async Task NativeAotNormalMode_SpawnsDetachedDrainerThatUploadsTelemetry()
+    public async Task NormalMode_SpawnsDetachedDrainerThatUploadsTelemetry()
     {
-        DotnetupTestUtilities.GetNativeDotnetupExecutablePath();
         using var server = new MockTelemetryIngestionServer();
         using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
 
@@ -47,9 +45,8 @@ public class TelemetryDrainE2ETests
     }
 
     [TestMethod]
-    public void NativeAotEnvScript_UsesShellStartupShutdownBudget()
+    public void EnvScript_UsesShellStartupShutdownBudget()
     {
-        DotnetupTestUtilities.GetNativeDotnetupExecutablePath();
         using var server = new MockTelemetryIngestionServer();
         using var environment = new TelemetryTestEnvironment(server.IngestionEndpoint);
         environment.ConfigureShutdownBudgetObservation();
