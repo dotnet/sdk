@@ -39,4 +39,36 @@ public class GivenAWindowsMsiManifestInstaller : SdkTest
         packageId.ToString().Should().Be(
             $"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture}".ToLowerInvariant());
     }
+
+    // MSIs built with WiX v3 collapse the Program Files directory into the administrative install target.
+    [TestMethod]
+    public void FindExtractedManifestFolderLocatesTheManifestInTheWiXV3AdminInstallLayout()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+        var expected = Path.Combine(testDirectory, "dotnet", "sdk-manifests", "6.0.100", "test.manifest");
+        Directory.CreateDirectory(expected);
+
+        WindowsMsiManifestInstaller.FindExtractedManifestFolder(testDirectory).Should().Be(expected);
+    }
+
+    // MSIs built with WiX v4 and newer emit a named directory for Program Files in the administrative image.
+    [TestMethod]
+    public void FindExtractedManifestFolderLocatesTheManifestInTheWiXV4AdminInstallLayout()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+        var expected = Path.Combine(testDirectory, "PFiles64", "dotnet", "sdk-manifests", "6.0.100", "workloadsets");
+        Directory.CreateDirectory(expected);
+
+        WindowsMsiManifestInstaller.FindExtractedManifestFolder(testDirectory).Should().Be(expected);
+    }
+
+    [TestMethod]
+    public void FindExtractedManifestFolderReturnsNullWhenThereIsNoManifest()
+    {
+        var testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+        Directory.CreateDirectory(Path.Combine(testDirectory, "PFiles64", "dotnet"));
+
+        WindowsMsiManifestInstaller.FindExtractedManifestFolder(testDirectory).Should().BeNull();
+        WindowsMsiManifestInstaller.FindExtractedManifestFolder(Path.Combine(testDirectory, "does-not-exist")).Should().BeNull();
+    }
 }
