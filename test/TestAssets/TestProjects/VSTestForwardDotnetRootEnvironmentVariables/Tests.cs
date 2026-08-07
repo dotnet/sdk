@@ -16,7 +16,7 @@ namespace TestNamespace
             // This project is compiled, and executed by the tests in "test/dotnet-test.Tests/GivenDotnetTestForwardDotnetRootEnvironmentVariables.cs"
             foreach (DictionaryEntry env in Environment.GetEnvironmentVariables())
             {
-                if (env.Key.ToString().Contains("VSTEST_WINAPPHOST_"))
+                if (env.Key.ToString().Contains("VSTEST_"))
                 {
                     Console.WriteLine($"{env.Key.ToString()}={env.Value.ToString()}");
                 }

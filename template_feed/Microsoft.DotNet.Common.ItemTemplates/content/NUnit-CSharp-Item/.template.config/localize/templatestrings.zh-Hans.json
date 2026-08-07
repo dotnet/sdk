@@ -1,0 +1,6 @@
+﻿{
+  "author": "Aleksei Kharlov aka halex2005 (codeofclimber.ru)",
+  "name": "NUnit 3 测试项",
+  "description": "创建新的 NUnit 测试类",
+  "postActions/openInEditor/description": "在编辑器中打开创建的测试固定例程类"
+}

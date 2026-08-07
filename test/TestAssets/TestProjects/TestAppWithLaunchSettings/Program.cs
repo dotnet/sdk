@@ -10,8 +10,10 @@ namespace ConsoleApplication
         public static void Main(string[] args)
         {
             Console.WriteLine("Hello world");
-            Console.WriteLine($"MyCoolEnvironmentVariableKey={Environment.GetEnvironmentVariable("MyCoolEnvironmentVariableKey")}");
-            Console.WriteLine($"DOTNET_LAUNCH_PROFILE={Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")}");
+            Console.WriteLine($"env: MyCoolEnvironmentVariableKey={Environment.GetEnvironmentVariable("MyCoolEnvironmentVariableKey")}");
+            Console.WriteLine($"env: DOTNET_LAUNCH_PROFILE={Environment.GetEnvironmentVariable("DOTNET_LAUNCH_PROFILE")}");
+            Console.WriteLine($"env: ASPNETCORE_URLS={Environment.GetEnvironmentVariable("ASPNETCORE_URLS")}");
+            Console.WriteLine($"env: Configuration={Environment.GetEnvironmentVariable("Configuration")}");
             if (args.Length > 0)
             {
                 Console.WriteLine(args[0]);

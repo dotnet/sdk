@@ -17,6 +17,11 @@
         <target state="translated">Compila e executa um aplicativo usando a estrutura especificada. A estrutura deve ser especificada no arquivo de projeto. </target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionNoLaunchProfileArgumentsDescription">
+        <source>Do not use arguments specified in launch profile to run the application.</source>
+        <target state="translated">Não use argumentos especificados no perfil de inicialização para executar o aplicativo.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionProjectDescription">
         <source>The path to the project file to run (defaults to the current directory if there is only one project).</source>
         <target state="translated">O caminho para o arquivo de projeto a ser executado (usará como padrão o diretório atual se houver apenas um projeto).</target>

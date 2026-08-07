@@ -4,9 +4,8 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.Extensions.Tools.Internal;
 
-namespace Microsoft.DotNet.Watcher.Tools
+namespace Microsoft.DotNet.Watch
 {
     internal sealed class LaunchSettingsProfile
     {

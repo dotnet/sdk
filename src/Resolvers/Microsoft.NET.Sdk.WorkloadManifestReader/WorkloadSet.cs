@@ -6,6 +6,7 @@ using Microsoft.DotNet.MSBuildSdkResolver;
 using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
 using System.Text.Json;
+using Microsoft.DotNet.Workloads.Workload;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
