@@ -106,6 +106,71 @@ public sealed class TestApplicationLaunchTests
     }
 
     [TestMethod]
+    [DataRow("browser-wasm")]
+    [DataRow("wasi-wasm")]
+    public void CreateProcessStartInfo_WebAssembly_UsesAuthenticatedHttpTransport(string runtimeIdentifier)
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            runtimeIdentifier: runtimeIdentifier);
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+        Assert.IsNotNull(application.HttpResponseFilePath);
+        string responseFilePath = application.HttpResponseFilePath!;
+        string responseFileContents = File.ReadAllText(responseFilePath);
+
+        startInfo.Arguments.Should().Contain("@" + responseFilePath);
+        startInfo.Arguments.Should().NotContain(CliConstants.DotNetTestPipeOptionKey);
+        startInfo.Arguments.Should().NotContain(CliConstants.DotNetTestHttpEndpointOptionKey);
+        startInfo.Arguments.Should().NotContain(CliConstants.DotNetTestHttpTokenOptionKey);
+        responseFileContents.Should().Contain($"{CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue}");
+        responseFileContents.Should().Contain($"{CliConstants.DotNetTestTransportOptionKey} {CliConstants.DotNetTestHttpTransportValue}");
+        responseFileContents.Should().Contain(CliConstants.DotNetTestHttpEndpointOptionKey);
+        responseFileContents.Should().Contain(CliConstants.DotNetTestHttpTokenOptionKey);
+        if (!OperatingSystem.IsWindows())
+        {
+            File.GetUnixFileMode(responseFilePath)
+                .Should()
+                .Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+
+        string loggedArguments = application.GetArgumentsForLogging(startInfo.Arguments);
+        loggedArguments.Should().NotContain("http://127.0.0.1:");
+        loggedArguments.Should().NotContain(CliConstants.DotNetTestHttpTokenOptionKey);
+    }
+
+    [TestMethod]
+    public void Dispose_BrowserWasm_DeletesHttpTransportResponseFile()
+    {
+        string responseFilePath;
+        using (TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            runtimeIdentifier: "browser-wasm"))
+        {
+            application.CreateProcessStartInfo();
+            responseFilePath = application.HttpResponseFilePath!;
+            File.Exists(responseFilePath).Should().BeTrue();
+        }
+
+        File.Exists(responseFilePath).Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void CreateProcessStartInfo_Desktop_UsesNamedPipeTransport()
+    {
+        using TestApplication application = CreateApplication(
+            new TestOptions(false, false, TestListFormat.Text),
+            runtimeIdentifier: "win-x64");
+
+        ProcessStartInfo startInfo = application.CreateProcessStartInfo();
+
+        startInfo.Arguments.Should().Contain(CliConstants.DotNetTestPipeOptionKey);
+        startInfo.Arguments.Should().NotContain(CliConstants.DotNetTestTransportOptionKey);
+        startInfo.Arguments.Should().NotContain(CliConstants.DotNetTestHttpEndpointOptionKey);
+        startInfo.Arguments.Should().NotContain(CliConstants.DotNetTestHttpTokenOptionKey);
+    }
+
+    [TestMethod]
     public void CreateProcessStartInfo_LaunchProfileAffectedOption_DoesNotCreateSdkMarker()
     {
         var launchProfile = new ProjectLaunchProfile
@@ -128,10 +193,11 @@ public sealed class TestApplicationLaunchTests
         TestOptions testOptions,
         IEnumerable<string>? forwardedArguments = null,
         IReadOnlyDictionary<string, string>? environmentVariables = null,
-        ProjectLaunchProfile? launchProfile = null)
+        ProjectLaunchProfile? launchProfile = null,
+        string runtimeIdentifier = "")
     {
         var module = new TestModule(
-            new RunProperties("dotnet", "test.dll", null),
+            new RunProperties("dotnet", "test.dll", null, runtimeIdentifier, string.Empty, string.Empty),
             ProjectFullPath: "test.csproj",
             TargetFramework: "net11.0",
             IsTestingPlatformApplication: true,

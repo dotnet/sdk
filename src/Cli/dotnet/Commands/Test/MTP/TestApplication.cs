@@ -5,6 +5,8 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.IO.Pipes;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
 using Microsoft.DotNet.Cli.Commands.Test.IPC;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -54,6 +56,8 @@ internal sealed class TestApplication(
     private readonly ArtifactPostProcessingInvocation? _artifactPostProcessingInvocation = artifactPostProcessingInvocation;
     private readonly TestRunPolicy? _testRunPolicy = testRunPolicy;
     private readonly CancellationTokenSource _pipeCancellationTokenSource = new();
+    private HttpTestHostGateway? _httpGateway;
+    private string? _httpResponseFilePath;
 
     private readonly string _pipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
     private readonly string _controlPipeName = NamedPipeServer.GetPipeName(Guid.NewGuid().ToString("N"));
@@ -88,14 +92,18 @@ internal sealed class TestApplication(
         var processStartInfo = CreateProcessStartInfo();
 
         var cancellationToken = _pipeCancellationTokenSource.Token;
-        var testAppPipeConnectionLoop = Task.Run(async () => await WaitConnectionAsync(cancellationToken));
-        var controlPipeConnectionLoop = Task.Run(async () => await WaitControlConnectionAsync(cancellationToken));
+        var testAppPipeConnectionLoop = _httpGateway is null
+            ? Task.Run(async () => await WaitConnectionAsync(cancellationToken))
+            : Task.CompletedTask;
+        var controlPipeConnectionLoop = _httpGateway is null
+            ? Task.Run(async () => await WaitControlConnectionAsync(cancellationToken))
+            : Task.CompletedTask;
 
         Process? process = null;
         bool testApplicationStarted = false;
         try
         {
-            Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{processStartInfo.Arguments}'.");
+            Logger.LogTrace($"Starting test process with command '{processStartInfo.FileName}' and arguments '{GetArgumentsForLogging(processStartInfo.Arguments)}'.");
 
             process = Process.Start(processStartInfo)!;
             _testRunPolicy?.OnTestApplicationStarted();
@@ -351,7 +359,7 @@ internal sealed class TestApplication(
                 builder,
                 _buildOptions.PathOptions,
                 _artifactPostProcessingInvocation.ManifestPath,
-                _pipeName);
+                AppendTestHostTransportArguments);
         }
 
         if (TestOptions.IsHelp)
@@ -394,9 +402,113 @@ internal sealed class TestApplication(
             builder.Append($" {ArgumentEscaper.EscapeSingleArg(arg)}");
         }
 
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+        AppendTestHostTransportArguments(builder);
 
         return builder.ToString();
+    }
+
+    private void AppendTestHostTransportArguments(StringBuilder builder)
+    {
+        if (RequiresHttpTransport(Module))
+        {
+            _httpGateway ??= new HttpTestHostGateway(
+                OnHttpRequest,
+                _pipeCancellationTokenSource.Token);
+            _httpResponseFilePath ??= CreateHttpTransportResponseFile(_httpGateway);
+            builder.Append($" {ArgumentEscaper.EscapeSingleArg("@" + _httpResponseFilePath)}");
+        }
+        else
+        {
+            builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue}");
+            builder.Append($" {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(_pipeName)}");
+        }
+    }
+
+    internal static bool RequiresHttpTransport(TestModule module)
+    {
+        string runtimeIdentifier = module.RunProperties.RuntimeIdentifier;
+        return runtimeIdentifier.StartsWith("browser-", StringComparison.OrdinalIgnoreCase) ||
+            runtimeIdentifier.StartsWith("wasi-", StringComparison.OrdinalIgnoreCase);
+    }
+
+    internal string? HttpResponseFilePath => _httpResponseFilePath;
+
+    private static string CreateHttpTransportResponseFile(HttpTestHostGateway gateway)
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"dotnet-test-http-{Guid.NewGuid():N}.rsp");
+        try
+        {
+            FileStream stream;
+            if (OperatingSystem.IsWindows())
+            {
+                using WindowsIdentity identity = WindowsIdentity.GetCurrent();
+                SecurityIdentifier currentUser = identity.User
+                    ?? throw new InvalidOperationException("Unable to determine the current Windows user.");
+                var security = new FileSecurity();
+                security.SetAccessRuleProtection(isProtected: true, preserveInheritance: false);
+                security.AddAccessRule(new FileSystemAccessRule(
+                    currentUser,
+                    FileSystemRights.FullControl,
+                    AccessControlType.Allow));
+                stream = FileSystemAclExtensions.Create(
+                    new FileInfo(path),
+                    FileMode.CreateNew,
+                    FileSystemRights.FullControl,
+                    FileShare.None,
+                    bufferSize: 4096,
+                    FileOptions.WriteThrough,
+                    security);
+            }
+            else
+            {
+                stream = new FileStream(path, new FileStreamOptions
+                {
+                    Mode = FileMode.CreateNew,
+                    Access = FileAccess.Write,
+                    Share = FileShare.None,
+                    BufferSize = 4096,
+                    Options = FileOptions.WriteThrough,
+                    UnixCreateMode = UnixFileMode.UserRead | UnixFileMode.UserWrite,
+                });
+            }
+
+            using (stream)
+            using (var writer = new StreamWriter(stream, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false)))
+            {
+                writer.WriteLine($"{CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue}");
+                writer.WriteLine($"{CliConstants.DotNetTestTransportOptionKey} {CliConstants.DotNetTestHttpTransportValue}");
+                writer.WriteLine($"{CliConstants.DotNetTestHttpEndpointOptionKey} {gateway.Endpoint.AbsoluteUri}");
+                writer.WriteLine($"{CliConstants.DotNetTestHttpTokenOptionKey} {gateway.Token}");
+            }
+
+            return path;
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch (Exception cleanupException)
+            {
+                Logger.LogTrace($"Failed to clean up the dotnet test HTTP transport response file after creation failed: {cleanupException}");
+            }
+
+            throw;
+        }
+    }
+
+    internal string GetArgumentsForLogging(string arguments)
+    {
+        if (_httpGateway is null)
+        {
+            return arguments;
+        }
+
+        string redactedEndpoint = $"{_httpGateway.Endpoint.GetLeftPart(UriPartial.Authority)}/[REDACTED]";
+        return arguments
+            .Replace(_httpGateway.Endpoint.AbsoluteUri, redactedEndpoint, StringComparison.Ordinal)
+            .Replace(_httpGateway.Token, "[REDACTED]", StringComparison.Ordinal);
     }
 
     internal static string GetArtifactPostProcessingLaunchArguments(TestModule module)
@@ -418,6 +530,18 @@ internal sealed class TestApplication(
         PathOptions pathOptions,
         string manifestPath,
         string pipeName)
+        => BuildArtifactPostProcessingArguments(
+            builder,
+            pathOptions,
+            manifestPath,
+            transportArgumentsBuilder => transportArgumentsBuilder.Append(
+                $" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}"));
+
+    private static string BuildArtifactPostProcessingArguments(
+        StringBuilder builder,
+        PathOptions pathOptions,
+        string manifestPath,
+        Action<StringBuilder> appendTransportArguments)
     {
         builder.Append($" {CliConstants.ArtifactPostProcessingToolName}");
         builder.Append($" {CliConstants.ArtifactPostProcessingManifestOptionKey} {ArgumentEscaper.EscapeSingleArg(manifestPath)}");
@@ -438,7 +562,7 @@ internal sealed class TestApplication(
 
         // The results directory is deliberately not forwarded: the merged output location travels in
         // the manifest instead, so the SDK keeps control of it even when it has to be derived.
-        builder.Append($" {CliConstants.ServerOptionKey} {CliConstants.ServerOptionValue} {CliConstants.DotNetTestPipeOptionKey} {ArgumentEscaper.EscapeSingleArg(pipeName)}");
+        appendTransportArguments(builder);
         return builder.ToString();
     }
 
@@ -584,7 +708,18 @@ internal sealed class TestApplication(
         }
     }
 
-    private Task<IResponse> OnRequest(NamedPipeServer server, IRequest request)
+    private Task<IResponse> OnHttpRequest(IRequest request)
+    {
+        if (request is WaitForServerControlRequest)
+        {
+            Logger.LogTrace("The dotnet test HTTP transport does not support the reverse server-control channel.");
+            return Task.FromResult<IResponse>(VoidResponse.CachedInstance);
+        }
+
+        return OnRequest(server: null, request);
+    }
+
+    private Task<IResponse> OnRequest(NamedPipeServer? server, IRequest request)
     {
         // We need to lock as we might be called concurrently when test app child processes all communicate with us.
         // For example, in a case of a sharding extension, we could get test result messages concurrently.
@@ -596,7 +731,7 @@ internal sealed class TestApplication(
                 switch (request)
                 {
                     case HandshakeMessage handshakeMessage:
-                        if (!_handshakes.TryAdd(server, handshakeMessage))
+                        if (server is not null && !_handshakes.TryAdd(server, handshakeMessage))
                         {
                             throw new InvalidOperationException(CliCommandStrings.DotnetTestDuplicateHandshakeOnConnection);
                         }
@@ -606,7 +741,9 @@ internal sealed class TestApplication(
                         // Microsoft.Testing.Platform stops sending further messages on this connection.
                         bool handshakeAccepted = OnHandshakeMessage(handshakeMessage, negotiatedVersion.Length > 0);
                         SetNegotiatedProtocolVersion(handshakeAccepted ? negotiatedVersion : string.Empty);
-                        return Task.FromResult((IResponse)CreateHandshakeMessage(handshakeAccepted ? negotiatedVersion : string.Empty));
+                        return Task.FromResult((IResponse)CreateHandshakeMessage(
+                            handshakeAccepted ? negotiatedVersion : string.Empty,
+                            includeControlPipe: _httpGateway is null));
 
                     case CommandLineOptionMessages commandLineOptionMessages:
                         OnCommandLineOptionMessages(commandLineOptionMessages);
@@ -714,7 +851,7 @@ internal sealed class TestApplication(
         return highestCommonVersionText;
     }
 
-    private HandshakeMessage CreateHandshakeMessage(string version)
+    private HandshakeMessage CreateHandshakeMessage(string version, bool includeControlPipe = true)
     {
         var properties = new Dictionary<byte, string>(capacity: 6)
         {
@@ -725,7 +862,7 @@ internal sealed class TestApplication(
             { HandshakeMessagePropertyNames.SupportedProtocolVersions, version }
         };
 
-        if (version.Length > 0)
+        if (version.Length > 0 && includeControlPipe)
         {
             properties.Add(HandshakeMessagePropertyNames.ServerControlPipeName, _controlPipeName);
         }
@@ -998,6 +1135,19 @@ internal sealed class TestApplication(
 
                 HasFailureDuringDispose = true;
                 Reporter.Error.WriteLine(messageBuilder.ToString());
+            }
+        }
+
+        _httpGateway?.Dispose();
+        if (_httpResponseFilePath is not null)
+        {
+            try
+            {
+                File.Delete(_httpResponseFilePath);
+            }
+            catch (Exception ex)
+            {
+                Logger.LogTrace($"Failed to delete the dotnet test HTTP transport response file: {ex}");
             }
         }
 
