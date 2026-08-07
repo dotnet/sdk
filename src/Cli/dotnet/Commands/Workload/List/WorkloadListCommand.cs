@@ -13,7 +13,6 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.TemplateEngine.Cli.Commands;
 
@@ -58,10 +57,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
         _includePreviews = parseResult.GetValue(Definition.IncludePreviewsOption);
         string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
-        var configOption = parseResult.GetValue(Definition.ConfigOption);
-        var sourceOption = parseResult.GetValue(Definition.SourceOption);
-        var packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
-            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+        var packageSourceLocation = parseResult.ToPackageSourceLocation(Definition.ConfigOption, Definition.SourceOption);
 
         _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(resolvedReporter,
             _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer,
