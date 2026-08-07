@@ -2442,19 +2442,17 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    public void Directives_InvalidPropertyName()
+    [DataRow("123Name", "Name cannot begin with the '1' character, hexadecimal value 0x31.")]
+    [DataRow("Prefix:Name", "The ':' character, hexadecimal value 0x3A, cannot be included in a name.")]
+    public void Directives_InvalidPropertyName(string propertyName, string errorMessage)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
         VerifyConversion(
             baseDirectory: testInstance.Path,
-            inputCSharp: """
-                #:property 123Name=Value
-                """,
+            inputCSharp: $"#:property {propertyName}=Value",
             expectedErrors:
             [
-                (1, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, """
-                    Name cannot begin with the '1' character, hexadecimal value 0x31.
-                    """)),
+                (1, string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, errorMessage)),
             ]);
     }
 
