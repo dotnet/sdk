@@ -411,6 +411,22 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
+    public async Task ExecuteAsync_WebAssemblyModule_SkipsUnsupportedPostProcessing()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts(
+            CreateModule("browser-wasm"),
+            "first.trx",
+            "second.trx");
+        using var ctrlC = CreateCancellationManager();
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC);
+
+        console.GetOutput().Should().NotContain(CliCommandStrings.ArtifactPostProcessingStarted);
+    }
+
+    [TestMethod]
     public void ReportFailureUnlessCancelled_WhenNotCancelled_WritesWarning()
     {
         var console = new CapturingConsole();
@@ -438,9 +454,13 @@ public class ArtifactPostProcessingManagerTests
     }
 
     private static ArtifactPostProcessingManager CreateManagerWithMergeableArtifacts(params string[] artifactPaths)
+        => CreateManagerWithMergeableArtifacts(CreateModule(), artifactPaths);
+
+    private static ArtifactPostProcessingManager CreateManagerWithMergeableArtifacts(
+        TestModule module,
+        params string[] artifactPaths)
     {
         var manager = new ArtifactPostProcessingManager();
-        TestModule module = CreateModule();
         manager.RecordCapabilities(
             module,
             "net10.0",
@@ -513,9 +533,9 @@ public class ArtifactPostProcessingManagerTests
             new HashSet<string>(StringComparer.Ordinal));
     }
 
-    private static TestModule CreateModule()
+    private static TestModule CreateModule(string runtimeIdentifier = "")
         => new(
-            new RunProperties("dotnet", "A.dll", null),
+            new RunProperties("dotnet", "A.dll", null, runtimeIdentifier, string.Empty, string.Empty),
             ProjectFullPath: null,
             TargetFramework: "net10.0",
             IsTestingPlatformApplication: true,

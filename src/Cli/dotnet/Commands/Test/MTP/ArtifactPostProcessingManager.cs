@@ -90,8 +90,22 @@ internal sealed class ArtifactPostProcessingManager
         ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
             SnapshotApplications(),
             SnapshotArtifacts());
+        ArtifactPostProcessingJob[] runnableJobs =
+        [
+            .. plan.Jobs.Where(job =>
+            {
+                bool supported = !TestApplication.RequiresHttpTransport(job.Application.Module);
+                if (!supported)
+                {
+                    Logger.LogTrace(
+                        $"Skipping artifact post-processing for WebAssembly module '{job.Application.Module.TargetPath}' because no browser-aware merge host is available.");
+                }
 
-        if (plan.Jobs.Count == 0)
+                return supported;
+            }),
+        ];
+
+        if (runnableJobs.Length == 0)
         {
             return;
         }
@@ -105,7 +119,7 @@ internal sealed class ArtifactPostProcessingManager
         int executedJobs = 0;
         int failedJobs = 0;
 
-        foreach (ArtifactPostProcessingJob job in plan.Jobs)
+        foreach (ArtifactPostProcessingJob job in runnableJobs)
         {
             if (ctrlC.Token.IsCancellationRequested)
             {

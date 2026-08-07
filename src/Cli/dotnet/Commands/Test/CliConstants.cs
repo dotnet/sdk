@@ -8,8 +8,12 @@ internal static class CliConstants
     public const string ServerOptionKey = "--server";
     public const string HelpOptionKey = "--help";
     public const string DotNetTestPipeOptionKey = "--dotnet-test-pipe";
+    public const string DotNetTestTransportOptionKey = "--dotnet-test-transport";
+    public const string DotNetTestHttpEndpointOptionKey = "--dotnet-test-http-endpoint";
+    public const string DotNetTestHttpTokenOptionKey = "--dotnet-test-http-token";
 
     public const string ServerOptionValue = "dotnettestcli";
+    public const string DotNetTestHttpTransportValue = "http";
     public const string ArtifactPostProcessingToolName = "internal-merge-artifacts";
     public const string ArtifactPostProcessingManifestOptionKey = "--manifest";
 

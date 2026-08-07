@@ -43,6 +43,21 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
+        public void Build_TestApplicationBuilds()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmTestApp");
+
+            ExecuteCommand(CreateBuildCommand(testInstance))
+                .Should()
+                .Pass();
+
+            var buildOutputDirectory = Path.Combine(testInstance.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework);
+            new FileInfo(Path.Combine(buildOutputDirectory, "BlazorWasmTestApp.dll")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "BlazorWasmTestApp.staticwebassets.endpoints.json")).Should().Exist();
+        }
+
+        [TestMethod]
+        [CoreMSBuildOnly]
         [DataRow(null, false, "true", "true")]
         [DataRow("false", false, "false", "false")]
         // Setting the property from the project body must take effect (dotnet/sdk#55489): the defaults are
