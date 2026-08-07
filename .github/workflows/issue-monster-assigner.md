@@ -59,6 +59,7 @@ imports:
     with:
       environment: copilot-pat-pool
 
+runs-on-slim: ubuntu-latest
 timeout-minutes: 10
 
 tools:

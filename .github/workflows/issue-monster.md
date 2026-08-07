@@ -64,6 +64,7 @@ imports:
   - uses: shared/pat_pool.md
     with:
       environment: copilot-pat-pool
+runs-on-slim: ubuntu-latest
 timeout-minutes: 30
 
 tools:
