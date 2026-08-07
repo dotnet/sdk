@@ -756,4 +756,23 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 messages.Should().Contain(message => message.Text.Contains(ToolsetInfo.CurrentTargetFramework));
             });
     }
+
+    [TestMethod]
+    public void ItRunsBrowserWasmTestHostOverHttpTransport()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "HttpTransport")
+            .WithSource();
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework",
+                ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:UseHttpTestTransport=true")
+            .Should()
+            .Pass()
+            .And.HaveStdOutContaining("HTTP transport selected.")
+            .And.HaveStdOutContaining("total: 1");
+    }
 }
