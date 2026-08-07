@@ -1,0 +1,57 @@
+---
+title: dotnetup dotnet command
+description: Command reference for running the dotnetup-managed dotnet command.
+ms.topic: reference
+ms.date: 08/07/2026
+---
+
+# dotnetup dotnet command
+
+## Name
+
+`dotnetup dotnet` - Run a command with the dotnetup-managed `dotnet`
+executable.
+
+The command alias is `dotnetup do`.
+
+## Synopsis
+
+```console
+dotnetup dotnet [--] [<ARGUMENT>...]
+dotnetup do [--] [<ARGUMENT>...]
+```
+
+## Description
+
+The command selects the current default dotnetup hive. It uses the `PATH`
+location if that location is the default managed hive. Otherwise, it uses the
+default hive.
+
+Before it starts the child process, it sets `DOTNET_ROOT` to the selected
+hive and prepends the hive to `PATH`. It forwards all remaining arguments and
+inherits standard input, output, and error. Its exit code is the child
+process exit code.
+
+This command does not automatically select an arbitrary hive supplied earlier
+with `--install-path`.
+
+## Arguments
+
+`ARGUMENT`
+
+Zero or more arguments to pass to `dotnet`. The optional `--` separator makes
+the forwarding boundary explicit.
+
+## Options
+
+| Option | Description |
+| --- | --- |
+| `-?`, `-h`, `--help` | Show dotnetup command help. Add `--` before a `dotnet` help option when necessary. |
+
+## Examples
+
+```dotnetcli
+dotnetup dotnet -- --version
+dotnetup dotnet build --configuration Release
+dotnetup do test
+```

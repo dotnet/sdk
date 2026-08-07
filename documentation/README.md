@@ -6,6 +6,7 @@ Documents Index
 - [Intro to .NET Core CLI](general/intro-to-cli.md)
 - [Publishing a solution and its pitfalls](general/solution-publish.md)
 - [CLI UX Guidelines](general/cli-ux-guidelines.md)
+- [dotnetup documentation](general/dotnetup/README.md)
 - [.NET Core native pre-requisities document](https://github.com/dotnet/core/blob/main/Documentation/prereqs.md)
 - [Roadmap and OS support](https://github.com/dotnet/core/blob/main/roadmap.md)
 - [Comprehensive CLI documentation](https://docs.microsoft.com/en-us/dotnet/articles/core/preview3/tools/)
@@ -26,4 +27,3 @@ Documents Index
 
 - [CLI installation scenarios](specs/cli-installation-scenarios.md)
 - [Runtime configuration file specification](specs/runtime-configuration-file.md)
-
