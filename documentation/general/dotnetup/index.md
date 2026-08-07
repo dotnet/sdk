@@ -97,15 +97,9 @@ on your system and the available releases.
 
 ## How dotnetup manages .NET
 
-An installation starts with an **install specification**. The specification
-identifies a component, such as the .NET SDK, and a channel or exact version.
-`dotnetup` resolves that specification to a concrete version and installs it
-in a managed **hive**.
-
-The manifest records both the specification and the concrete installation.
-More than one specification can refer to the same files. When you uninstall a
-specification, `dotnetup` removes files only when no remaining specification
-requires them.
+`dotnetup` tracks the SDK installations that you request. This tracking lets
+`dotnetup` update many installations at the same time. It also lets `dotnetup`
+safely remove unused or out-of-support installations.
 
 For more information, see [How dotnetup works](concepts/how-dotnetup-works.md).
 
