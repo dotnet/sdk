@@ -25,8 +25,19 @@ internal sealed class ArtifactPostProcessingManager
         string[] extensions = ParseCapabilities(handshakeMessage, HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy)
             .Select(extension => extension.ToLowerInvariant())
             .ToArray();
+        string[] truncatedRunKinds = ParseCapabilities(
+            handshakeMessage,
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds);
+        string[] truncatedRunExtensions = ParseCapabilities(
+            handshakeMessage,
+            HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy)
+            .Select(extension => extension.ToLowerInvariant())
+            .ToArray();
 
-        if (kinds.Length == 0 && extensions.Length == 0)
+        if (kinds.Length == 0
+            && extensions.Length == 0
+            && truncatedRunKinds.Length == 0
+            && truncatedRunExtensions.Length == 0)
         {
             return;
         }
@@ -41,6 +52,8 @@ internal sealed class ArtifactPostProcessingManager
 
             application.SupportedKinds.UnionWith(kinds);
             application.SupportedExtensions.UnionWith(extensions);
+            application.SupportedTruncatedRunKinds.UnionWith(truncatedRunKinds);
+            application.SupportedTruncatedRunExtensions.UnionWith(truncatedRunExtensions);
         }
     }
 
@@ -59,18 +72,20 @@ internal sealed class ArtifactPostProcessingManager
                 module.TargetPath,
                 targetFramework,
                 architecture,
-                executionId));
+                executionId,
+                artifact.InputArtifactPaths));
         }
     }
 
     public async Task ExecuteAsync(
         BuildOptions buildOptions,
         TerminalTestReporter output,
-        CtrlCCancellationManager ctrlC)
+        CtrlCCancellationManager ctrlC,
+        TestRunCancellationReason cancellationReason)
     {
         try
         {
-            await ExecuteCoreAsync(buildOptions, output, ctrlC);
+            await ExecuteCoreAsync(buildOptions, output, ctrlC, cancellationReason);
         }
         catch (Exception ex)
         {
@@ -85,11 +100,13 @@ internal sealed class ArtifactPostProcessingManager
     private async Task ExecuteCoreAsync(
         BuildOptions buildOptions,
         TerminalTestReporter output,
-        CtrlCCancellationManager ctrlC)
+        CtrlCCancellationManager ctrlC,
+        TestRunCancellationReason cancellationReason)
     {
         ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
             SnapshotApplications(),
-            SnapshotArtifacts());
+            SnapshotArtifacts(),
+            cancellationReason);
 
         if (plan.Jobs.Count == 0)
         {
@@ -124,7 +141,11 @@ internal sealed class ArtifactPostProcessingManager
                 string manifestPath = Path.Combine(tempDirectory, "manifest.json");
                 string outputDirectory = GetOutputDirectory(buildOptions, job);
                 Directory.CreateDirectory(outputDirectory);
-                WriteManifest(manifestPath, outputDirectory, job.Groups.SelectMany(group => group.Artifacts));
+                WriteManifest(
+                    manifestPath,
+                    outputDirectory,
+                    job.Groups.SelectMany(group => group.Artifacts),
+                    cancellationReason);
 
                 var invocation = new ArtifactPostProcessingInvocation(manifestPath);
                 var toolOptions = new TestOptions(
@@ -232,7 +253,9 @@ internal sealed class ArtifactPostProcessingManager
                     application.TargetFramework,
                     application.Architecture,
                     new HashSet<string>(application.SupportedKinds, StringComparer.Ordinal),
-                    new HashSet<string>(application.SupportedExtensions, StringComparer.Ordinal)))
+                    new HashSet<string>(application.SupportedExtensions, StringComparer.Ordinal),
+                    new HashSet<string>(application.SupportedTruncatedRunKinds, StringComparer.Ordinal),
+                    new HashSet<string>(application.SupportedTruncatedRunExtensions, StringComparer.Ordinal)))
             ];
         }
     }
@@ -281,10 +304,11 @@ internal sealed class ArtifactPostProcessingManager
         return Path.GetDirectoryName(Path.GetFullPath(preferredInput.Path))!;
     }
 
-    private static void WriteManifest(
+    internal static void WriteManifest(
         string manifestPath,
         string outputDirectory,
-        IEnumerable<ArtifactPostProcessingArtifact> artifacts)
+        IEnumerable<ArtifactPostProcessingArtifact> artifacts,
+        TestRunCancellationReason cancellationReason)
     {
         using FileStream stream = File.Create(manifestPath);
         using var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true });
@@ -292,6 +316,18 @@ internal sealed class ArtifactPostProcessingManager
         writer.WriteStartObject();
         writer.WriteNumber("schemaVersion", 1);
         writer.WriteString("outputDirectory", outputDirectory);
+        if (cancellationReason != TestRunCancellationReason.None)
+        {
+            writer.WriteString(
+                "truncationReason",
+                cancellationReason switch
+                {
+                    TestRunCancellationReason.MaximumFailedTests => "maximumFailedTests",
+                    TestRunCancellationReason.Timeout => "timeout",
+                    _ => throw new ArgumentOutOfRangeException(nameof(cancellationReason)),
+                });
+        }
+
         writer.WriteStartArray("inputs");
         foreach (ArtifactPostProcessingArtifact artifact in artifacts
             .OrderBy(artifact => artifact.Path, FileUtilities.PathComparer))
@@ -327,24 +363,36 @@ internal sealed class ArtifactPostProcessingManager
         ArtifactPostProcessingJob job,
         IReadOnlyList<ArtifactPostProcessingArtifact> processedArtifacts)
     {
+        var plannedInputPaths = new HashSet<string>(
+            job.Groups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
+            FileUtilities.PathComparer);
+
         foreach (ArtifactPostProcessingArtifact processedArtifact in processedArtifacts)
         {
-            string outputExtension = Path.GetExtension(processedArtifact.Path).ToLowerInvariant();
-            // The dispatcher gives one processor both its kind-tagged inputs and matching legacy
-            // extension inputs, so the returned output consumes both groups.
-            ArtifactPostProcessingGroup[] consumedGroups =
-            [
-                .. job.Groups.Where(group =>
-                    group.IsKind
-                        ? string.Equals(group.Key, processedArtifact.Kind, StringComparison.Ordinal)
-                        : string.Equals(group.Key, outputExtension, StringComparison.Ordinal))
-            ];
-
-            if (consumedGroups.Length > 0)
+            HashSet<string> consumedPaths;
+            if (processedArtifact.InputArtifactPaths is { } inputArtifactPaths)
             {
-                var consumedPaths = new HashSet<string>(
-                    consumedGroups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
+                consumedPaths = new HashSet<string>(inputArtifactPaths, FileUtilities.PathComparer);
+                consumedPaths.IntersectWith(plannedInputPaths);
+            }
+            else
+            {
+                string outputExtension = Path.GetExtension(processedArtifact.Path).ToLowerInvariant();
+                // Older post-processing hosts do not report input provenance. Preserve their
+                // replacement behavior by inferring consumed groups from the output kind/extension.
+                consumedPaths = new HashSet<string>(
+                    job.Groups
+                        .Where(group =>
+                            group.IsKind
+                                ? string.Equals(group.Key, processedArtifact.Kind, StringComparison.Ordinal)
+                                : string.Equals(group.Key, outputExtension, StringComparison.Ordinal))
+                        .SelectMany(group => group.Artifacts)
+                        .Select(artifact => artifact.Path),
                     FileUtilities.PathComparer);
+            }
+
+            if (consumedPaths.Count > 0)
+            {
                 output.RemoveArtifacts(consumedPaths);
             }
 
@@ -366,6 +414,8 @@ internal sealed class ArtifactPostProcessingManager
         public string? Architecture { get; } = architecture;
         public HashSet<string> SupportedKinds { get; } = new(StringComparer.Ordinal);
         public HashSet<string> SupportedExtensions { get; } = new(StringComparer.Ordinal);
+        public HashSet<string> SupportedTruncatedRunKinds { get; } = new(StringComparer.Ordinal);
+        public HashSet<string> SupportedTruncatedRunExtensions { get; } = new(StringComparer.Ordinal);
     }
 }
 
@@ -411,7 +461,8 @@ internal sealed class ArtifactPostProcessingInvocation(string manifestPath)
                 module.TargetPath,
                 targetFramework,
                 architecture,
-                executionId));
+                executionId,
+                artifact.InputArtifactPaths));
         }
     }
 
