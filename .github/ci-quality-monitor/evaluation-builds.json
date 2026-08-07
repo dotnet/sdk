@@ -1,0 +1,89 @@
+{
+  "examples": [
+    {
+      "buildId": 1521345,
+      "name": "YAML pre-flight rejection",
+      "source": "refs/pull/55404/merge",
+      "expectedPhases": ["pipeline-validation"],
+      "expectedFailureTypes": ["configuration-error"],
+      "expectedEvidenceSources": ["azure-validation"],
+      "expectedMechanismIncludes": ["Unexpected parameter", "useFullyQualifiedTestName"],
+      "evidence": "Zero-duration build, empty timeline, validation error: Unexpected parameter 'useFullyQualifiedTestName'."
+    },
+    {
+      "buildId": 1523420,
+      "name": "Checkout/setup failure",
+      "source": "refs/pull/55429/merge",
+      "expectedPhases": ["source-checkout"],
+      "expectedFailureTypes": ["source-unavailable"],
+      "expectedEvidenceSources": ["azure-timeline"],
+      "expectedComponentIncludes": "refs/pull/55429/merge",
+      "expectedMechanismIncludes": ["Git fetch failed", "128"],
+      "evidence": "Checkout failed across multiple jobs after git fetch exited with code 128."
+    },
+    {
+      "buildId": 1523525,
+      "name": "Restore/feed service failure",
+      "source": "refs/pull/55431/merge",
+      "expectedPhases": ["dependency-restore"],
+      "expectedFailureTypes": ["network-failure"],
+      "expectedEvidenceSources": ["azure-timeline", "azure-task-log"],
+      "expectedMechanismIncludes": ["NuGet.targets", "503", "Service Unavailable"],
+      "evidence": "NuGet restore failed with HTTP 503, and named tests independently reported NU1301 against the dotnet6 feed."
+    },
+    {
+      "buildId": 1525235,
+      "name": "Compiler build break",
+      "source": "refs/pull/55339/merge",
+      "expectedPhases": ["compilation"],
+      "expectedFailureTypes": ["compiler-error"],
+      "expectedEvidenceSources": ["azure-timeline", "azure-task-log"],
+      "expectedMechanismIncludes": ["CS0114", "RunReadyToRunCompiler.TaskEnvironment"],
+      "evidence": "CS0114 in RunReadyToRunCompiler.TaskEnvironment failed multiple build legs before tests."
+    },
+    {
+      "buildId": 1522972,
+      "name": "Release branch build break",
+      "source": "refs/heads/release/8.0.4xx",
+      "expectedPhases": ["signing"],
+      "expectedFailureTypes": ["tool-execution-error"],
+      "expectedEvidenceSources": ["azure-timeline", "azure-task-log"],
+      "expectedMechanismIncludes": ["MSB4018", "Exec format error"],
+      "evidence": "MSB4018 SignToolTask failure: sn.exe produced Exec format error on Linux and macOS."
+    },
+    {
+      "buildId": 1525292,
+      "name": "Multiple named test failures",
+      "source": "refs/heads/main",
+      "expectedPhases": ["test-execution"],
+      "expectedFailureTypes": ["network-failure"],
+      "expectedEvidenceSources": ["helix-trx"],
+      "minimumObservations": 2,
+      "minimumTotalCandidates": 4,
+      "expectedMatchingMechanismIncludes": ["503", "Service Unavailable"],
+      "minimumMatchingCandidates": 2,
+      "evidence": "Four named Windows test failures recovered from Helix TRX; two share the same HTTP 503 mechanism."
+    },
+    {
+      "buildId": 1524763,
+      "name": "Helix test hang and host crash",
+      "source": "refs/pull/55431/merge",
+      "expectedPhases": ["test-execution"],
+      "expectedFailureTypes": ["timeout"],
+      "expectedEvidenceSources": ["helix-console", "process-exit-code", "helix-trx", "helix-dump"],
+      "expectedComponentIncludes": "dotnet-watch.Tests",
+      "expectedMechanismIncludes": ["BrowserDiagnostics", "exit code is '137'"],
+      "evidence": "dotnet-watch BrowserDiagnostics hung for 50 minutes, hang dumps were captured, and the test host crashed with work-item exit 7."
+    }
+  ],
+  "syntheticOnly": [
+    {
+      "category": "pipeline-not-triggered",
+      "reason": "A missing run has no Azure DevOps build ID; validate through the two-poll heartbeat unit test."
+    },
+    {
+      "category": "cascade",
+      "reason": "No verified artifact-cascade failure was found in the sampled recent definition 101 window; validate through the root/cascade unit test."
+    }
+  ]
+}
