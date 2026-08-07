@@ -99,15 +99,14 @@ safe-outputs:
   add-comment:
     max: 3
     target: "*"
-  # Security-retirement relabeling. When the orchestrator refuses a security-sensitive
-  # issue it retires it from the queue: remove the 'cookie' work-queue label and add
-  # 'Area-Security'. Both target "*" so the specific refused issue number can be addressed.
+  # Every inspected candidate may be refused as security-sensitive. Each refusal
+  # removes the queue label and adds the security ownership label.
   remove-labels:
-    max: 3
+    max: 80
     target: "*"
     allowed: [cookie]
   add-labels:
-    max: 3
+    max: 80
     target: "*"
     allowed: [Area-Security]
   noop:
