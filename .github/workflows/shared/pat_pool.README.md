@@ -76,6 +76,8 @@ Team members' PATs are _only_ used for the Copilot requests from within the agen
 
 The [`pat_pool.md`](./pat_pool.md) workflow import defines a custom job with a `pat_number` output. Consuming workflows need two additions to their frontmatter to import this job and use the PAT number to override the `COPILOT_GITHUB_TOKEN` passed to the workflow's agent job.
 
+The shared `pat_pool` job runs on `ubuntu-latest`. Do not change it to `ubuntu-slim`, which has a hard 15-minute job limit that includes time spent waiting for runner allocation.
+
 ```yml
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
