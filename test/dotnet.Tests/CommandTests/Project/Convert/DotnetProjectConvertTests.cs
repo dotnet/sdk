@@ -303,8 +303,11 @@ public sealed class DotnetProjectConvertTests : SdkTest
 
         // #:ref metadata should be carried over to the converted ProjectReference as a child element.
         var appProject = File.ReadAllText(Path.Join(outputDirFullPath, "app", "app.csproj"));
-        appProject.Should().Contain($"""Include="..{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}lib.csproj""");
-        appProject.Should().Contain("<Category>test</Category>");
+        appProject.Should().Contain($"""
+                <ProjectReference Include="..{Path.DirectorySeparatorChar}lib{Path.DirectorySeparatorChar}lib.csproj">
+                  <Category>test</Category>
+                </ProjectReference>
+            """);
 
         // The converted project should build and produce the same output.
         new DotnetCommand(Log, "run")

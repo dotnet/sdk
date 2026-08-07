@@ -450,7 +450,10 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// <item>If the text contains a double quote, it is parsed strictly via <see cref="Tokenize"/>.</item>
     /// <item>Otherwise, if there is at most one whitespace-separated token, it is returned as-is.</item>
     /// <item>Otherwise, the trailing tokens are treated as metadata only when <paramref name="allowMetadata"/>
-    /// is set and every trailing token is a valid <c>Name=Value</c> pair; then the split tokens are returned.</item>
+    /// is set and every trailing token is a valid <c>Name=Value</c> pair; then the split tokens are returned.
+    /// This is unlikely to be a breaking change as it requires a construct like
+    /// <c>#:package X@1 A=B</c> (which would previously fail because space is disallowed in version)
+    /// or <c>#:ref ./f.cs A=B</c> (which is unlikely to be a real path).</item>
     /// <item>Otherwise the whole (already trimmed) remainder is returned as a single legacy value with its
     /// internal whitespace preserved, and <paramref name="isLegacy"/> is set. The deprecated legacy form is
     /// flagged by an analyzer rather than erroring here.</item>
@@ -539,14 +542,21 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     }
 
     /// <summary>
-    /// Splits a single directive <paramref name="token"/> into a required name and optional value
+    /// Splits the first of <paramref name="tokens"/> into a required name and optional value
     /// on the first occurrence of <paramref name="separator"/> (e.g., <c>Name@Version</c>),
-    /// validating the name. Used by <c>#:sdk</c> and <c>#:package</c>. When <paramref name="trimAroundSeparator"/>
-    /// is set (legacy form, where the token may contain unquoted whitespace), whitespace adjacent to the
-    /// separator is trimmed to match the pre-quoting behavior.
+    /// validating the name. Used by <c>#:sdk</c>, <c>#:property</c>, and <c>#:package</c>.
+    /// When <paramref name="trimAroundSeparator"/> is set (legacy form, where the token may contain unquoted whitespace),
+    /// whitespace adjacent to the separator is trimmed to match the pre-quoting behavior.
     /// </summary>
-    private static (string Name, string? Value)? ParseNameAndValue(in ParseContext context, string token, char separator, bool trimAroundSeparator = false)
+    private static (string Name, string? Value)? ParseNameAndValue(in ParseContext context, ImmutableArray<string> tokens, char separator, bool trimAroundSeparator = false)
     {
+        if (tokens.Length == 0)
+        {
+            context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
+            return null;
+        }
+
+        var token = tokens[0];
         var separatorIndex = token.IndexOf(separator);
         var name = separatorIndex < 0 ? token : token.Substring(0, separatorIndex);
         if (trimAroundSeparator)
@@ -585,7 +595,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     {
         if (start >= tokens.Length)
         {
-            return ImmutableArray<(string, string)>.Empty;
+            return [];
         }
 
         var builder = ImmutableArray.CreateBuilder<(string Name, string Value)>(tokens.Length - start);
@@ -704,19 +714,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (tokens.Length == 0)
-            {
-                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
-                return null;
-            }
-
             if (tokens.Length > 1)
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, context.DirectiveKind));
                 return null;
             }
 
-            if (ParseNameAndValue(context, tokens[0], separator: '@', trimAroundSeparator: isLegacy) is not var (sdkName, sdkVersion))
+            if (ParseNameAndValue(context, tokens, separator: '@', trimAroundSeparator: isLegacy) is not var (sdkName, sdkVersion))
             {
                 return null;
             }
@@ -745,19 +749,13 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (tokens.Length == 0)
-            {
-                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
-                return null;
-            }
-
             if (tokens.Length > 1)
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, context.DirectiveKind));
                 return null;
             }
 
-            if (ParseNameAndValue(context, tokens[0], separator: '=', trimAroundSeparator: isLegacy) is not var (propertyName, propertyValue))
+            if (ParseNameAndValue(context, tokens, separator: '=', trimAroundSeparator: isLegacy) is not var (propertyName, propertyValue))
             {
                 return null;
             }
@@ -801,7 +799,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// Additional item metadata specified as trailing <c>Name=Value</c> pairs,
         /// e.g. <c>#:package Foo@1.0.0 ExcludeAssets=runtime PrivateAssets=all</c>.
         /// </summary>
-        public ImmutableArray<(string Name, string Value)> Metadata { get; init; } = ImmutableArray<(string, string)>.Empty;
+        public ImmutableArray<(string Name, string Value)> Metadata { get; init; }
 
         public static new Package? Parse(in ParseContext context)
         {
@@ -810,13 +808,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (tokens.Length == 0)
-            {
-                context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
-                return null;
-            }
-
-            if (ParseNameAndValue(context, tokens[0], separator: '@', trimAroundSeparator: isLegacy) is not var (packageName, packageVersion))
+            if (ParseNameAndValue(context, tokens, separator: '@', trimAroundSeparator: isLegacy) is not var (packageName, packageVersion))
             {
                 return null;
             }
@@ -877,7 +869,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         /// Additional item metadata specified as trailing <c>Name=Value</c> pairs,
         /// e.g. <c>#:project ../MyLibrary Private=false</c>.
         /// </summary>
-        public ImmutableArray<(string Name, string Value)> Metadata { get; init; } = ImmutableArray<(string, string)>.Empty;
+        public ImmutableArray<(string Name, string Value)> Metadata { get; init; }
 
         public static new Project? Parse(in ParseContext context)
         {
@@ -886,7 +878,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (tokens.Length == 0 || tokens[0].Length == 0)
+            if (tokens is not [{ Length: > 0 } firstToken, ..])
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
                 return null;
@@ -897,7 +889,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            return new Project(context.Info, tokens[0]) { Metadata = metadata };
+            return new Project(context.Info, firstToken) { Metadata = metadata };
         }
 
         public enum NameKind
@@ -1020,7 +1012,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (tokens.Length == 0 || tokens[0].Length == 0)
+            if (tokens is not [{ Length: > 0 } firstToken, ..])
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.MissingDirectiveName, context.DirectiveKind));
                 return null;
@@ -1031,7 +1023,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            return new Ref(context.Info, tokens[0]) { Metadata = metadata };
+            return new Ref(context.Info, firstToken) { Metadata = metadata };
         }
 
         public enum NameKind
