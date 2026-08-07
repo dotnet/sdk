@@ -13,7 +13,6 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
-using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
@@ -54,10 +53,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
         _numberOfWorkloadSetsToTake = result.GetValue(Definition.TakeOption);
         _workloadSetOutputFormat = result.GetValue(Definition.FormatOption);
 
-        var configOption = result.GetValue(Definition.ConfigOption);
-        var sourceOption = result.GetValue(Definition.SourceOption);
-        _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
-            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+        _packageSourceLocation = result.ToPackageSourceLocation(Definition.ConfigOption, Definition.SourceOption);
 
         // For these operations, we don't have to respect 'msi' because they're equivalent between the two workload
         // install types, and FileBased is much easier to work with.
