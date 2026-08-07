@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
@@ -26,6 +27,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
     private readonly IEnumerable<string> _workloadVersion;
     private readonly bool _includePreviews;
     private readonly IWorkloadResolver _resolver;
+    private readonly PackageSourceLocation _packageSourceLocation;
 
     public WorkloadSearchVersionsCommand(
         ParseResult result,
@@ -52,9 +54,14 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
         _numberOfWorkloadSetsToTake = result.GetValue(Definition.TakeOption);
         _workloadSetOutputFormat = result.GetValue(Definition.FormatOption);
 
+        var configOption = result.GetValue(Definition.ConfigOption);
+        var sourceOption = result.GetValue(Definition.SourceOption);
+        _packageSourceLocation = string.IsNullOrEmpty(configOption) && (sourceOption == null || !sourceOption.Any()) ? null :
+            new PackageSourceLocation(string.IsNullOrEmpty(configOption) ? null : new FilePath(configOption), sourceFeedOverrides: sourceOption);
+
         // For these operations, we don't have to respect 'msi' because they're equivalent between the two workload
         // install types, and FileBased is much easier to work with.
-        _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), _resolver, Verbosity, interactive: false);
+        _installer = installer ?? GenerateInstaller(Reporter, new SdkFeatureBand(_sdkVersion), _resolver, Verbosity, _packageSourceLocation, RestoreActionConfiguration);
 
         _workloadVersion = result.GetValue(Definition.WorkloadVersionArgument);
 
@@ -64,7 +71,7 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
 
     }
 
-    private static IInstaller GenerateInstaller(IReporter reporter, SdkFeatureBand sdkFeatureBand, IWorkloadResolver workloadResolver, VerbosityOptions verbosity, bool interactive)
+    private static IInstaller GenerateInstaller(IReporter reporter, SdkFeatureBand sdkFeatureBand, IWorkloadResolver workloadResolver, VerbosityOptions verbosity, PackageSourceLocation packageSourceLocation, RestoreActionConfig restoreActionConfig)
     {
         return new FileBasedInstaller(
             reporter,
@@ -75,8 +82,8 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
             dotnetDir: Path.GetDirectoryName(Environment.ProcessPath),
             tempDirPath: null,
             verbosity: verbosity,
-            packageSourceLocation: null,
-            restoreActionConfig: new RestoreActionConfig(interactive),
+            packageSourceLocation: packageSourceLocation,
+            restoreActionConfig: restoreActionConfig ?? new RestoreActionConfig(),
             nugetPackageDownloaderVerbosity: VerbosityOptions.quiet
             );
     }
@@ -155,32 +162,32 @@ internal sealed class WorkloadSearchVersionsCommand : WorkloadCommandBase<Worklo
 
     private List<string> GetVersions(int numberOfWorkloadSetsToTake)
     {
-        return GetVersions(numberOfWorkloadSetsToTake, new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _resolver);
+        return GetVersions(numberOfWorkloadSetsToTake, new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _resolver, _packageSourceLocation, RestoreActionConfiguration);
     }
 
-    private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IWorkloadResolver resolver)
+    private static List<string> GetVersions(int numberOfWorkloadSetsToTake, SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IWorkloadResolver resolver, PackageSourceLocation packageSourceLocation, RestoreActionConfig restoreActionConfig)
     {
-        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, packageSourceLocation, restoreActionConfig);
         var packageId = installer.GetManifestPackageId(new ManifestId("Microsoft.NET.Workloads"), featureBand);
 
-        return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: null, includePreview: includePreviews)
+        return [.. packageDownloader.GetLatestPackageVersions(packageId, numberOfWorkloadSetsToTake, packageSourceLocation: packageSourceLocation, includePreview: includePreviews)
             .GetAwaiter().GetResult()
             .Select(version => featureBand.GetWorkloadSetPackageVersion(version.ToString()))];
     }
 
     private IEnumerable<string> FindBestWorkloadSetsFromComponents()
     {
-        return FindBestWorkloadSetsFromComponents(new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _workloadVersion, _resolver, _numberOfWorkloadSetsToTake);
+        return FindBestWorkloadSetsFromComponents(new SdkFeatureBand(_sdkVersion), _installer, _includePreviews, PackageDownloader, _workloadVersion, _resolver, _numberOfWorkloadSetsToTake, _packageSourceLocation, RestoreActionConfiguration);
     }
 
-    public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake)
+    public static IEnumerable<string> FindBestWorkloadSetsFromComponents(SdkFeatureBand featureBand, IInstaller installer, bool includePreviews, INuGetPackageDownloader packageDownloader, IEnumerable<string> workloadVersions, IWorkloadResolver resolver, int numberOfWorkloadSetsToTake, PackageSourceLocation packageSourceLocation = null, RestoreActionConfig restoreActionConfig = null)
     {
-        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, interactive: false);
+        installer ??= GenerateInstaller(Utils.Reporter.NullReporter, featureBand, resolver, VerbosityOptions.d, packageSourceLocation, restoreActionConfig);
         List<string> versions;
         try
         {
             // 0 indicates 'give all versions'. Not all will match, so we don't know how many we will need
-            versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader, resolver);
+            versions = GetVersions(0, featureBand, installer, includePreviews, packageDownloader, resolver, packageSourceLocation, restoreActionConfig);
         }
         catch (NuGetPackageNotFoundException)
         {

@@ -239,7 +239,9 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
                     PackageDownloader,
                     _workloadSetVersionFromCommandLine,
                     _workloadResolver,
-                    numberOfWorkloadSetsToTake: 1);
+                    numberOfWorkloadSetsToTake: 1,
+                    _packageSourceLocation,
+                    RestoreActionConfiguration);
 
                 if (versions is null)
                 {
