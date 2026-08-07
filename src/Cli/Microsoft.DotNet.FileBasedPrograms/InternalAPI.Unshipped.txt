@@ -159,6 +159,7 @@ Microsoft.DotNet.FileBasedPrograms.ErrorReporter
 Microsoft.DotNet.FileBasedPrograms.ErrorReporters
 Microsoft.DotNet.FileBasedPrograms.ExternalHelpers
 Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.ExternalHelpers() -> void
+Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers
 Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers
 Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities
 Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities.MSBuildUtilities() -> void
@@ -216,6 +217,10 @@ static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Parse(in Micr
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk?
 static Microsoft.DotNet.FileBasedPrograms.ErrorReporters.CreateCollectingReporter(out System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic!>.Builder! builder) -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
+static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.AllValidMetadata(System.Collections.Generic.IReadOnlyList<string!>! tokens, int start) -> bool
+static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.ContainsDisallowedNameCharacter(string! name) -> bool
+static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.IsValidMSBuildName(string! name, out string? errorMessage) -> bool
+static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.QuoteIfNeeded(string! value) -> string!
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.CombineHashCodes(int value1, int value2) -> int
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.GetRelativePath(string! relativeTo, string! path) -> string!
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.IsPathFullyQualified(string! path) -> bool
@@ -223,7 +228,6 @@ static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.CreateTokeni
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, bool reportAllErrors, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter, bool checkDuplicates = true) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindLeadingDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.SyntaxTriviaList triviaList, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>.Builder? builder, bool checkDuplicates = true) -> void
 static Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities.ConvertStringToBool(string? parameterValue, bool defaultValue = false) -> bool
-static Microsoft.DotNet.FileBasedPrograms.Patterns.DisallowedNameCharacters.get -> System.Text.RegularExpressions.Regex!
 static Microsoft.DotNet.FileBasedPrograms.Patterns.EscapedCompilerOption.get -> System.Text.RegularExpressions.Regex!
 static Microsoft.DotNet.FileBasedPrograms.Patterns.Whitespace.get -> System.Text.RegularExpressions.Regex!
 static Microsoft.DotNet.FileBasedPrograms.SourceFile.Load(string! filePath) -> Microsoft.DotNet.FileBasedPrograms.SourceFile

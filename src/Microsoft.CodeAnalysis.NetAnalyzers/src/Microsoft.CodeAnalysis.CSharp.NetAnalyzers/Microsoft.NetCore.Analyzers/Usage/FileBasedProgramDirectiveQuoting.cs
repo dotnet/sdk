@@ -3,21 +3,22 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.DotNet.FileBasedPrograms;
+using static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 {
     /// <summary>
     /// Shared logic for detecting the deprecated unquoted-whitespace form of a file-based program
     /// <c>#:</c> directive and for computing its quoted replacement. This mirrors (a conservative
-    /// subset of) the directive parser in <c>Microsoft.DotNet.FileBasedPrograms</c> without taking a
-    /// dependency on it: it flags only directives that the parser accepts as the legacy form and that
-    /// have an unambiguous, semantics-preserving quoted equivalent.
+    /// subset of) the directive parser in <c>Microsoft.DotNet.FileBasedPrograms</c> and reuses that
+    /// parser's value-level primitives (see <see cref="FileBasedProgramDirectiveValueHelpers"/>) for
+    /// quoting, name validity, and metadata detection so the two cannot drift. It flags only directives
+    /// that the parser accepts as the legacy form and that have an unambiguous, semantics-preserving
+    /// quoted equivalent.
     /// </summary>
     internal static class FileBasedProgramDirectiveQuoting
     {
-        // Characters that are not allowed in a directive name (matches the parser's DisallowedNameCharacters).
-        private static readonly char[] s_disallowedNameCharacters = [' ', '\t', '\n', '\r', '\f', '\v', '@', '=', '/'];
-
         /// <summary>
         /// Extracts the directive kind (e.g. <c>property</c>) and its value text from a file-based program
         /// <c>#:</c> directive trivia. Returns <see langword="false"/> for any other trivia.
@@ -99,7 +100,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                 case "sdk":
                 case "package":
                     // A trailing run of valid 'Name=Value' tokens is the new metadata form, not legacy.
-                    if (kind == "package" && AllMetadataLike(tokens))
+                    if (kind == "package" && AllValidMetadata(tokens, start: 1))
                     {
                         return false;
                     }
@@ -108,17 +109,17 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 
                 case "project":
                 case "ref":
-                    if (AllMetadataLike(tokens))
+                    if (AllValidMetadata(tokens, start: 1))
                     {
                         return false;
                     }
 
-                    newValue = Quote(value);
+                    newValue = QuoteIfNeeded(value);
                     return true;
 
                 case "include":
                 case "exclude":
-                    newValue = Quote(value);
+                    newValue = QuoteIfNeeded(value);
                     return true;
 
                 default:
@@ -137,7 +138,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var name = value.Substring(0, separatorIndex).TrimEnd();
-            if (name.Length == 0 || name.IndexOfAny(s_disallowedNameCharacters) >= 0)
+            if (name.Length == 0 || ContainsDisallowedNameCharacter(name))
             {
                 return false;
             }
@@ -158,7 +159,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var name = value.Substring(0, separatorIndex).TrimEnd();
-            if (name.Length == 0 || name.IndexOfAny(s_disallowedNameCharacters) >= 0)
+            if (name.Length == 0 || ContainsDisallowedNameCharacter(name))
             {
                 return false;
             }
@@ -174,28 +175,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             newValue = name + "@" + version;
             return true;
         }
-
-        private static bool AllMetadataLike(List<string> tokens)
-        {
-            for (var i = 1; i < tokens.Count; i++)
-            {
-                if (tokens[i].IndexOf('=') <= 0)
-                {
-                    return false;
-                }
-            }
-
-            return true;
-        }
-
-        private static string QuoteIfNeeded(string value)
-        {
-            return IndexOfWhitespace(value) >= 0 ? Quote(value) : value;
-        }
-
-        // Produce a properly escaped C# string literal so the quoted value round-trips through the parser,
-        // which lexes it as a regular string literal (e.g. a backslash becomes "\\" and a quote "\"").
-        private static string Quote(string value) => SymbolDisplay.FormatLiteral(value, quote: true);
 
         private static int IndexOfWhitespace(string text)
         {

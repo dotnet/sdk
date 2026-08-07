@@ -11,12 +11,12 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Xml;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.ProjectTools;
+using static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
@@ -242,8 +242,6 @@ internal readonly record struct SourceFile(string Path, SourceText Text)
 internal static partial class Patterns
 {
     public static Regex Whitespace { get; } = new Regex("""\s+""", RegexOptions.Compiled);
-
-    public static Regex DisallowedNameCharacters { get; } = new Regex("""[\s@=/]""", RegexOptions.Compiled);
 
     public static Regex EscapedCompilerOption { get; } = new Regex("""^/\w+:".*"$""", RegexOptions.Compiled | RegexOptions.Singleline);
 }
@@ -497,51 +495,6 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     }
 
     /// <summary>
-    /// Validates that <paramref name="name"/> is a valid XML NCName, the constraint MSBuild applies to
-    /// property and item-metadata names (an NCName additionally disallows the ':' that a plain XML name
-    /// permits). Returns <see langword="true"/> when valid; otherwise returns <see langword="false"/> and
-    /// sets <paramref name="errorMessage"/> to the underlying validation-failure message.
-    /// </summary>
-    private static bool IsValidMSBuildName(string name, [NotNullWhen(false)] out string? errorMessage)
-    {
-        try
-        {
-            XmlConvert.VerifyNCName(name);
-            errorMessage = null;
-            return true;
-        }
-        catch (XmlException ex)
-        {
-            errorMessage = ex.Message;
-            return false;
-        }
-    }
-
-    /// <summary>
-    /// Returns whether every token from <paramref name="start"/> onwards is a valid <c>Name=Value</c>
-    /// metadata pair (i.e., would be accepted by <see cref="ParseMetadata"/>).
-    /// </summary>
-    private static bool AllValidMetadata(string[] tokens, int start)
-    {
-        for (var i = start; i < tokens.Length; i++)
-        {
-            var token = tokens[i];
-            var separatorIndex = token.IndexOf('=');
-            if (separatorIndex <= 0)
-            {
-                return false;
-            }
-
-            if (!IsValidMSBuildName(token.Substring(0, separatorIndex), out _))
-            {
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /// <summary>
     /// Splits the first of <paramref name="tokens"/> into a required name and optional value
     /// on the first occurrence of <paramref name="separator"/> (e.g., <c>Name@Version</c>),
     /// validating the name. Used by <c>#:sdk</c>, <c>#:property</c>, and <c>#:package</c>.
@@ -571,7 +524,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         // If the name contains characters that resemble separators, report an error to avoid any confusion.
-        if (Patterns.DisallowedNameCharacters.IsMatch(name))
+        if (ContainsDisallowedNameCharacter(name))
         {
             context.ReportError(string.Format(FileBasedProgramsResources.InvalidDirectiveName, context.DirectiveKind, separator));
             return null;
@@ -651,23 +604,6 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         return tokens[0];
-    }
-
-    /// <summary>Wraps <paramref name="value"/> in a C# string literal if it contains characters (whitespace
-    /// or a double quote) that cannot appear in a bare token, so it round-trips through <see cref="Tokenize"/>.</summary>
-    private static string QuoteIfNeeded(string value)
-    {
-        foreach (var c in value)
-        {
-            if (char.IsWhiteSpace(c) || c == '"')
-            {
-                // FormatLiteral produces a properly escaped C# string literal (e.g. "a\"b", "a\tb") that
-                // Tokenize decodes back to the original value.
-                return SymbolDisplay.FormatLiteral(value, quote: true);
-            }
-        }
-
-        return value;
     }
 
     private static void AppendMetadata(StringBuilder builder, ImmutableArray<(string Name, string Value)> metadata)
