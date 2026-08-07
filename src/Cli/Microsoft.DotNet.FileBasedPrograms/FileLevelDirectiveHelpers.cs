@@ -494,6 +494,27 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     }
 
     /// <summary>
+    /// Validates that <paramref name="name"/> is a valid XML NCName, the constraint MSBuild applies to
+    /// property and item-metadata names (an NCName additionally disallows the ':' that a plain XML name
+    /// permits). Returns <see langword="true"/> when valid; otherwise returns <see langword="false"/> and
+    /// sets <paramref name="errorMessage"/> to the underlying validation-failure message.
+    /// </summary>
+    private static bool IsValidMSBuildName(string name, [NotNullWhen(false)] out string? errorMessage)
+    {
+        try
+        {
+            XmlConvert.VerifyNCName(name);
+            errorMessage = null;
+            return true;
+        }
+        catch (XmlException ex)
+        {
+            errorMessage = ex.Message;
+            return false;
+        }
+    }
+
+    /// <summary>
     /// Returns whether every token from <paramref name="start"/> onwards is a valid <c>Name=Value</c>
     /// metadata pair (i.e., would be accepted by <see cref="ParseMetadata"/>).
     /// </summary>
@@ -508,11 +529,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return false;
             }
 
-            try
-            {
-                XmlConvert.VerifyName(token.Substring(0, separatorIndex));
-            }
-            catch (XmlException)
+            if (!IsValidMSBuildName(token.Substring(0, separatorIndex), out _))
             {
                 return false;
             }
@@ -586,13 +603,9 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             var name = token.Substring(0, separatorIndex);
             var value = token.Substring(separatorIndex + 1);
 
-            try
+            if (!IsValidMSBuildName(name, out var nameError))
             {
-                name = XmlConvert.VerifyName(name);
-            }
-            catch (XmlException ex)
-            {
-                context.ReportError(string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, name, ex.Message));
+                context.ReportError(string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, name, nameError));
                 return null;
             }
 
@@ -755,13 +768,9 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            try
+            if (!IsValidMSBuildName(propertyName, out var nameError))
             {
-                propertyName = XmlConvert.VerifyName(propertyName);
-            }
-            catch (XmlException ex)
-            {
-                context.ReportError(string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, ex.Message));
+                context.ReportError(string.Format(FileBasedProgramsResources.PropertyDirectiveInvalidName, nameError));
                 return null;
             }
 
