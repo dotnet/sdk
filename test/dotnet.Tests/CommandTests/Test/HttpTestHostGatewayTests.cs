@@ -217,7 +217,10 @@ public sealed class HttpTestHostGatewayTests
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Headers.Add("Origin", BrowserOrigin);
         request.Content = new ByteArrayContent(frame);
-        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+        request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream")
+        {
+            CharSet = "utf-8",
+        };
         return request;
     }
 

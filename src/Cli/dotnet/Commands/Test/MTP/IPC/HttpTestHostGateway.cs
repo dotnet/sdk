@@ -155,7 +155,8 @@ internal sealed class HttpTestHostGateway : IDisposable
                 return;
             }
 
-            if (!string.Equals(request.ContentType, BinaryContentType, StringComparison.OrdinalIgnoreCase))
+            if (!MediaTypeHeaderValue.TryParse(request.ContentType, out MediaTypeHeaderValue? contentType) ||
+                !string.Equals(contentType.MediaType, BinaryContentType, StringComparison.OrdinalIgnoreCase))
             {
                 await CompleteErrorResponseAsync(response, HttpStatusCode.UnsupportedMediaType, cancellationToken);
                 return;
