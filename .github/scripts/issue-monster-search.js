@@ -342,6 +342,13 @@ module.exports = async function searchIssueMonsterCandidates({
       })
       .join("\n\n---\n\n");
 
+    core.info(`Total candidate issues: ${scoredIssues.length}`);
+    if (scoredIssues.length > 0) {
+      core.info(`Top candidates:\n${issueList.split("\n").slice(0, 10).join("\n")}`);
+    } else {
+      core.info("🍽️ No suitable candidate issues - the plate is empty!");
+    }
+
     core.setOutput("issue_count", scoredIssues.length);
     core.setOutput(
       "issue_numbers",
