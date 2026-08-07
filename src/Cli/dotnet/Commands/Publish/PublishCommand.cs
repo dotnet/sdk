@@ -86,6 +86,8 @@ public class PublishCommand : RestoringCommand
     {
         parseResult.HandleDebugSwitch();
 
-        return FromParseResult(parseResult).Execute();
+        CommandBase command = FromParseResult(parseResult);
+        command.MSBuildSubmissionMetricCommandName = "publish";
+        return command.Execute();
     }
 }
