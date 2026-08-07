@@ -39,6 +39,56 @@ public class InitFormModelTests
     }
 
     [TestMethod]
+    public void SelectedChannel_MapsFixedCustomAndNoneChoices()
+    {
+        var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
+        FormField channelField = model.Fields[0];
+
+        int ltsIndex = channelField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == ChannelVersionResolver.LtsChannel)
+            .index;
+        channelField.SelectChoice(ltsIndex);
+        model.SelectedChannel().Should().Be(ChannelVersionResolver.LtsChannel);
+
+        int customIndex = channelField.Choices.Count - 1;
+        channelField.SetCustomValue(customIndex, "9.0.2xx");
+        model.SelectedChannel().Should().Be("9.0.2xx");
+
+        int noneIndex = channelField.Choices
+            .Select((choice, index) => (choice, index))
+            .Single(item => item.choice.Title == InitWorkflows.NoneChannel)
+            .index;
+        channelField.SelectChoice(noneIndex);
+        model.SelectedChannel().Should().BeNull();
+    }
+
+    [TestMethod]
+    public void GlobalJsonChannelDetail_ShowsSourcePath()
+    {
+        const string globalJsonPath = @"C:\repo\global.json";
+        var model = CreateModel(new DefaultChannelDisplay("9.0", globalJsonPath));
+
+        FieldDetail detail = model.BuildDetail(model.Fields[0], choiceIndex: 0);
+
+        detail.Lines.Should().ContainSingle()
+            .Which.Should().Be(new DetailLine("From global.json:", globalJsonPath));
+    }
+
+    [TestMethod]
+    public void ConfiguredAccessMode_IsSelectedByDefault()
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            accessMode: DotnetAccessMode.Shell);
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Environment setup");
+
+        accessModeField.DisplayValue.Should().Be(DotnetAccessMode.Shell.ToString());
+        accessModeField.IsChangedFromDefault.Should().BeFalse();
+        model.SelectedAccessMode().Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod]
     public void ChangedRuntimeChannel_PreservesRuntimeComponent()
     {
         var installRoot = new DotnetInstallRoot(
@@ -92,6 +142,7 @@ public class InitFormModelTests
             [CreateMigration("10.0.1xx", "10.0.100")]);
         FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
         migrationField.IsVisible.Should().BeFalse();
+        model.MigrateSelected().Should().BeFalse();
 
         FormField channelField = model.Fields[0];
         int customIndex = channelField.Choices.Count - 1;
@@ -101,27 +152,79 @@ public class InitFormModelTests
         model.MigrateSelected().Should().BeTrue();
     }
 
+    [TestMethod]
+    public void MigrationField_IsOmittedWhenThereAreNoCandidates()
+    {
+        var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
+
+        model.Fields.Should().NotContain(field => field.Label == "Migrate system installs");
+        model.MigrateSelected().Should().BeFalse();
+    }
+
+    [TestMethod]
+    public void MigrationNoChoice_DisablesMigration()
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            [CreateMigration("10.0.1xx", "10.0.100")]);
+        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+
+        migrationField.SelectChoice(1);
+
+        model.MigrateSelected().Should().BeFalse();
+        model.BuildDetail(migrationField, choiceIndex: 1).Lines.Should().BeEmpty();
+    }
+
+    [TestMethod]
+    public void MigrationDetail_GroupsComponentsAndTruncatesVersions()
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            [
+                CreateMigration("10.0.1xx", "10.0.100"),
+                CreateMigration("9.0.3xx", "9.0.300"),
+                CreateMigration("8.0.4xx", "8.0.400"),
+                CreateMigration("7.0.4xx", "7.0.400"),
+                CreateMigration("10.0", "10.0.5", InstallComponent.Runtime),
+            ]);
+        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+
+        FieldDetail detail = model.BuildDetail(migrationField, choiceIndex: 0);
+
+        detail.Lines.Should().HaveCount(2);
+        detail.Lines[0].Label.Should().Be(".NET SDKs:");
+        detail.Lines[0].Value.Should().EndWith("and 1 more");
+        detail.Lines[1].Label.Should().ContainEquivalentOf("runtime");
+        detail.Lines[1].Value.Should().Be("10.0.5");
+    }
+
     private static InitFormModel CreateModel(
         DefaultChannelDisplay channelDisplay,
-        List<MigrationWorkflow.MigrationSelection>? migrations = null)
+        List<MigrationWorkflow.MigrationSelection>? migrations = null,
+        DotnetAccessMode accessMode = DotnetAccessMode.None)
     {
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
         var plan = new WalkthroughPlan(
             installRoot,
-            DotnetAccessMode.None,
+            accessMode,
             migrations ?? [],
             channelDisplay,
-            [new MinimalInstallSpec(InstallComponent.SDK, channelDisplay.ChannelLabel)]);
+            [new MinimalInstallSpec(InstallComponent.SDK, channelDisplay.ChannelLabel)],
+            ShellProvider: null,
+            InstallRootGlobalJsonPath: null);
 
         return InitFormModel.Create(plan, shellProvider: null);
     }
 
-    private static MigrationWorkflow.MigrationSelection CreateMigration(string channel, string version)
+    private static MigrationWorkflow.MigrationSelection CreateMigration(
+        string channel,
+        string version,
+        InstallComponent component = InstallComponent.SDK)
     {
         return new MigrationWorkflow.MigrationSelection(
-            InstallComponent.SDK,
+            component,
             new UpdateChannel(channel),
             new ReleaseVersion(version),
             InstallerUtilities.GetDefaultInstallArchitecture());
