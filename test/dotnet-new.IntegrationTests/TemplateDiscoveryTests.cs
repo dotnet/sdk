@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _templateDiscoveryTool = templateDiscoveryTool;
         }
 
+        // https://github.com/dotnet/sdk/issues/53569
         [PlatformSpecificFact(TestPlatforms.Any, TestArchitectures.X64)]
         public async Task CanRunDiscoveryTool()
         {

@@ -34,7 +34,11 @@ namespace Microsoft.NET.TestFramework
 
         internal static bool ShouldSkipArchitecture(TestArchitectures architectures) =>
             architectures != TestArchitectures.All &&
-            ((RuntimeInformation.ProcessArchitecture == Architecture.X64 && !architectures.HasFlag(TestArchitectures.X64))
-                || (RuntimeInformation.ProcessArchitecture == Architecture.Arm64 && !architectures.HasFlag(TestArchitectures.ARM64)));
+            RuntimeInformation.ProcessArchitecture switch
+            {
+                Architecture.X64 => !architectures.HasFlag(TestArchitectures.X64),
+                Architecture.Arm64 => !architectures.HasFlag(TestArchitectures.ARM64),
+                _ => true,
+            };
     }
 }

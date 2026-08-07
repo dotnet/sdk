@@ -233,6 +233,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private void RecordPackages(string projectDirectory)
         {
+            if (PackagesJsonPath is null)
+            {
+                return;
+            }
+
             // Get all project files with a single directory search, then filter to specific types
             var projectFiles = Directory.GetFiles(projectDirectory, "*.*proj")
                 .Where(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
@@ -336,7 +341,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
                 // Write updated manifest
                 File.WriteAllText(
-                    PackagesJsonPath!,
+                    PackagesJsonPath,
                     JsonSerializer.Serialize(manifest, new JsonSerializerOptions
                     {
                         WriteIndented = true,
