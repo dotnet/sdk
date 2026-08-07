@@ -1,16 +1,55 @@
 ﻿﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Telemetry;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Utilities;
 
 namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 
+/// <summary>
+/// Receives telemetry from MSBuild and SDK build logic. The logger sends the telemetry
+/// through the .NET SDK telemetry pipeline.
+/// </summary>
+/// <remarks>
+/// MSBuild loads this type from <c>dotnet.dll</c> as a distributed logger. The logger is a
+/// separate SDK entry point. It can run in the managed CLI process, a child MSBuild
+/// process, or a persistent MSBuild server. Some hosts do not run either CLI bootstrap.
+/// The logger initializes process-wide telemetry when necessary. It creates and clears
+/// request-specific activity state at <c>BuildStarted</c> and <c>BuildFinished</c>.
+/// </remarks>
 public sealed class MSBuildLogger : INodeLogger
 {
+    /// <summary>
+    /// The process-wide telemetry client used by this logger instance.
+    /// </summary>
+    /// <remarks>
+    /// The managed CLI initializes this client before it runs MSBuild in the same process.
+    /// Other processes use the parameterless constructor to initialize their own client.
+    /// </remarks>
     private readonly ITelemetryClient? _telemetry;
+
+    /// <summary>
+    /// Whether this logger initialized the process-wide telemetry client.
+    /// </summary>
+    /// <remarks>
+    /// The initializer controls provider shutdown. If this logger did not initialize the
+    /// client, the managed CLI controls its lifetime.
+    /// </remarks>
+    private readonly bool _initializedTelemetryClient;
+
+    /// <summary>
+    /// The activity owned by the current build.
+    /// </summary>
+    /// <remarks>
+    /// This activity belongs to one build. It must not remain active after
+    /// <c>BuildFinished</c>. A persistent server can run later builds with unrelated parent
+    /// trace contexts in the same process.
+    /// </remarks>
+    private Activity? _activity;
 
     internal const string TargetFrameworkTelemetryEventName = "targetframeworkeval";
     internal const string BuildTelemetryEventName = "build";
@@ -59,16 +98,28 @@ public sealed class MSBuildLogger : INodeLogger
     /// </remarks>
     private Dictionary<string, Dictionary<string, int>> _aggregatedEvents = new();
 
+    /// <summary>
+    /// Initializes telemetry for the process hosting the logger.
+    /// </summary>
+    /// <remarks>
+    /// MSBuild uses the parameterless constructor to create loggers. The managed CLI can
+    /// initialize telemetry before it runs MSBuild in the same process. When another process
+    /// loads the logger without an existing client, the constructor initializes one. It
+    /// reuses an existing client to preserve CLI state. Telemetry failures must not fail the
+    /// build.
+    /// </remarks>
     public MSBuildLogger()
     {
         try
         {
             string? sessionId = Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
-
-            if (sessionId != null)
+            if (!TelemetryClient.IsInitialized)
             {
-                _telemetry = new TelemetryClient(sessionId);
+                _ = new TelemetryClient(sessionId);
+                _initializedTelemetryClient = true;
             }
+
+            _telemetry = TelemetryClient.Instance;
         }
         catch (Exception)
         {
@@ -84,11 +135,27 @@ public sealed class MSBuildLogger : INodeLogger
         _telemetry = telemetry;
     }
 
+    /// <summary>
+    /// Connects this node logger to MSBuild's event lifecycle.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="INodeLogger"/> requires this node-count overload. Both overloads use the
+    /// same event subscriptions. Build events control the activity lifetime because a
+    /// server can run multiple builds. Each build can have different request context.
+    /// </remarks>
     public void Initialize(IEventSource eventSource, int nodeCount)
     {
         Initialize(eventSource);
     }
 
+    /// <summary>
+    /// Connects this logger to the events needed to collect telemetry and delimit a build.
+    /// </summary>
+    /// <remarks>
+    /// The logger subscribes to telemetry events and <c>BuildStarted</c> only when telemetry
+    /// is enabled. This avoids work for opted-out builds. The logger always subscribes to
+    /// <c>BuildFinished</c>. This lets the logger clear its activity before a later request.
+    /// </remarks>
     public void Initialize(IEventSource eventSource)
     {
         // Declare lack of dependency on having properties/items in ProjectStarted events
@@ -106,6 +173,8 @@ public sealed class MSBuildLogger : INodeLogger
                 {
                     eventSource2.TelemetryLogged += OnTelemetryLogged;
                 }
+
+                eventSource.BuildStarted += OnBuildStarted;
             }
 
             eventSource.BuildFinished += OnBuildFinished;
@@ -116,11 +185,53 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
+    /// <summary>
+    /// Starts the activity that contains telemetry for one MSBuild request.
+    /// </summary>
+    /// <remarks>
+    /// A persistent server can receive different environment and trace context for each
+    /// request. This method resolves the parent at <c>BuildStarted</c>, not in the
+    /// constructor. It uses the ambient activity when the managed CLI runs MSBuild in the
+    /// same process. Otherwise, it reads the context that the invoking CLI forwarded. The
+    /// activity is internal because it represents SDK work in the invoking command, not a
+    /// remote client call.
+    /// </remarks>
+    private void OnBuildStarted(object sender, BuildStartedEventArgs e)
+    {
+        ActivityContext parentContext =
+            Activity.Current?.Context
+            ?? TelemetryClient.GetParentActivityContext()
+            ?? TelemetryClient.ParentActivityContext;
+        _activity = Activities.Source.StartActivity(
+            "msbuild",
+            ActivityKind.Internal,
+            parentContext);
+    }
+
+    /// <summary>
+    /// Completes telemetry and activity state for one MSBuild request.
+    /// </summary>
+    /// <remarks>
+    /// The logger attaches MSBuild events before it stops the activity. This order ensures
+    /// that exporters include the events when they capture the stopped activity. The method
+    /// sets the span status from the overall build result. It then clears the activity so a
+    /// later server build cannot use the completed activity as its parent.
+    /// </remarks>
     private void OnBuildFinished(object sender, BuildFinishedEventArgs e)
     {
         SendAggregatedEventsOnBuildFinished(_telemetry);
+        _activity?.SetStatus(e.Succeeded ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
+        StopActivity();
     }
 
+    /// <summary>
+    /// Emits telemetry that is intentionally accumulated across nodes during a build.
+    /// </summary>
+    /// <remarks>
+    /// A persistent server retains process state for the next build. This method removes
+    /// each aggregate after it sends the aggregate. The next build cannot reuse counts from
+    /// the completed request.
+    /// </remarks>
     internal void SendAggregatedEventsOnBuildFinished(ITelemetryClient? telemetry)
     {
         if (telemetry is null) return;
@@ -250,7 +361,16 @@ public sealed class MSBuildLogger : INodeLogger
             }
         }
 
-        telemetry?.TrackEvent(eventName, properties ?? eventProperties);
+        if (telemetry is TelemetryClient telemetryClient)
+        {
+            // Add production events before BuildFinished stops the activity.
+            // Test clients use ITelemetryClient without a real telemetry client.
+            telemetryClient.ThreadBlockingTrackEvent(eventName, properties ?? eventProperties);
+        }
+        else
+        {
+            telemetry?.TrackEvent(eventName, properties ?? eventProperties);
+        }
     }
 
     private void OnTelemetryLogged(object sender, TelemetryEventArgs args)
@@ -265,8 +385,48 @@ public sealed class MSBuildLogger : INodeLogger
         }
     }
 
+    /// <summary>
+    /// Completes this MSBuild logger instance and writes its diagnostic telemetry log.
+    /// </summary>
+    /// <remarks>
+    /// <c>BuildFinished</c> normally stops the build activity. <see cref="Shutdown"/> also
+    /// stops the activity if an aborted build did not deliver <c>BuildFinished</c>. MSBuild
+    /// calls this method when the logger instance ends. The method waits for queued events
+    /// before it writes the diagnostic log. If this logger initialized the telemetry client,
+    /// it owns provider shutdown. When the managed CLI runs MSBuild in the same process,
+    /// provider shutdown remains with the CLI that initialized the client.
+    /// </remarks>
     public void Shutdown()
     {
+        StopActivity();
+
+        if (_telemetry is TelemetryClient telemetryClient)
+        {
+            if (_initializedTelemetryClient)
+            {
+                TelemetryClient.FlushProviders();
+            }
+            else
+            {
+                telemetryClient.WaitForPendingEvents();
+            }
+        }
+
+        TelemetryClient.WriteLogIfNecessary();
+    }
+
+    /// <summary>
+    /// Stops only the activity owned by this logger and clears the reference.
+    /// </summary>
+    /// <remarks>
+    /// The invoking host owns the ambient parent activity. This method does not stop the
+    /// parent. Because this method clears the field, both <c>BuildFinished</c> and
+    /// <see cref="Shutdown"/> can call it safely.
+    /// </remarks>
+    private void StopActivity()
+    {
+        _activity?.Stop();
+        _activity = null;
     }
 
     public LoggerVerbosity Verbosity { get; set; }
