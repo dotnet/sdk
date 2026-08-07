@@ -19,7 +19,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
             CreateLocalizableResourceString(nameof(PreferQuotedFileBasedProgramDirectiveTitle)),
             CreateLocalizableResourceString(nameof(PreferQuotedFileBasedProgramDirectiveMessage)),
             DiagnosticCategory.Usage,
-            RuleLevel.IdeSuggestion,
+            RuleLevel.BuildWarning,
             CreateLocalizableResourceString(nameof(PreferQuotedFileBasedProgramDirectiveDescription)),
             isPortedFxCopRule: false,
             isDataflowRule: false,

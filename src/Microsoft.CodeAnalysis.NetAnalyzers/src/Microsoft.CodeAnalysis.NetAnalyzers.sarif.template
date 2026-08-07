@@ -612,7 +612,7 @@
           "id": "CA2267",
           "shortDescription": "Quote whitespace in file-based program directive values",
           "fullDescription": "Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.",
-          "defaultLevel": "note",
+          "defaultLevel": "warning",
           "helpUri": "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267",
           "properties": {
             "category": "Usage",

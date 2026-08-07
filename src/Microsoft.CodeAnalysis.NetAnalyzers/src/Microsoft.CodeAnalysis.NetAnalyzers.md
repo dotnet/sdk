@@ -2834,7 +2834,7 @@ Before quoting was supported, whitespace in a file-based program '#:' directive 
 |-|-|
 |Category|Usage|
 |Enabled|True|
-|Severity|Info|
+|Severity|Warning|
 |CodeFix|True|
 ---
 
