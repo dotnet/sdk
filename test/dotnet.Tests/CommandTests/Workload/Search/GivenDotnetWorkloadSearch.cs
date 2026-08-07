@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.CommandLine.Invocation;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli.Commands.Workload.Search;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -50,6 +51,30 @@ namespace Microsoft.DotNet.Cli.Workload.Search.Tests
             var command = () => new WorkloadSearchVersionsCommand(parseResult, _reporter, workloadResolverFactory);
             command.Should().Throw<CommandParsingException>()
                 .WithMessage(string.Format(CommandDefinitionStrings.UnrecognizedCommandOrArgument, argument));
+        }
+
+        [TestMethod]
+        public void GivenMistypedOptionToWorkloadSearchVersionItOnlyPrintsTheError()
+        {
+            var result = new DotnetCommand(Log)
+                .Execute("workload", "search", "version", "-foo", "bar");
+
+            result.Should().Fail();
+            result.StdErr.Trim().Should().Be(
+                string.Format(CommandDefinitionStrings.UnrecognizedCommandOrArgument, "-foo bar"));
+            result.StdOut.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void ParseErrorsOnlySuppressHelpForWorkloadSearchVersion()
+        {
+            var versionParseError = Parser.Parse(["workload", "search", "version", "-foo", "bar"])
+                .Action.Should().BeOfType<ParseErrorAction>().Which;
+            var otherParseError = Parser.Parse(["workload", "list", "--invalid"])
+                .Action.Should().BeOfType<ParseErrorAction>().Which;
+
+            versionParseError.ShowHelp.Should().BeFalse();
+            otherParseError.ShowHelp.Should().BeTrue();
         }
 
         [TestMethod]
