@@ -2600,6 +2600,21 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    public void Directives_EmptyMetadataName()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Foo@1.0.0 ="value"
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.InvalidDirectiveMetadata, "=value")),
+            ]);
+    }
+
+    [TestMethod]
     [DataRow("invalid")]
     [DataRow("SDK")]
     public void Directives_Unknown(string directive)

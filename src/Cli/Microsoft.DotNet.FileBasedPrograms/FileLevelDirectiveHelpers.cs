@@ -557,7 +557,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         {
             var token = tokens[i];
             var separatorIndex = token.IndexOf('=');
-            if (separatorIndex < 0)
+            if (separatorIndex <= 0)
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.InvalidDirectiveMetadata, token));
                 return null;
