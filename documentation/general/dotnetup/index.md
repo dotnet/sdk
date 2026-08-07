@@ -26,7 +26,19 @@ Use `dotnetup` to:
 Run the interactive setup:
 
 ```dotnetcli
-dotnetup init
+> dotnetup init
+Welcome to dotnetup!
+
+SDK Channel: latest
+Mode: Terminal Mode (Suggested)
+
+Would you like to install .NET with the recommended settings?
+> Yes, proceed with defaults and install
+
+Downloading SDK <resolved-version>
+Installing SDK <resolved-version>
+Installed SDK <resolved-version>
+Setup complete!
 ```
 
 The setup asks which SDK channel to install and how you want to access the
@@ -36,19 +48,52 @@ For a concise, noninteractive setup, install an SDK and configure the current
 shell:
 
 ```dotnetcli
-dotnetup install latest
-dotnetup env set shell
-dotnetup list
-dotnet --version
+> dotnetup install latest
+Downloading SDK <resolved-version>
+Installing SDK <resolved-version>
+Installed SDK <resolved-version>
+
+> dotnetup env set shell
+dotnet and dotnetup are on your PATH.
+To apply the change to this terminal now, run:
+<shell-specific command>
+Or open a new terminal.
+
+> dotnetup list
+Installations (managed by dotnetup):
+
+  <default-hive>
+
+    Tracked channels:
+      SDK latest  (source: explicit)
+
+    Installed versions:
+      SDK <resolved-version>  (<architecture>)
+
+Total: 1
+
+> dotnet --version
+<resolved-version>
 ```
 
 If you do not want to change your shell profile, use the forwarding command:
 
 ```dotnetcli
-dotnetup install latest
-dotnetup env set none
-dotnetup dotnet --version
+> dotnetup install latest
+Downloading SDK <resolved-version>
+Installing SDK <resolved-version>
+Installed SDK <resolved-version>
+
+> dotnetup env set none
+dotnetup is on your PATH. dotnet is not — run it with 'dotnetup dotnet <command>'.
+Open a new terminal for the change to take effect.
+
+> dotnetup dotnet --version
+<resolved-version>
 ```
+
+The mode, resolved version, architecture, hive path, and shell command depend
+on your system and the available releases.
 
 ## How dotnetup manages .NET
 
