@@ -75,10 +75,16 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         {
             foreach (var commandName in new[] { "build", "clean", "pack", "publish", "restore" })
             {
-                yield return [commandName, new[] { "--logger", "xyz", "Program.cs" }];
-                yield return [commandName, new[] { "--logger:xyz", "Program.cs" }];
-                yield return [commandName, new[] { "-l", "xyz", "Program.cs" }];
-                yield return [commandName, new[] { "-l:xyz", "Program.cs" }];
+                var configurationArgs = commandName is "pack" or "publish"
+                    ? new[] { "--configuration", "Debug" }
+                    : Array.Empty<string>();
+                string[] AddConfigurationAndProgram(params string[] loggerArgs) =>
+                    [.. loggerArgs, .. configurationArgs, "Program.cs"];
+
+                yield return [commandName, AddConfigurationAndProgram("--logger", "xyz")];
+                yield return [commandName, AddConfigurationAndProgram("--logger:xyz")];
+                yield return [commandName, AddConfigurationAndProgram("-l", "xyz")];
+                yield return [commandName, AddConfigurationAndProgram("-l:xyz")];
             }
         }
 
