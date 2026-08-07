@@ -91,7 +91,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             try
             {
-                File.WriteAllText(Path.Join(workingDirectory, "Program.cs"), "System.Console.WriteLine(\"Hello\");");
+                var programPath = Path.Join(workingDirectory, "Program.cs");
+                File.WriteAllText(programPath, "System.Console.WriteLine(\"Hello\");");
+                args = args.Select(arg => arg == "Program.cs" ? programPath : arg).ToArray();
 
                 CommandDirectoryContext.PerformActionWithBasePath(workingDirectory, () =>
                 {
