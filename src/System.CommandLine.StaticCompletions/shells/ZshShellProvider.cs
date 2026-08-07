@@ -17,6 +17,9 @@ public class ZshShellProvider : IShellProvider
     // override the ToString method to return the argument name so that CLI help is cleaner for 'default' values
     public override string ToString() => ArgumentName;
 
+    private static IEnumerable<string> SanitizeOptionNames(IEnumerable<string> names) =>
+        names.Where(n => n.StartsWith('-'));
+
     public string GenerateCompletions(Command command)
     {
         var binaryName = command.Name;
@@ -84,7 +87,7 @@ fi
             var helpText = SanitizeHelp(option.Description);
             if (option.IsFlag())
             {
-                foreach (var name in option.Names())
+                foreach (var name in SanitizeOptionNames(option.Names()))
                 {
                     writer.WriteLine($"'{multiplicity}{name}[{helpText}]' \\");
                 }
@@ -97,7 +100,7 @@ fi
                 }
                 var argumentName = option.HelpName ?? " ";
                 var argumentValues = ZshValueExpression(option);
-                foreach (var name in option.Names())
+                foreach (var name in SanitizeOptionNames(option.Names()))
                 {
                     writer.Write($"'{multiplicity}{name}=[{helpText}]:{argumentName}");
                     WriteValueExpression(writer, argumentValues);
