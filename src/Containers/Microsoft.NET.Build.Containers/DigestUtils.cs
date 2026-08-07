@@ -114,15 +114,6 @@ internal sealed class DigestUtils
     }
 
     /// <summary>
-    /// Validates hash value against the expected hash, failing with a
-    /// consistent error message if they don't match.
-    /// </summary>
-    internal static void ValidateHashValueAsync(ReadOnlySpan<byte> actualHash, ReadOnlySpan<byte> expectedHash)
-    {
-        InvalidDigestException.ThrowIfMismatched(expectedHash, actualHash);
-    }
-
-    /// <summary>
     /// Validates a digest string against the OCI grammar and registered
     /// algorithms, returning the parsed algorithm and encoded portions. Throws
     /// <see cref="InvalidDigestException"/> if the digest is malformed, uses an
