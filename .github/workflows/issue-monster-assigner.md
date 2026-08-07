@@ -64,6 +64,10 @@ timeout-minutes: 10
 tools:
   github: false
 
+concurrency:
+  group: issue-monster-assigner
+  queue: max
+
 jobs:
   conclusion:
     pre-steps:
