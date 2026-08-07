@@ -261,7 +261,8 @@ internal static class MSBuildUtility
                 ? ResultsDirectoryLayout.PerModule
                 : ResultsDirectoryLayout.Flat,
             configFile,
-            diagnosticOutputDirectory);
+            diagnosticOutputDirectory,
+            parseResult.HasOption(definition.ResultsDirectoryLayoutOption));
 
         return new BuildOptions(
             pathOptions,
