@@ -30,8 +30,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             ("nunit-playwright", new[] { Languages.CSharp }, false, false),
         ];
 
-        private static readonly string PackagesJsonPath = Path.Combine(CodeBaseRoot, "test", "TestPackages", "cgmanifest.json");
-
         public DotnetNewTestTemplatesTests(ITestOutputHelper log) : base(log)
         {
             _log = log;
@@ -233,6 +231,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private void RecordPackages(string projectDirectory)
         {
+            string packagesJsonPath = Path.Combine(
+                TestContext.Current.TestPackages ?? throw new InvalidOperationException("TestPackages should never be null."),
+                "cgmanifest.json");
+
             // Get all project files with a single directory search, then filter to specific types
             var projectFiles = Directory.GetFiles(projectDirectory, "*.*proj")
                 .Where(file => file.EndsWith(".csproj", StringComparison.OrdinalIgnoreCase) ||
@@ -242,11 +244,11 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             // Load existing component detection manifest or create new one
             ComponentDetectionManifest manifest;
 
-            if (File.Exists(PackagesJsonPath))
+            if (File.Exists(packagesJsonPath))
             {
                 try
                 {
-                    string jsonContent = File.ReadAllText(PackagesJsonPath);
+                    string jsonContent = File.ReadAllText(packagesJsonPath);
                     manifest = JsonSerializer.Deserialize<ComponentDetectionManifest>(jsonContent) ??
                         CreateNewManifest();
                 }
@@ -324,19 +326,19 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (updatedManifest)
             {
                 // Ensure directory exists
-                if (Path.GetDirectoryName(PackagesJsonPath) is string directoryPath)
+                if (Path.GetDirectoryName(packagesJsonPath) is string directoryPath)
                 {
                     Directory.CreateDirectory(directoryPath);
                 }
                 else
                 {
-                    _log.WriteLine($"Warning: Could not determine directory path for '{PackagesJsonPath}'.");
+                    _log.WriteLine($"Warning: Could not determine directory path for '{packagesJsonPath}'.");
                     return;
                 }
 
                 // Write updated manifest
                 File.WriteAllText(
-                    PackagesJsonPath,
+                    packagesJsonPath,
                     JsonSerializer.Serialize(manifest, new JsonSerializerOptions
                     {
                         WriteIndented = true,
