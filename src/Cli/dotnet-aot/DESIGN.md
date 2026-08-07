@@ -121,9 +121,9 @@ the dual-path dispatch logic.
 bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
-can run entirely in AOT (`--version`, `--info`, and the AOT-capable `sln`
-subcommands) execute immediately and return.
-Every other built-in command is wired with a fallback action that throws
+can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
+subcommands, and the narrow file-based run path described below) execute immediately and return.
+Other built-in command shapes are wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
@@ -138,12 +138,31 @@ the managed CLI uses — minus the MSBuild/NuGet project-tools resolver — via
 then invokes the resolved `CommandSpec` out-of-process through
 `CommandFactoryUsingResolver` + `Command.Execute()`. The resolution step is
 side-effect free, so the bridge defers to the managed CLI whenever it cannot
-handle the invocation: file-based apps (handled by the managed `run` pipeline),
-commands that only the full project-tools resolver can find, anything that does
+handle the invocation: unsupported implicit file-based shapes, commands that only the full
+project-tools resolver can find, anything that does
 not resolve, or any resolution error. Because the managed CLI re-resolves with
 its full resolver set, deferral produces identical user-facing behavior. Out-of-
 process invocation only happens after a non-null spec, so a command is never
-executed twice.
+executed twice. If resolution returns no command, reuse-only implicit file-based apps
+(`dotnet app.cs --no-build`) enter the launch-only gate. Build-enabled shorthand can also use an
+unchanged validated cache; other shorthand shapes defer. The native path also supports explicit
+`dotnet run --file` and positional `dotnet run app.cs`.
+
+**No-build file launch** — `AotRunCommand` handles explicit `--file` and positional
+`dotnet run <path> --no-build` when the prior cache records a synthetic CSC build. Positional discovery runs natively
+only when the current directory contains no project; otherwise it defers so the project receives
+the path as an application argument. The native path preserves arguments after `--`, `-e`
+environment variables, the architecture-specific
+`DOTNET_ROOT`, working directory, Ctrl-C handling, and exit code. Project launch
+profiles decorate the cached apphost; Executable profiles bypass the cache and launch their
+configured command. Runs requiring compile/build work and unsupported options continue through
+managed fallback.
+
+The validated-cache launch additionally handles unchanged replayed/MSBuild caches, including package apps.
+The bridge validates versions, global properties, source and tracked filesystem inputs, and the
+serialized `RunProperties` contract before using its command, arguments, working directory, and
+RID/framework values. Stale or ambiguous caches defer before launch. Missing launch output follows
+the same process-start or apphost failure path as managed `dotnet run`.
 
 **MSBuild evaluation infrastructure** — The Native AOT closure includes the
 SDK-shipped workload and NuGet SDK resolvers and a reflection-free project evaluator
@@ -186,7 +205,7 @@ sequenceDiagram
             aot->>tool: Command.Execute() (out of process)
             tool-->>aot: exit code
             aot-->>dn: exit code
-        else Command not handled, unresolved, or file-based app
+        else Command not handled, unresolved, or unsupported file-based shape
             aot->>cli: ManagedHost.RunApp(args) → managed fallback (see below)
             cli-->>aot: exit code
             aot-->>dn: exit code
@@ -231,7 +250,7 @@ In the shared files:
   isolated to small inline `#if CLI_AOT` regions: the managed build wires the
   real command handlers, while the AOT build attaches a managed-fallback handler
   to every command (overriding it with real implementations where AOT can run
-  the command, e.g. `sln`). The help writer (`DotnetHelpBuilder`) has no
+  the command, e.g. `sln` and the narrow cached `run` action). The help writer (`DotnetHelpBuilder`) has no
   conditional compilation: help for the external-tool commands
   (msbuild/nuget/vstest/format/fsi) renders from AOT because those forwarding
   apps use AOT-friendly out-of-process codepaths under `#if CLI_AOT`.

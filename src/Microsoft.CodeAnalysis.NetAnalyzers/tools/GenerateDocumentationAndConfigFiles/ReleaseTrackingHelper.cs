@@ -33,6 +33,13 @@ namespace Microsoft.CodeAnalysis.ReleaseTracking
         internal const string TableHeaderNewOrRemovedRulesLine2RegexPattern = @"^-{3,}\|-{3,}\|-{3,}\|-{3,}";
         internal const string TableHeaderChangedRulesLine2RegexPattern = @"^-{3,}\|-{3,}\|-{3,}\|-{3,}\|-{3,}\|-{3,}";
 
+        /// <summary>
+        /// The canonical documentation link for a rule, which <c>DiagnosticDescriptorHelper.Create</c> builds by
+        /// appending the lowercased rule ID. Keep the two in sync.
+        /// </summary>
+        internal const string HelpLinkPrefix = "https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/";
+        internal const string HelpLinkRegexPattern = @"https?://\S*?code-analysis/quality-rules/[^\s)]+";
+
         internal static Version UnshippedVersion { get; } = new Version(int.MaxValue, int.MaxValue);
 
         internal static ReleaseTrackingData ReadReleaseTrackingData(
@@ -184,6 +191,14 @@ namespace Microsoft.CodeAnalysis.ReleaseTracking
 
                 string ruleId = parts[0];
 
+                // Nothing else reads the Notes field, so a row copy-pasted from its neighbour keeps that rule's
+                // documentation link and silently ships users to the wrong page.
+                var notesIndex = currentRuleEntryKind.Value == ReleaseTrackingRuleEntryKind.Changed ? 5 : 3;
+                if (TryValidateHelpLink(parts, notesIndex, ruleId) is InvalidEntryKind helpLinkEntryKind)
+                {
+                    OnInvalidEntry(line, helpLinkEntryKind);
+                }
+
                 InvalidEntryKind? invalidEntryKind = TryParseFields(parts, categoryIndex: 1, severityIndex: 2,
                     out var category, out var defaultSeverity, out var enabledByDefault);
                 if (invalidEntryKind.HasValue)
@@ -272,6 +287,27 @@ namespace Microsoft.CodeAnalysis.ReleaseTracking
                 };
             }
 
+            static InvalidEntryKind? TryValidateHelpLink(string[] parts, int notesIndex, string ruleId)
+            {
+                // The Notes field is optional, and a removed rule legitimately carries no link at all.
+                if (parts.Length <= notesIndex)
+                {
+                    return null;
+                }
+
+                var match = Regex.Match(parts[notesIndex], HelpLinkRegexPattern);
+                if (!match.Success)
+                {
+                    return null;
+                }
+
+                // Compared whole rather than by ID alone so a stale host is caught too. The page itself is not
+                // fetched: a rule documented after it ships legitimately has no page yet.
+                return string.Equals(match.Value, HelpLinkPrefix + ruleId.ToLowerInvariant(), StringComparison.Ordinal)
+                    ? null
+                    : InvalidEntryKind.HelpLink;
+            }
+
             static InvalidEntryKind? TryParseFields(
                 string[] parts, int categoryIndex, int severityIndex,
                 out string category,
@@ -320,6 +356,7 @@ namespace Microsoft.CodeAnalysis.ReleaseTracking
     {
         Header,
         UndetectedField,
+        HelpLink,
         Other
     }
 

@@ -863,6 +863,25 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
     }
 
     [TestMethod]
+    public void Format()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programFile = Path.Join(testInstance.Path, "app.cs");
+        File.WriteAllText(programFile, """
+            class C   {}
+            """);
+
+        new DotnetCommand(Log, "format", "app.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        File.ReadAllText(programFile).Should().Be("""
+            class C { }
+            """);
+    }
+
+    [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     [UnsupportedOSPlatform("windows")]
     public void ArtifactsDirectory_Permissions()

@@ -632,10 +632,10 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
-        [DataRow(null, nameof(ResultsDirectoryLayout.Flat))]
-        [DataRow("flat", nameof(ResultsDirectoryLayout.Flat))]
-        [DataRow("per-module", nameof(ResultsDirectoryLayout.PerModule))]
-        public void MTPCommandParsesResultsDirectoryLayout(string? value, string expected)
+        [DataRow(null, nameof(ResultsDirectoryLayout.Flat), false)]
+        [DataRow("flat", nameof(ResultsDirectoryLayout.Flat), true)]
+        [DataRow("per-module", nameof(ResultsDirectoryLayout.PerModule), true)]
+        public void MTPCommandParsesResultsDirectoryLayout(string? value, string expected, bool expectedSpecified)
         {
             var command = new TestCommandDefinition.MicrosoftTestingPlatform();
             var parseResult = value is null
@@ -643,7 +643,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 : command.Parse(["--results-directory-layout", value]);
 
             parseResult.Errors.Should().BeEmpty();
-            MSBuildUtility.GetBuildOptions(parseResult).PathOptions.ResultsDirectoryLayout.ToString().Should().Be(expected);
+            PathOptions pathOptions = MSBuildUtility.GetBuildOptions(parseResult).PathOptions;
+            pathOptions.ResultsDirectoryLayout.ToString().Should().Be(expected);
+            pathOptions.ResultsDirectoryLayoutSpecified.Should().Be(expectedSpecified);
         }
 
         [TestMethod]
