@@ -220,6 +220,29 @@ Options:
         [InlineData("solution", ".sln")]
         [InlineData("sln", ".slnx")]
         [InlineData("solution", ".slnx")]
+        public void WhenPassedAReferenceWithoutExtensionNotInSlnItPrintsStatus(string solutionCommand, string solutionExtension)
+        {
+            var projectDirectory = _testAssetsManager
+                .CopyTestAsset("TestAppWithSlnAndExistingCsprojReferences", identifier: $"{solutionCommand}{solutionExtension}NotFoundNoExt")
+                .WithSource()
+                .Path;
+
+            var solutionPath = Path.Combine(projectDirectory, $"App{solutionExtension}");
+            var contentBefore = File.ReadAllText(solutionPath);
+            var cmd = new DotnetCommand(Log)
+                .WithWorkingDirectory(projectDirectory)
+                .Execute(solutionCommand, $"App{solutionExtension}", "remove", "invalid");
+            cmd.Should().Pass();
+            cmd.StdOut.Should().Be(string.Format(CliStrings.ProjectNotFoundInTheSolution, "invalid"));
+            File.ReadAllText(solutionPath)
+                .Should().BeVisuallyEquivalentTo(contentBefore);
+        }
+
+        [Theory]
+        [InlineData("sln", ".sln")]
+        [InlineData("solution", ".sln")]
+        [InlineData("sln", ".slnx")]
+        [InlineData("solution", ".slnx")]
         public async Task WhenPassedAReferenceItRemovesTheReferenceButNotOtherReferences(string solutionCommand, string solutionExtension)
         {
             var projectDirectory = _testAssetsManager
