@@ -2565,6 +2565,22 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    [DataRow("#:property Description=\"\"\"abc\"\"\"", "\"\"\"abc\"\"\"")]
+    public void Directives_RawStringLiteralRejected(string directive, string expectedTokenText)
+    {
+        // Raw string literals ('"""..."""') lex to a different token kind and are not supported; the
+        // error shows the offending token text rather than assuming a specific kind.
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: directive,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.ExpectedSimpleStringLiteralInDirective, expectedTokenText)),
+            ]);
+    }
+
+    [TestMethod]
     public void Directives_InvalidMetadataName()
     {
         // A quote forces the strict (new) form, so the metadata name is validated.

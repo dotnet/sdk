@@ -169,6 +169,10 @@
     <value>Invalid quoted value in directive: {0}</value>
     <comment>{0} is the underlying C# string literal error message, for example 'Unrecognized escape sequence.'.</comment>
   </data>
+  <data name="ExpectedSimpleStringLiteralInDirective" xml:space="preserve">
+    <value>Expected a simple string literal in the directive value. Raw and verbatim string literals are not supported in directive values. Found: {0}</value>
+    <comment>{0} is the offending C# token text, for example '"""abc"""'.</comment>
+  </data>
   <data name="InvalidDirectiveMetadata" xml:space="preserve">
     <value>Directive metadata must be in the form 'Name=Value'. Invalid metadata: '{0}'.</value>
     <comment>{Locked="'Name=Value'"}{0} is the offending metadata text.</comment>

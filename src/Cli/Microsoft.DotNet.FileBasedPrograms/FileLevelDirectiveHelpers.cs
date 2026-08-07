@@ -380,7 +380,16 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
                 if (!token.IsKind(SyntaxKind.StringLiteralToken))
                 {
-                    context.ReportError(FileBasedProgramsResources.InvalidQuoteInDirective);
+                    // Any token carrying a lexer error was already reported (and Roslyn's diagnostic
+                    // forwarded) above, so the only thing that reaches here is a *well-formed* literal
+                    // that starts with '"' yet isn't a simple string literal. Today that can only be a
+                    // raw string literal ('"""..."""'); verbatim ('@"..."') can't start here because the
+                    // '@' would precede the quote and fail the position check. Raw/verbatim literals are
+                    // intentionally unsupported (we match '#r'/'#load', which accept only a simple string
+                    // literal). Report the actual token text so the message shows the user exactly what was
+                    // wrong, and stays accurate even if a future Roslyn lexer change routes some other kind
+                    // here.
+                    context.ReportError(string.Format(FileBasedProgramsResources.ExpectedSimpleStringLiteralInDirective, token.Text));
                     return null;
                 }
 
