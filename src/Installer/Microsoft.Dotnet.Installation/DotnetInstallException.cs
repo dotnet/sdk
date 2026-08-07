@@ -133,6 +133,12 @@ public enum DotnetInstallErrorCode
     /// Distinct from <see cref="NoMatchingReleaseFileForPlatform"/>
     /// </summary>
     NoUserInstallableArtifact,
+
+    /// <summary>
+    /// An access mode reached a workflow that does not support it, indicating inconsistent
+    /// product state rather than invalid user input.
+    /// </summary>
+    InvalidModeSelection,
 }
 
 /// <summary>

@@ -501,15 +501,35 @@ Or open a new terminal.</target>
         <target state="new">... and {0} more</target>
         <note>{0} is the count of additional migration candidates not individually listed.</note>
       </trans-unit>
+      <trans-unit id="SummaryModeConfiguration">
+        <source>{0} modifies {1} to set {2} and {3} to prefer {4}.</source>
+        <target state="new">{0} modifies {1} to set {2} and {3} to prefer {4}.</target>
+        <note>{0} is the suggested mode name; {1} is one or more shell profile paths or the system environment variables; {2} is PATH; {3} is DOTNET_ROOT; {4} is the dotnetup install path.</note>
+      </trans-unit>
       <trans-unit id="SummaryModeCurrent">
         <source>current: {0}</source>
         <target state="new">current: {0}</target>
         <note>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</note>
       </trans-unit>
+      <trans-unit id="SummaryModeInstallRootGlobalJsonSuffix">
+        <source>(inferred from {0})</source>
+        <target state="new">(inferred from {0})</target>
+        <note>{0} is the path to the global.json file that supplied the dotnetup install root.</note>
+      </trans-unit>
       <trans-unit id="SummaryModeLabel">
         <source>Mode:</source>
         <target state="new">Mode:</target>
         <note />
+      </trans-unit>
+      <trans-unit id="SummaryModeSystemEnvironmentVariables">
+        <source>the system environment variables</source>
+        <target state="new">the system environment variables</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="SummaryModeUnsupportedShell">
+        <source>{0} is suggested because the current shell ({1}) cannot be detected or is not supported. Supported shells: {2}.</source>
+        <target state="new">{0} is suggested because the current shell ({1}) cannot be detected or is not supported. Supported shells: {2}.</target>
+        <note>{0} is the suggested isolation mode name; {1} is the current SHELL value or "(not set)"; {2} is the list of supported shell names.</note>
       </trans-unit>
       <trans-unit id="SummaryProceedDescriptionConfigured">
         <source>Replace your current settings with the recommended ones above.</source>
