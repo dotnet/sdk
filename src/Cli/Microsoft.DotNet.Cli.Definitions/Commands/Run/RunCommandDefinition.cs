@@ -29,6 +29,17 @@ internal sealed class RunCommandDefinition : Command
         HelpName = CommandDefinitionStrings.CommandOptionFileHelpName,
     };
 
+    public readonly Option<bool> FileModeOption = new("--file-mode")
+    {
+        Description = CommandDefinitionStrings.RunFileModeOptionDescription,
+        Hidden = true,
+    };
+
+    public readonly Option<string> WorkingDirectoryOption = new("--working-directory")
+    {
+        Description = CommandDefinitionStrings.RunWorkingDirectoryOptionDescription,
+    };
+
     public readonly Option<ReadOnlyDictionary<string, string>?> PropertyOption = CommonOptions.CreatePropertyOption();
 
     public readonly Option<string> LaunchProfileOption = new("--launch-profile", "-lp")
@@ -107,6 +118,8 @@ internal sealed class RunCommandDefinition : Command
         Options.Add(FrameworkOption);
         Options.Add(ProjectOption);
         Options.Add(FileOption);
+        Options.Add(FileModeOption);
+        Options.Add(WorkingDirectoryOption);
         Options.Add(PropertyOption);
         Options.Add(LaunchProfileOption);
         Options.Add(NoLaunchProfileOption);
