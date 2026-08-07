@@ -19,7 +19,7 @@ dotnetup sdk install 10.0 11.0
 dotnetup sdk install 10.0.103
 ```
 
-The top-level `install` command is an SDK alias:
+The top-level `install` command is an alias for `dotnetup sdk install`:
 
 ```dotnetcli
 dotnetup install 10.0
@@ -66,14 +66,11 @@ architecture.
 
 ## Check installed state
 
+You can see the list of install specifications, the installed versions, and the source of each requirement with:
+
 ```dotnetcli
 dotnetup list
-dotnetup dotnet -- --info
 ```
-
-The current parser accepts `--set-default-install`. The install handlers do
-not apply environment changes from it. Use `dotnetup env set` after
-installation.
 
 ## See also
 

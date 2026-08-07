@@ -29,15 +29,11 @@ With selection options, it includes only the requested parts.
 
 | Option | Description |
 | --- | --- |
-| `-s`, `--shell [<bash|zsh|fish|pwsh>]` | Select the script syntax. If omitted, detect the current shell. |
+| `-s`, `--shell [<bash\|zsh\|fish\|pwsh>]` | Select the script syntax. If omitted, detect the current shell. |
 | `-d`, `--dotnet-install-path <PATH>` | Use a specific .NET installation root. The default is the default dotnetup hive. |
 | `--dotnet` | Add the selected .NET root to `PATH` and set `DOTNET_ROOT`. |
 | `--dotnetup` | Add the directory that contains `dotnetup` to `PATH`. |
 | `-?`, `-h`, `--help` | Show command help. |
-
-The hidden `--dotnetup-only` compatibility option emits only the dotnetup
-`PATH` change. Do not combine it with `--dotnet` or `--dotnetup`. New
-scripts should use `--dotnetup`.
 
 ## Examples
 

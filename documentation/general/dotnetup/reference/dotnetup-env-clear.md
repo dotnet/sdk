@@ -32,7 +32,7 @@ It does not uninstall .NET.
 
 | Option | Description |
 | --- | --- |
-| `-s`, `--shell [<bash|zsh|fish|pwsh>]` | Select the profile shell to update. If omitted, detect the current shell. |
+| `-s`, `--shell [<bash\|zsh\|fish\|pwsh>]` | Select the profile shell to update. If omitted, detect the current shell. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Example

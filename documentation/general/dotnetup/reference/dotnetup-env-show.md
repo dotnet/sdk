@@ -30,7 +30,7 @@ If the configuration has drifted, run `dotnetup env set` to reapply it.
 
 | Option | Description |
 | --- | --- |
-| `-s`, `--shell [<bash|zsh|fish|pwsh>]` | Select the profile shell to inspect. If omitted, detect the current shell. |
+| `-s`, `--shell [<bash\|zsh\|fish\|pwsh>]` | Select the profile shell to inspect. If omitted, detect the current shell. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Example

@@ -30,7 +30,7 @@ component selects the core .NET runtime.
 
 | Option | Description |
 | --- | --- |
-| `--source <explicit|globaljson|all>` | Remove specifications from the selected source. The default is `explicit`. Runtime specifications are normally explicit. |
+| `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. Runtime specifications are normally explicit. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `-?`, `-h`, `--help` | Show command help. |

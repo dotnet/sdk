@@ -32,9 +32,9 @@ exists, it can start first-use onboarding.
 | --- | --- |
 | [`sdk`](dotnetup-sdk.md) | Manage .NET SDK installations. |
 | [`runtime`](dotnetup-runtime.md) | Manage .NET runtime installations. |
-| [`install`](dotnetup-install.md) | Install .NET SDKs. Alias for `sdk install`. |
+| [`install`](dotnetup-install.md) | Install a component. |
 | [`update`](dotnetup-update.md) | Update all tracked components. |
-| [`uninstall`](dotnetup-uninstall.md) | Remove an SDK specification. Alias for `sdk uninstall`. |
+| [`uninstall`](dotnetup-uninstall.md) | Remove a tracked component. |
 | [`list`](dotnetup-list.md) | List tracked specifications and installations. |
 | [`init`](dotnetup-init.md) | Run interactive setup. |
 | [`env`](dotnetup-env.md) | Manage environment configuration. |
@@ -46,7 +46,7 @@ exists, it can start first-use onboarding.
 | --- | --- |
 | `--info` | Display the dotnetup version, commit, process architecture, runtime identifier, and verified installation information. |
 | `--version` | Display the dotnetup version. |
-| `--interactive [<true|false>]` | Allow a bare invocation to wait for user input. The default is `true` in an interactive terminal and `false` in CI or when output is redirected. |
+| `--interactive [<true\|false>]` | Allow a bare invocation to wait for user input. The default is `true` in an interactive terminal and `false` in CI or when output is redirected. |
 | `-h`, `/h`, `-?`, `/?`, `--help` | Show root help. |
 
 ### --info options

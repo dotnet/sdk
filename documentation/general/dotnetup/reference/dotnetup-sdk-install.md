@@ -32,19 +32,16 @@ When no value is present, `dotnetup` derives the channel from the nearest
 | Option | Description |
 | --- | --- |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
-| `--set-default-install [<true|false>]` | The current parser accepts this option. The current install handler does not apply its environment changes. Use `dotnetup env set` after installation. |
-| `--migrate-from-system [<true|false>]` | Install matching native-architecture SDKs from a system-managed installation into the selected hive. |
-| `--update-global-json [<true|false>]` | Replace `sdk.version` in the applicable `global.json` with the installed version. |
+| `--set-default-install [<true\|false>]` | The current parser accepts this option. The current install handler does not apply its environment changes. Use `dotnetup env set` after installation. |
+| `--migrate-from-system [<true\|false>]` | Install matching native-architecture SDKs from a system-managed installation into the selected hive. |
+| `--update-global-json [<true\|false>]` | Replace `sdk.version` in the applicable `global.json` with the installed version. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
-| `--interactive [<true|false>]` | Allow first-use onboarding to wait for input. |
-| `--no-progress [<true|false>]` | Disable progress display. |
-| `-v`, `--verbosity <normal|detailed>` | Set output verbosity. The default is `normal`. |
-| `--require-muxer-update [<true|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |
-| `--untracked [<true|false>]` | Install without adding a manifest record. |
+| `--interactive [<true\|false>]` | Allow first-use onboarding to wait for input. |
+| `--no-progress [<true\|false>]` | Disable progress display. |
+| `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
+| `--require-muxer-update [<true\|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |
+| `--untracked [<true\|false>]` | Install without adding a manifest record. |
 | `-?`, `-h`, `--help` | Show command help. |
-
-The `--shell` option is not accepted. Run `dotnetup init --shell <name>` or
-`dotnetup env set shell --shell <name>` to select a shell.
 
 ## Examples
 

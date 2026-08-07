@@ -36,8 +36,8 @@ fails if no readable configuration exists.
 
 | Option | Description |
 | --- | --- |
-| `--dotnetup-on-path <true|false>` | Add or remove the directory that contains `dotnetup` from `PATH`. If omitted, preserve the stored value. The first stored configuration defaults to `true`. |
-| `-s`, `--shell [<bash|zsh|fish|pwsh>]` | Select the profile shell. If omitted, detect the current shell. |
+| `--dotnetup-on-path <true\|false>` | Add or remove the directory that contains `dotnetup` from `PATH`. If omitted, preserve the stored value. The first stored configuration defaults to `true`. |
+| `-s`, `--shell [<bash\|zsh\|fish\|pwsh>]` | Select the profile shell. If omitted, detect the current shell. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Examples

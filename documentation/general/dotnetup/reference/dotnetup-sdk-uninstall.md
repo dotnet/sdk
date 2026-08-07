@@ -28,7 +28,7 @@ case-insensitive.
 
 | Option | Description |
 | --- | --- |
-| `--source <explicit|globaljson|all>` | Remove specifications from the selected source. The default is `explicit`. |
+| `--source <explicit\|globaljson\|all>` | Remove specifications from the selected source. The default is `explicit`. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `-?`, `-h`, `--help` | Show command help. |

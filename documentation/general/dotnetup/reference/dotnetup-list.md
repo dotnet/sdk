@@ -34,8 +34,8 @@ Property names use camel case. Enum values use their names.
 
 | Option | Description |
 | --- | --- |
-| `--format <text|json>` | Select text or JSON output. The default is `text`. |
-| `--no-verify [<true|false>]` | Do not validate each recorded installation on disk. |
+| `--format <text\|json>` | Select text or JSON output. The default is `text`. |
+| `--no-verify [<true\|false>]` | Do not validate each recorded installation on disk. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Show only the matching installation root. |
 | `-?`, `-h`, `--help` | Show command help. |

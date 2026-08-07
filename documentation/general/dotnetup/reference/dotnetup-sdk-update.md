@@ -30,9 +30,9 @@ versions. Use `--all` to process SDK and runtime specifications.
 | `--update-global-json` | Update applicable global.json-sourced SDK versions. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
 | `--install-path <INSTALL_PATH>` | Update only the matching installation root. |
-| `--interactive [<true|false>]` | The current parser accepts this option. The current update handler does not use it. |
-| `--no-progress [<true|false>]` | Disable progress display. |
-| `-v`, `--verbosity <normal|detailed>` | Set output verbosity. The default is `normal`. |
+| `--interactive [<true\|false>]` | The current parser accepts this option. The current update handler does not use it. |
+| `--no-progress [<true\|false>]` | Disable progress display. |
+| `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Examples

@@ -58,35 +58,7 @@ An **install specification** records a component and a channel or exact
 version. For example, an SDK specification for `10.0.1xx` means "keep the
 latest SDK in the 10.0.1xx feature band."
 
-Use one of these forms for the version or channel part of an install
-specification:
-
-| Form | Pattern or value | Example | Selection |
-| --- | --- | --- | --- |
-| Latest stable | `latest` | `latest` | Latest active stable version |
-| Latest LTS | `lts` | `lts` | Latest active stable LTS version |
-| Latest preview | `preview` | `preview` | Latest preview or GoLive version, or the latest active version when no preview exists |
-| Major | `<major>` | `10` | Latest version for the specified major version |
-| Major and minor | `<major>.<minor>` | `10.0` | Latest version for the specified major and minor version |
-| SDK feature band | `<major>.<minor>.<band>xx` | `10.0.1xx` | Latest SDK in the specified feature band |
-| Exact stable version | `<major>.<minor>.<patch>` | SDK `10.0.103` or runtime `10.0.3` | Only the specified version |
-| Exact prerelease version | `<major>.<minor>.<patch>-<prerelease-label>` | `11.0.100-preview.5.25277.114` | Only the specified prerelease version |
-| Latest daily | `daily` | `daily` | Latest available daily build |
-| Scoped daily | Add `-daily` to a major, major/minor, or feature-band scope | `11-daily`, `11.0-daily`, or `11.0.1xx-daily` | Latest daily build in the specified scope |
-| Phase-qualified daily | Add `-<phase>.<number>-daily` to a numeric scope | `11.0-preview.5-daily` or `11.0.1xx-preview.5-daily` | Latest daily build for the specified scope and prerelease phase |
-
-Daily phase names contain letters, and the phase number contains digits.
-For example, `preview.5` and `rc.1` are valid phases. The compact form
-`preview5` is also valid.
-
-Feature-band specifications are valid only for SDK installations. Runtime
-commands accept major, major/minor, named, daily, and exact runtime versions.
-The `sts` channel, `preview-daily`, and a complete version with `-daily` are
-not valid.
-
-A valid specification format does not guarantee that a matching release
-exists. Resolution fails when the selected release source has no matching
-version.
+You can learn more about the different kinds of supported channels and versions in [Channels and versions](channels.md).
 
 Each specification has one of these sources:
 

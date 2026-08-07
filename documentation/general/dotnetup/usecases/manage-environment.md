@@ -12,7 +12,7 @@ the access mode that fits your workflow.
 
 ## Use command forwarding
 
-The least persistent option is the `none` mode:
+The least persistent option is the `none` mode. In this mode, no changes are made to your shell profile or user environment. Instead, `dotnetup dotnet` allows you to run `dotnet` commands via the `dotnetup`-managed installation:
 
 ```dotnetcli
 dotnetup env set none --dotnetup-on-path true
@@ -24,7 +24,7 @@ The managed `dotnet` is not added to your shell `PATH`.
 
 ## Configure a shell profile
 
-Use the `shell` mode to write a managed block to a supported profile:
+Use the `shell` mode to write a managed block to your shellprofile:
 
 ```dotnetcli
 dotnetup env set shell --shell pwsh
@@ -32,7 +32,7 @@ dotnetup env set shell --shell pwsh
 
 Supported shell values are `bash`, `zsh`, `fish`, and `pwsh`.
 
-Open a new shell after the command finishes, or activate the current shell:
+Open a new shell after the command finishes, or activate the current shell to apply the changes:
 
 ```powershell
 dotnetup env script --shell pwsh | Invoke-Expression

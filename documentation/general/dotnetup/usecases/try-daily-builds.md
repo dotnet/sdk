@@ -7,8 +7,8 @@ ms.date: 08/07/2026
 
 # Try .NET daily builds with dotnetup
 
-Daily channels give you recent builds from the .NET build feeds. `dotnetup`
-displays a trust warning for these unsigned sources.
+Daily channels give you bleeding-edge builds from the .NET build feeds. `dotnetup`
+makes it easy to try these daily builds in your workspaces.
 
 ## Install a daily SDK
 

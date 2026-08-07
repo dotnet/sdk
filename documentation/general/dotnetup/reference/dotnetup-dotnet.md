@@ -12,13 +12,10 @@ ms.date: 08/07/2026
 `dotnetup dotnet` - Run a command with the dotnetup-managed `dotnet`
 executable.
 
-The command alias is `dotnetup do`.
-
 ## Synopsis
 
 ```console
 dotnetup dotnet [--] [<ARGUMENT>...]
-dotnetup do [--] [<ARGUMENT>...]
 ```
 
 ## Description
@@ -40,7 +37,7 @@ with `--install-path`.
 `ARGUMENT`
 
 Zero or more arguments to pass to `dotnet`. The optional `--` separator makes
-the forwarding boundary explicit.
+the forwarding boundary explicit and should be used whenever an argument passed to `dotnet` could overlap with an option that `dotnetup dotnet` also accepts.
 
 ## Options
 

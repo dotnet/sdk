@@ -54,15 +54,12 @@ repository file.
 
 ## Understand update behavior
 
-- Exact SDK and runtime versions are skipped.
-- Each requirement is processed independently.
-- Processing continues after an individual failure.
-- The command reports failure after it processes the remaining requirements.
-- Successful updates run garbage collection.
+- Exact SDK and runtime versions are skipped - they were explicitly requested, so can never be updated.
+- Each installation requirement is processed independently.
+- Processing of all installation requirements continues after an individual failure.
+- The command reports failure after it processes all remaining installation requirements.
+- Successful updates run garbage collection - a cleanup process that removes any installed components that none of your configured installation requirements actually need.
 - An installed version remains if another requirement still needs it.
-
-The `--interactive` option is present in the current root and SDK update help.
-The update handler does not use it.
 
 ## Review the result
 

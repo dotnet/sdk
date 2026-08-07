@@ -33,11 +33,11 @@ Run this command again to reconfigure dotnetup.
 | --- | --- |
 | `--install-path <INSTALL_PATH>` | Select the installation root. |
 | `--manifest-path <MANIFEST_PATH>` | Use a custom manifest file. |
-| `--no-progress [<true|false>]` | Disable progress display. |
-| `-s`, `--shell [<bash|zsh|fish|pwsh>]` | Select the profile shell. If omitted, detect the current shell. |
-| `-v`, `--verbosity <normal|detailed>` | Set output verbosity. The default is `normal`. |
-| `--require-muxer-update [<true|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |
-| `--interactive [<true|false>]` | Allow the command to wait for input. |
+| `--no-progress [<true\|false>]` | Disable progress display. |
+| `-s`, `--shell [<bash\|zsh\|fish\|pwsh>]` | Select the profile shell. If omitted, detect the current shell. |
+| `-v`, `--verbosity <normal\|detailed>` | Set output verbosity. The default is `normal`. |
+| `--require-muxer-update [<true\|false>]` | Fail if the command cannot update the `dotnet` executable. By default, installation continues with a warning. |
+| `--interactive [<true\|false>]` | Allow the command to wait for input. |
 | `-?`, `-h`, `--help` | Show command help. |
 
 ## Examples
