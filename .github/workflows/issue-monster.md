@@ -312,7 +312,7 @@ safeoutputs/add_comment(item_number=<issue_number>, body="🍪 **Issue Monster s
 description: Keeps recurring issue-monster runs lean and bounded.
 ---
 
-Issue Monster runs frequently (every 12 hours), so keeping each run lean is critical to avoid unbounded token spend.
+Keeping each Issue Monster run lean is critical to avoid unbounded token spend.
 
 - **Stop as soon as the task is done**: Once you have dispatched issues and added comments (or called `noop`), stop immediately. Do not produce additional analysis, summaries, or commentary.
 - **Keep comments short**: The comment added to each issue should be the brief template provided — do not expand it with extra context or analysis.
