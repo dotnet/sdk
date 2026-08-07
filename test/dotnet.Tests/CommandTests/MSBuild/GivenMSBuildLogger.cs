@@ -240,5 +240,30 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["TaskCount"].Should().Be("1");
             fakeTelemetry.LogEntry.Properties["TotalTaskCount"].Should().Be("1");
         }
+
+        [TestMethod]
+        public void ItForwardsRoslynCompilerCacheEvent()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.RoslynCompilerCacheEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "cachestatus", "hit" },
+                    { "storeresult", "none" },
+                    { "language", "C#" },
+                    { "keycomputems", "5" },
+                    { "restorems", "6" },
+                    { "storems", "0" }
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be($"msbuild/{MSBuildLogger.RoslynCompilerCacheEventName}");
+            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
+        }
     }
 }
