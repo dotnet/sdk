@@ -19,6 +19,8 @@ run from the `release/dnup` branch. The build's tags include:
 BAR ID - <build-id>
 ```
 
+If the build tags do not include a BAR ID, you can find it at the end of the job `📤 Publish to BAR`, under the step `Publish Using Darc`.
+
 Use that numeric Build Asset Registry (BAR) ID when promoting the build. Normal non-test runs
 of the official pipeline are PME-signed and have a `PME Signed` tag. Use the tag to confirm
 signing completed; do not promote a test build or a build without the tag.
@@ -33,7 +35,7 @@ pipeline with these parameters:
 | --- | --- |
 | `BARBuildId` | The BAR ID from the selected build |
 | `PromoteToChannelIds` | `10506` (`dotnetup Daily`) |
-| `ArtifactsPublishingAdditionalParameters` | `/p:BuildQuality=preview` |
+| `ArtifactsPublishingAdditionalParameters` ( NOT `symbol` parameters ) | `/p:BuildQuality=preview` |
 
 Leave the remaining parameters at their defaults. The Maestro channel retains its historical
 `dotnetup Daily` name; `BuildQuality=preview` controls the quality segment in the generated
