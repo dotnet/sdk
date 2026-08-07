@@ -44,7 +44,7 @@ internal static class InitWorkflowDefaults
                 new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath));
         }
 
-        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory, parseContents: true);
         var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
             command.InstallPath, globalJson);
         var installRoot = new DotnetInstallRoot(

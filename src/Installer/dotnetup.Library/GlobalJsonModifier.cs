@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Deployment.DotNet.Releases;
 
@@ -13,11 +14,16 @@ namespace Microsoft.DotNet.Tools.Bootstrapper;
 /// </summary>
 public static class GlobalJsonModifier
 {
+    private const int MaxParseFailureMessageLength = 200;
+
     /// <summary>
     /// Searches for a global.json file starting from <paramref name="initialDirectory"/>
-    /// and walking up the directory tree. Returns the parsed contents and path if found.
+    /// and walking up the directory tree. Returns the path and, when requested,
+    /// the parsed contents.
     /// </summary>
-    public static GlobalJsonInfo GetGlobalJsonInfo(string initialDirectory)
+    public static GlobalJsonInfo GetGlobalJsonInfo(
+        string initialDirectory,
+        bool parseContents)
     {
         string? directory = initialDirectory;
         while (!string.IsNullOrEmpty(directory))
@@ -25,10 +31,22 @@ public static class GlobalJsonModifier
             string globalJsonPath = Path.Combine(directory, "global.json");
             if (File.Exists(globalJsonPath))
             {
-                using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
-                var contents = JsonSerializer.Deserialize(
-                    stream,
-                    GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                GlobalJsonContents? contents = null;
+                if (parseContents)
+                {
+                    try
+                    {
+                        using var stream = GlobalJsonFileHelper.OpenAsUtf8Stream(globalJsonPath);
+                        contents = JsonSerializer.Deserialize(
+                            stream,
+                            GlobalJsonContentsJsonContext.Default.GlobalJsonContents);
+                    }
+                    catch (JsonException ex)
+                    {
+                        throw CreateMalformedGlobalJsonException(globalJsonPath, ex);
+                    }
+                }
+
                 return new GlobalJsonInfo
                 {
                     GlobalJsonPath = globalJsonPath,
@@ -46,6 +64,18 @@ public static class GlobalJsonModifier
         }
 
         return new GlobalJsonInfo();
+    }
+
+    internal static DotnetInstallException CreateMalformedGlobalJsonException(string globalJsonPath, JsonException ex)
+    {
+        return new DotnetInstallException(
+            DotnetInstallErrorCode.MalformedGlobalJson,
+            string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.MalformedGlobalJson,
+                globalJsonPath,
+                TruncateParseFailureMessage(ex.Message)),
+            ex);
     }
 
     /// <summary>
@@ -170,5 +200,12 @@ public static class GlobalJsonModifier
         bytes.AsSpan(tokenStart + tokenLength).CopyTo(result.AsSpan(tokenStart + replacementBytes.Length));
 
         return System.Text.Encoding.UTF8.GetString(result);
+    }
+
+    private static string TruncateParseFailureMessage(string message)
+    {
+        return message.Length <= MaxParseFailureMessageLength
+            ? message
+            : message[..MaxParseFailureMessageLength] + "...";
     }
 }

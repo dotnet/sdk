@@ -314,7 +314,7 @@ internal class InitWorkflows
             "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",
             brand));
 
-        var globalJsonInfo = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var globalJsonInfo = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory, parseContents: false);
         if (globalJsonInfo.GlobalJsonPath is not null)
         {
             SpectreAnsiConsole.MarkupLine(string.Format(
