@@ -40,10 +40,10 @@
                                     Trim="true" />
   </ItemGroup>
 
-  <!-- The package's TFM-specific _._ prevents NuGet from importing its root buildTransitive target.
+  <!-- The package's current-TFM _._ prevents NuGet from importing its minimum-TFM buildTransitive target.
        Remove this workaround when https://github.com/dotnet/msbuild/issues/14467 is fixed. -->
-  <Import Project="$(PkgMicrosoft_Build_Framework)\buildTransitive\Microsoft.Build.Framework.targets"
-          Condition="Exists('$(PkgMicrosoft_Build_Framework)\buildTransitive\Microsoft.Build.Framework.targets')" />
+  <Import Project="$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets"
+          Condition="Exists('$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets')" />
 
   <!-- 'dotnet sdk check' command dependency. -->
   <ItemGroup>

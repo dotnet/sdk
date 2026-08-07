@@ -303,6 +303,131 @@ End Class
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public async Task CA1309FixAllNestedEqualsCSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.[|Equals|](b.[|Equals|](c).ToString())) { }
+    }
+}
+",
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal)) { }
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309FixAllNestedEqualsBasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.[|Equals|](b.[|Equals|](c).ToString()) Then
+        End If
+    End Sub
+End Class
+",
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal) Then
+        End If
+    End Sub
+End Class
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309FixAllNestedArgumentCSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|])) { }
+    }
+}
+",
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase)) { }
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309FixAllNestedArgumentBasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|]) Then
+        End If
+    End Sub
+End Class
+",
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase) Then
+        End If
+    End Sub
+End Class
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309NoFixOfferedForUnfixableOverloadCSharpAsync()
+        {
+            // No added argument turns Compare(string, string, bool) into an acceptable overload, so
+            // the diagnostic is reported without a fix rather than with one that changes nothing.
+            string source = @"
+class C
+{
+    void M(string a, string b)
+    {
+        if (string.[|Compare|](a, b, true) == 0) { }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        public async Task CA1309NoFixOfferedForUnfixableOverloadBasicAsync()
+        {
+            string source = @"
+Class C
+    Sub M(a As String, b As String)
+        If String.[|Compare|](a, b, True) = 0 Then
+        End If
+    End Sub
+End Class
+";
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
+        }
+
         #endregion
     }
 }

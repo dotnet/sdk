@@ -224,5 +224,38 @@ Public class A
     End Operator
 end class");
         }
+
+        [TestMethod]
+        public async Task VisualBasicTestOverloads1Async()
+        {
+            await VerifyVB.VerifyCodeFixAsync(
+                @"
+Public class A
+    public shared operator {|BC33033:[|=|]|}(a1 as A, a2 as A) as boolean   ' error BC33033: Matching '<>' operator is required
+        return false
+    end operator
+
+    public shared operator {|BC33033:[|=|]|}(a1 as A, a2 as boolean) as boolean   ' error BC33033: Matching '<>' operator is required
+        return false
+    end operator
+end class", @"
+Public class A
+    public shared operator =(a1 as A, a2 as A) as boolean   ' error BC33033: Matching '<>' operator is required
+        return false
+    end operator
+
+    Public Shared Operator <>(a1 As A, a2 As A) As Boolean
+        Return Not a1 = a2
+    End Operator
+
+    public shared operator =(a1 as A, a2 as boolean) as boolean   ' error BC33033: Matching '<>' operator is required
+        return false
+    end operator
+
+    Public Shared Operator <>(a1 As A, a2 As Boolean) As Boolean
+        Return Not a1 = a2
+    End Operator
+end class");
+        }
     }
 }

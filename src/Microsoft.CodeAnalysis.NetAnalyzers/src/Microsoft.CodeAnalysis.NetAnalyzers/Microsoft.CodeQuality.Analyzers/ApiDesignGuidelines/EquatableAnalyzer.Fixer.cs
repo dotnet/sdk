@@ -12,6 +12,7 @@ using System.Threading;
 using Analyzer.Utilities.Extensions;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.CodeActions;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -25,11 +26,13 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
         public override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(EquatableAnalyzer.ImplementIEquatableRuleId, EquatableAnalyzer.OverrideObjectEqualsRuleId);
 
+        // The two actions generate different members, so the fix-all pass has to be told which one the user
+        // picked - DocumentBasedFixAllProvider hands over every diagnostic it collected without filtering by
+        // the equivalence key.
         public override FixAllProvider GetFixAllProvider()
-        {
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
-        }
+            => SyntaxEditorFixAllProvider.Create<string?>(
+                static fixAllContext => fixAllContext.CodeActionEquivalenceKey,
+                ApplyFixAsync);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
@@ -56,15 +59,20 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 return;
             }
 
+            Document document = context.Document;
+            ImmutableArray<Diagnostic> diagnostics = context.Diagnostics;
+
             if (type.TypeKind == TypeKind.Struct && !TypeImplementsEquatable(type, equatableType))
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.ImplementEquatable;
                 context.RegisterCodeFix(CodeAction.Create(
                     title,
-                    async ct =>
-                        await ImplementEquatableInStructAsync(context.Document, declaration, type, model.Compilation,
-                            equatableType, ct).ConfigureAwait(false),
-                    equivalenceKey: title), context.Diagnostics);
+                    cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
+                        document,
+                        diagnostics,
+                        (doc, diagnostic, editor, token) => ApplyFixAsync(doc, diagnostic, editor, title, token),
+                        cancellationToken),
+                    equivalenceKey: title), diagnostics);
             }
 
             if (!type.OverridesEquals())
@@ -72,10 +80,50 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 string title = MicrosoftCodeQualityAnalyzersResources.OverrideEqualsOnImplementingIEquatableCodeActionTitle;
                 context.RegisterCodeFix(CodeAction.Create(
                     title,
-                    async ct =>
-                        await OverrideObjectEqualsAsync(context.Document, declaration, type, equatableType,
-                            ct).ConfigureAwait(false),
-                    equivalenceKey: title), context.Diagnostics);
+                    cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
+                        document,
+                        diagnostics,
+                        (doc, diagnostic, editor, token) => ApplyFixAsync(doc, diagnostic, editor, title, token),
+                        cancellationToken),
+                    equivalenceKey: title), diagnostics);
+            }
+        }
+
+        private static async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor,
+            string? equivalenceKey, CancellationToken cancellationToken)
+        {
+            SyntaxNode? declaration = editor.Generator.GetDeclaration(editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan));
+            if (declaration == null)
+            {
+                return;
+            }
+
+            SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            if (model.GetDeclaredSymbol(declaration, cancellationToken) is not INamedTypeSymbol type ||
+                type.TypeKind != TypeKind.Class && type.TypeKind != TypeKind.Struct)
+            {
+                return;
+            }
+
+            INamedTypeSymbol? equatableType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIEquatable1);
+            if (equatableType == null)
+            {
+                return;
+            }
+
+            if (equivalenceKey == MicrosoftCodeQualityAnalyzersResources.ImplementEquatable)
+            {
+                if (type.TypeKind == TypeKind.Struct && !TypeImplementsEquatable(type, equatableType))
+                {
+                    ImplementEquatableInStruct(declaration, type, model.Compilation, equatableType, editor);
+                }
+            }
+            else if (equivalenceKey == MicrosoftCodeQualityAnalyzersResources.OverrideEqualsOnImplementingIEquatableCodeActionTitle)
+            {
+                if (!type.OverridesEquals())
+                {
+                    OverrideObjectEquals(declaration, type, equatableType, editor);
+                }
             }
         }
 
@@ -88,11 +136,10 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
             return implementation != null;
         }
 
-        private static async Task<Document> ImplementEquatableInStructAsync(Document document, SyntaxNode declaration,
+        private static void ImplementEquatableInStruct(SyntaxNode declaration,
             INamedTypeSymbol typeSymbol, Compilation compilation, INamedTypeSymbol equatableType,
-            CancellationToken cancellationToken)
+            SyntaxEditor editor)
         {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;
 
             var equalsMethod = generator.MethodDeclaration(
@@ -109,14 +156,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             INamedTypeSymbol constructedType = equatableType.Construct(typeSymbol);
             editor.AddInterfaceType(declaration, generator.TypeExpression(constructedType));
-
-            return editor.GetChangedDocument();
         }
 
-        private static async Task<Document> OverrideObjectEqualsAsync(Document document, SyntaxNode declaration,
-            INamedTypeSymbol typeSymbol, INamedTypeSymbol equatableType, CancellationToken cancellationToken)
+        private static void OverrideObjectEquals(SyntaxNode declaration,
+            INamedTypeSymbol typeSymbol, INamedTypeSymbol equatableType, SyntaxEditor editor)
         {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             var generator = editor.Generator;
 
             var argumentName = generator.IdentifierName("obj");
@@ -149,8 +193,6 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                 statements: new[] { returnStatement });
 
             editor.AddMember(declaration, equalsMethod);
-
-            return editor.GetChangedDocument();
         }
 
         private static bool HasExplicitEqualsImplementation(INamedTypeSymbol typeSymbol, INamedTypeSymbol equatableType)

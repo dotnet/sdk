@@ -15,6 +15,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 [TestClass]
 public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 {
+    /// <summary>Verifies incremental build-level selection as source and implicit build inputs change.</summary>
     [TestMethod]
     public void UpToDate()
     {

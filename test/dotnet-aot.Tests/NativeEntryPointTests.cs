@@ -378,16 +378,16 @@ public partial class NativeEntryPointTests
         });
     }
 
+    /// <summary>Verifies that a build-enabled shorthand file invocation falls back to the managed CLI.</summary>
     [TestMethod]
-    public void ExecuteCore_AotEnabled_FileBasedApp_FallsBackToManaged()
+    public void ExecuteCore_AotEnabled_BuildEnabledFileBasedApp_FallsBackToManaged()
     {
         WithEnvRestore(() =>
         {
             Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
 
-            // `dotnet app.cs` must not be served by the AOT path (which would print root usage);
-            // it has to fall back to the managed CLI's run pipeline. With a nonexistent SDK dir the
-            // fallback can't be hosted, so it reports the missing dotnet.dll - proving we reached it.
+            // Build-enabled `dotnet app.cs` remains outside the launch-only AOT contract and falls
+            // back to the managed run pipeline. The nonexistent SDK proves fallback was reached.
             var csFile = Path.Combine(Path.GetTempPath(), $"aot-entry-filebased-{Guid.NewGuid():N}.cs");
             File.WriteAllText(csFile, "Console.WriteLine(\"hi\");");
 
@@ -400,7 +400,7 @@ public partial class NativeEntryPointTests
                 int exitCode = NativeEntryPoint.ExecuteCore(
                     hostPath: "test-host",
                     dotnetRoot: "test-root",
-                    sdkDir: "nonexistent-sdk-dir",
+                    sdkDir: "",
                     hostfxrPath: "",
                     args: [csFile]);
 
@@ -411,6 +411,98 @@ public partial class NativeEntryPointTests
             {
                 Console.SetError(originalErr);
                 File.Delete(csFile);
+            }
+        });
+    }
+
+    /// <summary>Verifies that external command resolution takes precedence over shorthand file execution.</summary>
+    [TestMethod]
+    public void ExecuteCore_AotEnabled_ExternalCommandTakesPrecedenceOverFileBasedApp()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+            string commandToken = $"aot-precedence-{Guid.NewGuid():N}.cs";
+            string sourcePath = Path.Combine(Environment.CurrentDirectory, commandToken);
+            string toolDirectory = Path.Combine(Path.GetTempPath(), $"aot-precedence-tool-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(toolDirectory);
+            File.WriteAllText(sourcePath, "Console.WriteLine(42);");
+            string originalPath = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+
+            try
+            {
+                const int expectedExitCode = 42;
+                if (OperatingSystem.IsWindows())
+                {
+                    File.WriteAllText(
+                        Path.Combine(toolDirectory, $"dotnet-{commandToken}.cmd"),
+                        $"@echo off{Environment.NewLine}exit /b {expectedExitCode}{Environment.NewLine}");
+                }
+                else
+                {
+                    string toolPath = Path.Combine(toolDirectory, $"dotnet-{commandToken}");
+                    File.WriteAllText(toolPath, $"#!/bin/sh{Environment.NewLine}exit {expectedExitCode}{Environment.NewLine}");
+                    File.SetUnixFileMode(toolPath,
+                        UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute |
+                        UnixFileMode.GroupRead | UnixFileMode.GroupExecute |
+                        UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+                }
+
+                Environment.SetEnvironmentVariable("PATH", toolDirectory + Path.PathSeparator + originalPath);
+                int exitCode = NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "",
+                    hostfxrPath: "",
+                    args: [commandToken, "--no-build", "--no-launch-profile"]);
+
+                Assert.AreEqual(expectedExitCode, exitCode);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable("PATH", originalPath);
+                File.Delete(sourcePath);
+                Directory.Delete(toolDirectory, recursive: true);
+            }
+        });
+    }
+
+    /// <summary>Verifies that a committed shorthand Executable profile launch failure is terminal.</summary>
+    [TestMethod]
+    public void ExecuteCore_AotEnabled_ShorthandExecutableProfileFailureIsTerminal()
+    {
+        WithEnvRestore(() =>
+        {
+            Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
+            string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-profile-failure-{Guid.NewGuid():N}");
+            Directory.CreateDirectory(testDirectory);
+            string sourcePath = Path.Combine(testDirectory, "Program.cs");
+            File.WriteAllText(sourcePath, "Console.WriteLine(42);");
+            File.WriteAllText(Path.Combine(testDirectory, "Program.run.json"), """
+                {
+                  "profiles": {
+                    "MissingExecutable": {
+                      "commandName": "Executable",
+                      "executablePath": "aot-profile-command-that-does-not-exist"
+                    }
+                  }
+                }
+                """);
+
+            try
+            {
+                int exitCode = NativeEntryPoint.ExecuteCore(
+                    hostPath: "test-host",
+                    dotnetRoot: "test-root",
+                    sdkDir: "",
+                    hostfxrPath: "",
+                    args: [sourcePath, "--no-build", "--launch-profile", "MissingExecutable"]);
+
+                Assert.AreEqual(1, exitCode);
+            }
+            finally
+            {
+                Directory.Delete(testDirectory, recursive: true);
             }
         });
     }
