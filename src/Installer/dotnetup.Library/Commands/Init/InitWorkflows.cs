@@ -57,14 +57,18 @@ internal class InitWorkflows
 
         ShowBanner();
 
+        DotnetupConfigData? previousConfig = DotnetupConfig.Read();
+
         // Resolve the recommended setup. This is side-effect-free: it performs no version
         // resolution, writes no output, and does not throw on an unresolvable channel, so simply
         // viewing the form or choosing to exit never triggers an install or a download. Dry-run
         // ignores global.json so the preview reflects a normal directory.
         WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughPlan(
-            command, requests, _dotnetEnvironment, ignoreGlobalJson: command.DryRun);
-
-        DotnetAccessMode? previousAccessMode = DotnetupConfig.ReadAccessMode();
+            command,
+            requests,
+            _dotnetEnvironment,
+            configuredAccessMode: previousConfig?.AccessMode,
+            ignoreGlobalJson: command.DryRun);
 
         // Show the interactive form (or, non-interactively, take the recommended defaults) and read
         // back the user's raw choices without resolving any install requests yet.
@@ -81,7 +85,7 @@ internal class InitWorkflows
         }
 
         WalkthroughSelection selection = BuildSelection(command, requests, plan, outcome);
-        return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousAccessMode);
+        return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousConfig);
     }
 
     /// <summary>
@@ -140,11 +144,24 @@ internal class InitWorkflows
         }
         else
         {
-            effectiveRequests = InitWorkflowDefaults.GenerateSdkInstallRequests(command, outcome.Channel);
+            effectiveRequests = InitWorkflowDefaults.GenerateInstallRequests(
+                command,
+                BuildChangedChannelSpecs(requests, outcome.Channel));
         }
 
-        List<MigrationWorkflow.MigrationSelection> migrations = outcome.Migrate ? plan.Migrations : [];
+        List<MigrationWorkflow.MigrationSelection> migrations = outcome.Migrate
+            ? MigrationWorkflow.FilterMigrationSelections(plan.Migrations, effectiveRequests)
+            : [];
         return new WalkthroughSelection(effectiveRequests, outcome.AccessMode, migrations);
+    }
+
+    internal static MinimalInstallSpec[] BuildChangedChannelSpecs(
+        List<ResolvedInstallRequest>? requests,
+        string? channel)
+    {
+        return requests is { Count: > 0 }
+            ? [.. requests.Select(request => new MinimalInstallSpec(request.Request.Component, channel))]
+            : [new MinimalInstallSpec(InstallComponent.SDK, channel)];
     }
 
     /// <summary>
@@ -161,8 +178,11 @@ internal class InitWorkflows
         string channelText = outcome.SkipInstall
             ? "none (skip install)"
             : outcome.Channel ?? plan.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
+        List<MigrationWorkflow.MigrationSelection> migrations = MigrationWorkflow.FilterMigrationSelections(
+            plan.Migrations,
+            BuildSelectedInstallSpecs(plan, outcome));
         string migrateText = outcome.Migrate
-            ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", plan.Migrations.Count)
+            ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", migrations.Count)
             : "No";
 
         PrintPreviewLine("SDK channel", channelText, accent);
@@ -181,6 +201,18 @@ internal class InitWorkflows
             value.EscapeMarkup()));
     }
 
+    private static MinimalInstallSpec[] BuildSelectedInstallSpecs(WalkthroughPlan plan, FormOutcome outcome)
+    {
+        if (outcome.SkipInstall)
+        {
+            return [];
+        }
+
+        return outcome.ChannelChanged
+            ? [.. plan.DefaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, outcome.Channel))]
+            : [.. plan.DefaultInstallSpecs];
+    }
+
     /// <summary>
     /// Installs the selected requests (with any migrations), persists the configuration, and
     /// applies the environment changes for the chosen mode.
@@ -189,7 +221,7 @@ internal class InitWorkflows
         InstallCommand command,
         WalkthroughSelection selection,
         DotnetInstallRoot defaultInstallRoot,
-        DotnetAccessMode? previousAccessMode)
+        DotnetupConfigData? previousConfig)
     {
         List<ResolvedInstallRequest> effectiveRequests = selection.Requests;
         DotnetAccessMode accessMode = selection.AccessMode;
@@ -231,7 +263,7 @@ internal class InitWorkflows
 
         // Save config and apply configuration(s) regardless of partial install failure, so the
         // user's choice persists and the successful installs are usable (PATH / shell profile).
-        const bool dotnetupOnPath = true;
+        bool dotnetupOnPath = InitWorkflowDefaults.GetDefaultDotnetupOnPath(previousConfig);
         SaveConfig(accessMode, dotnetupOnPath);
 
         ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
@@ -247,7 +279,7 @@ internal class InitWorkflows
         // One or more installs failed; surface the error after configuration was applied.
         installFailure?.Throw();
 
-        DisplaySetupResult(accessMode, previousAccessMode);
+        DisplaySetupResult(accessMode, previousConfig?.AccessMode);
 
         return effectiveRequests;
     }
@@ -325,7 +357,6 @@ internal class InitWorkflows
     /// <returns>A list of deduplicated channel selections to migrate, or an empty list if the user declines or no candidates remain.</returns>
     internal static List<MigrationWorkflow.MigrationSelection> PromptInstallsToMigrateIfDesired(
         IDotnetEnvironmentManager dotnetEnvironment,
-        DotnetAccessMode accessMode,
         DotnetInstallRoot installRoot,
         string? manifestPath = null,
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null,
@@ -336,10 +367,13 @@ internal class InitWorkflows
             return [];
         }
 
-        // ResolveDefaultMigrations already returns an empty list for modes that do not migrate
-        // system installs, so no separate ShouldPromptToConvertSystemInstalls guard is needed here.
         var migrationSelections = InitWorkflowDefaults.ResolveDefaultMigrations(
-            dotnetEnvironment, accessMode, installRoot, manifestPath, existingRequests);
+            dotnetEnvironment, installRoot, manifestPath);
+        if (existingRequests is not null)
+        {
+            migrationSelections = MigrationWorkflow.FilterMigrationSelections(migrationSelections, existingRequests);
+        }
+
         if (migrationSelections.Count == 0)
         {
             return [];

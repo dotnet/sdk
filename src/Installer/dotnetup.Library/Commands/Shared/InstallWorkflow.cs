@@ -96,11 +96,11 @@ internal class InstallWorkflow
         var toMigrate = MigrationWorkflow.GetMigrationCandidates(
             _command.DotnetEnvironment,
             _command.MigrationComponents);
-        var migrationSelections = MigrationWorkflow.BuildMigrationSelections(
+        var migrationCandidates = MigrationWorkflow.BuildMigrationSelections(
             toMigrate,
             installRoot,
-            _command.ManifestPath,
-            requests);
+            _command.ManifestPath);
+        var migrationSelections = MigrationWorkflow.FilterMigrationSelections(migrationCandidates, requests);
 
         if (migrationSelections.Count == 0)
         {

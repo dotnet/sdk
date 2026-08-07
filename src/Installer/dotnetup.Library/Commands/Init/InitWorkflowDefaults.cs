@@ -27,10 +27,11 @@ internal static class InitWorkflowDefaults
         InstallCommand command,
         List<ResolvedInstallRequest>? preResolvedRequests,
         IDotnetEnvironmentManager dotnetEnvironment,
+        DotnetAccessMode? configuredAccessMode = null,
         bool ignoreGlobalJson = false)
     {
         IEnvShellProvider? shellProvider = command.ShellProvider ?? ShellDetection.GetCurrentShellProvider();
-        DotnetAccessMode accessMode = GetDefaultAccessMode(shellProvider);
+        DotnetAccessMode accessMode = GetDefaultAccessMode(shellProvider, configuredAccessMode);
         // Dry-run previews the form as it would look in an ordinary directory, so global.json (which
         // could pin a local install path or channel) is ignored.
         var globalJson = ignoreGlobalJson
@@ -44,13 +45,17 @@ internal static class InitWorkflowDefaults
             var first = preResolvedRequests[0];
             DotnetInstallRoot resolvedRoot = first.Request.InstallRoot;
             var resolvedMigrations = ResolveDefaultMigrations(
-                dotnetEnvironment, accessMode, resolvedRoot, first.Request.Options.ManifestPath, preResolvedRequests);
+                dotnetEnvironment, resolvedRoot, first.Request.Options.ManifestPath);
+            var defaultInstallSpecs = preResolvedRequests
+                .Select(request => new MinimalInstallSpec(request.Request.Component, request.Request.Channel.Name))
+                .ToList();
 
             return new WalkthroughPlan(
                 resolvedRoot,
                 accessMode,
                 resolvedMigrations,
                 new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath),
+                defaultInstallSpecs,
                 shellProvider,
                 GetInstallRootGlobalJsonPath(pathResolution, globalJson, resolvedRoot));
         }
@@ -59,14 +64,15 @@ internal static class InitWorkflowDefaults
             pathResolution.ResolvedInstallPath,
             InstallerUtilities.GetDefaultInstallArchitecture());
 
-        var migrations = ResolveDefaultMigrations(
-            dotnetEnvironment, accessMode, installRoot, command.ManifestPath, existingRequests: null);
+        var migrations = ResolveDefaultMigrations(dotnetEnvironment, installRoot, command.ManifestPath);
+        DefaultChannelDisplay channelDisplay = ResolveChannelDisplay(globalJson);
 
         return new WalkthroughPlan(
             installRoot,
             accessMode,
             migrations,
-            ResolveChannelDisplay(globalJson),
+            channelDisplay,
+            [new MinimalInstallSpec(InstallComponent.SDK, channelDisplay.ChannelLabel)],
             shellProvider,
             GetInstallRootGlobalJsonPath(pathResolution, globalJson, installRoot));
     }
@@ -99,19 +105,35 @@ internal static class InitWorkflowDefaults
     /// </summary>
     public static List<ResolvedInstallRequest> GenerateSdkInstallRequests(InstallCommand command, string? channel)
     {
-        var workflow = new InstallWorkflow(command);
-        return workflow.GenerateInstallRequests(
-            [new MinimalInstallSpec(InstallComponent.SDK, channel)]);
+        return GenerateInstallRequests(command, [new MinimalInstallSpec(InstallComponent.SDK, channel)]);
     }
 
     /// <summary>
-    /// Returns the recommended access mode without prompting. On Windows this is everywhere mode;
-    /// otherwise it is terminal-profile mode when a supported shell is available, and isolation mode
-    /// when it is not. This is the value shown in the summary and used by the "proceed with
-    /// defaults" branch.
+    /// Generates resolved install requests for the supplied component specifications.
     /// </summary>
-    public static DotnetAccessMode GetDefaultAccessMode(IEnvShellProvider? shellProvider = null)
+    public static List<ResolvedInstallRequest> GenerateInstallRequests(
+        InstallCommand command,
+        MinimalInstallSpec[] componentSpecs)
     {
+        var workflow = new InstallWorkflow(command);
+        return workflow.GenerateInstallRequests(componentSpecs);
+    }
+
+    /// <summary>
+    /// Returns the access mode to select by default without prompting. A configured, supported mode
+    /// takes precedence. Otherwise, Windows defaults to everywhere mode; other platforms use
+    /// terminal-profile mode when a supported shell is available and isolation mode when it is not.
+    /// </summary>
+    public static DotnetAccessMode GetDefaultAccessMode(
+        IEnvShellProvider? shellProvider = null,
+        DotnetAccessMode? configuredAccessMode = null)
+    {
+        if (configuredAccessMode is DotnetAccessMode configured &&
+            DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(configured))
+        {
+            return configured;
+        }
+
         // Default to Everywhere mode on Windows
         if (OperatingSystem.IsWindows())
         {
@@ -127,23 +149,23 @@ internal static class InitWorkflowDefaults
     }
 
     /// <summary>
-    /// Builds the deduplicated migration candidates for the recommended mode without prompting.
-    /// Returns an empty list when the mode does not migrate system installs.
+    /// Preserves the configured dotnetup PATH setting when init is rerun, defaulting on for first use.
+    /// </summary>
+    public static bool GetDefaultDotnetupOnPath(DotnetupConfigData? configured) =>
+        configured?.DotnetupOnPath ?? true;
+
+    /// <summary>
+    /// Builds the deduplicated migration candidates without prompting or considering pending install
+    /// requests. Migration is independent of how dotnetup's installs are exposed through PATH or the
+    /// shell environment.
     /// </summary>
     public static List<MigrationWorkflow.MigrationSelection> ResolveDefaultMigrations(
         IDotnetEnvironmentManager dotnetEnvironment,
-        DotnetAccessMode accessMode,
         DotnetInstallRoot installRoot,
-        string? manifestPath,
-        IReadOnlyCollection<ResolvedInstallRequest>? existingRequests)
+        string? manifestPath)
     {
-        if (!DotnetAccessModePolicy.ShouldPromptToConvertSystemInstalls(accessMode))
-        {
-            return [];
-        }
-
         var systemInstalls = MigrationWorkflow.GetMigrationCandidates(dotnetEnvironment);
-        return MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, manifestPath, existingRequests);
+        return MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, manifestPath);
     }
 
     /// <summary>

@@ -35,7 +35,8 @@ internal sealed class InitFormModel
     private readonly IReadOnlyList<DotnetAccessMode> _accessModes;
 
     private readonly FormField? _migrateField;
-    private readonly IReadOnlyList<MigrationWorkflow.MigrationSelection> _migrations;
+    private readonly IReadOnlyList<MigrationWorkflow.MigrationSelection> _migrationCandidates;
+    private readonly IReadOnlyList<MinimalInstallSpec> _defaultInstallSpecs;
 
     private readonly IReadOnlyList<string> _profilePaths;
 
@@ -48,7 +49,8 @@ internal sealed class InitFormModel
         FormField accessModeField,
         IReadOnlyList<DotnetAccessMode> accessModes,
         FormField? migrateField,
-        IReadOnlyList<MigrationWorkflow.MigrationSelection> migrations,
+        IReadOnlyList<MigrationWorkflow.MigrationSelection> migrationCandidates,
+        IReadOnlyList<MinimalInstallSpec> defaultInstallSpecs,
         string installPath,
         IReadOnlyList<string> profilePaths)
     {
@@ -60,7 +62,8 @@ internal sealed class InitFormModel
         _accessModeField = accessModeField;
         _accessModes = accessModes;
         _migrateField = migrateField;
-        _migrations = migrations;
+        _migrationCandidates = migrationCandidates;
+        _defaultInstallSpecs = defaultInstallSpecs;
         InstallPath = installPath;
         _profilePaths = profilePaths;
     }
@@ -96,7 +99,8 @@ internal sealed class InitFormModel
     public DotnetAccessMode SelectedAccessMode() => _accessModes[_accessModeField.SelectedIndex];
 
     /// <summary>Whether the user chose to migrate existing system installs.</summary>
-    public bool MigrateSelected() => _migrateField is not null && _migrateField.SelectedIndex == YesIndex;
+    public bool MigrateSelected() =>
+        _migrateField is { IsVisible: true } && _migrateField.SelectedIndex == YesIndex;
 
     /// <summary>Where dotnetup installs .NET; shown once at the top of the form.</summary>
     public string InstallPath { get; }
@@ -180,13 +184,20 @@ internal sealed class InitFormModel
 
     private List<DetailLine> BuildMigrationLines()
     {
-        return _migrations
+        return CurrentMigrations()
             .GroupBy(m => m.Component)
             .OrderBy(g => g.Key)
             .Select(g => new DetailLine(
                 FormattableString.Invariant($"{g.Key.GetDisplayName()}s:"),
                 FormatVersions([.. g.Select(m => m.ExampleVersion.ToString())])))
             .ToList();
+    }
+
+    private List<MigrationWorkflow.MigrationSelection> CurrentMigrations()
+    {
+        return MigrationWorkflow.FilterMigrationSelections(
+            _migrationCandidates,
+            GetCurrentInstallSpecs(_channelField, _channelTokens, _defaultInstallSpecs));
     }
 
     // Joins the first few versions and collapses the rest into "and N more".
@@ -215,7 +226,16 @@ internal sealed class InitFormModel
         (FormField accessModeField, IReadOnlyList<DotnetAccessMode> accessModes) =
             BuildAccessModeField(plan.AccessMode);
 
-        FormField? migrateField = plan.Migrations.Count > 0 ? BuildMigrateField() : null;
+        FormField? migrateField = null;
+        if (plan.Migrations.Count > 0)
+        {
+            migrateField = BuildMigrateField(() =>
+            {
+                return MigrationWorkflow.FilterMigrationSelections(
+                    plan.Migrations,
+                    GetCurrentInstallSpecs(channelField, channelTokens, plan.DefaultInstallSpecs)).Count > 0;
+            });
+        }
 
         var fields = new List<FormField> { channelField, accessModeField };
         if (migrateField is not null)
@@ -233,6 +253,7 @@ internal sealed class InitFormModel
             accessModes,
             migrateField,
             plan.Migrations,
+            plan.DefaultInstallSpecs,
             plan.InstallRoot.Path,
             shellProvider?.GetProfilePaths() ?? []);
     }
@@ -244,29 +265,32 @@ internal sealed class InitFormModel
         var tokens = new List<string?>();
         int globalJsonIndex = -1;
 
-        // A channel implied by a nearby global.json is the recommended default, listed first.
-        bool globalJsonImplied = channelDisplay.GlobalJsonPath is not null && channelDisplay.ChannelLabel is not null;
-        if (globalJsonImplied)
+        // A channel supplied by the pending install request is the recommended default, listed
+        // first. It may have come from global.json or directly from the command line.
+        if (channelDisplay.ChannelLabel is not null)
         {
-            globalJsonIndex = 0;
-            choices.Add(new FieldChoice(channelDisplay.ChannelLabel!, "From your global.json"));
+            if (channelDisplay.GlobalJsonPath is not null)
+            {
+                globalJsonIndex = 0;
+            }
+
+            string helperText = channelDisplay.GlobalJsonPath is not null
+                ? "From your global.json"
+                : "Requested by this install command";
+            choices.Add(new FieldChoice(channelDisplay.ChannelLabel, helperText));
             tokens.Add(channelDisplay.ChannelLabel);
         }
 
-        choices.Add(new FieldChoice(ChannelVersionResolver.LatestChannel, "Latest stable release"));
-        tokens.Add(ChannelVersionResolver.LatestChannel);
-        choices.Add(new FieldChoice(ChannelVersionResolver.LtsChannel, "Long Term Support"));
-        tokens.Add(ChannelVersionResolver.LtsChannel);
-        choices.Add(new FieldChoice(ChannelVersionResolver.PreviewChannel, "Latest preview"));
-        tokens.Add(ChannelVersionResolver.PreviewChannel);
-        choices.Add(new FieldChoice(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build"));
-        tokens.Add(ChannelVersionResolver.DailyChannel);
+        AddChannelChoice(ChannelVersionResolver.LatestChannel, "Latest stable release");
+        AddChannelChoice(ChannelVersionResolver.LtsChannel, "Long Term Support");
+        AddChannelChoice(ChannelVersionResolver.PreviewChannel, "Latest preview");
+        AddChannelChoice(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build");
         choices.Add(new FieldChoice(InitWorkflows.NoneChannel, "Pick what to install later"));
         tokens.Add(InitWorkflows.NoneChannel);
         choices.Add(new FieldChoice("<other>", "Type your own, e.g. 10.0.1xx", IsCustomInput: true));
         tokens.Add(null);
 
-        // The recommended default is listed first (the global.json channel when present, else "latest").
+        // The recommended default is listed first (the pending request when present, else "latest").
         int defaultIndex = 0;
 
         var field = new FormField(
@@ -277,6 +301,17 @@ internal sealed class InitFormModel
             inlineHelp: true,
             summaryShowsDescription: true);
         return (field, tokens, globalJsonIndex);
+
+        void AddChannelChoice(string channel, string helperText)
+        {
+            if (string.Equals(channelDisplay.ChannelLabel, channel, StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            choices.Add(new FieldChoice(channel, helperText));
+            tokens.Add(channel);
+        }
     }
 
     private static (FormField Field, IReadOnlyList<DotnetAccessMode> Modes) BuildAccessModeField(DotnetAccessMode recommended)
@@ -309,7 +344,7 @@ internal sealed class InitFormModel
     // 'dotnetup env' vocabulary.
     private static string AccessModeTitle(DotnetAccessMode mode) => mode.ToString();
 
-    private static FormField BuildMigrateField()
+    private static FormField BuildMigrateField(Func<bool> isVisible)
     {
         var choices = new List<FieldChoice>
         {
@@ -320,6 +355,36 @@ internal sealed class InitFormModel
         return new FormField(
             "Migrate system installs",
             choices,
-            defaultIndex: YesIndex);
+            defaultIndex: YesIndex,
+            isVisible: isVisible);
+    }
+
+    private static string? GetSelectedChannel(
+        FormField channelField,
+        IReadOnlyList<string?> channelTokens)
+    {
+        if (channelField.Selected.IsCustomInput)
+        {
+            return channelField.CustomValue;
+        }
+
+        string? token = channelTokens[channelField.SelectedIndex];
+        return string.Equals(token, InitWorkflows.NoneChannel, StringComparison.Ordinal) ? null : token;
+    }
+
+    private static IReadOnlyCollection<MinimalInstallSpec> GetCurrentInstallSpecs(
+        FormField channelField,
+        IReadOnlyList<string?> channelTokens,
+        IReadOnlyList<MinimalInstallSpec> defaultInstallSpecs)
+    {
+        string? selectedChannel = GetSelectedChannel(channelField, channelTokens);
+        if (selectedChannel is null)
+        {
+            return [];
+        }
+
+        return channelField.IsChangedFromDefault
+            ? [.. defaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, selectedChannel))]
+            : defaultInstallSpecs;
     }
 }
