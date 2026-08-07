@@ -67,7 +67,9 @@
 
     <!-- TFMs -->
     <SdkTargetFramework>$(NetCurrent)</SdkTargetFramework>
-    <VisualStudioServiceTargetFramework>net9.0</VisualStudioServiceTargetFramework>
+
+    <!-- TFM for projects that are deployed to run on .NET shipping with Visual Studio -->
+    <VisualStudioServiceTargetFramework>net10.0</VisualStudioServiceTargetFramework>
 
     <!-- NU1507 Disable multi-feed check as .NET uses multiple internal feeds intentionally -->
     <!-- NU5039 Disable NuGet is unable to find the readme file in the package. -->

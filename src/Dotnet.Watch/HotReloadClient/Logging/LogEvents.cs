@@ -77,6 +77,11 @@ internal static class LogEvents
     public static readonly LogEvent<string> RefreshServerRunningAt = Create<string>(LogLevel.Debug, "Refresh server running at {0}.");
     public static readonly LogEvent<None> ConnectedToRefreshServer = Create(LogLevel.Debug, "Connected to refresh server.");
     public static readonly LogEvent<string> ManifestFileNotFound = Create<string>(LogLevel.Debug, "Manifest file '{0}' not found.");
+    public static readonly LogEvent<(int, int)> WaitingForProcessToExitWithin = Create<(int, int)>(LogLevel.Debug, "Waiting for process {0} to exit within {1}s.");
+    public static readonly LogEvent<(int, int)> WaitingForProcessToExit = Create<(int, int)>(LogLevel.Debug, "Waiting for process {0} to exit ({1}).");
+    public static readonly LogEvent<(int, string)> FailedToKillProcess = Create<(int, string)>(LogLevel.Error, "Failed to kill process {0}: {1}.");
+    public static readonly LogEvent<(int, string)> TerminatingProcess = Create<(int, string)>(LogLevel.Debug, "Terminating process {0} ({1}).");
+    public static readonly LogEvent<(string, int, string)> FailedToSendSignalToProcess = Create<(string, int, string)>(LogLevel.Warning, "Failed to send {0} signal to process {1}: {2}");
     public static readonly LogEvent<string> ProjectSpecifiesCapabilities = Create<string>(LogLevel.Debug, "Project specifies capabilities: {0}.");
     public static readonly LogEvent<(Version, string)> UsingCapabilitiesBasedOnTargetFrameworkVersion = Create<(Version, string)>(LogLevel.Debug, "Using capabilities based on project target framework version: '{0}': {1}.");
     public static readonly LogEvent<None> StaticWebAssetManifestNotFound = Create(LogLevel.Warning, "Static web asset manifest not found.");

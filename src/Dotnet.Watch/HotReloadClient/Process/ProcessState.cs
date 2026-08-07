@@ -1,0 +1,251 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#nullable enable
+
+using System;
+using System.ComponentModel;
+using System.Diagnostics;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Threading;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
+
+namespace Microsoft.DotNet.HotReload;
+
+internal sealed class ProcessState(Process process, bool isUserApplication) : IDisposable
+{
+    public Process Process => process;
+    public bool IsUserApplication => isUserApplication;
+    public int ProcessId { get; private set; }
+    public bool HasExited { get; private set; }
+
+    public void Dispose()
+        => Process.Dispose();
+
+    public void Started(int processId)
+        => ProcessId = processId;
+
+    public void Exited()
+        => HasExited = true;
+
+    public async ValueTask TerminateProcessAsync(TimeSpan processCleanupTimeout, ILogger logger)
+    {
+        var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !isUserApplication;
+
+        TerminateProcess(logger, forceOnly);
+
+        if (forceOnly)
+        {
+            _ = await WaitForExitAsync(timeout: null, logger);
+            return;
+        }
+
+        // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
+        if (processCleanupTimeout.TotalMilliseconds == 0 ||
+            !await WaitForExitAsync(processCleanupTimeout, logger))
+        {
+            // Force termination if the process is still running after the timeout.
+            TerminateProcess(logger, force: true);
+
+            _ = await WaitForExitAsync(timeout: null, logger);
+        }
+    }
+
+    private async ValueTask<bool> WaitForExitAsync(TimeSpan? timeout, ILogger logger)
+    {
+        Task? reportingTask;
+
+        using var cancellationSource = new CancellationTokenSource();
+        if (timeout != null)
+        {
+            logger.Log(LogEvents.WaitingForProcessToExitWithin, ProcessId, (int)timeout.Value.TotalSeconds);
+            cancellationSource.CancelAfter(timeout.Value);
+            reportingTask = null;
+        }
+        else
+        {
+            // report progress if waiting without a timeout:
+            reportingTask = Task.Run(async () =>
+            {
+                try
+                {
+                    var i = 1;
+                    while (!cancellationSource.IsCancellationRequested)
+                    {
+                        logger.Log(LogEvents.WaitingForProcessToExit, ProcessId, i++);
+                        await Task.Delay(TimeSpan.FromSeconds(1), cancellationSource.Token);
+                    }
+                }
+                catch (OperationCanceledException)
+                {
+                }
+            });
+        }
+
+        try
+        {
+#if NET
+            await process.WaitForExitAsync(cancellationSource.Token);
+            return true;
+#else
+            return await WaitForExitNetFrameworkAsync(cancellationSource.Token);
+#endif
+        }
+        catch (OperationCanceledException)
+        {
+            return false;
+        }
+        finally
+        {
+            if (reportingTask != null)
+            {
+                cancellationSource.Cancel();
+                await reportingTask;
+            }
+        }
+    }
+
+#if !NET
+    /// <summary>
+    /// Returns true if the process has been verified to have exited and its output has been drained, false if an error occurred.
+    /// </summary>
+    private async ValueTask<bool> WaitForExitNetFrameworkAsync(CancellationToken cancellationToken)
+    {
+        if (!await WaitForExitAsync(cancellationToken))
+        {
+            return false;
+        }
+
+        // Parameterless WaitForExit drains asynchronous output and error streams after process has exited:
+        return await Task.Run(() =>
+        {
+            try
+            {
+                process.WaitForExit();
+                return true;
+            }
+            catch
+            {
+                return false;
+            }
+        });
+
+        async ValueTask<bool> WaitForExitAsync(CancellationToken cancellationToken)
+        {
+            var exitedSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            void OnExited(object? sender, EventArgs e)
+                => exitedSource.TrySetResult(true);
+
+            process.Exited += OnExited;
+            try
+            {
+                process.EnableRaisingEvents = true;
+
+                if (process.HasExited)
+                {
+                    return true;
+                }
+
+                using (cancellationToken.Register(() => exitedSource.TrySetCanceled()))
+                {
+                    await exitedSource.Task;
+                }
+
+                return true;
+            }
+            catch (Exception e) when (e is InvalidOperationException or Win32Exception)
+            {
+                return false;
+            }
+            finally
+            {
+                process.Exited -= OnExited;
+            }
+        }
+    }
+
+#endif
+
+    private void TerminateProcess(ILogger logger, bool force)
+    {
+        try
+        {
+            if (!HasExited && !process.HasExited)
+            {
+                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+                {
+                    TerminateWindowsProcess(logger, force);
+                }
+                else
+                {
+#if NET
+                    TerminateUnixProcess(logger, force);
+#else
+                    throw new PlatformNotSupportedException();
+#endif
+                }
+            }
+        }
+        catch (Exception e)
+        {
+            logger.Log(LogEvents.FailedToKillProcess, ProcessId, e.Message);
+        }
+    }
+
+    private void TerminateWindowsProcess(ILogger logger, bool force)
+    {
+        var signalName = force ? "Kill" : "Ctrl+C";
+        logger.Log(LogEvents.TerminatingProcess, ProcessId, signalName);
+
+        if (force)
+        {
+            try
+            {
+                process.Kill();
+            }
+            catch (Exception e)
+            {
+                logger.Log(LogEvents.FailedToSendSignalToProcess, signalName, ProcessId, e.Message);
+            }
+        }
+        else
+        {
+            var error = ProcessUtilities.SendWindowsCtrlCEvent(ProcessId);
+            if (error != null)
+            {
+                logger.Log(LogEvents.FailedToSendSignalToProcess, signalName, ProcessId, error);
+            }
+        }
+    }
+
+#if NET
+    [UnsupportedOSPlatform("windows")]
+    private void TerminateUnixProcess(ILogger logger, bool force)
+    {
+        var signal = force ? PosixSignal.SIGKILL : PosixSignal.SIGTERM;
+        var signalName = force ? "SIGKILL" : "SIGTERM";
+        logger.Log(LogEvents.TerminatingProcess, ProcessId, signalName);
+
+        string? error = null;
+        try
+        {
+            process.SafeHandle.Signal(signal);
+        }
+        catch (Win32Exception ex)
+        {
+            // A process that has already exited is handled by Signal's non-exception return path.
+            // This catch is for exceptional failures, such as attempting to signal a process
+            // that we don't have permission to kill.
+            error = ex.Message;
+        }
+
+        if (error != null)
+        {
+            logger.Log(LogEvents.FailedToSendSignalToProcess, signalName, ProcessId, error);
+        }
+    }
+#endif
+}

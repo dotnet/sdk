@@ -4,23 +4,13 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Versioning;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
 
 internal class ProcessRunner(TimeSpan processCleanupTimeout)
 {
-    private sealed class ProcessState(Process process) : IDisposable
-    {
-        public Process Process { get; } = process;
-
-        public int ProcessId;
-        public bool HasExited;
-
-        public void Dispose()
-            => Process.Dispose();
-    }
-
     // For testing purposes only, lock on access.
     private static readonly HashSet<int> s_runningApplicationProcesses = [];
 
@@ -74,7 +64,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
                 // Either Ctrl+C was pressed or the process is being restarted.
 
                 // Non-cancellable to not leave orphaned processes around blocking resources:
-                await TerminateProcessAsync(state.Process, processSpec, state, logger);
+                await state.TerminateProcessAsync(processCleanupTimeout, logger);
             }
         }
         catch (Exception e)
@@ -96,7 +86,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
                 }
             }
 
-            state.HasExited = true;
+            state.Exited();
 
             try
             {
@@ -154,7 +144,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
             }
         };
 
-        var state = new ProcessState(process);
+        var state = new ProcessState(process, processSpec.IsUserApplication);
 
         if (processSpec.IsUserApplication && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
@@ -212,7 +202,8 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
             {
                 throw new InvalidOperationException("Process can't be started.");
             }
-            state.ProcessId = process.Id;
+
+            state.Started(process.Id);
 
             if (onOutput != null)
             {
@@ -229,166 +220,6 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
             state.Dispose();
             return null;
-        }
-    }
-
-    private async ValueTask TerminateProcessAsync(Process process, ProcessSpec processSpec, ProcessState state, ILogger logger)
-    {
-        var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !processSpec.IsUserApplication;
-
-        TerminateProcess(process, state, logger, forceOnly);
-
-        if (forceOnly)
-        {
-            _ = await WaitForExitAsync(process, state, timeout: null, logger);
-            return;
-        }
-
-        // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
-        if (processCleanupTimeout.TotalMilliseconds == 0 ||
-            !await WaitForExitAsync(process, state, processCleanupTimeout, logger))
-        {
-            // Force termination if the process is still running after the timeout.
-            TerminateProcess(process, state, logger, force: true);
-
-            _ = await WaitForExitAsync(process, state, timeout: null, logger);
-        }
-    }
-
-    private static async ValueTask<bool> WaitForExitAsync(Process process, ProcessState state, TimeSpan? timeout, ILogger logger)
-    {
-        // On Linux simple call WaitForExitAsync does not work reliably (it may hang).
-        // As a workaround we poll for HasExited.
-        // See also https://github.com/dotnet/runtime/issues/109434.
-
-        if (timeout.HasValue)
-        {
-            using var cancellationSource = new CancellationTokenSource();
-            cancellationSource.CancelAfter(timeout.Value);
-
-            try
-            {
-                logger.Log(MessageDescriptor.WaitingForProcessToExitWithin, state.ProcessId, (int)timeout.Value.TotalSeconds);
-                await process.WaitForExitAsync(cancellationSource.Token);
-            }
-            catch (OperationCanceledException)
-            {
-                try
-                {
-                    return process.HasExited;
-                }
-                catch
-                {
-                    return false;
-                }
-            }
-        }
-        else
-        {
-            int i = 1;
-            while (true)
-            {
-                try
-                {
-                    if (process.HasExited)
-                    {
-                        return true;
-                    }
-                }
-                catch
-                {
-                }
-
-                logger.Log(MessageDescriptor.WaitingForProcessToExit, state.ProcessId, i++);
-
-                using var cancellationSource = new CancellationTokenSource();
-                cancellationSource.CancelAfter(TimeSpan.FromSeconds(1));
-
-                try
-                {
-                    await process.WaitForExitAsync(cancellationSource.Token);
-                    break;
-                }
-                catch (OperationCanceledException)
-                {
-                }
-            }
-        }
-
-        return true;
-    }
-
-    private static void TerminateProcess(Process process, ProcessState state, ILogger logger, bool force)
-    {
-        try
-        {
-            if (!state.HasExited && !process.HasExited)
-            {
-                if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                {
-                    TerminateWindowsProcess(process, state, logger, force);
-                }
-                else
-                {
-                    TerminateUnixProcess(process, state, logger, force);
-                }
-            }
-        }
-        catch (Exception e)
-        {
-            logger.Log(MessageDescriptor.FailedToKillProcess, state.ProcessId, e.Message);
-        }
-    }
-
-    private static void TerminateWindowsProcess(Process process, ProcessState state, ILogger logger, bool force)
-    {
-        var signalName = force ? "Kill" : "Ctrl+C";
-        logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
-
-        if (force)
-        {
-            try
-            {
-                process.Kill();
-            }
-            catch (Exception e)
-            {
-                logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, e.Message);
-            }
-        }
-        else
-        {
-            var error = ProcessUtilities.SendWindowsCtrlCEvent(state.ProcessId);
-            if (error != null)
-            {
-                logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
-            }
-        }
-    }
-
-    [UnsupportedOSPlatform("windows")]
-    private static void TerminateUnixProcess(Process process, ProcessState state, ILogger logger, bool force)
-    {
-        var signal = force ? PosixSignal.SIGKILL : PosixSignal.SIGTERM;
-        var signalName = force ? "SIGKILL" : "SIGTERM";
-        logger.Log(MessageDescriptor.TerminatingProcess, state.ProcessId, signalName);
-
-        string? error = null;
-        try
-        {
-            process.SafeHandle.Signal(signal);
-        }
-        catch (Win32Exception ex)
-        {
-            // A process that has already exited is handled by Signal's non-exception return path.
-            // This catch is for exceptional failures, such as attempting to signal a process
-            // that we don't have permission to kill.
-            error = ex.Message;
-        }
-
-        if (error != null)
-        {
-            logger.Log(MessageDescriptor.FailedToSendSignalToProcess, signalName, state.ProcessId, error);
         }
     }
 }
