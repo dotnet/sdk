@@ -61,6 +61,9 @@
 ./sdk/x.y.z/DotnetTools/dotnet-format/
 ./sdk/x.y.z/DotnetTools/dotnet-watch/
 
+# SB rebuilds IdentityModel from older source lacking the transitive Microsoft.Bcl.Cryptography dependency
+./sdk/x.y.z/DotnetTools/dotnet-user-jwts/x.y.z/tools/netx.y/any/Microsoft.Bcl.Cryptography.dll|msft
+
 ./sdk/x.y.z/Extensions/cs/|msft
 ./sdk/x.y.z/Extensions/de/|msft
 ./sdk/x.y.z/Extensions/es/|msft

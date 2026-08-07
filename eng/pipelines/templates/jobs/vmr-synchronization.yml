@@ -54,24 +54,10 @@ jobs:
       vmrBranch: ${{ parameters.vmrBranch }}
 
   - ${{ if eq(variables['System.TeamProject'], 'internal') }}:
-    - task: AzureCLI@2
-      displayName: 'Mint AzDO token for VMR push'
-      inputs:
-        azureSubscription: 'dnceng-build-rw-code-rw-wif'
-        scriptType: 'pscore'
-        scriptLocation: 'inlineScript'
-        inlineScript: |
-          $token = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
-          if ($LASTEXITCODE -ne 0) {
-            Write-Error "Failed to acquire Azure DevOps access token via 'az account get-access-token'. Exit code: $LASTEXITCODE"
-            exit 1
-          }
-          $token = $token.Trim()
-          if ([string]::IsNullOrWhiteSpace($token)) {
-            Write-Error "Received an empty or whitespace Azure DevOps access token from 'az account get-access-token'."
-            exit 1
-          }
-          Write-Host "##vso[task.setvariable variable=AzdoToken;issecret=true]$token"
+    - template: /eng/common/templates-official/steps/get-federated-access-token.yml
+      parameters:
+        federatedServiceConnection: VmrSyncPipeline
+        outputVariableName: AzdoToken
 
   - template: ../steps/vmr-pull-updates.yml
     parameters:
@@ -95,13 +81,31 @@ jobs:
 
     # Push internal/release branches to the internal VMR
     - ${{ if startsWith(parameters.vmrBranch, 'internal/release/') }}:
+      - task: AzureCLI@2
+        displayName: Mint AzDO token via WIF
+        inputs:
+          azureSubscription: 'dnceng-build-rw-code-rw-wif'
+          scriptType: 'pscore'
+          scriptLocation: 'inlineScript'
+          inlineScript: |
+            $token = az account get-access-token --resource 499b84ac-1321-427f-aa17-267ca6975798 --query accessToken -o tsv
+            if ($LASTEXITCODE -ne 0) {
+              Write-Error "Failed to acquire Azure DevOps access token via 'az account get-access-token'. Exit code: $LASTEXITCODE"
+              exit 1
+            }
+            $token = $token.Trim()
+            if ([string]::IsNullOrWhiteSpace($token)) {
+              Write-Error "Received an empty or whitespace Azure DevOps access token from 'az account get-access-token'."
+              exit 1
+            }
+            Write-Host "##vso[task.setvariable variable=WifAzdoToken;issecret=true]$token"
       - script: >
           ./.dotnet/dotnet darc vmr push
           --vmr '$(vmrPath)'
           --skip-commit-verification
           --branch '${{ parameters.vmrBranch }}'
           --remote-url '$(vmrInternalUrl)'
-          --azdev-pat '$(AzdoToken)'
+          --azdev-pat '$(WifAzdoToken)'
           --verbose
         displayName: Push changes to dotnet-dotnet (internal)
         workingDirectory: $(Agent.BuildDirectory)/sdk
