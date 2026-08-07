@@ -19,7 +19,7 @@ run from the `release/dnup` branch. The build's tags include:
 BAR ID - <build-id>
 ```
 
-If the build tags do not include a BAR ID, you can find it in at the end of the job `📤 Publish to BAR `. under the step `Publish Using Darc`.
+If the build tags do not include a BAR ID, you can find it at the end of the job `📤 Publish to BAR`, under the step `Publish Using Darc`.
 
 Use that numeric Build Asset Registry (BAR) ID when promoting the build. Normal non-test runs
 of the official pipeline are PME-signed and have a `PME Signed` tag. Use the tag to confirm
