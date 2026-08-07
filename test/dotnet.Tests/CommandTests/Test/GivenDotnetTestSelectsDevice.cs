@@ -110,6 +110,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItUsesFreshEvaluationContextAfterBuild()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "FreshEvaluationContext")
+            .WithSource();
+        File.Delete(Path.Combine(testInstance.Path, "post-build-discovery.props"));
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework", ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:GeneratePostBuildDiscoveryProps=true");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Runtime environment variables:");
+    }
+
+    [TestMethod]
     public void ItPassesEnvironmentVariablesToBuildDeployAndRunArgumentsTargets()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "EnvironmentVariables")
@@ -439,6 +457,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
 
         result.Should().Fail()
             .And.HaveStdErrContaining(CliCommandStrings.CmdListDevicesAndListTestsMutuallyExclusive);
+    }
+
+    [TestMethod]
+    [DataRow("--collect-test-map")]
+    [DataRow("--affected-tests")]
+    public void ItErrorsWhenListDevicesAndAffectedTestOperationAreCombined(string affectedTestOption)
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", $"ListDevicesWith{affectedTestOption.TrimStart('-')}")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("DOTNET_CLI_ENABLE_AFFECTED_TESTS", "1")
+            .Execute("--list-devices", affectedTestOption, "-f", "net11.0-android");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.CmdListDevicesAndAffectedTestsMutuallyExclusive);
     }
 
     [TestMethod]

@@ -84,11 +84,17 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         var managedCodeChangesApplied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
+        var hasResolvedDependency = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
         {
             if (line.Content.Contains("<Lib>"))
             {
                 hasUpdatedOutput.TrySetResult();
+            }
+
+            if (line.Content.Contains("Resolving 'Dependency, Version=1.0.0.0'"))
+            {
+                hasResolvedDependency.TrySetResult();
             }
         };
 
@@ -115,7 +121,8 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         Log("Waiting for output '<Lib>'...");
         await hasUpdatedOutput.Task;
 
-        AssertEx.ContainsSubstring("Resolving 'Dependency, Version=1.0.0.0'", w.Reporter.ProcessOutput);
+        Log("Waiting for dependency resolution...");
+        await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
         // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
         // to finish logging ManagedCodeChangesApplied. The app output arrives before this task
@@ -149,11 +156,17 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         var managedCodeChangesApplied = w.Observer.RegisterSemaphore(MessageDescriptor.ManagedCodeChangesApplied);
 
         var hasUpdatedOutput = w.CreateCompletionSource();
+        var hasResolvedDependency = w.CreateCompletionSource();
         w.Reporter.OnProcessOutput += line =>
         {
             if (line.Content.Contains("Newtonsoft.Json.Linq.JToken"))
             {
                 hasUpdatedOutput.TrySetResult();
+            }
+
+            if (line.Content.Contains("Resolving 'Newtonsoft.Json, Version=13.0.0.0'"))
+            {
+                hasResolvedDependency.TrySetResult();
             }
         };
 
@@ -178,7 +191,8 @@ public class ProjectUpdateInProcTests : DotNetWatchTestBase
         Log("Waiting for output 'Newtonsoft.Json.Linq.JToken'...");
         await hasUpdatedOutput.Task;
 
-        AssertEx.ContainsSubstring("Resolving 'Newtonsoft.Json, Version=13.0.0.0'", w.Reporter.ProcessOutput);
+        Log("Waiting for dependency resolution...");
+        await hasResolvedDependency.Task.WaitAsync(w.ShutdownSource.Token);
 
         // Wait for the fire-and-forget task in CompilationHandler.CompleteApplyOperationAsync
         // to finish logging ManagedCodeChangesApplied. The app output arrives before this task

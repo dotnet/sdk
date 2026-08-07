@@ -9,11 +9,11 @@
 
 .DESCRIPTION
     Publishes dotnet-aot (NativeAOT) and the dn native host, builds the managed dotnet
-    CLI, and assembles them into the dn publish directory (dn + dotnet-aot.dll + the
+    CLI, and assembles them into the dn publish directory (dn + the dotnet-aot native library + the
     managed dotnet.dll + deps). Then runs `dn <Command>` with DOTNET_CLI_ENABLEAOT
     toggled:
-      * Aot      DOTNET_CLI_ENABLEAOT=true: the command runs in-process in dotnet-aot.dll.
-      * Managed  dn hosts the copied dotnet.dll (same source, JIT-compiled).
+      * Aot      DOTNET_CLI_ENABLEAOT=true: the command runs in-process in dotnet-aot.
+      * Managed  DOTNET_CLI_ENABLEAOT=false; dn hosts the copied dotnet.dll (same source, JIT-compiled).
       * Compare  runs both and diffs the output (an empty diff means parity).
 
     DOTNET_ROOT is pointed at the repo-local .dotnet because the publish directory is
@@ -73,7 +73,7 @@ $isWin = $IsWindows -or ($env:OS -eq "Windows_NT")
 $exeSuffix = if ($isWin) { ".exe" } else { "" }
 $dotnet = Join-Path $repoRoot ".dotnet" "dotnet$exeSuffix"
 $dnExeName = "dn$exeSuffix"
-$aotLibName = if ($isWin) { "dotnet-aot.dll" } elseif ($IsMacOS) { "dotnet-aot.dylib" } else { "dotnet-aot.so" }
+$aotLibName = if ($isWin) { "dotnet-aot.dll" } elseif ($IsMacOS) { "libdotnet-aot.dylib" } else { "libdotnet-aot.so" }
 
 if (-not $Rid) {
     $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture.ToString().ToLowerInvariant()
@@ -160,7 +160,7 @@ function Invoke-Dn([bool]$enableAot) {
         $env:DOTNET_CLI_ENABLEAOT = "true"
     }
     else {
-        Remove-Item Env:\DOTNET_CLI_ENABLEAOT -ErrorAction SilentlyContinue
+        $env:DOTNET_CLI_ENABLEAOT = "false"
     }
     & $dnExe @argList 2>&1
 }
@@ -171,7 +171,7 @@ switch ($Mode) {
         Invoke-Dn $true
     }
     "Managed" {
-        Write-Host "===== Managed (DOTNET_CLI_ENABLEAOT unset) =====" -ForegroundColor Green
+        Write-Host "===== Managed (DOTNET_CLI_ENABLEAOT=false) =====" -ForegroundColor Green
         Invoke-Dn $false
     }
     "Compare" {

@@ -53,5 +53,59 @@ Public Class Class1
 End Class
 ");
         }
+
+        [TestMethod]
+        public async Task CA1821CSharpCodeFixAllAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class Class1
+{
+    ~[|Class1|]()
+    {
+    }
+}
+
+public class Class2
+{
+    ~[|Class2|]()
+    {
+    }
+}
+",
+@"
+public class Class1
+{
+}
+
+public class Class2
+{
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA1821BasicCodeFixAllAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class Class1
+    Protected Overrides Sub [|Finalize|]()
+
+    End Sub
+End Class
+
+Public Class Class2
+    Protected Overrides Sub [|Finalize|]()
+
+    End Sub
+End Class
+",
+@"
+Public Class Class1
+End Class
+
+Public Class Class2
+End Class
+");
+        }
     }
 }

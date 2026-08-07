@@ -6,10 +6,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DisposeMethodsShouldCallBaseClassDispose,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDisposeMethodsShouldCallBaseClassDisposeFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DisposeMethodsShouldCallBaseClassDispose,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicDisposeMethodsShouldCallBaseClassDisposeFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {

@@ -56,6 +56,12 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
+- **Run focused tests through `targeted-test`.** It runs the smallest relevant tests and
+  preserves actionable output and diagnostics when a local run fails.
+- **Map new substantive test areas for targeted testing.** Prefer adding a
+  `ConditionalTestScope` when reliable trigger paths can be defined. When the area is too
+  broad for practical conditional filtering, add its primary project to the fallback
+  table in the `targeted-test` skill.
 - **Skips must point to a tracking issue URL** — `[Ignore("https://github.com/dotnet/sdk/issues/N")]`.
 - **Verify (approval) snapshots**: `*.verified.*` is checked in; the runner writes a
   `*.received.*` on mismatch — promote received → verified when you change output

@@ -11,7 +11,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -37,52 +37,49 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             foreach (var diagnostic in context.Diagnostics)
             {
-                string fixTitle = diagnostic.Id == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags ?
-                                                        MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsCodeFix :
-                                                        MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsCodeFix;
+                string fixTitle = GetTitle(diagnostic);
                 context.RegisterCodeFix(CodeAction.Create(fixTitle,
-                                             async ct => await AddOrRemoveFlagsAttributeAsync(context.Document, context.Span, diagnostic.Id, flagsAttributeType, ct).ConfigureAwait(false),
+                                             ct => SyntaxEditorFixAllProvider.ApplyFixesAsync(context.Document, ImmutableArray.Create(diagnostic), ApplyFixAsync, ct),
                                              equivalenceKey: fixTitle),
                                         diagnostic);
             }
         }
 
-        private static async Task<Document> AddOrRemoveFlagsAttributeAsync(Document document, TextSpan span, string diagnosticId, INamedTypeSymbol flagsAttributeType, CancellationToken cancellationToken)
-        {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            SyntaxNode node = root.FindNode(span);
+        // The two rules produce opposite fixes, and DocumentBasedFixAllProvider does not filter by
+        // CodeActionEquivalenceKey, so a fix-all invoked from one title must skip the other's diagnostics.
+        public override FixAllProvider GetFixAllProvider()
+            => SyntaxEditorFixAllProvider.Create<string?>(
+                fixAllContext => fixAllContext.CodeActionEquivalenceKey,
+                (document, diagnostic, editor, equivalenceKey, cancellationToken) => equivalenceKey is null || GetTitle(diagnostic) == equivalenceKey
+                    ? ApplyFixAsync(document, diagnostic, editor, cancellationToken)
+                    : Task.CompletedTask);
 
+        private static string GetTitle(Diagnostic diagnostic)
+            => diagnostic.Id == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags
+                ? MicrosoftCodeQualityAnalyzersResources.MarkEnumsWithFlagsCodeFix
+                : MicrosoftCodeQualityAnalyzersResources.DoNotMarkEnumsWithFlagsCodeFix;
+
+        private static async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
             SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            SyntaxNode newEnumBlockSyntax = diagnosticId == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags ?
-                AddFlagsAttribute(editor.Generator, node, flagsAttributeType) :
-                RemoveFlagsAttribute(editor.Generator, model, node, flagsAttributeType, cancellationToken);
 
-            editor.ReplaceNode(node, newEnumBlockSyntax);
-            return editor.GetChangedDocument();
-        }
-
-        private static SyntaxNode AddFlagsAttribute(SyntaxGenerator generator, SyntaxNode enumTypeSyntax, INamedTypeSymbol flagsAttributeType)
-        {
-            return generator.AddAttributes(enumTypeSyntax, generator.Attribute(generator.TypeExpression(flagsAttributeType)));
-        }
-
-        private static SyntaxNode RemoveFlagsAttribute(SyntaxGenerator generator, SemanticModel model, SyntaxNode enumTypeSyntax, INamedTypeSymbol flagsAttributeType, CancellationToken cancellationToken)
-        {
-            if (model.GetDeclaredSymbol(enumTypeSyntax, cancellationToken) is not INamedTypeSymbol enumType)
+            INamedTypeSymbol? flagsAttributeType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemFlagsAttribute);
+            if (flagsAttributeType == null)
             {
-                return enumTypeSyntax;
+                return;
             }
 
-            AttributeData flagsAttribute = enumType.GetAttribute(flagsAttributeType)!;
-            SyntaxNode attributeNode = flagsAttribute.ApplicationSyntaxReference!.GetSyntax(cancellationToken);
-
-            return generator.RemoveNode(enumTypeSyntax, attributeNode);
-        }
-
-        public override FixAllProvider GetFixAllProvider()
-        {
-            return WellKnownFixAllProviders.BatchFixer;
+            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            if (diagnostic.Id == EnumWithFlagsAttributeAnalyzer.RuleIdMarkEnumsWithFlags)
+            {
+                SyntaxNode attribute = editor.Generator.Attribute(editor.Generator.TypeExpression(flagsAttributeType));
+                editor.ReplaceNode(node, (currentNode, generator) => generator.AddAttributes(currentNode, attribute));
+            }
+            else if (model.GetDeclaredSymbol(node, cancellationToken) is INamedTypeSymbol enumType)
+            {
+                SyntaxNode attributeNode = enumType.GetAttribute(flagsAttributeType)!.ApplicationSyntaxReference!.GetSyntax(cancellationToken);
+                editor.RemoveNode(attributeNode);
+            }
         }
     }
 }
