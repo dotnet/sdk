@@ -93,7 +93,10 @@ internal class Layer
         {
             using (HashDigestGZipStream gz = new(fs, leaveOpen: true))
             {
-                using (TarWriter writer = new(gz, TarEntryFormat.Pax, leaveOpen: true))
+                // The extended header names the runtime writes contain the current process id, which
+                // would otherwise make the layer differ between two builds of identical content.
+                using (PaxHeaderNameNormalizingStream normalized = new(gz, leaveOpen: true))
+                using (TarWriter writer = new(normalized, TarEntryFormat.Pax, leaveOpen: true))
                 {
                     // Every entry is stamped with the same timestamp so that publishing identical
                     // content twice produces an identical layer. Otherwise each entry would carry the
@@ -149,7 +152,7 @@ internal class Layer
                         writer.WriteEntry(entry);
                     }
 
-                } // Dispose of the TarWriter before getting the hash so the final data get written to the tar stream
+                } // Dispose of the TarWriter and the normalizing stream before getting the hash so the final data get written to the tar stream
 
                 int bytesWritten = gz.GetCurrentUncompressedHash(uncompressedHash);
                 Debug.Assert(bytesWritten == uncompressedHash.Length);

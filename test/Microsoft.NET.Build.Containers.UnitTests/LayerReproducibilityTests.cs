@@ -40,6 +40,15 @@ public class LayerReproducibilityTests
 
             Assert.AreEqual(firstLayer.Descriptor.Digest, secondLayer.Descriptor.Digest);
             Assert.AreEqual(firstLayer.Descriptor.Size, secondLayer.Descriptor.Size);
+
+            // The layer must not depend on the process that produced it, which the process id in the
+            // pax extended header names would otherwise leak in.
+            using FileStream compressed = File.OpenRead(firstLayer.BackingFile);
+            using var decompressed = new GZipStream(compressed, CompressionMode.Decompress);
+            using var text = new StreamReader(decompressed);
+            Assert.IsFalse(
+                text.ReadToEnd().Contains($"PaxHeaders.{Environment.ProcessId}", StringComparison.Ordinal),
+                "The layer should not contain the current process id.");
         }
         finally
         {
