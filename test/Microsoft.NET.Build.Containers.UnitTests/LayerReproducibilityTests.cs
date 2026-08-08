@@ -32,6 +32,7 @@ public class LayerReproducibilityTests
         string second = CreateContentDirectory();
         File.SetLastWriteTimeUtc(Path.Combine(second, "app.dll"), new DateTime(2001, 2, 3, 4, 5, 6, DateTimeKind.Utc));
 
+        string? previousEpoch = Environment.GetEnvironmentVariable("SOURCE_DATE_EPOCH");
         Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", "1636374896");
         try
         {
@@ -52,7 +53,7 @@ public class LayerReproducibilityTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", null);
+            Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", previousEpoch);
         }
     }
 
@@ -66,6 +67,7 @@ public class LayerReproducibilityTests
         string second = CreateContentDirectory();
         File.WriteAllText(Path.Combine(second, "app.dll"), "some different content");
 
+        string? previousEpoch = Environment.GetEnvironmentVariable("SOURCE_DATE_EPOCH");
         Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", "1636374896");
         try
         {
@@ -75,7 +77,7 @@ public class LayerReproducibilityTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", null);
+            Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", previousEpoch);
         }
     }
 
@@ -85,6 +87,7 @@ public class LayerReproducibilityTests
     {
         var expected = new DateTimeOffset(2021, 11, 8, 12, 34, 56, TimeSpan.Zero);
 
+        string? previousEpoch = Environment.GetEnvironmentVariable("SOURCE_DATE_EPOCH");
         Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", "1636374896");
         Layer layer;
         try
@@ -93,7 +96,7 @@ public class LayerReproducibilityTests
         }
         finally
         {
-            Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", null);
+            Environment.SetEnvironmentVariable("SOURCE_DATE_EPOCH", previousEpoch);
         }
 
         using FileStream compressed = File.OpenRead(layer.BackingFile);

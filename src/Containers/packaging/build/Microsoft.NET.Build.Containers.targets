@@ -149,8 +149,10 @@
            label so that rebuilding the same source produces the same image. -->
       <_ContainerSourceDateEpoch>$([System.Environment]::GetEnvironmentVariable('SOURCE_DATE_EPOCH'))</_ContainerSourceDateEpoch>
       <!-- A value that is not a non-negative integer is ignored rather than failing the build, matching
-           the specification and the behavior of the tasks. -->
-      <_ContainerSourceDateEpoch Condition="'$(_ContainerSourceDateEpoch)' != '' and !$([System.Text.RegularExpressions.Regex]::IsMatch($(_ContainerSourceDateEpoch), '^[0-9]+$'))"></_ContainerSourceDateEpoch>
+           the specification and the behavior of the tasks. The digit count is bounded because
+           DateTimeOffset.FromUnixTimeSeconds throws for values outside its supported range; 11 digits is
+           comfortably inside it (the maximum it accepts is 253402300799). -->
+      <_ContainerSourceDateEpoch Condition="'$(_ContainerSourceDateEpoch)' != '' and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(_ContainerSourceDateEpoch)', '^[0-9]{1,11}$'))"></_ContainerSourceDateEpoch>
       <_ContainerImageCreated Condition="'$(_ContainerSourceDateEpoch)' == ''">$([System.DateTime]::UtcNow.ToString('o'))</_ContainerImageCreated>
       <_ContainerImageCreated Condition="'$(_ContainerSourceDateEpoch)' != ''">$([System.DateTimeOffset]::FromUnixTimeSeconds($(_ContainerSourceDateEpoch)).UtcDateTime.ToString('o'))</_ContainerImageCreated>
     </PropertyGroup>
