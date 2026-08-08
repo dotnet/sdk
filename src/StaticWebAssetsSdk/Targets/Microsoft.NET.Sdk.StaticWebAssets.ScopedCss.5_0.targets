@@ -70,7 +70,7 @@ Integration with static web assets:
     $(_PrepareForScopedCssDependsOn)
   </_PrepareForScopedCssDependsOn>
 
-  <ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
+  <ResolveCurrentProjectStaticWebAssetsInputsDependsOn Condition="'$(ExcludeScopedCssAssets)' != 'true'">
     $(ResolveCurrentProjectStaticWebAssetsInputsDependsOn);
     _AddGeneratedScopedCssFiles;
   </ResolveCurrentProjectStaticWebAssetsInputsDependsOn>
@@ -78,7 +78,7 @@ Integration with static web assets:
   <!-- We want to include the bundle as part of the list of static web assets when bundling is enabled and remove all the individual scoped
        css files.
   -->
-  <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true'">
+  <ResolveStaticWebAssetsInputsDependsOn Condition="'$(DisableScopedCssBundling)' != 'true' and '$(ExcludeScopedCssAssets)' != 'true'">
     $(ResolveStaticWebAssetsInputsDependsOn);
     _AddScopedCssBundles;
   </ResolveStaticWebAssetsInputsDependsOn>
