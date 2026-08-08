@@ -267,8 +267,8 @@ namespace Microsoft.NET.Build.Tasks
 
             ResolvedAssetsCacheEntry newCacheEntry = new()
             {
-                ReferencesToAdd = deduplicatedReferences.Distinct().ToArray(),
-                AnalyzersToAdd = deduplicatedAnalyzers.Distinct().ToArray(),
+                ReferencesToAdd = deduplicatedReferences.ToArray(),
+                AnalyzersToAdd = deduplicatedAnalyzers.ToArray(),
                 PlatformManifests = platformManifests.ToArray(),
                 PackageConflictOverrides = packageConflictOverrides.ToArray(),
                 PackageConflictPreferredPackages = string.Join(";", preferredPackages),
