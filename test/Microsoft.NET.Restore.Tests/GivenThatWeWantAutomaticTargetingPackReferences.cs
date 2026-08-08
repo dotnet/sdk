@@ -55,8 +55,7 @@ namespace Microsoft.NET.Restore.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_restores_multitargeted_net_framework_project_successfully(bool includeExplicitReference)
         {
             var testProject = new TestProject()
