@@ -10,6 +10,7 @@ namespace Microsoft.NET.Build.Tests
     {
         [TestMethod]
         [FullMSBuildOnly]
+        [Ignore("https://github.com/dotnet/sdk/issues/54145")]
         public void It_should_fail_with_error_message()
         {
             var testAsset = TestAssetsManager

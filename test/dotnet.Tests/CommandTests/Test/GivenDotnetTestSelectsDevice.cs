@@ -110,6 +110,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItUsesFreshEvaluationContextAfterBuild()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "FreshEvaluationContext")
+            .WithSource();
+        File.Delete(Path.Combine(testInstance.Path, "post-build-discovery.props"));
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework", ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:GeneratePostBuildDiscoveryProps=true");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Runtime environment variables:");
+    }
+
+    [TestMethod]
     public void ItPassesEnvironmentVariablesToBuildDeployAndRunArgumentsTargets()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "EnvironmentVariables")
@@ -737,5 +755,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 messages.Should().Contain(message => message.Text.Contains("net9.0"));
                 messages.Should().Contain(message => message.Text.Contains(ToolsetInfo.CurrentTargetFramework));
             });
+    }
+
+    [TestMethod]
+    public void ItRunsBrowserWasmTestHostOverHttpTransport()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "HttpTransport")
+            .WithSource();
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework",
+                ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:UseHttpTestTransport=true")
+            .Should()
+            .Pass()
+            .And.HaveStdOutContaining("HTTP transport selected.")
+            .And.HaveStdOutContaining("total: 1");
     }
 }

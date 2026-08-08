@@ -25,6 +25,9 @@
     <!-- Projects suffixed with UnitTests or IntegrationTests are not matched by *.Tests.csproj above, so include them with a separate glob. -->
     <SDKCustomTestProject Include="**\*UnitTests.csproj;**\*IntegrationTests.csproj" Exclude="TestAssets\**\*" />
 
+    <!-- Temporarily disabled on macOS due to https://github.com/dotnet/runtime/issues/131944 -->
+    <SDKCustomTestProject Remove="dotnet-watch.Tests\dotnet-watch.Tests.csproj" Condition="'$(TargetOS)' == 'osx'" />
+
     <!-- Don't run MSI installation tests in Helix / CI -->
     <SDKCustomTestProject Remove="dotnet-MsiInstallation.Tests\**\*" />
 
