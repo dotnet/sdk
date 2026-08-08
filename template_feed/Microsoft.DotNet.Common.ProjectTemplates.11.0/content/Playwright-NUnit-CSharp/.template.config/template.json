@@ -117,6 +117,78 @@
   "defaultName": "TestProject1",
   "postActions": [
     {
+      "description": "Add the coverlet.collector package reference.",
+      "manualInstructions": [{ "text": "Run 'dotnet add package coverlet.collector --version 6.0.4 --no-restore'" }],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "args": {
+        "files": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "coverlet.collector",
+        "version": "6.0.4"
+      }
+    },
+    {
+      "description": "Add the Microsoft.NET.Test.Sdk package reference.",
+      "manualInstructions": [{ "text": "Run 'dotnet add package Microsoft.NET.Test.Sdk --version 17.14.0 --no-restore'" }],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "args": {
+        "files": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "Microsoft.NET.Test.Sdk",
+        "version": "17.14.0"
+      }
+    },
+    {
+      "description": "Add the Microsoft.Playwright.NUnit package reference.",
+      "manualInstructions": [{ "text": "Run 'dotnet add package Microsoft.Playwright.NUnit --version 1.52.0 --no-restore'" }],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "args": {
+        "files": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "Microsoft.Playwright.NUnit",
+        "version": "1.52.0"
+      }
+    },
+    {
+      "description": "Add the NUnit package reference.",
+      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit --version 4.3.2 --no-restore'" }],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "args": {
+        "files": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "NUnit",
+        "version": "4.3.2"
+      }
+    },
+    {
+      "description": "Add the NUnit.Analyzers package reference.",
+      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit.Analyzers --version 4.7.0 --no-restore'" }],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "args": {
+        "files": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "NUnit.Analyzers",
+        "version": "4.7.0"
+      }
+    },
+    {
+      "description": "Add the NUnit3TestAdapter package reference.",
+      "manualInstructions": [{ "text": "Run 'dotnet add package NUnit3TestAdapter --version 5.0.0 --no-restore'" }],
+      "actionId": "B17581D1-C5C9-4489-8F0A-004BE667B814",
+      "continueOnError": true,
+      "args": {
+        "files": [ "Company.TestProject1.csproj" ],
+        "referenceType": "package",
+        "reference": "NUnit3TestAdapter",
+        "version": "5.0.0"
+      }
+    },
+    {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [ { "text": "Run 'dotnet restore'" } ],
