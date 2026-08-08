@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class ProcessState(Process process, bool isUserApplication) : IDisposable
+internal sealed class ProcessState(Process process, ILogger logger, bool isUserApplication) : IDisposable
 {
     public Process Process => process;
     public bool IsUserApplication => isUserApplication;
@@ -30,30 +30,30 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
     public void Exited()
         => HasExited = true;
 
-    public async ValueTask TerminateProcessAsync(TimeSpan processCleanupTimeout, ILogger logger)
+    public async ValueTask TerminateProcessAsync(TimeSpan processCleanupTimeout)
     {
         var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !isUserApplication;
 
-        TerminateProcess(logger, forceOnly);
+        TerminateProcess(forceOnly);
 
         if (forceOnly)
         {
-            _ = await WaitForExitAsync(timeout: null, logger);
+            _ = await WaitForExitReportProgressAsync(timeout: null);
             return;
         }
 
         // Ctlr+C/SIGTERM has been sent, wait for the process to exit gracefully.
         if (processCleanupTimeout.TotalMilliseconds == 0 ||
-            !await WaitForExitAsync(processCleanupTimeout, logger))
+            !await WaitForExitReportProgressAsync(processCleanupTimeout))
         {
             // Force termination if the process is still running after the timeout.
-            TerminateProcess(logger, force: true);
+            TerminateProcess(force: true);
 
-            _ = await WaitForExitAsync(timeout: null, logger);
+            _ = await WaitForExitReportProgressAsync(timeout: null);
         }
     }
 
-    private async ValueTask<bool> WaitForExitAsync(TimeSpan? timeout, ILogger logger)
+    private async ValueTask<bool> WaitForExitReportProgressAsync(TimeSpan? timeout)
     {
         Task? reportingTask;
 
@@ -86,12 +86,7 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
 
         try
         {
-#if NET
-            await process.WaitForExitAsync(cancellationSource.Token);
-            return true;
-#else
-            return await WaitForExitNetFrameworkAsync(cancellationSource.Token);
-#endif
+            return await WaitForExitAsync(cancellationSource.Token);
         }
         catch (OperationCanceledException)
         {
@@ -107,13 +102,16 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
         }
     }
 
-#if !NET
     /// <summary>
     /// Returns true if the process has been verified to have exited and its output has been drained, false if an error occurred.
     /// </summary>
-    private async ValueTask<bool> WaitForExitNetFrameworkAsync(CancellationToken cancellationToken)
+    public async ValueTask<bool> WaitForExitAsync(CancellationToken cancellationToken)
     {
-        if (!await WaitForExitAsync(cancellationToken))
+#if NET
+        await process.WaitForExitAsync(cancellationToken);
+        return true;
+#else
+        if (!await WaitForExitNetFrameworkAsync(cancellationToken))
         {
             return false;
         }
@@ -132,7 +130,7 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
             }
         });
 
-        async ValueTask<bool> WaitForExitAsync(CancellationToken cancellationToken)
+        async ValueTask<bool> WaitForExitNetFrameworkAsync(CancellationToken cancellationToken)
         {
             var exitedSource = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -165,11 +163,10 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
                 process.Exited -= OnExited;
             }
         }
+#endif
     }
 
-#endif
-
-    private void TerminateProcess(ILogger logger, bool force)
+    private void TerminateProcess(bool force)
     {
         try
         {
@@ -177,12 +174,12 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
             {
                 if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
                 {
-                    TerminateWindowsProcess(logger, force);
+                    TerminateWindowsProcess(force);
                 }
                 else
                 {
 #if NET
-                    TerminateUnixProcess(logger, force);
+                    TerminateUnixProcess(force);
 #else
                     throw new PlatformNotSupportedException();
 #endif
@@ -195,7 +192,7 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
         }
     }
 
-    private void TerminateWindowsProcess(ILogger logger, bool force)
+    private void TerminateWindowsProcess(bool force)
     {
         var signalName = force ? "Kill" : "Ctrl+C";
         logger.Log(LogEvents.TerminatingProcess, ProcessId, signalName);
@@ -223,7 +220,7 @@ internal sealed class ProcessState(Process process, bool isUserApplication) : ID
 
 #if NET
     [UnsupportedOSPlatform("windows")]
-    private void TerminateUnixProcess(ILogger logger, bool force)
+    private void TerminateUnixProcess(bool force)
     {
         var signal = force ? PosixSignal.SIGKILL : PosixSignal.SIGTERM;
         var signalName = force ? "SIGKILL" : "SIGTERM";

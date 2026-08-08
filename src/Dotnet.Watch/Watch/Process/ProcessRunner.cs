@@ -56,7 +56,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         {
             try
             {
-                await state.Process.WaitForExitAsync(processTerminationToken);
+                await state.WaitForExitAsync(processTerminationToken);
             }
             catch (OperationCanceledException)
             {
@@ -64,7 +64,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
                 // Either Ctrl+C was pressed or the process is being restarted.
 
                 // Non-cancellable to not leave orphaned processes around blocking resources:
-                await state.TerminateProcessAsync(processCleanupTimeout, logger);
+                await state.TerminateProcessAsync(processCleanupTimeout);
             }
         }
         catch (Exception e)
