@@ -13,8 +13,7 @@ public class ConsoleReporterTests
     private static readonly string EOL = Environment.NewLine;
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public void WritesToStandardStreams(bool suppressEmojis)
     {
         var testConsole = new TestConsole();
