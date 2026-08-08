@@ -24,6 +24,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 new CannotRemoveBaseTypeOrInterface(settings, context),
                 new CannotSealType(settings, context),
                 new EnumsMustMatch(settings, context),
+                new ExperimentalApiBecomesStable(context),
                 new MembersMustExist(settings, context),
                 new CannotChangeVisibility(settings, context),
                 new CannotChangeGenericConstraints(settings, context),

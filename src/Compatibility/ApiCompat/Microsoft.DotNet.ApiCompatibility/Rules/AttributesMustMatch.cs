@@ -146,6 +146,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     // Loop over left and issue "removed" diagnostic for each one.
                     foreach (AttributeData leftAttribute in leftGroup.Attributes)
                     {
+                        if (ApiStabilityClassifier.IsExperimentalAttribute(leftAttribute))
+                        {
+                            continue;
+                        }
+
                         AddDifference(differences, DifferenceType.Removed, leftMetadata, rightMetadata, containing, itemRef, leftAttribute);
                     }
                 }
