@@ -145,11 +145,19 @@
       <ContainerVersion Condition="'$(ContainerVersion)' == '' and '$(PackageVersion)' != ''">$(PackageVersion)</ContainerVersion>
       <ContainerLicenseExpression Condition="'$(ContainerLicenseExpression)' == '' and '$(PackageLicenseExpression)' != ''">$(PackageLicenseExpression)</ContainerLicenseExpression>
       <ContainerTitle Condition="'$(ContainerTitle)' == '' and '$(Title)' != ''">$(Title)</ContainerTitle>
+      <!-- SOURCE_DATE_EPOCH (https://reproducible-builds.org/docs/source-date-epoch/) pins the creation
+           label so that rebuilding the same source produces the same image. -->
+      <_ContainerSourceDateEpoch>$([System.Environment]::GetEnvironmentVariable('SOURCE_DATE_EPOCH'))</_ContainerSourceDateEpoch>
+      <!-- A value that is not a non-negative integer is ignored rather than failing the build, matching
+           the specification and the behavior of the tasks. -->
+      <_ContainerSourceDateEpoch Condition="'$(_ContainerSourceDateEpoch)' != '' and !$([System.Text.RegularExpressions.Regex]::IsMatch($(_ContainerSourceDateEpoch), '^[0-9]+$'))"></_ContainerSourceDateEpoch>
+      <_ContainerImageCreated Condition="'$(_ContainerSourceDateEpoch)' == ''">$([System.DateTime]::UtcNow.ToString('o'))</_ContainerImageCreated>
+      <_ContainerImageCreated Condition="'$(_ContainerSourceDateEpoch)' != ''">$([System.DateTimeOffset]::FromUnixTimeSeconds($(_ContainerSourceDateEpoch)).UtcDateTime.ToString('o'))</_ContainerImageCreated>
     </PropertyGroup>
 
     <!-- Labels generated from descriptions from the spec at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
     <ItemGroup Label="Conventional Label assignment" Condition="'$(ContainerGenerateLabels)' == 'true'">
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageCreated)' == 'true'" Include="org.opencontainers.image.created;org.opencontainers.artifact.created" Value="$([System.DateTime]::UtcNow.ToString('o'))" />
+      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageCreated)' == 'true'" Include="org.opencontainers.image.created;org.opencontainers.artifact.created" Value="$(_ContainerImageCreated)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.artifact.description;org.opencontainers.image.description" Value="$(ContainerDescription)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageAuthors)' == 'true' and '$(ContainerAuthors)' != ''" Include="org.opencontainers.image.authors" Value="$(ContainerAuthors)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageUrl)' == 'true' and '$(ContainerInformationUrl)' != ''" Include="org.opencontainers.image.url" Value="$(ContainerInformationUrl)" />

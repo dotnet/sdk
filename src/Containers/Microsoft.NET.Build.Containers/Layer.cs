@@ -95,15 +95,23 @@ internal class Layer
             {
                 using (TarWriter writer = new(gz, TarEntryFormat.Pax, leaveOpen: true))
                 {
+                    // Every entry is stamped with the same timestamp so that publishing identical
+                    // content twice produces an identical layer. Otherwise each entry would carry the
+                    // moment it happened to be written and the layer digest would change on every build.
+                    DateTimeOffset modificationTime = SourceDateEpoch.GetTimestamp();
+
                     // Windows layers need a Files folder
                     if (isWindowsLayer)
                     {
-                        var entry = new PaxTarEntry(TarEntryType.Directory, "Files", entryAttributes);
+                        var entry = new PaxTarEntry(TarEntryType.Directory, "Files", entryAttributes)
+                        {
+                            ModificationTime = modificationTime
+                        };
                         writer.WriteEntry(entry);
                     }
 
                     // Write an entry for the application directory.
-                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                    WriteTarEntryForFile(writer, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId, modificationTime);
 
                     // Write entries for the application directory contents.
                     var fileList = new FileSystemEnumerable<(FileSystemInfo file, string containerPath)>(
@@ -124,15 +132,20 @@ internal class Layer
                                     AttributesToSkip = FileAttributes.System, // Include hidden files
                                     RecurseSubdirectories = true
                                 });
-                    foreach (var item in fileList)
+                    // The enumeration order of a directory is filesystem-defined, so it is sorted to keep
+                    // the order of entries in the tar stream stable across machines and builds.
+                    foreach (var item in fileList.OrderBy(static item => item.containerPath, StringComparer.Ordinal))
                     {
-                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId);
+                        WriteTarEntryForFile(writer, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId, modificationTime);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside
                     if (isWindowsLayer)
                     {
-                        var entry = new PaxTarEntry(TarEntryType.Directory, "Hives", entryAttributes);
+                        var entry = new PaxTarEntry(TarEntryType.Directory, "Hives", entryAttributes)
+                        {
+                            ModificationTime = modificationTime
+                        };
                         writer.WriteEntry(entry);
                     }
 
@@ -150,7 +163,7 @@ internal class Layer
             Debug.Assert(bW == hash.Length);
 
             // Writes a tar entry corresponding to the file system item.
-            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId)
+            static void WriteTarEntryForFile(TarWriter writer, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId, DateTimeOffset modificationTime)
             {
                 UnixFileMode mode = DetermineFileMode(file);
                 PaxTarEntry entry;
@@ -169,6 +182,7 @@ internal class Layer
                 }
 
                 entry.Mode = mode;
+                entry.ModificationTime = modificationTime;
                 if (userId is int uid)
                 {
                     entry.Uid = uid;
