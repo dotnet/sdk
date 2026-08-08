@@ -16,6 +16,9 @@ namespace Microsoft.DotNet.HotReload;
 
 internal sealed class ProcessState(Process process, ILogger logger, bool isUserApplication) : IDisposable
 {
+    // Exit code used by the OS when process is terminated by an external signal.
+    private static readonly int s_processTerminatedExitCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? unchecked((int)0xC000013A) : 137;
+
     public Process Process => process;
     public bool IsUserApplication => isUserApplication;
     public int ProcessId { get; private set; }
@@ -27,8 +30,62 @@ internal sealed class ProcessState(Process process, ILogger logger, bool isUserA
     public void Started(int processId)
         => ProcessId = processId;
 
-    public void Exited()
-        => HasExited = true;
+    public async Task<int?> WaitForExitAsync(TimeSpan processCleanupTimeout, CancellationToken processTerminationToken)
+    {
+        int? exitCode = null;
+
+        try
+        {
+            try
+            {
+                await WaitForExitImplAsync(processTerminationToken);
+            }
+            catch (OperationCanceledException)
+            {
+                // Process termination requested via cancellation token.
+                // Either Ctrl+C was pressed or the process is being restarted.
+
+                // Non-cancellable to not leave orphaned processes around blocking resources:
+                await TerminateProcessAsync(processCleanupTimeout);
+            }
+        }
+        catch (Exception e)
+        {
+            if (isUserApplication)
+            {
+                logger.Log(LogEvents.ApplicationFailed, e.Message);
+            }
+        }
+
+        HasExited = true;
+
+        try
+        {
+            exitCode = Process.ExitCode;
+        }
+        catch
+        {
+            exitCode = null;
+        }
+
+        if (isUserApplication)
+        {
+            if (exitCode == 0 || exitCode == s_processTerminatedExitCode)
+            {
+                logger.Log(LogEvents.Exited);
+            }
+            else if (exitCode == null)
+            {
+                logger.Log(LogEvents.ExitedWithUnknownErrorCode);
+            }
+            else
+            {
+                logger.Log(LogEvents.ExitedWithErrorCode, exitCode.Value);
+            }
+        }
+
+        return exitCode;
+    }
 
     public async ValueTask TerminateProcessAsync(TimeSpan processCleanupTimeout)
     {
@@ -86,7 +143,7 @@ internal sealed class ProcessState(Process process, ILogger logger, bool isUserA
 
         try
         {
-            return await WaitForExitAsync(cancellationSource.Token);
+            return await WaitForExitImplAsync(cancellationSource.Token);
         }
         catch (OperationCanceledException)
         {
@@ -105,7 +162,7 @@ internal sealed class ProcessState(Process process, ILogger logger, bool isUserA
     /// <summary>
     /// Returns true if the process has been verified to have exited and its output has been drained, false if an error occurred.
     /// </summary>
-    public async ValueTask<bool> WaitForExitAsync(CancellationToken cancellationToken)
+    private async ValueTask<bool> WaitForExitImplAsync(CancellationToken cancellationToken)
     {
 #if NET
         await process.WaitForExitAsync(cancellationToken);

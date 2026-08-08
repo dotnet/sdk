@@ -14,9 +14,6 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
     // For testing purposes only, lock on access.
     private static readonly HashSet<int> s_runningApplicationProcesses = [];
 
-    // Exit code used by the OS when process is terminated by an external signal.
-    private static readonly int s_processTerminatedExitCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? unchecked((int)0xC000013A) : 137;
-
     public static IReadOnlyCollection<int> GetRunningApplicationProcesses()
     {
         lock (s_runningApplicationProcesses)
@@ -29,7 +26,8 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
     /// Launches a process.
     /// Virtual for testing.
     /// </summary>
-    public virtual async Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
+    /// <returns>Returns null if the process failed to start, otherwise returns the exit code of the process.</returns>
+    public virtual async Task<int?> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
     {
         var stopwatch = new Stopwatch();
         stopwatch.Start();
@@ -37,7 +35,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
         using var state = TryStartProcessImpl(processSpec, logger);
         if (state == null)
         {
-            return int.MinValue;
+            return null;
         }
 
         if (processSpec.IsUserApplication)
@@ -50,77 +48,25 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
 
         launchResult?.ProcessId = state.ProcessId;
 
-        int? exitCode = null;
+        var exitCode = await state.WaitForExitAsync(processCleanupTimeout, processTerminationToken);
 
-        try
+        stopwatch.Stop();
+        logger.Log(MessageDescriptor.ProcessRunAndExited, state.ProcessId, stopwatch.ElapsedMilliseconds, exitCode);
+
+        if (processSpec.IsUserApplication)
         {
-            try
+            lock (s_runningApplicationProcesses)
             {
-                await state.WaitForExitAsync(processTerminationToken);
-            }
-            catch (OperationCanceledException)
-            {
-                // Process termination requested via cancellation token.
-                // Either Ctrl+C was pressed or the process is being restarted.
-
-                // Non-cancellable to not leave orphaned processes around blocking resources:
-                await state.TerminateProcessAsync(processCleanupTimeout);
-            }
-        }
-        catch (Exception e)
-        {
-            if (processSpec.IsUserApplication)
-            {
-                logger.Log(MessageDescriptor.ApplicationFailed, e.Message);
-            }
-        }
-        finally
-        {
-            stopwatch.Stop();
-
-            if (processSpec.IsUserApplication)
-            {
-                lock (s_runningApplicationProcesses)
-                {
-                    s_runningApplicationProcesses.Remove(state.ProcessId);
-                }
-            }
-
-            state.Exited();
-
-            try
-            {
-                exitCode = state.Process.ExitCode;
-            }
-            catch
-            {
-                exitCode = null;
-            }
-
-            logger.Log(MessageDescriptor.ProcessRunAndExited, state.ProcessId, stopwatch.ElapsedMilliseconds, exitCode);
-
-            if (processSpec.IsUserApplication)
-            {
-                if (exitCode == 0 || exitCode == s_processTerminatedExitCode)
-                {
-                    logger.Log(MessageDescriptor.Exited);
-                }
-                else if (exitCode == null)
-                {
-                    logger.Log(MessageDescriptor.ExitedWithUnknownErrorCode);
-                }
-                else
-                {
-                    logger.Log(MessageDescriptor.ExitedWithErrorCode, exitCode.Value);
-                }
-            }
-
-            if (processSpec.OnExit != null)
-            {
-                await processSpec.OnExit(state.ProcessId, exitCode);
+                s_runningApplicationProcesses.Remove(state.ProcessId);
             }
         }
 
+        if (processSpec.OnExit != null)
+        {
+            await processSpec.OnExit(state.ProcessId, exitCode);
+        }
+
+        // min value if the exit code can't be retrieved
         return exitCode ?? int.MinValue;
     }
 
@@ -144,7 +90,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
             }
         };
 
-        var state = new ProcessState(process, processSpec.IsUserApplication);
+        var state = new ProcessState(process, logger, processSpec.IsUserApplication);
 
         if (processSpec.IsUserApplication && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
