@@ -77,6 +77,57 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [TestMethod]
+        public void PathMapMakesTheSettingsHashLocationIndependent()
+        {
+            var task = InitializeTask(out _);
+
+            void SetProjectPaths(string root)
+            {
+                task.ProjectPath = root + @"\src\proj.csproj";
+                task.ProjectAssetsFile = root + @"\obj\project.assets.json";
+                task.ProjectAssetsCacheFile = root + @"\obj\project.assets.cache";
+            }
+
+            // Identical restores under two different roots hash differently without a path map...
+            SetProjectPaths(@"C:\rootA");
+            task.PathMap = null;
+            byte[] rootAUnmapped = task.HashSettings();
+
+            SetProjectPaths(@"C:\rootB");
+            byte[] rootBUnmapped = task.HashSettings();
+
+            rootBUnmapped.Should().NotBeEquivalentTo(rootAUnmapped,
+                because: "identical restores under different roots hash differently without a path map.");
+
+            // ...but converge once each root is mapped to the same deterministic prefix.
+            SetProjectPaths(@"C:\rootA");
+            task.PathMap = @"C:\rootA\=/_/";
+            byte[] rootAMapped = task.HashSettings();
+
+            SetProjectPaths(@"C:\rootB");
+            task.PathMap = @"C:\rootB\=/_/";
+            byte[] rootBMapped = task.HashSettings();
+
+            rootBMapped.Should().BeEquivalentTo(rootAMapped,
+                because: "mapping each root to the same prefix makes the settings hash location-independent.");
+        }
+
+        [TestMethod]
+        public void EmptyPathMapDoesNotChangeTheSettingsHash()
+        {
+            var task = InitializeTask(out _);
+
+            task.PathMap = null;
+            byte[] withoutPathMap = task.HashSettings();
+
+            task.PathMap = "";
+            byte[] withEmptyPathMap = task.HashSettings();
+
+            withEmptyPathMap.Should().BeEquivalentTo(withoutPathMap,
+                because: "an empty path map keeps the legacy hash, so the normalization is opt-in.");
+        }
+
+        [TestMethod]
         public void It_does_not_error_on_duplicate_package_names()
         {
             string projectAssetsJsonPath = Path.GetTempFileName();
@@ -205,6 +256,9 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 .GetProperties(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public)
                 .Where(p => !p.IsDefined(typeof(OutputAttribute)) &&
                             p.Name != nameof(ResolvePackageAssets.DesignTimeBuild) &&
+                            // PathMap is not hashed directly; it transforms other hashed paths, so it is
+                            // covered by PathMapMakesTheSettingsHashLocationIndependent instead.
+                            p.Name != nameof(ResolvePackageAssets.PathMap) &&
                             p.Name != nameof(ResolvePackageAssets.TaskEnvironment))
                 .OrderBy(p => p.Name, StringComparer.Ordinal);
 

@@ -48,6 +48,15 @@ namespace Microsoft.NET.Build.Tasks
         public string ProjectPath { get; set; }
 
         /// <summary>
+        /// Optional path map, in the same "from=to,from2=to2" form the compiler accepts for /pathmap.
+        /// When set, it is applied (as a path-prefix replacement) to the project-owned paths that feed the
+        /// cache-invalidation hash, so an otherwise-identical restore under a different repo root produces the
+        /// same hash and the assets cache stays valid across checkout locations. Empty by default, so the hash
+        /// is unchanged for normal builds - the normalization is opt-in.
+        /// </summary>
+        public string PathMap { get; set; }
+
+        /// <summary>
         /// TargetFramework to use for compile-time assets.
         /// </summary>
         [Required]
@@ -437,6 +446,10 @@ namespace Microsoft.NET.Build.Tasks
 
         internal byte[] HashSettings()
         {
+            // Applied to the project-owned paths below so the invalidation hash is independent of the
+            // checkout location when the compiler is already producing location-independent output.
+            List<KeyValuePair<string, string>> pathMap = ParsePathMap(PathMap);
+
             using (var stream = new MemoryStream())
             {
                 using (var writer = new BinaryWriter(stream, TextEncoding, leaveOpen: true))
@@ -467,8 +480,8 @@ namespace Microsoft.NET.Build.Tasks
                             writer.Write(implicitPackage.GetMetadata(MetadataKeys.Version) ?? "");
                         }
                     }
-                    writer.Write(ProjectAssetsCacheFile);
-                    writer.Write(ProjectAssetsFile ?? "");
+                    writer.Write(NormalizePathPrefix(ProjectAssetsCacheFile, pathMap));
+                    writer.Write(NormalizePathPrefix(ProjectAssetsFile ?? "", pathMap));
                     writer.Write(PlatformLibraryName ?? "");
                     if (RuntimeFrameworks != null)
                     {
@@ -487,7 +500,7 @@ namespace Microsoft.NET.Build.Tasks
                     }
                     writer.Write(ProjectLanguage ?? "");
                     writer.Write(CompilerApiVersion ?? "");
-                    writer.Write(ProjectPath);
+                    writer.Write(NormalizePathPrefix(ProjectPath, pathMap));
                     // we want to ensure uniqueness of results, so even though `any` is No RID for purposes of Task logic,
                     // we continue to treat it distinctly for hashing
                     writer.Write(RuntimeIdentifier ?? "");
@@ -510,6 +523,153 @@ namespace Microsoft.NET.Build.Tasks
                     return hash.ComputeHash(stream);
                 }
             }
+        }
+
+        /// <summary>
+        /// Parses a "from=to,from2=to2" path map (the same value the compiler receives via /pathmap) into
+        /// prefix-replacement pairs, ordered longest key first so the most specific prefix wins. Returns an
+        /// empty list when there is nothing to apply. Kept in sync with the compiler's path-map parsing
+        /// (Microsoft.CodeAnalysis.CommandLineParser.ParsePathMap / SortPathMap).
+        /// </summary>
+        private static List<KeyValuePair<string, string>> ParsePathMap(string pathMap)
+        {
+            var result = new List<KeyValuePair<string, string>>();
+            if (string.IsNullOrEmpty(pathMap))
+            {
+                return result;
+            }
+
+            foreach (var kEqualsV in SplitWithDoubledSeparatorEscaping(pathMap, ','))
+            {
+                if (kEqualsV.Length == 0)
+                {
+                    continue;
+                }
+
+                var kv = SplitWithDoubledSeparatorEscaping(kEqualsV, '=');
+                if (kv.Length != 2)
+                {
+                    continue;
+                }
+
+                var from = kv[0];
+                var to = kv[1];
+                if (from.Length == 0 || to.Length == 0)
+                {
+                    continue;
+                }
+
+                result.Add(new KeyValuePair<string, string>(EnsureTrailingSeparator(from), EnsureTrailingSeparator(to)));
+            }
+
+            result.Sort((x, y) => -x.Key.Length.CompareTo(y.Key.Length));
+            return result;
+        }
+
+        /// <summary>
+        /// Kept in sync with Microsoft.CodeAnalysis.CommandLineParser.SplitWithDoubledSeparatorEscaping.
+        /// </summary>
+        private static string[] SplitWithDoubledSeparatorEscaping(string str, char separator)
+        {
+            if (str.Length == 0)
+            {
+                return Array.Empty<string>();
+            }
+
+            var result = new List<string>();
+            var part = new StringBuilder();
+
+            int i = 0;
+            while (i < str.Length)
+            {
+                char c = str[i++];
+                if (c == separator)
+                {
+                    if (i < str.Length && str[i] == separator)
+                    {
+                        i++;
+                    }
+                    else
+                    {
+                        result.Add(part.ToString());
+                        part.Clear();
+                        continue;
+                    }
+                }
+
+                part.Append(c);
+            }
+
+            result.Add(part.ToString());
+            return result.ToArray();
+        }
+
+        /// <summary>
+        /// Kept in sync with Roslyn.Utilities.PathUtilities.EnsureTrailingSeparator.
+        /// </summary>
+        private static string EnsureTrailingSeparator(string s)
+        {
+            if (s.Length == 0 || s[s.Length - 1] == '/' || s[s.Length - 1] == '\\')
+            {
+                return s;
+            }
+
+            // Use the existing slashes in the path, if they're consistent.
+            bool hasSlash = s.IndexOf('/') >= 0;
+            bool hasBackslash = s.IndexOf('\\') >= 0;
+            if (hasSlash && !hasBackslash)
+            {
+                return s + '/';
+            }
+            else if (!hasSlash && hasBackslash)
+            {
+                return s + '\\';
+            }
+            else
+            {
+                // If there are no slashes or they are inconsistent, use the current platform's slash.
+                return s + System.IO.Path.DirectorySeparatorChar;
+            }
+        }
+
+        /// <summary>
+        /// Applies the first matching path-prefix mapping to <paramref name="filePath"/>. Kept in sync with
+        /// Roslyn.Utilities.PathUtilities.NormalizePathPrefix. Comparison is ordinal because the compiler
+        /// expects consistent capitalization for path-map keys.
+        /// </summary>
+        private static string NormalizePathPrefix(string filePath, List<KeyValuePair<string, string>> pathMap)
+        {
+            if (pathMap.Count == 0 || string.IsNullOrEmpty(filePath))
+            {
+                return filePath;
+            }
+
+            foreach (var kv in pathMap)
+            {
+                var oldPrefix = kv.Key;
+                if (!(oldPrefix?.Length > 0))
+                {
+                    continue;
+                }
+
+                // oldPrefix always ends with a path separator, so a prefix match cannot be a partial segment
+                // (e.g. map /goo=/bar does not match /goooo).
+                if (filePath.StartsWith(oldPrefix, StringComparison.Ordinal))
+                {
+                    var replacementPrefix = kv.Value;
+                    var replacement = replacementPrefix + filePath.Substring(oldPrefix.Length);
+
+                    // Normalize the path separators if they are used uniformly in the replacement prefix.
+                    bool hasSlash = replacementPrefix.IndexOf('/') >= 0;
+                    bool hasBackslash = replacementPrefix.IndexOf('\\') >= 0;
+                    return
+                        (hasSlash && !hasBackslash) ? replacement.Replace('\\', '/') :
+                        (hasBackslash && !hasSlash) ? replacement.Replace('/', '\\') :
+                        replacement;
+                }
+            }
+
+            return filePath;
         }
 
         private sealed class CacheReader : IDisposable
