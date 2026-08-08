@@ -100,44 +100,53 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             {
                 if (rightAttributeSet.TryGetValue(leftGroup.Representative, out AttributeGroup? rightGroup))
                 {
-                    // If attribute exists on left and the right, compare their arguments.
+                    // Match equal attribute instances first so repeated attributes are compared as a multiset.
+                    List<AttributeData> unmatchedLeft = new();
                     foreach (AttributeData leftAttribute in leftGroup.Attributes)
                     {
-                        bool seen = false;
+                        bool matched = false;
                         for (int j = 0; j < rightGroup.Attributes.Count; j++)
                         {
                             AttributeData rightAttribute = rightGroup.Attributes[j];
-                            if (_settings.AttributeDataEqualityComparer.Equals(leftAttribute, rightAttribute))
+                            if (!rightGroup.Seen[j] && _settings.AttributeDataEqualityComparer.Equals(leftAttribute, rightAttribute))
                             {
                                 rightGroup.Seen[j] = true;
-                                seen = true;
+                                matched = true;
                                 break;
                             }
                         }
 
-                        if (!seen)
+                        if (!matched)
                         {
-                            // Attribute arguments exist on left but not right.
-                            // Issue "changed" diagnostic.
-                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, leftAttribute);
+                            unmatchedLeft.Add(leftAttribute);
                         }
                     }
 
+                    List<AttributeData> unmatchedRight = new();
                     for (int i = 0; i < rightGroup.Attributes.Count; i++)
                     {
-                        if (!rightGroup.Seen[i] && _settings.StrictMode)
+                        if (!rightGroup.Seen[i])
                         {
-                            // Attribute arguments exist on right but not left.
-                            // Left
-                            //   [Foo("a")]
-                            //   void F()
-                            // Right
-                            //   [Foo("a")]
-                            //   [Foo("b")]
-                            //   void F()
-                            // Issue "changed" diagnostic when in strict mode.
-                            AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, rightGroup.Attributes[i]);
+                            unmatchedRight.Add(rightGroup.Attributes[i]);
                         }
+                    }
+
+                    // Pair remaining instances as argument changes. Any unpaired instances were
+                    // genuinely removed or added.
+                    int changedCount = Math.Min(unmatchedLeft.Count, unmatchedRight.Count);
+                    for (int i = 0; i < changedCount; i++)
+                    {
+                        AddDifference(differences, DifferenceType.Changed, leftMetadata, rightMetadata, containing, itemRef, unmatchedLeft[i]);
+                    }
+
+                    for (int i = changedCount; i < unmatchedLeft.Count; i++)
+                    {
+                        AddDifference(differences, DifferenceType.Removed, leftMetadata, rightMetadata, containing, itemRef, unmatchedLeft[i]);
+                    }
+
+                    for (int i = changedCount; i < unmatchedRight.Count; i++)
+                    {
+                        AddDifference(differences, DifferenceType.Added, leftMetadata, rightMetadata, containing, itemRef, unmatchedRight[i]);
                     }
                 }
                 else
