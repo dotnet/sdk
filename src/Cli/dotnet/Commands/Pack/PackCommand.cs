@@ -106,7 +106,10 @@ public class PackCommand(
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),
             LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(definition.VerbosityOption)),
-            Arguments = [nuspecPath]
+            Arguments = [nuspecPath],
+            NoDefaultExcludes = parseResult.GetValue(definition.NoDefaultExcludesOption),
+            Serviceable = parseResult.GetValue(definition.ServiceableOption),
+            Suffix = parseResult.GetValue(definition.VersionSuffixOption)
         };
 
         packArgs.Path = PackCommandRunner.GetInputFile(packArgs);

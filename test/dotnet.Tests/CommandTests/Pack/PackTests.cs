@@ -432,5 +432,80 @@ namespace Microsoft.DotNet.Pack.Tests
 
             result.Should().Fail();            
         }
+
+        [TestMethod]
+        public void DotnetPack_AppliesDefaultExcludesToNuspecByDefault()
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecWithDefaultExcludes")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath);
+
+            result.Should().Pass();
+
+            var nupkgPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.1.0.0.nupkg");
+            using var zip = ZipFile.OpenRead(nupkgPath);
+            zip.Entries.Should().Contain(e => e.FullName == "content/one.txt");
+            zip.Entries.Should().NotContain(e => e.FullName == "content/.dotfile");
+        }
+
+        [TestMethod]
+        public void DotnetPack_AcceptsNoDefaultExcludesOption()
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecWithDefaultExcludes")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--no-default-excludes");
+
+            result.Should().Pass();
+
+            var nupkgPath = Path.Combine(testInstance.Path, "PackDefaultExcludes.1.0.0.nupkg");
+            using var zip = ZipFile.OpenRead(nupkgPath);
+            zip.Entries.Should().Contain(e => e.FullName == "content/one.txt");
+            zip.Entries.Should().Contain(e => e.FullName == "content/.dotfile");
+        }
+
+        [TestMethod]
+        public void DotnetPack_AcceptsServiceableOptionForNuspec()
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj",
+                "--property", "authors=CustomAuthor", "--serviceable");
+
+            result.Should().Pass();
+
+            var nupkgPath = Path.Combine(testInstance.Path, "PackNoCsproj.1.0.0.nupkg");
+            using var nupkgReader = new PackageArchiveReader(nupkgPath);
+            nupkgReader.NuspecReader.IsServiceable().Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void DotnetPack_AcceptsVersionSuffixOptionForNuspec()
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestNuspecProject")
+                .WithSource();
+            string nuspecPath = Path.Combine(testInstance.Path, "PackNoCsproj.nuspec");
+
+            var result = new DotnetPackCommand(Log)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(nuspecPath, "--property", "id=PackNoCsproj",
+                "--property", "authors=CustomAuthor", "--version-suffix", "beta1");
+
+            result.Should().Pass();
+
+            var nupkgPath = Path.Combine(testInstance.Path, "PackNoCsproj.1.0.0-beta1.nupkg");
+            File.Exists(nupkgPath).Should().BeTrue("The version suffix should be appended to the package version.");
+        }
     }
 }
