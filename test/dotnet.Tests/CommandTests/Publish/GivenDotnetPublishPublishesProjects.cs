@@ -346,8 +346,7 @@ namespace Microsoft.DotNet.Cli.Publish.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void ItPublishesSuccessfullyWithNoBuildIfPreviouslyBuilt(bool selfContained)
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppSimple", identifier: selfContained.ToString())
