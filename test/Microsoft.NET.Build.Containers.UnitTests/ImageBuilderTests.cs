@@ -95,6 +95,29 @@ public class ImageBuilderTests
     }
 
     [TestMethod]
+    public void CanAddAnnotationsToOciImageManifest()
+    {
+        var builder = FromBaseImageConfig(
+            """
+            {
+              "architecture": "amd64",
+              "config": {},
+              "os": "linux",
+              "rootfs": { "type": "layers", "diff_ids": [] }
+            }
+            """);
+        builder.ManifestMediaType = SchemaTypes.OciManifestV1;
+        builder.AddAnnotation("org.opencontainers.image.source", "https://github.com/dotnet/sdk");
+        builder.AddAnnotation("org.opencontainers.image.revision", "abcdef");
+
+        JsonNode? manifest = JsonNode.Parse(builder.Build().Manifest);
+
+        Assert.IsNotNull(manifest);
+        Assert.AreEqual("https://github.com/dotnet/sdk", manifest["annotations"]?["org.opencontainers.image.source"]?.GetValue<string>());
+        Assert.AreEqual("abcdef", manifest["annotations"]?["org.opencontainers.image.revision"]?.GetValue<string>());
+    }
+
+    [TestMethod]
     public void CanPreserveExistingLabels()
     {
         string simpleImageConfig =
@@ -695,7 +718,50 @@ public class ImageBuilderTests
         Assert.AreEqual(StaticKnownDigestValue, digest.GetValue<string>());
     }
 
-    private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
+    [TestMethod]
+    public void CanSetBaseImageDigestAnnotation()
+    {
+        var builder = FromBaseImageConfig(
+            """
+            {
+              "architecture": "amd64",
+              "config": {},
+              "os": "linux",
+              "rootfs": { "type": "layers", "diff_ids": [] }
+            }
+            """);
+        builder.ManifestMediaType = SchemaTypes.OciManifestV1;
+
+        builder.AddBaseImageDigestAnnotation();
+
+        JsonNode? manifest = JsonNode.Parse(builder.Build().Manifest);
+        Assert.IsNotNull(manifest);
+        Assert.AreEqual(StaticKnownDigestValue, manifest["annotations"]?["org.opencontainers.image.base.digest"]?.GetValue<string>());
+    }
+
+    [TestMethod]
+    public void DoesNotSetEmptyBaseImageDigestAnnotation()
+    {
+        var builder = FromBaseImageConfig(
+            """
+            {
+              "architecture": "amd64",
+              "config": {},
+              "os": "linux",
+              "rootfs": { "type": "layers", "diff_ids": [] }
+            }
+            """,
+            knownDigest: string.Empty);
+        builder.ManifestMediaType = SchemaTypes.OciManifestV1;
+
+        builder.AddBaseImageDigestAnnotation();
+
+        JsonNode? manifest = JsonNode.Parse(builder.Build().Manifest);
+        Assert.IsNotNull(manifest);
+        Assert.IsNull(manifest["annotations"]);
+    }
+
+    private ImageBuilder FromBaseImageConfig(string baseImageConfig, string? knownDigest = null, [CallerMemberName] string testName = "")
     {
         var manifest = new ManifestV2()
         {
@@ -708,7 +774,7 @@ public class ImageBuilderTests
                 digest = "sha256:"
             },
             Layers = new List<ManifestLayer>(),
-            KnownDigest = StaticKnownDigestValue
+            KnownDigest = knownDigest ?? StaticKnownDigestValue
         };
         return new ImageBuilder(manifest, manifest.MediaType, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));
     }

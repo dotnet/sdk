@@ -505,4 +505,13 @@
     <value>CONTAINER2031: The container image format '{0}' is not supported. Supported formats are '{1}'.</value>
     <comment>{StrBegins="CONTAINER2031: "}</comment>
   </data>
+  <data name="InvalidContainerAnnotationScope" xml:space="preserve">
+    <value>Container annotation '{0}' has invalid Scope '{1}'. Valid values are Manifest, Index, or Manifest,Index.</value>
+  </data>
+  <data name="ManifestAnnotationsRequireOci" xml:space="preserve">
+    <value>Manifest-scoped container annotations cannot be written to Docker image manifests. Use the OCI image format or remove the applicable annotations.</value>
+  </data>
+  <data name="IndexAnnotationsRequireOci" xml:space="preserve">
+    <value>Index-scoped container annotations cannot be written to Docker manifest lists. Use the OCI image format or remove the applicable annotations.</value>
+  </data>
 </root>
