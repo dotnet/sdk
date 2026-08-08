@@ -55,7 +55,7 @@ namespace Microsoft.CodeAnalysis.FlowAnalysis.DataFlow.PointsToAnalysis
         public void AddTrackedPointsToValue(PointsToAbstractValue value)
             => PointsToValues.Add(value);
 
-        public IEnumerable<AnalysisEntity> EnumerateEntities()
+        public HashSet<AnalysisEntity> EnumerateEntities()
             => AllEntities;
 
         public bool IsTrackedPointsToValue(PointsToAbstractValue value)
