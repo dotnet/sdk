@@ -34,8 +34,7 @@ namespace ManifestReaderTests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItShouldPrioritizeInstallStateOverWorkloadSetUnlessSpecified(bool preferWorkloadSet)
         {
             Initialize(identifier: preferWorkloadSet.ToString());
@@ -68,8 +67,7 @@ namespace ManifestReaderTests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItShouldReturnTheWorkloadVersion(bool useWorkloadSet)
         {
             Initialize(identifier: useWorkloadSet.ToString());
@@ -303,8 +301,7 @@ namespace ManifestReaderTests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void ItUsesLatestWorkloadSet(bool globalJsonExists)
         {
             Initialize("8.0.200", identifier: globalJsonExists.ToString());
