@@ -166,6 +166,11 @@ partial class CreateNewImage
     /// </summary>
     public bool SkipPublishing { get; set; }
 
+    /// <summary>
+    /// If true, the tooling will skip layer and configuration uploads when the generated manifest already exists in the destination registry.
+    /// </summary>
+    public bool SkipPushIfAlreadyPresent { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 

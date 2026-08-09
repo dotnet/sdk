@@ -135,6 +135,7 @@
       <ContainerGenerateLabelsImageBaseDigest Condition="'$(ContainerGenerateLabelsImageBaseDigest)' == ''">true</ContainerGenerateLabelsImageBaseDigest>
       <ContainerGenerateLabelsImageBaseName Condition="'$(ContainerGenerateLabelsImageBaseName)' == ''">true</ContainerGenerateLabelsImageBaseName>
       <ContainerGenerateLabelsDotnetToolset Condition="'$(ContainerGenerateLabelsDotnetToolset)' == ''">true</ContainerGenerateLabelsDotnetToolset>
+      <ContainerSkipPushIfAlreadyPresent Condition="'$(ContainerSkipPushIfAlreadyPresent)' == ''">false</ContainerSkipPushIfAlreadyPresent>
     </PropertyGroup>
 
     <PropertyGroup Label="Defaults for Container Labels">
@@ -277,6 +278,7 @@
                     ContainerUser="$(ContainerUser)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
                     SkipPublishing="$(_SkipContainerPublishing)"
+                    SkipPushIfAlreadyPresent="$(ContainerSkipPushIfAlreadyPresent)"
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
@@ -333,6 +335,7 @@
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerGenerateLabels=$(ContainerGenerateLabels);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
+          ContainerSkipPushIfAlreadyPresent=$(ContainerSkipPushIfAlreadyPresent);
           _SkipContainerPublishing=$(_SkipContainerPublishing);
           ContainerImageFormat=$(_SingleImageContainerFormat);
           _IsMultiRIDBuild=false;
