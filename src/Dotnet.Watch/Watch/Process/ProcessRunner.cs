@@ -85,7 +85,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
             }
         };
 
-        var state = new ProcessState(process, logger, processSpec.OnExit, processSpec.IsUserApplication);
+        var state = new ProcessState(process, logger, processSpec.OnExit, onBeforeTermination: null, processSpec.IsUserApplication);
 
         if (processSpec.IsUserApplication && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
