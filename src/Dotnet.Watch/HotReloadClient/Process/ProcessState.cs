@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class ProcessState(Process process, ILogger logger, ProcessExitAction? onExit, bool isUserApplication) : IDisposable
+internal sealed class ProcessState(Process process, ILogger logger, ProcessExitAction? onExit, Func<ValueTask>? onBeforeTermination, bool isUserApplication) : IDisposable
 {
     // Exit code used by the OS when process is terminated by an external signal.
     private static readonly int s_processTerminatedExitCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? unchecked((int)0xC000013A) : 137;
@@ -42,6 +42,10 @@ internal sealed class ProcessState(Process process, ILogger logger, ProcessExitA
             {
                 // Process termination requested via cancellation token.
                 // Either Ctrl+C was pressed or the process is being restarted.
+                if (onBeforeTermination != null)
+                {
+                    await onBeforeTermination();
+                }
 
                 // Non-cancellable to not leave orphaned processes around blocking resources:
                 await TerminateProcessAsync(processCleanupTimeout);
@@ -92,7 +96,7 @@ internal sealed class ProcessState(Process process, ILogger logger, ProcessExitA
         return exitCode;
     }
 
-    public async ValueTask TerminateProcessAsync(TimeSpan processCleanupTimeout)
+    private async ValueTask TerminateProcessAsync(TimeSpan processCleanupTimeout)
     {
         var forceOnly = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && !isUserApplication;
 
