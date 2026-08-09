@@ -107,8 +107,22 @@ internal sealed class ArtifactPostProcessingManager
             SnapshotApplications(),
             SnapshotArtifacts(),
             cancellationReason);
+        ArtifactPostProcessingJob[] runnableJobs =
+        [
+            .. plan.Jobs.Where(job =>
+            {
+                bool supported = !TestApplication.RequiresHttpTransport(job.Application.Module);
+                if (!supported)
+                {
+                    Logger.LogTrace(
+                        $"Skipping artifact post-processing for WebAssembly module '{job.Application.Module.TargetPath}' because no browser-aware merge host is available.");
+                }
 
-        if (plan.Jobs.Count == 0)
+                return supported;
+            }),
+        ];
+
+        if (runnableJobs.Length == 0)
         {
             return;
         }
@@ -122,7 +136,7 @@ internal sealed class ArtifactPostProcessingManager
         int executedJobs = 0;
         int failedJobs = 0;
 
-        foreach (ArtifactPostProcessingJob job in plan.Jobs)
+        foreach (ArtifactPostProcessingJob job in runnableJobs)
         {
             if (ctrlC.Token.IsCancellationRequested)
             {
@@ -282,6 +296,15 @@ internal sealed class ArtifactPostProcessingManager
         if (buildOptions.PathOptions.ResultsDirectoryPath is { } resultsDirectory)
         {
             return Path.GetFullPath(resultsDirectory);
+        }
+
+        if (job.Application.Module.UseArtifactsOutput
+            && TestResultsDirectoryResolver.GetResultsDirectoryRoot(
+                buildOptions.PathOptions,
+                job.Application.Module,
+                Directory.GetCurrentDirectory()) is { } artifactsResultsDirectory)
+        {
+            return Path.GetFullPath(artifactsResultsDirectory);
         }
 
         ArtifactPostProcessingArtifact[] inputs =
