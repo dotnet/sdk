@@ -43,11 +43,41 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
         [TestMethod]
         [CoreMSBuildOnly]
-        [DataRow(null, "true", "true")]
-        [DataRow("false", "false", "false")]
-        public void Build_ResolvesBlazorDiagnosticsFeatureSwitches(string diagnosticsEnabled, string expectedDiagnosticsEnabled, string expectedFeatureValue)
+        public void Build_TestApplicationBuilds()
+        {
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmTestApp");
+
+            ExecuteCommand(CreateBuildCommand(testInstance))
+                .Should()
+                .Pass();
+
+            var buildOutputDirectory = Path.Combine(testInstance.Path, "bin", "Debug", ToolsetInfo.CurrentTargetFramework);
+            new FileInfo(Path.Combine(buildOutputDirectory, "BlazorWasmTestApp.dll")).Should().Exist();
+            new FileInfo(Path.Combine(buildOutputDirectory, "BlazorWasmTestApp.staticwebassets.endpoints.json")).Should().Exist();
+        }
+
+        [TestMethod]
+        [CoreMSBuildOnly]
+        [DataRow(null, false, "true", "true")]
+        [DataRow("false", false, "false", "false")]
+        // Setting the property from the project body must take effect (dotnet/sdk#55489): the defaults are
+        // evaluated at Sdk.targets time so a value set in the .csproj is honored, not just a global property.
+        [DataRow("false", true, "false", "false")]
+        [DataRow("true", true, "true", "true")]
+        public void Build_ResolvesBlazorDiagnosticsFeatureSwitches(string diagnosticsEnabled, bool setInProjectFile, string expectedDiagnosticsEnabled, string expectedFeatureValue)
         {
             var testInstance = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
+
+            if (setInProjectFile && diagnosticsEnabled is not null)
+            {
+                testInstance.WithProjectChanges((project, doc) =>
+                {
+                    var propertyGroup = new XElement("PropertyGroup");
+                    propertyGroup.Add(new XElement("BlazorWebAssemblyDiagnosticsEnabled", diagnosticsEnabled));
+                    doc.Root.Add(propertyGroup);
+                });
+            }
+
             var build = CreateBuildCommand(testInstance);
 
             var arguments = new List<string>
@@ -58,7 +88,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 "-getProperty:HttpActivityPropagationSupport"
             };
 
-            if (diagnosticsEnabled is not null)
+            if (!setInProjectFile && diagnosticsEnabled is not null)
             {
                 arguments.Add($"/p:BlazorWebAssemblyDiagnosticsEnabled={diagnosticsEnabled}");
             }

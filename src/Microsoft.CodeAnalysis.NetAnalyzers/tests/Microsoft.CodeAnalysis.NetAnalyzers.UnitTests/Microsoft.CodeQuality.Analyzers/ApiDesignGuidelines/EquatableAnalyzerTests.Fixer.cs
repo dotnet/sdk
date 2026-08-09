@@ -169,5 +169,117 @@ struct S : IEquatable<S>
 }
 ");
         }
+
+        [TestMethod]
+        public async Task CSharp_NestedStructsMissingIEquatable_FixAllImplementsEquatableOnBothAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+
+struct {|CA1066:Outer|}
+{
+    public override bool Equals(object other)
+    {
+        return true;
+    }
+
+    public override int GetHashCode() => 0;
+
+    struct {|CA1066:Inner|}
+    {
+        public override bool Equals(object other)
+        {
+            return true;
+        }
+
+        public override int GetHashCode() => 0;
+    }
+}
+", @"
+using System;
+
+struct Outer : IEquatable<Outer>
+{
+    public override bool Equals(object other)
+    {
+        return true;
+    }
+
+    public override int GetHashCode() => 0;
+
+    struct Inner : IEquatable<Inner>
+    {
+        public override bool Equals(object other)
+        {
+            return true;
+        }
+
+        public override int GetHashCode() => 0;
+
+        public bool Equals(Inner other)
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public bool Equals(Outer other)
+    {
+        throw new NotImplementedException();
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CSharp_NestedClassesMissingEqualsOverride_FixAllOverridesEqualsOnBothAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+
+class {|CA1067:Outer|} : IEquatable<Outer>
+{
+    public bool Equals(Outer other)
+    {
+        return true;
+    }
+
+    class {|CA1067:Inner|} : IEquatable<Inner>
+    {
+        public bool Equals(Inner other)
+        {
+            return true;
+        }
+    }
+}
+", @"
+using System;
+
+class Outer : IEquatable<Outer>
+{
+    public bool Equals(Outer other)
+    {
+        return true;
+    }
+
+    class Inner : IEquatable<Inner>
+    {
+        public bool Equals(Inner other)
+        {
+            return true;
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as Inner);
+        }
+    }
+
+    public override bool Equals(object obj)
+    {
+        return Equals(obj as Outer);
+    }
+}
+");
+        }
     }
 }

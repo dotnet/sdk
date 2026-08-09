@@ -93,12 +93,11 @@
 /test/TemplateEngine @dotnet/templating-engine-maintainers
 /template_feed @dotnet/templating-engine-maintainers
 
-# ILLink and ReadyToRun targets and tasks owned by runtime team
 # Area-ILLink Area-ReadyToRun
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
-/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs @dotnet/illink
+/test/Microsoft.NET.ILLink.Tests @dotnet/illink
 # Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @dotnet/dotnet-cli
+
 # Area-ClickOnce
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 

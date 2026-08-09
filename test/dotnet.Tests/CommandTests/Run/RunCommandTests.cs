@@ -142,4 +142,30 @@ public sealed class RunCommandTests : SdkTest
 
         Assert.AreEqual("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
     }
+
+    [TestMethod]
+    [DataRow("cached-argument", "cached-argument \"app arg\"")]
+    [DataRow(null, "\"app arg\"")]
+    public void Project_CachedRunPropertiesApplicationArguments(string? cachedArguments, string expectedArguments)
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        string projectPath = Path.Combine(root, "myproj.csproj");
+        var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app arg"]);
+        var runProperties = new RunProperties(
+            Command: "executable",
+            Arguments: cachedArguments,
+            WorkingDirectory: root,
+            RuntimeIdentifier: string.Empty,
+            DefaultAppHostRuntimeIdentifier: string.Empty,
+            TargetFrameworkVersion: string.Empty);
+
+        var command = (Command)runCommand.GetTargetCommand(
+            launchSettings: null,
+            projectFactory: null,
+            cachedRunProperties: runProperties,
+            runPropertiesFromEvaluation: false,
+            logger: null);
+
+        Assert.AreEqual(expectedArguments, command.StartInfo.Arguments);
+    }
 }
