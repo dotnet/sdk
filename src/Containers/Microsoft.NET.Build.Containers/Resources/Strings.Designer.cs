@@ -763,6 +763,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
+        ///   Looks up a localized string similar to Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads..
+        /// </summary>
+        internal static string Registry_ManifestExists {
+            get {
+                return ResourceManager.GetString("Registry_ManifestExists", resourceCulture);
+            }
+        }
+
+        /// <summary>
         ///   Looks up a localized string similar to Uploading manifest to registry &apos;{0}&apos; as blob &apos;{1}&apos;..
         /// </summary>
         internal static string Registry_ManifestUploadStarted {
