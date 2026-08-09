@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class ProcessState(Process process, ILogger logger, bool isUserApplication) : IDisposable
+internal sealed class ProcessState(Process process, ILogger logger, ProcessExitAction? onExit, bool isUserApplication) : IDisposable
 {
     // Exit code used by the OS when process is terminated by an external signal.
     private static readonly int s_processTerminatedExitCode = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? unchecked((int)0xC000013A) : 137;
@@ -32,8 +32,6 @@ internal sealed class ProcessState(Process process, ILogger logger, bool isUserA
 
     public async Task<int?> WaitForExitAsync(TimeSpan processCleanupTimeout, CancellationToken processTerminationToken)
     {
-        int? exitCode = null;
-
         try
         {
             try
@@ -59,6 +57,8 @@ internal sealed class ProcessState(Process process, ILogger logger, bool isUserA
 
         HasExited = true;
 
+        int? exitCode;
+
         try
         {
             exitCode = Process.ExitCode;
@@ -82,6 +82,11 @@ internal sealed class ProcessState(Process process, ILogger logger, bool isUserA
             {
                 logger.Log(LogEvents.ExitedWithErrorCode, exitCode.Value);
             }
+        }
+
+        if (onExit != null)
+        {
+            await onExit(ProcessId, exitCode);
         }
 
         return exitCode;

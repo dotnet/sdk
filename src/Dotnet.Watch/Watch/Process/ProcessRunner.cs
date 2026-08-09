@@ -61,11 +61,6 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
             }
         }
 
-        if (processSpec.OnExit != null)
-        {
-            await processSpec.OnExit(state.ProcessId, exitCode);
-        }
-
         // min value if the exit code can't be retrieved
         return exitCode ?? int.MinValue;
     }
@@ -90,7 +85,7 @@ internal class ProcessRunner(TimeSpan processCleanupTimeout)
             }
         };
 
-        var state = new ProcessState(process, logger, processSpec.IsUserApplication);
+        var state = new ProcessState(process, logger, processSpec.OnExit, processSpec.IsUserApplication);
 
         if (processSpec.IsUserApplication && RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
         {
