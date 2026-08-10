@@ -611,7 +611,25 @@ internal static class SolutionAndProjectUtility
             rootVariableName = null;
         }
 
-        return new TestModule(runProperties, PathUtility.FixFilePath(projectFullPath), targetFramework, isTestingPlatformApplication, launchSettings, project.GetPropertyValue(ProjectProperties.TargetPath), rootVariableName, runtimeEnvironmentVariables);
+        _ = bool.TryParse(project.GetPropertyValue(ProjectProperties.UseArtifactsOutput), out bool useArtifactsOutput);
+        string artifactsPath = project.GetPropertyValue(ProjectProperties.ArtifactsPath);
+        string? fullArtifactsPath = string.IsNullOrEmpty(artifactsPath)
+            ? null
+            : Path.GetFullPath(PathUtility.FixFilePath(artifactsPath), project.Directory);
+
+        return new TestModule(
+            runProperties,
+            PathUtility.FixFilePath(projectFullPath),
+            targetFramework,
+            isTestingPlatformApplication,
+            launchSettings,
+            project.GetPropertyValue(ProjectProperties.TargetPath),
+            rootVariableName,
+            runtimeEnvironmentVariables,
+            useArtifactsOutput,
+            fullArtifactsPath,
+            project.GetPropertyValue(ProjectProperties.ArtifactsProjectName),
+            project.GetPropertyValue(ProjectProperties.ArtifactsPivots));
 
         [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
         [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
