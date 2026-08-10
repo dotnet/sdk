@@ -24,7 +24,7 @@ The managed `dotnet` is not added to your shell `PATH`.
 
 ## Configure a shell profile
 
-Use the `shell` mode to write a managed block to your shellprofile:
+Use the `shell` mode to write a managed block to your shell profile:
 
 ```dotnetcli
 dotnetup env set shell --shell pwsh
