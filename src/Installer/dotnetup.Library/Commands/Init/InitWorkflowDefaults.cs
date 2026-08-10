@@ -28,7 +28,11 @@ internal static class InitWorkflowDefaults
         List<ResolvedInstallRequest>? preResolvedRequests,
         IDotnetEnvironmentManager dotnetEnvironment)
     {
-        DotnetAccessMode accessMode = GetDefaultAccessMode(command.ShellProvider);
+        IEnvShellProvider? shellProvider = command.ShellProvider ?? ShellDetection.GetCurrentShellProvider();
+        DotnetAccessMode accessMode = GetDefaultAccessMode(shellProvider);
+        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
+            command.InstallPath, globalJson);
 
         if (preResolvedRequests is { Count: > 0 })
         {
@@ -41,12 +45,11 @@ internal static class InitWorkflowDefaults
                 resolvedRoot,
                 accessMode,
                 resolvedMigrations,
-                new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath));
+                new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath),
+                shellProvider,
+                GetInstallRootGlobalJsonPath(pathResolution, globalJson, resolvedRoot));
         }
 
-        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
-            command.InstallPath, globalJson);
         var installRoot = new DotnetInstallRoot(
             pathResolution.ResolvedInstallPath,
             InstallerUtilities.GetDefaultInstallArchitecture());
@@ -54,8 +57,23 @@ internal static class InitWorkflowDefaults
         var migrations = ResolveDefaultMigrations(
             dotnetEnvironment, accessMode, installRoot, command.ManifestPath, existingRequests: null);
 
-        return new WalkthroughPlan(installRoot, accessMode, migrations, ResolveChannelDisplay(globalJson));
+        return new WalkthroughPlan(
+            installRoot,
+            accessMode,
+            migrations,
+            ResolveChannelDisplay(globalJson),
+            shellProvider,
+            GetInstallRootGlobalJsonPath(pathResolution, globalJson, installRoot));
     }
+
+    private static string? GetInstallRootGlobalJsonPath(
+        InstallPathResolver.InstallPathResolutionResult pathResolution,
+        GlobalJsonInfo globalJson,
+        DotnetInstallRoot installRoot)
+        => pathResolution.PathSource is PathSource.GlobalJson
+            && DotnetupUtilities.PathsEqual(pathResolution.ResolvedInstallPath, installRoot.Path)
+                ? globalJson.GlobalJsonPath
+                : null;
 
     /// <summary>
     /// Resolves the default install requests. Uses the pre-resolved requests when supplied;
