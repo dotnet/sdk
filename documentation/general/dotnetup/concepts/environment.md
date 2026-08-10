@@ -29,6 +29,7 @@ Profile and script generation support:
 - Bash
 - Z shell
 - Fish
+- Pwsh (PowerShell Core)
 - PowerShell
 
 If you do not pass `--shell`, `dotnetup` detects the current shell. Use an

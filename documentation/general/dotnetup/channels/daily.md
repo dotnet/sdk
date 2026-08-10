@@ -12,10 +12,7 @@ Use them to test changes that are not yet available in a stable or preview
 release.
 
 > [!CAUTION]
-> Daily builds can change frequently and are not supported releases. The
-> current implementation warns that a daily source can provide weaker
-> authenticity guarantees than release-manifest downloads. Use daily builds
-> only in environments where you accept this risk.
+> Daily builds can change frequently and are not supported releases. They are not code-signed.
 
 ## Daily channel forms
 

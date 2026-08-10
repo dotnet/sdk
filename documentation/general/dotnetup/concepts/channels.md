@@ -8,7 +8,7 @@ ms.date: 08/07/2026
 # dotnetup channels and versions
 
 A channel describes a set of .NET versions. An exact version describes one
-version. `dotnetup` stores the text that you requested and resolves it for the
+version. `dotnetup` stores `channels` and resolves it for the
 selected component.
 
 ## Named channels

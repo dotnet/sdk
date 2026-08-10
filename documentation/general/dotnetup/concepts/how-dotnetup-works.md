@@ -17,7 +17,7 @@ A **hive** is a .NET installation root that `dotnetup` tracks. A hive has:
 
 - A fully qualified directory path.
 - An architecture: `x86`, `x64`, or `arm64`.
-- Zero or more install specifications.
+- Zero or more install specifications, specified as `channels`.
 - Zero or more concrete installations.
 
 The current CLI installs for the architecture of the running `dotnetup`
