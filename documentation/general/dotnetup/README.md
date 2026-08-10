@@ -1,192 +1,174 @@
-# Getting Started with dotnetup
+# Get started with dotnetup
 
-`dotnetup` is the .NET toolchain manager for user-level installs. It lets you install, update, and manage .NET SDKs and runtimes without needing administrator privileges or system package managers.
+`dotnetup` is a cross-platform toolchain manager for user-level .NET
+installations. It installs, updates, and removes .NET SDKs and runtimes without
+using a system package manager.
 
 ## Prerequisites
 
-- **Windows**, **macOS**, or **Linux**
-- A terminal (like bash, zsh, or PowerShell (Core))
-- No administrator / root access required for Isolation or Terminal Mode. Replacement Mode on Windows requires administrator privileges.
+- Windows, macOS, or Linux.
+- A terminal.
+- Bash on macOS or Linux, or PowerShell on Windows, to run the download script.
+
+The default installation and all access modes use your user profile. They do
+not require administrator access. A custom installation path can require
+additional file permissions.
 
 ## Download dotnetup
 
-The easiest way to download the latest preview build of `dotnetup` is to use the installation script:
+The download scripts install the latest `preview` build by default. They verify
+the downloaded executable with its SHA-512 checksum and install it in
+`~/.dotnetup`.
+
+On macOS or Linux, run:
 
 ```bash
-curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash
+curl -fsSL https://aka.ms/dotnet/dotnetup/preview/get-dotnetup.sh | bash
 ```
 
-On Windows, save the script and run it so PowerShell can verify its Authenticode signature (the `.ps1` served from https://aka.ms/dotnetup/get-dotnetup.ps1 is signed by the .NET signing certificate):
+On Windows, save and run the PowerShell script:
 
-```pwsh
-$s = Join-Path $env:TEMP 'get-dotnetup.ps1'
-iwr https://aka.ms/dotnetup/get-dotnetup.ps1 -OutFile $s
-# Get-AuthenticodeSignature $s   # optional: inspect the signature
-& $s
+```powershell
+$script = Join-Path $env:TEMP 'get-dotnetup.ps1'
+Invoke-WebRequest https://aka.ms/dotnet/dotnetup/preview/get-dotnetup.ps1 -OutFile $script
+& $script
 ```
 
-To install the latest daily build instead, pass the quality explicitly:
+To install the latest `daily` build on macOS or Linux, run:
 
 ```bash
-curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash -s -- --quality daily
+curl -fsSL https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.sh |
+  bash -s -- --quality daily
 ```
 
-For a PowerShell one-liner, create a script block from the downloaded script and pass the
-parameter when invoking it:
+To install the latest `daily` build on Windows, run:
 
-```pwsh
-& ([scriptblock]::Create((iwr https://aka.ms/dotnetup/get-dotnetup.ps1).Content)) -Quality daily
+```powershell
+$script = Join-Path $env:TEMP 'get-dotnetup-daily.ps1'
+Invoke-WebRequest https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1 -OutFile $script
+& $script -Quality daily
 ```
 
-These PowerShell one-liners bypass Authenticode signature verification:
+> [!IMPORTANT]
+> Daily builds have not completed release validation and are not code-signed.
+> Use daily builds only for short-lived testing.
 
-```pwsh
-iwr https://aka.ms/dotnetup/get-dotnetup.ps1 | iex
-```
+The scripts print instructions to add `dotnetup` to `PATH`. Open a new terminal
+after you apply the instructions.
 
-These scripts default to the `preview` channel. They download `dotnetup` and install it in your user directory, then print instructions to update your $PATH so that `dotnetup` is available in your terminal.
+## Run first-time setup
 
-## First-Time Setup
+Run the interactive setup:
 
-When you run `dotnetup` for the first time (or run `dotnetup init` explicitly), it walks you through an interactive setup flow:
-
-```
-$ dotnetup
-╭─────────────────────────────────────────────────╮
-│ dotnetup v0.2.0-dev                             │
-│ .NET toolchain manager for user level installs. │
-╰─────────────────────────────────────────────────╯
-
+```dotnetcli
+> dotnetup init
 Welcome to dotnetup!
 
-dotnetup updates and groups installations using dotnetup channels.
+SDK Channel: latest
+Mode: <recommended-mode> (Suggested)
 
-Select an example channel to get started: (Enter to confirm)
-> latest       (suggested)  Latest stable release  → 10.0.300
-  none          I'll tell you what to install later.
-  lts           Long Term Support  → 10.0.300
-  preview       Latest preview  → 11.0.100-preview.4.26230.115
-  10.0          Major.Minor channel  → 10.0.300
+<recommended-mode> modifies <configuration-target> to set PATH and DOTNET_ROOT to prefer <install-path>.
 
-(use ↑↓ arrows)
-```
+Would you like to install .NET with the recommended settings?
+> Yes, proceed with defaults and install
 
-### Step 1: Choose a Channel
-
-Channels determine which version of .NET to install and how it gets updated. Pick one that matches your needs:
-
-| Channel     | What It Installs | Update Behavior |
-|-------------|-----------------|-----------------|
-| `latest`    | The newest stable .NET SDK | Updates to the latest GA release |
-| `lts`       | The current Long Term Support release | Updates within the LTS line |
-| `preview`   | The latest preview/RC release | Updates to newer previews |
-| `10.0`      | The latest SDK for .NET 10.0 | Updates within the 10.0 major.minor |
-| `10.0.1xx`  | The latest SDK in the 10.0.1xx feature band | Updates within the feature band |
-| `10.0.100`  | Exactly SDK 10.0.100 | Never updates (pinned) |
-| `11.0.100-preview.6.26277.104` (or any other nightly build number)     | A specific version number of a daily VMR builds | Never updates |
-| `none`      | Skips the initial install | You can install later with `dotnetup sdk install` |
-
-In general, there are two kinds of channels: **version-based** and **feature-based**.
-- **Version-based** channels specify an exact version or a range of versions - `10`,  `10.0.2xx`, and so on
-- **Feature-based** channels group versions by their characteristics - `preview`, `lts`, and so on
-
-### Step 2: Choose How to Access .NET
-
-Next, dotnetup asks how you'd like to use the managed .NET installation:
-
-```
-How would you like to use dotnetup?
-
-  Isolation Mode
-  Use 'dotnetup dotnet' to consume installs managed by dotnetup.
-  New installs can be used alongside your existing installs.
-
-> Terminal Mode (Suggested)
-  Configure the current shell profile to use installs managed by dotnetup.
-  Only applications launched from the shell will leverage dotnetup installs.
-
-  Replacement Mode      (Windows only)
-  The system will be configured to use dotnetup installs over any other installs.
-```
-
-| Mode | How It Works | Best For |
-|------|-------------|----------|
-| **Isolation Mode** | Run .NET via `dotnetup dotnet <command>` | Users who want to keep their system .NET as-is |
-| **Terminal Mode** | Updates your shell profile (`.bashrc`, `.zshrc`, or PowerShell `$PROFILE`) so `dotnet` resolves to the dotnetup-managed install | Most developers (suggested) |
-| **Replacement Mode** | Modifies system PATH and DOTNET_ROOT (Windows only, requires admin) | Users who want dotnetup to be the default everywhere |
-
-In general, we think most developers will want to use **Terminal Mode**. This ensures that the `dotnetup`-managed .NET installations are used by default in most contexts.  Visual Studio users *may* want to use **Replacement Mode** to ensure that the .NET SDK is used by default even in Visual Studio, but this will require both administrator permissions and monthly maintenance as Visual Studio re-installs .NET SDK bundles.
-
-### Step 3: Migrate Existing Installs (Optional)
-
-If you chose Terminal Mode or Replacement Mode and have existing system-level .NET installations that are installed to the default locations, dotnetup will offer to track matching versions:
-
-```
-You have existing system-managed .NET installs in C:\Program Files\dotnet.
-  SDK 10.0.100
-  Runtime 10.0.0
-  ASP.NET Core 10.0.0
-Do you want dotnetup to install matching versions in its managed directory? [y/n]
-```
-
-Accepting this migration downloads the same versions into the dotnetup-managed directory so that your existing projects continue to work seamlessly after the switch.
-
-### Step 4: Installation Completes
-
-```
-Downloading .NET SDK 10.0.100...  ████████████████████████ 100%
-Installed .NET SDK 10.0.100 to C:\Users\you\AppData\Local\dotnetup\dotnet
-
-Your shell profile has been updated. Restart your terminal or source your profile
-to use 'dotnet' directly.
+Installing SDK <resolved-version> to <install-path>...
+<download and installation progress>
+Installed at <install-path>:
+  SDK <resolved-version>
+<mode-specific environment guidance>
 Setup complete!
 ```
 
-## After Setup
+The paths, progress display, and environment guidance depend on your system and
+the selected mode.
 
-Once setup is complete, you can verify the installation:
+The recommended mode is Everywhere Mode on Windows. On macOS and Linux, it is
+Terminal Mode when `dotnetup` detects a supported shell. It is Isolation Mode
+when shell detection is not available.
 
+Select **No, customize setup** to choose the SDK channel, access mode, and
+migration options.
+
+### Choose an SDK channel
+
+An SDK channel tells `dotnetup` which SDK to install and how to update it.
+
+| Channel form | Example | Result |
+| --- | --- | --- |
+| Latest stable | `latest` | Latest active stable SDK |
+| Latest LTS | `lts` | Latest active stable LTS SDK |
+| Latest preview | `preview` | Latest preview SDK |
+| Latest daily | `daily` | Latest available daily SDK |
+| Major | `10` | Latest SDK for the specified major version |
+| Major and minor | `10.0` | Latest SDK for the specified major and minor version |
+| Feature band | `10.0.1xx` | Latest SDK in the specified feature band |
+| Exact version | `10.0.103` | Only the specified SDK version |
+| No initial SDK | `none` | Skip installation during setup |
+
+Exact versions do not advance during updates. For all accepted forms, see
+[dotnetup channels and versions](concepts/channels.md).
+
+### Choose how to access .NET
+
+The access mode controls how terminals and applications find the managed
+`dotnet` command.
+
+| Mode | Behavior |
+| --- | --- |
+| Isolation Mode | Use `dotnetup dotnet <command>`. Existing .NET installations remain the default. |
+| Terminal Mode | Update the selected shell profile. Applications launched from that shell use the managed installation. |
+| Everywhere Mode | Update the Windows user environment and shell profile. New terminals and user applications use the managed installation. Windows only. |
+
+Terminal Mode supports Bash, Z shell, Fish, PowerShell Core, and Windows
+PowerShell.
+
+For more information, see
+[dotnetup environment configuration](concepts/environment.md).
+
+### Migrate existing installations
+
+Setup can find SDKs and runtimes in the system-managed .NET directory. It can
+install matching native-architecture versions in the dotnetup-managed
+directory. This keeps existing projects working after you change the access
+mode.
+
+## Verify setup
+
+Open a new terminal after setup changes your environment.
+
+For Terminal Mode or Everywhere Mode, run:
+
+```dotnetcli
+dotnet --version
+dotnetup list
 ```
-# If using Terminal Mode, restart your terminal first, then:
-$ dotnet --version
-10.0.100
 
-# If using Isolation Mode:
-$ dotnetup dotnet --version
-10.0.100
+For Isolation Mode, run:
 
-# View what dotnetup is managing:
-$ dotnetup list
-
-Installations (managed by dotnetup):
-
-  C:\Users\you\AppData\Local\dotnetup\dotnet
-
-    Tracked channels:
-      SDK latest                          (source: explicit)
-
-    Installed versions:
-      SDK 10.0.100                        (x64)
-
-Total: 1
+```dotnetcli
+dotnetup dotnet --version
+dotnetup list
 ```
 
-## Re-Running Setup
+Run `dotnetup init` again to change the setup.
 
-You can re-run the setup flow at any time with:
+## Public documentation
 
-```
-$ dotnetup init
-```
+- [dotnetup overview](index.md)
+- [Table of contents](toc.yml)
+- [Core concepts](concepts/how-dotnetup-works.md)
+- [Release channels](channels/preview.md)
+- [CLI reference](reference/dotnetup.md)
+- [Scenarios](usecases/install-with-global-json.md)
 
-This lets you change your path preference (Isolation → Terminal, etc.) or install additional .NET versions.
+## Maintainer documentation
 
-## Next Steps
+- [Design notes](designs/)
+- [How dotnetup is included in the SDK](dotnetup_in_sdk.md)
+- [Release engineering](releasing.md)
+- [Signature verification](signature-verification.md)
 
-- [Install SDKs with global.json](./usecases/install-with-global-json.md) — Install the right SDK version for a project automatically
-- [Update SDK and Runtime Installations](./usecases/update-installations.md) — Keep your .NET installations current
-- [Try Daily Builds](./usecases/try-daily-builds.md) — Safely test pre-release .NET builds
-
-## Maintainer Documentation
-
-- [Publish, update, and roll back preview builds](./releasing.md)
+The command reference follows the generated runtime help. Command handlers and
+tests verify product behavior. Hidden compatibility and elevation commands are
+implementation details. They are not part of the public command reference.
