@@ -441,10 +441,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-#pragma warning disable xUnit1004
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/39772")]
-#pragma warning restore xUnit1004
         [DataRow("console --search")]
         [DataRow("--search console")]
         [DataRow("search console")]
@@ -476,12 +473,17 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Skip(1)
                 .Select(x => new { name = x[0], count = x[5] })
                 .OrderByDescending(x => x.count, downloadCountComparer)
-                .ThenBy(x => x.name, nameComparer);
+                .ThenBy(x => x.name, nameComparer)
+                .ToList();
 
             for (int i = 1; i < tableOutput.Count; i++)
             {
-                Assert.AreEqual(orderedRows.ElementAt(i - 1).name, tableOutput[i][0]);
-                Assert.AreEqual(orderedRows.ElementAt(i - 1).count, tableOutput[i][5]);
+                var expectedRow = orderedRows[i - 1];
+                Assert.AreEqual(
+                    0,
+                    nameComparer.Compare(expectedRow.name, tableOutput[i][0]),
+                    $"Expected template '{expectedRow.name}' but found '{tableOutput[i][0]}' at row {i}.");
+                Assert.AreEqual(expectedRow.count, tableOutput[i][5]);
             }
         }
 
@@ -971,19 +973,15 @@ For more information, run:
                 bool rightIsShrunk = right.EndsWith("...");
                 if (!(leftIsShrunk ^ rightIsShrunk))
                 {
-                    // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                     return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
                 }
 
-                if (rightIsShrunk && left.StartsWith(right.Substring(0, right.Length - 3), StringComparison.CurrentCultureIgnoreCase))
+                if (rightIsShrunk && left.StartsWith(right[..^3], StringComparison.CurrentCultureIgnoreCase)
+                    || leftIsShrunk && right.StartsWith(left[..^3], StringComparison.CurrentCultureIgnoreCase))
                 {
-                    return -1;
+                    return 0;
                 }
-                if (leftIsShrunk && right.StartsWith(left.Substring(0, left.Length - 3), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return -1;
-                }
-                // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
+
                 return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
             }
         }
