@@ -2615,6 +2615,25 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    // Directive kinds that do not support trailing 'Name=Value' metadata. A quote is used to force the
+    // strict (new) form; otherwise the extra tokens would be accepted verbatim as a legacy single value.
+    [DataRow("#:sdk MySdk Extra=\"a b\"", "sdk")]
+    [DataRow("#:property Name=\"v\" Extra=\"a b\"", "property")]
+    [DataRow("#:include \"a.cs\" Extra=\"a b\"", "include")]
+    [DataRow("#:exclude \"a.cs\" Extra=\"a b\"", "exclude")]
+    public void Directives_MetadataOnUnsupportedKind(string directive, string kind)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: directive,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.UnexpectedDirectiveText, kind)),
+            ]);
+    }
+
+    [TestMethod]
     [DataRow("invalid")]
     [DataRow("SDK")]
     public void Directives_Unknown(string directive)
