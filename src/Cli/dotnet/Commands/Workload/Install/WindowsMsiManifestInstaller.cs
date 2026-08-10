@@ -157,7 +157,7 @@ internal class WindowsMsiManifestInstaller(
     ///  but the name of the Program Files directory in the administrative image depends on the WiX version that
     ///  built the MSI: WiX v3 collapsed it into the target directory (<c>&lt;target&gt;\dotnet\sdk-manifests</c>),
     ///  while WiX v4+ emits a named directory for it (for example <c>&lt;target&gt;\PFiles64\dotnet\sdk-manifests</c>).
-    ///  Search for the <c>sdk-manifests</c> directory instead of assuming a fixed depth so that both layouts work.
+    ///  Probe both layouts without recursively traversing the administrative image.
     ///  </para>
     /// </summary>
     /// <param name="msiExtractionPath">The directory the MSI was administratively installed to.</param>
@@ -169,19 +169,31 @@ internal class WindowsMsiManifestInstaller(
             return null;
         }
 
-        string? manifestsFolder = Directory.EnumerateDirectories(msiExtractionPath, "sdk-manifests", SearchOption.AllDirectories).FirstOrDefault();
-        if (manifestsFolder == null)
+        try
+        {
+            string directManifestsFolder = Path.Combine(msiExtractionPath, "dotnet", "sdk-manifests");
+            string? manifestsFolder = Directory.Exists(directManifestsFolder)
+                ? directManifestsFolder
+                : Directory.EnumerateDirectories(msiExtractionPath)
+                    .Select(directory => Path.Combine(directory, "dotnet", "sdk-manifests"))
+                    .FirstOrDefault(Directory.Exists);
+            if (manifestsFolder == null)
+            {
+                return null;
+            }
+
+            string? manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
+            if (manifestsFeatureBandFolder == null)
+            {
+                return null;
+            }
+
+            return Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
             return null;
         }
-
-        string? manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
-        if (manifestsFeatureBandFolder == null)
-        {
-            return null;
-        }
-
-        return Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
     }
 
     /// <summary>
