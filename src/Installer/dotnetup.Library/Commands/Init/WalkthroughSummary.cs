@@ -3,6 +3,7 @@
 
 using System.Globalization;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
 using SpectreAnsiConsole = Spectre.Console.AnsiConsole;
 
@@ -97,9 +98,60 @@ internal static class WalkthroughSummary
 
         RenderChannelLine(plan.ChannelDisplay);
         RenderModeLine(plan.AccessMode, configuredAccessMode);
+        SpectreAnsiConsole.WriteLine();
+        SpectreAnsiConsole.MarkupLine(BuildModeDescription(plan));
         RenderMigrationSummary(plan.Migrations);
 
         SpectreAnsiConsole.WriteLine();
+    }
+
+    internal static string BuildModeDescription(WalkthroughPlan plan)
+    {
+        string mode = DotnetupTheme.Accent(DotnetAccessModeDisplay.GetName(plan.AccessMode).EscapeMarkup());
+
+        if (plan.AccessMode is DotnetAccessMode.None)
+        {
+            string currentShell = DotnetupTheme.Accent(ShellDetection.GetCurrentShellDisplayName().EscapeMarkup());
+            string supportedShells = DotnetupTheme.Accent(
+                string.Join(", ", ShellDetection.s_supportedShells.Select(shell => shell.ArgumentName)).EscapeMarkup());
+
+            return string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.SummaryModeUnsupportedShell,
+                mode,
+                currentShell,
+                supportedShells);
+        }
+
+        string configurationTarget = plan.AccessMode switch
+        {
+            DotnetAccessMode.Shell when plan.ShellProvider is { } shellProvider => string.Join(
+                ", ",
+                shellProvider.GetProfilePaths().Select(path => DotnetupTheme.Accent(path.EscapeMarkup()))),
+            DotnetAccessMode.Everywhere => DotnetupTheme.Accent(
+                Strings.SummaryModeSystemEnvironmentVariables.EscapeMarkup()),
+            _ => throw new DotnetInstallException(
+                DotnetInstallErrorCode.InvalidModeSelection,
+                $"Unable to describe access mode '{plan.AccessMode}' with the resolved shell provider."),
+        };
+
+        string installRoot = DotnetupTheme.Accent(plan.InstallRoot.Path.EscapeMarkup());
+        if (plan.InstallRootGlobalJsonPath is { } globalJsonPath)
+        {
+            installRoot += " " + DotnetupTheme.Dim(string.Format(
+                CultureInfo.InvariantCulture,
+                Strings.SummaryModeInstallRootGlobalJsonSuffix,
+                globalJsonPath.EscapeMarkup()));
+        }
+
+        return string.Format(
+            CultureInfo.InvariantCulture,
+            Strings.SummaryModeConfiguration,
+            mode,
+            configurationTarget,
+            DotnetupTheme.Accent("PATH"),
+            DotnetupTheme.Accent("DOTNET_ROOT"),
+            installRoot);
     }
 
     private static void RenderChannelLine(DefaultChannelDisplay channel)
