@@ -49,4 +49,12 @@ Copyright (c) .NET Foundation. All rights reserved.
   <ItemGroup Condition="'$(_CanonicalizedArtifactsPath)' != ''">
     <SourceRoot Include="$(_CanonicalizedArtifactsPath)"/>
   </ItemGroup>
+
+  <!-- Use FileBasedAppArtifactsPath if set -->
+  <PropertyGroup Condition="'$(ArtifactsPath)' == '' And '$(FileBasedAppArtifactsPath)' != ''">
+    <UseArtifactsOutput Condition="'$(UseArtifactsOutput)' == '' And '$(UsingMicrosoftArtifactsSdk)' != 'true'">true</UseArtifactsOutput>
+    <ArtifactsPath>$(FileBasedAppArtifactsPath)</ArtifactsPath>
+    <IncludeProjectNameInArtifactsPaths Condition="'$(IncludeProjectNameInArtifactsPaths)' == ''">false</IncludeProjectNameInArtifactsPaths>
+    <_ArtifactsPathLocationType>FileBasedApp</_ArtifactsPathLocationType>
+  </PropertyGroup>
 </Project>

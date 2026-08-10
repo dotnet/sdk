@@ -1390,8 +1390,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
@@ -1475,8 +1474,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>A</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
@@ -1551,8 +1549,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>
@@ -1626,8 +1623,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
                         <PublishDir>artifacts/$(AssemblyName)</PublishDir>

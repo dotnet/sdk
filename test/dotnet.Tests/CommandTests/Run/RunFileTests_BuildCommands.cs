@@ -919,6 +919,67 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
             .Should().Be(actualMode, artifactsDir);
     }
 
+    [TestMethod]
+    public void ArtifactsPath()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
+
+        var globalArtifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(globalArtifactsDir)) Directory.Delete(globalArtifactsDir, recursive: true);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
+        new DirectoryInfo(Path.Join(testInstance.Path, "bin")).Should().NotExist();
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().NotBeEmpty();
+        new FileInfo(Path.Join(globalArtifactsDir, "bin", "debug", "Program.dll")).Should().Exist();
+        new DirectoryInfo(Path.Join(globalArtifactsDir, "bin")).EnumerateDirectories().Select(d => d.Name).Should().BeEquivalentTo(["debug"]);
+        new DirectoryInfo(Path.Join(globalArtifactsDir, "artifacts")).Should().NotExist();
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
+        new DirectoryInfo(Path.Join(testInstance.Path, "bin")).Should().NotExist();
+    }
+
+    /// <summary>
+    /// When the surrounding repo uses artifacts layout, file-based apps place their artifacts there.
+    /// </summary>
+    [TestMethod]
+    public void ArtifactsPath_ReusedFromRepo()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+            <Project>
+              <PropertyGroup>
+                <UseArtifactsOutput>true</UseArtifactsOutput>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        var globalArtifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
+        if (Directory.Exists(globalArtifactsDir)) Directory.Delete(globalArtifactsDir, recursive: true);
+
+        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        // We still put our marker files into the global artifacts directory, but it should not contain any subdirectories.
+        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().BeEmpty();
+
+        new FileInfo(Path.Join(testInstance.Path, "artifacts", "bin", "Program.cs", "debug", "Program.dll")).Should().Exist();
+        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts", "bin", "debug")).Should().NotExist();
+    }
+
     [TestMethod, CombinatorialData]
     public void LaunchProfile(
         bool cscOnly,

@@ -628,15 +628,14 @@ sealed class VirtualProjectBuilder
             Debug.Assert(!string.IsNullOrWhiteSpace(artifactsPath));
             Debug.Assert(entryPointFilePath is not null);
 
-            // Note that ArtifactsPath needs to be specified before Sdk.props
+            // Note that FileBasedAppArtifactsPath needs to be specified before Sdk.props
             // (usually it's recommended to specify it in Directory.Build.props
             // but importing Sdk.props manually afterwards also works).
             writer.WriteLine($"""
                 <Project>
 
                   <PropertyGroup>
-                    <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                    <ArtifactsPath>{EscapeValue(artifactsPath)}</ArtifactsPath>
+                    <FileBasedAppArtifactsPath>{EscapeValue(artifactsPath)}</FileBasedAppArtifactsPath>
                     <AssemblyName>{EscapeValue(Path.GetFileNameWithoutExtension(entryPointFilePath))}</AssemblyName>
                     <RootNamespace>$(AssemblyName)</RootNamespace>
                     <PublishDir>artifacts/$(AssemblyName)</PublishDir>
