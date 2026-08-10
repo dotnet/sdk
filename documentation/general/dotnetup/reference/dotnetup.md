@@ -53,8 +53,8 @@ exists, it can start first-use onboarding.
 
 | Option | Description |
 | --- | --- |
-| `--format <text|json>` | Select text or JSON output. The default is `text`. |
-| `--no-list [<true|false>]` | Omit tracked specifications and installations. Without this option, `--info` verifies installations. |
+| `--format <text\|json>` | Select text or JSON output. The default is `text`. |
+| `--no-list [<true\|false>]` | Omit tracked specifications and installations. Without this option, `--info` verifies installations. |
 
 ## Examples
 
