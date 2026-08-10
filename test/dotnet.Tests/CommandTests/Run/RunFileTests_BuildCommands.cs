@@ -966,7 +966,8 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
         var globalArtifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(globalArtifactsDir)) Directory.Delete(globalArtifactsDir, recursive: true);
 
-        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts")).Should().NotExist();
+        var localArtifactsDir = Path.Join(testInstance.Path, "artifacts");
+        new DirectoryInfo(localArtifactsDir).Should().NotExist();
 
         new DotnetCommand(Log, "build", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
@@ -976,8 +977,34 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
         // We still put our marker files into the global artifacts directory, but it should not contain any subdirectories.
         new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().BeEmpty();
 
-        new FileInfo(Path.Join(testInstance.Path, "artifacts", "bin", "Program.cs", "debug", "Program.dll")).Should().Exist();
-        new DirectoryInfo(Path.Join(testInstance.Path, "artifacts", "bin", "debug")).Should().NotExist();
+        new FileInfo(Path.Join(localArtifactsDir, "bin", "Program.cs", "debug", "Program.dll")).Should().Exist();
+        new DirectoryInfo(Path.Join(localArtifactsDir, "bin", "debug")).Should().NotExist();
+
+        // Publish
+
+        Directory.Delete(Path.Join(localArtifactsDir), recursive: true);
+
+        new DotnetCommand(Log, "publish", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().BeEmpty();
+        new DirectoryInfo(localArtifactsDir).EnumerateDirectories().Select(d => d.Name).Should().BeEquivalentTo(["bin", "obj", "publish"]);
+        new FileInfo(Path.Join(localArtifactsDir, "publish", "Program.cs", "release", $"Program{Constants.ExeSuffix}")).Should().Exist();
+
+        // Pack
+
+        Directory.Delete(localArtifactsDir, recursive: true);
+
+        new DotnetCommand(Log, "pack", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        new DirectoryInfo(globalArtifactsDir).EnumerateDirectories().Should().BeEmpty();
+        new DirectoryInfo(localArtifactsDir).EnumerateDirectories().Select(d => d.Name).Should().BeEquivalentTo(["bin", "obj", "package", "publish"]);
+        new FileInfo(Path.Join(localArtifactsDir, "package", "release", "Program.1.0.0.nupkg")).Should().Exist();
     }
 
     [TestMethod, CombinatorialData]

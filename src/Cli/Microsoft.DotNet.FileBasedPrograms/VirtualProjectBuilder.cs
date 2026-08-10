@@ -638,8 +638,6 @@ sealed class VirtualProjectBuilder
                     <FileBasedAppArtifactsPath>{EscapeValue(artifactsPath)}</FileBasedAppArtifactsPath>
                     <AssemblyName>{EscapeValue(Path.GetFileNameWithoutExtension(entryPointFilePath))}</AssemblyName>
                     <RootNamespace>$(AssemblyName)</RootNamespace>
-                    <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                    <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                     <FileBasedProgram>true</FileBasedProgram>
                     <EntryPointFilePath>{EscapeValue(entryPointFilePath)}</EntryPointFilePath>
                     <FileBasedProgramsItemMapping>{CSharpDirective.IncludeOrExclude.DefaultMappingString}</FileBasedProgramsItemMapping>

@@ -56,5 +56,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ArtifactsPath>$(FileBasedAppArtifactsPath)</ArtifactsPath>
     <IncludeProjectNameInArtifactsPaths Condition="'$(IncludeProjectNameInArtifactsPaths)' == ''">false</IncludeProjectNameInArtifactsPaths>
     <_ArtifactsPathLocationType>FileBasedApp</_ArtifactsPathLocationType>
+
+    <!-- If artifacts are going to a temp folder, set publish and pack outputs next to the file-based app. -->
+    <PublishDir Condition="'$(PublishDir)' == ''">artifacts/$(AssemblyName)</PublishDir>
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">artifacts/$(AssemblyName)</PackageOutputPath>
   </PropertyGroup>
 </Project>

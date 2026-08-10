@@ -43,7 +43,8 @@ Additionally, the implicit project file has the following customizations:
   - `ArtifactsPath` is set to a [temp directory](#build-outputs),
     unless [artifacts output layout][artifacts-output] is enabled.
 
-  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app.
+  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app,
+    unless [artifacts output layout][artifacts-output] is enabled.
 
   - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` (except for `Publish` and `Pack` targets)
     which can be accessed in the app via `AppContext`:
