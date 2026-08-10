@@ -120,9 +120,13 @@ Telemetry drain processes must be launched via a temp copy of dotnetup.
 
 #### Comparisons
 
-'rustup' - (TODO)
+'rustup' - It does use a separate updater process but two concurrent self udpates can interfere. This makes mores sense for rustup but less for us as mentioned prior.
 
 'Aspire CLI' - It does not use a separate updater process; it renames itself and copies the old into the new location, runs 'aspire.exe --version' with a redirected output, waits for it, and treats 0 as verification. Cleanup is left for a later invocation. This seems simpler and possibly less bug or process/file contention prone, however,  it is not concurrency safe.
+
+'VS Code' - It is concurrency safe as it has a Node IPC-like Mutex and an in-process state machine from `Idle` to `Checking` to `Downloading` and so forth. We don't need to have this complex of a state layer as we are not managing UI and several instances with many sub host processes, and we don't need to use something as mature as Inno setup as `dotnetup` is a user level dev tool.
+
+(TODO _ can we elminate a 3rd process if we defer deletion of the tmp folder like aspire does )
 
 
 ## Linux:
