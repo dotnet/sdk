@@ -31,7 +31,7 @@ Another design contention is whether to have mutex or inter-process (i.e. severa
 
 The main dotnetup process, say in dotnetup`s official install directory, D/, downloads a new version of `dotnetup`; the new version of dotnetup is downloaded into a user/temp folder - it is verified either via sha (preview) or signature (stable)
 
-Upon verification, `dotnetup`  holds a mutex for modifying `dotnetup` folder state (`dotnetupFolderMutex`) - this should be the same mutex used for modifying install states/manifests/installs to prevent another running dotnetup process from making breaking changes. Other executables may still be running, so it must also grab an exclusive file lock on `D/dotnetup.update.lock` and will bail with an error containing the specific process-id that`s still holding that `dotnetup.exe` if it cannot. It then deletes any pre-existing `D/dotnetup.exe.new` or `D/dotnetup.exe.old` - if we cannot delete them, fail with the exit code / problem as to why, with `InsufficientPermissionsToUpdate` (user error) pointing out the other executables are in use. The original new dotnetup executable is copied as `/D/dotnetup.exe.new`
+Upon verification, `dotnetup` holds a mutex for modifying `dotnetup` folder state (`dotnetupFolderMutex`) - this should be the same mutex used for modifying install states/manifests/installs to prevent another running dotnetup process from making breaking changes. Other executables may still be running, so it must also grab an exclusive file lock on `D/dotnetup.update.lock`. If acquiring the lock or modifying an update artifact fails because a file is in use, dotnetup uses the existing `FileLockDetector`/Windows Restart Manager integration to report the locking process and PID on a best-effort basis. It then deletes any pre-existing `D/dotnetup.exe.new` or `D/dotnetup.exe.old` - if we cannot delete them, fail with the exit code / problem as to why, with `InsufficientPermissionsToUpdate` (user error) pointing out the other executables are in use. The original new dotnetup executable is copied as `/D/dotnetup.exe.new`
 
 
 The state of the file system would be:
@@ -42,7 +42,7 @@ The state of the file system would be:
 `tmp/dotnetup/<random>/dotnetup.exe`
 ```
 
-`dotnetup.exe` lets go of the file while still holding onto the mutex and starts `tmp/dotnetup/<random>/dotnetup.exe` and does a heart-beat hand-off via a hidden command, `dotnetup self replacement <tmp folder executable>`: the replacer exe (/tmp/dotnetup/<random>/dotnetup.exe) inherits the pipes to stdin/stdout/stderr. `tmp/dotnetup/<random>/dotnetup.exe` acquires a `FileShare.None` lock on `D/dotnetup.update.lock` with `OpenOrCreate`, `ReadWrite`, `FileShare.None`:
+While still holding `dotnetupFolderMutex`, `dotnetup.exe` releases its handle to `D/dotnetup.update.lock`, starts `tmp/dotnetup/<random>/dotnetup.exe`, and performs a heartbeat handoff via the hidden command `dotnetup self replacement <tmp folder executable>`. The replacer inherits stdin/stdout/stderr and acquires the `FileShare.None` lock on `D/dotnetup.update.lock` before it responds that it is ready:
 
 ```cs
 FileStream updateLock = new(
@@ -52,15 +52,15 @@ FileStream updateLock = new(
     FileShare.None);
 ```
 
-Once the replacer exe has responded OK (ensure the pid and such match), `dotnetup.exe` releases `dotnetupFolderMutex` and exits, upon which `dotnetupFolderMutex` should be immediately acquired by `tmp/dotnetup/<random>/dotnetup.exe`. If `dotnetup.exe` fails to get the heart-beat, it fails with a specific error `DotnetupReplacerCommunicationFailure` type (product error) and tries to kill the `tmp/dotnetup/<random>/dotnetup.exe` process just in case it misbehaved. If `tmp/dotnetup/<random>/dotnetup.exe` cannot acquire the mutex, it should fail mentioning there is another install in place (point to the file).
+Once the replacer has acquired `D/dotnetup.update.lock` and responded OK (including the expected PID and an unguessable handoff token), `dotnetup.exe` releases `dotnetupFolderMutex` and exits. The replacer continues holding the update-file lock while it acquires `dotnetupFolderMutex`, so at least one synchronization primitive is held continuously across the handoff. If `dotnetup.exe` fails to get the heartbeat, it fails with `DotnetupReplacerCommunicationFailure` (product error) and tries to kill the `tmp/dotnetup/<random>/dotnetup.exe` process. If the replacer cannot acquire the mutex, it should report that another installation-state operation is in progress.
 
 It renames `dotnetup.exe` first to ensure the app had properly exited and nobody restarted it. Executables on Windows can be renamed even while they are running; though one side effect of this, is that the future dotnetup processes will use the newer version to spawn child processes or load external assets - including the short-term telemetry drainer.
 
 `Environment.ProcessPath` should be cached and accessible from a singleton upon `dotnetup` startup as its behavior is undefined [if the executable is renamed or deleted before [ProcessPath] property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
 
-`tmp/dotnetup/<random>/dotnetup.exe` will release  `D/dotnetup.update.lock` - it will then `D/dotnetup.exe --version` and assume if it exits with status `0` that the update succeeded and report success, along with an aka.ms link to how to install older versions and close, releasing both locks. I
+`tmp/dotnetup/<random>/dotnetup.exe` keeps both `D/dotnetup.update.lock` and `dotnetupFolderMutex` while it runs `D/dotnetup.exe --version`. The update succeeds only if the command exits with status `0` and reports the expected version. It then reports success, includes an aka.ms link describing how to install older versions, and releases both locks.
 
-If `tmp/dotnetup/<random>/dotnetup.exe` cannot run `D/dotnetup.exe` or `D/dotnetup.exe` does not return `0`, it will try to delete `D/dotnetup.exe` and rename `D/dotnetup.exe.old` back to `D/dotnetup.exe` and report an error - if it cannot delete `D/dotnetup.exe` then it must be in use but unresponsive - dotnetup should ask the user to reinstall dotnetup themselves as the new process is not communicating properly but cannot be unwound; otherwise, assuming the hand-off went smoothly, it will release `dotnetupFolderMutex` and close.
+If `tmp/dotnetup/<random>/dotnetup.exe` cannot run `D/dotnetup.exe`, the command does not return `0`, or the reported version does not match the expected version, it will attempt rollback while still holding both locks: delete `D/dotnetup.exe`, rename `D/dotnetup.exe.old` back to `D/dotnetup.exe`, and report an error. If it cannot delete `D/dotnetup.exe`, then the new executable may be in use but unresponsive; dotnetup should ask the user to reinstall dotnetup because the update cannot be unwound safely. Otherwise, assuming the hand-off went smoothly, it will release both locks and close.
 
 `dotnetup.exe` (now the new executable) will try to delete the `tmp/dotnetup/dotnetup.exe` folders the next time it launches. If it cannot delete `dotnetup.exe.old` it will not fail, as there may be dotnetup processes running before `self update` started.
 
@@ -69,59 +69,6 @@ This situation is not ever perpetuating: The next time `dotnetup self update` ex
 This prevents breaking apps reliant on `dotnetup` to be running; e.g. when a customer has their machine off for over a month and tries to run dotnetup self update but has some persisted dependent application such as vscode holding the dotnetup executable; other apps can chose how to make this visibly actionable (e.g. close your apps using `dotnetup` when possible.)
 
 None of this process may be `await`ed as mutexes are not safe to use in an asynchronous context. The point of the `lock` file is to prevent corruption - e.g. if another updater process got the global folder mutex, it still wouldn`t be able to actually delete / rename the dotnetup processes because it wouldnt have the file lock. This prevents another update process from deleting the actual valid dotnetup.exe.old at the start of its process.
-
-#### Alternatives Considered:
-
-Windows also has reboot-delayed renames, but this provides a poor experience for immediate updates as it requires a reboot.
-
-Instead of using 3 process hand-offs, the new copy could never run and the tmp/dotnetup/<random>/dotnetup.exe could rename the new one and report success, but this prevents automatic clean up of tmp/dotnetup/<random>/dotnetup.exe and does not validate that the new executable is actually valid and able to run or not as part of the process.
-
-#### Power/Restart Crash Safe Behavior:
-
-`tmp/dotnetup/<random>/dotnetup.exe` does an atomic replacement:
-
-```cs
-File.Replace(
-    sourceFileName: stagedPath,
-    destinationFileName: installedPath,
-    destinationBackupFileName: backupPath,
-    ignoreMetadataErrors: false);
-```
-
-This is to prevent a problem in the immediate term if power is lost or the app crashes after renaming the old dotnetup but before renaming the new dotnetup. We did not move forward with this as this requires a hack for telemetry draining as well as waiting for all dotnetup processes to finish before self update can run.
-
-In the outlined steps above, instead of renaming, `dotnetup.exe` gets replaced with a backup file of `dotnetup.exe.old`. `dotnetup.exe` is replaced by `dotnetup.exe.new` into `dotnetup.exe`. If we simply did a rename, then if the app got killed/crashed mid update then no `dotnnetup` executable would exist.
-
-##### Future `dotnetup` behavior for all executables:
-
-All future-facing dotnetup executables must at launch grab a shareable file handle (say, always `dotnetup_home/dotnetup.users.lock`) and persist that handle for the entire process lifetime:
-
-```cs
-var activityHandle = new FileStream(
-    activityPath,
-    FileMode.OpenOrCreate,
-    FileAccess.ReadWrite,
-    FileShare.ReadWrite);
-```
-
-`dotnetup self update` must immediately fail if any `dotnetup` executable is currently running; it will detect this by trying to open the same file with exclusivity:
-
-```var exclusiveActivityHandle = new FileStream(
-    activityPath,
-    FileMode.Open,
-    FileAccess.ReadWrite,
-    FileShare.None);
-```
-
-A file is used over a mutex, because the mutex does not allow cross-process sharing with current .NET implementations.
-
-##### Future `dotnetup` drain process executables:
-
-Until the OTelemetry fixes are complete, `dotnetup` uses a process drainer. The process drainer runs for a while after `dotnetup` exits which may cause confusing behavior when trying to run `dotnetup self update` as the update would be blocked by the telemetry drainer.
-
-Short-term:
-
-Telemetry drain processes must be launched via a temp copy of dotnetup.
 
 #### Comparisons
 
@@ -159,3 +106,61 @@ DotnetArchiveDownloader in V1 (preview) can use `ResolveBlobFeedEntry` and use t
 
 ResolveManifestEntry will resolve an index of dotnetup releases similar to the .NET release manifest.
 The manifest will be signed just like the .NET artifacts manifests, with a detached signature, which will be downloaded as well and be used to validate dotnetup's own executable. We could only have an index but supporting multiple versions or allowing a downgrade/revert will only be possible if we maintain separate indexes. Whether we have a `daily` `preview` `stable` keyed index or a `major.minor` keyed index is not part of this spec.
+
+
+# Alternatives Considered:
+
+### Content below is not proposed implementation but rather alternatives that we could implement. 
+
+Windows also has reboot-delayed renames, but this provides a poor experience for immediate updates as it requires a reboot.
+
+Instead of using 3 process hand-offs, the new copy could never run and the tmp/dotnetup/<random>/dotnetup.exe could rename the new one and report success, but this prevents automatic clean up of tmp/dotnetup/<random>/dotnetup.exe and does not validate that the new executable is actually valid and able to run or not as part of the process.
+
+#### Rejected Alternative: Crash-Safe Replacement
+
+The following `File.Replace` and process-draining design is not part of the final proposed update logic above.
+
+In this alternative, `tmp/dotnetup/<random>/dotnetup.exe` performs an atomic replacement:
+
+```cs
+File.Replace(
+    sourceFileName: stagedPath,
+    destinationFileName: installedPath,
+    destinationBackupFileName: backupPath,
+    ignoreMetadataErrors: false);
+```
+
+This is to prevent a problem in the immediate term if power is lost or the app crashes after renaming the old dotnetup but before renaming the new dotnetup. We did not move forward with this as this requires a hack for telemetry draining as well as waiting for all dotnetup processes to finish before self update can run.
+
+In the outlined steps above, instead of renaming, `dotnetup.exe` gets replaced with a backup file of `dotnetup.exe.old`. `dotnetup.exe` is replaced by `dotnetup.exe.new` into `dotnetup.exe`. If we simply did a rename, then if the app got killed/crashed mid update then no `dotnnetup` executable would exist.
+
+##### Required future behavior for all executables under this alternative:
+
+All future-facing dotnetup executables must at launch grab a shareable file handle (say, always `dotnetup_home/dotnetup.users.lock`) and persist that handle for the entire process lifetime:
+
+```cs
+var activityHandle = new FileStream(
+    activityPath,
+    FileMode.OpenOrCreate,
+    FileAccess.ReadWrite,
+    FileShare.ReadWrite);
+```
+
+`dotnetup self update` must immediately fail if any `dotnetup` executable is currently running; it will detect this by trying to open the same file with exclusivity:
+
+```var exclusiveActivityHandle = new FileStream(
+    activityPath,
+    FileMode.Open,
+    FileAccess.ReadWrite,
+    FileShare.None);
+```
+
+A file is used over a mutex, because the mutex does not allow cross-process sharing with current .NET implementations.
+
+##### Telemetry drain processes under this alternative:
+
+Until the OTelemetry fixes are complete, `dotnetup` uses a process drainer. The process drainer runs for a while after `dotnetup` exits which may cause confusing behavior when trying to run `dotnetup self update` as the update would be blocked by the telemetry drainer.
+
+Short-term:
+
+Telemetry drain processes must be launched via a temp copy of dotnetup.
