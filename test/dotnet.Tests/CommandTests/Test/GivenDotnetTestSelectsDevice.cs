@@ -110,6 +110,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItUsesFreshEvaluationContextAfterBuild()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "FreshEvaluationContext")
+            .WithSource();
+        File.Delete(Path.Combine(testInstance.Path, "post-build-discovery.props"));
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework", ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:GeneratePostBuildDiscoveryProps=true");
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining("Runtime environment variables:");
+    }
+
+    [TestMethod]
     public void ItPassesEnvironmentVariablesToBuildDeployAndRunArgumentsTargets()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", "EnvironmentVariables")
@@ -442,6 +460,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    [DataRow("--collect-test-map")]
+    [DataRow("--affected-tests")]
+    public void ItErrorsWhenListDevicesAndAffectedTestOperationAreCombined(string affectedTestOption)
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", $"ListDevicesWith{affectedTestOption.TrimStart('-')}")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .WithEnvironmentVariable("DOTNET_CLI_ENABLE_AFFECTED_TESTS", "1")
+            .Execute("--list-devices", affectedTestOption, "-f", "net11.0-android");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(CliCommandStrings.CmdListDevicesAndAffectedTestsMutuallyExclusive);
+    }
+
+    [TestMethod]
     public void ItListsDevicesForExplicitFrameworkOnMultiTargetedProject()
     {
         // DotnetTestDevices targets both net9.0 and $(CurrentTargetFramework) with different
@@ -502,6 +538,30 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                     .Single(message => message.Text.Contains("DeployToDevice: Deployed"));
                 deployMessage.Text.Should().Contain(deviceId, "the Device property should be passed to DeployToDevice");
             });
+    }
+
+    [TestMethod]
+    public void ItSetsDotnetHostPathForDirectDeviceTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "DotnetHostPath")
+            .WithSource();
+
+        new DotnetCommand(Log, "build")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute("--framework", ToolsetInfo.CurrentTargetFramework, "-p:Device=test-device-1")
+            .Should().Pass();
+
+        var command = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path);
+        command.EnvironmentToRemove.Add("DOTNET_HOST_PATH");
+
+        command.Execute(
+            "--framework",
+            ToolsetInfo.CurrentTargetFramework,
+            "--device",
+            "test-device-1",
+            "--no-build")
+            .Should().Pass();
     }
 
     [TestMethod]
@@ -695,5 +755,24 @@ public class GivenDotnetTestSelectsDevice : SdkTest
                 messages.Should().Contain(message => message.Text.Contains("net9.0"));
                 messages.Should().Contain(message => message.Text.Contains(ToolsetInfo.CurrentTargetFramework));
             });
+    }
+
+    [TestMethod]
+    public void ItRunsBrowserWasmTestHostOverHttpTransport()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices", identifier: "HttpTransport")
+            .WithSource();
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "--framework",
+                ToolsetInfo.CurrentTargetFramework,
+                "-p:SingleDevice=true",
+                "-p:UseHttpTestTransport=true")
+            .Should()
+            .Pass()
+            .And.HaveStdOutContaining("HTTP transport selected.")
+            .And.HaveStdOutContaining("total: 1");
     }
 }

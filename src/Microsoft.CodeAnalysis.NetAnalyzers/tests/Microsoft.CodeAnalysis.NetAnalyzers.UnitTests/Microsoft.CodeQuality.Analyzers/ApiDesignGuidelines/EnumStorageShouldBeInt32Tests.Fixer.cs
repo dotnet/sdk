@@ -122,6 +122,82 @@ End Module
             await VerifyVB.VerifyCodeFixAsync(code, fix);
         }
 
+        [TestMethod]
+        public async Task CSharp_CA1028_FixAllRewritesEveryEnumAsync()
+        {
+            var code = @"
+using System;
+namespace Test
+{
+    public class Outer
+    {
+        public enum [|Nested|]: byte
+        {
+            Value1 = 1
+        }
+    }
+
+    public enum [|TopLevel|]: long
+    {
+        Value1 = 1
+    }
+}
+";
+            var fix = @"
+using System;
+namespace Test
+{
+    public class Outer
+    {
+        public enum Nested
+        {
+            Value1 = 1
+        }
+    }
+
+    public enum TopLevel
+    {
+        Value1 = 1
+    }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(code, fix);
+        }
+
+        [TestMethod]
+        public async Task Basic_CA1028_FixAllRewritesEveryEnumAsync()
+        {
+            var code = @"
+Imports System
+Namespace Test
+    Public Class Outer
+        Public Enum [|Nested|] As Byte
+            Value1 = 1
+        End Enum
+    End Class
+
+    Public Enum [|TopLevel|] As Long
+        Value1 = 1
+    End Enum
+End Namespace
+";
+            var fix = @"
+Imports System
+Namespace Test
+    Public Class Outer
+        Public Enum Nested 
+            Value1 = 1
+        End Enum
+    End Class
+
+    Public Enum TopLevel 
+        Value1 = 1
+    End Enum
+End Namespace
+";
+            await VerifyVB.VerifyCodeFixAsync(code, fix);
+        }
+
         #endregion
     }
 }

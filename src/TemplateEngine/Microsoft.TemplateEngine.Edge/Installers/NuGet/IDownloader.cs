@@ -7,7 +7,7 @@ namespace Microsoft.TemplateEngine.Edge.Installers.NuGet
 {
     internal interface IDownloader
     {
-        Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, CancellationToken cancellationToken = default);
+        Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, bool includePrerelease = false, CancellationToken cancellationToken = default);
     }
 
     internal class NuGetPackageInfo

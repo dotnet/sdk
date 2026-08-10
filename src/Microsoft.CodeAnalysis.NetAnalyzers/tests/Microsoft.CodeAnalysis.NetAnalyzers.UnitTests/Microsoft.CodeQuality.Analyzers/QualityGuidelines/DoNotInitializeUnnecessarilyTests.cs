@@ -243,8 +243,7 @@ public class C
 
     public int SomeIntProp { get; }
     public string SomeStringProp { get; set; }
-}",
-                NumberOfFixAllIterations = 2
+}"
             }.RunAsync(CancellationToken.None);
         }
 

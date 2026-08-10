@@ -8,6 +8,7 @@
   - [Common Properties Collected](#common-properties-collected)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
+    - [Test Events](#test-events)
     - [Template Engine Events](#template-engine-events)
     - [SDK-Collected Build Events](#sdk-collected-build-events)
     - [MSBuild Engine Telemetry](#msbuild-engine-telemetry)
@@ -220,6 +221,24 @@ Every telemetry event automatically includes these common properties:
 
 **Description**: Tracks unhandled exceptions for diagnostics
 
+### Test Events
+
+#### `test/artifact-post-processing`
+
+**When fired**: Once per `dotnet test` Microsoft.Testing.Platform run that planned at least one artifact post-processing job. Runs that plan nothing (no mergeable artifacts) emit nothing.
+
+**Properties**:
+
+- `jobs_planned`: Number of elected test-application relaunches planned
+- `jobs_executed`: Number of jobs actually attempted (differs from `jobs_planned` only when the run was cancelled mid-way)
+- `jobs_failed`: Number of jobs that reported a failure
+- `artifact_count`: Total number of input artifacts across all planned groups
+- `kinds`: Semicolon-separated, sorted, distinct artifact kinds that were merged; any kind outside a fixed well-known list is reported as `other`
+- `extensions`: Semicolon-separated, sorted, distinct file extensions from file-extension fallback groups; any extension outside a fixed well-known list is reported as `other`
+- `duration_ms`: Total wall-clock time spent post-processing, in milliseconds
+
+**Description**: Tracks how often artifact post-processing runs and on which shipped formats. No file paths, artifact contents, project names, or user-defined identifiers are collected — that is why unknown kinds and extensions are bucketed as `other`.
+
 ### Template Engine Events
 
 #### `template/new-install`
@@ -254,6 +273,14 @@ Every telemetry event automatically includes these common properties:
 **Description**: Tracks template usage and creation success
 
 ### SDK-Collected Build Events
+
+[`MSBuildLogger`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) collects the
+existing events below. MSBuild loads the logger from the SDK. The logger can run in the
+CLI process, a child MSBuild process, or a persistent MSBuild server.
+
+The logger creates an internal activity for each build. When trace context is available,
+the activity is a child of the invoking CLI trace. Server reuse changes telemetry delivery
+and correlation only. It does not change the listed data points or properties.
 
 #### `msbuild/targetframeworkeval`
 

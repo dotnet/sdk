@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
@@ -23,8 +23,8 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
     public partial class UsePropertyInsteadOfCountMethodWhenAvailableTests
     {
         [TestMethod]
-        public Task CSharp_AsMethodArgument_TestsAsync()
-            => new VerifyCS.Test
+        public async Task CSharp_AsMethodArgument_TestsAsync()
+            => await new VerifyCS.Test
             {
                 TestState =
                 {
@@ -67,8 +67,8 @@ public static class C
             }.RunAsync(CancellationToken.None);
 
         [TestMethod]
-        public Task Basic_AsMethodArgument_TestsAsync()
-            => new VerifyVB.Test
+        public async Task Basic_AsMethodArgument_TestsAsync()
+            => await new VerifyVB.Test
             {
                 TestState =
                 {
@@ -111,8 +111,8 @@ End Class
             }.RunAsync(CancellationToken.None);
 
         [TestMethod]
-        public Task CSharp_ImmutableArray_TestsAsync()
-            => new VerifyCS.Test
+        public async Task CSharp_ImmutableArray_TestsAsync()
+            => await new VerifyCS.Test
             {
                 TestState =
                 {
@@ -147,8 +147,8 @@ public static class C
             }.RunAsync(CancellationToken.None);
 
         [TestMethod]
-        public Task Basic_ImmutableArray_TestsAsync()
-            => new VerifyVB.Test
+        public async Task Basic_ImmutableArray_TestsAsync()
+            => await new VerifyVB.Test
             {
                 TestState =
                 {
@@ -198,8 +198,8 @@ End Module
         [DataRow("System.Collections.Generic.List<int>", nameof(List<int>.Count))]
         [DataRow("System.Collections.Generic.IList<int>", nameof(IList<int>.Count))]
         [DataRow("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
-        public Task CSharp_FixedAsync(string type, string propertyName)
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_FixedAsync(string type, string propertyName)
+            => await VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public static class C
@@ -228,8 +228,8 @@ public static class C
         [DataRow("System.Collections.Generic.List<int>", nameof(List<int>.Count))]
         [DataRow("System.Collections.Generic.IList<int>", nameof(IList<int>.Count))]
         [DataRow("System.Collections.Generic.ICollection<int>", nameof(ICollection<int>.Count))]
-        public Task CSharp_Conditional_FixedAsync(string type, string propertyName)
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_Conditional_FixedAsync(string type, string propertyName)
+            => await VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public static class C
@@ -255,8 +255,8 @@ public static class C
         [TestMethod]
         [DataRow("string()", nameof(Array.Length))]
         [DataRow("System.Collections.Immutable.ImmutableArray(Of Integer)", nameof(ImmutableArray<int>.Length))]
-        public Task Basic_FixedAsync(string type, string propertyName)
-            => VerifyVB.VerifyCodeFixAsync(
+        public async Task Basic_FixedAsync(string type, string propertyName)
+            => await VerifyVB.VerifyCodeFixAsync(
                 $@"Imports System
 Imports System.Linq
 Public Module M
@@ -288,8 +288,8 @@ End Module
         [TestMethod]
         [DataRow("string()", nameof(Array.Length))]
         [DataRow("System.Collections.Immutable.ImmutableArray(Of Integer)?", nameof(ImmutableArray<int>.Length))]
-        public Task Basic_Conditional_FixedAsync(string type, string propertyName)
-            => VerifyVB.VerifyCodeFixAsync(
+        public async Task Basic_Conditional_FixedAsync(string type, string propertyName)
+            => await VerifyVB.VerifyCodeFixAsync(
                 $@"Imports System
 Imports System.Linq
 Public Module M
@@ -320,8 +320,8 @@ End Module
 
         [TestMethod]
         [DataRow("System.Collections.Generic.IEnumerable<int>")]
-        public Task CSharp_NoDiagnosticAsync(string type)
-            => VerifyCS.VerifyAnalyzerAsync(
+        public async Task CSharp_NoDiagnosticAsync(string type)
+            => await VerifyCS.VerifyAnalyzerAsync(
                 $@"using System;
 using System.Linq;
 public static class C
@@ -333,8 +333,8 @@ public static class C
 
         [TestMethod]
         [DataRow("System.Collections.Generic.IEnumerable(Of Integer)")]
-        public Task Basic_NoDiagnosticAsync(string type)
-            => VerifyVB.VerifyAnalyzerAsync(
+        public async Task Basic_NoDiagnosticAsync(string type)
+            => await VerifyVB.VerifyAnalyzerAsync(
                 $@"Imports System
 Imports System.Linq
 Public Module M
@@ -351,8 +351,8 @@ End Module
         [DataRow("System.Collections.Generic.List(Of Integer)")]
         [DataRow("System.Collections.Generic.IList(Of Integer)")]
         [DataRow("System.Collections.Generic.ICollection(Of Integer)")]
-        public Task Basic_PropertyInvocationWithParenthesis_NoDiagnosticAsync(string type)
-            => VerifyVB.VerifyAnalyzerAsync(
+        public async Task Basic_PropertyInvocationWithParenthesis_NoDiagnosticAsync(string type)
+            => await VerifyVB.VerifyAnalyzerAsync(
                 $@"Imports System
 Imports System.Linq
 Public Module M
@@ -366,8 +366,8 @@ End Module
 ");
 
         [TestMethod]
-        public Task CSharp_ICollectionOfTImplementerWithImplicitCount_FixedAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_ICollectionOfTImplementerWithImplicitCount_FixedAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public class T : global::System.Collections.Generic.ICollection<string>
@@ -415,8 +415,8 @@ public static class C
 ");
 
         [TestMethod]
-        public Task CSharp_ICollectionImplementerWithImplicitCount_FixedAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_ICollectionImplementerWithImplicitCount_FixedAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public class T :
@@ -462,8 +462,8 @@ public static class C
 ");
 
         [TestMethod]
-        public Task CSharp_ICollectionOfTImplementerWithExplicitCount_NoDiagnosticAsync()
-            => VerifyCS.VerifyAnalyzerAsync(
+        public async Task CSharp_ICollectionOfTImplementerWithExplicitCount_NoDiagnosticAsync()
+            => await VerifyCS.VerifyAnalyzerAsync(
                 $@"using System;
 using System.Linq;
 public class T : global::System.Collections.Generic.ICollection<string>
@@ -486,8 +486,8 @@ public static class C
 ");
 
         [TestMethod]
-        public Task CSharp_InterfaceShadowingICollectionOfT_FixedAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_InterfaceShadowingICollectionOfT_FixedAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
                 @"using System;
 using System.Linq;
 public interface I : global::System.Collections.Generic.ICollection<string>
@@ -519,8 +519,8 @@ public static class C
 ");
 
         [TestMethod]
-        public Task CSharp_InterfaceShadowingICollection_FixedAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_InterfaceShadowingICollection_FixedAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
                 @"using System;
 using System.Linq;
 public interface I :
@@ -556,8 +556,8 @@ public static class C
 ");
 
         [TestMethod]
-        public Task CSharp_ClassShadowingICollectionOfT_FixedAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_ClassShadowingICollectionOfT_FixedAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public class T : global::System.Collections.Generic.ICollection<string>
@@ -607,8 +607,8 @@ public static class C
 ");
 
         [TestMethod]
-        public Task CSharp_ClassShadowingICollection_FixedAsync()
-            => VerifyCS.VerifyCodeFixAsync(
+        public async Task CSharp_ClassShadowingICollection_FixedAsync()
+            => await VerifyCS.VerifyCodeFixAsync(
                 $@"using System;
 using System.Linq;
 public class T :
@@ -743,6 +743,60 @@ End Class
         }
 
         [TestMethod]
+        public async Task CS_NestedCount_FixAllRewritesBothAsync()
+            => await new VerifyCS.Test
+            {
+                TestCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public int M(List<List<int>> lists)
+    {
+        return {|CA1829:lists[{|CA1829:lists.Count()|}].Count()|};
+    }
+}",
+                FixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class C
+{
+    public int M(List<List<int>> lists)
+    {
+        return lists[lists.Count].Count;
+    }
+}",
+            }.RunAsync(CancellationToken.None);
+
+        [TestMethod]
+        public async Task VB_NestedCount_FixAllRewritesBothAsync()
+            => await new VerifyVB.Test
+            {
+                TestCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Function M(items As Integer()()) As Integer
+        Return {|CA1829:items({|CA1829:items.Count()|}).Count()|}
+    End Function
+End Class
+",
+                FixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class C
+    Public Function M(items As Integer()()) As Integer
+        Return items(items.Length).Length
+    End Function
+End Class
+",
+            }.RunAsync(CancellationToken.None);
+
+        [TestMethod]
         public async Task CA1827_CA1829_ExpressionTree_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -782,8 +836,8 @@ class C
             : base(sourceProvider, verifier) { }
 
         [TestMethod]
-        public Task CountEqualsNonZero_WithoutPredicate_FixedAsync()
-            => VerifyAsync(
+        public async Task CountEqualsNonZero_WithoutPredicate_FixedAsync()
+            => await VerifyAsync(
                 methodName: SourceProvider.MemberName,
                 testSource: SourceProvider.GetCodeWithExpression(
                     SourceProvider.GetTargetExpressionEqualsInvocationCode(1, withPredicate: false, "Count"),
@@ -794,8 +848,8 @@ class C
                 extensionsSource: null);
 
         [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/3700"), WorkItem(3700, "https://github.com/dotnet/roslyn-analyzers/issues/3700")]
-        public Task NonZeroEqualsCount_WithoutPredicate_FixedAsync()
-            => VerifyAsync(
+        public async Task NonZeroEqualsCount_WithoutPredicate_FixedAsync()
+            => await VerifyAsync(
                 methodName: SourceProvider.MemberName,
                 testSource: SourceProvider.GetCodeWithExpression(
                     SourceProvider.GetEqualsTargetExpressionInvocationCode(1, withPredicate: false, "Count"),
@@ -813,7 +867,7 @@ class C
         [TestMethod]
         // Scenarios that are not diagnosed with CA1836 should fallback in CA1829.
         [DynamicData(nameof(NoDiagnosisOnlyTestData))]
-        public Task PropertyOnBinaryOperationAsync(int literal, BinaryOperatorKind @operator, bool isRightSideExpression)
+        public async Task PropertyOnBinaryOperationAsync(int literal, BinaryOperatorKind @operator, bool isRightSideExpression)
         {
             string testSource;
             string fixedSource;
@@ -839,7 +893,7 @@ class C
                 21 + 3 + GetOperatorLength(SourceProvider, @operator) :
                 21;
 
-            return VerifyAsync(SourceProvider.MemberName, testSource, fixedSource, extensionsSource: null, line, column);
+            await VerifyAsync(SourceProvider.MemberName, testSource, fixedSource, extensionsSource: null, line, column);
         }
 
         private static int GetOperatorLength(TestsSourceCodeProvider sourceProvider, BinaryOperatorKind @operator)
