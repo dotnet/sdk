@@ -67,14 +67,21 @@ Welcome to dotnetup!
 SDK Channel: latest
 Mode: <recommended-mode> (Suggested)
 
+<recommended-mode> modifies <configuration-target> to set PATH and DOTNET_ROOT to prefer <install-path>.
+
 Would you like to install .NET with the recommended settings?
 > Yes, proceed with defaults and install
 
-Downloading SDK <resolved-version>
-Installing SDK <resolved-version>
-Installed SDK <resolved-version>
+Installing SDK <resolved-version> to <install-path>...
+<download and installation progress>
+Installed at <install-path>:
+  SDK <resolved-version>
+<mode-specific environment guidance>
 Setup complete!
 ```
+
+The paths, progress display, and environment guidance depend on your system and
+the selected mode.
 
 The recommended mode is Everywhere Mode on Windows. On macOS and Linux, it is
 Terminal Mode when `dotnetup` detects a supported shell. It is Isolation Mode
