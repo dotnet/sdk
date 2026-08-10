@@ -495,6 +495,10 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>50dbab4de210e882172b07934e9666313b7065f1</Sha>
     </Dependency>
+    <Dependency Name="Microsoft.CodeAnalysis.Analyzers" Version="5.11.0-1.26406.108">
+      <Uri>https://github.com/dotnet/dotnet</Uri>
+      <Sha>6c7fa710f4337334575f0c30f1691edc244518d1</Sha>
+    </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
     <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="11.0.0-beta.26406.108">
