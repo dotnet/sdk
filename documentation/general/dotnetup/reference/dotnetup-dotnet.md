@@ -32,6 +32,14 @@ process exit code.
 This command does not automatically select an arbitrary hive supplied earlier
 with `--install-path`.
 
+`dotnetup dotnet` changes the environment only for the command that it starts.
+Other applications do not use this hive by default. This includes IDEs such as
+Visual Studio Code.
+
+Use Terminal Mode and launch the IDE from that terminal. On Windows, use
+Everywhere Mode to configure all applications. For more information, see
+[dotnetup environment configuration](../concepts/environment.md).
+
 ## Arguments
 
 `ARGUMENT`
