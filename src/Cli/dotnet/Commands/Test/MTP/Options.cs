@@ -48,7 +48,8 @@ internal record PathOptions(
     string? ResultsDirectoryPath,
     ResultsDirectoryLayout ResultsDirectoryLayout,
     string? ConfigFilePath,
-    string? DiagnosticOutputDirectoryPath);
+    string? DiagnosticOutputDirectoryPath,
+    bool ResultsDirectoryLayoutSpecified = false);
 
 internal record BuildOptions(
     PathOptions PathOptions,

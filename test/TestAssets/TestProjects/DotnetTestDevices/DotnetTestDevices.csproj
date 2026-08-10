@@ -105,10 +105,21 @@
           Condition="'@(RuntimeEnvironmentVariable)' != ''">
     <Message Text="ComputeRunArguments: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
   </Target>
+
+  <Target Name="_UseHttpTestTransport"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(UseHttpTestTransport)' == 'true'">
+    <PropertyGroup>
+      <!-- Keep the host executable runnable on the build machine while exercising the browser transport selection. -->
+      <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    </PropertyGroup>
+  </Target>
+
   <!-- Unlike dotnet run, dotnet test builds DeployToDevice first and ComputeRunArguments second,
        so ResolveFrameworkReferences has to run in the second build too to mimic Android. -->
   <Target Name="_ComputeRunArgumentsDependsOnResolveFrameworkReferences"
           BeforeTargets="ComputeRunArguments"
-          DependsOnTargets="ResolveFrameworkReferences" />
+          DependsOnTargets="ResolveFrameworkReferences"
+          Condition="'$(UseHttpTestTransport)' != 'true'" />
 
 </Project>
