@@ -363,6 +363,19 @@ namespace Microsoft.DotNet.Cli.Build.Tests
             // the CodeAnalysis targets.
             command.Properties.Add("CompilerApiVersion", compilerApiVersion);
 
+            if (restoreEnableAnalyzerAssets &&
+                SdkTestContext.Current.ToolsetUnderTest.ShouldUseFullFrameworkMSBuild)
+            {
+                // Full MSBuild may use an in-box NuGet that does not produce analyzer assets yet.
+                // Restore with the SDK's NuGet, then verify Full MSBuild consumes that assets file.
+                new DotnetRestoreCommand(Log, command.FullPathProjectFile)
+                    .Execute()
+                    .Should()
+                    .Pass();
+
+                command.ShouldRestore = false;
+            }
+
             command.Execute().Should().Pass();
 
             var analyzers = command.GetValues();
