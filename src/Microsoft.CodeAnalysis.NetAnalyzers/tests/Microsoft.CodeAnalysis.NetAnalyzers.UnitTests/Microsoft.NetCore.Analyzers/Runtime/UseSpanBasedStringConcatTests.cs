@@ -260,7 +260,7 @@ Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|});",
                     @"
 Consume(string.Concat(Fwd(string.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)));",
                     new[] { 0, 1 },
-                    2, 2, 2
+                    2, 1, 1
                 };
                 yield return new object[]
                 {
@@ -269,7 +269,7 @@ var _ = {|#0:Fwd({|#1:foo.Substring(1) + bar.Substring(1)|}) + Fwd({|#2:foo.Subs
                     @"
 var _ = string.Concat(Fwd(string.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(string.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(string.Concat(foo, bar.AsSpan(1))));",
                     new[] { 0, 1, 2, 3 },
-                    4, 2, 2
+                    4, 1, 1
                 };
             }
         }
@@ -304,7 +304,7 @@ Consume({|#0:Fwd({|#1:foo + bar.Substring(1)|}) + baz.Substring(1)|})",
                     @"
 Consume(String.Concat(Fwd(String.Concat(foo, bar.AsSpan(1))), baz.AsSpan(1)))",
                     new[] { 0, 1 },
-                    2, 2, 2
+                    2, 1, 1
                 };
                 yield return new object[]
                 {
@@ -313,7 +313,7 @@ Dim s = {|#0:Fwd({|#1:foo.Substring(1) & bar.Substring(1)|}) & Fwd({|#2:foo.Subs
                     @"
 Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(String.Concat(foo.AsSpan(1), bar)).AsSpan(1), Fwd(String.Concat(foo, bar.AsSpan(1))))",
                     new[] { 0, 1, 2, 3 },
-                    4, 2, 2
+                    4, 1, 1
                 };
             }
         }
@@ -330,8 +330,8 @@ Dim s = String.Concat(Fwd(String.Concat(foo.AsSpan(1), bar.AsSpan(1))), Fwd(Stri
                 FixedCode = VBUsings + VBWithBody(fixedStatements),
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 NumberOfIncrementalIterations = incrementalIterations,
-                NumberOfFixAllIterations = fixAllInDocumentIterations,
-                NumberOfFixAllInDocumentIterations = fixAllIterations
+                NumberOfFixAllInDocumentIterations = fixAllInDocumentIterations,
+                NumberOfFixAllIterations = fixAllIterations
             };
             test.ExpectedDiagnostics.AddRange(locations.Select(x => VerifyVB.Diagnostic(Rule).WithLocation(x)));
             return test.RunAsync(CancellationToken.None);

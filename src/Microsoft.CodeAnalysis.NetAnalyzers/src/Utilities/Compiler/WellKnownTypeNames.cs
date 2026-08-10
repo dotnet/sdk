@@ -229,6 +229,7 @@ namespace Analyzer.Utilities
         public const string SystemDiagnosticsProcess = "System.Diagnostics.Process";
         public const string SystemDiagnosticsProcessModule = "System.Diagnostics.ProcessModule";
         public const string SystemDiagnosticsProcessStartInfo = "System.Diagnostics.ProcessStartInfo";
+        public const string SystemDiagnosticsStopwatch = "System.Diagnostics.Stopwatch";
         public const string SystemDiagnosticsTraceListener = "System.Diagnostics.TraceListener";
         public const string SystemDiagnosticsTracingEventSource = "System.Diagnostics.Tracing.EventSource";
         public const string SystemDiagnosticsUnreachableException = "System.Diagnostics.UnreachableException";
@@ -445,6 +446,7 @@ namespace Analyzer.Utilities
         public const string SystemTextJsonJsonSerializerOptions = "System.Text.Json.JsonSerializerOptions";
         public const string SystemTextJsonJsonSerializer = "System.Text.Json.JsonSerializer";
         public const string SystemTextRegularExpressionsGroup = "System.Text.RegularExpressions.Group";
+        public const string SystemTextRegularExpressionsMatch = "System.Text.RegularExpressions.Match";
         public const string SystemTextRegularExpressionsMatchCollection = "System.Text.RegularExpressions.MatchCollection";
         public const string SystemTextRegularExpressionsRegex = "System.Text.RegularExpressions.Regex";
         public const string SystemTextStringBuilder = "System.Text.StringBuilder";

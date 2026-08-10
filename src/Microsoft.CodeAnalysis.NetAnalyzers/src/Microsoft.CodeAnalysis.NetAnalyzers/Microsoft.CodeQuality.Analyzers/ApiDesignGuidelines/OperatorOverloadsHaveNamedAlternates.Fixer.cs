@@ -9,9 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 {
@@ -19,55 +19,53 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
     /// CA2225: Operator overloads have named alternates
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class OperatorOverloadsHaveNamedAlternatesFixer : CodeFixProvider
+    public sealed class OperatorOverloadsHaveNamedAlternatesFixer : SyntaxEditorBasedCodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(OperatorOverloadsHaveNamedAlternatesAnalyzer.RuleId);
 
-        public override FixAllProvider GetFixAllProvider()
+        public override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
+            string title = MicrosoftCodeQualityAnalyzersResources.OperatorOverloadsHaveNamedAlternatesCodeFixTitle;
+            RegisterCodeFix(context, title, title);
+            return Task.CompletedTask;
         }
 
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        protected override async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode node = root.FindNode(context.Span);
+            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
             if (node == null)
             {
                 return;
             }
 
-            string title = MicrosoftCodeQualityAnalyzersResources.OperatorOverloadsHaveNamedAlternatesCodeFixTitle;
-            context.RegisterCodeFix(CodeAction.Create(title, ct => FixAsync(context, ct), equivalenceKey: title), context.Diagnostics.First());
-        }
+            SemanticModel semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            SyntaxGenerator generator = editor.Generator;
 
-        private static async Task<Document> FixAsync(CodeFixContext context, CancellationToken cancellationToken)
-        {
-            var semanticModel = await context.Document.GetRequiredSemanticModelAsync(context.CancellationToken).ConfigureAwait(false);
-            var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var generator = SyntaxGenerator.GetGenerator(context.Document);
-
-            SyntaxNode node = root.FindNode(context.Span);
-            Diagnostic diagnostic = context.Diagnostics.First();
             switch (diagnostic.Properties[OperatorOverloadsHaveNamedAlternatesAnalyzer.DiagnosticKindText])
             {
                 case OperatorOverloadsHaveNamedAlternatesAnalyzer.AddAlternateText:
-                    if ((generator.GetDeclaration(node, DeclarationKind.Operator) ?? generator.GetDeclaration(node, DeclarationKind.ConversionOperator)) is not SyntaxNode methodDeclaration)
+                    if ((generator.GetDeclaration(node, DeclarationKind.Operator) ?? generator.GetDeclaration(node, DeclarationKind.ConversionOperator)) is not SyntaxNode methodDeclaration ||
+                        semanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken) is not IMethodSymbol operatorOverloadSymbol)
                     {
-                        return context.Document;
+                        return;
                     }
 
-                    var operatorOverloadSymbol = (IMethodSymbol)semanticModel.GetDeclaredSymbol(methodDeclaration, cancellationToken)!;
                     INamedTypeSymbol typeSymbol = operatorOverloadSymbol.ContainingType;
+
+                    // A partial type can be declared across documents, and the editor only edits this one.
+                    SyntaxReference? typeReference = typeSymbol.DeclaringSyntaxReferences.FirstOrDefault(r => r.SyntaxTree == editor.OriginalRoot.SyntaxTree);
+                    if (typeReference == null)
+                    {
+                        return;
+                    }
 
                     // For C# the following `typeDeclarationSyntax` and `typeDeclaration` nodes are identical, but for VB they're different so in
                     // an effort to keep this as language-agnostic as possible, the heavy-handed approach is used.
-                    SyntaxNode typeDeclarationSyntax = await typeSymbol.DeclaringSyntaxReferences.First().GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
+                    SyntaxNode typeDeclarationSyntax = await typeReference.GetSyntaxAsync(cancellationToken).ConfigureAwait(false);
                     if (generator.GetDeclaration(typeDeclarationSyntax,
                         typeSymbol.TypeKind == TypeKind.Struct ? DeclarationKind.Struct : DeclarationKind.Class) is not SyntaxNode typeDeclaration)
                     {
-                        return context.Document;
+                        return;
                     }
 
                     SyntaxNode addedMember;
@@ -88,7 +86,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                         ExpectedMethodSignature? expectedSignature = GetExpectedMethodSignature(operatorOverloadSymbol, semanticModel.Compilation);
                         if (expectedSignature == null)
                         {
-                            return context.Document;
+                            return;
                         }
 
                         if (expectedSignature.Name == "CompareTo" && operatorOverloadSymbol.ContainingType.TypeKind == TypeKind.Class)
@@ -115,23 +113,17 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
                             statements: bodyStatements);
                     }
 
-                    SyntaxNode newTypeDeclaration = generator.AddMembers(typeDeclaration, addedMember);
-                    return context.Document.WithSyntaxRoot(root.ReplaceNode(typeDeclaration, newTypeDeclaration));
+                    editor.AddMember(typeDeclaration, addedMember);
+                    return;
                 case OperatorOverloadsHaveNamedAlternatesAnalyzer.FixVisibilityText:
-                    if ((generator.GetDeclaration(node, DeclarationKind.Method) ?? generator.GetDeclaration(node, DeclarationKind.Property)) is not SyntaxNode badVisibilityNode)
+                    if ((generator.GetDeclaration(node, DeclarationKind.Method) ?? generator.GetDeclaration(node, DeclarationKind.Property)) is SyntaxNode badVisibilityNode)
                     {
-                        return context.Document;
+                        editor.SetAccessibility(badVisibilityNode, Accessibility.Public);
                     }
 
-                    ISymbol badVisibilitySymbol = semanticModel.GetDeclaredSymbol(badVisibilityNode, cancellationToken)!;
-                    SymbolEditor symbolEditor = SymbolEditor.Create(context.Document);
-                    ISymbol newSymbol = await symbolEditor.EditOneDeclarationAsync(badVisibilitySymbol,
-                        (documentEditor, syntaxNode) => documentEditor.SetAccessibility(badVisibilityNode, Accessibility.Public), cancellationToken).ConfigureAwait(false);
-                    Document newDocument = symbolEditor.GetChangedDocuments().Single();
-                    SyntaxNode newRoot = await newDocument.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-                    return context.Document.WithSyntaxRoot(newRoot);
+                    return;
                 default:
-                    return context.Document;
+                    return;
             }
         }
 
