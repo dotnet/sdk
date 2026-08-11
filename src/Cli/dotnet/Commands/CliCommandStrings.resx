@@ -456,6 +456,9 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdListDevicesAndListTestsMutuallyExclusive" xml:space="preserve">
     <value>The '--list-devices' and '--list-tests' options cannot be used together.</value>
   </data>
+  <data name="CmdListDevicesAndAffectedTestsMutuallyExclusive" xml:space="preserve">
+    <value>The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</value>
+  </data>
   <data name="CmdDeviceOptionsRequireProject" xml:space="preserve">
     <value>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</value>
   </data>
@@ -2681,6 +2684,9 @@ Proceed?</value>
     <value>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</value>
     <comment>{0} is the test application path. {1} is the process exit code.</comment>
   </data>
+  <data name="ArtifactPostProcessingStarted" xml:space="preserve">
+    <value>Merging compatible artifacts produced by different test applications...</value>
+  </data>
   <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>
   </data>
@@ -2716,8 +2722,33 @@ Proceed?</value>
   <data name="TotalColon" xml:space="preserve">
     <value>total:</value>
   </data>
-  <data name="Retried" xml:space="preserve">
-    <value>retried</value>
+  <data name="RetriedColon" xml:space="preserve">
+    <value>retried:</value>
+    <comment>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</comment>
+  </data>
+  <data name="RetriedTestsAndRuns" xml:space="preserve">
+    <value>{0} test(s), {1} extra run(s)</value>
+    <comment>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</comment>
+  </data>
+  <data name="FlakyLowercase" xml:space="preserve">
+    <value>flaky: {0} (passed after retry)</value>
+    <comment>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</comment>
+  </data>
+  <data name="FlakyTests" xml:space="preserve">
+    <value>Flaky tests:</value>
+    <comment>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</comment>
+  </data>
+  <data name="FlakyTransition" xml:space="preserve">
+    <value>failed -&gt; passed</value>
+    <comment>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</comment>
+  </data>
+  <data name="FlakyAttempts" xml:space="preserve">
+    <value>{0} attempts</value>
+    <comment>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</comment>
+  </data>
+  <data name="SlowestTests" xml:space="preserve">
+    <value>Slowest tests:</value>
+    <comment>Header of the run summary section that lists the longest-running tests.</comment>
   </data>
   <data name="FailedColon" xml:space="preserve">
     <value>failed:</value>
@@ -2749,5 +2780,20 @@ Proceed?</value>
   <data name="WorkloadSetVersionSpecifiedInGlobalJson" xml:space="preserve">
     <value> (Specified in '{0}')</value>
     <comment>{0} is the path to the global.json file.</comment>
+  </data>
+  <data name="CmdAffectedTestsFeatureDisabled" xml:space="preserve">
+    <value>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</value>
+  </data>
+  <data name="CmdAffectedTestsOptionsMutuallyExclusive" xml:space="preserve">
+    <value>The options '--collect-test-map' and '--affected-tests' cannot be used together.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRunModulesInParallel" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRequireMinimumTests" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</value>
+  </data>
+  <data name="CmdAffectedTestsResponseFilesMustBeConsistent" xml:space="preserve">
+    <value>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</value>
   </data>
 </root>

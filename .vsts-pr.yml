@@ -37,6 +37,8 @@ variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngPublicBuildPool
 - template: /eng/common/templates/variables/pool-providers.yml
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 
 resources:
   containers:
@@ -58,6 +60,8 @@ stages:
   jobs:
   ############### HELIX JOB MONITOR ###############
   - template: /eng/common/core-templates/job/helix-job-monitor.yml
+    parameters:
+      useFullyQualifiedTestName: true
 
   ############### WINDOWS ###############
   - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self

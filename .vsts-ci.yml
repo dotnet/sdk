@@ -51,6 +51,8 @@ variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
 # Variables used: DncEngInternalBuildPool
 - template: /eng/common/templates-official/variables/pool-providers.yml
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
 # Helix testing requires a token when internally run.
 # Variables used: HelixApiAccessToken
 - group: DotNet-HelixApi-Access
@@ -121,6 +123,7 @@ extends:
           - template: /eng/common/core-templates/job/helix-job-monitor.yml@self
             parameters:
               helixAccessToken: $(HelixApiAccessToken)
+              useFullyQualifiedTestName: true
 
         ############### WINDOWS ###############
         - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self

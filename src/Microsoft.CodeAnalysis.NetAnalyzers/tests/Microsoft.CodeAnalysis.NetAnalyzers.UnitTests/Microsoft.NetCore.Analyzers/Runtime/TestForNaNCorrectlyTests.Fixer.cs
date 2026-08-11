@@ -544,5 +544,45 @@ public class A
 }
 ");
         }
+
+        [TestMethod]
+        public async Task CA2242_NestedComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class A
+{
+    public bool Compare(float f, float g)
+    {
+        return [|([|f == float.NaN|] ? f : g) == float.NaN|];
+    }
+}
+", @"
+public class A
+{
+    public bool Compare(float f, float g)
+    {
+        return float.IsNaN((float.IsNaN(f) ? f : g));
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA2242_NestedComparison_FixAllRewritesBoth_BasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class A
+    Public Function Compare(s As Single, t As Single) As Boolean
+        Return [|If([|s = Single.NaN|], s, t) = Single.NaN|]
+    End Function
+End Class
+", @"
+Public Class A
+    Public Function Compare(s As Single, t As Single) As Boolean
+        Return Single.IsNaN(If(Single.IsNaN(s), s, t))
+    End Function
+End Class
+");
+        }
     }
 }
