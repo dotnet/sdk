@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.ApiCompatibility
 {
     internal static class ApiStabilityClassifier
     {
-        internal const string ExperimentalAttributeMetadataName = "System.Diagnostics.CodeAnalysis.ExperimentalAttribute";
+        private const string ExperimentalAttributeName = "ExperimentalAttribute";
 
         private static readonly ConditionalWeakTable<ISymbol, CacheEntry> s_classifications = new();
 
@@ -33,7 +33,23 @@ namespace Microsoft.DotNet.ApiCompatibility
         }
 
         public static bool IsExperimentalAttribute(AttributeData attribute) =>
-            attribute.AttributeClass?.ToDisplayString() == ExperimentalAttributeMetadataName;
+            attribute.AttributeClass is
+            {
+                MetadataName: ExperimentalAttributeName,
+                ContainingNamespace:
+                {
+                    Name: "CodeAnalysis",
+                    ContainingNamespace:
+                    {
+                        Name: "Diagnostics",
+                        ContainingNamespace:
+                        {
+                            Name: "System",
+                            ContainingNamespace.IsGlobalNamespace: true
+                        }
+                    }
+                }
+            };
 
         private sealed class CacheEntry(ApiStability stability)
         {
