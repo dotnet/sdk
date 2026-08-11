@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// <inheritdoc />
         public void Visit(IAssemblyMapper assembly)
         {
-            AddDifferences(assembly);
+            AddSymbolDifferences(assembly.GetDifferences());
 
             foreach (INamespaceMapper @namespace in assembly.GetNamespaces())
             {
@@ -97,8 +97,11 @@ namespace Microsoft.DotNet.ApiCompatibility
 
         private void AddSymbolDifferences<T>(IElementMapper<T> mapper)
             where T : ISymbol
+            => AddSymbolDifferences(mapper.GetDifferences());
+
+        private void AddSymbolDifferences(IEnumerable<CompatDifference> differences)
         {
-            foreach (CompatDifference item in mapper.GetDifferences())
+            foreach (CompatDifference item in differences)
             {
                 ApiStability leftStability = ApiStabilityClassifier.Classify(item.LeftSymbol);
                 ApiStability rightStability = ApiStabilityClassifier.Classify(item.RightSymbol);
@@ -111,14 +114,6 @@ namespace Microsoft.DotNet.ApiCompatibility
                 _compatDifferences.Add(isExperimentalDifference
                     ? item.WithSeverity(DifferenceSeverity.Informational)
                     : item);
-            }
-        }
-
-        private void AddDifferences<T>(IElementMapper<T> mapper)
-        {
-            foreach (CompatDifference item in mapper.GetDifferences())
-            {
-                _compatDifferences.Add(item);
             }
         }
     }

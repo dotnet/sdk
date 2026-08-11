@@ -228,6 +228,57 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
         }
 
+        [TestMethod]
+        public void ExperimentalAssemblyIdentityDifferenceIsInformational()
+        {
+            const string leftSyntax = """
+                [assembly: System.Diagnostics.CodeAnalysis.Experimental("TEST001")]
+                [assembly: System.Reflection.AssemblyVersion("2.0.0.0")]
+                """;
+            const string rightSyntax = """
+                [assembly: System.Diagnostics.CodeAnalysis.Experimental("TEST001")]
+                [assembly: System.Reflection.AssemblyVersion("1.0.0.0")]
+                """;
+
+            CompatDifference difference = Assert.ContainsSingle(GetAssemblyIdentityDifferences(leftSyntax, rightSyntax));
+
+            Assert.AreEqual(DifferenceSeverity.Informational, difference.Severity);
+        }
+
+        [TestMethod]
+        public void StableAssemblyIdentityDifferenceRemainsError()
+        {
+            const string leftSyntax = "[assembly: System.Reflection.AssemblyVersion(\"2.0.0.0\")]";
+            const string rightSyntax = "[assembly: System.Reflection.AssemblyVersion(\"1.0.0.0\")]";
+
+            CompatDifference difference = Assert.ContainsSingle(GetAssemblyIdentityDifferences(leftSyntax, rightSyntax));
+
+            Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
+        }
+
+        [TestMethod]
+        public void RemovedExperimentalAssemblyIsInformational()
+        {
+            const string leftSyntax = "[assembly: System.Diagnostics.CodeAnalysis.Experimental(\"TEST001\")]";
+            IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
+            TestRuleFactory ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(new SuppressibleTestLog(), settings, context));
+            ApiComparer comparer = new(ruleFactory);
+
+            CompatDifference difference = Assert.ContainsSingle(comparer.GetDifferences([left], Array.Empty<IAssemblySymbol>()));
+
+            Assert.AreEqual(DifferenceSeverity.Informational, difference.Severity);
+        }
+
+        private static CompatDifference[] GetAssemblyIdentityDifferences(string leftSyntax, string rightSyntax)
+        {
+            TestRuleFactory ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(new SuppressibleTestLog(), settings, context));
+            ApiComparer comparer = new(ruleFactory);
+
+            return comparer.GetDifferences(
+                SymbolFactory.GetAssemblyFromSyntax(leftSyntax),
+                SymbolFactory.GetAssemblyFromSyntax(rightSyntax)).ToArray();
+        }
+
         private static CompatDifference[] GetDifferences(string leftSyntax, string rightSyntax, bool strictMode = false, bool includeAttributesRule = false)
         {
             TestRuleFactory ruleFactory = new(
