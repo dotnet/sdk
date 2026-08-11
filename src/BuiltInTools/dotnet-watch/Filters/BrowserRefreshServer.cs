@@ -73,7 +73,7 @@ namespace Microsoft.DotNet.Watcher.Tools
                     var allowedHosts = new List<string>() { "localhost", "127.0.0.1", "[::1]" };
                     if (!string.IsNullOrEmpty(autoReloadWebSocketOrigins))
                     {
-                        allowedHosts.AddRange(autoReloadWebSocketOrigins.Split([',', ';'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
+                        allowedHosts.AddRange(autoReloadWebSocketOrigins.Split(new[] { ',', ';' }, StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries));
                     }
 
                     if (!string.IsNullOrEmpty(envHostName))
