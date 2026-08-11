@@ -10,25 +10,71 @@ The update should be in-place and appear to happen seamlessly from the perspecti
 
 On Windows, `dotnetup` can pick one approach:
 
-1. To require a reboot to update & replace. This  simplifies logic as it reduces contention complexity with other running executables and programs. It also provides stronger crash recovery guarantees.
+1. Reboot Approach:
 
-2. To require that no `dotnetup` executable is running during the update process. This likewise provides stronger crash recovery by waiting for every running instance to exit as `dotnetup` can atomically replace its own executable with a backup. Atomic replacement prevents a partially copied executable, but strict pkill/power-loss durability depends on filesystem guarantees.
+To require a reboot to update & replace. This  simplifies logic as it reduces contention complexity with other running executables and programs. It also provides stronger crash recovery guarantees.
 
-3. To allow other `dotnetup` processes to run at the same time of `update` and accept the risk of the app no longer existing in the event of an outage/crash mid-update. Users can still use scripts to re-acquire `dotnetup`. To enable this, the executable is `renamed` while it is open. Existing executable behaviors may change based on the updated executable or fail if they don`t leverage proper caching of values dependent on the original executable.
+2. File Replace Approach:
 
+To require that absolutely *no* `dotnetup` executable is running during the update process. This likewise provides stronger crash recovery by waiting for every running instance to exit as `dotnetup` can be atomically replaced with a backup. (File Replacement cannot occur on an executable on Windows while said executable is running.) Atomic replacement prevents a partially copied executable, though strict pkill/power-loss durability depends on the kernel.
+
+One fault in this approach is that there can always be a race condition in an executable looking to see if it can run or not, because the executable cannot natively block itself from running whatsoever without elevation. Mutexes, reader/writer locks, or process enumeration may be used to tell the program to exit but this does not provide a full guarantee as the executable itself must be running to respect that and exit.
+
+3. File Rename Approach:
+
+`rename`s are permissible on an executable even while that executable is in use. We can allow other *certain* `dotnetup` processes to run at the same time of `update` (exclusively `dotnetup's telemetry drain process` as well as `dotnetup self update`) and use guards to block others.
+
+Allowing `dotnetup runtime install` to run at the same time as `dotnetup self update` is a poor choice as the old executable may use a different manifest format and crash after the update changes, for example.
+
+To use a rename means we must accept the risk of the app no longer existing in the event of an outage/crash mid-update. Users can still use scripts to re-acquire `dotnetup`.
+
+Existing executables that are permitted to run may change behaviorally based on the updated executable or fail if they don't leverage proper caching of values dependent on the original executable.
+
+## Selected Approach
 For `dotnetup`, `3` is the best selection.
 
 For `1`, requiring a reboot would interrupt developers, and dotnetup is a developer tool; a reboot-style approach is best served for system level applications or applications managed by IT.
 
-For `2`, Aspire CLI and RustUp also don't have crash/power outage safe update behavior. With the current telemetry drainer, this also complicates the process structure to `Replace` as a copy process is needed. `dotnetup` is easily and quickly re-installed if this occurs.
+For `2`, Aspire CLI and RustUp also don't have crash/power outage safe update behavior. With the current telemetry drainer, this also complicates the process structure to `Replace` as a copy process is needed.
+
+Under approach `2`, while `dotnetup` can have a reader/writer lock that tells other `dotnetup` executables not to run, it does not prevent the executable from being invoked and causing a race condition while the newly invoked executable is looking at the mutex and deciding to close itself. This adds complexity and requires retry + busy-waiting logic to verify no executable is running if the `Replace` operation fails.
+
+For `3`, `dotnetup self update` should be safely callable by others at the same time or during an update. IDEs or other tools that want to have unattended upgrades may clobber or compete to update `dotnetup` at the same time. This might be several VS Code extensions, or a window of VS Code and VS Code insiders.
+
+To clarify, this does not mean that the updates to dotnetup itself are executed concurrently as there is no advantage in doing so. Racing update commands would simply observe that there is no update to proceed with and exit gracefully once the update command that won a race let go of its mutex - with approaches `1` or `2`, the racing updaters would see a failure and have to subscribe to a system event and retry. Under approach `3`, they don't have to worry about whether `dotnetup` is already being updated or not.
+
+`dotnetup` is easily and quickly re-installed via the script if an outage occurs.
 
 #### Concurrency Trade-Offs
 
 Another contention is whether to have mutex or inter-process (i.e. several process) aware logic; should `dotnetup` gracefully succeed when multiple updates are attempted at once or simply reject the premise and fail?
 
-`Aspire` and `rustup` are not concurrency safe during update procedures but they also do not block such an action explicitly.
+`Aspire` and `rustup` are not concurrency safe during update procedures and they also do not block such an action explicitly.
 
-`dotnetup` should be concurrency safe. IDEs or other tools that want to have unattended upgrades may clobber or compete to update `dotnetup` at the same time. This might be several VS Code extensions, or a window of VS Code and VS Code insiders. `dotnetup` should also allow multiple callers to invoke it at the same time to configure/install runtimes, so it should not run an exclusive lock on itself at all times as this would delay progress and other apps unnecessarily.
+`dotnetup` should be concurrency safe. `dotnetup` should also allow multiple callers to invoke it at the same time to configure/install runtimes, so it should not run an exclusive lock on itself at all times as this would delay progress and other apps unnecessarily.
+
+# Success Criteria
+
+- It's okay for `dotnetup` to no longer exist on the `PATH` or in the `dotnetup` folder in the event of a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running. Consumers must know how to re-acquire `dotnetup` or ebmed a backup `dotnetup` executable at a base level in the event this occurs.
+
+
+- It is NOT okay for a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running to cause a permanent broken state that requires user understanding to remedy outside of re-installing `dotnetup`. e.g. it must not leave behind files with permissions that don't allow deletion, it must not corrupt other files that `dotnetup` depends on or leave them half-complete, including but not limited to a corrupt `dotnetup` executable that fails to load or execute.
+
+- Multiple `dotnetup` processes in general must be able to execute at the same time.
+
+- `dotnetup` may leverage asynchronous code or `await`.
+
+- `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.
+
+- `non-safe` processes must exit immediately if any `self update` is running.
+
+- `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.
+
+- At this time, the only 'safe' `dotnetup` processes to have running during `self update` are the `telemetry drain` process, `dotnetup dotnet`, and the `self update` process itself. All other processes are `non-safe`. A process does not know its 'safety' status until `S.CL` parsers or `args` are processed.
+
+- `dotnetup` must not require a reboot to update itself.
+
+- It's ok to ignore a 'rogue' `dotnetup` process and allow them to fail or incur behavioral runtime bugs; e.g. an old `dotnetup` version that does not know about or support any mutex, semaphore, or locks and therefore bypasses the conditional guarantees. This is permissible because `dotnetup` is not yet `stable` or in a fully public `preview`.
 
 # Self Update Broad Approach
 
@@ -36,23 +82,25 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 #### Final Proposed Update Logic:
 
-The main dotnetup process, say in dotnetup's official install directory, `D/`, downloads a new version of `dotnetup` into a randomly named, current-user-only temporary directory. Preview builds validate the published hash as an integrity check and explicitly warn that the artifact is not authenticated. Stable builds validate signed release metadata against the executable.
+Immediately in `dotnetup self update`, `dotnetup` first acquires the already existing `ModifyInstallationStates` mutex (called `dotnetupFolderMutex` below) to prevent manifest/install-state mutations and guard against contending update calls. It will wait a certain amount of time on the mutex and fail if it cannot be acquired with `dotnetupMutexBusy`.
 
-After copying the artifact to `D/dotnetup.exe.new`, dotnetup validates the staged copy again before executing or installing it.
+After acquiring `dotnetupFolderMutex`, `dotnetup` must also grab an exclusive file lock on `D/dotnetup.update.lock`. If acquiring the lock or modifying an update artifact fails because a file is in use, dotnetup should query Windows Restart Manager to report the locking process and PID on a best-effort basis and fail. This can be added with a `FileLockDetector`-style helper such as [commit `7fcc618e03f`](https://github.com/dotnet/sdk/commit/7fcc618e03f1520f688fa86bc7ade67aa417e380) via `RmRegisterResources`/`RmGetList` integration.
 
-Upon verification, `dotnetup` holds the existing `ModifyInstallationStates` mutex (called `dotnetupFolderMutex` below) to prevent concurrent manifest/install-state mutations. Other executables may still be running, so it must also grab an exclusive file lock on `D/dotnetup.update.lock`. If acquiring the lock or modifying an update artifact fails because a file is in use, dotnetup should query Windows Restart Manager to report the locking process and PID on a best-effort basis. This requires adding a `FileLockDetector`-style helper such as [commit `7fcc618e03f`](https://github.com/dotnet/sdk/commit/7fcc618e03f1520f688fa86bc7ade67aa417e380) via `RmRegisterResources`/`RmGetList` integration. The process may exit before it is reported, and failure to identify it does not change the update result.
+If `D/dotnetup.update.lock` is acquired, `dotnetup` removes any stale `D/dotnetup.exe.new` and does a best-effort delete of all `tmp/dotnetup/*/` folders, as well as all `dotnetup.exe.old.*`. `tmp/` cleanup is best-effort but failure to delete `dotnetup.exe.old` would cause `InsufficientPermissionsToUpdate`.
 
-Assuming the lock is acquired, `dotnetup` removes a stale `D/dotnetup.exe.new` and does a best-effort delete of all `D/dotnetup.exe.old.*`, except for the current random `transaction-id`, which would cause `InsufficientPermissionsToUpdate`.
+The original dotnetup process, say in dotnetup's official install directory, `D/`, assuming that there is a new version of `dotnetup` to update to (it can compare its assembly version with the prescribed `dotnetup` channel version), then downloads a new version of `dotnetup` into a randomly named, current-user-only temporary directory, say `tmp/dotnetup/<random>/dotnetup.exe`. If there is no new version, it would let the mutex and lock go and exit.
+
+After copying the downloaded artifact to `D/dotnetup.exe.new`, dotnetup validates the staged copy.
 
 Backups use transaction-specific names such as `D/dotnetup.exe.old.<transaction-id>` so a locked backup from an older process does not prevent staging a later update. A failure to remove an artifact required by the current transaction returns `InsufficientPermissionsToUpdate` with any available locking-process details.
 
 
 The state of the file system would be:
 ```
-`D/dotnetup.exe.new`
-`D/dotnetup.exe`
+`D/dotnetup.exe.new` <- replacement file
+`D/dotnetup.exe` <- old file
 
-`tmp/dotnetup/<random>/dotnetup.exe`
+`tmp/dotnetup/<random>/dotnetup.exe` <- swapping throwaway executable
 ```
 
 While still holding `dotnetupFolderMutex`, `dotnetup.exe` releases its handle to `D/dotnetup.update.lock`, starts `tmp/dotnetup/<random>/dotnetup.exe`, and performs a heartbeat handoff via the hidden command `dotnetup self replacement <tmp folder executable>`. The replacer inherits stdin/stdout/stderr and acquires the `FileShare.None` lock on `D/dotnetup.update.lock` before it responds that it is ready:
@@ -81,7 +129,7 @@ Abrupt termination can leave temporary directories or old backups behind indefin
 
 This prevents breaking apps reliant on `dotnetup` to be running; e.g. when a customer has their machine off for over a month and tries to run dotnetup self update but has some persisted dependent application such as vscode holding the dotnetup executable; other apps can chose how to make this visibly actionable (e.g. close your apps using `dotnetup` when possible.)
 
-Downloading and pre-lock verification may use asynchronous APIs. Once a thread acquires the thread-affine `ScopedMutex`, that thread must not cross an `await` boundary before releasing it; the heartbeat and final replacement critical sections therefore use synchronous waits or a dedicated thread. `FileStream` lock ownership is handle-based and is not thread-affine. The update-file lock bridges the parent/child mutex handoff and prevents another updater from deleting or replacing artifacts belonging to the active transaction. Every self-update path must acquire locks in the same order to avoid deadlock.
+Downloading and pre-lock verification may use asynchronous APIs. Once a thread acquires the thread-affine `ScopedMutex`, that thread must not cross an `await` boundary before releasing it; the heartbeat and final replacement critical sections therefore use synchronous waits or a dedicated thread. `FileStream` lock ownership is handle-based and is not thread-affine. The update-file lock bridges the parent/child mutex handoff and prevents another updater from deleting or replacing artifacts belonging to the active transaction.
 
 In the event of a crash/pkill/outage, users can safely run the get-dotnetup scripts to redownload the `dotnetup` executable to the standard `D/` location.
 
