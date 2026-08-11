@@ -31,12 +31,14 @@ Guidance for changes under `test/`.
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
 - **Don't raise parallelism.** MSTest is repo-defaulted to `None` in
   `test/Directory.Build.props` because of concurrency flakiness; a few projects opt
-  into `ClassLevel`. Cranking it up causes Helix over-subscription/timeouts.
+  into `ClassLevel` or `MethodLevel` after auditing their shared resources. Cranking it
+  up without that audit causes Helix over-subscription/timeouts and test interference.
 - **In parallelized projects, prefer `[ResourceLock]` over `[DoNotParallelize]`.** In the
   projects that do opt in (`Microsoft.NET.Build.Tests`, `dotnet-watch.Tests`,
-  `Microsoft.NET.Build.Containers.UnitTests`), MSTest's parallel-safety analyzers
-  (MSTEST0073–MSTEST0077) are active, and `MSTestAnalysisMode=Recommended` plus
-  `TreatWarningsAsErrors` makes them build errors. Fix them in this order:
+  `Microsoft.NET.Build.Containers.UnitTests`, `Microsoft.TemplateEngine.Cli.UnitTests`),
+  MSTest's parallel-safety analyzers (MSTEST0073–MSTEST0077) are active, and
+  `MSTestAnalysisMode=Recommended` plus `TreatWarningsAsErrors` makes them build errors.
+  Fix them in this order:
   1. **Eliminate the shared state** — pass an environment variable to the child process
      via `TestCommand.WithEnvironmentVariable(...)` instead of
      `Environment.SetEnvironmentVariable`, and give each test its own scratch directory
@@ -56,6 +58,12 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
+- **Run focused tests through `targeted-test`.** It runs the smallest relevant tests and
+  preserves actionable output and diagnostics when a local run fails.
+- **Map new substantive test areas for targeted testing.** Prefer adding a
+  `ConditionalTestScope` when reliable trigger paths can be defined. When the area is too
+  broad for practical conditional filtering, add its primary project to the fallback
+  table in the `targeted-test` skill.
 - **Skips must point to a tracking issue URL** — `[Ignore("https://github.com/dotnet/sdk/issues/N")]`.
 - **Verify (approval) snapshots**: `*.verified.*` is checked in; the runner writes a
   `*.received.*` on mismatch — promote received → verified when you change output

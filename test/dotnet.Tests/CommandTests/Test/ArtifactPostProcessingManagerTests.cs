@@ -140,6 +140,7 @@ public class ArtifactPostProcessingManagerTests
             SolutionPath: null,
             TestModules: null,
             ResultsDirectoryPath: "/results",
+            ResultsDirectoryLayout: ResultsDirectoryLayout.Flat,
             ConfigFilePath: "/config/testconfig.json",
             DiagnosticOutputDirectoryPath: "/diagnostics");
 
@@ -166,6 +167,7 @@ public class ArtifactPostProcessingManagerTests
             SolutionPath: null,
             TestModules: null,
             ResultsDirectoryPath: "/results",
+            ResultsDirectoryLayout: ResultsDirectoryLayout.Flat,
             ConfigFilePath: null,
             DiagnosticOutputDirectoryPath: null);
 
@@ -287,6 +289,26 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
+    public void GetOutputDirectory_WithArtifactsOutput_UsesArtifactsTestDirectory()
+    {
+        string artifactsDirectory = Path.Combine(Path.GetTempPath(), "artifacts");
+        TestModule module = CreateModule() with
+        {
+            UseArtifactsOutput = true,
+            ArtifactsPath = artifactsDirectory,
+        };
+        ArtifactPostProcessingJob job = CreateJob(
+            module,
+            CreateArtifact(Path.Combine(artifactsDirectory, "test", "project", "result.trx"), "microsoft.testing.trx"));
+
+        string outputDirectory = ArtifactPostProcessingManager.GetOutputDirectory(
+            CreateBuildOptions(),
+            job);
+
+        outputDirectory.Should().Be(Path.Combine(artifactsDirectory, "test"));
+    }
+
+    [TestMethod]
     public void GetOutputDirectory_WithoutResultsDirectory_PrefersDirectoryOfElectedApplicationInput()
     {
         // 'aaa' sorts before 'zzz', so an implementation that just takes the first input in path
@@ -342,8 +364,16 @@ public class ArtifactPostProcessingManagerTests
     }
 
     private static ArtifactPostProcessingJob CreateJob(params ArtifactPostProcessingArtifact[] artifacts)
+        => CreateJob(CreateModule(), artifacts);
+
+    private static ArtifactPostProcessingJob CreateJob(TestModule module, params ArtifactPostProcessingArtifact[] artifacts)
     {
-        ArtifactPostProcessingApplication application = CreateApplication();
+        var application = new ArtifactPostProcessingApplication(
+            module,
+            "net10.0",
+            "x64",
+            new HashSet<string>(StringComparer.Ordinal) { "microsoft.testing.trx", "microsoft.codecoverage" },
+            new HashSet<string>(StringComparer.Ordinal));
         return new ArtifactPostProcessingJob(
             application,
             [new ArtifactPostProcessingGroup("microsoft.testing.trx", IsKind: true, artifacts, [application])]);
@@ -409,6 +439,22 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
+    public async Task ExecuteAsync_WebAssemblyModule_SkipsUnsupportedPostProcessing()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts(
+            CreateModule("browser-wasm"),
+            "first.trx",
+            "second.trx");
+        using var ctrlC = CreateCancellationManager();
+
+        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC);
+
+        console.GetOutput().Should().NotContain(CliCommandStrings.ArtifactPostProcessingStarted);
+    }
+
+    [TestMethod]
     public void ReportFailureUnlessCancelled_WhenNotCancelled_WritesWarning()
     {
         var console = new CapturingConsole();
@@ -436,9 +482,13 @@ public class ArtifactPostProcessingManagerTests
     }
 
     private static ArtifactPostProcessingManager CreateManagerWithMergeableArtifacts(params string[] artifactPaths)
+        => CreateManagerWithMergeableArtifacts(CreateModule(), artifactPaths);
+
+    private static ArtifactPostProcessingManager CreateManagerWithMergeableArtifacts(
+        TestModule module,
+        params string[] artifactPaths)
     {
         var manager = new ArtifactPostProcessingManager();
-        TestModule module = CreateModule();
         manager.RecordCapabilities(
             module,
             "net10.0",
@@ -466,7 +516,14 @@ public class ArtifactPostProcessingManagerTests
 
     private static BuildOptions CreateBuildOptions(string? resultsDirectory = null)
         => new(
-            new PathOptions(null, null, null, ResultsDirectoryPath: resultsDirectory, null, null),
+            new PathOptions(
+                ProjectOrSolutionPath: null,
+                SolutionPath: null,
+                TestModules: null,
+                ResultsDirectoryPath: resultsDirectory,
+                ResultsDirectoryLayout: ResultsDirectoryLayout.Flat,
+                ConfigFilePath: null,
+                DiagnosticOutputDirectoryPath: null),
             HasNoRestore: false,
             HasNoBuild: false,
             Verbosity: null,
@@ -504,9 +561,9 @@ public class ArtifactPostProcessingManagerTests
             new HashSet<string>(StringComparer.Ordinal));
     }
 
-    private static TestModule CreateModule()
+    private static TestModule CreateModule(string runtimeIdentifier = "")
         => new(
-            new RunProperties("dotnet", "A.dll", null),
+            new RunProperties("dotnet", "A.dll", null, runtimeIdentifier, string.Empty, string.Empty),
             ProjectFullPath: null,
             TargetFramework: "net10.0",
             IsTestingPlatformApplication: true,

@@ -257,8 +257,12 @@ internal static class MSBuildUtility
             parseResult.GetValue(definition.SolutionOption),
             positionalTestModules ?? parseResult.GetValue(definition.TestModulesFilterOption),
             resultsDirectory,
+            parseResult.GetValue(definition.ResultsDirectoryLayoutOption) == "per-module"
+                ? ResultsDirectoryLayout.PerModule
+                : ResultsDirectoryLayout.Flat,
             configFile,
-            diagnosticOutputDirectory);
+            diagnosticOutputDirectory,
+            parseResult.HasOption(definition.ResultsDirectoryLayoutOption));
 
         return new BuildOptions(
             pathOptions,
@@ -386,6 +390,7 @@ internal static class MSBuildUtility
                 var project = ProjectInstance.FromFile(filePath, new ProjectOptions
                 {
                     GlobalProperties = globalProperties,
+                    EvaluationStage = ProjectEvaluationStage.Items,
                     ProjectCollection = collection,
                 });
 

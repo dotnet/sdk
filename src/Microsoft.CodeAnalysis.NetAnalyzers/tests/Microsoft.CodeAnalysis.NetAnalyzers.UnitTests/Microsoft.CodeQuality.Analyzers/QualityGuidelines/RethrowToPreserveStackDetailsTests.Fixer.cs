@@ -97,6 +97,86 @@ End Class
 "
     );
         }
+
+        [TestMethod]
+        public async Task TestCSharp_MultipleCatchClauses_FixAllRewritesEveryRethrowAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+@"
+using System;
+class Program
+{
+    void CatchAndRethrowExplicitly()
+    {
+        try
+        {
+            throw new ArithmeticException();
+        }
+        catch (ArithmeticException e)
+        {
+            [|throw e;|]
+        }
+        catch (Exception e)
+        {
+            [|throw e;|]
+        }
+    }
+}",
+@"
+using System;
+class Program
+{
+    void CatchAndRethrowExplicitly()
+    {
+        try
+        {
+            throw new ArithmeticException();
+        }
+        catch (ArithmeticException e)
+        {
+            throw;
+        }
+        catch (Exception e)
+        {
+            throw;
+        }
+    }
+}");
+        }
+
+        [TestMethod]
+        public async Task TestBasic_MultipleCatchClauses_FixAllRewritesEveryRethrowAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(
+@"
+Imports System
+Class Program
+    Sub CatchAndRethrowExplicitly()
+        Try
+            Throw New ArithmeticException()
+        Catch e As ArithmeticException
+            [|Throw e|]
+        Catch ex As Exception
+            [|Throw ex|]
+        End Try
+    End Sub
+End Class
+",
+@"
+Imports System
+Class Program
+    Sub CatchAndRethrowExplicitly()
+        Try
+            Throw New ArithmeticException()
+        Catch e As ArithmeticException
+            Throw
+        Catch ex As Exception
+            Throw
+        End Try
+    End Sub
+End Class
+");
+        }
     }
 }
 

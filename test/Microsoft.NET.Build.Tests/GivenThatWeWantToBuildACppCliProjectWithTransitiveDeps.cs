@@ -14,7 +14,6 @@ namespace Microsoft.NET.Build.Tests
         private readonly Lazy<TestAsset> _buildAsset;
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
         [FullMSBuildOnly]
         public void It_can_generate_correct_depsJson_file()
         {
@@ -27,7 +26,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
         [FullMSBuildOnly]
         public void It_can_generate_all_runtimeconfig_files_to_output_folder()
         {
@@ -41,7 +39,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
         [FullMSBuildOnly]
         public void It_can_generate_all_depsjson_files_to_output_folder()
         {

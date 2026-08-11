@@ -5,10 +5,10 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.NormalizeStringsToUppercaseAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpNormalizeStringsToUppercaseFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.NormalizeStringsToUppercaseAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Runtime.BasicNormalizeStringsToUppercaseFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {

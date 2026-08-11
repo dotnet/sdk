@@ -7,7 +7,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -192,12 +191,10 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     return length >= MinLengthWorthReplacing;
                 }
             }
-            else if (argument.Kind == OperationKindEx.Utf8String)
+            else if (argument is IUtf8StringOperation utf8String)
             {
                 // text.IndexOfAny("abc"u8)
-                return
-                    IUtf8StringOperationWrapper.IsInstance(argument) &&
-                    IUtf8StringOperationWrapper.FromOperation(argument).Value.Length >= MinLengthWorthReplacing;
+                return utf8String.Value.Length >= MinLengthWorthReplacing;
             }
             else if (argument is IPropertyReferenceOperation propertyReference)
             {
@@ -321,9 +318,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
         internal static bool IsConstantByteOrCharCollectionExpression(IOperation operation, List<char>? values, out int length)
         {
-            if (operation.Kind == OperationKindEx.CollectionExpression &&
-                ICollectionExpressionOperationWrapper.IsInstance(operation) &&
-                ICollectionExpressionOperationWrapper.FromOperation(operation) is { } collection &&
+            if (operation is ICollectionExpressionOperation collection &&
                 AllElementsAreConstantByteOrCharLiterals(collection.Elements, values))
             {
                 length = collection.Elements.Length;

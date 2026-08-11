@@ -22,6 +22,7 @@ internal class TestApplicationActionQueue
         int degreeOfParallelism,
         BuildOptions buildOptions,
         TestOptions testOptions,
+        TestResultsDirectoryResolver resultsDirectoryResolver,
         TerminalTestReporter output,
         Action<CommandLineOptionMessages> onHelpRequested,
         CtrlCCancellationManager ctrlC,
@@ -38,6 +39,7 @@ internal class TestApplicationActionQueue
             _readers[i] = Task.Run(async () => await Read(
                 buildOptions,
                 testOptions,
+                resultsDirectoryResolver,
                 output,
                 onHelpRequested,
                 ctrlC,
@@ -74,6 +76,7 @@ internal class TestApplicationActionQueue
     private async Task Read(
         BuildOptions buildOptions,
         TestOptions testOptions,
+        TestResultsDirectoryResolver resultsDirectoryResolver,
         TerminalTestReporter output,
         Action<CommandLineOptionMessages> onHelpRequested,
         CtrlCCancellationManager ctrlC,
@@ -93,6 +96,7 @@ internal class TestApplicationActionQueue
                         module,
                         buildOptions,
                         testOptions,
+                        resultsDirectoryResolver,
                         output,
                         onHelpRequested,
                         artifactPostProcessingManager,
