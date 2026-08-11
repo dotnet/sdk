@@ -65,7 +65,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 // squashing snapshots by creating output unique for template (but not alias) and preventing item to have name by alias
                 TemplateSpecificArgs = new[] { "-o", itemName, "-n", "item" }.Concat(args ?? Enumerable.Empty<string>()),
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 VerifyCommandOutput = true,
                 VerificationExcludePatterns = new[] { "*/stderr.txt", "*\\stderr.txt" },
                 SettingsDirectory = _fixture.HomeDirectory,
@@ -109,7 +109,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         //{
         //    TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: "editorconfig")
         //    {
-        //        SnapshotsDirectory = "Approvals",
+        //        SnapshotsDirectory = ApprovalsDirectory,
         //        SettingsDirectory = _fixture.HomeDirectory,
         //    }
         //    .WithCustomDirectoryVerifier(async (content, contentFetcher) =>
@@ -206,7 +206,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
                 TemplateSpecificArgs = args,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,
@@ -401,7 +401,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: name)
             {
                 TemplateSpecificArgs = args,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 OutputDirectory = workingDir,
                 SettingsDirectory = _fixture.HomeDirectory,
                 VerifyCommandOutput = true,
