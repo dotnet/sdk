@@ -2615,6 +2615,37 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    public void Directives_ConflictingPackageVersionMetadata()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Foo@1.0.0 Version=2.0.0
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, "Version")),
+            ]);
+    }
+
+    [TestMethod]
+    [DataRow("#:package Foo@1.0.0 Note=a note=b", "note")]
+    [DataRow("#:project Lib.csproj Private=false private=true", "private")]
+    [DataRow("#:ref Lib.cs Alias=a Alias=b", "Alias")]
+    public void Directives_DuplicateMetadata(string directive, string duplicateName)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: directive,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.DuplicateDirectiveMetadata, duplicateName)),
+            ]);
+    }
+
+    [TestMethod]
     // Directive kinds that do not support trailing 'Name=Value' metadata. A quote is used to force the
     // strict (new) form; otherwise the extra tokens would be accepted verbatim as a legacy single value.
     [DataRow("#:sdk MySdk Extra=\"a b\"", "sdk")]

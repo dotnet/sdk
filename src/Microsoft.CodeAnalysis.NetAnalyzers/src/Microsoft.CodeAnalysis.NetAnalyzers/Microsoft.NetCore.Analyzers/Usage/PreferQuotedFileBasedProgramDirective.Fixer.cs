@@ -2,14 +2,12 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
-using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.Usage
 {
-    public abstract class PreferQuotedFileBasedProgramDirectiveFixer : CodeFixProvider
+    public abstract class PreferQuotedFileBasedProgramDirectiveFixer : SyntaxEditorBasedCodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PreferQuotedFileBasedProgramDirective.RuleId);
-
-        public override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
     }
 }

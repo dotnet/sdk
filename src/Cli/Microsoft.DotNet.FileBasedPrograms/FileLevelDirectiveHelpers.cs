@@ -544,7 +544,11 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// <c>Name=Value</c> item metadata pairs. Returns <see langword="null"/> and reports an error
     /// if a token is not a valid metadata pair.
     /// </summary>
-    private static ImmutableArray<(string Name, string Value)>? ParseMetadata(in ParseContext context, ImmutableArray<string> tokens, int start)
+    private static ImmutableArray<(string Name, string Value)>? ParseMetadata(
+        in ParseContext context,
+        ImmutableArray<string> tokens,
+        int start,
+        string? conflictingName = null)
     {
         if (start >= tokens.Length)
         {
@@ -552,6 +556,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         var builder = ImmutableArray.CreateBuilder<(string Name, string Value)>(tokens.Length - start);
+        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         for (var i = start; i < tokens.Length; i++)
         {
@@ -569,6 +574,18 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (!IsValidMSBuildName(name, out var nameError))
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, name, nameError));
+                return null;
+            }
+
+            if (name.Equals(conflictingName, StringComparison.OrdinalIgnoreCase))
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, name));
+                return null;
+            }
+
+            if (!names.Add(name))
+            {
+                context.ReportError(string.Format(FileBasedProgramsResources.DuplicateDirectiveMetadata, name));
                 return null;
             }
 
@@ -749,7 +766,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseMetadata(context, tokens, start: 1) is not { } metadata)
+            if (ParseMetadata(context, tokens, start: 1, conflictingName: packageVersion is null ? null : "Version") is not { } metadata)
             {
                 return null;
             }

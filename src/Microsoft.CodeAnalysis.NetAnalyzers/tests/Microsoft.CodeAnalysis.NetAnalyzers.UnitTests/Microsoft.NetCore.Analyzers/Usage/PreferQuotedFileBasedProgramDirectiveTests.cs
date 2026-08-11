@@ -212,6 +212,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     },
                 },
                 CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
+                NumberOfFixAllIterations = 1,
                 SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(CancellationToken.None);
         }
@@ -223,8 +224,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [DataRow("#:package Foo@1.0.0 ExcludeAssets=runtime PrivateAssets=all")]
         [DataRow("#:project ../Lib Private=false")]
         [DataRow("#:ref ../lib.cs Aliases=lib")]
-        [DataRow("#:package Foo@1.0 ExtraToken")]
-        public async Task NewOrUnfixableForm_NoDiagnosticAsync(string directive)
+        public async Task NewForm_NoDiagnosticAsync(string directive)
         {
             await new VerifyCS.Test
             {
@@ -238,6 +238,63 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                             """),
                     },
                 },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task UnfixableLegacyForm_WarningWithoutFixAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            #:package Name@1.0 Property
+                            class Program { static void Main() { } }
+                            """),
+                    },
+                    ExpectedDiagnostics = { Expected("package") },
+                },
+                SolutionTransforms = { EnableFileBasedProgramFeature },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task TriviaIsPreservedAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            // Before
+                            #:property Description=Hello World
+
+                            // After
+                            class Program { static void Main() { } }
+                            """),
+                    },
+                    ExpectedDiagnostics = { Expected("property", line: 2) },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        ("Test0.cs", """
+                            // Before
+                            #:property Description="Hello World"
+
+                            // After
+                            class Program { static void Main() { } }
+                            """),
+                    },
+                },
+                CodeFixTestBehaviors = CodeFixTestBehaviors.SkipLocalDiagnosticCheck,
                 SolutionTransforms = { EnableFileBasedProgramFeature },
             }.RunAsync(CancellationToken.None);
         }

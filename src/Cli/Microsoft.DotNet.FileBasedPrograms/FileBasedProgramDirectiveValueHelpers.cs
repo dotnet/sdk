@@ -21,7 +21,7 @@ internal static class FileBasedProgramDirectiveValueHelpers
 {
     // Characters that are not allowed in a directive or metadata name because they would be confused
     // with a separator: whitespace, '@', '=', '/'.
-    private static readonly Regex s_disallowedNameCharacters = new("""[\s@=/]""", RegexOptions.Compiled);
+    private static readonly Regex s_disallowedNameCharacters = new("""[\s@=/]""");
 
     /// <summary>
     /// Returns whether <paramref name="name"/> contains a character that is not allowed in a directive

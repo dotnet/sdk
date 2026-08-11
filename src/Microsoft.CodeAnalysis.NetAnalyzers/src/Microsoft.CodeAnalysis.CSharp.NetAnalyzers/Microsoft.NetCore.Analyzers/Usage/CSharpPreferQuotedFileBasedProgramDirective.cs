@@ -26,7 +26,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                         continue;
                     }
 
-                    if (!FileBasedProgramDirectiveQuoting.TryGetQuotedForm(kind, value, out _))
+                    if (!FileBasedProgramDirectiveQuoting.IsLegacyForm(kind, value))
                     {
                         continue;
                     }

@@ -3,8 +3,9 @@
 
 using System.Composition;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Editing;
 using Microsoft.NetCore.Analyzers;
 using Microsoft.NetCore.Analyzers.Usage;
 
@@ -23,23 +24,30 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 
             var trivia = root.FindTrivia(context.Span.Start);
             if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value) ||
-                !FileBasedProgramDirectiveQuoting.TryGetQuotedForm(kind, value, out var newValue))
+                !FileBasedProgramDirectiveQuoting.TryGetQuotedForm(kind, value, out _))
             {
                 return;
             }
 
-            var triviaSpan = trivia.Span;
-            var newDirectiveText = "#:" + kind + " " + newValue;
-
-            var codeAction = CodeAction.Create(
+            RegisterCodeFix(
+                context,
                 MicrosoftNetCoreAnalyzersResources.PreferQuotedFileBasedProgramDirectiveCodeFixTitle,
-                async ct =>
-                {
-                    var text = await context.Document.GetTextAsync(ct).ConfigureAwait(false);
-                    return context.Document.WithText(text.Replace(triviaSpan, newDirectiveText));
-                },
                 nameof(MicrosoftNetCoreAnalyzersResources.PreferQuotedFileBasedProgramDirectiveCodeFixTitle));
-            context.RegisterCodeFix(codeAction, context.Diagnostics);
+        }
+
+        protected override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
+        {
+            var trivia = editor.OriginalRoot.FindTrivia(diagnostic.Location.SourceSpan.Start);
+            if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value) ||
+                !FileBasedProgramDirectiveQuoting.TryGetQuotedForm(kind, value, out var newValue) ||
+                trivia.GetStructure() is not { } structure ||
+                SyntaxFactory.ParseLeadingTrivia("#:" + kind + " " + newValue + "\n").FirstOrDefault().GetStructure() is not { } newStructure)
+            {
+                return Task.CompletedTask;
+            }
+
+            editor.ReplaceNode(structure, newStructure.WithTrailingTrivia(structure.GetTrailingTrivia()));
+            return Task.CompletedTask;
         }
     }
 }

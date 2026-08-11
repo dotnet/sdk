@@ -214,7 +214,8 @@ flags such legacy directives and offers a code fix to rewrite them into the quot
 
 `#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
 e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
-Each metadata name must be a valid XML element name; each metadata value can be quoted to contain whitespace.
+Each metadata name must be a unique valid XML element name; each metadata value can be quoted to contain whitespace.
+When a `#:package` directive specifies its version after `@`, it cannot also specify `Version` metadata.
 The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
 
 The directives are processed as follows:

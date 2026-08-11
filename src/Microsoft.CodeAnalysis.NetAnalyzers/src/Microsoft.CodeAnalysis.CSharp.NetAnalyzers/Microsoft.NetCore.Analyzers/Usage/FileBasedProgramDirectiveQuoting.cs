@@ -69,14 +69,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
         }
 
         /// <summary>
-        /// Returns whether the directive uses the deprecated unquoted-whitespace form and, if so,
-        /// computes the equivalent quoted <paramref name="newValue"/> (the text that should follow the
-        /// directive kind).
+        /// Returns whether the directive uses the deprecated unquoted-whitespace form.
         /// </summary>
-        public static bool TryGetQuotedForm(string kind, string value, out string newValue)
+        public static bool IsLegacyForm(string kind, string value)
         {
-            newValue = value;
-
             // No value, or already quoted (quotes unambiguously mean the new form): nothing to flag.
             if (value.Length == 0 || value.IndexOf('"') >= 0)
             {
@@ -94,29 +90,48 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             switch (kind)
             {
                 case "property":
-                    // Value after the first '='; the name must be valid so this is deprecated (not invalid).
+                case "sdk":
+                case "include":
+                case "exclude":
+                    return true;
+
+                case "package":
+                    // A trailing run of valid 'Name=Value' tokens is the new metadata form, not legacy.
+                    return !AllValidMetadata(tokens, start: 1);
+
+                case "project":
+                case "ref":
+                    return !AllValidMetadata(tokens, start: 1);
+
+                default:
+                    return false;
+            }
+        }
+
+        /// <summary>
+        /// Computes an equivalent quoted <paramref name="newValue"/> for a legacy directive.
+        /// Returns <see langword="false"/> when the legacy form cannot be rewritten without changing
+        /// its value.
+        /// </summary>
+        public static bool TryGetQuotedForm(string kind, string value, out string newValue)
+        {
+            newValue = value;
+            if (!IsLegacyForm(kind, value))
+            {
+                return false;
+            }
+
+            switch (kind)
+            {
+                case "property":
                     return TryQuoteAfterSeparator(value, out newValue);
 
                 case "sdk":
                 case "package":
-                    // A trailing run of valid 'Name=Value' tokens is the new metadata form, not legacy.
-                    if (kind == "package" && AllValidMetadata(tokens, start: 1))
-                    {
-                        return false;
-                    }
-
                     return TryCollapseNameAndVersion(value, out newValue);
 
                 case "project":
                 case "ref":
-                    if (AllValidMetadata(tokens, start: 1))
-                    {
-                        return false;
-                    }
-
-                    newValue = QuoteIfNeeded(value);
-                    return true;
-
                 case "include":
                 case "exclude":
                     newValue = QuoteIfNeeded(value);

@@ -181,6 +181,14 @@
     <value>Invalid directive metadata name '{0}': {1}</value>
     <comment>{0} is the metadata name. {1} is the inner exception message.</comment>
   </data>
+  <data name="ConflictingDirectiveMetadata" xml:space="preserve">
+    <value>Directive metadata '{0}' conflicts with a value already specified by the directive.</value>
+    <comment>{0} is the metadata name.</comment>
+  </data>
+  <data name="DuplicateDirectiveMetadata" xml:space="preserve">
+    <value>Directive metadata name '{0}' is specified more than once.</value>
+    <comment>{0} is the duplicate metadata name.</comment>
+  </data>
   <data name="UnexpectedDirectiveText" xml:space="preserve">
     <value>The '{0}' directive has unexpected content. To include whitespace in a value, enclose it in double quotes (").</value>
     <comment>{0} is the directive kind like 'property' or 'sdk'.</comment>
