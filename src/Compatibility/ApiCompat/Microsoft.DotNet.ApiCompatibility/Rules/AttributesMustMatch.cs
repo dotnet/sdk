@@ -66,6 +66,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             differences.Add(difference);
         }
 
+        // Attribute diagnostics retain the left containing symbol for compatibility with existing behavior.
+        // The right containing symbol is only used when handing an experimental API promotion to CP0022.
         private void ReportAttributeDifferences(ISymbol leftContaining,
             ISymbol rightContaining,
             MetadataInformation leftMetadata,
