@@ -1393,8 +1393,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1477,8 +1475,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>A</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1552,8 +1548,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1626,8 +1620,6 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                         <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
