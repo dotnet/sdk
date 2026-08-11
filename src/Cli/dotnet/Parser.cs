@@ -3,7 +3,6 @@
 
 using System.CommandLine;
 using System.CommandLine.Help;
-using System.CommandLine.Invocation;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Format;
@@ -349,8 +348,8 @@ public static class Parser
     /// before parsing, which is not as efficient as using the array overload.
     /// And also won't always split tokens the way the user will expect on their shell.
     /// </summary>
-    public static ParseResult Parse(string commandLineUnsplit) => ConfigureParseResult(RootCommand.Parse(commandLineUnsplit, ParserConfiguration));
-    public static ParseResult Parse(string[] args) => ConfigureParseResult(RootCommand.Parse(args, ParserConfiguration));
+    public static ParseResult Parse(string commandLineUnsplit) => RootCommand.Parse(commandLineUnsplit, ParserConfiguration);
+    public static ParseResult Parse(string[] args) => RootCommand.Parse(args, ParserConfiguration);
     public static int Invoke(ParseResult parseResult) => parseResult.Invoke(InvocationConfiguration);
     public static Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default) => parseResult.InvokeAsync(InvocationConfiguration, cancellationToken);
     public static int Invoke(string[] args) => Invoke(Parse(args));
@@ -396,17 +395,6 @@ public static class Parser
         }
 
         return 1;
-    }
-
-    private static ParseResult ConfigureParseResult(ParseResult parseResult)
-    {
-        if (parseResult.CommandResult.Command is WorkloadSearchVersionsCommandDefinition
-            && parseResult.Action is ParseErrorAction parseErrorAction)
-        {
-            parseErrorAction.ShowHelp = false;
-        }
-
-        return parseResult;
     }
 
     internal class DotnetHelpBuilder : HelpBuilder
