@@ -66,7 +66,7 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 - `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.
 
-- `non-safe` processes must never execute their command body across a `self update` boundary. A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright, so `dotnetup list` and IDE-issued commands do not hard-fail during an update. If the executable was replaced while it waited, it must forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code.
+- `non-safe` processes must never execute their command body across a `self update` boundary. A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright, so `dotnetup list` and IDE-issued commands do not hard-fail during an update. If the executable was replaced while it waited, it must forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code. If breaking changes are made to command names themselves, then this will break and that is acceptable.
 
 - `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.
 
@@ -82,134 +82,190 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 #### Final Proposed Update Logic:
 
-##### Locks
+##### Definitions
 
-Self update is guarded by two lock files in `D/`. Both are permanent, zero-length files created on first use and never deleted.
+Let `D/` be the directory containing the installed dotnetup executable, and let `D/dotnetup.exe` be that executable at its canonical path.
 
-`install`, `uninstall`, `update`, and the other manifest-mutating commands continue to use the `ModifyInstallationStates` mutex for their own critical sections and no modifications are necessary to this logic.
+Let `T/` be a randomly named, current-user-only temporary directory of the form `tmp/dotnetup/<random>/`, and let `T/dotnetup.exe` be the throwaway executable copied into `T/`.
 
-Each file is a reader/writer lock rather than a flag, so its meaning depends on which side is held.
+Let `t` be the transaction identifier: a random value unique to a single execution of `dotnetup self update`, used to name the backup `D/dotnetup.exe.old.<t>`.
 
-| File | Shared ownership means | Exclusive ownership means |
+Let `A` be the activity lock, the file `D/dotnetup.activity.lock`.
+
+Let `U` be the update lock, the file `D/dotnetup.update.lock`.
+
+`A` and `U` are permanent, zero-length files created on first use and never deleted.
+
+Let `P` be the `dotnetup self update` process that Algorithm 2 outlines.
+
+Let `R` be the replacer process — `T/dotnetup.exe` started by `P` via the hidden command `dotnetup self replacement`.
+
+Let `N` be any `non-safe` dotnetup process.
+
+Let `S` be any `safe` dotnetup process: `dotnetup dotnet`, the telemetry drain process, and `P` itself.
+
+Let `V_channel` be the build identity published by the configured dotnetup channel, and let `V_installed` be the build identity of `D/dotnetup.exe`.
+
+Let `X_U`, `X_A`, `X_N`, and `X_R` be the bounded timeouts defined in rule 3 of Algorithm 1.
+
+`A` and `U` are reader/writer locks rather than flags, so the meaning of each depends on which side is held.
+
+| Lock | Shared ownership means | Exclusive ownership means |
 | --- | --- | --- |
-| `D/dotnetup.activity.lock` | "I am a running `non-safe` command" | "no `non-safe` command transaction is running, and none may start off their existing executable" |
-| `D/dotnetup.update.lock` | nothing; it is opened shared only to observe whether an exclusive owner exists | "a self-update transaction is in flight" |
+| `A` | "a `non-safe` command is running" | "no `non-safe` command is running, and none may start from the current executable" |
+| `U` | nothing; `U` is opened shared only to observe whether an exclusive owner exists | "a self-update transaction is in flight" |
 
-Who holds what, and for how long:
-
-| Participant | Lock | Mode | Held for |
-| --- | --- | --- | --- |
-| `non-safe` command | `activity` | shared | from just after parse until the process exits |
-| `non-safe` command | `update` | shared | a momentary probe, released on the next line |
-| `self update` parent | `update` | exclusive | transaction start until it is released for the handoff |
-| `self update` parent | `activity` | exclusive | transaction start until the replacer confirms it holds `update`, then released as the parent exits |
-| replacer | `update` | exclusive | the handoff until rename, verification, and any rollback have completed |
-| replacer | `activity` | — | never acquired |
-| `safe` commands, `dotnetup dotnet`, telemetry drain | both | — | never acquired; these skip the gate entirely |
-
-Because `dotnetup dotnet` and the telemetry drain hold nothing, a self update can complete underneath them.
-
-They are `safe` only so long as they resolve any needed process-specific information at startup and globally cache it. In other words, they must cache `Environment.ProcessPath`.
+A shared lock is held via:
 
 ```cs
-// shared
-new FileStream(path, FileMode.OpenOrCreate, FileAccess.Read, FileShare.Read);
-
-// exclusive
-new FileStream(path, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.None);
+FileStream sharedLock = new(
+    lockPath,
+    FileMode.OpenOrCreate,
+    FileAccess.Read,
+    FileShare.Read);
 ```
 
-`FileShare` sharing semantics mean every open either succeeds or throws `IOException` immediately; no open blocks in the kernel. "Waiting" is always a retry loop with jittered backoff and a bounded timeout. `FileShare.Delete` is never requested on either file.
-
-Three rules govern every participant:
-
-1. The two sides acquire in opposite order, deliberately. A `non-safe` process takes `D/dotnetup.activity.lock` before it touches `D/dotnetup.update.lock`; `self update` takes `D/dotnetup.update.lock` before `D/dotnetup.activity.lock`.
-2. While acquiring the pair, no participant blocks on one lock while holding the other. If the second acquisition fails, the first is released, the process backs off, and the pair is retried from the start. Holding a lock while doing work is expected — what is forbidden is holding one and waiting for the other, which is the only way the opposite ordering in rule 1 could deadlock.
-3. Timeouts are asymmetric: a `self update` waiting on another `self update` waits generously; a `self update` waiting on a `non-safe` process waits briefly and then fails; a `non-safe` process waiting on a `self update` waits for the length of a typical update and then fails.
-
-The parent-to-replacer handoff is the one deliberate exception to rule 2: the parent holds `D/dotnetup.activity.lock` while it waits for the replacer to acquire `D/dotnetup.update.lock`. That edge is safe only because rule 1 stops a newly launched `non-safe` process at the activity lock, so nothing else can be holding the update lock at that moment.
-
-When an acquisition fails, dotnetup queries Windows Restart Manager to report the locking process and PID on a best-effort basis. This can be added with a `FileLockDetector`-style helper such as [commit `7fcc618e03f`](https://github.com/dotnet/sdk/commit/7fcc618e03f1520f688fa86bc7ade67aa417e380) via `RmRegisterResources`/`RmGetList` integration. The process may exit before it is reported, and failure to identify it does not change the result.
-
-##### The gate (every `non-safe` command)
-
-The gate runs in `CommandBase.Execute`, after the parser has determined the command's safety status and before any command body executes. Safety is a property of the command: `CommandBase` defaults every command to `non-safe`, and only `dotnetup dotnet`, the telemetry drain, and `self update` override that default. A newly added command is therefore gated unless someone deliberately exempts it.
-
-1. Acquire `shared(D/dotnetup.activity.lock)`. Held until the process exits.
-2. Acquire `shared(D/dotnetup.update.lock)`, then release it immediately.
-3. If either open fails, release whatever is held, back off, and retry from step 1 until the timeout.
-
-Only three things may happen before the gate: console encoding and UI language setup, capturing `Environment.ProcessPath` and the image identity, and parsing. Parsing must not read the manifest, enumerate `D/`, or touch the network — no `System.CommandLine` default-value factory, custom parser, validator, or completion source may do so — because command selection must not depend on state a concurrent update is changing. Reading environment variables, console redirection state, and paths outside `D/` is fine; `--interactive` and `--shell` already resolve their defaults that way, and a self update cannot affect either. The first-run telemetry notice is the only pre-gate write today; it targets the telemetry directory rather than `D/`, and its sentinel keeps it idempotent across a forward.
-
-A process blocked at the gate has therefore touched no installation state and can forward or fail cleanly.
-
-##### Forwarding after a completed update
-
-A process that waited at the gate is still executing the old image, so it must not run its command body if the executable changed while it waited.
-
-At startup each process records the file identity of its own image — the volume serial number and file index from `GetFileInformationByHandle` on the cached `Environment.ProcessPath`. After the gate succeeds, it compares that identity to `D/dotnetup.exe`:
-
-- **Identity matches** — no replacement occurred (including the rollback case, because renaming the backup back preserves the original file identity). The command proceeds normally.
-- **Identity differs** : It could forward instead of running. It starts `D/dotnetup.exe` with the original `args`, `UseShellExecute = false` and no stream redirection so the child inherits stdin/stdout/stderr, the same working directory, and the same environment plus an incremented `DOTNETUP_FORWARD_DEPTH`. It keeps its `shared` activity handle for the child's lifetime, waits, and returns the child's exit code via `SetExitCode`. This is subject to breaking if the new executable has a breaking change to the command terminology itself.
-
-`D/dotnetup.exe` is resolved as the canonical, dotnetup-owned path and is not followed through an unexpected symbolic link or reparse point. Forwarding is capped at `DOTNETUP_FORWARD_DEPTH` of 2; beyond that the command fails rather than hopping again. The forwarding process emits a telemetry event for the forward and does not emit a command-completion event, since the child emits its own.
-
-Forwarding is deferred to a later implementation. Until it lands, a process whose image changed while it waited fails and tells the user to re-run the command; it still never executes its own stale command body.
-
-##### `self update` (parent)
-
-1. Acquire `exclusive(D/dotnetup.update.lock)`. Busy means another `self update` is running: back off and retry, then re-evaluate whether an update is still needed. This step never fails the user.
-2. Acquire `exclusive(D/dotnetup.activity.lock)`. Busy means a `non-safe` process is running: release the update lock, back off, and retry the pair. On timeout, fail with `dotnetupBusy` and the locking PID.
-3. Remove any stale `D/dotnetup.exe.new` and do a best-effort delete of all `tmp/dotnetup/*/` folders and all `dotnetup.exe.old.*`. `tmp/` cleanup is best-effort but failure to delete `dotnetup.exe.old` would cause `InsufficientPermissionsToUpdate`.
-
-The original dotnetup process, say in dotnetup's official install directory, `D/`, assuming that there is a new version of `dotnetup` to update to (it can compare its assembly version with the prescribed `dotnetup` channel version), then downloads a new version of `dotnetup` into a randomly named, current-user-only temporary directory, say `tmp/dotnetup/<random>/dotnetup.exe`. If there is no new version, it releases both locks and exits.
-
-After copying the downloaded artifact to `D/dotnetup.exe.new`, dotnetup validates the staged copy.
-
-Backups use transaction-specific names such as `D/dotnetup.exe.old.<transaction-id>` so a locked backup from an older process does not prevent staging a later update. A failure to remove an artifact required by the current transaction returns `InsufficientPermissionsToUpdate` with any available locking-process details.
-
-
-The state of the file system would be:
-```
-`D/dotnetup.exe.new` <- replacement file
-`D/dotnetup.exe` <- old file
-
-`tmp/dotnetup/<random>/dotnetup.exe` <- swapping throwaway executable
-```
-
-While still holding `exclusive(D/dotnetup.activity.lock)`, `dotnetup.exe` releases its handle to `D/dotnetup.update.lock`, starts `tmp/dotnetup/<random>/dotnetup.exe`, and performs a heartbeat handoff via the hidden command `dotnetup self replacement <tmp folder executable>`. The replacer inherits stdin/stdout/stderr and acquires the `FileShare.None` lock on `D/dotnetup.update.lock` before it responds that it is ready:
+An exclusive lock is held via:
 
 ```cs
-FileStream updateLock = new(
+FileStream exclusiveLock = new(
     lockPath,
     FileMode.OpenOrCreate,
     FileAccess.ReadWrite,
     FileShare.None);
 ```
 
-Once the replacer has acquired `D/dotnetup.update.lock` and responded OK (including the expected PID and an unguessable handoff token), `dotnetup.exe` releases `D/dotnetup.activity.lock` and exits. Because the parent holds the activity lock until the replacer confirms it holds the update lock, at least one of the two locks is held continuously across the handoff. If `dotnetup.exe` fails to get the heartbeat, it fails with `DotnetupReplacerCommunicationFailure` (product error) and tries to kill the `tmp/dotnetup/<random>/dotnetup.exe` process. If the replacer cannot acquire `D/dotnetup.update.lock` within its own timeout, it reports failure and exits without touching any executable.
+`FileShare.Delete` is never requested on `A` or `U`.
 
-`tmp/dotnetup/<random>/dotnetup.exe` renames `dotnetup.exe` first to ensure the app had properly exited and nobody restarted it. Executables on Windows can be renamed even while they are running; though one side effect of this, is that the future dotnetup processes will use the newer version to spawn child processes or load external assets - including the short-term telemetry drainer.
+Ownership across a complete transaction:
 
-`Environment.ProcessPath` should be cached and accessible from a singleton upon `dotnetup` startup as its behavior is undefined [if the executable is renamed or deleted before [ProcessPath] property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
+| Participant | Lock | Mode | Held for |
+| --- | --- | --- | --- |
+| `N` | `A` | shared | from just after parse until `N` exits |
+| `N` | `U` | shared | a momentary probe, released on the next line |
+| `P` | `U` | exclusive | start of the transaction until `P` releases `U` for the handoff |
+| `P` | `A` | exclusive | start of the transaction until `R` confirms ownership of `U`, then released as `P` exits |
+| `R` | `U` | exclusive | the handoff until rename, verification, and any rollback have completed |
+| `R` | `A` | — | never acquired |
+| `S` | `A` and `U` | — | never acquired; `S` skips the gate entirely |
 
-`tmp/dotnetup/<random>/dotnetup.exe` keeps `D/dotnetup.update.lock` while it launches `D/dotnetup.exe --build-identity` to verify the replacement.
+Because `S` holds neither lock, a self update can complete underneath `S`. `S` is `safe` only so long as `S` resolves every value derived from the dotnetup image at startup and caches it globally — `Environment.ProcessPath` above all, whose behavior is undefined [if the executable is renamed or deleted before the property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
 
-`--build-identity` is a hidden **option** on the root command, not a subcommand. Like the built-in `--version`, its action runs during `ParseResult.Invoke` and returns before any `CommandBase` is constructed, so it never reaches the gate. That is load-bearing rather than incidental: the replacer holds `D/dotnetup.update.lock` exclusively while the child runs, so a gated child would block on its own update-lock probe and every update would fail. If the verification path ever becomes a subcommand it must be classified `safe`.
+`install`, `uninstall`, `update`, and the other manifest-mutating commands continue to use the `ModifyInstallationStates` mutex for their own critical sections. `P` does not acquire `ModifyInstallationStates`, and no modification to that logic is necessary.
 
-The option reads `AssemblyInformationalVersionAttribute` from the loaded assembly, exactly as `Parser.Version` already does, and writes only that identity to stdout. It must never read the version off disk with `FileVersionInfo` against `Environment.ProcessPath`, which would fail once the executable has been renamed. It disables telemetry and spawns no detached child processes. The replacer waits synchronously with a timeout and succeeds only if the process exits with status `0` and reports the exact expected build identity. It then reports success, includes an aka.ms link describing how to install older versions, and releases the update lock.
+##### Algorithm 1 — Lock acquisition and the `non-safe` gate
 
-If `tmp/dotnetup/<random>/dotnetup.exe` cannot run `D/dotnetup.exe`, the command does not return `0`, or the reported version does not match the expected version, it will attempt rollback while still holding the update lock: delete `D/dotnetup.exe`, rename the current transaction's `D/dotnetup.exe.old.<transaction-id>` back to `D/dotnetup.exe`, and report an error. Rollback restores the original file identity at the canonical path, so a `non-safe` process waiting at its gate resumes normally instead of forwarding. If it cannot delete `D/dotnetup.exe`, then the new executable may be in use but unresponsive; dotnetup should ask the user to reinstall dotnetup because the update cannot be unwound safely. Otherwise, assuming the hand-off went smoothly, it will release the update lock and close.
+Every acquisition of `A` or `U` either succeeds or throws `IOException` immediately; no open blocks in the kernel. "Wait" therefore always denotes a retry loop with jittered backoff bounded by a timeout.
 
-`dotnetup.exe` (now the new executable) performs best-effort cleanup of prior `tmp/dotnetup/<random>/` directories and `dotnetup.exe.old.*` backups on later launches. Cleanup is age-bounded and never follows symbolic links or reparse points outside the owned update directories. Failure to delete a locked old executable is not an update failure because a process started before `self update` may still be using it.
+**Rule 1 — opposite ordering.** `N` acquires `A` before `N` touches `U`. `P` acquires `U` before `P` acquires `A`.
 
-Abrupt termination can leave temporary directories or old backups behind indefinitely if dotnetup is never run again. Transaction-specific names prevent those stale files from corrupting or unnecessarily blocking a later update; subsequent launches retry cleanup on a best-effort basis.
+**Rule 2 — no hold-and-wait during acquisition.** While acquiring the pair, neither `N` nor `P` blocks on one lock while holding the other. If the second acquisition fails, the first is released, the acquiring process backs off, and the pair is retried from the beginning. Holding a lock while performing work is expected; holding one lock while waiting for the other is forbidden, and is the only way the opposite ordering of rule 1 could deadlock.
 
-This prevents breaking apps reliant on `dotnetup` to be running; e.g. when a customer has their machine off for over a month and tries to run dotnetup self update but has some persisted dependent application such as vscode holding the dotnetup executable; other apps can chose how to make this visibly actionable (e.g. close your apps using `dotnetup` when possible.)
+**Rule 3 — asymmetric timeouts.**
 
-`FileStream` lock ownership is handle-based rather than thread-affine, so both locks may be held across an `await` and the whole transaction — download included — can be asynchronous. This is the reason `self update` does not use the thread-affine `ScopedMutex`.
+| Timeout | Applies to | Magnitude |
+| --- | --- | --- |
+| `X_U` | `P` waiting on `U` held by a peer `self update` | generous |
+| `X_A` | `P` waiting on `A` held by `N` | brief |
+| `X_N` | `N` waiting at the gate during a self update | the length of a typical update |
+| `X_R` | the `P`-to-`R` heartbeat, and `R` waiting on `U` | brief |
 
-In the event of a crash/pkill/outage, users can safely run the get-dotnetup scripts to redownload the `dotnetup` executable to the standard `D/` location.
+**Exception to rule 2.** During step 2.6 of Algorithm 2, `P` holds `A` while `P` waits for `R` to acquire `U`. That edge cannot close a cycle, because rule 1 stops a newly launched `N` at `A`, so no participant other than `R` can be holding `U` at that moment.
+
+###### Lock Acquisition for `P`
+
+**1.1 — `P` acquires `U` exclusively.** A busy `U` means a peer `self update` holds `U`. `P` backs off and retries for up to `X_U`, then re-evaluates whether an update is still required. `P` does not fail the user for contention on `U`; on expiry of `X_U`, `P` fails with `DotnetupBusyWithAnotherUpdate`.
+
+**1.2 — `P` acquires `A` exclusively.** A busy `A` means at least one `N` is running. Per rule 2, `P` releases `U`, backs off, and retries the pair from step 1.1 for up to `X_A`. On expiry of `X_A`, `P` fails with `DotnetupBusyWithAnotherCommand` and reports the locking PID per step 1.7.
+
+###### Lock Acquisition for `N`
+
+**1.3 — `N` passes the gate.** The gate executes in `CommandBase.Execute`, after the parser has determined the safety status of the command and before any command body executes.
+
+1. `N` acquires `A` shared. `N` holds `A` until `N` exits.
+2. `N` acquires `U` shared, then releases `U` immediately.
+3. If either open throws, `N` releases whatever `N` holds, backs off, and retries from sub-step 1 for up to `X_N`. On expiry of `X_N`, `N` fails and reports that a self update is in progress.
+
+Safety is a property of the command: `CommandBase` classifies every command as `non-safe` by default, and only `dotnetup dotnet`, the telemetry drain, and `self update` override that default. A newly added command is therefore gated unless someone deliberately exempts it.
+
+**1.4 — `N` verifies image identity.** At startup `N` records the file identity of the image of `N` — the volume serial number and file index returned by `GetFileInformationByHandle` on the cached `Environment.ProcessPath`. After the gate succeeds, `N` compares that identity to `D/dotnetup.exe`.
+
+The comparison is unconditional. `N` performs the comparison even when both opens in step 1.3 succeeded on the first attempt, because a transaction that began before `N` launched and completed before `N` reached the gate replaces the image of `N` without `N` ever observing contention.
+
+- **Identity matches.** No replacement occurred, including the rollback case of step 2.11, because renaming the backup back to the canonical path preserves the original file identity. `N` proceeds to the command body.
+- **Identity differs.** `D/dotnetup.exe` was replaced while `N` waited, so the image of `N` is stale and `N` must not execute the command body of `N`. `N` forwards per step 1.5.
+
+**1.5 — `N` forwards to the replaced executable.** `N` starts `D/dotnetup.exe` with the original `args`, `UseShellExecute = false`, and no stream redirection, so the child inherits stdin, stdout, and stderr, the working directory of `N`, and the environment of `N` plus an incremented `DOTNETUP_FORWARD_DEPTH`. `N` retains the shared handle on `A` for the lifetime of the child, waits for the child, and returns the exit code of the child via `SetExitCode`.
+
+`D/dotnetup.exe` is resolved as the canonical, dotnetup-owned path and is not followed through an unexpected symbolic link or reparse point. Forwarding is capped at a `DOTNETUP_FORWARD_DEPTH` of 2; beyond that `N` fails rather than hopping again. `N` emits a telemetry event for the forward and does not emit a command-completion event, because the child emits one. Forwarding breaks if the replacement executable renamed or removed the command that `N` was invoked with.
+
+Forwarding is deferred to a later implementation. Until forwarding lands, an `N` whose image identity differs fails and instructs the user to re-run the command. `N` never executes the stale command body of `N` in either case.
+
+**1.6 — Work permitted before the gate.** Exactly three things may execute before the gate: console encoding and UI language setup, capture of `Environment.ProcessPath` and the image identity, and parsing.
+
+Parsing must not read the manifest, enumerate `D/`, or touch the network.
+
+The first-run telemetry notice is the only pre-gate write. That notice targets the telemetry directory rather than `D/`, and its sentinel keeps the notice idempotent across a forward. An `N` blocked at the gate has therefore touched no installation state and can forward or fail cleanly.
+
+###### Common to `P` and `N`
+
+**1.7 — Reporting the lock holder.** When an acquisition fails, dotnetup queries Windows Restart Manager to report the locking process and PID on a best-effort basis. This requires a `FileLockDetector`-style helper such as [commit `7fcc618e03f`](https://github.com/dotnet/sdk/commit/7fcc618e03f1520f688fa86bc7ade67aa417e380) via `RmRegisterResources`/`RmGetList` integration. The reported process may exit before the report is produced, and failure to identify the reported process does not change the outcome of the acquisition.
+
+##### Algorithm 2 — The update transaction
+
+Algorithm 2 begins once `P` holds both `U` and `A` per steps 1.1 and 1.2.
+
+**2.1 — `P` determines whether an update is required.** `P` compares `V_installed` with `V_channel`. If the two identities are equal, `P` releases `A` and `U` and exits successfully.
+
+**2.2 — `P` clears stale artifacts.** `P` deletes `D/dotnetup.exe.new` if present, and performs a best-effort delete of every prior `tmp/dotnetup/<random>/` directory and every `D/dotnetup.exe.old.*` backup. Failure to delete a `tmp/dotnetup/<random>/` directory or a backup belonging to an older transaction is not fatal. Failure to delete an artifact that the current transaction requires returns `InsufficientPermissionsToUpdate` with the locking-process details from step 1.7.
+
+Backups are named `D/dotnetup.exe.old.<t>` so that a backup still locked by an older process cannot prevent a later transaction from staging.
+
+**2.3 — `P` downloads the replacement.** `P` downloads the replacement executable into `T/` as `T/dotnetup.exe`. Preview builds validate the published hash as an integrity check and warn explicitly that the artifact is not authenticated. Stable builds validate signed release metadata against the executable.
+
+**2.4 — `P` stages the replacement.** `P` copies `T/dotnetup.exe` to `D/dotnetup.exe.new` and validates the staged copy again before `D/dotnetup.exe.new` is executed or installed.
+
+The state of the file system after step 2.4:
+
+```
+D/dotnetup.exe.new   <- validated replacement
+D/dotnetup.exe       <- installed executable, still running as P
+T/dotnetup.exe       <- throwaway replacer
+```
+
+**2.5 — `P` starts `R`.** While still holding `A` exclusively, `P` releases the handle of `P` on `U`, creates an `AnonymousPipeServerStream` whose client handle is inheritable, and starts `T/dotnetup.exe` via the hidden command `dotnetup self replacement <T/dotnetup.exe>` with that client handle passed on the command line. `R` inherits stdin, stdout, and stderr from `P`.
+
+**2.6 — `R` takes ownership of `U`.** `R` acquires `U` exclusively, then writes the ready message to the inherited pipe handle. If `R` cannot acquire `U` within `X_R`, `R` reports failure and exits without modifying any executable.
+
+The handoff pipe is anonymous, so the identity of `R` is structural rather than checked: there is no pipe name for another process to connect to, and the client handle value is meaningful only inside the process that inherited it. A replacer left behind by an earlier, crashed transaction therefore cannot satisfy the handoff of the current transaction. No handoff token is required, and a token would be weaker — a token passed on the command line of `R` is readable by any process that can enumerate command lines.
+
+Authenticating `R` more strongly is not meaningful. `D/` is writable by the current user, so any process already running as that user can replace `D/dotnetup.exe` directly instead of impersonating `R`.
+
+**2.7 — `P` completes the handoff.** On a valid heartbeat, `P` releases `A` and exits. Because `P` holds `A` until `R` confirms ownership of `U`, at least one of `A` and `U` is held continuously across the handoff. If `P` does not receive the heartbeat within `X_R`, `P` fails with `DotnetupReplacerCommunicationFailure` and attempts to kill `R`.
+
+**2.8 — `R` replaces the executable.** `R` renames `D/dotnetup.exe` to `D/dotnetup.exe.old.<t>` first, which confirms that `P` exited and that no process restarted `D/dotnetup.exe`. `R` then renames `D/dotnetup.exe.new` to `D/dotnetup.exe`. Windows permits renaming an executable that is in use. One consequence is that any dotnetup process started after step 2.8 resolves the replacement image when spawning child processes or loading external assets, including the short-term telemetry drainer.
+
+**2.9 — `R` verifies the replacement.** `R` retains `U` and runs `D/dotnetup.exe --build-identity`. `R` waits synchronously for up to `X_R` and treats the replacement as valid only if the child exits with status `0` and reports exactly `V_channel`.
+
+`--build-identity` is a hidden **option** on the root command, not a subcommand. Like the built-in `--version`, the action of `--build-identity` runs during `ParseResult.Invoke` and returns before any `CommandBase` is constructed, so `--build-identity` never reaches the gate of step 1.3. That is load-bearing rather than incidental: `R` holds `U` exclusively while the child runs, so a gated child would block on its own probe of `U` and every transaction would fail. If the verification path ever becomes a subcommand, that subcommand must be classified `safe`.
+
+`--build-identity` reads `AssemblyInformationalVersionAttribute` from the loaded assembly, exactly as `Parser.Version` already does, and writes only that identity to stdout. `--build-identity` must never read the identity off disk with `FileVersionInfo` against `Environment.ProcessPath`, which fails once the executable has been renamed. `--build-identity` disables telemetry and spawns no detached child processes.
+
+**2.10 — `R` reports success.** `R` prints a success message including an aka.ms link describing how to install older versions, releases `U`, and exits.
+
+**2.11 — `R` rolls back.** If `R` cannot start `D/dotnetup.exe`, the child does not exit with status `0`, or the reported identity is not `V_channel`, `R` attempts rollback while still holding `U`: `R` deletes `D/dotnetup.exe`, then renames `D/dotnetup.exe.old.<t>` back to `D/dotnetup.exe`, then reports an error. Rollback restores the original file identity at the canonical path, so an `N` waiting at the gate takes the identity-matches branch of step 1.4 and proceeds normally instead of forwarding. If `R` cannot delete `D/dotnetup.exe`, the replacement may be in use but unresponsive; `R` reports that dotnetup must be reinstalled, because the transaction cannot be unwound safely.
+
+**2.12 — Deferred cleanup.** `D/dotnetup.exe`, now the replacement, performs best-effort cleanup of prior `tmp/dotnetup/<random>/` directories and `D/dotnetup.exe.old.*` backups on later launches. Cleanup is age-bounded and never follows symbolic links or reparse points outside the update directories that dotnetup owns. Failure to delete a locked backup is not a transaction failure, because a process started before the transaction may still be executing that image.
+
+##### Properties of Algorithms 1 and 2
+
+Abrupt termination can leave `tmp/dotnetup/<random>/` directories or `D/dotnetup.exe.old.*` backups behind indefinitely if dotnetup is never run again. Naming each backup with `t` prevents those stale files from corrupting or blocking a later transaction, and step 2.12 retries cleanup on every later launch.
+
+A dependent application — a long-running VS Code window, for example — may hold `D/dotnetup.exe.old.<t>` for weeks. Step 2.12 tolerates that rather than failing, and consumers decide how to surface it to the user.
+
+`FileStream` lock ownership is handle-based rather than thread-affine, so `A` and `U` may be held across an `await` and the entire transaction, download included, may be asynchronous. This is why `P` does not use the thread-affine `ScopedMutex`.
+
+After a crash, `pkill`, or power loss at any step, running the get-dotnetup scripts restores `D/dotnetup.exe` at the canonical location.
 
 #### Locking Rationale
 
