@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.ApiCompatibility
 
         public static ApiStability Classify(ISymbol? symbol)
         {
-            for (ISymbol? current = symbol; current != null; current = current.ContainingType)
+            for (ISymbol? current = symbol; current != null; current = current.ContainingSymbol)
             {
                 if (current.GetAttributes().Any(IsExperimentalAttribute))
                 {

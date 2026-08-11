@@ -129,6 +129,45 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         }
 
         [TestMethod]
+        [DataRow("assembly")]
+        [DataRow("module")]
+        public void MemberInExperimentalCompilationScopeIsInformational(string attributeTarget)
+        {
+            string leftSyntax = $$"""
+                [{{attributeTarget}}: System.Diagnostics.CodeAnalysis.Experimental("TEST001")]
+                namespace CompatTests;
+                public class Api { public void Changed() { } }
+                """;
+            string rightSyntax = $$"""
+                [{{attributeTarget}}: System.Diagnostics.CodeAnalysis.Experimental("TEST001")]
+                namespace CompatTests;
+                public class Api { }
+                """;
+
+            CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax)
+                .Where(difference => difference.ReferenceId == "M:CompatTests.Api.Changed"));
+            Assert.AreEqual(DifferenceSeverity.Informational, difference.Severity);
+        }
+
+        [TestMethod]
+        [DataRow("assembly")]
+        [DataRow("module")]
+        public void RemovingExperimentalCompilationScopeReportsPromotion(string attributeTarget)
+        {
+            string leftSyntax = $$"""
+                [{{attributeTarget}}: System.Diagnostics.CodeAnalysis.Experimental("TEST001")]
+                namespace CompatTests;
+                public class Api { public void Changed() { } }
+                """;
+            string rightSyntax = "namespace CompatTests; public class Api { public void Changed() { } }";
+
+            CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax)
+                .Where(difference => difference.ReferenceId == "M:CompatTests.Api.Changed"));
+            Assert.AreEqual(DiagnosticIds.ExperimentalApiBecomesStable, difference.DiagnosticId);
+            Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
+        }
+
+        [TestMethod]
         public void StableToExperimentalRemainsGenericAttributeError()
         {
             string leftSyntax = "namespace CompatTests; public class Api { public void Changed() { } }";
