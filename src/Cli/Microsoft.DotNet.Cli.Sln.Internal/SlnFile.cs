@@ -27,9 +27,9 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+using System.Collections;
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
-using System.Collections;
 using System.Globalization;
 using System.Reflection;
 using Microsoft.DotNet.Cli.Sln.Internal.FileManipulation;
@@ -39,11 +39,11 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
 {
     public class SlnFile
     {
-        private SlnProjectCollection _projects = new SlnProjectCollection();
-        private SlnSectionCollection _sections = new SlnSectionCollection();
-        private SlnPropertySet _metadata = new SlnPropertySet(true);
+        private SlnProjectCollection _projects = new();
+        private SlnSectionCollection _sections = new();
+        private SlnPropertySet _metadata = new(true);
         private int _prefixBlankLines = 1;
-        private TextFormatInfo _format = new TextFormatInfo();
+        private TextFormatInfo _format = new();
 
         public string FormatVersion { get; set; }
         public string ProductDescription { get; set; }
@@ -105,9 +105,11 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
 
         public static SlnFile Read(string file)
         {
-            SlnFile slnFile = new SlnFile();
-            slnFile.FullPath = Path.GetFullPath(file);
-            slnFile._format = FileUtil.GetTextFormatInfo(file);
+            SlnFile slnFile = new()
+            {
+                FullPath = Path.GetFullPath(file),
+                _format = FileUtil.GetTextFormatInfo(file)
+            };
 
             using (var sr = new StreamReader(new FileStream(file, FileMode.Open, FileAccess.Read)))
             {
@@ -152,7 +154,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
                 }
                 else if (line.StartsWith("Project", StringComparison.Ordinal))
                 {
-                    SlnProject p = new SlnProject();
+                    SlnProject p = new();
                     p.Read(reader, line, ref curLineNum);
                     _projects.Add(p);
                 }
@@ -241,7 +243,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
 
     public class SlnProject
     {
-        private SlnSectionCollection _sections = new SlnSectionCollection();
+        private SlnSectionCollection _sections = new();
 
         private SlnFile _parentFile;
 
@@ -404,8 +406,8 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
         {
             get
             {
-                return (_properties == null || _properties.Count == 0) && 
-                    (_nestedPropertySets == null || _nestedPropertySets.All(t => t.IsEmpty)) && 
+                return (_properties == null || _properties.Count == 0) &&
+                    (_nestedPropertySets == null || _nestedPropertySets.All(t => t.IsEmpty)) &&
                     (_sectionLines == null || _sectionLines.Count == 0);
             }
         }
@@ -429,8 +431,10 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
             {
                 if (_properties == null)
                 {
-                    _properties = new SlnPropertySet();
-                    _properties.ParentSection = this;
+                    _properties = new SlnPropertySet
+                    {
+                        ParentSection = this
+                    };
                     if (_sectionLines != null)
                     {
                         foreach (var line in _sectionLines)
@@ -503,8 +507,8 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
                 return SlnSectionType.PostProcess;
             }
             throw new InvalidSolutionFormatException(
-                curLineNum, 
-                String.Format(LocalizableStrings.InvalidSectionTypeError, s));
+                curLineNum,
+                string.Format(LocalizableStrings.InvalidSectionTypeError, s));
         }
 
         private string FromSectionType(bool isProjectSection, SlnSectionType type)
@@ -635,7 +639,7 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
     /// </summary>
     public class SlnPropertySet : IDictionary<string, string>
     {
-        private OrderedDictionary _values = new OrderedDictionary();
+        private OrderedDictionary _values = new();
         private bool _isMetadata;
 
         internal bool Processed { get; set; }
@@ -804,13 +808,13 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
 
         public void SetValue(string name, object value, object defaultValue = null)
         {
-            var isDefault = object.Equals(value, defaultValue);
+            var isDefault = Equals(value, defaultValue);
             if (isDefault)
             {
                 // if the value is default, only remove the property if it was not already the default
                 // to avoid unnecessary project file churn
                 if (ContainsKey(name) && (defaultValue == null ||
-                    !object.Equals(defaultValue, GetValue(name, defaultValue.GetType(), null))))
+                    !Equals(defaultValue, GetValue(name, defaultValue.GetType(), null))))
                 {
                     Remove(name);
                 }
@@ -1066,8 +1070,11 @@ namespace Microsoft.DotNet.Cli.Sln.Internal
             var sec = this.FirstOrDefault(s => s.Id == id);
             if (sec == null)
             {
-                sec = new SlnSection { Id = id };
-                sec.SectionType = sectionType;
+                sec = new SlnSection
+                {
+                    Id = id,
+                    SectionType = sectionType
+                };
                 Add(sec);
             }
             return sec;

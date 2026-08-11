@@ -1,0 +1,56 @@
+# Contains the list of files whose assembly versions are to be excluded from comparison between the MSFT & SB SDK.
+# These exclusions only take effect if the assembly version of the file in the SB SDK is equal to or greater than
+# the version in the MSFT SDK. If the version is less, the file will show up in the results as this is not a scenario
+# that is valid for shipping.
+#
+# This list is processed using FileSystemName.MatchesSimpleExpression
+#
+# Examples
+# 'folder/*' matches 'folder/' and 'folder/abc'
+# 'folder/?*' matches 'folder/abc' but not 'folder/'
+#
+# We do not want to filter-out folder entries, therefore, we should use: '?*' and not just '*'
+
+./sdk/x.y.z/*/NuGet.Commands.resources.dll
+./sdk/x.y.z/*/NuGet.Common.resources.dll
+./sdk/x.y.z/*/NuGet.Configuration.resources.dll
+./sdk/x.y.z/*/NuGet.Credentials.resources.dll
+./sdk/x.y.z/*/NuGet.DependencyResolver.Core.resources.dll
+./sdk/x.y.z/*/NuGet.Frameworks.resources.dll
+./sdk/x.y.z/*/NuGet.LibraryModel.resources.dll
+./sdk/x.y.z/*/NuGet.Localization.resources.dll
+./sdk/x.y.z/*/NuGet.PackageManagement.resources.dll
+./sdk/x.y.z/*/NuGet.Packaging.Core.resources.dll
+./sdk/x.y.z/*/NuGet.Packaging.resources.dll
+./sdk/x.y.z/*/NuGet.ProjectModel.resources.dll
+./sdk/x.y.z/*/NuGet.Protocol.resources.dll
+./sdk/x.y.z/*/NuGet.Resolver.resources.dll
+./sdk/x.y.z/*/NuGet.Versioning.resources.dll
+./sdk/x.y.z/*/NuGet.VisualStudio.Contracts.resources.dll
+./sdk/x.y.z/*/Test.Utility.resources.dll
+
+./sdk/x.y.z/DotnetTools/dotnet-format/dotnet-format.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/*/dotnet-format.resources.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.Bcl.AsyncInterfaces.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/Microsoft.DiaSymReader.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/win/lib/netx.y/System.Diagnostics.EventLog.Messages.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/win/lib/netx.y/System.Security.Cryptography.Pkcs.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/runtimes/win/lib/netx.y/System.Windows.Extensions.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.CodeDom.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Composition.AttributedModel.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Composition.Convention.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Composition.Hosting.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Composition.Runtime.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Composition.TypedParts.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Configuration.ConfigurationManager.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Diagnostics.EventLog.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Reflection.MetadataLoadContext.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Resources.Extensions.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.Pkcs.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.ProtectedData.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Cryptography.Xml.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Security.Permissions.dll
+./sdk/x.y.z/DotnetTools/dotnet-format/System.Windows.Extensions.dll
+
+./sdk/x.y.z/DotnetTools/dotnet-watch/x.y.z/tools/netx.y/any/Microsoft.DiaSymReader.dll

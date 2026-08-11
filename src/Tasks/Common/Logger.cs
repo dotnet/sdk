@@ -1,9 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-//Microsoft.NET.Build.Extensions.Tasks (net7.0) has nullables disabled
 #pragma warning disable IDE0240 // Remove redundant nullable directive
-#nullable disable
+#nullable enable
 #pragma warning restore IDE0240 // Remove redundant nullable directive
 
 using System.Diagnostics;
@@ -79,7 +78,7 @@ namespace Microsoft.NET.Build.Tasks
 
         private static Message CreateMessage(MessageLevel level, string format, string[] args)
         {
-            string code;
+            string? code;
 
             if (format.Length >= 12
                 && format[0] == 'N'
@@ -106,13 +105,13 @@ namespace Microsoft.NET.Build.Tasks
             DebugThrowMissingOrIncorrectCode(code, format, level);
 
             return new Message(
-                level, 
+                level,
                 text: string.Format(format, args),
                 code: code);
         }
 
         [Conditional("DEBUG")]
-        private static void DebugThrowMissingOrIncorrectCode(string code, string message, MessageLevel level)
+        private static void DebugThrowMissingOrIncorrectCode(string? code, string message, MessageLevel level)
         {
             // NB: This is not localized because it represents a bug in our code base, not a user error.
             //     To log message with external codes, use Log.Log(in Message, string[]) directly.

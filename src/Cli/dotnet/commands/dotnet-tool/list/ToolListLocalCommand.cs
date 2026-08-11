@@ -30,29 +30,23 @@ namespace Microsoft.DotNet.Tools.Tool.List
 
         public override int Execute()
         {
-            var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
             var packageIdArgument = _parseResult.GetValue(ToolListCommandParser.PackageIdArgument);
             PackageId? packageId = null;
             if (!string.IsNullOrWhiteSpace(packageIdArgument))
             {
                 packageId = new PackageId(packageIdArgument);
             }
-
-            table.AddColumn(
-                LocalizableStrings.PackageIdColumn,
-                p => p.toolManifestPackage.PackageId.ToString());
-            table.AddColumn(
-                LocalizableStrings.VersionColumn,
-                p => p.toolManifestPackage.Version.ToNormalizedString());
-            table.AddColumn(
-                LocalizableStrings.CommandsColumn,
-                p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
-            table.AddColumn(
-                LocalizableStrings.ManifestFileColumn,
-                p => p.SourceManifest.Value);
-
             var packageEnumerable = GetPackages(packageId);
-            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+
+            var formatValue = _parseResult.GetValue(ToolListCommandParser.ToolListFormatOption);
+            if (formatValue is ToolListOutputFormat.json)
+            {
+                PrintJson(packageEnumerable);
+            }
+            else
+            {
+                PrintTable(packageEnumerable);
+            }
 
             if (packageId.HasValue && !packageEnumerable.Any())
             {
@@ -72,6 +66,40 @@ namespace Microsoft.DotNet.Tools.Tool.List
         private bool PackageIdMatches(ToolManifestPackage package, PackageId? packageId)
         {
             return !packageId.HasValue || package.PackageId.Equals(packageId);
+        }
+
+        private void PrintTable(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
+        {
+            var table = new PrintableTable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)>();
+            table.AddColumn(
+                LocalizableStrings.PackageIdColumn,
+                p => p.toolManifestPackage.PackageId.ToString());
+            table.AddColumn(
+                LocalizableStrings.VersionColumn,
+                p => p.toolManifestPackage.Version.ToNormalizedString());
+            table.AddColumn(
+                LocalizableStrings.CommandsColumn,
+                p => string.Join(CommandDelimiter, p.toolManifestPackage.CommandNames.Select(c => c.Value)));
+            table.AddColumn(
+                LocalizableStrings.ManifestFileColumn,
+                p => p.SourceManifest.Value);
+            table.PrintRows(packageEnumerable, l => _reporter.WriteLine(l));
+        }
+
+        private void PrintJson(IEnumerable<(ToolManifestPackage toolManifestPackage, FilePath SourceManifest)> packageEnumerable)
+        {
+            var jsonData = new VersionedDataContract<LocalToolListJsonContract[]>()
+            {
+                Data = packageEnumerable.Select(p => new LocalToolListJsonContract
+                {
+                    PackageId = p.toolManifestPackage.PackageId.ToString(),
+                    Version = p.toolManifestPackage.Version.ToNormalizedString(),
+                    Commands = p.toolManifestPackage.CommandNames.Select(c => c.Value).ToArray(),
+                    Manifest = p.SourceManifest.Value
+                }).ToArray()
+            };
+            var jsonText = System.Text.Json.JsonSerializer.Serialize(jsonData, JsonHelper.NoEscapeSerializerOptions);
+            _reporter.WriteLine(jsonText);
         }
     }
 }

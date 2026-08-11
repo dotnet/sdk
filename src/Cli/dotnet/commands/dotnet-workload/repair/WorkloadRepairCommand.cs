@@ -4,11 +4,11 @@
 using System.CommandLine;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.NET.Sdk.WorkloadManifestReader;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
-using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Workloads.Workload.Install;
+using Microsoft.Extensions.EnvironmentAbstractions;
+using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Workloads.Workload.Repair
 {
@@ -21,6 +21,7 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
         private readonly ReleaseVersion _sdkVersion;
         private readonly string _dotnetPath;
         private readonly string _userProfileDir;
+        private readonly WorkloadHistoryRecorder _recorder;
 
         public WorkloadRepairCommand(
             ParseResult parseResult,
@@ -54,31 +55,37 @@ namespace Microsoft.DotNet.Workloads.Workload.Repair
                                  WorkloadInstallerFactory.GetWorkloadInstaller(Reporter, sdkFeatureBand,
                                      _workloadResolver, Verbosity, creationResult.UserProfileDir, VerifySignatures, PackageDownloader, _dotnetPath, TempDirectoryPath,
                                      _packageSourceLocation, _parseResult.ToRestoreActionConfig());
+
+            _recorder = new WorkloadHistoryRecorder(_workloadResolver, _workloadInstaller, () => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, null));
+            _recorder.HistoryRecord.CommandName = "repair";
         }
 
         public override int Execute()
         {
             try
             {
-                Reporter.WriteLine();
-
-                var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
-
-                if (!workloadIds.Any())
+                _recorder.Run(() =>
                 {
-                    Reporter.WriteLine(LocalizableStrings.NoWorkloadsToRepair);
-                    return 0;
-                }
+                    Reporter.WriteLine();
 
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
+                    var workloadIds = _workloadInstaller.GetWorkloadInstallationRecordRepository().GetInstalledWorkloads(new SdkFeatureBand(_sdkVersion));
 
-                ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
+                    if (!workloadIds.Any())
+                    {
+                        Reporter.WriteLine(LocalizableStrings.NoWorkloadsToRepair);
+                        return;
+                    }
 
-                WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+                    Reporter.WriteLine(string.Format(LocalizableStrings.RepairingWorkloads, string.Join(" ", workloadIds)));
 
-                Reporter.WriteLine();
-                Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
-                Reporter.WriteLine();
+                    ReinstallWorkloadsBasedOnCurrentManifests(workloadIds, new SdkFeatureBand(_sdkVersion));
+
+                    WorkloadInstallCommand.TryRunGarbageCollection(_workloadInstaller, Reporter, Verbosity, workloadSetVersion => _workloadResolverFactory.CreateForWorkloadSet(_dotnetPath, _sdkVersion.ToString(), _userProfileDir, workloadSetVersion));
+
+                    Reporter.WriteLine();
+                    Reporter.WriteLine(string.Format(LocalizableStrings.RepairSucceeded, string.Join(" ", workloadIds)));
+                    Reporter.WriteLine();
+                });
             }
             catch (Exception e)
             {

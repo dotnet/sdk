@@ -12,8 +12,6 @@
 //  versions of cross-gened assemblies.  See https://github.com/dotnet/sdk/issues/1502
 #if NETCOREAPP || !EXTENSIONS
 
-#nullable disable
-
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,7 +28,7 @@ namespace Microsoft.NET.Build.Tasks
         {
             DateTime lastWriteTimeUtc = File.GetLastWriteTimeUtc(sourcePath);
 
-            if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry) 
+            if (s_versionCache.TryGetValue(sourcePath, out var cacheEntry)
                 && lastWriteTimeUtc == cacheEntry.LastKnownWriteTimeUtc)
             {
                 return cacheEntry.Version;
@@ -56,7 +54,7 @@ namespace Microsoft.NET.Build.Tasks
                     Version result = null;
                     try
                     {
-                        using (PEReader peReader = new PEReader(assemblyStream, PEStreamOptions.LeaveOpen))
+                        using (PEReader peReader = new(assemblyStream, PEStreamOptions.LeaveOpen))
                         {
                             if (peReader.HasMetadata)
                             {

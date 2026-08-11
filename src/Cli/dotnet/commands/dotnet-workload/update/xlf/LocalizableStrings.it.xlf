@@ -17,6 +17,11 @@
         <target state="translated">Aggiornare tutti i carichi di lavoro installati.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FromHistoryOptionDescription">
+        <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
+        <target state="translated">Aggiornare i carichi di lavoro a una versione precedente specificata dall'argomento. Usare la 'cronologia del carico di lavoro dotnet' per visualizzare i record della cronologia del carico di lavoro disponibili.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
         <source>Include workloads installed with earlier SDK versions in update.</source>
         <target state="translated">Includere nell'aggiornamento i carichi di lavoro installati con le versioni SDK precedenti.</target>
@@ -25,6 +30,16 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">Aggiornare i carichi di lavoro in base al file di definizione di ripristino dello stato precedente specificato.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryManifestOnlyOptionDescription">
+        <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
+        <target state="translated">Eseguire l'aggiornamento alle versioni del carico di lavoro specificate nella cronologia senza modificare i carichi di lavoro installati. I carichi di lavoro attualmente installati verranno aggiornati in modo che corrispondano alla versione della cronologia specificata.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadHistoryRecords">
+        <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
+        <target state="translated">I record della cronologia del carico di lavoro vengono creati quando si esegue un'operazione che modifica carichi di lavoro come l'aggiornamento o l'installazione. Non è possibile eseguire l'aggiornamento dalla cronologia finché non sono presenti record della cronologia del carico di lavoro.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -65,6 +80,16 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">Non è stato possibile scaricare i pacchetti di aggiornamento del carico di lavoro nella cache: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
+        <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
+        <target state="translated">L'ID di un record di cronologia del carico di lavoro deve essere compreso tra 1 e il numero di record della cronologia del carico di lavoro inclusi.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
+        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
+        <target state="translated">Argomento non valido "{0}" per l'argomento --mode per l'aggiornamento del carico di lavoro dotnet. Le uniche modalità supportate sono "workloadset", "loosemanifest" e "auto".</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

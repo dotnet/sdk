@@ -17,6 +17,11 @@
         <target state="translated">Tüm yüklü iş yüklerini güncelleştirin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="FromHistoryOptionDescription">
+        <source>Update workloads to a previous version specified by the argument. Use the 'dotnet workload history' to see available workload history records.</source>
+        <target state="translated">İş yüklerini bağımsız değişken tarafından belirtilen önceki bir sürüme güncelleştirin. Kullanılabilir iş yükü geçmişi kayıtlarını görmek için 'dotnet iş yükü geçmişi' komutunu kullanın.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="FromPreviousSdkOptionDescription">
         <source>Include workloads installed with earlier SDK versions in update.</source>
         <target state="translated">Önceki SDK sürümleriyle yüklenen iş yüklerini güncelleştirmeye ekleyin.</target>
@@ -25,6 +30,16 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">İş yüklerini belirtilen geri alma tanım dosyasına göre güncelleştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="HistoryManifestOnlyOptionDescription">
+        <source>Update to the workload versions specified in the history without changing which workloads are installed. Currently installed workloads will be updated to match the specified history version.</source>
+        <target state="translated">Hangi iş yüklerinin yüklü olduğunu değiştirmeden, geçmişte belirtilen iş yükü sürümlerine güncelleştirin. Şu anda yüklü iş yükleri belirtilen geçmiş sürümüyle eşleşecek şekilde güncelleştirilecek.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadHistoryRecords">
+        <source>Workload history records are created when when running an operation that modifies workloads like update or install. Cannot update from history until workload history records exist.</source>
+        <target state="translated">İş yükü geçmişi kayıtları, güncelleştirme veya yükleme gibi iş yüklerini değiştiren bir işlem çalıştırılırken oluşturulur. İş yükü geçmişi kayıtları mevcut olana kadar geçmiş güncelleştirilemez.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadUpdateFound">
@@ -65,6 +80,16 @@
       <trans-unit id="WorkloadCacheDownloadFailed">
         <source>Failed to download workload update packages to cache: {0}</source>
         <target state="translated">İş yükü güncelleştirme paketleri önbelleğe yüklenemedi: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadHistoryRecordInvalidIdValue">
+        <source>The ID of a workload history record should be between 1 and the number of workload history records, inclusive.</source>
+        <target state="translated">İş yükü geçmişi kaydının kimliği 1 ile iş yükü geçmişi kayıtlarının (dahil) sayısı arasında olmalıdır.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadSetModeTakesWorkloadSetLooseManifestOrAuto">
+        <source>Invalid argument "{0}" to the --mode argument for dotnet workload update. Only supported modes are "workloadset", "loosemanifest", and "auto".</source>
+        <target state="translated">Dotnet iş yükü güncelleştirmesi için --mod bağımsız değişkeninde geçersiz "{0}" bağımsız değişkeni. Yalnızca "workloadset", "loosemanifest" ve "auto" modları desteklenir.</target>
         <note />
       </trans-unit>
       <trans-unit id="WorkloadUpdateAdManifestsSucceeded">

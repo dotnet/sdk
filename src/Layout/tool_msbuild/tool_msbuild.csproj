@@ -7,13 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Build.Runtime" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
-    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
+    <PackageReference Include="Microsoft.Build.Runtime" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Framework" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Tasks.Core" VersionOverride="$(MicrosoftBuildVersion)" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" VersionOverride="$(MicrosoftBuildVersion)" />
     <PackageReference Include="Microsoft.Build.Localization" />
-    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildCurrentPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.StringTools" VersionOverride="$(MicrosoftBuildVersion)" />
     <PackageReference Include="System.Resources.Extensions" />
   </ItemGroup>
 </Project>

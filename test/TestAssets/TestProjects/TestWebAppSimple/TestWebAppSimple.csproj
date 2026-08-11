@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>$(CliTargetFramework)</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <Target Name="WriteDefaultPatchVersionsFile" BeforeTargets="Restore">
+    <WriteLinesToFile
+      File="$(MSBuildThisFileDirectory)/.DefaultPatchVersionForAspNetCoreApp2_1"
+      Lines="$(DefaultPatchVersionForAspNetCoreApp2_1)"
+      Overwrite="true"/>
+  </Target>
+
+  <Target Name="WriteBundledVersionsFile" BeforeTargets="Restore">
+    <WriteLinesToFile
+      File="$(MSBuildThisFileDirectory)/.BundledAspNetCoreVersion"
+      Lines="$(MicrosoftAspNetCoreAppRuntimeX64PackageVersion)"
+      Overwrite="true"/>
+  </Target>
+  
+</Project>

@@ -1,8 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.DotNet.Cli;
 using System.CommandLine;
+using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tools.Format
@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.Tools.Format
 
         public static FormatCommand FromArgs(string[] args)
         {
-            var parser = Cli.Parser.Instance;
+            var parser = Parser.Instance;
             var result = parser.ParseFrom("dotnet format", args);
             return FromParseResult(result);
         }

@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-sign" "1" "2023-10-25" "" ".NET Documentation"
+.TH "dotnet-nuget-sign" "1" "2024-10-02" "" ".NET Documentation"
 .hy
 .SH dotnet nuget sign
 .PP
@@ -105,7 +105,12 @@ If there are multiple matching certificates in the result, or no matching certif
 \f[B]\f[VB]--certificate-fingerprint <FINGERPRINT>\f[B]\f[R]
 .RS 2
 .PP
-SHA-1 fingerprint of the certificate used to search a local certificate store for the certificate.
+Specifies the fingerprint of the certificate used to search a local certificate store for the certificate.
+.PP
+Starting with .NET 9, this option can be used to specify the SHA-1, SHA-256, SHA-384, or SHA-512 fingerprint of the certificate.
+However, a \f[V]NU3043\f[R] warning is raised when a SHA-1 certificate fingerprint is used because it is no longer considered secure.
+.PP
+All the previous versions of the .NET SDK continue to accept only SHA-1 certificate fingerprint.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--certificate-password <PASSWORD>\f[B]\f[R]

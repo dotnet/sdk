@@ -1,0 +1,9 @@
+<Project>
+
+  <!-- VMR bootstrap -->
+  <ItemGroup Condition="'$(InitializeVMR)' == 'true'">
+    <ProjectToBuild Include="$(RepoRoot)src/VirtualMonoRepo/Tasks/VirtualMonoRepo.Tasks.csproj" BuildInParallel="false" />
+    <ProjectToBuild Include="$(RepoRoot)src/VirtualMonoRepo/InitializeVMR.proj" BuildInParallel="false" />
+  </ItemGroup>
+
+</Project>

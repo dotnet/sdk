@@ -1,0 +1,1 @@
+[assembly: System.Reflection.AssemblyMetadata("TestAssemblyMetadata", "1")]

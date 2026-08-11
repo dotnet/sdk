@@ -135,4 +135,33 @@
   <data name="PlatformColumnName" xml:space="preserve">
     <value>Platforms</value>
   </data>
+  <data name="PrintSetVersionsDescription" xml:space="preserve">
+    <value>Output a list of the latest released workload versions. Takes the --take option to specify how many to provide and --format to alter the format.</value>
+    <comment>Do not localize --take or --format</comment>
+  </data>
+  <data name="FormatOptionDescription" xml:space="preserve">
+    <value>Changes the format of outputted workload versions. Can take 'json' or 'list'</value>
+  </data>
+  <data name="TakeOptionMustBePositive" xml:space="preserve">
+    <value>The --take option must be positive.</value>
+  </data>
+  <data name="WorkloadVersionArgument" xml:space="preserve">
+    <value>WORKLOAD_VERSION</value>
+  </data>
+  <data name="WorkloadVersionArgumentDescription" xml:space="preserve">
+    <value>Output workload manifest versions associated with the provided workload version.</value>
+  </data>
+  <data name="CannotCombineSearchStringAndVersion" xml:space="preserve">
+    <value>Cannot specify both the {0} and {1} arguments.</value>
+  </data>
+  <data name="NoWorkloadVersionsFound" xml:space="preserve">
+    <value>No workload versions found for SDK feature band {0}.</value>
+  </data>
+  <data name="WorkloadManifestIdColumn" xml:space="preserve">
+    <value>Workload manifest ID</value>
+  </data>
+  <data name="WorkloadManifestFeatureBandColumn" xml:space="preserve">
+    <value>Manifest feature band</value>
+  </data>
+  
 </root>

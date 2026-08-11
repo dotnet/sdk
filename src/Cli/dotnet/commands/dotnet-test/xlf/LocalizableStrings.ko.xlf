@@ -12,6 +12,11 @@
         <target state="translated">.NET 플랫폼용 테스트 드라이버입니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="translated">전달할 추가 msbuild 매개 변수입니다.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">예상된 테스트 호스트 종료와 예기치 않은 테스트 호스트 종료 시 크래시 덤프 수집을 사용하도록 설정합니다.</target>
@@ -96,6 +101,11 @@ Examples:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NAME="VALUE"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="translated">병렬로 실행할 수 있는 최대 테스트 모듈 수입니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -223,6 +233,16 @@ The specified directory will be created if it does not exist.</source>
       <trans-unit id="IgnoredArgumentsMessage">
         <source>The following arguments have been ignored : "{0}"</source>
         <target state="translated">"{0}" 인수가 무시되었습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="translated">ID '{0}'(으)로 등록된 직렬 변환기가 없습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="translated">'{0}' 형식으로 등록된 직렬 변환기가 없습니다.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

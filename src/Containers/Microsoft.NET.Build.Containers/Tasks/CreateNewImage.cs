@@ -60,7 +60,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
-        SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag);
+        SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
             Repository,
@@ -80,7 +80,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
                 var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
                 imageBuilder = await registry.GetImageManifestAsync(
                     BaseImageName,
-                    BaseImageTag,
+                    sourceImageReference.Reference,
                     ContainerRuntimeIdentifier,
                     picker,
                     cancellationToken).ConfigureAwait(false);
@@ -88,7 +88,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             catch (RepositoryNotFoundException)
             {
                 telemetry.LogUnknownRepository();
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, registry.RegistryName);
+                Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, BaseImageDigest, registry.RegistryName);
                 return !Log.HasLoggedErrors;
             }
             catch (UnableToAccessRepositoryException)
@@ -124,6 +124,24 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             ( Strings.ContainerBuilder_StartBuildingImageForRid, new object[] { Repository, ContainerRuntimeIdentifier, sourceImageReference }) :
             ( Strings.ContainerBuilder_StartBuildingImage, new object[] { Repository, String.Join(",", ImageTags), sourceImageReference });
         Log.LogMessage(MessageImportance.High, message, parameters);
+
+        // forcibly change the media type if required
+        if (ImageFormat is not null)
+        {
+            if (Enum.TryParse<KnownImageFormats>(ImageFormat, out var imageFormat))
+            {
+                imageBuilder.ManifestMediaType = imageFormat switch
+                {
+                    KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
+                    KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+                    _ => imageBuilder.ManifestMediaType // should be impossible unless we add to the enum
+                };
+            }
+            else
+            {
+                Log.LogErrorWithCodeFromResources(nameof(Strings.InvalidContainerImageFormat), ImageFormat, string.Join(",", Enum.GetValues<KnownImageFormats>()));
+            }
+        }
 
         // forcibly change the media type if required
         if (ImageFormat is not null)

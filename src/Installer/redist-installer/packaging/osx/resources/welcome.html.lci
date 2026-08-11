@@ -1,0 +1,98 @@
+﻿<LCX SchemaVersion="6.0" Name="D:\a\_work\1\s\src\redist\packaging\osx\resources\welcome.html" PsrId="22" FileType="1" SrcCul="en-US" Desc="Commenting file created by LCXAdmin. For more information, please visit http://localizability/longhorn/LcxAdmin.asp" xmlns="http://schemas.microsoft.com/locstudio/2006/6/lcx">
+  <OwnedComments>
+    <Cmt Name="LcxAdmin" />
+  </OwnedComments>
+  <Item ItemId=";Attributes" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Item ItemId=";align" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId="0;0b232ca5c87c0123c6f54f37576b9bcf" ItemType="23;Attr:&lt;DIV&gt;:align" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Property">
+          <Val><![CDATA[left]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="2" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="1;0b232ca5c87c0123c6f54f37576b9bcf" ItemType="23;Attr:&lt;DIV&gt;:align" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Property">
+          <Val><![CDATA[left]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="6" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="2;0b232ca5c87c0123c6f54f37576b9bcf" ItemType="23;Attr:&lt;DIV&gt;:align" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Property">
+          <Val><![CDATA[left]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="13" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+    <Item ItemId=";charset" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId="0;bfca00b0e0c56e9d0dcf189318935756" ItemType="23;Attr:&lt;META&gt;:charset" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Text">
+          <Val><![CDATA[utf-8]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="1" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";CSS Properties" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Item ItemId=";font-family" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId="0;481e5bb208bdaa170e6b4abf59597f63" ItemType="26;Style:&lt;DIV&gt;:font-family" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Font Name">
+          <Val><![CDATA[Helvetica]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="3" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="1;481e5bb208bdaa170e6b4abf59597f63" ItemType="26;Style:&lt;DIV&gt;:font-family" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Font Name">
+          <Val><![CDATA[Helvetica]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="7" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+      <Item ItemId="2;481e5bb208bdaa170e6b4abf59597f63" ItemType="26;Style:&lt;DIV&gt;:font-family" PsrId="22" InstFlg="true" Leaf="true">
+        <Str Cat="Font Name">
+          <Val><![CDATA[Helvetica]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="14" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+  <Item ItemId=";HTML Content" ItemType="0" PsrId="22" Leaf="false">
+    <Disp Icon="Expand" Expand="true" Disp="true" LocTbl="false" />
+    <Item ItemId=";Regular Content" ItemType="0" PsrId="22" Leaf="false">
+      <Disp Icon="Str" Disp="true" LocTbl="false" />
+      <Item ItemId="0;3743368085be61f5b4814f3127fe51a7" ItemType="18;HTML" PsrId="22" Leaf="true">
+        <Str Cat="HTML Text" UsrLk="true">
+          <Val><![CDATA[.NET SDK]]></Val>
+        </Str>
+        <Disp Icon="Str" Order="4" />
+        <Cmts>
+          <Cmt Name="LcxAdmin"><![CDATA[{Locked}]]></Cmt>
+        </Cmts>
+      </Item>
+    </Item>
+  </Item>
+</LCX>

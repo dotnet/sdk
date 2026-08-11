@@ -15,7 +15,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
     internal partial class InstantiateCommand
     {
         private const string Indent = "  ";
-        private static Lazy<ResourceManager> _resourceManager = new Lazy<ResourceManager>(
+        private static Lazy<ResourceManager> _resourceManager = new(
             () => new ResourceManager("System.CommandLine.Properties.Resources", typeof(System.CommandLine.CliSymbol).Assembly));
 
         public static void WriteHelp(HelpContext context, InstantiateCommandArgs instantiateCommandArgs, IEngineEnvironmentSettings environmentSettings)
@@ -455,6 +455,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             HelpBuilder.Default.CommandArgumentsSection()(context);
             context.Output.WriteLine();
             HelpBuilder.Default.OptionsSection()(context);
+            context.Output.WriteLine();
             HelpBuilder.Default.SubcommandsSection()(context);
             context.Output.WriteLine();
         }

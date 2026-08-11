@@ -1,0 +1,84 @@
+﻿<WixLocalization Culture="en-us" Language="1033" xmlns="http://schemas.microsoft.com/wix/2006/localization">
+  <String Id="Caption">Instalador do [WixBundleName]</String>
+  <String Id="Title">[BUNDLEMONIKER]</String>
+  <String Id="ConfirmCancelMessage">Tem certeza de que deseja cancelar?</String>
+  <String Id="ExecuteUpgradeRelatedBundleMessage">Versão anterior</String>
+  <String Id="HelpHeader">Ajuda da Instalação</String>
+  <String Id="HelpText">/install | /repair | /uninstall | /layout [\[]"directory"[\]] – instala, repara, desinstala
+   ou cria uma cópia local completa do pacote no diretório. "/install" é o padrão.
+
+/passive | /quiet – exibe a interface do usuário mínima sem prompts ou não exibe nenhuma interface do usuário e
+   nenhum prompt. Por padrão, a interface do usuário e todos os prompts são exibidos.
+
+/norestart – suprime quaisquer tentativas de reinicialização. Por padrão, a interface do usuário será solicitada antes da reinicialização.
+/log [\[]"log.txt"[\]] – registra em log um arquivo específico. Por padrão, um arquivo de log é criado em %TEMP%.</String>
+  <String Id="HelpCloseButton">&amp;Fechar</String>
+  <String Id="InstallAcceptCheckbox">&amp;Concordo com os termos e condições da licença</String>
+  <String Id="InstallOptionsButton">&amp;Opções</String>
+  <String Id="InstallInstallButton">&amp;Instalar</String>
+  <String Id="InstallCloseButton">&amp;Fechar</String>
+  <String Id="ProgressHeader">Progresso da Instalação</String>
+  <String Id="ProgressLabel">Processando:</String>
+  <String Id="OverallProgressPackageText">Inicializando...</String>
+  <String Id="ProgressCancelButton">&amp;Cancelar</String>
+  <String Id="ModifyHeader">Modificar Instalação</String>
+  <String Id="ModifyRepairButton">&amp;Reparar</String>
+  <String Id="ModifyUninstallButton">&amp;Desinstalar</String>
+  <String Id="ModifyCloseButton">&amp;Fechar</String>
+  <String Id="SuccessRepairHeader">Reparação Concluída com Êxito</String>
+  <String Id="SuccessUninstallHeader">Desinstalação Concluída com Êxito</String>
+  <String Id="SuccessHeader">Instalação com Êxito</String>
+  <String Id="SuccessLaunchButton">&amp;Iniciar</String>
+  <String Id="SuccessRestartText">É necessário reiniciar o computador para concluir a instalação do software.</String>
+  <String Id="SuccessRestartButton">&amp;Reiniciar</String>
+  <String Id="SuccessCloseButton">&amp;Fechar</String>
+  <String Id="FailureHeader">Falha na Instalação</String>
+  <String Id="FailureInstallHeader">Falha na Instalação</String>
+  <String Id="FailureUninstallHeader">Falha na Desinstalação</String>
+  <String Id="FailureRepairHeader">Falha ao Reparar</String>
+  <String Id="FailureHyperlinkLogText">Um ou mais problemas fizeram com que a configuração falhasse. Corrija os problemas e tente novamente a configuração. Para obter mais informações, consulte o &lt;a href="#"&gt;arquivo de log&lt;/a&gt;.</String>
+  <String Id="FailureRestartText">Reinicie o computador para concluir a reversão do software.</String>
+  <String Id="FailureRestartButton">&amp;Reiniciar</String>
+  <String Id="FailureCloseButton">&amp;Fechar</String>
+  <String Id="FilesInUseHeader">Arquivos em Uso</String>
+  <String Id="FilesInUseLabel">Os aplicativos a seguir estão usando arquivos que precisam ser atualizados:</String>
+  <String Id="FilesInUseCloseRadioButton">Feche os &amp;aplicativos e tente reiniciá-los.</String>
+  <String Id="FilesInUseDontCloseRadioButton">&amp;Não feche os aplicativos. Uma reinicialização será necessária.</String>
+  <String Id="FilesInUseOkButton">&amp;OK</String>
+  <String Id="FilesInUseCancelButton">&amp;Cancelar</String>
+  <String Id="FirstTimeWelcomeMessage">A instalação foi bem-sucedida.
+
+Os seguintes produtos foram instalados:
+    • SDK .NET [DOTNETSDKVERSION]
+    • Runtime .NET [DOTNETRUNTIMEVERSION]
+    • Runtime ASP.NET Core [ASPNETCOREVERSION]
+    • Runtime .NET para Desktop no Windows [WINFORMSANDWPFVERSION]
+
+Esse produto coleta dados de uso
+    • Mais informações e recusa https://aka.ms/dotnet-cli-telemetry
+
+Recursos
+    • Documentação do .NET https://aka.ms/dotnet-docs
+    • Documentação do SDK https://aka.ms/dotnet-sdk-docs
+    • Notas de versão https://aka.ms/dotnet[VERSIONMAJOR]-release-notes
+    • Tutoriais https://aka.ms/dotnet-tutorials</String>
+  <String Id="WelcomeHeaderMessage">SDK do .NET</String>
+  <String Id="WelcomeDescription">
+    O SDK do .NET é usado para compilar, executar e testar aplicativos .NET. Você pode escolher entre vários idiomas, editores e ferramentas de desenvolvedor e aproveitar um grande ecossistema de bibliotecas para criar aplicativos para Web, móveis, área de trabalho, jogos e IoT. Esperamos que goste!</String>
+  <String Id="LearnMoreTitle">Saiba mais sobre o .NET</String>
+  <String Id="ResourcesHeader">Recursos</String>
+  <String Id="CoreDocumentationLink">&lt;A HREF="https://aka.ms/dotnet-docs"&gt;Documentação do .NET&lt;/A&gt;</String>
+  <String Id="SDKDocumentation">&lt;A HREF="https://aka.ms/dotnet-cli-docs"&gt;Documentação do SDK&lt;/A&gt;</String>
+  <String Id="PrivacyStatementLink">&lt;A HREF="https://aka.ms/dev-privacy"&gt;Política de Privacidade&lt;/A&gt;</String>
+  <String Id="DotNetEulaLink">&lt;A HREF="https://aka.ms/dotnet-license-windows"&gt;Informações de licenciamento para .NET&lt;/A&gt;</String>
+  <String Id="DotNetCLITelemetryLink">&lt;A HREF="https://aka.ms/dotnet-cli-telemetry"&gt;Coleção e recusa de telemetria&lt;/A&gt;</String>
+  <String Id="InstallationNoteTitle">Nota de instalação</String>
+  <String Id="InstallationNote">Um comando será executado durante o processo de instalação que melhorará a velocidade de restauração do projeto e habilitará o acesso offline. Isso levará até um minuto para ser concluído.
+  </String>
+  <String Id="VisualStudioWarning">Se você planeja usar .NET [VERSIONMAJOR].[VERSIONMINOR] com o Visual Studio, é necessário o Visual Studio 2022 [MINIMUMVSVERSION] ou mais recente. &lt;A HREF="https://aka.ms/dotnet[VERSIONMAJOR]-release-notes"&gt;Saiba mais&lt;/A&gt;.
+  </String>
+  <String Id="LicenseAssent">Ao clicar em Instalar, você concorda com os termos a seguir:</String>
+  <String Id="InstallPathx64x86">O caminho da instalação para instalações do SDK x64: "[DOTNETHOME_X64]" não pode ser o mesmo que para instalações do SDK x86: "[DOTNETHOME_X86]"</String>
+  <String Id="InstallPathARM64x86">O caminho da instalação para instalações do SDK ARM64: "[DOTNETHOME_ARM64]" não pode ser o mesmo que para instalações do SDK x86: "[DOTNETHOME_X86]"</String>
+  <String Id="InstallPathARM64x64">O caminho da instalação para instalações do SDK ARM64: "[DOTNETHOME_ARM64]" não pode ser o mesmo que para instalações do SDK x64: "[DOTNETHOME_X64]"</String>
+</WixLocalization>

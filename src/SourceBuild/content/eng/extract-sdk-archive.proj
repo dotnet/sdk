@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.Build.NoTargets">
+
+  <PropertyGroup>
+    <TargetFramework>$(NetCurrent)</TargetFramework>
+  </PropertyGroup>
+
+  <Target Name="ExtractSdkArchive"
+          BeforeTargets="AfterBuild"
+          DependsOnTargets="DetermineSourceBuiltSdkVersion"
+          Inputs="$(SdkTarballPath)"
+          Outputs="$(BaseIntermediateOutputPath)ExtractSdkArchive.complete">
+    <MakeDir Directories="$(DotNetSdkExtractDir)" />
+
+    <Exec Condition="'$(ArchiveExtension)' == '.tar.gz'"
+          Command="tar -xzf $(SdkTarballPath) -C $(DotNetSdkExtractDir)" />
+    <Unzip Condition="'$(ArchiveExtension)' == '.zip'"
+           SourceFiles="$(SdkTarballPath)"
+           DestinationFolder="$(DotNetSdkExtractDir)" />
+
+    <Message Text="Extracted SDK archive file '$(SdkTarballPath)' to '$(DotNetSdkExtractDir)'." Importance="high" />
+
+    <Touch Files="$(BaseIntermediateOutputPath)ExtractSdkArchive.complete" AlwaysCreate="true">
+      <Output TaskParameter="TouchedFiles" ItemName="FileWrites" />
+    </Touch>
+  </Target>
+
+</Project>

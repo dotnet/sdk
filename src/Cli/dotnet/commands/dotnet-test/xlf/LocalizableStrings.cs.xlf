@@ -12,6 +12,11 @@
         <target state="translated">Testovací ovladač pro platformu .NET</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAdditionalMSBuildParametersDescription">
+        <source>The additional msbuild parameters to pass.</source>
+        <target state="translated">Další parametry msbuild, které se mají předat.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Umožní shromažďovat výpisy stavu systému při očekávaných i neočekávaných ukončeních hostitele testů.</target>
@@ -96,6 +101,11 @@ Příklady:
       <trans-unit id="CmdEnvironmentVariableExpression">
         <source>NAME="VALUE"</source>
         <target state="translated">NÁZEV="HODNOTA"</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdMaxParallelTestModulesDescription">
+        <source>The max number of test modules that can run in parallel.</source>
+        <target state="translated">Maximální počet testovacích modulů, které je možné spustit paralelně.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoLogo">
@@ -223,6 +233,16 @@ Pokud zadaný adresář neexistuje, bude vytvořen.</target>
       <trans-unit id="IgnoredArgumentsMessage">
         <source>The following arguments have been ignored : "{0}"</source>
         <target state="translated">Následující argumenty se ignorovaly: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithIdErrorMessage">
+        <source>No serializer registered with ID '{0}'</source>
+        <target state="translated">Není zaregistrovaný žádný serializátor s ID {0}.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoSerializerRegisteredWithTypeErrorMessage">
+        <source>No serializer registered with type '{0}'</source>
+        <target state="translated">Není zaregistrovaný žádný serializátor s typem {0}.</target>
         <note />
       </trans-unit>
       <trans-unit id="RunSettingsArgumentsDescription">

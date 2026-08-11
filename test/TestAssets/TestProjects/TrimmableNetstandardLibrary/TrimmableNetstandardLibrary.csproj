@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+
+  <PropertyGroup>
+    <!-- Test infra replaces this with the value of CurrentTargetFramework so we can compare against it below. -->
+    <CurrentTargetFramework>$(CurrentTargetFramework)</CurrentTargetFramework>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <IsTrimmable>true</IsTrimmable>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AnalysisLevel>latest</AnalysisLevel>
+  </PropertyGroup>
+
+  <Target Name="_AddKnownILLinkPack" BeforeTargets="ProcessFrameworkReferences">
+    <PropertyGroup>
+      <!-- Work around a version check that prevents referencing illink pack from a netstandard project. -->
+      <_FirstTargetFrameworkVersionToSupportTrimAnalyzer>2.0</_FirstTargetFrameworkVersionToSupportTrimAnalyzer>
+    </PropertyGroup>
+    <ItemGroup>
+      <KnownILLinkPack Include="@(KnownILLinkPack)"
+                       Condition="'%(TargetFramework)' == '$(CurrentTargetFramework)'"
+                       TargetFramework="$(TargetFramework)" />
+    </ItemGroup>
+  </Target>
+
+</Project>

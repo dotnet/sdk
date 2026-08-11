@@ -32,6 +32,11 @@
         <target state="translated">다음 워크로드에 대한 업데이트를 사용할 수 있습니다. {0}. 최신 버전을 받으려면 `dotnet workload update`를 실행하세요.</target>
         <note>{Locked="dotnet workload update"}</note>
       </trans-unit>
+      <trans-unit id="WorkloadVersionNotInstalledShort">
+        <source>(not installed)</source>
+        <target state="translated">(설치되지 않음)</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

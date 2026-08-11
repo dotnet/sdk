@@ -1,0 +1,16 @@
+<RunSettings>
+    <LoggerRunSettings>
+        <Loggers>
+            <Logger friendlyName="trx" enabled="True">
+                <Configuration>
+                <LogFileName>MsiInstallationTests.trx</LogFileName>
+                </Configuration>
+            </Logger>
+            <Logger friendlyName="html" enabled="True">
+                <Configuration>
+                <LogFileName>MsiInstallationTests.html</LogFileName>
+                </Configuration>
+            </Logger>
+        </Loggers>
+    </LoggerRunSettings>
+</RunSettings>

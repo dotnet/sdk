@@ -1,0 +1,79 @@
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <?include "Variables.wxi" ?>
+  <Product Id="*" Name="$(var.ProductName)" Language="$(var.ProductLanguage)" Version="$(var.ProductVersion)" Manufacturer="$(var.Manufacturer)" UpgradeCode="$(var.UpgradeCode)">
+    <Package Compressed="yes" InstallScope="perMachine" InstallerVersion="$(var.InstallerVersion)" />
+
+    <Condition Message="$(var.ProductName) must be installed as part of a coordinated SDK installation.">
+      Installed OR ALLOWMSIINSTALL
+    </Condition>
+
+    <MajorUpgrade DowngradeErrorMessage="$(var.DowngradeErrorMessage)" Schedule="afterInstallInitialize"/>
+
+    <MediaTemplate CompressionLevel="high" EmbedCab="yes" />
+    <Feature Id="MainFeature" Title="Main Feature" Level="1">
+      <ComponentGroupRef Id="InstallFiles" />
+      <ComponentGroupRef Id="AuthoredRegistryKeys_x86node"/>
+      <ComponentGroupRef Id="DotnetToolSetup"/>
+      <ComponentRef Id="WorkloadInstallerTypeComp" />
+    </Feature>
+    <Feature Id="Provider" Absent="disallow" AllowAdvertise="no" Description="Used for Ref Counting" Display="hidden" Level="1" InstallDefault="local" Title="RefCounting" TypicalDefault="install">
+      <ComponentRef Id="$(var.DependencyKeyId)" />
+    </Feature>
+
+    <Property Id="ARPNOMODIFY" Value="1" />
+    <Property Id="ProductFamily" Value="$(var.ProductFamily)" />
+    <Property Id="ProductEdition" Value="$(var.ProductEdition)" />
+    <Property Id="ProductCPU" Value="$(var.Platform)" />
+    <Property Id="RTM_ProductVersion" Value="$(var.Dotnet_ProductVersion)" />
+    <Property Id="MSIFASTINSTALL" Value="7" />
+    <Property Id="NUGETVERSION" Value="$(var.NugetVersion)" />
+    <WixVariable Id="WixUILicenseRtf" Value="$(var.MicrosoftEula)" />
+
+    <CustomActionRef Id="WixBroadcastEnvironmentChange" />
+
+    <CustomAction Id="PropertyAssignPrimeCacheAndTelemetry"
+                  Property="QtExecPrimeCacheAndTelemetryTarget"
+                  Value="&quot;[DOTNETHOME]\dotnet.exe&quot; exec &quot;[DOTNETHOME]\sdk\[NUGETVERSION]\dotnet.dll&quot; internal-reportinstallsuccess &quot;[EXEFULLPATH]&quot;"
+                  Execute="immediate" />
+    <CustomAction Id="QtExecPrimeCacheAndTelemetryTarget"
+                  BinaryKey="WixCA"
+                  DllEntry="$(var.WixQuietExec)"
+                  Execute="deferred"
+                  Return="ignore"
+                  Impersonate="no"/>
+
+    <InstallExecuteSequence>
+      <Custom Action="PropertyAssignPrimeCacheAndTelemetry" Before="QtExecPrimeCacheAndTelemetryTarget">NOT Installed</Custom>
+      <Custom Action="QtExecPrimeCacheAndTelemetryTarget" Before="InstallFinalize">NOT Installed</Custom>
+    </InstallExecuteSequence>
+  </Product>
+  <Fragment>
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="$(var.Program_Files)">
+        <Directory Id="DOTNETHOME" Name="dotnet">
+          <Directory Id="MetadataDir" Name="metadata">
+            <Directory Id="WorkloadsDir" Name="workloads">
+              <Directory Id="FeatureBandDir" Name="$(var.SdkFeatureBandVersion)">
+                <Directory Id="InstallerTypeDir" Name="installertype" />
+              </Directory>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+    
+    <?if $(var.Platform)~=x64?>
+    <CustomActionRef Id="Set_DOTNETHOME_NON_NATIVE_ARCHITECTURE" />
+    <?endif?>
+  </Fragment>
+  <Fragment>
+    <ComponentGroup Id="DotnetToolSetup">
+      <Component Id="AppendDotnetToolShimPath" Directory="TARGETDIR" Guid="{241B7B8D-7817-41C1-807F-5F4010BF583A}">
+        <Environment Id="E_PATH" Name="PATH" Value="%USERPROFILE%\.dotnet\tools" Part="last" Action="set" System="no" />
+      </Component>
+    </ComponentGroup>
+    <Component Id="WorkloadInstallerTypeComp" Directory="InstallerTypeDir">
+     <File KeyPath="yes" Name="msi" />
+    </Component>
+  </Fragment>
+</Wix>

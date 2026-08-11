@@ -35,12 +35,15 @@ namespace Microsoft.DotNet.Workloads.Workload.List
             IWorkloadResolver workloadResolver = null
         ) : base(parseResult, CommonOptions.HiddenVerbosityOption, reporter, tempDirPath, nugetPackageDownloader)
         {
+            _machineReadableOption = parseResult.GetValue(WorkloadListCommandParser.MachineReadableOption);
+
+            var resolvedReporter = _machineReadableOption ? NullReporter.Instance : Reporter;
             _workloadListHelper = new WorkloadInfoHelper(
                 parseResult.HasOption(SharedOptions.InteractiveOption),
                 Verbosity,
                 parseResult?.GetValue(WorkloadListCommandParser.VersionOption) ?? null,
                 VerifySignatures,
-                Reporter,
+                resolvedReporter,
                 workloadRecordRepo,
                 currentSdkVersion,
                 dotnetDir,
@@ -48,12 +51,10 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 workloadResolver
             );
 
-            _machineReadableOption = parseResult.GetValue(WorkloadListCommandParser.MachineReadableOption);
-
             _includePreviews = parseResult.GetValue(WorkloadListCommandParser.IncludePreviewsOption);
             string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
-            _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(Reporter,
+            _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(resolvedReporter,
                 _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer);
         }
 
@@ -69,11 +70,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 var installed = installedList.Select(id => id.ToString()).ToArray();
                 ListOutput listOutput = new(installed, updateAvailable.ToArray());
 
-                Reporter.WriteLine("==workloadListJsonOutputStart==");
-                Reporter.WriteLine(
-                    JsonSerializer.Serialize(listOutput,
-                        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
-                Reporter.WriteLine("==workloadListJsonOutputEnd==");
+                Reporter.WriteLine(JsonSerializer.Serialize(listOutput, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase }));
             }
             else
             {
@@ -81,7 +78,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                 Reporter.WriteLine();
                 var shouldPrintTable = globalJsonInformation?.WorkloadVersionInstalled != false;
                 var shouldShowWorkloadSetVersion = globalJsonInformation is not null ||
-                    InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.DotnetPath), "default.json")).UseWorkloadSets == true;
+                    InstallStateContents.FromPath(Path.Combine(WorkloadInstallType.GetInstallStateFolder(_workloadListHelper._currentSdkFeatureBand, _workloadListHelper.UserLocalPath), "default.json")).UseWorkloadSets == true;
 
                 if (shouldShowWorkloadSetVersion)
                 {
@@ -96,7 +93,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
                     }
                     else
                     {
-                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion() ?? "unknown"));
+                        Reporter.WriteLine(string.Format(LocalizableStrings.WorkloadSetVersion, _workloadListHelper.WorkloadResolver.GetWorkloadVersion().Version ?? "unknown"));
                     }
 
                     Reporter.WriteLine();
@@ -120,7 +117,7 @@ namespace Microsoft.DotNet.Workloads.Workload.List
 
                     table.AddColumn(InformationStrings.WorkloadSourceColumn, workload => workload.Value);
 
-                    table.PrintRows(installedWorkloads.AsEnumerable(), l => Reporter.WriteLine(l));
+                    table.PrintRows(installedWorkloads.AsEnumerable().OrderBy(workload => workload.Key), l => Reporter.WriteLine(l));
                 }
 
                 Reporter.WriteLine();

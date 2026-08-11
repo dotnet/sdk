@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<EmbeddedResource Update="Resources.test-1.resx">
+			<Culture>test-1</Culture>
+		</EmbeddedResource>
+	</ItemGroup>
+
+  <ItemGroup>
+		<EmbeddedResource Update="Resources.test-2.resx">
+			<Culture>test-2</Culture>
+		</EmbeddedResource>
+	</ItemGroup>
+
+</Project>
