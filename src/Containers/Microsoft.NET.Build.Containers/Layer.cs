@@ -105,12 +105,6 @@ internal class Layer
             {
                 using (TarWriter writer = new(layerStream, TarEntryFormat.Pax, leaveOpen: true))
                 {
-                    void WriteEntry(PaxTarEntry entry)
-                    {
-                        layerStream.NormalizeNextHeader();
-                        writer.WriteEntry(entry);
-                    }
-
                     // Windows layers need a Files folder
                     if (isWindowsLayer)
                     {
@@ -118,11 +112,11 @@ internal class Layer
                         {
                             ModificationTime = entryModificationTime
                         };
-                        WriteEntry(entry);
+                        WriteEntry(writer, layerStream, entry);
                     }
 
                     // Write an entry for the application directory.
-                    WriteTarEntryForFile(WriteEntry, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId, entryModificationTime);
+                    WriteTarEntryForFile(writer, layerStream, new DirectoryInfo(directory), containerPath, entryAttributes, isWindowsLayer ? null : userId, entryModificationTime);
 
                     // Write entries for the application directory contents.
                     var fileList = new FileSystemEnumerable<(FileSystemInfo file, string containerPath)>(
@@ -147,7 +141,7 @@ internal class Layer
                     // the order of entries in the tar stream stable across machines and builds.
                     foreach (var item in fileList.OrderBy(static item => item.containerPath, StringComparer.Ordinal))
                     {
-                        WriteTarEntryForFile(WriteEntry, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId, entryModificationTime);
+                        WriteTarEntryForFile(writer, layerStream, item.file, item.containerPath, entryAttributes, isWindowsLayer ? null : userId, entryModificationTime);
                     }
 
                     // Windows layers need a Hives folder, we do not need to create any Registry Hive deltas inside
@@ -157,7 +151,7 @@ internal class Layer
                         {
                             ModificationTime = entryModificationTime
                         };
-                        WriteEntry(entry);
+                        WriteEntry(writer, layerStream, entry);
                     }
 
                 } // Dispose of the TarWriter before getting the hash so the final data get written to the tar stream
@@ -173,8 +167,14 @@ internal class Layer
             int bW = SHA256.HashData(fs, hash);
             Debug.Assert(bW == hash.Length);
 
+            static void WriteEntry(TarWriter writer, LayerTarGZipStream layerStream, PaxTarEntry entry)
+            {
+                layerStream.NormalizeNextHeader();
+                writer.WriteEntry(entry);
+            }
+
             // Writes a tar entry corresponding to the file system item.
-            static void WriteTarEntryForFile(Action<PaxTarEntry> writeEntry, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId, DateTimeOffset modificationTime)
+            static void WriteTarEntryForFile(TarWriter writer, LayerTarGZipStream layerStream, FileSystemInfo file, string containerPath, IEnumerable<KeyValuePair<string, string>> entryAttributes, int? userId, DateTimeOffset modificationTime)
             {
                 UnixFileMode mode = DetermineFileMode(file);
                 PaxTarEntry entry;
@@ -199,7 +199,7 @@ internal class Layer
                     entry.Uid = uid;
                 }
 
-                writeEntry(entry);
+                WriteEntry(writer, layerStream, entry);
 
                 if (entry.DataStream is not null)
                 {
