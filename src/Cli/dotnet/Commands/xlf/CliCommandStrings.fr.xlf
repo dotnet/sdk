@@ -2892,7 +2892,7 @@ Votre projet cible plusieurs frameworks. Spécifiez le framework à exécuter à
       </trans-unit>
       <trans-unit id="RunCommandWarningUnableToDetermineLoggerArguments">
         <source>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</source>
-        <target state="new">Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</target>
+        <target state="translated">Avertissement : impossible de déterminer quels arguments d’application sont apparus après « -- ». Tous les arguments d’application sont passés à l’application sans traiter spécialement les arguments d’enregistreur d’événements.</target>
         <note>{Locked="--"}</note>
       </trans-unit>
       <trans-unit id="RunConfigurationOptionDescription">
@@ -3880,12 +3880,12 @@ et les ID de package correspondants aux outils installés, utilisez la commande
       </trans-unit>
       <trans-unit id="WarningCsFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</source>
-        <target state="new">Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</target>
+        <target state="translated">Avertissement : « {0} » ressemble à une application basée sur un fichier, mais le fichier est introuvable et il a été traité en tant qu’argument MSBuild. Arguments non reconnus : {1}.</target>
         <note>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</note>
       </trans-unit>
       <trans-unit id="WarningFileArgumentPassedToMSBuild">
         <source>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</source>
-        <target state="new">Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</target>
+        <target state="translated">Avertissement : « {0} » semble être une application basée sur un fichier, mais a été traitée comme un argument MSBuild. Pour le traiter comme une application basée sur des fichiers, utilisez 'dotnet {1} {0}' et supprimez les arguments non pris en charge {2}.</target>
         <note>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</note>
       </trans-unit>
       <trans-unit id="WatchDefinition">
