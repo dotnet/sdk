@@ -204,6 +204,30 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.IsTrue(differences.All(difference => difference.DiagnosticId == DiagnosticIds.ExperimentalApiBecomesStable));
         }
 
+        [TestMethod]
+        public void AttributesRuleAloneReportsPromotion()
+        {
+            string leftSyntax = $$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public void Changed() { }
+                }
+                """;
+            string rightSyntax = "namespace CompatTests; public class Api { public void Changed() { } }";
+            TestRuleFactory ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context));
+            ApiComparer comparer = new(ruleFactory);
+
+            CompatDifference difference = Assert.ContainsSingle(comparer.GetDifferences(
+                SymbolFactory.GetAssemblyFromSyntax(leftSyntax),
+                SymbolFactory.GetAssemblyFromSyntax(rightSyntax)));
+
+            Assert.AreEqual(DiagnosticIds.ExperimentalApiBecomesStable, difference.DiagnosticId);
+            Assert.AreEqual("M:CompatTests.Api.Changed", difference.ReferenceId);
+            Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
+        }
+
         private static CompatDifference[] GetDifferences(string leftSyntax, string rightSyntax, bool strictMode = false, bool includeAttributesRule = false)
         {
             TestRuleFactory ruleFactory = new(

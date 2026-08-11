@@ -30,7 +30,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             IList<CompatDifference> differences) =>
             AddDifference(left, right, leftMetadata, rightMetadata, differences);
 
-        private static void AddDifference(ISymbol? left,
+        internal static void AddDifference(ISymbol? left,
             ISymbol? right,
             MetadataInformation leftMetadata,
             MetadataInformation rightMetadata,
