@@ -15,7 +15,8 @@ namespace Microsoft.DotNet.ApiCompatibility
     /// <param name="message"><see cref="string"/> message describing the difference.</param>
     /// <param name="type"><see cref="DifferenceType"/> to describe the type of the difference.</param>
     /// <param name="memberId"><see cref="string"/> containing the member ID for which the difference is associated to.</param>
-    public readonly struct CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity = DifferenceSeverity.Error) : IDiagnostic, IEquatable<CompatDifference>
+    /// <param name="severity">The severity of the compatibility difference.</param>
+    public readonly struct CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity) : IDiagnostic, IEquatable<CompatDifference>
     {
         /// <inheritdoc />
         public string DiagnosticId { get; } = diagnosticId;
@@ -49,6 +50,20 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// The right's metadata information.
         /// </summary>
         public MetadataInformation Right { get; } = right;
+
+        /// <summary>
+        /// Instantiate a new object representing the compatibility difference.
+        /// </summary>
+        /// <param name="left">The metadata information of the left comparison side.</param>
+        /// <param name="right">The metadata information of the right comparison side.</param>
+        /// <param name="diagnosticId"><see cref="string"/> representing the diagnostic ID.</param>
+        /// <param name="message"><see cref="string"/> message describing the difference.</param>
+        /// <param name="type"><see cref="DifferenceType"/> to describe the type of the difference.</param>
+        /// <param name="memberId"><see cref="string"/> containing the member ID for which the difference is associated to.</param>
+        public CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId)
+            : this(left, right, diagnosticId, message, type, memberId, DifferenceSeverity.Error)
+        {
+        }
 
         /// <summary>
         /// Instantiate a new object representing the compatibility difference.

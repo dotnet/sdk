@@ -21,9 +21,7 @@ namespace ApiCompatValidateAssembliesTestProject
 
         [System.Diagnostics.CodeAnalysis.Experimental("TEST002")]
         public string Promoted(string name) => $"Promoted hello, {name}!";
-#endif
-
-#if IncludeStablePromotedApi
+#elif IncludeStablePromotedApi
         public string Promoted(string name) => $"Promoted hello, {name}!";
 #endif
     }
