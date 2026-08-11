@@ -253,8 +253,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.get -> b
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GenerateDigestLabel.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.get -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPublishing.set -> void
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPushIfAlreadyPresent.get -> bool
-Microsoft.NET.Build.Containers.Tasks.CreateNewImage.SkipPushIfAlreadyPresent.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.NoCache.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.NoCache.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.GeneratedContainerNames.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ImageFormat.get -> string?

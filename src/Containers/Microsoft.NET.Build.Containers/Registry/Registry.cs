@@ -595,17 +595,17 @@ internal sealed class Registry
     }
 
     public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, CancellationToken cancellationToken)
-        => PushAsync(builtImage, source, destination, skipIfManifestExists: false, cancellationToken);
+        => PushAsync(builtImage, source, destination, noCache: false, cancellationToken);
 
-    public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool skipIfManifestExists, CancellationToken cancellationToken)
-        => PushAsync(builtImage, source, destination, pushTags: true, skipIfManifestExists, cancellationToken);
+    public Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool noCache, CancellationToken cancellationToken)
+        => PushAsync(builtImage, source, destination, pushTags: true, noCache, cancellationToken);
 
-    private async Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool pushTags, bool skipIfManifestExists, CancellationToken cancellationToken)
+    private async Task PushAsync(BuiltImage builtImage, SourceImageReference source, DestinationImageReference destination, bool pushTags, bool noCache, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         Registry destinationRegistry = destination.RemoteRegistry!;
 
-        bool manifestExists = skipIfManifestExists &&
+        bool manifestExists = !noCache &&
             await _registryAPI.Manifest.ExistsAsync(destination.Repository, builtImage.ManifestDigest, cancellationToken).ConfigureAwait(false);
 
         if (manifestExists)
