@@ -237,10 +237,6 @@ T/dotnetup.exe       <- throwaway replacer
 
 **2.6 — `R` takes ownership of `U`.** `R` acquires `U` exclusively, then writes the ready message to the inherited pipe handle. If `R` cannot acquire `U` within `X_R`, `R` reports failure and exits without modifying any executable.
 
-The handoff pipe is anonymous, so the identity of `R` is structural rather than checked: there is no pipe name for another process to connect to, and the client handle value is meaningful only inside the process that inherited it. A replacer left behind by an earlier, crashed transaction therefore cannot satisfy the handoff of the current transaction. No handoff token is required, and a token would be weaker — a token passed on the command line of `R` is readable by any process that can enumerate command lines.
-
-Authenticating `R` more strongly is not meaningful. `D/` is writable by the current user, so any process already running as that user can replace `D/dotnetup.exe` directly instead of impersonating `R`.
-
 **2.7 — `P` completes the handoff.** On a valid heartbeat, `P` releases `A` and exits. Because `P` holds `A` until `R` confirms ownership of `U`, at least one of `A` and `U` is held continuously across the handoff. If `P` does not receive the heartbeat within `X_R`, `P` fails with `DotnetupReplacerCommunicationFailure` and attempts to kill `R`.
 
 **2.8 — `R` replaces the executable.** `R` renames `D/dotnetup.exe` to `D/dotnetup.exe.old.<t>` first, which confirms that `P` exited and that no process restarted `D/dotnetup.exe`. `R` then renames `D/dotnetup.exe.new` to `D/dotnetup.exe`. Windows permits renaming an executable that is in use. One consequence is that any dotnetup process started after step 2.8 resolves the replacement image when spawning child processes or loading external assets, including the short-term telemetry drainer.
@@ -266,27 +262,6 @@ A dependent application — a long-running VS Code window, for example — may h
 `FileStream` lock ownership is handle-based rather than thread-affine, so `A` and `U` may be held across an `await` and the entire transaction, download included, may be asynchronous. This is why `P` does not use the thread-affine `ScopedMutex`.
 
 After a crash, `pkill`, or power loss at any step, running the get-dotnetup scripts restores `D/dotnetup.exe` at the canonical location.
-
-#### Locking Rationale
-
-**Why two lock files instead of a mutex such as `ModifyInstallationStates`.**
-A named mutex has exactly one owner, so it cannot represent "N `non-safe` processes are alive"; holding it proves only that nobody is inside a critical section at that instant, which does not cover a `dotnetup sdk install` that is downloading an archive. It also has no fail-if-held semantics, so a contending process blocks rather than reacting, and it is thread-affine, so it cannot be held across an `await`. Handle-based `FileShare` locks give all three properties, and the OS closes the handles if a process is killed, so there is no abandoned-state ambiguity to reason about.
-
-**Why a `non-safe` process takes the activity lock first.**
- Mutual exclusion requires that a `non-safe` process, once it has passed its update check, never reaches an instant where it holds neither lock. Retaining the activity lock and then probing the update lock satisfies this. Probing the update lock, releasing it, and only then acquiring the activity lock does not: an updater can acquire both inside that gap, and both sides pass their checks.
-
-Acquiring the update lock, acquiring the activity lock while still holding it, and then releasing the update lock is also correct, but it lets a newly launched `non-safe` process hold the update lock during the parent-to-replacer handoff, where it can knock over the replacer's exclusive acquire — the single most safety-critical open in the design. It also closes a three-party cycle once the `non-safe` side waits rather than fails: the newcomer holds the update lock and waits on the activity lock, the parent holds the activity lock and waits on the replacer, and the replacer waits on the update lock.
-
-**Why `self update` takes them in the reverse order.**
-The opposite ordering is what makes the pair of checks race-free: each side retains its own lock before testing the other's, so neither can slip through a gap in the other's sequence. It is also why `self update` has no reason to open the activity lock shared first — a shared open succeeds while any number of `non-safe` processes hold it shared, so it would answer nothing. Only the exclusive open establishes that no `non-safe` process is running.
-
-**Why nobody waits for one lock while holding the other.** Because `non-safe` processes wait rather than fail, hold-and-wait during acquisition would produce a two-party cycle regardless of ordering: the gate would hold the shared activity lock while waiting on the update lock, and the `self update` parent would hold the exclusive update lock while waiting on the activity lock. Releasing everything between retry attempts removes that edge. The handoff is the only place a participant waits while holding, and rule 1 is what keeps it from closing a cycle.
-
-**Why the update lock stays updater-only.** Contention on the update lock means a peer `self update`, which must be waited out and never failed. Contention on the activity lock means a `non-safe` process, which is waited on briefly and then failed. If `non-safe` processes retained the update lock instead of probing it, those two cases would be indistinguishable and the required policies could not both be honored.
-
-**Why forwarding instead of resuming.** A process that waited at the gate is still executing the old image. Resuming would run pre-update code against post-update state — for example a manifest written in a format the old code does not understand. Forwarding is only legal at the gate precisely because nothing has been mutated and nothing has been written to the console yet.
-
-**Why `FileShare.Delete` is never requested.** A lock file that can be deleted while it is open allows a second process to create a new file at the same path, at which point two processes each hold "exclusive" access to different files. The lock files are permanent fixtures; leaving them behind costs nothing. For the same reason the locks are files under the per-user `D/` rather than `Global\` named objects, which another session can squat.
 
 #### Comparisons
 
@@ -326,6 +301,27 @@ DotnetArchiveDownloader in V1 (preview) can use `ResolveBlobFeedEntry` and use t
 
 ResolveManifestEntry will resolve an index of dotnetup releases similar to the .NET release manifest.
 The manifest will be signed just like the .NET artifacts manifests, with a detached signature, which will be downloaded as well and be used to validate dotnetup's own executable. We could only have an index but supporting multiple versions or allowing a downgrade/revert will only be possible if we maintain separate indexes. Whether we have a `daily` `preview` `stable` keyed index or a `major.minor` keyed index is not part of this spec.
+
+#### Locking Rationale
+
+**Why two lock files instead of a mutex such as `ModifyInstallationStates`.**
+A named mutex has exactly one owner, so it cannot represent "N `non-safe` processes are alive"; holding it proves only that nobody is inside a critical section at that instant, which does not cover a `dotnetup sdk install` that is downloading an archive. It also has no fail-if-held semantics, so a contending process blocks rather than reacting, and it is thread-affine, so it cannot be held across an `await`. Handle-based `FileShare` locks give all three properties, and the OS closes the handles if a process is killed, so there is no abandoned-state ambiguity to reason about.
+
+**Why a `non-safe` process takes the activity lock first.**
+ Mutual exclusion requires that a `non-safe` process, once it has passed its update check, never reaches an instant where it holds neither lock. Retaining the activity lock and then probing the update lock satisfies this. Probing the update lock, releasing it, and only then acquiring the activity lock does not: an updater can acquire both inside that gap, and both sides pass their checks.
+
+Acquiring the update lock, acquiring the activity lock while still holding it, and then releasing the update lock is also correct, but it lets a newly launched `non-safe` process hold the update lock during the parent-to-replacer handoff, where it can knock over the replacer's exclusive acquire — the single most safety-critical open in the design. It also closes a three-party cycle once the `non-safe` side waits rather than fails: the newcomer holds the update lock and waits on the activity lock, the parent holds the activity lock and waits on the replacer, and the replacer waits on the update lock.
+
+**Why `self update` takes them in the reverse order.**
+The opposite ordering is what makes the pair of checks race-free: each side retains its own lock before testing the other's, so neither can slip through a gap in the other's sequence. It is also why `self update` has no reason to open the activity lock shared first — a shared open succeeds while any number of `non-safe` processes hold it shared, so it would answer nothing. Only the exclusive open establishes that no `non-safe` process is running.
+
+**Why nobody waits for one lock while holding the other.** Because `non-safe` processes wait rather than fail, hold-and-wait during acquisition would produce a two-party cycle regardless of ordering: the gate would hold the shared activity lock while waiting on the update lock, and the `self update` parent would hold the exclusive update lock while waiting on the activity lock. Releasing everything between retry attempts removes that edge. The handoff is the only place a participant waits while holding, and rule 1 is what keeps it from closing a cycle.
+
+**Why the update lock stays updater-only.** Contention on the update lock means a peer `self update`, which must be waited out and never failed. Contention on the activity lock means a `non-safe` process, which is waited on briefly and then failed. If `non-safe` processes retained the update lock instead of probing it, those two cases would be indistinguishable and the required policies could not both be honored.
+
+**Why forwarding instead of resuming.** A process that waited at the gate is still executing the old image. Resuming would run pre-update code against post-update state — for example a manifest written in a format the old code does not understand. Forwarding is only legal at the gate precisely because nothing has been mutated and nothing has been written to the console yet.
+
+**Why `FileShare.Delete` is never requested.** A lock file that can be deleted while it is open allows a second process to create a new file at the same path, at which point two processes each hold "exclusive" access to different files. The lock files are permanent fixtures; leaving them behind costs nothing. For the same reason the locks are files under the per-user `D/` rather than `Global\` named objects, which another session can squat.
 
 
 # Alternatives Considered:
