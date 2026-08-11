@@ -91,11 +91,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                     throw new ArgumentOutOfRangeException(nameof(mapper));
                 }
 
-                for (int differenceIndex = initialDifferenceCount; differenceIndex < differences.Count; differenceIndex++)
+                if (initialDifferenceCount < differences.Count)
                 {
-                    differences[differenceIndex] = differences[differenceIndex].WithStabilities(
-                        leftSymbol is null ? null : ApiStabilityClassifier.Classify(leftSymbol),
-                        rightSymbol is null ? null : ApiStabilityClassifier.Classify(rightSymbol));
+                    ApiStability? leftStability = leftSymbol is null ? null : ApiStabilityClassifier.Classify(leftSymbol);
+                    ApiStability? rightStability = rightSymbol is null ? null : ApiStabilityClassifier.Classify(rightSymbol);
+
+                    for (int differenceIndex = initialDifferenceCount; differenceIndex < differences.Count; differenceIndex++)
+                    {
+                        differences[differenceIndex] = differences[differenceIndex].WithStabilities(leftStability, rightStability);
+                    }
                 }
             }
 
