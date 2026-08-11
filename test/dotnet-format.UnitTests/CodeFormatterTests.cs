@@ -23,6 +23,10 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         private static readonly string s_unformattedProgramFilePath = Path.Combine(s_unformattedProjectPath, "program.cs");
         private static readonly string s_unformattedSolutionFilePath = Path.Combine("for_code_formatter", "unformatted_solution", "unformatted_solution.sln");
 
+        private static readonly string s_fileBasedAppsDirectoryPath = Path.Combine("for_code_formatter", "file_based_app");
+        private static readonly string s_formattedFileBasedAppPath = Path.Combine(s_fileBasedAppsDirectoryPath, "formatted.cs");
+        private static readonly string s_unformattedFileBasedAppPath = Path.Combine(s_fileBasedAppsDirectoryPath, "unformatted.cs");
+
         private static readonly string s_fSharpProjectPath = Path.Combine("for_code_formatter", "fsharp_project");
         private static readonly string s_fSharpProjectFilePath = Path.Combine(s_fSharpProjectPath, "fsharp_project.fsproj");
 
@@ -81,6 +85,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
         }
 
         [TestMethod]
+        public async Task NoFilesFormattedInFormattedFileBasedApp()
+        {
+            await TestFormatWorkspaceAsync(
+                s_formattedFileBasedAppPath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 0,
+                expectedFileCount: 4);
+        }
+
+        [TestMethod]
         public async Task FilesFormattedInUnformattedProject()
         {
             await TestFormatWorkspaceAsync(
@@ -91,6 +108,19 @@ namespace Microsoft.CodeAnalysis.Tools.Tests
                 expectedExitCode: 0,
                 expectedFilesFormatted: 2,
                 expectedFileCount: 6);
+        }
+
+        [TestMethod]
+        public async Task FilesFormattedInUnformattedFileBasedApp()
+        {
+            await TestFormatWorkspaceAsync(
+                s_unformattedFileBasedAppPath,
+                include: EmptyFilesList,
+                exclude: EmptyFilesList,
+                includeGenerated: false,
+                expectedExitCode: 0,
+                expectedFilesFormatted: 1,
+                expectedFileCount: 4);
         }
 
         [TestMethod]
@@ -705,7 +735,7 @@ Greeter.Greeter() -> void";
             }
             else
             {
-                workspaceType = workspacePath.EndsWith("proj")
+                workspaceType = workspacePath.EndsWith("proj") || workspacePath.EndsWith(".cs")
                     ? WorkspaceType.Project
                     : WorkspaceType.Solution;
             }

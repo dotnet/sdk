@@ -22,6 +22,7 @@ namespace Microsoft.DotNet.Cli.Commands.Test;
 internal sealed class TestResultsDirectoryResolver
 {
     private const string DefaultResultsDirectoryName = "TestResults";
+    private const string ArtifactsTestDirectoryName = "test";
     private const string UnknownComponent = "unknown";
     private const int MaxPathComponentLength = 255;
 
@@ -32,31 +33,44 @@ internal sealed class TestResultsDirectoryResolver
     private readonly string _workingDirectory;
     private readonly string _identityRoot;
     private readonly HashSet<string> _ambiguousProjectNames;
+    private readonly bool _shared;
 
-    private TestResultsDirectoryResolver(PathOptions pathOptions, string workingDirectory, string identityRoot, HashSet<string> ambiguousProjectNames)
+    private TestResultsDirectoryResolver(
+        PathOptions pathOptions,
+        string workingDirectory,
+        string identityRoot,
+        HashSet<string> ambiguousProjectNames,
+        bool shared = false)
     {
         _pathOptions = pathOptions;
         _workingDirectory = workingDirectory;
         _identityRoot = identityRoot;
         _ambiguousProjectNames = ambiguousProjectNames;
+        _shared = shared;
     }
 
     public static TestResultsDirectoryResolver Create(PathOptions pathOptions, IEnumerable<TestModule> modules, string workingDirectory)
     {
-        if (pathOptions.ResultsDirectoryLayout == ResultsDirectoryLayout.Flat)
+        List<TestModule> materializedModules = [.. modules];
+        List<TestModule> perModuleLayoutModules =
+        [
+            .. materializedModules.Where(module => GetResultsDirectoryLayout(pathOptions, module) == ResultsDirectoryLayout.PerModule)
+        ];
+
+        if (perModuleLayoutModules.Count == 0)
         {
             return new TestResultsDirectoryResolver(pathOptions, workingDirectory, workingDirectory, []);
         }
+
         // Anchor identities to the directory shared by every module rather than the current
         // directory, so the same solution produces the same folder names no matter where
         // 'dotnet test' was invoked from.
-        List<TestModule> materializedModules = [.. modules];
-        string identityRoot = GetCommonRootDirectory(materializedModules, workingDirectory);
+        string identityRoot = GetCommonRootDirectory(perModuleLayoutModules, workingDirectory);
 
         Dictionary<string, HashSet<string>> identitiesByProjectName = new(StringComparer.OrdinalIgnoreCase);
-        foreach (TestModule module in materializedModules)
+        foreach (TestModule module in perModuleLayoutModules)
         {
-            string projectName = GetProjectName(module);
+            string projectName = GetProjectName(module, UsesArtifactsOutputDefaults(pathOptions, module));
             if (!identitiesByProjectName.TryGetValue(projectName, out HashSet<string>? identities))
             {
                 identities = new HashSet<string>(StringComparer.Ordinal);
@@ -79,33 +93,61 @@ internal sealed class TestResultsDirectoryResolver
     }
 
     /// <summary>
-    /// A resolver that always yields the configured results directory, whatever the requested
-    /// layout. Used by internal invocations such as artifact post-processing, which merge results
-    /// across modules and so must not be scoped to a single module's directory.
+    /// A resolver that always yields the run-level results directory root, whatever the requested
+    /// layout. The root can come from an explicit results directory, artifacts output, or the
+    /// default results directory. Used by internal invocations such as artifact post-processing,
+    /// which merge results across modules and so must not be scoped to a single module's directory.
     /// </summary>
     public static TestResultsDirectoryResolver CreateShared(PathOptions pathOptions, string workingDirectory)
-        => new(pathOptions with { ResultsDirectoryLayout = ResultsDirectoryLayout.Flat }, workingDirectory, workingDirectory, []);
+        => new(pathOptions, workingDirectory, workingDirectory, [], shared: true);
 
     public string? Resolve(TestModule module)
     {
-        if (_pathOptions.ResultsDirectoryLayout == ResultsDirectoryLayout.Flat)
+        string? resultsDirectory = GetResultsDirectoryRoot(_pathOptions, module, _workingDirectory);
+        if (_shared || GetResultsDirectoryLayout(_pathOptions, module) == ResultsDirectoryLayout.Flat)
         {
-            return _pathOptions.ResultsDirectoryPath;
+            return resultsDirectory;
         }
 
-        string resultsDirectory = _pathOptions.ResultsDirectoryPath
-            ?? Path.Combine(_workingDirectory, DefaultResultsDirectoryName);
-
+        string resultsRoot = resultsDirectory!;
         string resolved = Path.GetFullPath(
-            Path.Combine(resultsDirectory, GetProjectDirectoryName(module), GetPivotDirectoryName(module)));
+            Path.Combine(resultsRoot, GetProjectDirectoryName(module), GetPivotDirectoryName(module)));
 
         // Sanitization strips separators and dot-only components, so a module can never steer its
         // results out of the requested root. Asserted rather than thrown because it is unreachable
         // by design and only a future change to the component rules could break it.
-        Debug.Assert(IsUnderRoot(resolved, resultsDirectory), $"'{resolved}' escaped the results directory '{resultsDirectory}'.");
+        Debug.Assert(IsUnderRoot(resolved, resultsRoot), $"'{resolved}' escaped the results directory '{resultsRoot}'.");
 
         return resolved;
     }
+
+    internal static string? GetResultsDirectoryRoot(PathOptions pathOptions, TestModule module, string workingDirectory)
+    {
+        if (pathOptions.ResultsDirectoryPath is { } configuredResultsDirectory)
+        {
+            return configuredResultsDirectory;
+        }
+
+        if (module.UseArtifactsOutput && module.ArtifactsPath is { } artifactsPath)
+        {
+            return Path.Combine(artifactsPath, ArtifactsTestDirectoryName);
+        }
+
+        return GetResultsDirectoryLayout(pathOptions, module) == ResultsDirectoryLayout.PerModule
+            ? Path.Combine(workingDirectory, DefaultResultsDirectoryName)
+            : null;
+    }
+
+    private static ResultsDirectoryLayout GetResultsDirectoryLayout(PathOptions pathOptions, TestModule module)
+        => UsesArtifactsOutputDefaults(pathOptions, module)
+            ? ResultsDirectoryLayout.PerModule
+            : pathOptions.ResultsDirectoryLayout;
+
+    private static bool UsesArtifactsOutputDefaults(PathOptions pathOptions, TestModule module)
+        => !pathOptions.ResultsDirectoryLayoutSpecified
+            && pathOptions.ResultsDirectoryPath is null
+            && module.UseArtifactsOutput
+            && module.ArtifactsPath is not null;
 
     private static bool IsUnderRoot(string candidate, string root)
     {
@@ -180,7 +222,7 @@ internal sealed class TestResultsDirectoryResolver
     /// </summary>
     private string GetProjectDirectoryName(TestModule module)
     {
-        string projectName = GetProjectName(module);
+        string projectName = GetProjectName(module, UsesArtifactsOutputDefaults(_pathOptions, module));
 
         return LimitComponentLength(_ambiguousProjectNames.Contains(projectName)
             ? $"{projectName}_{GetShortHash(GetProjectIdentity(module, _identityRoot))}"
@@ -188,13 +230,19 @@ internal sealed class TestResultsDirectoryResolver
     }
 
     /// <summary>
-    /// The pivot folder distinguishing runs of the same project across target frameworks and
-    /// runtimes. Multiple elements are joined by an underscore, following the artifacts layout.
-    /// The configuration is deliberately not part of the pivot: a single test run targets one
-    /// configuration, so it would only ever add a constant level to every path.
+    /// The pivot folder distinguishing runs of the same project. Artifacts output reuses the
+    /// evaluated <c>ArtifactsPivots</c>, including configuration and any applicable target framework
+    /// or runtime identifier. An explicitly requested per-module layout instead uses target
+    /// framework and runtime or architecture.
     /// </summary>
-    private static string GetPivotDirectoryName(TestModule module)
+    private string GetPivotDirectoryName(TestModule module)
     {
+        if (UsesArtifactsOutputDefaults(_pathOptions, module)
+            && !string.IsNullOrEmpty(module.ArtifactsPivots))
+        {
+            return LimitComponentLength(SanitizePathComponent(module.ArtifactsPivots).ToLowerInvariant());
+        }
+
         string targetFramework = SanitizePathComponent(module.TargetFramework);
         string runtime = SanitizePathComponent(GetRuntimeComponent(module));
 
@@ -216,11 +264,13 @@ internal sealed class TestResultsDirectoryResolver
         return GetTargetArchitecture(module).ToString();
     }
 
-    private static string GetProjectName(TestModule module)
+    private static string GetProjectName(TestModule module, bool useArtifactsOutputDefaults)
     {
-        string? projectName = string.IsNullOrEmpty(module.ProjectFullPath)
-            ? Path.GetFileNameWithoutExtension(module.TargetPath)
-            : Path.GetFileNameWithoutExtension(module.ProjectFullPath);
+        string? projectName = useArtifactsOutputDefaults && !string.IsNullOrEmpty(module.ArtifactsProjectName)
+            ? module.ArtifactsProjectName
+            : string.IsNullOrEmpty(module.ProjectFullPath)
+                ? Path.GetFileNameWithoutExtension(module.TargetPath)
+                : Path.GetFileNameWithoutExtension(module.ProjectFullPath);
 
         return SanitizePathComponent(projectName);
     }

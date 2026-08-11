@@ -171,9 +171,9 @@ sealed class VirtualProjectBuilder
         return Path.Combine(GetTempSubdirectory(dotNetSubdirectory), name);
     }
 
-    public static bool IsValidEntryPointPath(string entryPointFilePath)
+    public static bool IsValidEntryPointPath(string entryPointFilePath, bool requireFileToExist = true)
     {
-        if (!File.Exists(entryPointFilePath))
+        if (requireFileToExist && !File.Exists(entryPointFilePath))
         {
             return false;
         }
@@ -181,6 +181,12 @@ sealed class VirtualProjectBuilder
         if (entryPointFilePath.EndsWith(".cs", StringComparison.OrdinalIgnoreCase))
         {
             return true;
+        }
+
+        // If we haven't checked file existence yet, do it before opening the file.
+        if (!requireFileToExist && !File.Exists(entryPointFilePath))
+        {
+            return false;
         }
 
         // Check if the first two characters are #!
