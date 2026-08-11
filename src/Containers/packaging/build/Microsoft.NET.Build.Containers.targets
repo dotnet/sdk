@@ -145,21 +145,10 @@
       <ContainerVersion Condition="'$(ContainerVersion)' == '' and '$(PackageVersion)' != ''">$(PackageVersion)</ContainerVersion>
       <ContainerLicenseExpression Condition="'$(ContainerLicenseExpression)' == '' and '$(PackageLicenseExpression)' != ''">$(PackageLicenseExpression)</ContainerLicenseExpression>
       <ContainerTitle Condition="'$(ContainerTitle)' == '' and '$(Title)' != ''">$(Title)</ContainerTitle>
-      <!-- SOURCE_DATE_EPOCH (https://reproducible-builds.org/docs/source-date-epoch/) pins the creation
-           label so that rebuilding the same source produces the same image. -->
-      <_ContainerSourceDateEpoch>$([System.Environment]::GetEnvironmentVariable('SOURCE_DATE_EPOCH'))</_ContainerSourceDateEpoch>
-      <!-- A value that is not a non-negative integer is ignored rather than failing the build, matching
-           the specification and the behavior of the tasks. The digit count is bounded because
-           DateTimeOffset.FromUnixTimeSeconds throws for values outside its supported range; 11 digits is
-           comfortably inside it (the maximum it accepts is 253402300799). -->
-      <_ContainerSourceDateEpoch Condition="'$(_ContainerSourceDateEpoch)' != '' and !$([System.Text.RegularExpressions.Regex]::IsMatch('$(_ContainerSourceDateEpoch)', '^[0-9]{1,11}$'))"></_ContainerSourceDateEpoch>
-      <_ContainerImageCreated Condition="'$(_ContainerSourceDateEpoch)' == ''">$([System.DateTime]::UtcNow.ToString('o'))</_ContainerImageCreated>
-      <_ContainerImageCreated Condition="'$(_ContainerSourceDateEpoch)' != ''">$([System.DateTimeOffset]::FromUnixTimeSeconds($(_ContainerSourceDateEpoch)).UtcDateTime.ToString('o'))</_ContainerImageCreated>
     </PropertyGroup>
 
     <!-- Labels generated from descriptions from the spec at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
     <ItemGroup Label="Conventional Label assignment" Condition="'$(ContainerGenerateLabels)' == 'true'">
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageCreated)' == 'true'" Include="org.opencontainers.image.created;org.opencontainers.artifact.created" Value="$(_ContainerImageCreated)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.artifact.description;org.opencontainers.image.description" Value="$(ContainerDescription)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageAuthors)' == 'true' and '$(ContainerAuthors)' != ''" Include="org.opencontainers.image.authors" Value="$(ContainerAuthors)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageUrl)' == 'true' and '$(ContainerInformationUrl)' != ''" Include="org.opencontainers.image.url" Value="$(ContainerInformationUrl)" />
@@ -285,9 +274,11 @@
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
+                    SourceDateEpoch="$(SOURCE_DATE_EPOCH)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
                     SkipPublishing="$(_SkipContainerPublishing)"
                     GenerateLabels="$(ContainerGenerateLabels)"
+                    GenerateCreatedLabels="$(ContainerGenerateLabelsImageCreated)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
@@ -342,6 +333,7 @@
           _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerGenerateLabels=$(ContainerGenerateLabels);
+          ContainerGenerateLabelsImageCreated=$(ContainerGenerateLabelsImageCreated);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
           _SkipContainerPublishing=$(_SkipContainerPublishing);
           ContainerImageFormat=$(_SingleImageContainerFormat);
