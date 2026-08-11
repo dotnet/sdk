@@ -1,27 +1,34 @@
 # Add `Self Update` Command
 
-`dotnetup self update` command - public facing command that updates `dotnetup` itself
-matches `dotnetup sdk update` nomenclature
-`dotnetup update` already updates all of the installs managed by dotnetup. We can consider making it also self update dotnetup later.
+`dotnetup self update` updates `dotnetup` itself.
+
+The update should be in-place and appear to happen seamlessly from the perspective of a CLI.
+
+`dotnetup update` already updates all of the installs managed by dotnetup. Using `self update` as the key noun matches `dotnetup sdk update` nomenclature. `dotnetup update` will continue to update only the .NET SDK and .NET Runtime installs.
 
 # Trade-offs
 
-On Windows, applications can pick:
+On Windows, `dotnetup` can pick one approach:
 
-1. To require reboot to update/replace; simplifying logic as other executables cannot be running.
+1. To require a reboot to update & replace. This  simplifies logic as it reduces contention complexity with other running executables and programs. It also provides stronger crash recovery guarantees.
 
-2. To provide stronger crash recovery by waiting for every running instance to exit and atomically replacing the executable with a backup. Atomic replacement prevents a partially copied canonical executable, but strict power-loss durability also depends on filesystem guarantees.
+2. To require that no `dotnetup` executable is running during the update process. This likewise provides stronger crash recovery by waiting for every running instance to exit as `dotnetup` can atomically replace its own executable with a backup. Atomic replacement prevents a partially copied executable, but strict pkill/power-loss durability depends on filesystem guarantees.
 
-3. To accept the risk of the app no longer existing in the event of an outage/crash mid-update, but to allow other executables to run simultaneously at the time of update; to enable this, the executable is `renamed`. Open executable behaviors may change based on the updated executable or fail if they don`t consider proper caching.
+3. To allow other `dotnetup` processes to run at the same time of `update` and accept the risk of the app no longer existing in the event of an outage/crash mid-update. Users can still use scripts to re-acquire `dotnetup`. To enable this, the executable is `renamed` while it is open. Existing executable behaviors may change based on the updated executable or fail if they don`t leverage proper caching of values dependent on the original executable.
 
 For `dotnetup`, `3` is the best selection.
 
-For `1`, requiring a reboot would interrupt developers, and dotnetup is not that integral to the system.
+For `1`, requiring a reboot would interrupt developers, and dotnetup is a developer tool; a reboot-style approach is best served for system level applications or applications managed by IT.
+
 For `2`, Aspire CLI and RustUp also don't have crash/power outage safe update behavior. With the current telemetry drainer, this also complicates the process structure to `Replace` as a copy process is needed. `dotnetup` is easily and quickly re-installed if this occurs.
 
-Another design contention is whether to have mutex or inter-process (i.e. several process) aware logic for when multiple updates are attempted at once.
+#### Concurrency Trade-Offs
 
-`Aspire` and `rustup` are not concurrency safe during update procedures. We argue that `dotnetup` should be, as IDEs or other tools that want to have attended upgrades may clobber or compete to update `dotnetup` at the same time, such as several VS Code extensions, or a window of VS Code and VS Code insiders. `dotnetup` should also allow multiple callers to invoke it at the same time to configure/install runtimes, so it must not run an exclusive lock on itself at all times.
+Another contention is whether to have mutex or inter-process (i.e. several process) aware logic; should `dotnetup` gracefully succeed when multiple updates are attempted at once or simply reject the premise and fail?
+
+`Aspire` and `rustup` are not concurrency safe during update procedures but they also do not block such an action explicitly.
+
+`dotnetup` should be concurrency safe. IDEs or other tools that want to have unattended upgrades may clobber or compete to update `dotnetup` at the same time. This might be several VS Code extensions, or a window of VS Code and VS Code insiders. `dotnetup` should also allow multiple callers to invoke it at the same time to configure/install runtimes, so it should not run an exclusive lock on itself at all times as this would delay progress and other apps unnecessarily.
 
 # Self Update Broad Approach
 
