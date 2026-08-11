@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                     {
                         if (difference.Severity == DifferenceSeverity.Informational)
                         {
-                            log.LogMessage(MessageImportance.Normal, difference.ToString());
+                            log.LogMessage(MessageImportance.Normal, $"info {difference.DiagnosticId}: {difference.Message}");
                             continue;
                         }
 

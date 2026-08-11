@@ -79,7 +79,8 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
 
             result.Should().Pass();
             string output = result.StdOut + result.StdErr;
-            output.Should().Contain("CP0002")
+            output.Should().Contain("info CP0002")
+                .And.NotContain("error CP0002")
                 .And.Contain("ExperimentalRemoved");
         }
 
