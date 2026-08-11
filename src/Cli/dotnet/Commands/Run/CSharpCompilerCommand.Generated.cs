@@ -49,7 +49,7 @@ partial class CSharpCompilerCommand
             $"{objDir}/{FileName}.GlobalUsings.g.cs",
             $"{objDir}/.NETCoreApp,Version=v{TargetFrameworkVersion}.AssemblyAttributes.cs",
             $"{objDir}/{FileName}.AssemblyInfo.cs",
-            "/warnaserror+:NU1605,SYSLIB0011",
+            "/warnaserror+:SYSLIB0011",
         ];
     }
 
