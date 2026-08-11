@@ -49,7 +49,7 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void It_should_publish_self_contained_for_2x()
         {
             var tfm = "netcoreapp2.2";

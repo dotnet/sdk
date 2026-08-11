@@ -26,6 +26,11 @@ namespace Microsoft.NET.Publish.Tests
         [InlineData("false", ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_with_or_without_apphost(string useAppHost, string targetFramework)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            {
+                return;
+            }
+
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             var appHostName = $"{TestProjectName}{Constants.ExeSuffix}";
 
