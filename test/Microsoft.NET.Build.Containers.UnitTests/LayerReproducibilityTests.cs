@@ -32,8 +32,8 @@ public class LayerReproducibilityTests
         string second = CreateContentDirectory();
         File.SetLastWriteTimeUtc(Path.Combine(second, "app.dll"), new DateTime(2001, 2, 3, 4, 5, 6, DateTimeKind.Utc));
 
-        Layer firstLayer = Layer.FromDirectory(first, "/app", false, ManifestMediaType, modificationTime: ReproducibleTimestamp);
-        Layer secondLayer = Layer.FromDirectory(second, "/app", false, ManifestMediaType, modificationTime: ReproducibleTimestamp);
+        Layer firstLayer = Layer.FromDirectory(first, "/app", false, ManifestMediaType, userId: null, modificationTime: ReproducibleTimestamp);
+        Layer secondLayer = Layer.FromDirectory(second, "/app", false, ManifestMediaType, userId: null, modificationTime: ReproducibleTimestamp);
 
         Assert.AreEqual(firstLayer.Descriptor.Digest, secondLayer.Descriptor.Digest);
         Assert.AreEqual(firstLayer.Descriptor.Size, secondLayer.Descriptor.Size);
@@ -58,8 +58,8 @@ public class LayerReproducibilityTests
         File.WriteAllText(Path.Combine(second, "app.dll"), "some different content");
 
         Assert.AreNotEqual(
-            Layer.FromDirectory(first, "/app", false, ManifestMediaType, modificationTime: ReproducibleTimestamp).Descriptor.Digest,
-            Layer.FromDirectory(second, "/app", false, ManifestMediaType, modificationTime: ReproducibleTimestamp).Descriptor.Digest);
+            Layer.FromDirectory(first, "/app", false, ManifestMediaType, userId: null, modificationTime: ReproducibleTimestamp).Descriptor.Digest,
+            Layer.FromDirectory(second, "/app", false, ManifestMediaType, userId: null, modificationTime: ReproducibleTimestamp).Descriptor.Digest);
     }
 
     [TestMethod]
@@ -70,6 +70,7 @@ public class LayerReproducibilityTests
             "/app",
             false,
             ManifestMediaType,
+            userId: null,
             modificationTime: ReproducibleTimestamp);
 
         using FileStream compressed = File.OpenRead(layer.BackingFile);
@@ -102,6 +103,7 @@ public class LayerReproducibilityTests
             "/app",
             false,
             ManifestMediaType,
+            userId: null,
             modificationTime: ReproducibleTimestamp);
 
         using FileStream compressed = File.OpenRead(layer.BackingFile);

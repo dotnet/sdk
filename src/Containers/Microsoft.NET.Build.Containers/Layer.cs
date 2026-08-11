@@ -60,8 +60,8 @@ internal class Layer
         string containerPath,
         bool isWindowsLayer,
         string manifestMediaType,
-        int? userId = null,
-        DateTimeOffset? modificationTime = null)
+        int? userId,
+        DateTimeOffset? modificationTime)
     {
         DateTimeOffset entryModificationTime = modificationTime ?? DateTimeOffset.UtcNow;
         long fileSize;
