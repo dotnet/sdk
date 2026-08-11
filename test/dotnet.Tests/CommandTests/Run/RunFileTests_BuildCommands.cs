@@ -946,6 +946,33 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
         new DirectoryInfo(Path.Join(testInstance.Path, "bin")).Should().NotExist();
     }
 
+    [TestMethod]
+    public void ArtifactsPath_IsAddedAsSourceRoot()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        var sourceRootsPath = Path.Join(testInstance.Path, "source-roots.txt");
+        File.WriteAllText(programPath, s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="_WriteSourceRoots" BeforeTargets="CoreCompile">
+                <WriteLinesToFile File="$(MSBuildThisFileDirectory)source-roots.txt"
+                                  Lines="@(SourceRoot)"
+                                  Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "build", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        var expectedSourceRoot = VirtualProjectBuilder.GetArtifactsPath(programPath) + Path.DirectorySeparatorChar;
+        File.ReadAllLines(sourceRootsPath).Should().Contain(
+            sourceRoot => sourceRoot.Equals(expectedSourceRoot, StringComparison.OrdinalIgnoreCase));
+    }
+
     /// <summary>
     /// When the surrounding repo uses artifacts layout, file-based apps place their artifacts there.
     /// </summary>

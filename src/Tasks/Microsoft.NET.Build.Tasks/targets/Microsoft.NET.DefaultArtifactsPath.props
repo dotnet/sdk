@@ -41,15 +41,6 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_ArtifactsPathLocationType>ProjectFolder</_ArtifactsPathLocationType>
   </PropertyGroup>
 
-  <!-- Add the ArtifactsPath as a SourceRoot so that source linking works correctly when the ArtifactsPath is outside of a known repo root.
-       The path must be canonicalized to avoid issues with relative path portions (..\) in PathMap infrastructure. -->
-  <PropertyGroup>
-    <_CanonicalizedArtifactsPath Condition="'$(ArtifactsPath)' != ''">$([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(ArtifactsPath)'))))</_CanonicalizedArtifactsPath>
-  </PropertyGroup>
-  <ItemGroup Condition="'$(_CanonicalizedArtifactsPath)' != ''">
-    <SourceRoot Include="$(_CanonicalizedArtifactsPath)"/>
-  </ItemGroup>
-
   <!-- Use FileBasedAppArtifactsPath if set -->
   <PropertyGroup Condition="'$(ArtifactsPath)' == '' And '$(FileBasedAppArtifactsPath)' != ''">
     <UseArtifactsOutput Condition="'$(UseArtifactsOutput)' == '' And '$(UsingMicrosoftArtifactsSdk)' != 'true'">true</UseArtifactsOutput>
@@ -61,4 +52,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PublishDir Condition="'$(PublishDir)' == ''">artifacts/$(AssemblyName)</PublishDir>
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">artifacts/$(AssemblyName)</PackageOutputPath>
   </PropertyGroup>
+
+  <!-- Add the ArtifactsPath as a SourceRoot so that source linking works correctly when the ArtifactsPath is outside of a known repo root.
+       The path must be canonicalized to avoid issues with relative path portions (..\) in PathMap infrastructure. -->
+  <PropertyGroup>
+    <_CanonicalizedArtifactsPath Condition="'$(ArtifactsPath)' != ''">$([MSBuild]::EnsureTrailingSlash($([System.IO.Path]::GetFullPath('$(ArtifactsPath)'))))</_CanonicalizedArtifactsPath>
+  </PropertyGroup>
+  <ItemGroup Condition="'$(_CanonicalizedArtifactsPath)' != ''">
+    <SourceRoot Include="$(_CanonicalizedArtifactsPath)"/>
+  </ItemGroup>
 </Project>
