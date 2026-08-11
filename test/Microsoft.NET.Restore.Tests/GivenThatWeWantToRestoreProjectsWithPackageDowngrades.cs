@@ -59,5 +59,32 @@ namespace Microsoft.NET.Restore.Tests
                 .Execute($"/p:RestorePackagesPath={packagesFolder}")
                 .Should().Pass(); ;
         }
+
+        [TestMethod]
+        public void ItIsPossibleToTurnOffDowngradeWarningsAsErrorsViaWarningsNotAsErrors()
+        {
+            const string testProjectName = "ProjectWithDowngradeWarning";
+            var testProject = new TestProject()
+            {
+                Name = testProjectName,
+                TargetFrameworks = "netstandard2.0",
+            };
+
+            testProject.AdditionalProperties.Add("TreatWarningsAsErrors", "true");
+            testProject.AdditionalProperties.Add("WarningsNotAsErrors", "NU1605");
+            testProject.AdditionalProperties.Add("NuGetAudit", "false");
+            testProject.PackageReferences.Add(new TestPackageReference("NuGet.Packaging", "3.5.0", null));
+            testProject.PackageReferences.Add(new TestPackageReference("NuGet.Commands", "4.0.0", null));
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            var packagesFolder = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "packages", testProjectName);
+
+            var restoreCommand = testAsset.GetRestoreCommand(Log, relativePath: testProjectName);
+            restoreCommand
+                .Execute($"/p:RestorePackagesPath={packagesFolder}")
+                .Should().Pass()
+                .And.HaveStdOutContaining("NU1605");
+        }
     }
 }

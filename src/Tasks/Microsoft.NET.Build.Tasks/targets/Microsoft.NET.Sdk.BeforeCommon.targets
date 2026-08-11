@@ -41,6 +41,22 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PlatformName Condition="'$(PlatformName)' == ''">$(Platform)</PlatformName>
   </PropertyGroup>
 
+  <!--
+    Microsoft.NET.Sdk.CSharp.props / Microsoft.NET.Sdk.VisualBasic.props unconditionally add NU1605 to
+    WarningsAsErrors (see the comments there for more details).  If the user has explicitly opted NU1605 out
+    of being treated as an error via WarningsNotAsErrors, honor that here so that WarningsNotAsErrors takes
+    precedence, as it does for NuGet's own restore warning properties.  This must run before
+    Microsoft.Common.CurrentVersion.targets copies WarningsAsErrors into MSBuildWarningsAsErrors (which the
+    MSBuild engine itself uses to promote logged warnings, including NuGet's, to errors), so it lives here
+    rather than in the language-specific .targets files, which are imported too late to affect that copy.
+  -->
+  <PropertyGroup>
+    <_WarningsNotAsErrorsPadded>;$(WarningsNotAsErrors);</_WarningsNotAsErrorsPadded>
+  </PropertyGroup>
+  <PropertyGroup Condition="$(_WarningsNotAsErrorsPadded.Contains(';NU1605;'))">
+    <WarningsAsErrors>$(WarningsAsErrors.Replace(';NU1605', ''))</WarningsAsErrors>
+  </PropertyGroup>
+
   <!-- Before any additional SDK targets are imported, import the publish profile.
        This allows the publish profile to set properties like RuntimeIdentifier and them be
        respected by the SDK. -->
