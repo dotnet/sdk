@@ -136,7 +136,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
         }
 
         [TestMethod]
-        public void ExecuteWorkItems_SuppressedInformationalDifference_IsNotLogged()
+        public void ExecuteWorkItems_InformationalDifference_IsLoggedWithoutSuppression()
         {
             MetadataInformation left = new("A.dll", @"lib\netstandard2.0\A.dll");
             MetadataInformation right = new("A.dll", @"lib\net462\A.dll");
@@ -153,9 +153,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner.Tests
 
             apiCompatRunner.ExecuteWorkItems();
 
-            suppressionEngineMock.Verify(m => m.IsErrorSuppressed(It.Is<Suppression>(suppression =>
-                suppression.DiagnosticId == "CP0001" && suppression.Target == "X01")), Times.Once);
-            logMock.Verify(m => m.LogMessage(MessageImportance.Normal, It.IsAny<string>()), Times.Never);
+            suppressionEngineMock.Verify(m => m.IsErrorSuppressed(It.IsAny<Suppression>()), Times.Never);
+            logMock.Verify(m => m.LogMessage(MessageImportance.Normal, "info CP0001: Invalid"), Times.Once);
         }
     }
 }
