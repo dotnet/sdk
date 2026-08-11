@@ -12,12 +12,25 @@ namespace Microsoft.DotNet.ApiCompatibility
 
         private static readonly ConditionalWeakTable<ISymbol, CacheEntry> s_classifications = new();
 
-        public static ApiStability Classify(ISymbol? symbol) => symbol is null
-            ? ApiStability.Stable
-            : s_classifications.GetValue(symbol, static current => new(
-                current.GetAttributes().Any(IsExperimentalAttribute) || Classify(current.ContainingSymbol) == ApiStability.Experimental
+        public static ApiStability Classify(ISymbol? symbol)
+        {
+            if (symbol is null)
+            {
+                return ApiStability.Stable;
+            }
+
+            if (s_classifications.TryGetValue(symbol, out CacheEntry? cached))
+            {
+                return cached.Stability;
+            }
+
+            ApiStability stability = symbol.GetAttributes().Any(IsExperimentalAttribute) ||
+                Classify(symbol.ContainingSymbol) == ApiStability.Experimental
                     ? ApiStability.Experimental
-                    : ApiStability.Stable)).Stability;
+                    : ApiStability.Stable;
+
+            return s_classifications.GetValue(symbol, _ => new(stability)).Stability;
+        }
 
         public static bool IsExperimentalAttribute(AttributeData attribute) =>
             attribute.AttributeClass?.ToDisplayString() == ExperimentalAttributeMetadataName;
