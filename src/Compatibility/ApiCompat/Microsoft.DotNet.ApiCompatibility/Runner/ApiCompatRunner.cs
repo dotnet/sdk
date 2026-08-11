@@ -65,6 +65,12 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
 
                     foreach (CompatDifference difference in differenceGroup)
                     {
+                        if (difference.Severity == DifferenceSeverity.Informational)
+                        {
+                            log.LogMessage(MessageImportance.Normal, $"info {difference.DiagnosticId}: {difference.Message}");
+                            continue;
+                        }
+
                         Suppression suppression = new(difference.DiagnosticId)
                         {
                             Target = difference.ReferenceId,
@@ -76,12 +82,6 @@ namespace Microsoft.DotNet.ApiCompatibility.Runner
                         // If the error is suppressed, don't log anything.
                         if (suppressionEngine.IsErrorSuppressed(suppression))
                             continue;
-
-                        if (difference.Severity == DifferenceSeverity.Informational)
-                        {
-                            log.LogMessage(MessageImportance.Normal, $"info {difference.DiagnosticId}: {difference.Message}");
-                            continue;
-                        }
 
                         if (logHeader)
                         {
