@@ -142,7 +142,9 @@
       <_CrossArchTestRuntimeSidecar>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'test-runtimes', '$(TargetArchitecture)'))</_CrossArchTestRuntimeSidecar>
     </PropertyGroup>
     <ItemGroup Condition="Exists('$(_CrossArchTestRuntimeSidecar)')">
-      <_CrossArchTestRuntimeFile Include="$(_CrossArchTestRuntimeSidecar)shared\**\*" />
+      <_CrossArchTestRuntimeFile Include="$(_CrossArchTestRuntimeSidecar)shared\**\*"
+                                Exclude="$(_CrossArchTestRuntimeSidecar)shared\Microsoft.NETCore.App\$(MajorMinorVersion).*\**\*;
+                                         $(_CrossArchTestRuntimeSidecar)shared\Microsoft.AspNetCore.App\$(MajorMinorVersion).*\**\*" />
     </ItemGroup>
     <Copy Condition="'@(_CrossArchTestRuntimeFile)' != ''"
           SourceFiles="@(_CrossArchTestRuntimeFile)"
