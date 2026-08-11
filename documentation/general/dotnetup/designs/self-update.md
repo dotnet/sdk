@@ -66,7 +66,7 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 - `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.
 
-- `non-safe` processes must exit immediately if any `self update` is running.
+- `non-safe` processes must exit immediately if any `self update` is running, however they should be able to wait for the ability to re-run while update is triggering, so that 'dotnetup --version' and other commands don't immediately fail and IDE during update with contention.
 
 - `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.
 
