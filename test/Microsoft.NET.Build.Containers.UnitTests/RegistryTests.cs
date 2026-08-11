@@ -90,9 +90,9 @@ public class RegistryTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PushAsync_SkipsBlobUploadsWhenManifestAlreadyExists()
+    public async Task PushAsync_SkipsBlobUploadsByDefaultWhenManifestAlreadyExists()
     {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_SkipsBlobUploadsWhenManifestAlreadyExists));
+        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_SkipsBlobUploadsByDefaultWhenManifestAlreadyExists));
         const string repository = "test/repository";
         const string manifestDigest = "sha256:manifest";
         string[] tags = ["latest", "stable"];
@@ -125,7 +125,7 @@ public class RegistryTests : IDisposable
         SourceImageReference source = new(registry, "base/image", "latest", null);
         DestinationImageReference destination = new(registry, repository, tags);
 
-        await registry.PushAsync(image, source, destination, skipIfManifestExists: true, CancellationToken.None);
+        await registry.PushAsync(image, source, destination, CancellationToken.None);
 
         manifestOperations.Verify(m => m.ExistsAsync(repository, manifestDigest, It.IsAny<CancellationToken>()), Times.Once);
         foreach (string tag in tags)
@@ -136,9 +136,9 @@ public class RegistryTests : IDisposable
     }
 
     [TestMethod]
-    public async Task PushAsync_DoesNotCheckManifestUnlessEnabled()
+    public async Task PushAsync_DoesNotCheckManifestWhenNoCacheIsEnabled()
     {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_DoesNotCheckManifestUnlessEnabled));
+        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_DoesNotCheckManifestWhenNoCacheIsEnabled));
         const string repository = "test/repository";
         const string configDigest = "sha256:config";
 
@@ -169,7 +169,7 @@ public class RegistryTests : IDisposable
         SourceImageReference source = new(registry, "base/image", "latest", null);
         DestinationImageReference destination = new(registry, repository, ["latest"]);
 
-        await registry.PushAsync(image, source, destination, CancellationToken.None);
+        await registry.PushAsync(image, source, destination, noCache: true, CancellationToken.None);
 
         manifestOperations.Verify(m => m.ExistsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         blobOperations.Verify(b => b.ExistsAsync(repository, configDigest, It.IsAny<CancellationToken>()), Times.Once);

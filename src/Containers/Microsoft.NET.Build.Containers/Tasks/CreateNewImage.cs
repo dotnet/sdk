@@ -227,7 +227,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (!SkipPublishing)
         {
-            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, SkipPushIfAlreadyPresent, Log, telemetry, cancellationToken)
+            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, NoCache, Log, telemetry, cancellationToken)
                 .ConfigureAwait(false);
         }
 
