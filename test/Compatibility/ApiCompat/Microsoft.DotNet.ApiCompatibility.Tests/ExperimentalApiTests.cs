@@ -283,7 +283,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         {
             TestRuleFactory ruleFactory = new(
                 (settings, context) => new MembersMustExist(settings, context),
-                (settings, context) => new ExperimentalApiBecomesStable(context));
+                (settings, context) => new ExperimentalApiBecomesStable(settings, context));
 
             if (includeAttributesRule)
             {

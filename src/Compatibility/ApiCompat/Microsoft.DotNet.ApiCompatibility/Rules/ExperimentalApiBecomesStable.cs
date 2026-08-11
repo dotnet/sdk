@@ -8,7 +8,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 {
     public class ExperimentalApiBecomesStable : IRule
     {
-        public ExperimentalApiBecomesStable(IRuleRegistrationContext context)
+        public ExperimentalApiBecomesStable(IRuleSettings settings, IRuleRegistrationContext context)
         {
             context.RegisterOnTypeSymbolAction(RunOnTypeSymbol);
             context.RegisterOnMemberSymbolAction(RunOnMemberSymbol);
