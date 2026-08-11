@@ -30,7 +30,7 @@ jobs:
     value: $(Agent.BuildDirectory)/vmr
   - ${{ if not(parameters.noPush) }}:
     - ${{ if and( eq(variables['System.TeamProject'], 'internal'), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
-      - group: DotNetBot-GitHub
+      - group: VMR Synchronization - Push
       - group: DotNetBot-GitHub-No-Scopes
       - name: vmrPublicUrl
         value: https://github.com/dotnet/dotnet
@@ -68,13 +68,23 @@ jobs:
   - ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
     # Push main and release branches to the public VMR
     - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
+      - template: /eng/common/templates-official/steps/get-github-app-token.yml
+        parameters:
+          azureSubscription: DncEng-VSTS
+          keyVaultName: dnceng-pipeline-secrets
+          keyName: vmr-synchronization-app-client-secret
+          appClientId: $(vmr-synchronization-app-client-id)
+          installationOwner: dotnet
+          outputVariableName: vmrPushToken
+          displayName: Get GitHub token for pushing to dotnet/dotnet
+
       - script: >
           ./.dotnet/dotnet darc vmr push
           --vmr '$(vmrPath)'
           --commit-verification-pat '$(BotAccount-dotnet-maestro-bot-no-scopes-PAT)'
           --branch '${{ parameters.vmrBranch }}'
           --remote-url '$(vmrPublicUrl)'
-          --github-pat '$(BotAccount-dotnet-bot-repo-PAT)'
+          --github-pat '$(vmrPushToken)'
           --verbose
         displayName: Push changes to dotnet/dotnet (public)
         workingDirectory: $(Agent.BuildDirectory)/sdk
