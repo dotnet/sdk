@@ -93,7 +93,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                 for (int differenceIndex = initialDifferenceCount; differenceIndex < differences.Count; differenceIndex++)
                 {
-                    differences[differenceIndex] = differences[differenceIndex].WithSymbols(leftSymbol, rightSymbol);
+                    differences[differenceIndex] = differences[differenceIndex].WithStabilities(
+                        leftSymbol is null ? null : ApiStabilityClassifier.Classify(leftSymbol),
+                        rightSymbol is null ? null : ApiStabilityClassifier.Classify(rightSymbol));
                 }
             }
 

@@ -103,13 +103,10 @@ namespace Microsoft.DotNet.ApiCompatibility
         {
             foreach (CompatDifference item in differences)
             {
-                ApiStability leftStability = ApiStabilityClassifier.Classify(item.LeftSymbol);
-                ApiStability rightStability = ApiStabilityClassifier.Classify(item.RightSymbol);
-
                 bool isExperimentalDifference =
-                    (item.LeftSymbol is null && rightStability == ApiStability.Experimental) ||
-                    (item.RightSymbol is null && leftStability == ApiStability.Experimental) ||
-                    (leftStability == ApiStability.Experimental && rightStability == ApiStability.Experimental);
+                    (item.LeftStability is null && item.RightStability == ApiStability.Experimental) ||
+                    (item.RightStability is null && item.LeftStability == ApiStability.Experimental) ||
+                    (item.LeftStability == ApiStability.Experimental && item.RightStability == ApiStability.Experimental);
 
                 _compatDifferences.Add(isExperimentalDifference
                     ? item.WithSeverity(DifferenceSeverity.Informational)

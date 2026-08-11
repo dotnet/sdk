@@ -31,9 +31,9 @@ namespace Microsoft.DotNet.ApiCompatibility
         /// </summary>
         public DifferenceSeverity Severity { get; } = severity;
 
-        internal ISymbol? LeftSymbol { get; }
+        internal ApiStability? LeftStability { get; }
 
-        internal ISymbol? RightSymbol { get; }
+        internal ApiStability? RightStability { get; }
 
         /// <inheritdoc />
         public string Message { get; } = message;
@@ -80,16 +80,16 @@ namespace Microsoft.DotNet.ApiCompatibility
         }
 
         internal CompatDifference WithSeverity(DifferenceSeverity newSeverity) =>
-            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, newSeverity, LeftSymbol, RightSymbol);
+            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, newSeverity, LeftStability, RightStability);
 
-        internal CompatDifference WithSymbols(ISymbol? leftSymbol, ISymbol? rightSymbol) =>
-            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, Severity, leftSymbol, rightSymbol);
+        internal CompatDifference WithStabilities(ApiStability? leftStability, ApiStability? rightStability) =>
+            new(Left, Right, DiagnosticId, Message, Type, ReferenceId, Severity, leftStability, rightStability);
 
-        private CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity, ISymbol? leftSymbol, ISymbol? rightSymbol)
+        private CompatDifference(MetadataInformation left, MetadataInformation right, string diagnosticId, string message, DifferenceType type, string? memberId, DifferenceSeverity severity, ApiStability? leftStability, ApiStability? rightStability)
             : this(left, right, diagnosticId, message, type, memberId, severity)
         {
-            LeftSymbol = leftSymbol;
-            RightSymbol = rightSymbol;
+            LeftStability = leftStability;
+            RightStability = rightStability;
         }
 
         /// <summary>
