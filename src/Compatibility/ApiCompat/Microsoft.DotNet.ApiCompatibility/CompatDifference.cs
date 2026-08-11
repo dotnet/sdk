@@ -115,7 +115,6 @@ namespace Microsoft.DotNet.ApiCompatibility
             Right.Equals(other.Right) &&
             DiagnosticId.Equals(other.DiagnosticId, StringComparison.InvariantCultureIgnoreCase) &&
             Type.Equals(other.Type) &&
-            Severity.Equals(other.Severity) &&
             string.Equals(ReferenceId, other.ReferenceId, StringComparison.InvariantCultureIgnoreCase);
 
         /// <inheritdoc />
@@ -129,7 +128,6 @@ namespace Microsoft.DotNet.ApiCompatibility
             hashCode = hashCode * -1521134295 + Right.GetHashCode();
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(DiagnosticId.ToLowerInvariant());
             hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(Type.ToString().ToLowerInvariant());
-            hashCode = hashCode * -1521134295 + Severity.GetHashCode();
             if (ReferenceId != null)
             {
                 hashCode = hashCode * -1521134295 + EqualityComparer<string>.Default.GetHashCode(ReferenceId.ToLowerInvariant());

@@ -108,9 +108,23 @@ namespace Microsoft.DotNet.ApiCompatibility
                     (item.RightStability is null && item.LeftStability == ApiStability.Experimental) ||
                     (item.LeftStability == ApiStability.Experimental && item.RightStability == ApiStability.Experimental);
 
-                _compatDifferences.Add(isExperimentalDifference
+                CompatDifference difference = isExperimentalDifference
                     ? item.WithSeverity(DifferenceSeverity.Informational)
-                    : item);
+                    : item;
+
+                if (_compatDifferences.TryGetValue(difference, out CompatDifference existingDifference))
+                {
+                    if (existingDifference.Severity == DifferenceSeverity.Informational &&
+                        difference.Severity == DifferenceSeverity.Error)
+                    {
+                        _compatDifferences.Remove(existingDifference);
+                        _compatDifferences.Add(difference);
+                    }
+                }
+                else
+                {
+                    _compatDifferences.Add(difference);
+                }
             }
         }
     }
