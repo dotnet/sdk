@@ -55,26 +55,26 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 # Success Criteria
 
-- It's okay for `dotnetup` to no longer exist on the `PATH` or in the `dotnetup` folder in the event of a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running. Consumers must know how to re-acquire `dotnetup` or ebmed a backup `dotnetup` executable at a base level in the event this occurs.
+- It's okay for `dotnetup` to no longer exist on the `PATH` or in the `dotnetup` folder in the event of a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running. Consumers must know how to re-acquire `dotnetup` or ebmed a backup `dotnetup` executable at a base level in the event this occurs.<br>
 
 
-- It is NOT okay for a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running to cause a permanent broken state that requires user understanding to remedy outside of re-installing `dotnetup`. e.g. it must not leave behind files with permissions that don't allow deletion, it must not corrupt other files that `dotnetup` depends on or leave them half-complete, including but not limited to a corrupt `dotnetup` executable that fails to load or execute.
+- It is NOT okay for a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running to cause a permanent broken state that requires user understanding to remedy outside of re-installing `dotnetup`. e.g. it must not leave behind files with permissions that don't allow deletion, it must not corrupt other files that `dotnetup` depends on or leave them half-complete, including but not limited to a corrupt `dotnetup` executable that fails to load or execute.<br>
 
-- Multiple `dotnetup` processes in general must be able to execute at the same time.
+- Multiple `dotnetup` processes in general must be able to execute at the same time.<br>
 
-- `dotnetup` may leverage asynchronous code or `await`.
+- `dotnetup` may leverage asynchronous code or `await`.<br>
 
-- `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.
+- `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.<br>
 
-- `non-safe` processes must never execute their command body across a `self update` boundary. A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright, so `dotnetup list` and IDE-issued commands do not hard-fail during an update. If the executable was replaced while it waited, it must forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code. If breaking changes are made to command names themselves, then this will break and that is acceptable.
+- `non-safe` processes must never execute their command body across a `self update` boundary. A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright, so `dotnetup list` and IDE-issued commands do not hard-fail during an update. If the executable was replaced while it waited, it must forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code. If breaking changes are made to command names themselves, then this will break and that is acceptable.<br>
 
-- `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.
+- `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.<br>
 
-- `self update` also does NOT make other `non safe` processes fail or exit immediately unless they are configured to do so. This is because we don't want others who call `dotnetup --info` to have to worry about whether another process is running `self update` or have to write recovery logic for this. However, others may opt in to this behavior if they want minimal latency and would rather defer the task if an update is running.
+- `self update` also does NOT make other `non safe` processes fail or exit immediately unless they are configured to do so. This is because we don't want others who call `dotnetup --info` to have to worry about whether another process is running `self update` or have to write recovery logic for this. However, others may opt in to this behavior if they want minimal latency and would rather defer the task if an update is running.<br>
 
-- At this time, the only 'safe' `dotnetup` processes to have running during `self update` are the `telemetry drain` process, `dotnetup dotnet`, and the `self update` process itself. All other processes are `non-safe`. A process does not know its 'safety' status until `S.CL` parsers or `args` are processed.
+- At this time, the only 'safe' `dotnetup` processes to have running during `self update` are the `telemetry drain` process, `dotnetup dotnet`, and the `self update` process itself. All other processes are `non-safe`. A process does not know its 'safety' status until `S.CL` parsers or `args` are processed.<br>
 
-- `dotnetup` must not require a reboot to update itself.
+- `dotnetup` must not require a reboot to update itself.<br>
 
 - It's ok to ignore a 'rogue' `dotnetup` process and allow them to fail or incur behavioral runtime bugs; e.g. an old `dotnetup` version that does not know about or support any mutex, semaphore, or locks and therefore bypasses the conditional guarantees. This is permissible because `dotnetup` is not yet `stable` or in a fully public `preview`.
 
@@ -188,7 +188,7 @@ Safety is a property of the command: `CommandBase` classifies every command as `
 
 **1.4 — `N` verifies image identity.** At startup `N` records the file identity of the image of `N` — the volume serial number and file index returned by `GetFileInformationByHandle` on the cached `Environment.ProcessPath`. After the gate succeeds, `N` compares that identity to `D/dotnetup.exe`.
 
-The comparison is unconditional. `N` performs the comparison even when both opens in step 1.3 succeeded on the first attempt, because a transaction that began before `N` launched and completed before `N` reached the gate replaces the image of `N` without `N` ever observing contention.
+The comparison is unconditional. `N` performs the comparison even when the acquisition in step 1.3 succeeded on the first attempt, because a transaction that began before `N` launched and completed before `N` reached the gate replaces the image of `N` without `N` ever observing contention.
 
 - **Identity matches.** No replacement occurred, including the rollback case of step 2.8, because renaming the backup back to the canonical path preserves the original file identity. `N` proceeds to the command body.
 - **Identity differs.** `D/dotnetup.exe` was replaced while `N` waited, so the image of `N` is stale and `N` must not execute the command body of `N`. `N` forwards per step 1.5.
@@ -331,8 +331,6 @@ A named mutex has exactly one owner, so it cannot represent "N `non-safe` proces
 **Why `N` acquires only the activity lock.**
 `P` holds `A` exclusively for the entire transaction, so `A` alone is a continuous signal that a transaction is in flight. An `N` that has acquired `A` shared and retained it excludes `P` completely: if `P` is mid-transaction the acquire by `N` fails, and if `P` is between steps 1.1 and 1.2 the acquire by `N` succeeds, after which step 1.2 fails and `P` releases `U` and backs off. There is no interleaving in which both proceed, and because `N` performs a single acquisition there is no window in which `N` holds nothing after having passed a check.
 
-An earlier form of this design had `N` also probe `U` shared. That probe was necessary only while a separate replacer process held `U` across a handoff during which `P` released `A`, which made `A` discontinuous. Once the replacement became a single process holding both locks end to end, the probe stopped carrying information, and with it went the question of which lock `N` should acquire first.
-
 **Why `P` acquires the update lock before the activity lock.**
 `U` serializes `P` against peer `self update` processes and `A` excludes `N`. Taking `U` first means `P` only begins excluding every `N` after `P` has won the race against peers; taking `A` first would hold every `non-safe` command out of the way for the whole of `X_U` while `P` waits on a peer that may itself be performing a long download.
 
@@ -355,11 +353,11 @@ Windows also has reboot-delayed renames, but this provides a poor experience for
 
 #### Rejected Alternative: A Separate Replacer Process
 
-An earlier form of this design had `P` copy the downloaded executable to a throwaway location, start it as a replacer process `R`, hand `U` over to `R` through an anonymous pipe while `P` retained `A`, and let `R` perform the rename, verification, and rollback after `P` exited.
+In this alternative, `P` copies the validated executable to a throwaway location, starts it as a replacer process `R`, hands `U` over to `R` through an anonymous pipe while `P` retains `A`, and lets `R` perform the rename, verification, and rollback after `P` exits. The anonymous pipe makes the identity of `R` structural: there is no pipe name for another process to connect to, and the client handle value is meaningful only inside the process that inherited it.
 
-That structure was dropped because `R` performs nothing that `P` cannot. Windows permits renaming an executable that is in use, including the image the renaming process is itself executing, so `P` can rename `D/dotnetup.exe` to the backup, install the replacement, and spawn the verification child without ever exiting. Aspire's self-update takes the same in-process shape.
+This is not the proposed design, because `R` performs nothing that `P` cannot. Windows permits renaming an executable that is in use, including the image the renaming process is itself executing, so `P` can rename `D/dotnetup.exe` to the backup, install the replacement, and spawn the verification child without ever exiting. Aspire's self-update takes the same in-process shape.
 
-Removing `R` also removed the throwaway copy and its temporary directory, the handoff pipe and heartbeat, the `dotnetup self replacement` hidden command, a timeout, the only exception to rule 2 of Algorithm 1, and the divergence between the Windows and Unix flows. Crash exposure is unchanged: a crash between the backup rename and the install rename leaves no executable at the canonical path under either structure.
+The replacer structure costs a throwaway copy and its temporary directory, a handoff pipe and heartbeat, the `dotnetup self replacement` hidden command, an additional timeout, an exception to rule 2 of Algorithm 1 for the span in which `P` holds `A` while waiting on `R`, and a divergence between the Windows and Unix flows. It buys no additional crash safety: a crash between the backup rename and the install rename leaves no executable at the canonical path under either structure.
 
 #### Rejected Alternative: Crash-Safe Replacement
 
