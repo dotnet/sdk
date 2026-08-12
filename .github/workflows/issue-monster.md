@@ -12,7 +12,7 @@ on:
   schedule: every 24h
   skip-if-match:
     query: "is:pr is:open is:draft author:app/copilot-swe-agent"
-    max: 2
+    max: 80
   skip-if-no-match: "is:issue is:open"
   permissions:
     issues: read
