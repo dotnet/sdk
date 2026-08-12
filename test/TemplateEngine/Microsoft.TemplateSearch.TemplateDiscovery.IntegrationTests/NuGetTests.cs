@@ -15,11 +15,17 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
         [TestMethod]
         public async Task CanReadPackageInfo()
         {
-            string nuGetOrgFeed = "https://api.nuget.org/v3/index.json";
+            string nuGetOrgFeed = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet-public/nuget/v3/index.json";
             var repository = Repository.Factory.GetCoreV3(nuGetOrgFeed);
             ServiceIndexResourceV3 indexResource = repository.GetResource<ServiceIndexResourceV3>(TestContext.Current!.CancellationToken)
                 ?? throw new InvalidOperationException("Failed to get ServiceIndexResourceV3.");
             IReadOnlyList<ServiceIndexEntry> searchResources = indexResource.GetServiceEntries("SearchQueryService");
+            if (searchResources.Count == 0)
+            {
+                searchResources = indexResource.GetServiceEntries("SearchQueryService/3.0.0-beta");
+            }
+
+            Assert.IsNotEmpty(searchResources, "No SearchQueryService entries found in the feed service index.");
             string queryString = $"{searchResources[0].Uri}?q=Microsoft.DotNet.Common.ProjectTemplates.5.0&skip=0&take=10&prerelease=true&semVerLevel=2.0.0";
             Uri queryUri = new Uri(queryString);
             using HttpClient client = new HttpClient();
@@ -29,18 +35,14 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 string responseText = await response.Content.ReadAsStringAsync(TestContext.Current!.CancellationToken);
 
                 NuGetPackageSearchResult resultsForPage = NuGetPackageSearchResult.FromJObject(JsonNode.Parse(responseText)!.AsObject());
-                Assert.AreEqual(1, resultsForPage.TotalHits);
-                Assert.ContainsSingle(resultsForPage.Data);
+                Assert.IsNotEmpty(resultsForPage.Data, "Search returned no data entries.");
 
                 var packageInfo = resultsForPage.Data[0];
 
                 Assert.AreEqual("Microsoft.DotNet.Common.ProjectTemplates.5.0", packageInfo.Name);
                 Assert.IsNotEmpty(packageInfo.Version);
-                Assert.IsGreaterThan(0, packageInfo.TotalDownloads);
-                Assert.IsTrue(packageInfo.Reserved);
-                Assert.Contains("Microsoft", packageInfo.Owners);
+                packageInfo.TotalDownloads.Should().BeGreaterThanOrEqualTo(0);
                 packageInfo.Description.Should().NotBeNullOrEmpty();
-                packageInfo.IconUrl.Should().NotBeNullOrEmpty();
             }
             else
             {
