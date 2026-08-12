@@ -34,6 +34,106 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         }
 
         [TestMethod]
+        public void RemovedExperimentalPropertyIsInformational()
+        {
+            string leftSyntax = $$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public int Removed { get; set; }
+                }
+                """;
+            string rightSyntax = "namespace CompatTests; public class Api { }";
+
+            CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
+
+            Assert.HasCount(2, differences);
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.get_Removed"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.set_Removed(System.Int32)"));
+            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+        }
+
+        [TestMethod]
+        public void MutatedExperimentalPropertyIsInformational()
+        {
+            string leftSyntax = $$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public int Changed { get; set; }
+                }
+                """;
+            string rightSyntax = $$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public int Changed { get; }
+                }
+                """;
+
+            CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax));
+
+            Assert.AreEqual("M:CompatTests.Api.set_Changed(System.Int32)", difference.ReferenceId);
+            Assert.AreEqual(DifferenceSeverity.Informational, difference.Severity);
+        }
+
+        [TestMethod]
+        public void RemovedExperimentalEventIsInformational()
+        {
+            string leftSyntax = $$"""
+                namespace CompatTests;
+                public delegate void Handler();
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public event Handler Removed;
+                }
+                """;
+            string rightSyntax = "namespace CompatTests; public delegate void Handler(); public class Api { }";
+
+            CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
+
+            Assert.HasCount(2, differences);
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.add_Removed(CompatTests.Handler)"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.remove_Removed(CompatTests.Handler)"));
+            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+        }
+
+        [TestMethod]
+        public void MutatedExperimentalEventIsInformational()
+        {
+            string leftSyntax = $$"""
+                namespace CompatTests;
+                public delegate void Handler();
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public virtual event Handler Changed;
+                }
+                """;
+            string rightSyntax = $$"""
+                namespace CompatTests;
+                public delegate void Handler();
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public event Handler Changed;
+                }
+                """;
+
+            CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax, includeVirtualRule: true);
+
+            Assert.HasCount(3, differences);
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.add_Changed(CompatTests.Handler)"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.remove_Changed(CompatTests.Handler)"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "E:CompatTests.Api.Changed"));
+            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+        }
+
+        [TestMethod]
         public void NewExperimentalTypeAndMemberAreInformationalInStrictMode()
         {
             string leftSyntax = "namespace CompatTests; public class Api { }";
@@ -279,7 +379,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
                 SymbolFactory.GetAssemblyFromSyntax(rightSyntax)).ToArray();
         }
 
-        private static CompatDifference[] GetDifferences(string leftSyntax, string rightSyntax, bool strictMode = false, bool includeAttributesRule = false)
+        private static CompatDifference[] GetDifferences(string leftSyntax, string rightSyntax, bool strictMode = false, bool includeAttributesRule = false, bool includeVirtualRule = false)
         {
             TestRuleFactory ruleFactory = new(
                 (settings, context) => new MembersMustExist(settings, context),
@@ -288,6 +388,11 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             if (includeAttributesRule)
             {
                 ruleFactory = ruleFactory.WithRule((settings, context) => new AttributesMustMatch(settings, context));
+            }
+
+            if (includeVirtualRule)
+            {
+                ruleFactory = ruleFactory.WithRule((settings, context) => new CannotAddOrRemoveVirtualKeyword(settings, context));
             }
 
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);

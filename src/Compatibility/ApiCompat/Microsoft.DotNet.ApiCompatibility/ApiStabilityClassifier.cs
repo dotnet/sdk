@@ -24,8 +24,12 @@ namespace Microsoft.DotNet.ApiCompatibility
                 return cached.Stability;
             }
 
+            ISymbol? parentSymbol = symbol is IMethodSymbol { AssociatedSymbol: { } associatedSymbol }
+                ? associatedSymbol
+                : symbol.ContainingSymbol;
+
             ApiStability stability = symbol.GetAttributes().Any(IsExperimentalAttribute) ||
-                Classify(symbol.ContainingSymbol) == ApiStability.Experimental
+                Classify(parentSymbol) == ApiStability.Experimental
                     ? ApiStability.Experimental
                     : ApiStability.Stable;
 
