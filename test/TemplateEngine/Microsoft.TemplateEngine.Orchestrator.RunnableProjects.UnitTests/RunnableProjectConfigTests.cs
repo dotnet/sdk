@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json.Nodes;
@@ -17,14 +17,19 @@ using Microsoft.TemplateEngine.TestHelper;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
-    public class RunnableProjectConfigTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class RunnableProjectConfigTests
     {
-        private readonly EnvironmentSettingsHelper _environmentSettingsHelper;
+        public TestContext TestContext { get; set; } = null!;
 
-        public RunnableProjectConfigTests(EnvironmentSettingsHelper environmentSettingsHelper)
-        {
-            _environmentSettingsHelper = environmentSettingsHelper;
-        }
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
 
         private const string InvalidMultiChoiceDefinition = /*lang=json,strict*/ """
             {
@@ -98,11 +103,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             }
             """;
 
-        [Theory]
-        [InlineData(ValidChoiceDefinition, false, true)]
-        [InlineData(InvalidMultiChoiceDefinition, false, true)]
-        [InlineData(ValidChoiceDefinition, true, true)]
-        [InlineData(InvalidMultiChoiceDefinition, true, false)]
+        [TestMethod]
+        [DataRow(ValidChoiceDefinition, false, true)]
+        [DataRow(InvalidMultiChoiceDefinition, false, true)]
+        [DataRow(ValidChoiceDefinition, true, true)]
+        [DataRow(InvalidMultiChoiceDefinition, true, false)]
         public async Task PerformTemplateValidation_ChoiceValuesValidation(string paramDefinition, bool isMultichoice, bool expectedToBeValid)
         {
             //
@@ -141,7 +146,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             List<(LogLevel, string)> loggedMessages = new();
             InMemoryLoggerProvider loggerProvider = new(loggedMessages);
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new[] { loggerProvider });
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(addLoggerProviders: new[] { loggerProvider });
             string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
 
             TestFileSystemUtils.WriteTemplateSource(environmentSettings, sourceBasePath, templateSourceFiles);
@@ -149,25 +154,25 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             RunnableProjectGenerator rpg = new();
 
             using RunnableProjectConfig templateConfig = new RunnableProjectConfig(environmentSettings, rpg, config, sourceMountPoint.Root);
-            await templateConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.Current.CancellationToken);
+            await templateConfig.ValidateAsync(ValidationScope.Instantiation, TestContext.CancellationToken);
 
             if (expectedToBeValid)
             {
-                Assert.True(templateConfig.IsValid);
-                Assert.DoesNotContain(templateConfig.ValidationErrors, e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning });
+                Assert.IsTrue(templateConfig.IsValid);
+                Assert.IsEmpty(templateConfig.ValidationErrors.Where(e => e is { Severity: IValidationEntry.SeverityLevel.Error } or { Severity: IValidationEntry.SeverityLevel.Warning }));
             }
             else
             {
-                Assert.False(templateConfig.IsValid);
-                IValidationEntry validationError = Assert.Single(templateConfig.ValidationErrors, e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning);
-                Assert.Equal("MV004", validationError.Code);
-                Assert.Equal(
+                Assert.IsFalse(templateConfig.IsValid);
+                IValidationEntry validationError = Assert.ContainsSingle(templateConfig.ValidationErrors.Where(e => e.Severity is IValidationEntry.SeverityLevel.Error or IValidationEntry.SeverityLevel.Warning));
+                Assert.AreEqual("MV004", validationError.Code);
+                Assert.AreEqual(
                     "Choice parameter 'ParamA' is invalid. It allows multiple values ('AllowMultipleValues=true'), while some of the configured choices contain separator characters ('|', ','). Invalid choices: {First|Choice}",
                     validationError.ErrorMessage);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyComputedSymbolsParsedCorrectly()
         {
             //
@@ -190,23 +195,23 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment();
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment();
 
             string sourceBasePath = environmentSettings.GetTempVirtualizedPath();
             using IMountPoint mountPoint = environmentSettings.MountPath(sourceBasePath);
             using RunnableProjectConfig templateConfig = new RunnableProjectConfig(environmentSettings, new RunnableProjectGenerator(), config, mountPoint.Root);
 
             //verify
-            Assert.Equal(7, templateConfig.GlobalOperationConfig.Macros.Count);
+            Assert.HasCount(7, templateConfig.GlobalOperationConfig.Macros);
             var evaluatedMacros = templateConfig.GlobalOperationConfig.Macros.Where(m => m.Type == "evaluate");
-            Assert.Equal(2, evaluatedMacros.Count());
+            Assert.HasCount(2, evaluatedMacros);
             evaluatedMacros.Select(m => m.VariableName).Should().Equal(new string[] { "computed1", "computed2" });
             // default symbols are different for OS
             templateConfig.GlobalOperationConfig.SymbolNames.Count.Should().BeGreaterThanOrEqualTo(3);
             templateConfig.GlobalOperationConfig.SymbolNames.Should().Contain(new string[] { "computed1", "computed2" });
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyCustomGeneratedSymbolsParsedCorrectly()
         {
             //
@@ -228,7 +233,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(
                 additionalComponents: new[]
                     {
                         (typeof(IMacro), (IIdentifiedComponent)new FakeMacro()),
@@ -241,15 +246,15 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
             var customMacros = templateConfig.GlobalOperationConfig.Macros.Where(m => m.Type == "fake");
             //verify
-            Assert.Equal(6, templateConfig.GlobalOperationConfig.Macros.Count);
-            Assert.Single(customMacros);
-            Assert.Equal("fake1", customMacros.First().VariableName);
+            Assert.HasCount(6, templateConfig.GlobalOperationConfig.Macros);
+            Assert.ContainsSingle(customMacros);
+            Assert.AreEqual("fake1", customMacros.First().VariableName);
             // default symbols are different for OS
             templateConfig.GlobalOperationConfig.SymbolNames.Count.Should().BeGreaterThanOrEqualTo(2);
             templateConfig.GlobalOperationConfig.SymbolNames.Should().Contain(new string[] { "fake1" });
         }
 
-        [Fact]
+        [TestMethod]
         public void VerifyDerivedSymbolsParsedCorrectly()
         {
             //
@@ -272,7 +277,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             // Dependencies preparation and mounting
             //
 
-            IEngineEnvironmentSettings environmentSettings = _environmentSettingsHelper.CreateEnvironment(
+            IEngineEnvironmentSettings environmentSettings = s_environmentSettingsHelper.CreateEnvironment(
                 additionalComponents: new[]
                     {
                         (typeof(IMacro), (IIdentifiedComponent)new FakeMacro()),
@@ -284,8 +289,8 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
             using RunnableProjectConfig templateConfig = new RunnableProjectConfig(environmentSettings, new RunnableProjectGenerator(), config, mountPoint.Root);
 
             //verify
-            Assert.Equal(7, templateConfig.GlobalOperationConfig.Macros.Count);
-            Assert.Equal(1, templateConfig.GlobalOperationConfig.Macros.Count(m => m.VariableName == "derivedTest{-VALUE-FORMS-}identity"));
+            Assert.HasCount(7, templateConfig.GlobalOperationConfig.Macros);
+            Assert.ContainsSingle(templateConfig.GlobalOperationConfig.Macros.Where(m => m.VariableName == "derivedTest{-VALUE-FORMS-}identity"));
 
             templateConfig.GlobalOperationConfig.SymbolNames.Should().Contain(new string[] { "original", "derivedTest" });
         }

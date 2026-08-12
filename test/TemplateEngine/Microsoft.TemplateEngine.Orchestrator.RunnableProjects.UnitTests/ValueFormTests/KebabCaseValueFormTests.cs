@@ -5,47 +5,48 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
+    [TestClass]
     public class KebabCaseValueFormTests
     {
-        [Theory]
-        [InlineData("I", "i")]
-        [InlineData("IO", "io")]
-        [InlineData("FileIO", "file-io")]
-        [InlineData("SignalR", "signal-r")]
-        [InlineData("IOStream", "io-stream")]
-        [InlineData("COMObject", "com-object")]
-        [InlineData("WebAPI", "web-api")]
-        [InlineData("XProjectX", "x-project-x")]
-        [InlineData("NextXXXProject", "next-xxx-project")]
-        [InlineData("NoNewProject", "no-new-project")]
-        [InlineData("NONewProject", "no-new-project")]
-        [InlineData("NewProjectName", "new-project-name")]
-        [InlineData("ABBREVIATIONAndSomeName", "abbreviation-and-some-name")]
-        [InlineData("NoNoNoNoNoNoNoName", "no-no-no-no-no-no-no-name")]
-        [InlineData("AnotherNewNewNewNewNewProjectName", "another-new-new-new-new-new-project-name")]
-        [InlineData("Param1TestValue", "param-1-test-value")]
-        [InlineData("Windows10", "windows-10")]
-        [InlineData("WindowsServer2016R2", "windows-server-2016-r-2")]
-        [InlineData("", "")]
-        [InlineData(";MyWord;", "my-word")]
-        [InlineData("My Word", "my-word")]
-        [InlineData("My    Word", "my-word")]
-        [InlineData(";;;;;", "")]
-        [InlineData("       ", "")]
-        [InlineData("Simple TEXT_here", "simple-text-here")]
-        [InlineData("НоваяПеременная", "новая-переменная")]
+        [TestMethod]
+        [DataRow("I", "i")]
+        [DataRow("IO", "io")]
+        [DataRow("FileIO", "file-io")]
+        [DataRow("SignalR", "signal-r")]
+        [DataRow("IOStream", "io-stream")]
+        [DataRow("COMObject", "com-object")]
+        [DataRow("WebAPI", "web-api")]
+        [DataRow("XProjectX", "x-project-x")]
+        [DataRow("NextXXXProject", "next-xxx-project")]
+        [DataRow("NoNewProject", "no-new-project")]
+        [DataRow("NONewProject", "no-new-project")]
+        [DataRow("NewProjectName", "new-project-name")]
+        [DataRow("ABBREVIATIONAndSomeName", "abbreviation-and-some-name")]
+        [DataRow("NoNoNoNoNoNoNoName", "no-no-no-no-no-no-no-name")]
+        [DataRow("AnotherNewNewNewNewNewProjectName", "another-new-new-new-new-new-project-name")]
+        [DataRow("Param1TestValue", "param-1-test-value")]
+        [DataRow("Windows10", "windows-10")]
+        [DataRow("WindowsServer2016R2", "windows-server-2016-r-2")]
+        [DataRow("", "")]
+        [DataRow(";MyWord;", "my-word")]
+        [DataRow("My Word", "my-word")]
+        [DataRow("My    Word", "my-word")]
+        [DataRow(";;;;;", "")]
+        [DataRow("       ", "")]
+        [DataRow("Simple TEXT_here", "simple-text-here")]
+        [DataRow("НоваяПеременная", "новая-переменная")]
         public void KebabCaseWorksAsExpected(string input, string expected)
         {
             IValueForm? model = new KebabCaseValueFormFactory().Create("test");
             string actual = model.Process(input, new Dictionary<string, IValueForm>());
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleNullValue()
         {
             IValueForm model = new KebabCaseValueFormFactory().Create("test");
-            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
+            Assert.ThrowsExactly<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }

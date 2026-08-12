@@ -1,7 +1,9 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+#endif
 
 namespace Microsoft.DotNet.Cli.CommandFactory;
 
@@ -13,6 +15,7 @@ public class CommandSpec(string path, string? args, IDictionary<string, string>?
 
     public IDictionary<string, string> EnvironmentVariables { get; } = environmentVariables ?? new Dictionary<string, string>();
 
+#if !CLI_AOT
     internal void AddEnvironmentVariablesFromProject(IProject project)
     {
         foreach (var environmentVariable in project.EnvironmentVariables)
@@ -20,4 +23,5 @@ public class CommandSpec(string path, string? args, IDictionary<string, string>?
             EnvironmentVariables.Add(environmentVariable.Key, environmentVariable.Value);
         }
     }
+#endif
 }

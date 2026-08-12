@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferDictionaryContainsMethods,
@@ -16,6 +15,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class PreferDictionaryContainsMethodsTests
     {
         #region Test Data
@@ -41,8 +41,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         #endregion
 
         #region Expected Diagnostic
-        [Theory]
-        [MemberData(nameof(DictionaryKeysExpressions))]
+        [TestMethod]
+        [DynamicData(nameof(DictionaryKeysExpressions))]
         public async Task IDictionary_Keys_Contains_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = @"IDictionary<string, int> dictionary = new Dictionary<string, int>();";
@@ -58,10 +58,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IDictionary_Keys_Contains_ReportsDiagnostic_VBAsync()
         {
             const string declaration = @"Dim dictionary As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()";
@@ -77,11 +77,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DictionaryKeysExpressions))]
+        [TestMethod]
+        [DynamicData(nameof(DictionaryKeysExpressions))]
         public async Task BuiltInDictionary_Keys_Contains_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = @"var dictionary = new Dictionary<string, int>();";
@@ -97,10 +97,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BuiltInDictionary_Keys_Contains_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New Dictionary(Of String, Integer)()";
@@ -116,11 +116,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DictionaryValuesExpressions))]
+        [TestMethod]
+        [DynamicData(nameof(DictionaryValuesExpressions))]
         public async Task BuiltInDictionary_Values_Contains_ReportsDiagnostic_CSAsync(string dictionaryValues)
         {
             const string declaration = "var dictionary = new Dictionary<string, int>();";
@@ -136,10 +136,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BuiltInDictionary_Values_Contains_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New Dictionary(Of String, Integer)()";
@@ -155,11 +155,51 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DictionaryKeysExpressions))]
+        [TestMethod]
+        public async Task NestedKeysContains_FixAllRewritesBoth_CSAsync()
+        {
+            const string declaration = @"var dictionary = new Dictionary<string, string>();";
+            string testCode = CreateCSSource(declaration, @"bool nested = {|#0:dictionary.Keys.Contains({|#1:dictionary.Keys.Contains(""inner"")|} ? ""a"" : ""b"")|};");
+            string fixedCode = CreateCSSource(declaration, @"bool nested = dictionary.ContainsKey(dictionary.ContainsKey(""inner"") ? ""a"" : ""b"");");
+
+            await new VerifyCS.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(ContainsKeyRule).WithLocation(0).WithArguments("Dictionary"),
+                    VerifyCS.Diagnostic(ContainsKeyRule).WithLocation(1).WithArguments("Dictionary"),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task NestedKeysContains_FixAllRewritesBoth_VBAsync()
+        {
+            const string declaration = "Dim dictionary = New Dictionary(Of String, String)()";
+            string testCode = CreateVBSource(declaration, @"Dim nested = {|#0:dictionary.Keys.Contains(If({|#1:dictionary.Keys.Contains(""inner"")|}, ""a"", ""b""))|}");
+            string fixedCode = CreateVBSource(declaration, @"Dim nested = dictionary.ContainsKey(If(dictionary.ContainsKey(""inner""), ""a"", ""b""))");
+
+            await new VerifyVB.Test
+            {
+                TestCode = testCode,
+                FixedCode = fixedCode,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyVB.Diagnostic(ContainsKeyRule).WithLocation(0).WithArguments("Dictionary"),
+                    VerifyVB.Diagnostic(ContainsKeyRule).WithLocation(1).WithArguments("Dictionary"),
+                }
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [DynamicData(nameof(DictionaryKeysExpressions))]
         public async Task ExplicitContainsKey_WhenTypedAsIDictionary_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = "IDictionary<string, int> dictionary = new TestDictionary();";
@@ -175,10 +215,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, CSExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExplicitContainsKey_WhenTypedAsIDictionary_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary As IDictionary(Of String, Integer) = New TestDictionary()";
@@ -194,11 +234,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, VBExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DictionaryKeysExpressions))]
+        [TestMethod]
+        [DynamicData(nameof(DictionaryKeysExpressions))]
         public async Task IEnumerableKeyCollection_ReportsDiagnostic_CSAsync(string dictionaryKeys)
         {
             const string declaration = "var dictionary = new TestDictionary();";
@@ -214,10 +254,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, CSCustomFacadeCollectionsDictionarySource, CSIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IEnumerableKeyCollection_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New TestDictionary()";
@@ -233,11 +273,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, VBCustomFacadeCollectionsDictionarySource, VBIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DictionaryValuesExpressions))]
+        [TestMethod]
+        [DynamicData(nameof(DictionaryValuesExpressions))]
         public async Task IEnumerableValueCollection_ReportsDiagnostic_CSAsync(string dictionaryValues)
         {
             const string declaration = "var dictionary = new TestDictionary();";
@@ -253,10 +293,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, CSCustomFacadeCollectionsDictionarySource, CSIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IEnumerableValueCollection_ReportsDiagnostic_VBAsync()
         {
             const string declaration = "Dim dictionary = New TestDictionary()";
@@ -272,12 +312,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 FixedState = { Sources = { fixedCode, VBCustomFacadeCollectionsDictionarySource, VBIEnumerableFacadeCollectionsSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
                 ExpectedDiagnostics = { diagnostic }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
         #endregion
 
         #region No Diagnostic
-        [Fact]
+        [TestMethod]
         public async Task IDictionary_Values_Contains_NoDiagnostic_CSAsync()
         {
             const string declaration = @"IDictionary<string, int> dictionary = new Dictionary<string, int>();";
@@ -287,10 +327,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IDictionary_Values_Contains_NoDiagnostic_VBAsync()
         {
             const string declaration = @"Dim dictionary As IDictionary(Of String, Integer) = New Dictionary(Of String, Integer)()";
@@ -300,10 +340,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExplicitContainsKey_Keys_Contains_NoDiagnostic_CSAsync()
         {
             string testCode = CreateCSSource(
@@ -314,10 +354,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, CSExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExplicitContainsKey_Keys_Contains_NoDiagnostic_VBAsync()
         {
             string testCode = CreateVBSource(
@@ -328,14 +368,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, VBExplicitContainsKeyDictionarySource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CSFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Keys.Contains(29)")]
-        [InlineData(CSFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Values.Contains(""RuhRoh"")")]
-        [InlineData(CSFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Keys.Contains(new object())")]
-        [InlineData(CSFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Values.Contains(new object())")]
+        [TestMethod]
+        [DataRow(CSFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Keys.Contains(29)")]
+        [DataRow(CSFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Values.Contains(""RuhRoh"")")]
+        [DataRow(CSFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Keys.Contains(new object())")]
+        [DataRow(CSFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Values.Contains(new object())")]
         public async Task ContainsArgument_WrongType_NoDiagnostic_CSAsync(string facadeCollectionSource, string containsInvocation)
         {
             string testCode = CreateCSSourceWithoutLinq(
@@ -346,14 +386,14 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, CSCustomFacadeCollectionsDictionarySource, facadeCollectionSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(VBFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Keys.Contains(29)")]
-        [InlineData(VBFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Values.Contains(""RuhRoh"")")]
-        [InlineData(VBFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Keys.Contains(New Object())")]
-        [InlineData(VBFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Values.Contains(New Object())")]
+        [TestMethod]
+        [DataRow(VBFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Keys.Contains(29)")]
+        [DataRow(VBFacadeCollectionContainsWithWrongArgumentTypeSource, @"dictionary.Values.Contains(""RuhRoh"")")]
+        [DataRow(VBFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Keys.Contains(New Object())")]
+        [DataRow(VBFacadeCollectionContainsWithBaseTypeArgumentSource, @"dictionary.Values.Contains(New Object())")]
         public async Task ContainsArgument_WrongType_NoDiagnostic_VBAsync(string facadeCollectionSource, string containsInvocation)
         {
             string testCode = CreateVBSourceWithoutLinq(
@@ -364,10 +404,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             {
                 TestState = { Sources = { testCode, VBCustomFacadeCollectionsDictionarySource, facadeCollectionSource } },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IQueryableContext_NoDiagnostic()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

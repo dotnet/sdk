@@ -5,6 +5,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class SpectreDisplayHelpersTests
 {
     private static ConsoleKeyInfo Key(ConsoleKey key)
@@ -12,53 +13,53 @@ public class SpectreDisplayHelpersTests
 
     // ── MapPlainScrollKey ──────────────────────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void PlainScroll_UpArrow_ScrollsUp()
         => SpectreDisplayHelpers.MapPlainScrollKey(Key(ConsoleKey.UpArrow)).Should().Be(ScrollAction.ScrollUp);
 
-    [Fact]
+    [TestMethod]
     public void PlainScroll_DownArrow_ScrollsDown()
         => SpectreDisplayHelpers.MapPlainScrollKey(Key(ConsoleKey.DownArrow)).Should().Be(ScrollAction.ScrollDown);
 
-    [Fact]
+    [TestMethod]
     public void PlainScroll_Enter_Accepts()
         => SpectreDisplayHelpers.MapPlainScrollKey(Key(ConsoleKey.Enter)).Should().Be(ScrollAction.Accept);
 
-    [Theory]
-    [InlineData(ConsoleKey.Y)]
-    [InlineData(ConsoleKey.N)]
-    [InlineData(ConsoleKey.P)]
-    [InlineData(ConsoleKey.A)]
+    [TestMethod]
+    [DataRow(ConsoleKey.Y)]
+    [DataRow(ConsoleKey.N)]
+    [DataRow(ConsoleKey.P)]
+    [DataRow(ConsoleKey.A)]
     public void PlainScroll_LetterKeys_AreIgnored(ConsoleKey key)
         => SpectreDisplayHelpers.MapPlainScrollKey(Key(key)).Should().Be(ScrollAction.None);
 
     // ── MapConfirmScrollKey ────────────────────────────────────────────
 
-    [Fact]
+    [TestMethod]
     public void ConfirmScroll_UpArrow_ScrollsUp()
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.UpArrow)).Should().Be(ScrollAction.ScrollUp);
 
-    [Fact]
+    [TestMethod]
     public void ConfirmScroll_DownArrow_ScrollsDown()
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.DownArrow)).Should().Be(ScrollAction.ScrollDown);
 
-    [Fact]
+    [TestMethod]
     public void ConfirmScroll_Enter_Accepts()
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.Enter)).Should().Be(ScrollAction.Accept);
 
-    [Fact]
+    [TestMethod]
     public void ConfirmScroll_Y_Accepts()
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.Y)).Should().Be(ScrollAction.Accept);
 
-    [Fact]
+    [TestMethod]
     public void ConfirmScroll_N_Declines()
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(ConsoleKey.N)).Should().Be(ScrollAction.Decline);
 
-    [Theory]
-    [InlineData(ConsoleKey.A)]
-    [InlineData(ConsoleKey.P)]
-    [InlineData(ConsoleKey.Spacebar)]
-    [InlineData(ConsoleKey.Escape)]
+    [TestMethod]
+    [DataRow(ConsoleKey.A)]
+    [DataRow(ConsoleKey.P)]
+    [DataRow(ConsoleKey.Spacebar)]
+    [DataRow(ConsoleKey.Escape)]
     public void ConfirmScroll_UnrecognizedKeys_AreIgnored(ConsoleKey key)
         => SpectreDisplayHelpers.MapConfirmScrollKey(Key(key)).Should().Be(ScrollAction.None);
 }

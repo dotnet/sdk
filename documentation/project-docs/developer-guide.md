@@ -30,7 +30,7 @@ build.cmd
 
 The build script will output a `dotnet` installation to `artifacts\bin\redist\Debug\dotnet` that will include any local changes to the .NET Core CLI.
 
-As part of the build, some intermediate files will get generated which may run into long-path issues. If you encounter a build failure with an error message similar to `Resource file [filename].resx cannot be found.`, [enable long paths](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and try again.
+As part of the build, some intermediate files will get generated which may run into long-path issues. If you encounter a build failure with an error message similar to `Resource file [filename].resx cannot be found.`, [enable long paths in Windows](https://docs.microsoft.com/en-us/windows/win32/fileio/maximum-file-path-limitation?tabs=cmd#enable-long-paths-in-windows-10-version-1607-and-later) and in Git (`git config core.longpaths true`), then try again.
 
 #### Using Visual Studio
 
@@ -56,6 +56,27 @@ Run the following command from the root of the repository:
 ```
 
 The build script will output a .NET Core installation to `artifacts\bin\redist\Debug\dotnet` that will include any local changes to the .NET Core CLI.
+
+## SDK process entry points
+
+Changes under `src/Cli` must support three process entry points of equal importance:
+
+| Entry point | Source | Host |
+| --- | --- | --- |
+| Managed CLI | [`src/Cli/dotnet/Program.cs`](../../src/Cli/dotnet/Program.cs) | CoreCLR runs the full command implementation. |
+| Native AOT CLI | [`src/Cli/dotnet-aot/NativeEntryPoint.cs`](../../src/Cli/dotnet-aot/NativeEntryPoint.cs) | The native `dotnet` host calls the exported `dotnet_execute`. Unsupported operations can continue in the managed CLI. See the [NativeAOT design](../../src/Cli/dotnet-aot/DESIGN.md). |
+| MSBuild logger | [`src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) | MSBuild loads the logger type from `dotnet.dll` as an `INodeLogger`. [`MSBuildForwardingApp`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildForwardingApp.cs) adds the `-distributedlogger` argument. |
+
+### MSBuild logger lifecycle
+
+The MSBuild logger is a separate process entry point. It is not a standalone executable.
+The logger can run in the managed CLI process, a child MSBuild process, or a persistent
+MSBuild server. Code called through the logger must not assume that a CLI bootstrap
+initialized process-wide state.
+
+Use `BuildStarted` and `BuildFinished` to manage state for one build. `Shutdown` completes
+one logger instance. It does not necessarily end the process. A persistent server can run
+multiple builds in one process. Refresh the environment and trace context for each build.
 
 ## Running tests
 
@@ -175,6 +196,33 @@ taskkill /F /IM dotnet.exe /T ||
 taskkill /F /IM VSTest.Console.exe /T ||
 taskkill /F /IM msbuild.exe /T
 ```
+
+## CI workflow telemetry correlation
+
+Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point.
+Set the variable at the workflow or pipeline scope. You can use job scope in a
+single-job workflow. The CLI uses this value to correlate telemetry from separate
+`dotnet` processes in one run.
+
+Use this value in GitHub Actions workflows under
+[`.github/workflows`](../../.github/workflows):
+
+```yaml
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+```
+
+Use this value in Azure DevOps pipeline entry points:
+
+```yaml
+variables:
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+```
+
+When you add or change a CI entry point, preserve this variable and its provider-specific
+format. For CLI behavior, see the
+[telemetry documentation](telemetry.md#related-environment-variables).
 
 ## Automated PR Maintenance Commands
 

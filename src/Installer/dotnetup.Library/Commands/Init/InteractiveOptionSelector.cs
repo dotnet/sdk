@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// <summary>
 /// Represents an option in the interactive selector with a title, description, and hover tooltip.
 /// </summary>
-internal record SelectableOption(string Key, string Title, string Description, string Tooltip);
+internal record SelectableOption(string Title, string Description, string Tooltip);
 
 /// <summary>
 /// A custom interactive option selector that uses Spectre.Console's LiveDisplay

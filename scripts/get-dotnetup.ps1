@@ -1,18 +1,18 @@
 #!/usr/bin/env pwsh
 <#
 .SYNOPSIS
-    Downloads the latest dotnetup daily build and installs it locally.
+    Downloads the latest dotnetup preview build and installs it locally.
 
 .DESCRIPTION
     Downloads dotnetup from the public aka.ms shortlinks (e.g.
-    https://aka.ms/dotnet/dotnetup/daily/dotnetup-win-x64.exe), verifies the
+    https://aka.ms/dotnet/dotnetup/preview/dotnetup-win-x64.exe), verifies the
     SHA-512 checksum, and installs the binary to a local directory.
 
 .PARAMETER InstallDir
     Directory to install dotnetup into. Defaults to ~/.dotnetup.
 
 .PARAMETER Quality
-    Build quality to install. Defaults to 'daily'.
+    Build quality to install. Defaults to 'preview'. Use 'daily' for the latest daily build.
 
 .PARAMETER RuntimeId
     Override automatic OS/architecture detection with an explicit RID
@@ -23,11 +23,14 @@
 
 .EXAMPLE
     ./get-dotnetup.ps1 -RuntimeId linux-musl-x64 -InstallDir /opt/dotnetup
+
+.EXAMPLE
+    ./get-dotnetup.ps1 -Quality daily
 #>
 [CmdletBinding()]
 param(
     [string]$InstallDir = (Join-Path $HOME ".dotnetup"),
-    [string]$Quality = "daily",
+    [string]$Quality = "preview",
     [string]$RuntimeId
 )
 
@@ -35,6 +38,47 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $BaseUrl = "https://aka.ms/dotnet/dotnetup/$Quality"
+
+# The SYNC section below is verified by a test to keep the dotnetup script + dotnet sdk engineering script logic in sync.
+# (the get-dotnetup script intentionally does not yet exist in `main` and that script must work standalone)
+# BEGIN-SYNC ArchitectureDetection (keep identical with eng/sdk-tools.ps1)
+function ConvertTo-RidArchitecture([System.Runtime.InteropServices.Architecture]$Architecture) {
+    switch ($Architecture) {
+        ([System.Runtime.InteropServices.Architecture]::Arm64) { return "arm64" }
+        ([System.Runtime.InteropServices.Architecture]::X86) { return "x86" }
+        ([System.Runtime.InteropServices.Architecture]::Arm) { return "arm" }
+        default { return "x64" }
+    }
+}
+
+# Maps a Windows PROCESSOR_ARCHITECTURE/PROCESSOR_ARCHITEW6432 env-var value to the
+# lowercase dotnet RID architecture token. Throws when the value is empty or unrecognized.
+function ConvertTo-RidFromProcessorArchitecture([string]$ProcessorArchitecture) {
+    switch ($ProcessorArchitecture) {
+        "ARM64" { return "arm64" }
+        "AMD64" { return "x64" }
+        "ARM" { return "arm" }
+        "x86" { return "x86" }
+        default { throw "Unable to determine the machine architecture from the processor architecture ('$ProcessorArchitecture'); it is empty or unrecognized." }
+    }
+}
+
+# Detect native OS architecture, which may differ from the process architecture
+# (e.g., x64 process running on ARM64 Windows via emulation).
+function Get-NativeMachineArchitecture {
+    try {
+        return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
+    }
+    catch {
+        # OSArchitecture can throw when a shadowing RuntimeInformation type lacks
+        # the property (PSReadLine's polyfill on Windows PowerShell 5.1 under strict mode).
+        # PROCESSOR_ARCHITEW6432 reports the native arch under emulation (e.g. an x64 process on ARM64 Windows).
+        if ([Environment]::OSVersion.Platform -ne 'Win32NT') { throw }
+        $procArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
+        return ConvertTo-RidFromProcessorArchitecture $procArch
+    }
+}
+# END-SYNC ArchitectureDetection
 
 function Get-RuntimeId {
     if ($RuntimeId) {
@@ -86,18 +130,49 @@ function Get-RuntimeId {
         throw "Unsupported operating system. Use -RuntimeId to specify a RID manually."
     }
 
-    # Detect architecture
-    $arch = [System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture
-    $archStr = switch ($arch) {
-        "X64" { "x64" }
-        "Arm64" { "arm64" }
-        default { throw "Unsupported architecture: $arch. Use -RuntimeId to specify a RID manually." }
+    # Detect architecture using the shared helper (see the SYNC section above).
+    $archStr = Get-NativeMachineArchitecture
+    switch ($archStr) {
+        "x64" { }
+        "arm64" { }
+        default { throw "Unsupported architecture: $archStr. Use -RuntimeId to specify a RID manually." }
     }
 
     return "$os-$archStr"
 }
 
 # --- Main ---
+
+# Map a 'channel' such as 'daily' to specific version url for the binary and its .sha512 to prevent release race condition mismatches
+function Resolve-FinalUrl([string]$Url) {
+    # Require an actual curl executable; on Windows PowerShell 5.1 'curl' is an alias for Invoke-WebRequest, so -CommandType Application excludes it.
+    $curl = Get-Command curl.exe -CommandType Application -ErrorAction SilentlyContinue
+    if (-not $curl) { $curl = Get-Command curl -CommandType Application -ErrorAction SilentlyContinue }
+    if ($curl) {
+        $sink = [System.IO.Path]::GetTempFileName()
+        try {
+            # --head resolves redirects without downloading the body.
+            $final = & $curl.Source --silent --show-error --location --head `
+                --output $sink --write-out '%{url_effective}' $Url 2>$null
+            if ($LASTEXITCODE -eq 0 -and $final) { return "$final".Trim() }
+        }
+        catch { }
+        finally { Remove-Item $sink -Force -ErrorAction SilentlyContinue }
+    }
+
+    # Fallback for hosts without a curl executable (e.g. Windows PowerShell 5.1):
+    try {
+        $req = [System.Net.WebRequest]::Create($Url)
+        $req.Method = "HEAD"
+        $req.AllowAutoRedirect = $true
+        $resp = $req.GetResponse()
+        try { return $resp.ResponseUri.AbsoluteUri }
+        finally { $resp.Dispose() }
+    }
+    catch {
+        return $null
+    }
+}
 
 $rid = Get-RuntimeId
 Write-Host "Detected runtime: $rid" -ForegroundColor Cyan
@@ -106,6 +181,17 @@ $binaryName = if ($rid -like "win-*") { "dotnetup.exe" } else { "dotnetup" }
 $fileName = if ($rid -like "win-*") { "dotnetup-$rid.exe" } else { "dotnetup-$rid" }
 $downloadUrl = "$BaseUrl/$fileName"
 $checksumUrl = "$downloadUrl.sha512"
+
+$resolvedUrl = Resolve-FinalUrl $downloadUrl
+if ($resolvedUrl -and $resolvedUrl -like "*/public/*") {
+    Write-Host "Resolved '$Quality' to concrete build: $resolvedUrl" -ForegroundColor DarkGray
+    $downloadUrl = $resolvedUrl
+    # Checksums live under the sibling 'public-checksums' path with a .sha512 suffix.
+    $checksumUrl = ($resolvedUrl -replace '/public/', '/public-checksums/') + ".sha512"
+}
+else {
+    Write-Host "Could not resolve '$Quality' shortlink to a concrete build; using shortlink URLs directly." -ForegroundColor DarkGray
+}
 
 $tempDir = Join-Path ([System.IO.Path]::GetTempPath()) "dotnetup-install-$([System.IO.Path]::GetRandomFileName())"
 New-Item -ItemType Directory -Path $tempDir -Force | Out-Null

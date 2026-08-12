@@ -33,18 +33,15 @@ internal class InstallPathResolver
     /// 1. Explicitly provided install path
     /// 2. global.json's sdk.paths — its first meaningful entry, which is either a literal path
     ///    or, when that entry is the "$host$" sentinel, the default host install location
-    /// 3. Current user installation path (if exists)
-    /// 4. Default install path
+    /// 3. Default install path
     /// </summary>
     /// <param name="explicitInstallPath">The install path explicitly provided by the user (e.g., --install-path option).</param>
     /// <param name="globalJsonInfo">Information from global.json, if available.</param>
-    /// <param name="currentDotnetInstallRoot">Current .NET installation configuration, if any.</param>
     /// <returns>The resolution result.</returns>
     /// <exception cref="DotnetInstallException">Thrown when the install path cannot be resolved.</exception>
     public InstallPathResolutionResult Resolve(
         string? explicitInstallPath,
-        GlobalJsonInfo? globalJsonInfo,
-        DotnetInstallRootConfiguration? currentDotnetInstallRoot)
+        GlobalJsonInfo? globalJsonInfo)
     {
         string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
             ? globalJsonInfo.SdkPath
@@ -67,10 +64,6 @@ internal class InstallPathResolver
             // decision, so this is reported as a global.json-sourced path.
             string defaultPath = _dotnetEnvironment.GetDefaultDotnetInstallPath();
             return new InstallPathResolutionResult(defaultPath, defaultPath, PathSource.GlobalJson);
-        }
-        else if (currentDotnetInstallRoot is not null && currentDotnetInstallRoot.InstallType == InstallType.User)
-        {
-            return new InstallPathResolutionResult(currentDotnetInstallRoot.Path, installPathFromGlobalJson, PathSource.ExistingUserInstall);
         }
         else
         {

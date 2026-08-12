@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
@@ -8,34 +8,17 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
-using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTestFixture(IMessageSink sink) : IAsyncLifetime
+public abstract class RunFileTestBase : SdkTest
 {
-    public ValueTask InitializeAsync()
+    [TestInitialize]
+    public void EnsureRunFileWarmup()
     {
-        RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
-
-        // Ensure a simple app runs fully with MSBuild before running other csc-only tests
-        // so we have packages like ILLink.Tasks restored and csc-only optimization can kick in.
-        new DotnetCommand(new SharedTestOutputHelper(sink), "run", "-")
-            .WithStandardInput("""
-                Console.WriteLine("Hello");
-                """)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut("Hello");
-
-        return default;
+        RunFileTestFixture.EnsureInitialized(Log);
     }
 
-    public ValueTask DisposeAsync() => default;
-}
-
-public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), IClassFixture<RunFileTestFixture>
-{
     internal static string s_includeExcludeDefaultKnownExtensions
         => field ??= string.Join(", ", CSharpDirective.IncludeOrExclude.DefaultMapping.Select(static e => e.Extension));
 
@@ -150,7 +133,7 @@ public abstract class RunFileTestBase(ITestOutputHelper log) : SdkTest(log), ICl
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
         // Check there are no implicit build files that would prevent testing optimizations.
-        VirtualProjectBuildingCommand.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
+        FileBasedAppRunPlan.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
         exampleMSBuildFile.Should().BeNull(because: "there should not be any implicit build files in the temp directory or its parents " +
             "so we can test optimizations that would be disabled with implicit build files present");
 

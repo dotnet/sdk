@@ -1,11 +1,10 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareVisibleInstanceFieldsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,9 +14,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotDeclareVisibleInstanceFieldsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharp_PublicVariable_PublicContainingTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -27,7 +27,7 @@ public class A
 }", GetCSharpResultAt(4, 19));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_PublicVariable_PublicContainingTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -36,7 +36,7 @@ Public Class A
 End Class", GetBasicResultAt(3, 12));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_PublicVariable_InternalContainingTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -51,7 +51,7 @@ internal class A
 }");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_PublicVariable_InternalContainingTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -65,7 +65,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_DefaultVisibilityAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -75,7 +75,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_DefaultVisibilityAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -84,7 +84,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_PublicStaticVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -94,7 +94,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_PublicStaticVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -103,7 +103,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_PublicStaticReadonlyVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -113,7 +113,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_PublicStaticReadonlyVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -122,7 +122,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_PublicConstVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -132,7 +132,7 @@ public class A
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_PublicConstVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -141,7 +141,7 @@ Public Class A
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedVariable_PublicContainingTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -151,7 +151,7 @@ public class A
 }", GetCSharpResultAt(4, 22));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedVariable_PublicContainingTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -160,7 +160,7 @@ Public Class A
 End Class", GetBasicResultAt(3, 15));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_ProtectedVariable_InternalContainingTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -175,7 +175,7 @@ End Class", GetBasicResultAt(3, 15));
         }");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_ProtectedVariable_InternalContainingTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -189,7 +189,7 @@ End Class", GetBasicResultAt(3, 15));
         ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedStaticVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -199,7 +199,7 @@ End Class", GetBasicResultAt(3, 15));
         }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedStaticVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -208,7 +208,7 @@ End Class", GetBasicResultAt(3, 15));
         End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedStaticReadonlyVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -218,7 +218,7 @@ End Class", GetBasicResultAt(3, 15));
         }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedStaticReadonlyVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -227,7 +227,7 @@ End Class", GetBasicResultAt(3, 15));
         End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedConstVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -237,7 +237,7 @@ End Class", GetBasicResultAt(3, 15));
         }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedConstVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -246,7 +246,7 @@ End Class", GetBasicResultAt(3, 15));
         End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedInternalVariable_PublicContainingTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -256,7 +256,7 @@ public class A
 }", GetCSharpResultAt(4, 31));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedFriendVariable_PublicContainingTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -265,7 +265,7 @@ Public Class A
 End Class", GetBasicResultAt(3, 22));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task CSharp_ProtectedInternalVariable_InternalContainingTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -280,7 +280,7 @@ End Class", GetBasicResultAt(3, 22));
         }");
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task VisualBasic_ProtectedFriendVariable_InternalContainingTypeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -294,7 +294,7 @@ End Class", GetBasicResultAt(3, 22));
         ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedInternalStaticVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -304,7 +304,7 @@ End Class", GetBasicResultAt(3, 22));
         }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedFriendStaticVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -313,7 +313,7 @@ End Class", GetBasicResultAt(3, 22));
         End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedInternalStaticReadonlyVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -323,7 +323,7 @@ End Class", GetBasicResultAt(3, 22));
         }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedFriendStaticReadonlyVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -332,7 +332,7 @@ End Class", GetBasicResultAt(3, 22));
         End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharp_ProtectedInternalConstVariableAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -342,7 +342,7 @@ End Class", GetBasicResultAt(3, 22));
         }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task VisualBasic_ProtectedFriendConstVariableAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -351,7 +351,7 @@ End Class", GetBasicResultAt(3, 22));
         End Class");
         }
 
-        [Fact, WorkItem(4149, "https://github.com/dotnet/roslyn-analyzers/issues/4149")]
+        [TestMethod, WorkItem(4149, "https://github.com/dotnet/roslyn-analyzers/issues/4149")]
         public async Task TypeWithStructLayoutAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -383,12 +383,12 @@ Public Structure S
 End Structure");
         }
 
-        [Theory, WorkItem(4149, "https://github.com/dotnet/roslyn-analyzers/issues/4149")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.exclude_structs = true")]
-        [InlineData("dotnet_code_quality.exclude_structs = false")]
-        [InlineData("dotnet_code_quality.CA1051.exclude_structs = true")]
-        [InlineData("dotnet_code_quality.CA1051.exclude_structs = false")]
+        [TestMethod, WorkItem(4149, "https://github.com/dotnet/roslyn-analyzers/issues/4149")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.exclude_structs = true")]
+        [DataRow("dotnet_code_quality.exclude_structs = false")]
+        [DataRow("dotnet_code_quality.CA1051.exclude_structs = true")]
+        [DataRow("dotnet_code_quality.CA1051.exclude_structs = false")]
         public async Task PublicFieldOnStruct_AnalyzerOptionAsync(string editorConfigText)
         {
             var expectsIssue = !editorConfigText.EndsWith("true", StringComparison.OrdinalIgnoreCase);
@@ -409,7 +409,7 @@ public struct S
 {editorConfigText}
 ") }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             var vbCode = @"
 Public Structure S
@@ -426,7 +426,7 @@ End Structure";
 {editorConfigText}
 ") }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

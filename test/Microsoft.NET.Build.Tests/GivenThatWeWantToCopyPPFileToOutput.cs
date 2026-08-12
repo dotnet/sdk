@@ -1,16 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeHaveAPpContentFile : SdkTest
     {
-        public GivenThatWeHaveAPpContentFile(ITestOutputHelper log) : base(log)
-        { }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_to_output_successfully()
         {
             var packageReference = GetPackageReference();

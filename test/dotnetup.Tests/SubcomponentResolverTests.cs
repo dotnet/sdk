@@ -3,135 +3,135 @@
 
 using FluentAssertions;
 using Microsoft.Dotnet.Installation.Internal;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
+[TestClass]
 public class SubcomponentResolverTests
 {
-    [Theory]
-    [InlineData("sdk/10.0.101/dotnet.dll", "sdk/10.0.101")]
-    [InlineData("sdk/10.0.101", "sdk/10.0.101")]
-    [InlineData("sdk\\10.0.101\\dotnet.dll", "sdk/10.0.101")]
+    [TestMethod]
+    [DataRow("sdk/10.0.101/dotnet.dll", "sdk/10.0.101")]
+    [DataRow("sdk/10.0.101", "sdk/10.0.101")]
+    [DataRow("sdk\\10.0.101\\dotnet.dll", "sdk/10.0.101")]
     public void ResolvesSdkPaths(string input, string expected)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
         result.Should().Be(SubcomponentResolveResult.Resolved);
     }
 
-    [Theory]
-    [InlineData("shared/Microsoft.NETCore.App/10.0.1/System.dll", "shared/Microsoft.NETCore.App/10.0.1")]
-    [InlineData("shared/Microsoft.AspNetCore.App/10.0.3/something.dll", "shared/Microsoft.AspNetCore.App/10.0.3")]
-    [InlineData("shared/Microsoft.WindowsDesktop.App/10.0.3/WPF.dll", "shared/Microsoft.WindowsDesktop.App/10.0.3")]
+    [TestMethod]
+    [DataRow("shared/Microsoft.NETCore.App/10.0.1/System.dll", "shared/Microsoft.NETCore.App/10.0.1")]
+    [DataRow("shared/Microsoft.AspNetCore.App/10.0.3/something.dll", "shared/Microsoft.AspNetCore.App/10.0.3")]
+    [DataRow("shared/Microsoft.WindowsDesktop.App/10.0.3/WPF.dll", "shared/Microsoft.WindowsDesktop.App/10.0.3")]
     public void ResolvesSharedPaths(string input, string expected)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
         result.Should().Be(SubcomponentResolveResult.Resolved);
     }
 
-    [Theory]
-    [InlineData("host/fxr/10.0.1/hostfxr.dll", "host/fxr/10.0.1")]
+    [TestMethod]
+    [DataRow("host/fxr/10.0.1/hostfxr.dll", "host/fxr/10.0.1")]
     public void ResolvesHostPaths(string input, string expected)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
         result.Should().Be(SubcomponentResolveResult.Resolved);
     }
 
-    [Theory]
-    [InlineData("packs/Microsoft.AspNetCore.App.Ref/10.0.2/ref/net10.0/foo.dll", "packs/Microsoft.AspNetCore.App.Ref/10.0.2")]
-    [InlineData("packs/Microsoft.NETCore.App.Ref/10.0.1/data/foo.xml", "packs/Microsoft.NETCore.App.Ref/10.0.1")]
+    [TestMethod]
+    [DataRow("packs/Microsoft.AspNetCore.App.Ref/10.0.2/ref/net10.0/foo.dll", "packs/Microsoft.AspNetCore.App.Ref/10.0.2")]
+    [DataRow("packs/Microsoft.NETCore.App.Ref/10.0.1/data/foo.xml", "packs/Microsoft.NETCore.App.Ref/10.0.1")]
     public void ResolvesPacksPaths(string input, string expected)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
         result.Should().Be(SubcomponentResolveResult.Resolved);
     }
 
-    [Theory]
-    [InlineData("templates/10.0.1/microsoft.dotnet.common.projecttemplates.10.0.nupkg", "templates/10.0.1")]
+    [TestMethod]
+    [DataRow("templates/10.0.1/microsoft.dotnet.common.projecttemplates.10.0.nupkg", "templates/10.0.1")]
     public void ResolvesTemplatePaths(string input, string expected)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
         result.Should().Be(SubcomponentResolveResult.Resolved);
     }
 
-    [Theory]
-    [InlineData("sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2/WorkloadManifest.json", "sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2")]
+    [TestMethod]
+    [DataRow("sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2/WorkloadManifest.json", "sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2")]
     public void ResolvesSdkManifestPaths(string input, string expected)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
         result.Should().Be(SubcomponentResolveResult.Resolved);
     }
 
-    [Theory]
-    [InlineData("dotnet.exe")]
-    [InlineData("LICENSE.txt")]
-    [InlineData("ThirdPartyNotices.txt")]
-    [InlineData("")]
+    [TestMethod]
+    [DataRow("dotnet.exe")]
+    [DataRow("LICENSE.txt")]
+    [DataRow("ThirdPartyNotices.txt")]
+    [DataRow("")]
     public void ReturnsNullForRootLevelFiles(string input)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().BeNull();
         result.Should().Be(SubcomponentResolveResult.RootLevelFile);
     }
 
-    [Theory]
-    [InlineData("unknown/folder/file.txt")]
+    [TestMethod]
+    [DataRow("unknown/folder/file.txt")]
     public void ReturnsNullForUnknownFolders(string input)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().BeNull();
         result.Should().Be(SubcomponentResolveResult.UnknownFolder);
     }
 
-    [Theory]
-    [InlineData("metadata/workloads/10.0.100/something")]
+    [TestMethod]
+    [DataRow("metadata/workloads/10.0.100/something")]
     public void ReturnsNullForIgnoredFolders(string input)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().BeNull();
         result.Should().Be(SubcomponentResolveResult.IgnoredFolder);
     }
 
-    [Theory]
-    [InlineData("sdk")]
-    [InlineData("shared/Microsoft.NETCore.App")]
+    [TestMethod]
+    [DataRow("sdk")]
+    [DataRow("shared/Microsoft.NETCore.App")]
     public void ReturnsNullForTooShallowPaths(string input)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().BeNull();
         result.Should().Be(SubcomponentResolveResult.TooShallow);
     }
 
-    [Theory]
-    [InlineData("shared/")]
-    [InlineData("shared/Microsoft.NETCore.App/")]
-    [InlineData("shared/Microsoft.AspNetCore.App/")]
-    [InlineData("host/")]
-    [InlineData("host/fxr/")]
-    [InlineData("./shared/")]
-    [InlineData("./shared/Microsoft.NETCore.App/")]
-    [InlineData("./host/")]
-    [InlineData("./host/fxr/")]
-    [InlineData("sdk/")]
-    [InlineData("sdk-manifests/")]
-    [InlineData("sdk-manifests/10.0.100/")]
-    [InlineData("sdk-manifests/10.0.100/microsoft.net.sdk.android/")]
+    [TestMethod]
+    [DataRow("shared/")]
+    [DataRow("shared/Microsoft.NETCore.App/")]
+    [DataRow("shared/Microsoft.AspNetCore.App/")]
+    [DataRow("host/")]
+    [DataRow("host/fxr/")]
+    [DataRow("./shared/")]
+    [DataRow("./shared/Microsoft.NETCore.App/")]
+    [DataRow("./host/")]
+    [DataRow("./host/fxr/")]
+    [DataRow("sdk/")]
+    [DataRow("sdk-manifests/")]
+    [DataRow("sdk-manifests/10.0.100/")]
+    [DataRow("sdk-manifests/10.0.100/microsoft.net.sdk.android/")]
     public void ReturnsIntermediateDirectoryForShallowDirectoryEntries(string input)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().BeNull();
         result.Should().Be(SubcomponentResolveResult.IntermediateDirectory);
     }
 
-    [Theory]
-    [InlineData("sdk\\10.0.101\\dotnet.dll", "sdk/10.0.101")]
-    [InlineData("shared\\Microsoft.NETCore.App\\10.0.1\\System.dll", "shared/Microsoft.NETCore.App/10.0.1")]
-    [InlineData("host\\fxr\\10.0.1\\hostfxr.dll", "host/fxr/10.0.1")]
-    [InlineData("packs\\Microsoft.NETCore.App.Ref\\10.0.1\\data\\foo.xml", "packs/Microsoft.NETCore.App.Ref/10.0.1")]
-    [InlineData("templates\\10.0.1\\something.nupkg", "templates/10.0.1")]
-    [InlineData("sdk-manifests\\10.0.100\\microsoft.net.sdk.android\\36.1.2\\WorkloadManifest.json", "sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2")]
+    [TestMethod]
+    [DataRow("sdk\\10.0.101\\dotnet.dll", "sdk/10.0.101")]
+    [DataRow("shared\\Microsoft.NETCore.App\\10.0.1\\System.dll", "shared/Microsoft.NETCore.App/10.0.1")]
+    [DataRow("host\\fxr\\10.0.1\\hostfxr.dll", "host/fxr/10.0.1")]
+    [DataRow("packs\\Microsoft.NETCore.App.Ref\\10.0.1\\data\\foo.xml", "packs/Microsoft.NETCore.App.Ref/10.0.1")]
+    [DataRow("templates\\10.0.1\\something.nupkg", "templates/10.0.1")]
+    [DataRow("sdk-manifests\\10.0.100\\microsoft.net.sdk.android\\36.1.2\\WorkloadManifest.json", "sdk-manifests/10.0.100/microsoft.net.sdk.android/36.1.2")]
     public void NormalizesBackslashesToForwardSlashes(string input, string expected)
     {
         SubcomponentResolver.Resolve(input, out var result).Should().Be(expected);
         result.Should().Be(SubcomponentResolveResult.Resolved);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryGetDepthWorksForKnownFolders()
     {
         SubcomponentResolver.TryGetDepth("sdk", out var depth).Should().BeTrue();
@@ -144,7 +144,7 @@ public class SubcomponentResolverTests
         depth.Should().Be(4);
     }
 
-    [Fact]
+    [TestMethod]
     public void TryGetDepthReturnsFalseForUnknownFolders()
     {
         SubcomponentResolver.TryGetDepth("metadata", out _).Should().BeFalse();

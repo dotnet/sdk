@@ -1,0 +1,17 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="GroupedFrameworkPackage" Version="1.0.0" />
+  </ItemGroup>
+
+</Project>

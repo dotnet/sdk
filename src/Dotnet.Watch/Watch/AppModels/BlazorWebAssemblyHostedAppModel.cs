@@ -21,13 +21,13 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
 
-    protected override ImmutableArray<(HotReloadClient client, string name)> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
+    protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);
         return
         [
-            (CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject), "client"),
-            (new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: false, new NamedPipeClientTransport(clientLogger)), "host")
+            CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject),
+            new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: false, new NamedPipeClientTransport(clientLogger))
         ];
     }
 }

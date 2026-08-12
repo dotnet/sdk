@@ -9,22 +9,16 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Xunit;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
-    [CollectionDefinition(nameof(GenerateDepsFileCwdSensitiveCollection), DisableParallelization = true)]
-    public sealed class GenerateDepsFileCwdSensitiveCollection
-    {
-    }
-
-    [Collection(nameof(GenerateDepsFileCwdSensitiveCollection))]
+    [TestClass]
     public class GivenAGenerateDepsFilePathResolution : IDisposable
     {
         private readonly List<string> _tempDirs = new();
         private readonly string _originalCwd = Directory.GetCurrentDirectory();
 
-        [Fact]
+        [TestMethod]
         public void ProjectAndDepsFilePathsAreResolvedThroughTaskEnvironment()
         {
             string projectDir = CreateTestProjectDirectory();
@@ -47,7 +41,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "FilesWritten should preserve the caller's original relative output path");
         }
 
-        [Fact]
+        [TestMethod]
         public void AssetsAndRuntimeGraphPathsAreResolvedThroughTaskEnvironment()
         {
             string projectDir = CreateTestProjectDirectory();
@@ -77,7 +71,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "deps file should not be written under the process CWD");
         }
 
-        [Fact]
+        [TestMethod]
         public void SatelliteAssemblyTargetPathFlowsVerbatimToDepsJsonResources()
         {
             // Encodes the contract that AssemblySatelliteAssemblies metadata is passed through

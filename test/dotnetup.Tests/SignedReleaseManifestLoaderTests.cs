@@ -16,7 +16,6 @@ using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.Dotnet.Installation.Internal.Signing;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -26,6 +25,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// <see cref="SignatureVerifierTests"/> + future integration tests; these focus on the
 /// URL-derivation and JSON-parsing primitives that are easiest to break without being noticed.
 /// </summary>
+[TestClass]
 public class SignedReleaseManifestLoaderTests
 {
     private static SignedReleaseManifestLoader CreateLoader(string indexUrl) => new(
@@ -46,16 +46,16 @@ public class SignedReleaseManifestLoaderTests
     }
     // ---------------- DeriveSiblingUrl ----------------
 
-    [Theory]
-    [InlineData(
+    [TestMethod]
+    [DataRow(
         "https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json",
         "releases-index.json.20260505084330.p7s",
         "https://builds.dotnet.microsoft.com/dotnet/release-metadata/releases-index.json.20260505084330.p7s")]
-    [InlineData(
+    [DataRow(
         "https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json",
         "releases.json.20260505.p7s",
         "https://builds.dotnet.microsoft.com/dotnet/release-metadata/10.0/releases.json.20260505.p7s")]
-    [InlineData(
+    [DataRow(
         "https://mirror.corp.com:8443/dotnet/release-metadata/releases-index.json",
         "sig.p7s",
         "https://mirror.corp.com:8443/dotnet/release-metadata/sig.p7s")]
@@ -65,7 +65,7 @@ public class SignedReleaseManifestLoaderTests
         actual.ToString().Should().Be(expected);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeriveSiblingUrl_PreservesPort()
     {
         // Non-default port must round-trip through the UriBuilder.
@@ -78,7 +78,7 @@ public class SignedReleaseManifestLoaderTests
 
     // ---------------- ParseSignatureFileField ----------------
 
-    [Fact]
+    [TestMethod]
     public void ParseSignatureFileField_PresentSignatureBlock_ReturnsFile()
     {
         byte[] json = Encoding.UTF8.GetBytes("""
@@ -90,14 +90,14 @@ public class SignedReleaseManifestLoaderTests
         SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().Be("x.20260505.p7s");
     }
 
-    [Fact]
+    [TestMethod]
     public void ParseSignatureFileField_MissingSignatureProperty_ReturnsNull()
     {
         byte[] json = Encoding.UTF8.GetBytes("""{ "channels": [] }""");
         SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ParseSignatureFileField_SignatureWithoutFile_ReturnsNull()
     {
         byte[] json = Encoding.UTF8.GetBytes("""
@@ -106,7 +106,7 @@ public class SignedReleaseManifestLoaderTests
         SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ParseSignatureFileField_SignatureFileNotAString_ReturnsNull()
     {
         // Defensive: don't accept numeric or null values. The loader uses this to construct
@@ -116,17 +116,17 @@ public class SignedReleaseManifestLoaderTests
         SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ParseSignatureFileField_ArrayRoot_ReturnsNull()
     {
         byte[] json = Encoding.UTF8.GetBytes("[]");
         SignedReleaseManifestLoader.ParseSignatureFileField(json).Should().BeNull();
     }
 
-    [Theory]
-    [InlineData("")]
-    [InlineData("   ")]
-    [InlineData("\t")]
+    [TestMethod]
+    [DataRow("")]
+    [DataRow("   ")]
+    [DataRow("\t")]
     public void ParseSignatureFileField_EmptyOrWhitespaceFile_ReturnsNull(string fileValue)
     {
         // An empty signature.file would derive a sibling URL ending in '/', which would
@@ -135,14 +135,14 @@ public class SignedReleaseManifestLoaderTests
             .Should().BeNull();
     }
 
-    [Theory]
-    [InlineData("../etc/passwd")]                         // relative path traversal
-    [InlineData("../../sensitive.p7s")]
-    [InlineData("subdir/sig.p7s")]                        // forward-slash navigation
-    [InlineData("subdir\\sig.p7s")]                       // back-slash navigation (Windows-style)
-    [InlineData("https://attacker.com/sig.p7s")]          // absolute URL with scheme
-    [InlineData("file:///etc/passwd")]                    // file: scheme
-    [InlineData("//attacker.com/sig.p7s")]                // protocol-relative URL
+    [TestMethod]
+    [DataRow("../etc/passwd")]                         // relative path traversal
+    [DataRow("../../sensitive.p7s")]
+    [DataRow("subdir/sig.p7s")]                        // forward-slash navigation
+    [DataRow("subdir\\sig.p7s")]                       // back-slash navigation (Windows-style)
+    [DataRow("https://attacker.com/sig.p7s")]          // absolute URL with scheme
+    [DataRow("file:///etc/passwd")]                    // file: scheme
+    [DataRow("//attacker.com/sig.p7s")]                // protocol-relative URL
     public void ParseSignatureFileField_PathTraversalOrSchemePrefix_ReturnsNull(string fileValue)
     {
         // signature.file MUST be a bare filename per the signing protocol's naming convention
@@ -154,7 +154,7 @@ public class SignedReleaseManifestLoaderTests
 
     // ---------------- GetReleaseUriForConfiguredHost (private-mirror rebase) ----------------
 
-    [Fact]
+    [TestMethod]
     public void GetReleaseUriForConfiguredHost_SameAuthority_IsNoOp()
     {
         // Production case: index URL and Product.ReleasesJson both point at builds.dotnet
@@ -165,7 +165,7 @@ public class SignedReleaseManifestLoaderTests
         loader.GetReleaseUriForConfiguredHost(original).Should().BeSameAs(original);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetReleaseUriForConfiguredHost_DifferentHost_RebasesScheme_Host_AndPort()
     {
         // Mirror case: index URL is on internal host; rebase swaps scheme/host/port and
@@ -182,7 +182,7 @@ public class SignedReleaseManifestLoaderTests
         rebased.AbsolutePath.Should().Be("/dotnet/release-metadata/10.0/releases.json");
     }
 
-    [Fact]
+    [TestMethod]
     public void GetReleaseUriForConfiguredHost_DoesNotPropagateUserInfo()
     {
         // URL-embedded credentials are deprecated and ignored by HttpClient. Make sure
@@ -229,7 +229,7 @@ public class SignedReleaseManifestLoaderTests
             new SignatureVerificationOptions(new X509Certificate2Collection(), new X509Certificate2Collection()),
             new Uri(TestIndexUrl));
 
-    [Fact]
+    [TestMethod]
     public void GetVerifiedReleasesIndex_JsonHttp500_ThrowsHttpRequestException()
     {
         // (a) JSON URL returns 500. HttpClient.GetByteArrayAsync throws HttpRequestException
@@ -248,7 +248,7 @@ public class SignedReleaseManifestLoaderTests
         handler.RequestCount.Should().Be(1, "loader must not attempt the .p7s fetch when JSON GET fails");
     }
 
-    [Fact]
+    [TestMethod]
     public void GetVerifiedReleasesIndex_SignatureP7sHttp500_ThrowsSignatureDownloadFailed()
     {
         // (b) JSON downloads + parses fine, but the sibling .p7s URL returns 500. The loader
@@ -268,7 +268,7 @@ public class SignedReleaseManifestLoaderTests
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureDownloadFailed);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetVerifiedReleasesIndex_TamperedJsonContent_ThrowsSignatureVerificationFailed()
     {
         // (c) JSON has been mutated after signing (single trailing whitespace byte appended).
@@ -297,7 +297,7 @@ public class SignedReleaseManifestLoaderTests
             .Which.ErrorCode.Should().Be(DotnetInstallErrorCode.SignatureVerificationFailed);
     }
 
-    [Fact]
+    [TestMethod]
     public void ReleaseManifest_WrapsLoaderHttpFailure_AsManifestFetchFailed()
     {
         // The loader leaves the JSON-GET HttpRequestException unwrapped (covered by

@@ -4,16 +4,16 @@
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Test.Utilities;
-using Xunit;
 using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForDllInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForDllInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForDllInjectionVulnerabilities, ReviewCodeForDllInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForDllInjectionVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task Assembly_LoadFrom_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -36,7 +36,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(15, 9, 14, 24, "Assembly Assembly.LoadFrom(string assemblyFile)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -55,7 +55,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(11, 9, 9, 24, "Assembly Assembly.Load(byte[] rawAssembly)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await new VerifyVB.Test
@@ -84,10 +84,10 @@ End Class",
                         GetBasicResultAt(11, 9, 9, 31, "Function Assembly.Load(rawAssembly As Byte()) As Assembly", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"),
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Assembly_LoadFrom_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -109,7 +109,7 @@ public partial class WebForm : System.Web.UI.Page
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AppDomain_ExecuteAssembly_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -132,7 +132,7 @@ public partial class WebForm : System.Web.UI.Page
                 GetCSharpResultAt(15, 9, 14, 24, "int AppDomain.ExecuteAssembly(string assemblyFile)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AspNetCoreHttpRequest_AppDomain_ExecuteAssembly_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

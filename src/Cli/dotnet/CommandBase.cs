@@ -4,9 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
-#if !CLI_AOT
 using Microsoft.DotNet.Cli.Extensions;
-#endif
 
 namespace Microsoft.DotNet.Cli;
 
@@ -17,19 +15,11 @@ public abstract class CommandBase
     protected CommandBase(ParseResult parseResult)
     {
         _parseResult = parseResult;
-#if !CLI_AOT
-        ShowHelpOrErrorIfAppropriate(parseResult);
-#endif
+        parseResult.ShowHelpOrErrorIfAppropriate();
     }
 
     protected CommandBase() { }
 
-#if !CLI_AOT
-    protected virtual void ShowHelpOrErrorIfAppropriate(ParseResult parseResult)
-    {
-        parseResult.ShowHelpOrErrorIfAppropriate();
-    }
-#endif
 
     public abstract int Execute();
 }

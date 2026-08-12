@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -6,6 +6,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
+    [TestClass]
     public class BuildRelatedCommandParserTests
     {
 
@@ -27,21 +28,19 @@ namespace Microsoft.DotNet.Tests.ParserTests
             "--artifacts-path"
         ];
 
-        public static TheoryData<string, string> BuildRelatedCommandsAndOptions()
+        public static IEnumerable<object[]> BuildRelatedCommandsAndOptions()
         {
-            var data = new TheoryData<string, string>();
             foreach (var cmd in BuildRelatedCommands)
             {
                 foreach (var opt in OptionsToVerify)
                 {
-                    data.Add(cmd, opt);
+                    yield return new object[] { cmd, opt };
                 }
             }
-            return data;
         }
 
-        [MemberData(nameof(BuildRelatedCommandsAndOptions))]
-        [Theory]
+        [DynamicData(nameof(BuildRelatedCommandsAndOptions))]
+        [TestMethod]
         public void Build(string command, string option)
         {
             var cliCommand = Parser.RootCommand.Children.OfType<Command>().FirstOrDefault(c => c.Name == command);

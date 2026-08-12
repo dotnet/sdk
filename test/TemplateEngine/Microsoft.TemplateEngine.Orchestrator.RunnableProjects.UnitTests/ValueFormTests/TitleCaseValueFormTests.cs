@@ -5,26 +5,27 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.ValueFormTests
 {
+    [TestClass]
     public class TitleCaseValueFormTests
     {
-        [Theory]
-        [InlineData("project x", "Project X")]
-        [InlineData("x project x", "X Project X")]
-        [InlineData("new project name", "New Project Name")]
-        [InlineData("new-project%name", "New-Project%Name")]
-        [InlineData("", "")]
+        [TestMethod]
+        [DataRow("project x", "Project X")]
+        [DataRow("x project x", "X Project X")]
+        [DataRow("new project name", "New Project Name")]
+        [DataRow("new-project%name", "New-Project%Name")]
+        [DataRow("", "")]
         public void TitleCaseWorksAsExpected(string input, string expected)
         {
             IValueForm model = new TitleCaseValueFormFactory().Create("test");
             string actual = model.Process(input, new Dictionary<string, IValueForm>());
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanHandleNullValue()
         {
             IValueForm model = new TitleCaseValueFormFactory().Create("test");
-            Assert.Throws<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
+            Assert.ThrowsExactly<ArgumentNullException>(() => model.Process(null!, new Dictionary<string, IValueForm>()));
         }
     }
 }

@@ -87,8 +87,43 @@ internal sealed class DailyChannelResolver : IDisposable
         }
 
         // "<M>-daily" → use "<M>.0" as the aka.ms partial version (aka.ms paths use major.minor).
-        string partialVersion = NormalizePartialVersion(UpdateChannel.StripDailySuffix(channel.Name));
+        // For prerelease-qualified daily channels ("<band>-preview.5-daily"):
+        //   1. Translate the label to aka.ms's dotless form ("preview5") so the URL has
+        //      the shape aka.ms expects: ".../<band>-preview5/daily/...".
+        //   2. If the band is a bare major.minor (e.g. "11.0-preview.5-daily"), inject
+        //      the default ".1xx" feature band. aka.ms only publishes prerelease-qualified
+        //      daily shortlinks under a feature-band path, so "11.0-preview5" has no
+        //      target; "11.0.1xx-preview5" is the canonical form aka.ms serves and it
+        //      returns the right artifact for any component (SDK, runtime, aspnetcore,
+        //      windowsdesktop).
+        string scope = UpdateChannel.StripDailySuffix(channel.Name);
+        string partialVersion;
+        if (UpdateChannel.TrySplitPartialVersionAndPrereleaseLabel(scope, out var bandPart, out var prereleaseLabel))
+        {
+            string akaMsLabel = prereleaseLabel.Replace(".", string.Empty, StringComparison.Ordinal);
+            string normalizedBand = EnsureFeatureBandForPreviewDaily(NormalizePartialVersion(bandPart));
+            partialVersion = $"{normalizedBand}-{akaMsLabel}";
+        }
+        else
+        {
+            partialVersion = NormalizePartialVersion(scope);
+        }
+
         return TryResolvePartialVersion(partialVersion, archivePrefix, rid, extension);
+    }
+
+    /// <summary>
+    /// Injects the default <c>.1xx</c> feature band into a bare major.minor partial version:
+    /// <c>"11.0"</c> → <c>"11.0.1xx"</c>; <c>"11.0.2xx"</c> passes through unchanged. Only valid
+    /// for prerelease-qualified daily channels, where the requested version is at the start of a
+    /// major version's life and <c>.1xx</c> is the only band aka.ms publishes a shortlink for.
+    /// Do not use for non-prerelease daily scopes (e.g. <c>"10.0-daily"</c>), which can resolve to
+    /// a later band such as <c>10.0.4xx</c>.
+    /// </summary>
+    private static string EnsureFeatureBandForPreviewDaily(string partialVersion)
+    {
+        var parts = partialVersion.Split('.');
+        return parts.Length == 2 ? $"{partialVersion}.1xx" : partialVersion;
     }
 
     /// <summary>

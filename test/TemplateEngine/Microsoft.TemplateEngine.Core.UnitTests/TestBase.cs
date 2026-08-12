@@ -3,7 +3,6 @@
 
 using System.Text;
 using Microsoft.TemplateEngine.Core.Contracts;
-using Xunit;
 
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
@@ -45,7 +44,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
                         }
                         totalBytesRead += bytesRead;
                     }
-                    Assert.Equal(preamble, readPreamble);
+                    Assert.AreSequenceEqual(preamble, readPreamble);
                 }
             }
 
@@ -62,7 +61,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
             }
 
             string actual = encoding.GetString(resultBytes);
-            Assert.Equal(expected, actual);
+            Assert.AreEqual(expected, actual);
 
             bool expectedChange = changeOverride ?? !string.Equals(expected, source, StringComparison.Ordinal);
             string modifier = expectedChange ? string.Empty : "not ";

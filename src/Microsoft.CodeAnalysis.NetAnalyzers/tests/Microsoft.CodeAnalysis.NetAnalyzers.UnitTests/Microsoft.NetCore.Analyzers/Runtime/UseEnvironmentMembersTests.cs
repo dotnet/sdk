@@ -1,8 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseEnvironmentMembers,
     Microsoft.NetCore.Analyzers.Runtime.UseEnvironmentMembersFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseEnvironmentMembersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_NoEnvironmentProcessId_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -30,7 +30,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_NoEnvironmentProcessPath_CSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +46,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostics_CSharpAsync()
         {
             await new VerifyCS.Test
@@ -95,10 +95,10 @@ class C
     public ProcessModule MainModule => null;
 }
 "
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_ProcessId_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -170,7 +170,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_ProcessPath_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -242,7 +242,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_CurrentManagedThreadId_FixApplies_CSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -314,7 +314,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostics_FixApplies_VBAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(

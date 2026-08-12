@@ -46,8 +46,10 @@
     <FileExtensionSignInfo Include=".ttf" CertificateName="None" />
     <FileExtensionSignInfo Include=".otf" CertificateName="None" />
 
-    <!-- We don't need to code sign .js files because they are not used in Windows Script Host. -->
+    <!-- We don't need to code sign most .js files because they are coming from other repos and are already signed -->
     <FileExtensionSignInfo Update=".js" CertificateName="None" />
+
+    <FileSignInfo Include="Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" CertificateName="MicrosoftDotNet500" />
 
     <!-- Skip signing .py files because they are already signed -->
     <FileExtensionSignInfo Update=".py" CertificateName="None" />
@@ -98,6 +100,7 @@
     <FileSignInfo Include="SimpleInfoName.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.DiffPlex.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="Verify.MSTest.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Verify.XunitV3.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="FluentAssertions.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>
@@ -108,6 +111,8 @@
     <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="csc;vbc;VBCSCompiler" CertificateName="MacDeveloperHarden" />
     <!-- MSBuild apphost -->
     <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="MSBuild" CertificateName="MacDeveloperHarden" />
+    <!-- NativeAOT'd aspnetcore dotnet tools -->
+    <FileSignInfo Condition="'$(TargetOS)' == 'osx'" Include="dotnet-dev-certs;dotnet-user-secrets;dotnet-user-jwts" CertificateName="MacDeveloperHarden" />
 
     <!-- dotnetup native executables (produced by src/Installer/dotnetup/dotnetup.csproj).
 
@@ -122,6 +127,14 @@
     <FileSignInfo Condition="'$(TargetOS)' == 'osx' and '$(TargetRid)' != ''"
                   Include="dotnetup-$(TargetRid)"
                   CertificateName="MacDeveloperHardenWithNotarization" />
+
+    <!-- Sign the powershell script as powershell blocks running unsigned scripts -->
+    <FileSignInfo Condition="'$(OS)' == 'Windows_NT'"
+                  Include="get-dotnetup.ps1"
+                  CertificateName="MicrosoftDotNet500" />
+
+    <!-- Avoid SignTool flagging the .sh script as missing sign info. -->
+    <FileSignInfo Include="get-dotnetup.sh" CertificateName="None" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetOS)' == 'osx'">
@@ -197,6 +210,21 @@
     <!-- The '*' wildcard is for the TargetFramework, which isn't set when evaluating this file. -->
     <_DotnetupPublishedBinary Include="$(ArtifactsBinDir)dotnetup\$(Configuration)\*\$(TargetRid)\publish\dotnetup-$(TargetRid)$(_DotnetupNativeExt)" />
     <Artifact Include="@(_DotnetupPublishedBinary)" Kind="Blob">
+      <ChecksumPath>%(FullPath).sha512</ChecksumPath>
+    </Artifact>
+  </ItemGroup>
+
+  <!--
+    Register the get-dotnetup bootstrap scripts as Blob artifacts from their staged copies
+    (see StageGetDotnetupScripts in src/Installer/dotnetup/dotnetup.csproj). The scripts are
+    RID-independent and are staged/signed/published only from the win-x64 leg to avoid
+    duplicate blob paths, so this registration is gated to that single leg. get-dotnetup.ps1
+    is Authenticode-signed via the FileSignInfo above; get-dotnetup.sh is published unsigned.
+  -->
+  <ItemGroup Condition="'$(TargetRid)' == 'win-x64'">
+    <_GetDotnetupPublishedScript Include="$(ArtifactsBinDir)dotnetup-scripts\get-dotnetup.ps1" />
+    <_GetDotnetupPublishedScript Include="$(ArtifactsBinDir)dotnetup-scripts\get-dotnetup.sh" />
+    <Artifact Include="@(_GetDotnetupPublishedScript)" Kind="Blob">
       <ChecksumPath>%(FullPath).sha512</ChecksumPath>
     </Artifact>
   </ItemGroup>

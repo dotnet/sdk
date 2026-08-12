@@ -9,9 +9,10 @@ using Moq;
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenACompositeCommandResolver
     {
-        [Fact]
+        [TestMethod]
         public void It_iterates_through_all_added_resolvers_in_order_when_they_return_null()
         {
             var compositeCommandResolver = new CompositeCommandResolver();
@@ -42,7 +43,7 @@ namespace Microsoft.DotNet.Tests
 
         }
 
-        [Fact]
+        [TestMethod]
         public void It_stops_iterating_through_added_resolvers_when_one_returns_nonnull()
         {
             var compositeCommandResolver = new CompositeCommandResolver();

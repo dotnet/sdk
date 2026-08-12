@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # get-dotnetup.sh
 #
-# Downloads the latest dotnetup daily build and installs it locally.
+# Downloads the latest dotnetup preview build and installs it locally.
 #
 # Downloads dotnetup from the public aka.ms shortlinks (e.g.
-# https://aka.ms/dotnet/dotnetup/daily/dotnetup-linux-x64), verifies the
+# https://aka.ms/dotnet/dotnetup/preview/dotnetup-linux-x64), verifies the
 # SHA-512 checksum, and installs the binary to a local directory.
 #
 # Usage:
@@ -17,7 +17,7 @@ set -euo pipefail
 
 # --- Defaults ---
 INSTALL_DIR="$HOME/.dotnetup"
-QUALITY="daily"
+QUALITY="preview"
 RUNTIME_ID=""
 
 # --- Colors (disabled if not a terminal) ---
@@ -48,16 +48,17 @@ while [[ $# -gt 0 ]]; do
             cat <<EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Downloads the latest dotnetup daily build from aka.ms and installs it locally.
+Downloads the latest dotnetup build from aka.ms and installs it locally.
 
 Options:
   --install-dir DIR     Installation directory (default: ~/.dotnetup)
-  --quality QUALITY     Build quality (default: daily)
+  --quality QUALITY     Build quality (default: preview; use daily for the latest daily build)
   --runtime-id RID      Override OS/architecture detection (e.g. linux-musl-x64, osx-arm64)
   --help, -h            Show this help message
 
 Examples:
   ./get-dotnetup.sh
+  ./get-dotnetup.sh --quality daily
   ./get-dotnetup.sh --runtime-id linux-musl-x64
   ./get-dotnetup.sh --install-dir /opt/dotnetup
 EOF
@@ -168,6 +169,32 @@ info "Detected runtime: $RID"
 FILE_NAME="dotnetup-${RID}"
 DOWNLOAD_URL="${BASE_URL}/${FILE_NAME}"
 CHECKSUM_URL="${DOWNLOAD_URL}.sha512"
+
+# Map a 'channel' such as 'daily' to specific version url for the binary and its .sha512 to prevent release race condition mismatches
+resolve_final_url() {
+    local url="$1"
+    if [ "$DOWNLOADER" = "curl" ]; then
+        # --head resolves redirects without downloading the body.
+        curl --silent --show-error --location --head --output /dev/null \
+            --write-out '%{url_effective}' "$url" 2>/dev/null
+    elif [ "$DOWNLOADER" = "wget" ]; then
+        # wget lacks --write-out; --spider -S prints the redirect headers, whose final 'Location:' is the concrete build URL. tolower() keeps awk portable.
+        wget --spider -S "$url" 2>&1 \
+            | awk 'tolower($1) == "location:" { u = $2 } END { if (u != "") print u }'
+    fi
+    # An empty result falls back to the shortlink URLs below (previous behavior).
+}
+
+RESOLVED_URL="$(resolve_final_url "$DOWNLOAD_URL" || true)"
+if [ -n "$RESOLVED_URL" ] && [[ "$RESOLVED_URL" == *"/public/"* ]]; then
+    info "Resolved '${QUALITY}' to concrete build: $RESOLVED_URL"
+    DOWNLOAD_URL="$RESOLVED_URL"
+    # Checksums live under the sibling 'public-checksums' path. Use sed, not bash
+    # ${var/p/r}, since bash 3.2 (macOS) keeps the escaped backslashes literally.
+    CHECKSUM_URL="$(printf '%s' "$RESOLVED_URL" | sed 's#/public/#/public-checksums/#').sha512"
+else
+    gray "Could not resolve '${QUALITY}' shortlink to a concrete build; using shortlink URLs directly."
+fi
 
 INSTALLED_BINARY="${INSTALL_DIR}/dotnetup"
 

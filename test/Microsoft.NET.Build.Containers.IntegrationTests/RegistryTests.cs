@@ -5,25 +5,20 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
-public class RegistryTests : IDisposable
+[TestClass]
+public class RegistryTests : SdkTest, IDisposable
 {
-    private ITestOutputHelper _testOutput;
-    private readonly TestLoggerFactory _loggerFactory;
-
-    public RegistryTests(ITestOutputHelper testOutput)
-    {
-        _testOutput = testOutput;
-        _loggerFactory = new TestLoggerFactory(testOutput);
-    }
+    private TestLoggerFactory? _loggerFactory;
+    private TestLoggerFactory LoggerFactory => _loggerFactory ??= new TestLoggerFactory(Log);
 
     public void Dispose()
     {
-        _loggerFactory.Dispose();
+        _loggerFactory?.Dispose();
     }
 
-    [InlineData("quay.io/centos/centos")]
-    [InlineData("registry.access.redhat.com/ubi8/dotnet-70")]
-    [Theory]
+    [DataRow("quay.io/centos/centos")]
+    [DataRow("registry.access.redhat.com/ubi8/dotnet-70")]
+    [TestMethod]
     public async Task CanReadManifestFromRegistry(string fullyQualifiedContainerName)
     {
         bool parsed = ContainerHelpers.TryParseFullyQualifiedContainerName(fullyQualifiedContainerName,
@@ -32,13 +27,13 @@ public class RegistryTests : IDisposable
                                                                            out string? containerTag,
                                                                            out string? containerDigest,
                                                                            out bool isRegistrySpecified);
-        Assert.True(parsed);
-        Assert.True(isRegistrySpecified);
-        Assert.NotNull(containerRegistry);
-        Assert.NotNull(containerName);
+        Assert.IsTrue(parsed);
+        Assert.IsTrue(isRegistrySpecified);
+        Assert.IsNotNull(containerRegistry);
+        Assert.IsNotNull(containerName);
         containerTag ??= "latest";
 
-        ILogger logger = _loggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
+        ILogger logger = LoggerFactory.CreateLogger(nameof(CanReadManifestFromRegistry));
         Registry registry = new(containerRegistry, logger, RegistryMode.Pull);
 
         var ridgraphfile = ToolsetUtils.GetRuntimeGraphFilePath();
@@ -48,8 +43,8 @@ public class RegistryTests : IDisposable
             containerTag,
             "linux-x64",
             ToolsetUtils.RidGraphManifestPicker,
-            cancellationToken: TestContext.Current.CancellationToken);
+            cancellationToken: TestContext.CancellationToken);
 
-        Assert.NotNull(downloadedImage);
+        Assert.IsNotNull(downloadedImage);
     }
 }

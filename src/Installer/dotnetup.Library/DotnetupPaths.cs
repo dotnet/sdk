@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.DotNet.Configurer;
+
 namespace Microsoft.DotNet.Tools.Bootstrapper;
 
 /// <summary>
@@ -13,6 +15,8 @@ internal static class DotnetupPaths
     private const string ManifestFileName = "dotnetup_manifest.json";
     private const string ConfigFileName = "dotnetup.config.json";
     private const string TelemetrySentinelFileName = ".dotnetup-telemetry-notice";
+    private const string TelemetryStorageServiceFolderName = "TelemetryStorageService";
+    private const string TelemetryDiskLogFileSuffix = "-dotnetup";
 
 #pragma warning disable IDE0032 // Lazy-init cache; not convertible to auto-property
     private static string? s_dataDirectory;
@@ -118,20 +122,67 @@ internal static class DotnetupPaths
     public static string TelemetrySentinelPath => Path.Combine(DataDirectory, TelemetrySentinelFileName);
 
     /// <summary>
-    /// Gets the default dotnet install path managed by dotnetup.
-    /// This is the user-local dotnet root (e.g. %LOCALAPPDATA%\dotnet on Windows).
+    /// Resolves the telemetry offline storage directory shared with the .NET SDK.
+    /// The SDK's environment override takes precedence over its default profile directory.
     /// </summary>
+    internal static string ResolveTelemetryStorageDirectory(Func<string, string?> getEnvironmentVariable)
+    {
+        var environmentStoragePath = getEnvironmentVariable(Constants.Telemetry.StoragePathEnvVar);
+        if (!string.IsNullOrWhiteSpace(environmentStoragePath))
+        {
+            return environmentStoragePath;
+        }
+
+        var profileFolder = new CliFolderPathCalculatorCore(getEnvironmentVariable).GetDotnetUserProfileFolderPath();
+        return !string.IsNullOrEmpty(profileFolder)
+            ? Path.Combine(profileFolder, TelemetryStorageServiceFolderName)
+            : throw new InvalidOperationException("Could not determine the .NET SDK telemetry storage directory.");
+    }
+
+    /// <summary>
+    /// Gets the path to the dotnetup telemetry disk log, or <see langword="null"/>
+    /// when the <c>DOTNET_CLI_TELEMETRY_LOG_PATH</c> environment variable is unset.
+    /// </summary>
+    /// <remarks>
+    /// Derived from the SDK log path but with a distinct <c>-dotnetup</c> filename
+    /// suffix, to avoid read-modify-write conflicts between the dotnet CLI and dotnetup.
+    /// </remarks>
+    public static string? TelemetryDiskLogPath
+    {
+        get
+        {
+            var path = Environment.GetEnvironmentVariable(Constants.Telemetry.DiskLogPathEnvVar);
+            if (string.IsNullOrWhiteSpace(path))
+            {
+                return null;
+            }
+
+            var dir = Path.GetDirectoryName(path);
+            var name = Path.GetFileNameWithoutExtension(path);
+            var ext = Path.GetExtension(path);
+            return Path.Combine(dir ?? string.Empty, $"{name}{TelemetryDiskLogFileSuffix}{ext}");
+        }
+    }
+
+    /// <summary>
+    /// Gets the default dotnet install path managed by dotnetup.
+    /// This is the dotnet subdirectory of the dotnetup data directory
+    /// (e.g. %LOCALAPPDATA%\dotnetup\dotnet on Windows).
+    /// </summary>
+    /// <remarks>
+    /// Can be overridden via DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH environment variable.
+    /// </remarks>
     public static string DefaultDotnetInstallPath
     {
         get
         {
-            var baseDir = GetBaseDirectory();
-            if (string.IsNullOrEmpty(baseDir))
+            var overridePath = Environment.GetEnvironmentVariable("DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH");
+            if (!string.IsNullOrEmpty(overridePath))
             {
-                throw new InvalidOperationException("Could not determine the local application data directory.");
+                return overridePath;
             }
 
-            return Path.Combine(baseDir, "dotnet");
+            return Path.Combine(DataDirectory, "dotnet");
         }
     }
 

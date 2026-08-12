@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.UseAsyncMethodInAsyncContext,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -15,11 +14,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseAsyncMethodInAsyncContextTests
     {
         private static readonly ImmutableArray<PackageIdentity> EntityFrameworkPackages = ImmutableArray.Create(new PackageIdentity("Microsoft.EntityFrameworkCore", "7.0.8"));
 
-        [Fact]
+        [TestMethod]
         public async Task TaskWaitInTaskReturningMethodGeneratesWarning()
         {
             var testCS = @"
@@ -52,7 +52,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub Wait()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ThreadSleepInTaskReturningMethodGeneratesWarning()
         {
             var testCS = @"
@@ -85,7 +85,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Shared Overloads Sub Sleep(millisecondsTimeout As Integer)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskWaitInValueTaskReturningMethodGeneratesWarning()
         {
             var testCS = @"
@@ -118,7 +118,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub Wait()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskWait_InIAsyncEnumerableAsyncMethod_ShouldReportWarning()
         {
             var testCS = @"
@@ -142,7 +142,7 @@ class Test {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 TestCode = testCS,
             };
-            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
+            await csTestVerify.RunAsync(CancellationToken.None);
 
             var testVB = @"
 Imports System
@@ -168,10 +168,10 @@ End Module
                 LanguageVersion = CodeAnalysis.VisualBasic.LanguageVersion.VisualBasic16_9,
                 TestCode = testVB,
             };
-            await vbTestVerify.RunAsync(TestContext.Current.CancellationToken);
+            await vbTestVerify.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskReturningMethodGeneratesWarning()
         {
             var testCS = @"
@@ -204,7 +204,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskPassedAsMethodParameterGeneratesWarning()
         {
             var testCS = @"
@@ -247,7 +247,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskReturningAnonymousMethodWithinSyncMethod_GeneratesWarning()
         {
             var testCS = @"
@@ -285,7 +285,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskReturningSimpleLambdaWithinSyncMethod_GeneratesWarning()
         {
             var testCS = @"
@@ -323,7 +323,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskReturningSimpleLambdaExpressionWithinSyncMethod_GeneratesWarning()
         {
             var testCS = @"
@@ -354,7 +354,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskReturningMethodGeneratesWarning_InCorrectLocation()
         {
             var testCS = @"
@@ -385,7 +385,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskReturningParentheticalLambdaWithinSyncMethod_GeneratesWarning()
         {
             var testCS = @"
@@ -423,7 +423,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads ReadOnly Property Result As TResult"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskOfTResultInTaskReturningMethodAnonymousDelegate_GeneratesNoWarning()
         {
             var testCS = @"
@@ -458,7 +458,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskGetAwaiterGetResultInTaskReturningMethodGeneratesWarning()
         {
             var testCS = @"
@@ -490,7 +490,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub GetResult()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionExistsInSameTypeGeneratesWarning()
         {
             var testCS = @"
@@ -527,7 +527,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo(x As Integer, y As Integer)", "Friend Function FooAsync(x As Integer, y As Integer) As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionIsObsolete_GeneratesNoWarning()
         {
             var testCS = @"
@@ -571,7 +571,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionIsPartlyObsolete_GeneratesWarning()
         {
             var testCS = @"
@@ -623,7 +623,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo(x As Integer, y As Double)", "Friend Function FooAsync(x As Integer, y As Double) As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionExistsInSubExpressionGeneratesWarning()
         {
             var testCS = @"
@@ -663,7 +663,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Function Foo() As Integer", "Friend Function FooAsync() As Task(Of Integer)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionExistsInOtherTypeGeneratesWarning()
         {
             var testCS = @"
@@ -706,7 +706,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionExistsAsPrivateInOtherTypeGeneratesNoWarning()
         {
             var testCS = @"
@@ -749,7 +749,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionExistsInOtherBaseTypeGeneratesWarning()
         {
             var testCS = @"
@@ -800,7 +800,7 @@ End Class
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationWhereAsyncOptionExistsInExtensionMethodGeneratesWarning()
         {
             var testCS = @"
@@ -852,7 +852,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationUsingStaticGeneratesWarning()
         {
             var testCS = @"
@@ -897,7 +897,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SyncInvocationUsingStaticGeneratesNoWarningAcrossTypes()
         {
             var testCS = @"
@@ -952,7 +952,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AwaitingAsyncMethodWithoutSuffixProducesNoWarningWhereSuffixVersionExists()
         {
             var testCS = @"
@@ -993,7 +993,7 @@ End Module
         /// Verifies that when method invocations and member access happens in properties
         /// (which can never be async), nothing bad happens.
         /// </summary>
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticAndNoExceptionForProperties()
         {
             var testCS = @"
@@ -1025,7 +1025,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GenericMethodName()
         {
             var testCS = @"
@@ -1069,7 +1069,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo(Of Integer)()", "Friend Function FooAsync() As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AsyncAlternativeWarning_RespectsTrivia()
         {
             var testCS = @"
@@ -1117,7 +1117,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.Descriptor).WithLocation(0).WithArguments("Friend Sub Foo()", "Friend Function FooAsync() As Task"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AwaitRatherThanWait_RespectsTrivia()
         {
             var testCS = @"
@@ -1165,7 +1165,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB, VerifyVB.Diagnostic(UseAsyncMethodInAsyncContext.DescriptorNoAlternativeMethod).WithLocation(0).WithArguments("Public Overloads Sub Wait()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DoNotSuggestAsyncAlternativeWhenItIsSelf()
         {
             var testCS = @"
@@ -1206,7 +1206,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DoNotSuggestAsyncAlternativeWhenItReturnsVoid()
         {
             var testCS = @"
@@ -1247,7 +1247,7 @@ End Module
             await CreateVBTestAndRunAsync(testVB);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
         public Task DbContextAdd_NoDiagnostic()
         {
@@ -1263,10 +1263,10 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
         public Task DbContextAddRange_NoDiagnostic()
         {
@@ -1282,10 +1282,10 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task DbSetAddRange_NoDiagnostic()
         {
             return new VerifyCS.Test
@@ -1300,10 +1300,10 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(6684, "https://github.com/dotnet/roslyn-analyzers/issues/6684")]
         [WorkItem(7036, "https://github.com/dotnet/roslyn-analyzers/issues/7036")]
         public Task DbContextFactoryCreateDbContext_NoDiagnostic()
@@ -1320,12 +1320,12 @@ class Test {
     }
 }",
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net70.WithPackages(EntityFrameworkPackages)
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Task<object>.Result")]
-        [InlineData("ValueTask<object>.Result")]
+        [TestMethod]
+        [DataRow("Task<object>.Result")]
+        [DataRow("ValueTask<object>.Result")]
         [WorkItem(6993, "https://github.com/dotnet/roslyn-analyzers/issues/6993")]
         public Task WhenUsingNameOf_NoDiagnostic(string taskExpression)
         {
@@ -1344,7 +1344,7 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
         public Task WhenPassingZeroToSemaphoreSlimWait_NoDiagnostic()
         {
             const string code = """
@@ -1365,7 +1365,7 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
         public Task WhenPassingZeroWithCancellationTokenToSemaphoreSlimWait_NoDiagnostic()
         {
             const string code = """
@@ -1386,7 +1386,7 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
         public Task WhenPassingTimeSpanZeroToSemaphoreSlimWait_NoDiagnostic()
         {
             const string code = """
@@ -1407,7 +1407,7 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
         public Task WhenPassingTimeSpanZeroWithCancellationTokenToSemaphoreSlimWait_NoDiagnostic()
         {
             const string code = """
@@ -1428,9 +1428,9 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
-        [InlineData("1")]
-        [InlineData("500")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [DataRow("1")]
+        [DataRow("500")]
         public Task WhenPassingNonZeroToSemaphoreSlimWait_Diagnostic(string nonZero)
         {
             var code = $$"""
@@ -1454,9 +1454,9 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code, result);
         }
 
-        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
-        [InlineData("1")]
-        [InlineData("500")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [DataRow("1")]
+        [DataRow("500")]
         public Task WhenPassingNonZeroWithCancellationTokenToSemaphoreSlimWait_Diagnostic(string nonZero)
         {
             var code = $$"""
@@ -1480,9 +1480,9 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code, result);
         }
 
-        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
-        [InlineData("TimeSpan.FromSeconds(30)")]
-        [InlineData("TimeSpan.Parse(\"0:32:0\")")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [DataRow("TimeSpan.FromSeconds(30)")]
+        [DataRow("TimeSpan.Parse(\"0:32:0\")")]
         public Task WhenPassingNonZeroTimeSpanToSemaphoreSlimWait_Diagnostic(string nonZero)
         {
             var code = $$"""
@@ -1506,9 +1506,9 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code, result);
         }
 
-        [Theory, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
-        [InlineData("TimeSpan.FromSeconds(30)")]
-        [InlineData("TimeSpan.Parse(\"0:32:0\")")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [DataRow("TimeSpan.FromSeconds(30)")]
+        [DataRow("TimeSpan.Parse(\"0:32:0\")")]
         public Task WhenPassingNonZeroTimeSpanWithCancellationTokenToSemaphoreSlimWait_Diagnostic(string nonZero)
         {
             var code = $$"""
@@ -1532,7 +1532,7 @@ class Test {
             return VerifyCS.VerifyAnalyzerAsync(code, result);
         }
 
-        [Fact, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
+        [TestMethod, WorkItem(7271, "https://github.com/dotnet/roslyn-analyzers/issues/7271")]
         public Task WhenPassingCancellationTokenToSemaphoreSlimWait_Diagnostic()
         {
             const string code = """
@@ -1563,7 +1563,7 @@ class Test {
                 TestCode = testCS,
             };
 
-            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
+            await csTestVerify.RunAsync(CancellationToken.None);
         }
 
         private static async Task CreateCSTestAndRunAsync(string testCS, params DiagnosticResult[] expectedDiagnostics)
@@ -1574,7 +1574,7 @@ class Test {
             };
 
             csTestVerify.ExpectedDiagnostics.AddRange(expectedDiagnostics);
-            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
+            await csTestVerify.RunAsync(CancellationToken.None);
         }
 
         private static async Task CreateVBTestAndRunAsync(string testCS)
@@ -1584,7 +1584,7 @@ class Test {
                 TestCode = testCS,
             };
 
-            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
+            await csTestVerify.RunAsync(CancellationToken.None);
         }
 
         private static async Task CreateVBTestAndRunAsync(string testCS, params DiagnosticResult[] expectedDiagnostics)
@@ -1595,7 +1595,7 @@ class Test {
             };
 
             csTestVerify.ExpectedDiagnostics.AddRange(expectedDiagnostics);
-            await csTestVerify.RunAsync(TestContext.Current.CancellationToken);
+            await csTestVerify.RunAsync(CancellationToken.None);
         }
     }
 }

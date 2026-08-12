@@ -29,10 +29,11 @@ public class TelemetryClient : ITelemetryClient
     private static readonly List<Activity> s_activities = [];
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
-    private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254";
+    private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=c5108c2c-b0c5-43c6-a703-424eae223a75";
     private static readonly string s_defaultStorageDirectory = Path.Combine(CliFolderPathCalculator.DotnetUserProfileFolderPath, "TelemetryStorageService");
     // Note: The TelemetryClient instance constructor takes in an environment provider. These fields don't use that currently.
     private static readonly string? s_environmentStoragePath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_STORAGE_PATH);
+    private static readonly string s_telemetryStorageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
 #endif
     private static readonly string? s_diskLogPath = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_LOG_PATH);
     private static readonly bool s_disableTraceExport = Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT);
@@ -47,7 +48,15 @@ public class TelemetryClient : ITelemetryClient
     private static readonly bool s_enableOtlpExporter =
         Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_ENABLE_EXPORTER)
         || (!Env.GetEnvironmentVariableAsBool(EnvironmentVariableNames.OTEL_SDK_DISABLED) && IsOtlpExporterConfiguredByStandardEnvVars());
-    private static readonly int s_flushTimeoutMs = 200;
+
+    // A CI process is one-shot: there is no subsequent CLI invocation to drain persisted
+    // telemetry. In that case we register the standard Azure Monitor exporter (see the static
+    // constructor) and call Shutdown on exit so the provider fully drains the export pipeline
+    // (including waiting for inflight HTTP POSTs to complete). Locally we only need a brief
+    // flush because spans are persisted synchronously as they end and delivered by a later
+    // invocation.
+    private static readonly bool s_isCIEnvironment = new CIEnvironmentDetectorForTelemetry().IsCIEnvironment();
+    private static readonly int s_shutdownTimeoutMs = GetShutdownTimeoutMs();
 
     /// <summary>
     /// Returns true if any of the standard OpenTelemetry OTLP exporter environment variables
@@ -56,7 +65,25 @@ public class TelemetryClient : ITelemetryClient
     /// </summary>
     private static bool IsOtlpExporterConfiguredByStandardEnvVars() => Env.AnyEnvironmentVariablesSet(EnvironmentVariableNames.OtlpExporterEnvVars);
 
+    /// <summary>
+    /// Returns the shutdown timeout in milliseconds. In CI this defaults to 20 seconds (bounded
+    /// to avoid hanging builds) but can be overridden via DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS.
+    /// Locally it is irrelevant (we use ForceFlush with a brief timeout instead).
+    /// </summary>
+    private static int GetShutdownTimeoutMs()
+    {
+        const int defaultCiTimeoutMs = 20_000;
+        var envValue = Env.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SHUTDOWN_TIMEOUT_MS);
+        if (!string.IsNullOrEmpty(envValue) && int.TryParse(envValue, out var parsed) && parsed > 0)
+        {
+            return parsed;
+        }
+        return defaultCiTimeoutMs;
+    }
+
     public static string? CurrentSessionId { get; private set; } = null;
+    internal static bool IsInitialized { get; private set; }
+    internal static TelemetryClient? Instance { get; private set; }
     public static bool DisabledForTests
     {
         get => field;
@@ -67,6 +94,8 @@ public class TelemetryClient : ITelemetryClient
             if (field)
             {
                 CurrentSessionId = null;
+                IsInitialized = false;
+                Instance = null;
             }
         }
     } = false;
@@ -103,15 +132,33 @@ public class TelemetryClient : ITelemetryClient
         }
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
-        if (!s_disableTraceExport)
+        if (!s_disableTraceExport && !string.IsNullOrWhiteSpace(s_connectionString))
         {
-            var storageDirectory = string.IsNullOrWhiteSpace(s_environmentStoragePath) ? s_defaultStorageDirectory : s_environmentStoragePath;
-            s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
+            if (s_isCIEnvironment)
             {
-                o.ConnectionString = s_connectionString;
-                o.EnableLiveMetrics = false;
-                o.StorageDirectory = storageDirectory;
-            });
+                // CI runs are one-shot, so there is no "next" invocation to drain persisted
+                // telemetry. Use the standard Azure Monitor exporter and call Shutdown (see
+                // FlushProviders) with a bounded timeout so the full export pipeline —
+                // including inflight HTTP POSTs — completes before the process exits.
+                s_tracerProviderBuilder.AddAzureMonitorTraceExporter(o =>
+                {
+                    o.ConnectionString = s_connectionString;
+                    o.EnableLiveMetrics = false;
+                    o.StorageDirectory = s_telemetryStorageDirectory;
+                });
+            }
+            else
+            {
+                // Persist spans to durable storage synchronously as they end (Phase 1), so a
+                // short-lived CLI process captures its telemetry before exiting. The exporter
+                // itself starts a background drain (Phase 2) the first time it runs, which
+                // uploads telemetry persisted by this and previous invocations.
+                s_tracerProviderBuilder.AddPersistentStorageExporter(o =>
+                {
+                    o.ConnectionString = s_connectionString;
+                    o.StorageDirectory = s_telemetryStorageDirectory;
+                });
+            }
         }
 #endif
 
@@ -129,6 +176,9 @@ public class TelemetryClient : ITelemetryClient
         {
             return;
         }
+
+        Instance = this;
+        IsInitialized = true;
 
         environmentProvider ??= new EnvironmentProvider();
         Enabled = !environmentProvider.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT,
@@ -148,23 +198,45 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider ??= s_tracerProviderBuilder.Build();
         }
 
-        CurrentSessionId ??= !string.IsNullOrEmpty(sessionId) ? sessionId : Guid.NewGuid().ToString();
+        var initialSessionId = !string.IsNullOrEmpty(sessionId)
+            ? sessionId
+            : environmentProvider.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID);
+
+        CurrentSessionId ??= !string.IsNullOrEmpty(initialSessionId) ? initialSessionId : Guid.NewGuid().ToString();
         s_commonProperties = new TelemetryCommonProperties().GetTelemetryCommonProperties(CurrentSessionId);
     }
 
     /// <summary>
-    /// Uses the OpenTelemetry SDK's Propagation API to derive the parent activity context from the DOTNET_CLI_TRACEPARENT and DOTNET_CLI_TRACESTATE environment variables.
+    /// Derives the parent activity context. Checks runtime properties first (set by the AOT
+    /// bridge via <c>hostfxr_set_runtime_property_value</c>), then falls back to the
+    /// <c>TRACEPARENT</c> / <c>TRACESTATE</c> environment variables.
     /// </summary>
-    private static ActivityContext? GetParentActivityContext()
+    internal static ActivityContext? GetParentActivityContext()
     {
-        var traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        // Runtime properties take precedence — they are set by the AOT bridge when it
+        // falls back to the managed CLI so that the managed spans become children of the
+        // AOT-side main activity.
+        var traceParent = AppContext.GetData(Activities.TRACEPARENT) as string;
+
+        // Fall back to environment variables for external callers.
+        if (string.IsNullOrEmpty(traceParent))
+        {
+            traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
+        }
+
         if (string.IsNullOrEmpty(traceParent))
         {
             return null;
         }
 
         var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
-        var traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+
+        var traceState = AppContext.GetData(Activities.TRACESTATE) as string;
+        if (string.IsNullOrEmpty(traceState))
+        {
+            traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
+        }
+
         if (!string.IsNullOrEmpty(traceState))
         {
             carrierMap.Add("tracestate", [traceState]);
@@ -186,15 +258,38 @@ public class TelemetryClient : ITelemetryClient
 
     public static void FlushProviders()
     {
-        s_tracerProvider?.ForceFlush(s_flushTimeoutMs);
-        s_metricsProvider?.ForceFlush(s_flushTimeoutMs);
+        if (s_isCIEnvironment)
+        {
+            // Shutdown drains the full export pipeline (BatchExportProcessor → Exporter.OnShutdown)
+            // and waits for inflight HTTP POSTs to complete, bounded by the configured timeout.
+            // This is necessary in CI because there is no subsequent invocation to drain.
+            s_tracerProvider?.Shutdown(s_shutdownTimeoutMs);
+            s_metricsProvider?.Shutdown(s_shutdownTimeoutMs);
+        }
+        else
+        {
+            // Locally, persisted-storage exporters write synchronously as spans end. A bounded
+            // shutdown also cancels any background drain so it can release its active lease
+            // before exit.
+            s_tracerProvider?.Shutdown(timeoutMilliseconds: 10);
+            s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
+        }
     }
 
     public static void WriteLogIfNecessary()
     {
-        if (!string.IsNullOrWhiteSpace(s_diskLogPath) && s_activities.Any())
+        if (string.IsNullOrWhiteSpace(s_diskLogPath))
         {
-            TelemetryDiskLogger.WriteLog(s_diskLogPath, s_activities);
+            return;
+        }
+
+        Activity[] activities = [.. s_activities];
+        if (activities.Length > 0 && TelemetryDiskLogger.WriteLog(s_diskLogPath, activities))
+        {
+            foreach (Activity activity in activities)
+            {
+                s_activities.Remove(activity);
+            }
         }
     }
 
@@ -219,6 +314,11 @@ public class TelemetryClient : ITelemetryClient
         }
 
         TrackEventTask(eventName, properties);
+    }
+
+    internal void WaitForPendingEvents()
+    {
+        _trackEventTask?.GetAwaiter().GetResult();
     }
 
     private static void TrackEventTask(string eventName, IDictionary<string, string?>? properties)

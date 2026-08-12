@@ -5,9 +5,10 @@
 
 namespace Microsoft.NET.Build.Tests;
 
-public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void It_warns_when_RoslynCompilerType_is_Framework()
     {
         var testProject = new TestProject()
@@ -33,7 +34,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .HaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_RoslynCompilerType_is_Core()
     {
         var testProject = new TestProject()
@@ -59,7 +60,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_RoslynCompilerType_is_FrameworkPackage()
     {
         var testProject = new TestProject()
@@ -85,7 +86,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_RoslynCompilerType_is_not_set()
     {
         var testProject = new TestProject()
@@ -109,7 +110,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_does_not_warn_when_suppressed_with_NoWarn()
     {
         var testProject = new TestProject()
@@ -136,7 +137,7 @@ public sealed class GivenThatWeWantToDetectDeprecatedRoslynCompilerType(ITestOut
             .NotHaveStdOutContaining(" NETSDK1234");
     }
 
-    [Fact]
+    [TestMethod]
     public void It_can_suppress_warning_via_command_line()
     {
         var testProject = new TestProject()

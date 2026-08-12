@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using FluentAssertions;
 using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
-using Xunit;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -16,6 +15,7 @@ namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 /// End-to-end tests that verify telemetry output by running dotnetup as a separate process
 /// with the console exporter enabled (DOTNETUP_TELEMETRY_DEBUG=1).
 /// </summary>
+[TestClass]
 public class TelemetryE2ETests
 {
     /// <summary>
@@ -42,7 +42,7 @@ public class TelemetryE2ETests
         ["DOTNET_TESTHOOK_DOTNETUP_DATA_DIR"] = dataDir,
     };
 
-    [Fact]
+    [TestMethod]
     public void InvalidVersion_ProducesUserError_OnRootLogRecord()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -65,7 +65,7 @@ public class TelemetryE2ETests
         rootRecord.Attributes["error.category"].Should().Be("user", "requesting a nonexistent SDK version should be a user error");
     }
 
-    [Fact]
+    [TestMethod]
     public void InvalidVersion_ErrorTags_AreOnCommandLogRecord()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -88,7 +88,7 @@ public class TelemetryE2ETests
         commandRecord!.Attributes.Should().ContainKey("error.type", "command record should have error.type attribute");
     }
 
-    [Fact]
+    [TestMethod]
     public void InvalidVersion_ErrorDetails_ArePropagatedToRootLogRecord()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -110,8 +110,9 @@ public class TelemetryE2ETests
             details.Should().NotBeNullOrWhiteSpace("error.details should contain a meaningful message");
         }
 
-        // The error.type should be present and match between command and root records
         var commandRecord = logRecords.FirstOrDefault(s => s.DisplayName == "command");
+        rootRecord.Attributes.Should().ContainKey("error.type",
+            "error.type is always stamped on the root record, even on the failure path");
         if (commandRecord != null &&
             commandRecord.Attributes.TryGetValue("error.type", out string? commandErrorType) &&
             rootRecord.Attributes.TryGetValue("error.type", out string? rootErrorType))
@@ -120,7 +121,7 @@ public class TelemetryE2ETests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void SuccessfulHelp_ProducesNoErrorTags()
     {
         // Running --help should succeed without error tags
@@ -142,7 +143,9 @@ public class TelemetryE2ETests
             var rootRecord = logRecords.FirstOrDefault(s => s.DisplayName == "dotnetup");
             if (rootRecord != null)
             {
-                rootRecord.Attributes.Should().NotContainKey("error.type", "--help should not produce error attributes");
+                rootRecord.Attributes.TryGetValue("error.type", out string? helpErrorType)
+                    .Should().BeTrue("error.type is always stamped, even on success");
+                helpErrorType.Should().BeEmpty("--help succeeds, so error.type must be present-but-empty");
                 rootRecord.Attributes.Should().NotContainKey("error.category", "--help should not produce error attributes");
             }
         }
@@ -152,7 +155,7 @@ public class TelemetryE2ETests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void InvalidVersion_RootLogRecord_HasCorrectDisplayName()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -175,7 +178,7 @@ public class TelemetryE2ETests
         commandRecord.Attributes["command.name"].Should().Contain("sdk", "SDK command should set command.name to a value containing 'sdk'");
     }
 
-    [Fact]
+    [TestMethod]
     public void InstallPathIsFile_ProducesUserError()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -203,7 +206,7 @@ public class TelemetryE2ETests
         rootRecord.Attributes["error.category"].Should().Be("user");
     }
 
-    [Fact]
+    [TestMethod]
     public void CorruptManifest_UserEdited_ProducesUserError()
     {
         // Write a corrupt manifest and set the env var so dotnetup reads it.
@@ -238,7 +241,7 @@ public class TelemetryE2ETests
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void CorruptManifest_DotnetupWrote_ProducesProductError()
     {
         // Write a corrupt manifest WITH a matching checksum → product error.
@@ -290,7 +293,7 @@ public class TelemetryE2ETests
     /// LogRecords — those are the only telemetry surfaces the data-x ingestion
     /// pipeline reads.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void Uninstall_NoMatchingTarget_StampsUserErrorTags_OnRootAndCommandLogs()
     {
         using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
@@ -322,7 +325,7 @@ public class TelemetryE2ETests
         commandRecord.Attributes["error.category"].Should().Be("user");
     }
 
-    [Fact]
+    [TestMethod]
     public void TelemetryDisabled_ProducesNoLogRecords()
     {
         string tempDir = Path.Combine(Path.GetTempPath(), $"dnup-e2e-{Guid.NewGuid():N}");

@@ -9,14 +9,12 @@ using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Runtime.Update;
 
-internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result)
+internal class RuntimeUpdateCommand(ParseResult result) : CommandBase(result, "runtime/update")
 {
     private readonly bool _noProgress = result.GetValue(CommonOptions.NoProgressOption);
     private readonly Verbosity _verbosity = result.GetValue(CommonOptions.VerbosityOption);
     private readonly string? _manifestPath = result.GetValue(CommonOptions.ManifestPathOption);
     private readonly string? _installPath = result.GetValue(CommonOptions.InstallPathOption);
-
-    protected override string GetCommandName() => "runtime/update";
 
     protected override void ExecuteCore()
     {
