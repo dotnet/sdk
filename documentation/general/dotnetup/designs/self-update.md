@@ -55,26 +55,26 @@ Another contention is whether to have mutex or inter-process (i.e. several proce
 
 # Success Criteria
 
-- It's okay for `dotnetup` to no longer exist on the `PATH` or in the `dotnetup` folder in the event of a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running. Consumers must know how to re-acquire `dotnetup` or ebmed a backup `dotnetup` executable at a base level in the event this occurs.<br>
+- It's okay for `dotnetup` to no longer exist on the `PATH` or in the `dotnetup` folder in the event of a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running. Consumers must know how to re-acquire `dotnetup` or ebmed a backup `dotnetup` executable at a base level in the event this occurs.<br><br>
 
 
-- It is NOT okay for a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running to cause a permanent broken state that requires user understanding to remedy outside of re-installing `dotnetup`. e.g. it must not leave behind files with permissions that don't allow deletion, it must not corrupt other files that `dotnetup` depends on or leave them half-complete, including but not limited to a corrupt `dotnetup` executable that fails to load or execute.<br>
+- It is NOT okay for a power-outage or uncontrolled process kill that occurs while `dotnetup self update` is running to cause a permanent broken state that requires user understanding to remedy outside of re-installing `dotnetup`. e.g. it must not leave behind files with permissions that don't allow deletion, it must not corrupt other files that `dotnetup` depends on or leave them half-complete, including but not limited to a corrupt `dotnetup` executable that fails to load or execute.<br><br>
 
-- Multiple `dotnetup` processes in general must be able to execute at the same time.<br>
+- Multiple `dotnetup` processes in general must be able to execute at the same time.<br><br>
 
-- `dotnetup` may leverage asynchronous code or `await`.<br>
+- `dotnetup` may leverage asynchronous code or `await`.<br><br>
 
-- `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.<br>
+- `self update` must not run if any `non-safe` `dotnetup` process is currently running. e.g. if `dotnetup sdk install` is running, the manifest format may change from one version to another; installing a new version that may edit the manifest format may cause the old `dotnetup` process to fail, and we want an invariant that avoids any such bugs.<br><br>
 
-- `non-safe` processes must never execute their command body across a `self update` boundary. A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright, so `dotnetup list` and IDE-issued commands do not hard-fail during an update. If the executable was replaced while it waited, it must forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code. If breaking changes are made to command names themselves, then this will break and that is acceptable.<br>
+- `non-safe` processes must never execute their command body across a `self update` boundary. A `non-safe` process that starts while `self update` is running waits at its gate rather than failing outright, so `dotnetup list` and IDE-issued commands do not hard-fail during an update. If the executable was replaced while it waited, it must forward the invocation to the updated executable and return that process's exit code; it must never resume running its own now-stale code. If breaking changes are made to command names themselves, then this will break and that is acceptable.<br><br>
 
-- `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.<br>
+- `self update` does NOT make other `self update` processes fail or exit immediately; other `self update` processes must merely wait for the other update processes to complete and then determine that an update is no longer needed, assuming no release occurs within the time frame of the race.<br><br>
 
-- `self update` also does NOT make other `non safe` processes fail or exit immediately unless they are configured to do so. This is because we don't want others who call `dotnetup --info` to have to worry about whether another process is running `self update` or have to write recovery logic for this. However, others may opt in to this behavior if they want minimal latency and would rather defer the task if an update is running.<br>
+- `self update` also does NOT make other `non safe` processes fail or exit immediately unless they are configured to do so. This is because we don't want others who call `dotnetup --info` to have to worry about whether another process is running `self update` or have to write recovery logic for this. However, others may opt in to this behavior if they want minimal latency and would rather defer the task if an update is running.<br><br>
 
-- At this time, the only 'safe' `dotnetup` processes to have running during `self update` are the `telemetry drain` process, `dotnetup dotnet`, and the `self update` process itself. All other processes are `non-safe`. A process does not know its 'safety' status until `S.CL` parsers or `args` are processed.<br>
+- At this time, the only 'safe' `dotnetup` processes to have running during `self update` are the `telemetry drain` process, `dotnetup dotnet`, and the `self update` process itself. All other processes are `non-safe`. A process does not know its 'safety' status until `S.CL` parsers or `args` are processed.<br><br>
 
-- `dotnetup` must not require a reboot to update itself.<br>
+- `dotnetup` must not require a reboot to update itself.<br><br>
 
 - It's ok to ignore a 'rogue' `dotnetup` process and allow them to fail or incur behavioral runtime bugs; e.g. an old `dotnetup` version that does not know about or support any mutex, semaphore, or locks and therefore bypasses the conditional guarantees. This is permissible because `dotnetup` is not yet `stable` or in a fully public `preview`.
 
