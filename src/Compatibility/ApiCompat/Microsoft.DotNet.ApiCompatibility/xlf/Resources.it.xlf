@@ -172,6 +172,11 @@
         <target state="translated">Il valore di '{0}' deve essere maggiore di 0.</target>
         <note />
       </trans-unit>
+      <trans-unit id="StableApiBecomesExperimental">
+        <source>API '{0}' was previously stable and is now marked experimental. Existing consumers will receive diagnostics when using this API.</source>
+        <target state="new">API '{0}' was previously stable and is now marked experimental. Existing consumers will receive diagnostics when using this API.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="TypeIsActuallySealed">
         <source>Type '{0}' has the sealed modifier on {1} but not on {2}</source>
         <target state="translated">Il tipo '{0}' ha il modificatore sealed in {1} ma non in {2}</target>

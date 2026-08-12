@@ -36,9 +36,25 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             MetadataInformation rightMetadata,
             IList<CompatDifference> differences)
         {
-            if (left is null || right is null ||
-                ApiStabilityClassifier.Classify(left) != ApiStability.Experimental ||
-                ApiStabilityClassifier.Classify(right) != ApiStability.Stable)
+            if (left is null || right is null)
+            {
+                return;
+            }
+
+            ApiStability leftStability = ApiStabilityClassifier.Classify(left);
+            ApiStability rightStability = ApiStabilityClassifier.Classify(right);
+            (string diagnosticId, string message) = (leftStability, rightStability) switch
+            {
+                (ApiStability.Experimental, ApiStability.Stable) => (
+                    DiagnosticIds.ExperimentalApiBecomesStable,
+                    string.Format(Resources.ExperimentalApiBecomesStable, right.ToDisplayString(SymbolExtensions.DisplayFormat))),
+                (ApiStability.Stable, ApiStability.Experimental) => (
+                    DiagnosticIds.StableApiBecomesExperimental,
+                    string.Format(Resources.StableApiBecomesExperimental, right.ToDisplayString(SymbolExtensions.DisplayFormat))),
+                _ => default,
+            };
+
+            if (diagnosticId is null)
             {
                 return;
             }
@@ -46,8 +62,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
             differences.Add(new CompatDifference(
                 leftMetadata,
                 rightMetadata,
-                DiagnosticIds.ExperimentalApiBecomesStable,
-                string.Format(Resources.ExperimentalApiBecomesStable, right.ToDisplayString(SymbolExtensions.DisplayFormat)),
+                diagnosticId,
+                message,
                 DifferenceType.Changed,
                 right.GetDocumentationCommentId(),
                 DifferenceSeverity.Error));

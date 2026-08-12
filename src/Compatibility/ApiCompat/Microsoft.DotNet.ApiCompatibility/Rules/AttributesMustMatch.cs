@@ -67,7 +67,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
         }
 
         // Attribute diagnostics retain the left containing symbol for compatibility with existing behavior.
-        // The right containing symbol is only used when handing an experimental API promotion to CP0022.
+        // The right containing symbol is only used when handing an experimental API stability transition to CP0022 or CP0023.
         private void ReportAttributeDifferences(ISymbol leftContaining,
             ISymbol rightContaining,
             MetadataInformation leftMetadata,
@@ -176,6 +176,17 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                 // Loop over right and issue "added" diagnostic for each one.
                 foreach (AttributeData rightAttribute in rightGroup.Attributes)
                 {
+                    if (ApiStabilityClassifier.IsExperimentalAttribute(rightAttribute))
+                    {
+                        ExperimentalApiBecomesStable.AddDifference(
+                            leftContaining,
+                            rightContaining,
+                            leftMetadata,
+                            rightMetadata,
+                            differences);
+                        continue;
+                    }
+
                     AddDifference(differences, DifferenceType.Added, leftMetadata, rightMetadata, leftContaining, itemRef, rightAttribute);
                 }
             }

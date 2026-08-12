@@ -30,5 +30,6 @@ namespace Microsoft.DotNet.ApiCompatibility
         public const string CannotExpandVisibility = "CP0020";
         public const string CannotChangeGenericConstraint = "CP0021";
         public const string ExperimentalApiBecomesStable = "CP0022";
+        public const string StableApiBecomesExperimental = "CP0023";
     }
 }

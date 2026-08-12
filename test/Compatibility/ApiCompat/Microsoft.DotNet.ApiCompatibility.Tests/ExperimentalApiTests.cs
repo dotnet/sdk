@@ -268,7 +268,9 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         }
 
         [TestMethod]
-        public void StableToExperimentalRemainsGenericAttributeError()
+        [DataRow(false)]
+        [DataRow(true)]
+        public void StableToExperimentalIsReportedByDefault(bool includeAttributesRule)
         {
             string leftSyntax = "namespace CompatTests; public class Api { public void Changed() { } }";
             string rightSyntax = $$"""
@@ -280,8 +282,109 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
                 }
                 """;
 
-            CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax, strictMode: true, includeAttributesRule: true)
-                .Where(difference => difference.DiagnosticId == DiagnosticIds.CannotAddAttribute));
+            CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax, includeAttributesRule: includeAttributesRule));
+
+            Assert.AreEqual(DiagnosticIds.StableApiBecomesExperimental, difference.DiagnosticId);
+            Assert.AreEqual("M:CompatTests.Api.Changed", difference.ReferenceId);
+            Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
+        }
+
+        [TestMethod]
+        public void StableTypeToExperimentalIsReportedByDefault()
+        {
+            string leftSyntax = "namespace CompatTests; public class Api { }";
+            string rightSyntax = $$"""
+                namespace CompatTests;
+                {{ExperimentalAttribute}}
+                public class Api { }
+                """;
+
+            CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
+
+            Assert.HasCount(2, differences);
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "T:CompatTests.Api"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.#ctor"));
+            Assert.IsTrue(differences.All(difference => difference.DiagnosticId == DiagnosticIds.StableApiBecomesExperimental));
+            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
+        }
+
+        [TestMethod]
+        public void StablePropertyAndEventToExperimentalReportAccessorsByDefault()
+        {
+            const string leftSyntax = """
+                namespace CompatTests;
+                public delegate void Handler();
+                public class Api
+                {
+                    public int Property { get; set; }
+                    public event Handler Event;
+                }
+                """;
+            string rightSyntax = $$"""
+                namespace CompatTests;
+                public delegate void Handler();
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public int Property { get; set; }
+                    {{ExperimentalAttribute}}
+                    public event Handler Event;
+                }
+                """;
+
+            CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
+
+            Assert.HasCount(6, differences);
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "P:CompatTests.Api.Property"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.get_Property"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.set_Property(System.Int32)"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "E:CompatTests.Api.Event"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.add_Event(CompatTests.Handler)"));
+            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.remove_Event(CompatTests.Handler)"));
+            Assert.IsTrue(differences.All(difference => difference.DiagnosticId == DiagnosticIds.StableApiBecomesExperimental));
+            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
+        }
+
+        [TestMethod]
+        [DataRow("assembly")]
+        [DataRow("module")]
+        public void AddingExperimentalCompilationScopeIsReportedByDefault(string attributeTarget)
+        {
+            string leftSyntax = "namespace CompatTests; public class Api { public void Changed() { } }";
+            string rightSyntax = $$"""
+                [{{attributeTarget}}: System.Diagnostics.CodeAnalysis.Experimental("TEST001")]
+                namespace CompatTests;
+                public class Api { public void Changed() { } }
+                """;
+
+            CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax)
+                .Where(difference => difference.ReferenceId == "M:CompatTests.Api.Changed"));
+
+            Assert.AreEqual(DiagnosticIds.StableApiBecomesExperimental, difference.DiagnosticId);
+            Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
+        }
+
+        [TestMethod]
+        public void AttributesRuleAloneReportsStableToExperimental()
+        {
+            string leftSyntax = "namespace CompatTests; public class Api { public void Changed() { } }";
+            string rightSyntax = $$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public void Changed() { }
+                }
+                """;
+            TestRuleFactory ruleFactory = new((settings, context) => new AttributesMustMatch(settings, context));
+            ApiComparer comparer = new(ruleFactory);
+
+            CompatDifference difference = Assert.ContainsSingle(comparer.GetDifferences(
+                SymbolFactory.GetAssemblyFromSyntax(leftSyntax),
+                SymbolFactory.GetAssemblyFromSyntax(rightSyntax)));
+
+            Assert.AreEqual(DiagnosticIds.StableApiBecomesExperimental, difference.DiagnosticId);
+            Assert.AreEqual("M:CompatTests.Api.Changed", difference.ReferenceId);
             Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
         }
 
