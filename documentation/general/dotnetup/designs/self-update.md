@@ -113,7 +113,7 @@ Let `X_U`, `X_A`, `X_N`, and `X_V` be the bounded timeouts defined in rule 3 of 
 | Lock | Shared ownership means | Exclusive ownership means |
 | --- | --- | --- |
 | `A` | "a `non-safe` command is running" | "no `non-safe` command is running, and none may start from the current executable" |
-| `U` | nothing; `U` is opened shared only to observe whether an exclusive owner exists | "a self-update transaction is in flight" |
+| `U` | unused; `U` is only ever opened exclusively | "a self-update transaction is in flight" |
 
 A shared lock is held via:
 
@@ -142,10 +142,12 @@ Ownership across a complete transaction:
 | Participant | Lock | Mode | Held for |
 | --- | --- | --- | --- |
 | `N` | `A` | shared | from just after parse until `N` exits |
-| `N` | `U` | shared | a momentary probe, released on the next line |
+| `N` | `U` | — | never acquired |
 | `P` | `U` | exclusive | start of the transaction until `P` exits |
 | `P` | `A` | exclusive | start of the transaction until `P` exits |
 | `S` | `A` and `U` | — | never acquired; `S` skips the gate entirely |
+
+`A` alone excludes `N` from a transaction, because `P` holds `A` exclusively for the whole transaction and an `N` that has retained `A` shared prevents `P` from ever acquiring it. `U` serializes `P` against peer `self update` processes and is never touched by `N`.
 
 Because `S` holds neither lock, a self update can complete underneath `S`. `S` is `safe` only so long as `S` resolves every value derived from the dotnetup image at startup and caches it globally — `Environment.ProcessPath` above all, whose behavior is undefined [if the executable is renamed or deleted before the property is first accessed](https://learn.microsoft.com/dotnet/api/system.environment.processpath?view=net-10.0#remarks).
 
@@ -155,9 +157,9 @@ Because `S` holds neither lock, a self update can complete underneath `S`. `S` i
 
 Every acquisition of `A` or `U` either succeeds or throws `IOException` immediately; no open blocks in the kernel. "Wait" therefore always denotes a retry loop with jittered backoff bounded by a timeout.
 
-**Rule 1 — opposite ordering.** `N` acquires `A` before `N` touches `U`. `P` acquires `U` before `P` acquires `A`.
+**Rule 1 — `P` acquires `U` before `A`.** `N` acquires only `A`, so `P` is the sole participant that holds two locks. `U` is taken first so that `P` does not exclude every `N` while waiting out a peer `self update`.
 
-**Rule 2 — no hold-and-wait during acquisition.** While acquiring the pair, neither `N` nor `P` blocks on one lock while holding the other. If the second acquisition fails, the first is released, the acquiring process backs off, and the pair is retried from the beginning. Holding a lock while performing work is expected; holding one lock while waiting for the other is forbidden, and is the only way the opposite ordering of rule 1 could deadlock.
+**Rule 2 — no hold-and-wait during acquisition.** `P` never blocks on `A` while holding `U`. If the acquisition of `A` fails, `P` releases `U`, backs off, and retries the pair from step 1.1. Holding a lock while performing work is expected; holding one lock while waiting for the other is forbidden, and is the only way this design could deadlock. Rule 2 is vacuous for `N`, which performs a single acquisition and therefore holds nothing while waiting.
 
 **Rule 3 — asymmetric timeouts.**
 
@@ -178,9 +180,9 @@ Every acquisition of `A` or `U` either succeeds or throws `IOException` immediat
 
 **1.3 — `N` passes the gate.** The gate executes in `CommandBase.Execute`, after the parser has determined the safety status of the command and before any command body executes.
 
-1. `N` acquires `A` shared. `N` holds `A` until `N` exits.
-2. `N` acquires `U` shared, then releases `U` immediately.
-3. If either open throws, `N` releases whatever `N` holds, backs off, and retries from sub-step 1 for up to `X_N`. On expiry of `X_N`, `N` fails and reports that a self update is in progress.
+`N` acquires `A` shared and holds `A` until `N` exits. If the open throws, `N` backs off and retries for up to `X_N`. On expiry of `X_N`, `N` fails and reports that a self update is in progress.
+
+A busy `A` unambiguously means a transaction is in flight, because `A` is only ever held exclusively by `P`; another `N` holding `A` shared does not block this one.
 
 Safety is a property of the command: `CommandBase` classifies every command as `non-safe` by default, and only `dotnetup dotnet`, the telemetry drain, and `self update` override that default. A newly added command is therefore gated unless someone deliberately exempts it.
 
@@ -326,19 +328,19 @@ The manifest will be signed just like the .NET artifacts manifests, with a detac
 **Why two lock files instead of a mutex such as `ModifyInstallationStates`.**
 A named mutex has exactly one owner, so it cannot represent "N `non-safe` processes are alive"; holding it proves only that nobody is inside a critical section at that instant, which does not cover a `dotnetup sdk install` that is downloading an archive. It also has no fail-if-held semantics, so a contending process blocks rather than reacting, and it is thread-affine, so it cannot be held across an `await`. Handle-based `FileShare` locks give all three properties, and the OS closes the handles if a process is killed, so there is no abandoned-state ambiguity to reason about.
 
-**Why a `non-safe` process takes the activity lock first.**
- Mutual exclusion requires that a `non-safe` process, once it has passed its update check, never reaches an instant where it holds neither lock. Retaining the activity lock and then probing the update lock satisfies this. Probing the update lock, releasing it, and only then acquiring the activity lock does not: an updater can acquire both inside that gap, and both sides pass their checks.
+**Why `N` acquires only the activity lock.**
+`P` holds `A` exclusively for the entire transaction, so `A` alone is a continuous signal that a transaction is in flight. An `N` that has acquired `A` shared and retained it excludes `P` completely: if `P` is mid-transaction the acquire by `N` fails, and if `P` is between steps 1.1 and 1.2 the acquire by `N` succeeds, after which step 1.2 fails and `P` releases `U` and backs off. There is no interleaving in which both proceed, and because `N` performs a single acquisition there is no window in which `N` holds nothing after having passed a check.
 
-Acquiring the update lock, acquiring the activity lock while still holding it, and then releasing the update lock also satisfies the no-gap requirement and is equally correct. Activity-first is preferred for two smaller reasons. It shortens the window in which `N` holds the update lock to a single open and close, so a momentary hold by `N` is less likely to spuriously fail the exclusive acquire of `P` at step 1.1. And it depends only on two acquisitions staying in order, whereas the overlapping form depends on a release happening late — a scope-tightening refactor of the `using` that holds the update lock silently reintroduces the gap, and no test is likely to catch it.
+An earlier form of this design had `N` also probe `U` shared. That probe was necessary only while a separate replacer process held `U` across a handoff during which `P` released `A`, which made `A` discontinuous. Once the replacement became a single process holding both locks end to end, the probe stopped carrying information, and with it went the question of which lock `N` should acquire first.
 
-The ordering has no bearing on whether a `non-safe` process can wait. Under either ordering `N` fails its first acquisition during a transaction, releases whatever `N` holds, and retries; the ability to wait comes from rule 2, not from rule 1. Rule 2 is also what removes the two-party cycle in which `N` holds the activity lock while waiting on the update lock and `P` holds the update lock while waiting on the activity lock, and that cycle is present under both orderings without it.
+**Why `P` acquires the update lock before the activity lock.**
+`U` serializes `P` against peer `self update` processes and `A` excludes `N`. Taking `U` first means `P` only begins excluding every `N` after `P` has won the race against peers; taking `A` first would hold every `non-safe` command out of the way for the whole of `X_U` while `P` waits on a peer that may itself be performing a long download.
 
-**Why `self update` takes them in the reverse order.**
-The opposite ordering is what makes the pair of checks race-free: each side retains its own lock before testing the other's, so neither can slip through a gap in the other's sequence. It is also why `self update` has no reason to open the activity lock shared first — a shared open succeeds while any number of `non-safe` processes hold it shared, so it would answer nothing. Only the exclusive open establishes that no `non-safe` process is running.
+`P` has no reason to open `A` shared first. A shared open succeeds while any number of `non-safe` processes hold `A` shared, so it would answer nothing. Only the exclusive open establishes that no `non-safe` process is running.
 
-**Why nobody waits for one lock while holding the other.** Because `non-safe` processes wait rather than fail, hold-and-wait during acquisition would produce a two-party cycle regardless of ordering: the gate would hold the shared activity lock while waiting on the update lock, and `self update` would hold the exclusive update lock while waiting on the activity lock. Releasing everything between retry attempts removes that edge, and no participant ever waits on a lock while holding the other.
+**Why nobody waits for one lock while holding the other.** `P` is the only participant that holds two locks. If `P` waited on `A` while holding `U`, a two-party cycle would form as soon as `non-safe` processes wait rather than fail: `N` holds `A` and waits for the transaction to end, while `P` holds `U` and waits for `A`. Releasing `U` between retry attempts removes that edge. The ability of `N` to wait comes from this rule, not from any acquisition ordering.
 
-**Why the update lock stays updater-only.** Contention on the update lock means a peer `self update`, which must be waited out and never failed. Contention on the activity lock means a `non-safe` process, which is waited on briefly and then failed. If `non-safe` processes retained the update lock instead of probing it, those two cases would be indistinguishable and the required policies could not both be honored.
+**Why the update lock stays updater-only.** Contention on `U` means a peer `self update`, which must be waited out and never failed. Contention on `A` means a `non-safe` process, which is waited on briefly and then failed. Keeping `N` off `U` entirely means the two cases can never be confused, and it removes any chance that a momentary open by `N` spuriously fails the acquire by `P` at step 1.1.
 
 **Why forwarding instead of resuming.** A process that waited at the gate is still executing the old image. Resuming would run pre-update code against post-update state — for example a manifest written in a format the old code does not understand. Forwarding is only legal at the gate precisely because nothing has been mutated and nothing has been written to the console yet.
 
