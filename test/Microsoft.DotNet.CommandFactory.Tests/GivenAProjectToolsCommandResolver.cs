@@ -318,7 +318,7 @@ namespace Microsoft.DotNet.Tests
             result.Args.Should().NotContain("--fx-version");
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void ItFindsToolsLocatedInTheNuGetFallbackFolder()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")
@@ -342,7 +342,7 @@ namespace Microsoft.DotNet.Tests
                 .Execute($"fallbackfoldertool").Should().Pass();
         }
 
-        [Fact]
+        [RequiresSpecificFrameworkFact("netcoreapp2.2")]
         public void ItShowsAnErrorWhenTheToolDllIsNotFound()
         {
             var testInstance = _testAssetsManager.CopyTestAsset("AppWithFallbackFolderToolDependency")
