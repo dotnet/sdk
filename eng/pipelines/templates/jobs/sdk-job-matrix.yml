@@ -26,12 +26,15 @@ parameters:
     runTests: false
   ### LINUX ###
   linuxJobParameterSets:
-  - osProperties: $(linuxOsglibcProperties)
+  - container: azureLinuxCrossX64
+    osProperties: $(linuxOsglibcProperties)
     runNativeAotCliTests: true
   # The x64 AOT leg runs on native x64 hardware (HostRid == TargetRid == linux-x64) so it can both
   # build dotnet-aot via NativeAOT (producing the .so and its mstat/dgml size-analysis output) and
-  # run the *.AoT.Tests.csproj test projects.
+  # run the *.AoT.Tests.csproj test projects. Both x64 legs use the portable Linux rootfs so the
+  # shipped native library runs on every supported glibc version.
   - categoryName: AOT
+    container: azureLinuxCrossX64
     runAoTTests: true
     osProperties: $(linuxOsglibcProperties)
   - categoryName: ContainerBased
