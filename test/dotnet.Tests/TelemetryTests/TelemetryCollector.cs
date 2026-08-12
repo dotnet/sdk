@@ -96,6 +96,10 @@ internal sealed class TelemetryCollector : IAsyncDisposable
             {
                 break;
             }
+            catch (ObjectDisposedException) when (cancellationToken.IsCancellationRequested)
+            {
+                break;
+            }
 
             using (client)
             {

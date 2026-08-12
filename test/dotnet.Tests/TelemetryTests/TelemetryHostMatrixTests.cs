@@ -96,10 +96,17 @@ public class TelemetryHostMatrixTests : SdkTest
         // The shared test environment disables node reuse to prevent cross-test interference.
         // The MSBuild server requires node reuse, and each matrix row shuts down its own server.
         command.EnvironmentToRemove.Add("MSBUILDDISABLENODEREUSE");
+        command.EnvironmentToRemove.Add("DOTNET_CLI_USE_MSBUILD_SERVER");
 
         if (host == TelemetryHost.InProcess)
         {
             command = command.WithEnvironmentVariable("MSBUILDUSESERVER", "0");
+        }
+        else
+        {
+            // Exercise the SDK's default server behavior without inheriting a machine-level
+            // opt-in or opt-out from the test host.
+            command.EnvironmentToRemove.Add("MSBUILDUSESERVER");
         }
 
         if (host == TelemetryHost.ServerFallback)
