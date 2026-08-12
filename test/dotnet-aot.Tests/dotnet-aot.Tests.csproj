@@ -21,6 +21,8 @@
        which is NativeAOT-compatible (no reflection-based discovery). -->
   <PropertyGroup Condition="'$(PublishAotTests)' == 'true'">
     <PublishAot>true</PublishAot>
+    <CrossBuild Condition="'$(ROOTFS_DIR)' != ''">true</CrossBuild>
+    <UseCommonLocateNativeCompilerTarget Condition="!$(TargetRid.StartsWith('win'))">true</UseCommonLocateNativeCompilerTarget>
     <!-- Project references (TestFramework.MSTest, Cli.Utils, NativeWrapper) may produce
          trim/AOT warnings since they are not annotated for AOT. -->
     <SuppressTrimAnalysisWarnings>true</SuppressTrimAnalysisWarnings>
@@ -72,5 +74,8 @@
   <ItemGroup Condition="'$(DotNetBuildSourceOnly)' != 'true'">
     <PackageReference Include="Azure.Monitor.OpenTelemetry.Exporter" />
   </ItemGroup>
+
+  <Import Project="$(RepositoryEngineeringDir)common\native\LocateNativeCompiler.targets"
+      Condition="'$(UseCommonLocateNativeCompilerTarget)' == 'true'" />
 
 </Project>
