@@ -52,6 +52,10 @@ imports:
 
 environment: copilot-pat-pool
 
+# ubuntu-slim has a hard 15-minute job limit. Use the standard runner for
+# framework jobs so temporary runner allocation delays do not cancel triage.
+runs-on-slim: ubuntu-latest
+
 engine:
   id: copilot
   env:
