@@ -89,6 +89,7 @@ namespace Microsoft.NET.Build.Tasks
             Architecture targetArch = RuntimeIdentifier.EndsWith("-x64") || RuntimeIdentifier.Contains("-x64-") ? Architecture.X64 :
                                       RuntimeIdentifier.EndsWith("-x86") || RuntimeIdentifier.Contains("-x86-") ? Architecture.X86 :
                                       RuntimeIdentifier.EndsWith("-arm64") || RuntimeIdentifier.Contains("-arm64-") ? Architecture.Arm64 :
+                                      RuntimeIdentifier.EndsWith("-armel") || RuntimeIdentifier.Contains("-armel-") ? Architecture.Arm :
                                       RuntimeIdentifier.EndsWith("-arm") || RuntimeIdentifier.Contains("-arm-") ? Architecture.Arm :
 #if !NETFRAMEWORK
                                       RuntimeIdentifier.EndsWith("-riscv64") || RuntimeIdentifier.Contains("-riscv64-") ? Architecture.RiscV64 :

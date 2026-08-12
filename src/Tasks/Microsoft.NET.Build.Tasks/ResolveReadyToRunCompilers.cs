@@ -269,6 +269,7 @@ namespace Microsoft.NET.Build.Tasks
             switch (architectureStr)
             {
                 case "arm":
+                case "armel":
                     architecture = Architecture.Arm;
                     break;
                 case "arm64":
