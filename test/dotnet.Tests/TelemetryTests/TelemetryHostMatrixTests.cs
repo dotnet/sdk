@@ -27,7 +27,7 @@ public class TelemetryHostMatrixTests : SdkTest
             .Pass();
 
         ShutdownBuildServers();
-        await using var collector = new TelemetryCollector();
+        await using var collector = await TelemetryCollectorFixture.CreateAsync(TestContext.CancellationToken);
 
         try
         {
@@ -42,7 +42,7 @@ public class TelemetryHostMatrixTests : SdkTest
             if (host == TelemetryHost.OptOut)
             {
                 await Task.Delay(TimeSpan.FromSeconds(2), TestContext.CancellationToken);
-                collector.GetEvents().Should().BeEmpty();
+                (await collector.GetEventsAsync(TestContext.CancellationToken)).Should().BeEmpty();
                 return;
             }
 
@@ -78,7 +78,7 @@ public class TelemetryHostMatrixTests : SdkTest
         }
     }
 
-    private CommandResult RunBuild(string projectPath, TelemetryCollector collector, TelemetryHost host)
+    private CommandResult RunBuild(string projectPath, TelemetryCollectorFixture collector, TelemetryHost host)
     {
         var command = new DotnetCommand(
                 Log,
@@ -118,7 +118,7 @@ public class TelemetryHostMatrixTests : SdkTest
     }
 
     private async Task<IReadOnlyList<CollectedEvent>> AssertBuildEventsAsync(
-        TelemetryCollector collector,
+        TelemetryCollectorFixture collector,
         int expectedBuildEventCount,
         string? expectedServerState)
     {
@@ -126,7 +126,8 @@ public class TelemetryHostMatrixTests : SdkTest
             currentEvents =>
                 currentEvents.Count(e => e.Name == "dotnet/cli/msbuild/build") >= expectedBuildEventCount
                 && currentEvents.Any(e => e.Name == "dotnet/cli/toplevelparser/command")
-                && currentEvents.Any(e => e.Name == "dotnet/cli/command/finish"));
+                && currentEvents.Any(e => e.Name == "dotnet/cli/command/finish"),
+            cancellationToken: TestContext.CancellationToken);
 
         CollectedEvent[] buildEvents = events
             .Where(e => e.Name == "dotnet/cli/msbuild/build")

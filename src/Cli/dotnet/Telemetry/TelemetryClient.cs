@@ -357,19 +357,7 @@ public class TelemetryClient : ITelemetryClient
             properties ??= new Dictionary<string, string?>();
             properties.Add("event id", Guid.NewGuid().ToString());
             var @event = new ActivityEvent($"dotnet/cli/{eventName}", tags: MakeTags(properties));
-
-            Activity? eventActivity = null;
-            if (Activity.Current is null)
-            {
-                ActivityContext parentContext = GetParentActivityContext() ?? ParentActivityContext;
-                eventActivity = Activities.Source.StartActivity(
-                    "telemetry",
-                    ActivityKind.Internal,
-                    parentContext);
-            }
-
             Activity.Current?.AddEvent(@event);
-            eventActivity?.Stop();
         }
         catch (Exception e)
         {

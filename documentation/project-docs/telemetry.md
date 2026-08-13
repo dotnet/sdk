@@ -286,8 +286,9 @@ The activity remains open through logger shutdown because MSBuild emits the fina
 telemetry event after `BuildFinished` (see
 [dotnet/sdk#55749](https://github.com/dotnet/sdk/issues/55749)).
 `TelemetryHostMatrixTests` validates the real OTLP export path for cold and hot MSBuild
-servers, in-process builds, server fallback, and telemetry opt-out. The test uses a local
-loopback receiver and requires no external collector or outbound network access.
+servers, in-process builds, server fallback, and telemetry opt-out. The test installs the
+pinned Aspire CLI version from the repository's configured feeds, runs its dashboard on
+loopback endpoints, and verifies exported events through the dashboard telemetry API.
 
 #### `msbuild/targetframeworkeval`
 

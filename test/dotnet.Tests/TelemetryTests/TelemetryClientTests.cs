@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
@@ -27,50 +26,6 @@ public class TelemetryClientTests : SdkTest
         [new[] { "run" }, "1"],
         [new[] { "new", "details" }, "127"]
     ];
-
-    [TestMethod]
-    [DoNotParallelize]
-    public void ItCreatesAnActivityWhenTrackingAnEventWithoutAnAmbientActivity()
-    {
-        Activity? originalActivity = Activity.Current;
-        Activity? stoppedActivity = null;
-        var environmentProvider = new Mock<IEnvironmentProvider>(MockBehavior.Strict);
-
-        TelemetryClient.DisabledForTests = true;
-        TelemetryClient.DisabledForTests = false;
-        Activity.Current = null;
-
-        using var listener = new ActivityListener
-        {
-            ShouldListenTo = source => source == Activities.Source,
-            Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
-            ActivityStopped = activity => stoppedActivity = activity,
-        };
-        ActivitySource.AddActivityListener(listener);
-
-        try
-        {
-            environmentProvider
-                .Setup(p => p.GetEnvironmentVariableAsBool(EnvironmentVariableNames.TELEMETRY_OPTOUT, It.IsAny<bool>()))
-                .Returns(false);
-            environmentProvider
-                .Setup(p => p.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID))
-                .Returns((string?)null);
-
-            var telemetry = new TelemetryClient(sessionId: null, environmentProvider: environmentProvider.Object);
-            telemetry.ThreadBlockingTrackEvent("standalone", new Dictionary<string, string?> { ["property"] = "value" });
-
-            stoppedActivity.Should().NotBeNull();
-            stoppedActivity.Events.Should().ContainSingle(@event =>
-                @event.Name == "dotnet/cli/standalone"
-                && @event.Tags.Any(tag => tag.Key == "property" && (string?)tag.Value == "value"));
-        }
-        finally
-        {
-            Activity.Current = originalActivity;
-            TelemetryClient.DisabledForTests = true;
-        }
-    }
 
     // Only runs on Windows because OTel libraries are only referenced on Windows builds.
     // Thus, this test that writes telemetry logs will not work on other platforms.
