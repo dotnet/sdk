@@ -63,6 +63,18 @@ The install-path precedence is:
 2. The first `sdk.paths` entry
 3. The default dotnetup hive
 
+### The `$host$` sentinel
+
+`$host$` is **not** a literal directory. It is a sentinel the .NET host resolver understands to mean "use the default host location." dotnetup treats it the same way, and skips empty, null, or whitespace entries while looking for the first meaningful entry:
+
+| First meaningful `sdk.paths` entry | Where dotnetup installs |
+|------------------------------------|-------------------------|
+| A relative or absolute path (e.g. `.dotnet`) | That path, resolved relative to the directory containing `global.json` |
+| `$host$` | The default dotnetup hive (e.g. `~/.dotnet`) |
+| *(no usable entry — empty, or only null/whitespace)* | The default dotnetup hive |
+
+Because `sdk.paths` is ordered, the first meaningful entry wins. `["$host$", ".dotnet"]` installs to the default hive and ignores `.dotnet`, while `[".dotnet", "$host$"]` installs to `.dotnet`. A literal path does *not* take precedence over `$host$` unless it appears first.
+
 ## Update `global.json`
 
 To install the newest version in the derived channel and write that version

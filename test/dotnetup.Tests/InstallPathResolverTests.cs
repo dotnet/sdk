@@ -138,6 +138,42 @@ public class InstallPathResolverTests
         result.PathSource.Should().Be(PathSource.Default);
     }
 
+    /// <summary>
+    /// When global.json's sdk.paths uses the "$host$" sentinel (as the first meaningful entry),
+    /// the install path resolves to the default host location, reported as a global.json source.
+    /// </summary>
+    [TestMethod]
+    public void Resolve_GlobalJsonHostSentinel_UsesDefaultHostLocation()
+    {
+        var globalJsonInfo = CreateGlobalJsonInfoWithPaths("$host$");
+
+        var result = _resolver.Resolve(
+            explicitInstallPath: null,
+            globalJsonInfo: globalJsonInfo);
+
+        result.Should().NotBeNull();
+        result!.ResolvedInstallPath.Should().Be(new DotnetEnvironmentManager().GetDefaultDotnetInstallPath());
+        result.PathSource.Should().Be(PathSource.GlobalJson);
+    }
+
+    /// <summary>
+    /// "$host$" as the first entry wins over later literal paths: the default host location is
+    /// used and the later path is ignored.
+    /// </summary>
+    [TestMethod]
+    public void Resolve_GlobalJsonHostSentinelFirst_IgnoresLaterPaths()
+    {
+        var globalJsonInfo = CreateGlobalJsonInfoWithPaths("$host$", GlobalJsonPath);
+
+        var result = _resolver.Resolve(
+            explicitInstallPath: null,
+            globalJsonInfo: globalJsonInfo);
+
+        result!.ResolvedInstallPath.Should().Be(new DotnetEnvironmentManager().GetDefaultDotnetInstallPath());
+        result.ResolvedInstallPath.Should().NotBe(GlobalJsonPath);
+        result.PathSource.Should().Be(PathSource.GlobalJson);
+    }
+
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void ResolveCurrentInstallRootPath_UsesSymlinkTargetDirectory()
@@ -220,6 +256,23 @@ public class InstallPathResolverTests
                 {
                     // Use the absolute path directly since it will be resolved relative to tempDir
                     Paths = [sdkPath]
+                }
+            }
+        };
+    }
+
+    private static GlobalJsonInfo CreateGlobalJsonInfoWithPaths(params string[] paths)
+    {
+        string globalJsonPath = Path.Combine(Path.GetTempPath(), "global.json");
+
+        return new GlobalJsonInfo
+        {
+            GlobalJsonPath = globalJsonPath,
+            GlobalJsonContents = new GlobalJsonContents
+            {
+                Sdk = new GlobalJsonContents.SdkSection
+                {
+                    Paths = paths
                 }
             }
         };
