@@ -31,7 +31,7 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+    local runtime_specs=("5.0" "6.0" "7.0" "8.0" "9.0" "10.0")
     # Also install the exact runtime versions that arcade's toolset requires
     # (from Version.Details.props) so tests can target those specific versions.
     local runtime_version
