@@ -6,6 +6,7 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 #endif
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -30,11 +31,11 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
+    internal const string FileBasedProgramCanSkipMSBuild = nameof(FileBasedProgramCanSkipMSBuild);
+
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
     public static string TargetFramework => $"net{Product.TargetFrameworkVersion}";
 
-    // Shared command factories initialize these options before the Native AOT path
-    // evaluates the virtual project and falls back to the managed build implementation.
     public bool NoRestore { get; init; }
 
     /// <summary>
@@ -46,6 +47,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoBuild { get; init; }
 
     /// <summary>
+    /// Filled during <see cref="Execute"/>.
+    /// </summary>
+    public (BuildLevel Level, FileBasedAppCacheInfo? Cache) LastBuild { get; private set; }
+
+    /// <summary>
+    /// Filled during <see cref="Execute"/>.
+    /// </summary>
+    public RunProperties? LastRunProperties { get; private set; }
+
+    /// <summary>
     /// If <see langword="true"/>, no build markers are written
     /// (like <see cref="FileBasedAppRunPlan.BuildStartCacheFileName"/> and <see cref="FileBasedAppRunPlan.BuildSuccessCacheFileName"/>).
     /// Also skips automatic cleanup.
@@ -55,17 +66,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public bool NoConsoleLogger { get; init; }
 
-    internal const string FileBasedProgramCanSkipMSBuild = nameof(FileBasedProgramCanSkipMSBuild);
-
-    /// <summary>
-    /// Filled during <see cref="Execute"/>.
-    /// </summary>
-    public (BuildLevel Level, FileBasedAppCacheInfo? Cache) LastBuild { get; private set; }
-
-    /// <summary>
-    /// Filled during <see cref="Execute"/>.
-    /// </summary>
-    public RunProperties? LastRunProperties { get; private set; }
+    public VirtualProjectBuilder Builder { get; }
+    public MSBuildArgs MSBuildArgs { get; }
 
     public ImmutableArray<CSharpDirective> Directives
     {
@@ -88,9 +90,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     public ImmutableArray<CSharpDirective> EvaluatedDirectives { get; private set; }
-
-    public VirtualProjectBuilder Builder { get; }
-    public MSBuildArgs MSBuildArgs { get; }
 
     public VirtualProjectBuildingCommand(
         string entryPointFileFullPath,
@@ -175,10 +174,27 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 Debug.Assert(cache is not null);
 
-                int result = ExecuteCsc(cache, out bool fallbackToNormalBuild);
+                MarkBuildStart();
+
+                // Execute CSC.
+                int result = new CSharpCompilerCommand
+                {
+                    EntryPointFileFullPath = Builder.EntryPointFileFullPath,
+                    ArtifactsPath = Builder.ArtifactsPath,
+                    CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
+                    CscArguments = cache.PreviousEntry?.CscArguments ?? [],
+                    BuildResultFile = cache.PreviousEntry?.BuildResultFile,
+                }
+                .Execute(out bool fallbackToNormalBuild);
 
                 if (!fallbackToNormalBuild)
                 {
+                    if (result == 0)
+                    {
+                        ReuseInfoFromPreviousCacheEntry(cache);
+                        MarkBuildSuccess(cache);
+                    }
+
 #if !CLI_AOT
                     if (binaryLogger is not null)
                     {
@@ -232,6 +248,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
 
+#pragma warning disable IL2026, IL3050 // This managed-only path runs in the untrimmed CLI.
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;
@@ -305,6 +322,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 projectInstance = buildRequest.ProjectInstance;
                 buildOrRestoreResult = buildResult;
             }
+#pragma warning restore IL2026, IL3050
 
             // Print build information.
             if (msbuildGet)
@@ -433,6 +451,22 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
+#endif
+
+        void ReuseInfoFromPreviousCacheEntry(FileBasedAppCacheInfo cache)
+        {
+            Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
+
+            if (cache.PreviousEntry != null)
+            {
+                foreach (var file in cache.PreviousEntry.AdditionalSources)
+                {
+                    cache.CurrentEntry.AdditionalSources.Add(file);
+                }
+            }
+        }
+
+#if !CLI_AOT
         void WriteCscRsp(FileBasedAppCacheInfo cache)
         {
             if (cache.CurrentEntry.CscArguments.IsDefaultOrEmpty)
@@ -634,42 +668,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         throw new CommandNotAvailableInAotException();
     }
 #endif
-
-    private int ExecuteCsc(FileBasedAppCacheInfo cache, out bool fallbackToNormalBuild)
-    {
-        MarkBuildStart();
-
-        int result = new CSharpCompilerCommand
-        {
-            EntryPointFileFullPath = Builder.EntryPointFileFullPath,
-            ArtifactsPath = Builder.ArtifactsPath,
-            CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
-            CscArguments = cache.PreviousEntry?.CscArguments ?? [],
-            BuildResultFile = cache.PreviousEntry?.BuildResultFile,
-        }
-        .Execute(out fallbackToNormalBuild);
-
-        if (!fallbackToNormalBuild && result == 0)
-        {
-            ReuseInfoFromPreviousCacheEntry(cache);
-            MarkBuildSuccess(cache);
-        }
-
-        return result;
-    }
-
-    private static void ReuseInfoFromPreviousCacheEntry(FileBasedAppCacheInfo cache)
-    {
-        Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
-
-        if (cache.PreviousEntry != null)
-        {
-            foreach (var file in cache.PreviousEntry.AdditionalSources)
-            {
-                cache.CurrentEntry.AdditionalSources.Add(file);
-            }
-        }
-    }
 
     private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {

@@ -8,6 +8,7 @@ using System.Diagnostics;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -49,7 +50,7 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
     internal static CommandBase CreateVirtualOrPhysicalCommand(
         System.CommandLine.Command commandDefinition,
         Argument<string[]> catchAllUserInputArgument,
-        Func<MSBuildArgs, string, CommandBase> createVirtualCommand,
+        Func<MSBuildArgs, string, VirtualProjectBuildingCommand> createVirtualCommand,
         Func<MSBuildArgs, string?, CommandBase> createPhysicalCommand,
         IEnumerable<Option> optionsToUseWhenParsingMSBuildFlags,
         ParseResult parseResult,

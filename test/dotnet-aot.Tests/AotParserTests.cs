@@ -197,32 +197,18 @@ public partial class AotParserTests
     }
 
     [TestMethod]
-    public void ParseBuildCommand_UsesAotParser()
+    [DataRow("build test.csproj --no-restore", "build")]
+    [DataRow("restore test.csproj --no-cache", "restore")]
+    [DataRow("clean test.csproj --configuration Release", "clean")]
+    [DataRow("msbuild test.csproj -target:Build", "msbuild")]
+    [DataRow("pack test.csproj --no-restore", "pack")]
+    [DataRow("publish test.csproj --no-restore", "publish")]
+    public void ParseMSBuildBackedCommand_UsesAotParser(string commandLine, string commandName)
     {
-        var result = Parser.Parse(["build", "test.csproj", "--no-restore"]);
+        var result = Parser.Parse(commandLine);
 
         Assert.IsEmpty(result.Errors);
-        Assert.AreEqual("build", result.CommandResult.Command.Name);
-        Assert.IsFalse(result.RequiresManagedCommandResolution());
-    }
-
-    [TestMethod]
-    public void ParseRestoreCommand_UsesAotParser()
-    {
-        var result = Parser.Parse(["restore", "test.csproj", "--no-cache"]);
-
-        Assert.IsEmpty(result.Errors);
-        Assert.AreEqual("restore", result.CommandResult.Command.Name);
-        Assert.IsFalse(result.RequiresManagedCommandResolution());
-    }
-
-    [TestMethod]
-    public void ParseCleanCommand_UsesAotParser()
-    {
-        var result = Parser.Parse(["clean", "test.csproj", "--configuration", "Release"]);
-
-        Assert.IsEmpty(result.Errors);
-        Assert.AreEqual("clean", result.CommandResult.Command.Name);
+        Assert.AreEqual(commandName, result.CommandResult.Command.Name);
         Assert.IsFalse(result.RequiresManagedCommandResolution());
     }
 
@@ -233,26 +219,6 @@ public partial class AotParserTests
 
         Assert.IsEmpty(result.Errors);
         Assert.AreEqual(0, Parser.Invoke(result));
-    }
-
-    [TestMethod]
-    public void ParseMSBuildCommand_UsesAotParser()
-    {
-        var result = Parser.Parse(["msbuild", "test.csproj", "-target:Build"]);
-
-        Assert.IsEmpty(result.Errors);
-        Assert.AreEqual("msbuild", result.CommandResult.Command.Name);
-        Assert.IsFalse(result.RequiresManagedCommandResolution());
-    }
-
-    [TestMethod]
-    public void ParsePackCommand_UsesAotParser()
-    {
-        var result = Parser.Parse(["pack", "test.csproj", "--no-restore"]);
-
-        Assert.IsEmpty(result.Errors);
-        Assert.AreEqual("pack", result.CommandResult.Command.Name);
-        Assert.IsFalse(result.RequiresManagedCommandResolution());
     }
 
     [TestMethod]
@@ -284,16 +250,6 @@ public partial class AotParserTests
         {
             File.Delete(sourceFile);
         }
-    }
-
-    [TestMethod]
-    public void ParsePublishCommand_UsesAotParser()
-    {
-        var result = Parser.Parse(["publish", "test.csproj", "--no-restore"]);
-
-        Assert.IsEmpty(result.Errors);
-        Assert.AreEqual("publish", result.CommandResult.Command.Name);
-        Assert.IsFalse(result.RequiresManagedCommandResolution());
     }
 
     [TestMethod]

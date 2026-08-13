@@ -187,6 +187,7 @@ internal sealed class ReleasePropertyProjectLocator(
                 }
             }
         });
+
         if (configuredProjects.Any() && configValues.Count > 1)
         {
             // Note:
