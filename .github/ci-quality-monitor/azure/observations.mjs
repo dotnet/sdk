@@ -111,7 +111,7 @@ function summarizeTaskLog(logText)
   const lines = splitNonEmptyLines(logText);
   const diagnostics = lines.filter(line => /\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b|response status|unable to|service unavailable|timed? ?out|connection refused|exec format error/i.test(line));
   const fallback = lines.filter(line => /\b(?:error|fatal|exception|failed)\b/i.test(line) && !/\bat\s+\S+\(/i.test(line));
-  return [...new Set((diagnostics.length > 0 ? diagnostics : fallback.length > 0 ? fallback : lines).slice(-8))];
+  return [...new Set((diagnostics.length > 0 ? diagnostics : fallback).slice(-8))];
 }
 
 function selectTaskMechanism(evidence, taskName)
@@ -150,8 +150,10 @@ export function createTaskObservations(timelineFailures, logsById = new Map())
         fingerprint: createFailureFingerprint({
           ...classification, component: failure.name, mechanism
         }),
-        actionable: classification.failureType !== "artifact-missing"
-          && classification.failureType !== "downstream-failure",
+        actionable: evidence.length > 0
+          && classification.failureType !== "artifact-missing"
+          && classification.failureType !== "downstream-failure"
+          && classification.failureType !== "unknown-error",
         path: failure.path,
         issues: failure.issues,
         logExcerpt,

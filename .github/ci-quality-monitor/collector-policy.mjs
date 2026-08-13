@@ -73,8 +73,13 @@ export function getTimelineFailuresFromRecords(records = [])
 
 export function applyKbeRecurrence(observations, relatedFailureSummaries, currentBuild = null)
 {
+  const currentPullRequest = /^refs\/pull\/\d+\/merge$/.test(currentBuild?.branch ?? "")
+    ? currentBuild.branch
+    : null;
   const relatedTests = relatedFailureSummaries.flatMap(summary =>
-    (summary.build?.commit === currentBuild?.commit ? [] : summary.observations ?? [])
+    (summary.build?.commit === currentBuild?.commit || summary.build?.branch === currentPullRequest
+      ? []
+      : summary.observations ?? [])
       .filter(observation => observation.kind === "test")
       .map(observation => ({observation, build: summary.build})));
   return observations.map(observation =>

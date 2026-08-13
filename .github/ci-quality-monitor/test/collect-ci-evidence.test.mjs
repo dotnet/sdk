@@ -419,6 +419,16 @@ test("createTaskObservations classifies restore failures from task logs", () => 
   assert.equal(observations[0].actionable, true);
 });
 
+test("normal task log text does not become an actionable failure", () => {
+  const observations = createTaskObservations([{
+    type: "Task", name: "Build", issues: [], path: ["Build", "Linux", "Build"], logId: 29
+  }], new Map([[29, "All projects are up-to-date for restore."]]));
+
+  assert.equal(observations[0].failureType, "build-task-error");
+  assert.deepEqual(observations[0].logExcerpt, []);
+  assert.equal(observations[0].actionable, false);
+});
+
 test("checkout observations use the stable fatal cause instead of randomized retry delays", () => {
   const failures = [3.784, 9.696].map((delay, index) => ({
     type: "Task",
@@ -558,6 +568,20 @@ test("applyKbeRecurrence ignores retries of the current commit", () => {
     build: { id: 41, commit: "same-commit" },
     observations: [{ kind: "test", component: current.component, mechanismFingerprint: current.mechanismFingerprint }]
   }], { id: 42, commit: "same-commit" });
+
+  assert.equal(result[0].kbe.recurring, false);
+  assert.deepEqual(result[0].kbe.matchingBuilds, []);
+});
+
+test("applyKbeRecurrence ignores attempts of the same pull request", () => {
+  const current = {
+    kind: "test", component: "Sdk.Tests.Flaky", mechanismFingerprint: "test-mechanism|shared|timeout",
+    kbe: { eligible: true, validation: { valid: true } }
+  };
+  const result = applyKbeRecurrence([current], [{
+    build: { id: 41, commit: "previous-commit", branch: "refs/pull/123/merge" },
+    observations: [{ kind: "test", component: current.component, mechanismFingerprint: current.mechanismFingerprint }]
+  }], { id: 42, commit: "current-commit", branch: "refs/pull/123/merge" });
 
   assert.equal(result[0].kbe.recurring, false);
   assert.deepEqual(result[0].kbe.matchingBuilds, []);

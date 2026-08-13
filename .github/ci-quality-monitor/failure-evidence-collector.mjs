@@ -1,6 +1,13 @@
 import {createPipelineObservation, createTaskObservations} from "./azure/observations.mjs";
 import {applyKbeRecurrence, getTimelineFailuresFromRecords} from "./collector-policy.mjs";
-import {MAX_HELIX_REFERENCES, MAX_RELATED_BUILDS, MAX_RELATED_HELIX_REFERENCES, MAX_TASK_LOGS} from "./constants.mjs";
+import {
+  MAX_HELIX_REFERENCES,
+  MAX_RELATED_BUILDS,
+  MAX_RELATED_CONTEXT_OBSERVATIONS,
+  MAX_RELATED_HELIX_REFERENCES,
+  MAX_RELATED_MECHANISM_CHARACTERS,
+  MAX_TASK_LOGS
+} from "./constants.mjs";
 import {createBuildSummary, isFailedBuild, normalizeEvidenceText} from "./evidence-utils.mjs";
 
 export class FailureEvidenceCollector
@@ -69,7 +76,7 @@ export class FailureEvidenceCollector
       recentBuilds: history.map(createBuildSummary),
       issueCandidates: observations.filter(observation => observation.actionable),
       contextObservations: observations.filter(observation => !observation.actionable),
-      relatedFailureSummaries,
+      relatedFailureSummaries: compactRelatedFailureSummaries(relatedFailureSummaries, observations),
       testFailures: await this.collectAzureTestFailures(azure, build.id)
     };
   }
@@ -115,4 +122,36 @@ function deduplicateObservations(observations)
     observation.fingerprint ?? `${observation.kind}:${observation.component}:${observation.mechanism}`,
     observation
   ])).values()];
+}
+
+function compactRelatedFailureSummaries(summaries, currentObservations)
+{
+  return summaries.map(summary => ({
+    ...summary,
+    observations: [...(summary.observations ?? [])]
+      .sort((left, right) => observationRelevance(right, currentObservations)
+        - observationRelevance(left, currentObservations))
+      .slice(0, MAX_RELATED_CONTEXT_OBSERVATIONS)
+      .map(compactRelatedObservation)
+  }));
+}
+
+function observationRelevance(observation, currentObservations)
+{
+  return currentObservations.some(current => current.fingerprint === observation.fingerprint
+    || (current.component === observation.component
+      && current.mechanismFingerprint === observation.mechanismFingerprint)) ? 1 : 0;
+}
+
+function compactRelatedObservation(observation)
+{
+  const {
+    kind, phase, failureType, evidenceSources, component, mechanism, fingerprint,
+    mechanismFingerprint, actionable, workItem, jobId, queue, outcome, exitCode, state
+  } = observation;
+  return {
+    kind, phase, failureType, evidenceSources, component,
+    mechanism: normalizeEvidenceText(mechanism, MAX_RELATED_MECHANISM_CHARACTERS),
+    fingerprint, mechanismFingerprint, actionable, workItem, jobId, queue, outcome, exitCode, state
+  };
 }
