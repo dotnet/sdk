@@ -6,7 +6,6 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <AspireCliVersion>13.4.6</AspireCliVersion>
     <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <OutputPath>$(TestHostFolder)</OutputPath>
