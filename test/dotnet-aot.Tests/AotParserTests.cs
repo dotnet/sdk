@@ -272,7 +272,13 @@ public partial class AotParserTests
         {
             var result = Parser.Parse(["pack", sourceFile, "--configuration", "Debug"]);
             Assert.IsEmpty(result.Errors);
-            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+            IReadOnlyList<string> messages = CaptureVerboseMessages(
+                () => Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result)));
+
+            Assert.ContainsSingle(
+                messages.Where(message => message.Contains(
+                    "file-based app build operations require in-process MSBuild",
+                    StringComparison.Ordinal)));
         }
         finally
         {
@@ -593,6 +599,25 @@ public partial class AotParserTests
             Reporter.Reset();
             Console.SetOut(originalOut);
             Console.SetError(originalErr);
+        }
+    }
+
+    private static IReadOnlyList<string> CaptureVerboseMessages(Action action)
+    {
+        bool originalVerbose = CommandLoggingContext.IsVerbose;
+        var reporter = new BufferedReporter();
+        try
+        {
+            CommandLoggingContext.SetVerbose(true);
+            Reporter.SetVerbose(reporter);
+            action();
+            return reporter.Lines.ToArray();
+        }
+        finally
+        {
+            Reporter.SetVerbose(Reporter.ConsoleOutReporter);
+            CommandLoggingContext.SetVerbose(originalVerbose);
+            Reporter.Reset();
         }
     }
 }
