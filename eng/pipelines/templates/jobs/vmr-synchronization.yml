@@ -68,17 +68,11 @@ jobs:
   - ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
     # Push main and release branches to the public VMR
     - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
-      # Make sure the script is where we expect it to be, since the template does not support multi-repo checkout
-      - script: |
-          mkdir -p $(System.DefaultWorkingDirectory)/eng/common
-          cp -r $(Build.Repository.LocalPath)/eng/common/Get-GitHubAppToken.ps1 $(System.DefaultWorkingDirectory)/eng/common
-        displayName: Copy GitHub App token script
-
       - template: /eng/common/templates-official/steps/get-github-app-token.yml
         parameters:
           azureSubscription: DncEng-VSTS
           keyVaultName: dnceng-pipeline-secrets
-          keyName: vmr-synchronization-app-client-secret
+          keyName: vmr-synchronization-app-secret
           appClientId: $(vmr-synchronization-app-client-id)
           installationOwner: dotnet
           outputVariableName: vmrPushToken

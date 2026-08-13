@@ -22,6 +22,20 @@ steps:
   displayName: Clone dotnet/sdk
   path: sdk
 
+
+- ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
+  # Push main and release branches to the public VMR
+  - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
+    # The template that signs GitHub App tokens does not support multi-repo checkout, so we need this workaround
+    - script: |
+        set -ex
+        target_dir='$(System.DefaultWorkingDirectory)/eng/common'
+        mkdir -p "$target_dir"
+        cp -r Get-GitHubAppToken.ps1 "$target_dir/Get-GitHubAppToken.ps1"
+        cp -r pipeline-logging-functions.ps1 "$target_dir/pipeline-logging-functions.ps1"
+      displayName: Prepare scripts for GitHub App token generation
+      workingDirectory: $(Build.Repository.LocalPath)/eng/common
+
 # This step is needed so that when we get a detached HEAD / shallow clone,
 # we still pull the commit into the temporary sdk clone to use it during the sync.
 - script: |
