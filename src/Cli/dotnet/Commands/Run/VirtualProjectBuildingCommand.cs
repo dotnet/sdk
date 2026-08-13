@@ -6,9 +6,6 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 #endif
 using System.Diagnostics;
-#if !CLI_AOT
-using System.Diagnostics.CodeAnalysis;
-#endif
 using System.Text.Json;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
@@ -108,10 +105,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
-#if !CLI_AOT
-    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
-#endif
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
