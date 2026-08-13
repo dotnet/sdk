@@ -6,7 +6,7 @@ export async function getRecentlyTrackedFingerprints(repository, token, fetchImp
   const fingerprints = new Set();
   for (let page = 1; page <= 5; page++)
   {
-    const url = `https://api.github.com/repos/${repository}/issues?state=all&sort=updated&direction=desc&per_page=100&page=${page}`;
+    const url = `https://api.github.com/repos/${repository}/issues?state=open&sort=updated&direction=desc&per_page=100&page=${page}`;
     const response = await fetchImplementation(url, {
       headers: {
         Accept: "application/vnd.github+json",

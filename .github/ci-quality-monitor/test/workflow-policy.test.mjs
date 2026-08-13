@@ -27,6 +27,15 @@ test("same pull request attempts are not independent recurrence", async () =>
     assert.match(workflow, /Attempts of the same pull request are not independent recurrence, even across different commits\./);
 });
 
+test("closed incidents provide context but do not suppress resurfaced failures", async () =>
+{
+        const workflow = await readFile(workflowUrl, "utf8");
+
+        assert.match(workflow, /Recently closed issues are historical context only and must not block filing a resurfaced failure\./);
+        assert.match(workflow, /only when it is open and its observable failure and mechanism materially match/);
+        assert.match(workflow, /do not create a duplicate when an existing open issue already tracks it/);
+});
+
 test("failed Azure check suites trigger build ID resolution", async () =>
 {
     const workflow = await readFile(workflowUrl, "utf8");

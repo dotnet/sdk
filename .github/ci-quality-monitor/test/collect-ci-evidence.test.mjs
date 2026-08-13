@@ -587,10 +587,11 @@ test("applyKbeRecurrence ignores attempts of the same pull request", () => {
   assert.deepEqual(result[0].kbe.matchingBuilds, []);
 });
 
-test("tracked issue fingerprints suppress candidates before agent activation", async () => {
+test("open issue fingerprints suppress candidates before agent activation", async () => {
   const fingerprint = "restore|build|nuget-503";
   const fetchImplementation = async (url, options) => {
     assert.match(url, /repos\/nagilson\/sdk\/issues/);
+    assert.match(url, /state=open/);
     assert.equal(options.headers.Authorization, "Bearer token");
     return new Response(JSON.stringify([{
       body: `## Build Information\n\n- **Failure fingerprint:** \`${fingerprint}\``
@@ -608,6 +609,22 @@ test("tracked issue fingerprints suppress candidates before agent activation", a
   assert.deepEqual(dossier.failures[0].issueCandidates, [{ fingerprint: "build|compiler|cs0114" }]);
   dossier.failures[0].issueCandidates = [];
   assert.equal(shouldRunAgent(dossier), false);
+});
+
+test("closed issue fingerprints remain eligible for a new issue", async () => {
+  const fingerprint = "restore|build|nuget-503";
+  const fetchImplementation = async url => {
+    assert.match(url, /state=open/);
+    return new Response(JSON.stringify([]), { status: 200 });
+  };
+  const dossier = {
+    failures: [{ issueCandidates: [{ fingerprint }] }]
+  };
+
+  const tracked = await getRecentlyTrackedFingerprints("nagilson/sdk", "token", fetchImplementation);
+  suppressTrackedIssueCandidates(dossier, tracked);
+
+  assert.deepEqual(dossier.failures[0].issueCandidates, [{ fingerprint }]);
 });
 
 test("Helix artifacts contribute TRX and dump evidence sources", () => {
