@@ -7,6 +7,7 @@ export const MAX_PROCESSED_BUILD_KEYS = 100;
 export const MAX_RELATED_BUILDS = 5;
 export const MAX_RELATED_HELIX_REFERENCES = 10;
 export const MAX_TASK_LOGS = 10;
+export const MAX_TEST_DIAGNOSTIC_CHARACTERS = 80_000;
 export const MAX_TEST_FAILURES = 20;
 export const MAX_TIMELINE_FAILURES = 100;
 export const PIPELINE_HEARTBEAT_AGE_MS = 90 * 60 * 1000;

@@ -1,12 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { MAX_LOG_CHARACTERS, MAX_TEST_FAILURES } from "../constants.mjs";
+import { MAX_TEST_DIAGNOSTIC_CHARACTERS, MAX_TEST_FAILURES } from "../constants.mjs";
 import { parseTestResultXml } from "../test-results.mjs";
 
 test("TRX parser bounds failure count and diagnostic text", () => {
-  const oversizedMessage = "m".repeat(MAX_LOG_CHARACTERS + 100);
-  const oversizedStack = "s".repeat(MAX_LOG_CHARACTERS + 100);
+  const oversizedMessage = "m".repeat(MAX_TEST_DIAGNOSTIC_CHARACTERS + 100);
+  const oversizedStack = "s".repeat(MAX_TEST_DIAGNOSTIC_CHARACTERS + 100);
   const failures = Array.from({ length: MAX_TEST_FAILURES + 5 }, (_, index) => `
     <UnitTestResult testId="test-${index}" testName="Test${index}" outcome="Failed">
       <Output><ErrorInfo><Message>${oversizedMessage}</Message><StackTrace>${oversizedStack}</StackTrace></ErrorInfo></Output>
@@ -18,6 +18,6 @@ test("TRX parser bounds failure count and diagnostic text", () => {
     </TestRun>`);
 
   assert.equal(results.failures.length, MAX_TEST_FAILURES);
-  assert.ok(results.failures.every(failure => failure.errorMessage.length === MAX_LOG_CHARACTERS));
-  assert.ok(results.failures.every(failure => failure.stackTrace.length === MAX_LOG_CHARACTERS));
+  assert.ok(results.failures.every(failure => failure.errorMessage.length === MAX_TEST_DIAGNOSTIC_CHARACTERS));
+  assert.ok(results.failures.every(failure => failure.stackTrace.length === MAX_TEST_DIAGNOSTIC_CHARACTERS));
 });
