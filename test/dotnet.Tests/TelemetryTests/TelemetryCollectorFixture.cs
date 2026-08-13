@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Net;
 using System.Net.Sockets;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 
@@ -12,7 +13,11 @@ namespace Microsoft.DotNet.Tests.TelemetryTests;
 
 internal sealed class TelemetryCollectorFixture : IAsyncDisposable
 {
-    private const string AspireCliVersion = "13.4.6";
+    private static readonly string s_aspireCliVersion = typeof(TelemetryCollectorFixture)
+        .Assembly
+        .GetCustomAttributes<AssemblyMetadataAttribute>()
+        .Single(attribute => attribute.Key == "AspireCliVersion")
+        .Value!;
     private static readonly SemaphoreSlim s_toolInstallLock = new(1, 1);
 
     private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(15) };
@@ -152,7 +157,7 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
         string toolPath = Path.Combine(
             SdkTestContext.Current.TestExecutionDirectory,
             ".tools",
-            $"aspire-cli-{AspireCliVersion}");
+            $"aspire-cli-{s_aspireCliVersion}");
 
         await s_toolInstallLock.WaitAsync(cancellationToken);
         try
@@ -180,7 +185,7 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
             startInfo.ArgumentList.Add("install");
             startInfo.ArgumentList.Add("Aspire.Cli");
             startInfo.ArgumentList.Add("--version");
-            startInfo.ArgumentList.Add(AspireCliVersion);
+            startInfo.ArgumentList.Add(s_aspireCliVersion);
             startInfo.ArgumentList.Add("--tool-path");
             startInfo.ArgumentList.Add(toolPath);
             startInfo.ArgumentList.Add("--configfile");
@@ -220,7 +225,7 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
             if (installProcess.ExitCode != 0)
             {
                 throw new InvalidOperationException(
-                    $"Installing Aspire CLI {AspireCliVersion} failed with exit code {installProcess.ExitCode}."
+                    $"Installing Aspire CLI {s_aspireCliVersion} failed with exit code {installProcess.ExitCode}."
                     + Environment.NewLine
                     + output
                     + Environment.NewLine
@@ -229,7 +234,7 @@ internal sealed class TelemetryCollectorFixture : IAsyncDisposable
 
             return FindAspireExecutable(toolPath)
                 ?? throw new FileNotFoundException(
-                    $"Aspire CLI {AspireCliVersion} was installed without its native executable.",
+                    $"Aspire CLI {s_aspireCliVersion} was installed without its native executable.",
                     toolPath);
         }
         finally
