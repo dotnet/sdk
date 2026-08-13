@@ -8,8 +8,8 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 #if !CLI_AOT
 using System.Diagnostics.CodeAnalysis;
-using System.Text.Json;
 #endif
+using System.Text.Json;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
 #if !CLI_AOT
@@ -442,19 +442,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
-        void ReuseInfoFromPreviousCacheEntry(FileBasedAppCacheInfo cache)
-        {
-            Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
-
-            if (cache.PreviousEntry != null)
-            {
-                foreach (var file in cache.PreviousEntry.AdditionalSources)
-                {
-                    cache.CurrentEntry.AdditionalSources.Add(file);
-                }
-            }
-        }
-
         void WriteCscRsp(FileBasedAppCacheInfo cache)
         {
             if (cache.CurrentEntry.CscArguments.IsDefaultOrEmpty)
@@ -646,6 +633,21 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
     }
+#endif
+
+    private static void ReuseInfoFromPreviousCacheEntry(FileBasedAppCacheInfo cache)
+    {
+        Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
+
+        if (cache.PreviousEntry != null)
+        {
+            foreach (var file in cache.PreviousEntry.AdditionalSources)
+            {
+                cache.CurrentEntry.AdditionalSources.Add(file);
+            }
+        }
+    }
+
     private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
         return FileBasedAppRunPlan.ReadCacheEntry(
@@ -661,6 +663,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
+#if !CLI_AOT
     /// <summary>
     /// Determines the work required to make the virtual project outputs current.
     /// </summary>
@@ -693,6 +696,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         cache = plan.Cache;
         return plan.ToBuildLevel();
     }
+#endif
 
     public void MarkArtifactsFolderUsed()
     {
@@ -731,7 +735,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         using var stream = File.Open(successCacheFile, FileMode.Create, FileAccess.Write, FileShare.None);
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
-#endif
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
