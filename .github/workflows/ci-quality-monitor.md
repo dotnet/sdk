@@ -4,8 +4,6 @@ name: CI Quality Investigator
 description: Investigates public dotnet/sdk CI failures and identifies actionable, previously untracked build and test quality issues.
 # See `ci-quality-monitor.README.md` for trigger coverage and fallback behavior.
 on:
-  push:
-    branches: [nagilson/ci-quality-monitor-live-evaluation]
   check_suite:
     types: [completed]
   pull_request:
@@ -43,7 +41,7 @@ jobs:
       should_run: ${{ steps.collect.outputs.should_run }}
     steps:
       - name: Check out monitor configuration
-        uses: actions/checkout@v7.0.0
+        uses: actions/checkout@v7.0.1
       - name: Resolve Azure build from completed check suite
         if: github.event_name == 'check_suite'
         id: resolve-check-suite
@@ -130,11 +128,6 @@ jobs:
             args+=(--event-build-id "$EVENT_BUILD_ID")
           elif [[ -n "$EVENT_HEAD_SHA" ]]; then
             args+=(--event-head-sha "$EVENT_HEAD_SHA")
-          elif [[ "$GITHUB_REF_NAME" == "nagilson/ci-quality-monitor-live-evaluation" ]]; then
-            args+=(--build-id "$(cat .github/ci-quality-monitor/evaluation-build-id.txt)")
-          fi
-          if [[ "$GITHUB_REF_NAME" == "nagilson/ci-quality-monitor-live-evaluation" ]]; then
-            args+=(--evaluation-catalog .github/ci-quality-monitor/evaluation-builds.json)
           fi
           if [[ -n "$MERGED_PR_NUMBER" ]]; then
             args+=(
@@ -160,7 +153,24 @@ jobs:
 
 if: needs.collect.outputs.should_run == 'true'
 
-engine: copilot
+# ###############################################################
+# Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
+# When org-level billing is available, this will be removed.
+# See `shared/pat_pool.README.md` for more information.
+# ###############################################################
+imports:
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
+
+engine:
+  id: copilot
+  env:
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
 
 permissions:
   contents: read
@@ -172,16 +182,33 @@ network:
     - defaults
     - github
 
+pre-steps:
+  - name: Force fresh Copilot CLI install
+    run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
+
 tools:
+  # cli-proxy + github.mode: gh-proxy route GitHub tools and Safe Outputs through the
+  # generated CLI proxy instead of the native HTTP MCP endpoint on the internal awmg-mcpg
+  # gateway, avoiding the firewall TCP_DENIED/403 on that single-label host.
+  # See github/gh-aw#45915.
   cli-proxy: true
   github:
     mode: gh-proxy
     toolsets: [issues, repos, search]
     allowed-repos:
       - "${{ github.repository }}"
-    min-integrity: none
+    min-integrity: approved
 
 safe-outputs:
+  threat-detection:
+    engine:
+      id: copilot
+      model: gpt-5.6-luna
+      env:
+        COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
+    steps:
+      - name: Force fresh Copilot CLI install
+        run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
   report-failure-as-issue: false
   missing-tool:
     create-issue: false
@@ -196,9 +223,9 @@ safe-outputs:
     - "helix.dot.net"
     - "*.blob.core.windows.net"
   create-issue:
-    title-prefix: "[AI] [CI] "
+    title-prefix: "[AI discovered CI] "
     labels: [agentic-workflows]
-    allowed-labels: ["Known Build Error", "Test Debt", live-build-incident, cookie]
+    allowed-labels: ["Known Build Error", "Test Debt", live-build-incident]
     deduplicate-by-title: true
     max: 3
   noop:
@@ -219,31 +246,29 @@ Apply the reasoning standards used by the `ci-analysis` skill, but do not claim 
 
 `mergedPullRequest` metadata links a final PR validation to a merge event, but the current collector does not compare the tested merge tree with the landed commit tree. Never describe that PR build as exact landed-content validation unless independent evidence establishes tree equivalence.
 
-When the dossier contains `evaluationScenario`, this is a fork-only evaluation and this rule takes precedence over production ownership and recurrence routing: create exactly one issue for the filtered `issueCandidates` even when the failure is one-off, externally owned, or would be routed to `dotnet/dnceng` in production. Explain the production routing in the RCA, but do not call `noop`. Pass `labels: [cookie, Test Debt]` to `create_issue`. For evaluation build `1525292` only, also pass `Known Build Error` and create the issue for the strongest named test failure only when `kbe.eligible` and `kbe.validation.valid` are true; evaluation mode relaxes recurrence, not pattern safety. For every other evaluation build, create an ordinary issue.
-
 ## Decision process
 
 Follow these steps in order:
 
 1. If `bootstrap` is true, call `noop`. The first scheduled run establishes state and must not create historical issues.
-2. Read `pipelineHealth` and each current build's `issueCandidates`. Only `issueCandidates` may anchor an issue. In fork evaluation, the collector has already filtered them to `evaluationScenario`; do not substitute another current-build mechanism. Use `contextObservations`, `relatedFailureSummaries`, and their nested observations only as context for history and recurrence; never file a related-build observation as the current failure. In particular, never file the generic `Monitor Helix Jobs` parent or an artifact-download cascade when specific child/root observations exist.
+2. Read `pipelineHealth` and each current build's `issueCandidates`. Only `issueCandidates` may anchor an issue. Use `contextObservations`, `relatedFailureSummaries`, and their nested observations only as context for history and recurrence; never file a related-build observation as the current failure. In particular, never file the generic `Monitor Helix Jobs` parent or an artifact-download cascade when specific child/root observations exist.
 3. Interpret each observation on three independent axes: `phase` says where execution stopped, `failureType` says what happened, and `evidenceSources` says how it was established. A named test, task name, Helix work item, or red build is not itself a root cause.
 4. Group different tests into one candidate only when their `mechanismFingerprint` values are equal and their stable evidence supports the same mechanism. List every affected test in that issue.
 5. Keep materially different mechanisms separate even when they share a phase. Conversely, do not create separate issues merely because one network or authentication failure surfaced in restore and another surfaced through a test wrapper; group them when the endpoint/service and stable mechanism match. The same test may map to multiple issues when it fails through different mechanisms in different builds.
 6. A test failure, work-item timeout/crash, or infrastructure failure is recurring only when substantially the same stable cause appears in the current build and at least one related build from a different commit. Retries of the same commit are not independent recurrence. Ignore timestamps, GUIDs, machines, temporary paths, and occurrence counts.
 7. A specific `compiler-error`, `configuration-error`, `package-policy-error`, or deterministic `tool-execution-error` may be actionable after one occurrence when the preceding build passed and the diagnostic clearly identifies an SDK-owned break. Do not apply this exception to generic exit codes, `unknown-error`, or `evidence-unavailable`.
 8. A `pipeline-not-triggered` heartbeat is actionable only when the collector reports `actionable: true`. The 90-minute threshold is only the minimum branch-head age for recording a miss; actionability requires misses in two consecutive daily routines, so ordinary detection latency is approximately 24–48 hours. Search for pipeline outages or disabled triggers before filing.
-9. Determine ownership before searching or filing. This output can create issues only in the SDK repository. A repository-specific test, product build break, or SDK-owned CI integration is in scope. A broad Azure DevOps, Helix, machine-pool, source-control, or external-feed outage with no SDK-specific mechanism belongs in `dotnet/dnceng`; when `evaluationScenario` is absent, call `noop` for that candidate and identify the routing reason instead of filing it here. When `evaluationScenario` is present, create the required evaluation issue and state that production would route it elsewhere.
+9. Determine ownership before searching or filing. This output can create issues only in the SDK repository. A repository-specific test, product build break, or SDK-owned CI integration is in scope. A broad Azure DevOps, Helix, machine-pool, source-control, or external-feed outage with no SDK-specific mechanism belongs in `dotnet/dnceng`; call `noop` for that candidate and identify the routing reason instead of filing it here.
 10. Search open and recently closed issues in `${{ github.repository }}` for each proposed mechanism. Search the exact test/diagnostic/status first, then one shorter mechanism phrase. Make at most six searches total.
 11. Treat an issue as covering the failure only when its observable failure and mechanism materially match. Generic task or assembly names are insufficient.
 12. For each remaining candidate, form an evidence-bounded causal chain: the observed failure, its proximate cause, any supported trigger or contributing condition, and the resulting impact. Separate facts from inference. Explicitly reject generic parent failures and artifact cascades as causes.
 13. Assign `High`, `Medium`, or `Low` confidence. Use `High` only when a specific diagnostic or artifact establishes the causal chain; recurrence alone establishes a flake pattern, not its underlying cause. Never call a failure flaky, infrastructure, PR-related, or safe to retry without the corresponding evidence in the dossier.
 14. Record plausible alternatives or missing evidence and name the cheapest next check that would distinguish them. Relevant checks may include target-branch comparison, PR changed-file correlation, build progression, Build Analysis status, a binlog, dump analysis, or source inspection; describe these as follow-up work, not completed verification.
-15. If no actionable candidate remains, call `noop` with the reason. Otherwise call `create_issue` at most three times. Request `Test Debt` and `live-build-incident` only when the dossier marks the failure as `monitoringScope: stable-branch` and `priority: HIGH`. When one run has more than three distinct actionable mechanisms, create the two highest-impact issues separately and use the third issue as an overflow aggregate whose title says `multiple additional CI mechanisms`; list every remaining fingerprint, component, build link, and next check in its body. Never silently omit an actionable HIGH mechanism. Never request `cookie` outside fork-only live evaluation; normal issue triage decides whether each production issue is bounded enough for Issue Monster.
+15. If no actionable candidate remains, call `noop` with the reason. Otherwise call `create_issue` at most three times. Request `Test Debt` and `live-build-incident` only when the dossier marks the failure as `monitoringScope: stable-branch` and `priority: HIGH`. When one run has more than three distinct actionable mechanisms, create the two highest-impact issues separately and use the third issue as an overflow aggregate whose title says `multiple additional CI mechanisms`; list every remaining fingerprint, component, build link, and next check in its body. Never silently omit an actionable HIGH mechanism. Normal issue triage decides whether each production issue is bounded enough for Issue Monster.
 
 ## Ordinary CI issue requirements
 
-Create an ordinary issue for build breaks, restore/setup failures, YAML errors, pipeline heartbeat failures, Helix crashes/timeouts, and SDK-owned CI infrastructure integration issues. Broad service infrastructure failures are not filed in this repository outside fork-only evaluation. Ordinary issues must not request `Known Build Error` or contain a `## Error Message` Build Analysis section.
+Create an ordinary issue for build breaks, restore/setup failures, YAML errors, pipeline heartbeat failures, Helix crashes/timeouts, and SDK-owned CI infrastructure integration issues. Broad service infrastructure failures are not filed in this repository. Ordinary issues must not request `Known Build Error` or contain a `## Error Message` Build Analysis section.
 
 Use a concise title containing the failing component and stable symptom. The body must include:
 
