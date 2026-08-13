@@ -196,8 +196,8 @@ Work with this pre-fetched, filtered, and prioritized list of issues. Do not per
 - Distinguish source branches from destination branches. A branch that contains existing content, is linked for reference, or appears after "from" is not automatically the PR base.
 - Issues with a `dotnetup` label default to `release/dnup` only when the issue does not explicitly request another destination.
 - Issues that explicitly target `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, use that release branch. Merely mentioning a release branch as the source of content does not target it.
-- Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target such as `release/10.0.3xx` (generically, `release/{hotfix-target}` while replacing `hotfix-target` with the form `release/X.0.Yxx`).
-- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal to the latest `release/{hotfix-target}` branch..
+- Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target such as `release/10.0.3xx` target `release/{hotfix-target}`, where `{hotfix-target}` has the form `X.0.Yxx`.
+- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal to the latest `release/{hotfix-target}` branch.
 - Examples:
   - "Merge documentation from `release/dnup` to `main`" targets `main`; `release/dnup` is the source.
   - "Backport the fix from `main` to `release/10.0.3xx`" targets `release/10.0.3xx`; `main` is the source.
