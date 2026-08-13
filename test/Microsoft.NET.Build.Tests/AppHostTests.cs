@@ -44,6 +44,11 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_builds_a_runnable_apphost_by_default(string targetFramework)
         {
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            {
+                return;
+            }
+
             var testAsset = _testAssetsManager
                 .CopyTestAsset("HelloWorld", identifier: targetFramework)
                 .WithSource()

@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Dependencies>
   <ProductDependencies>
-    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.317">
+    <Dependency Name="Microsoft.TemplateEngine.Abstractions" Version="9.0.318">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2bd479cb5468578fff053d61c5e2a874c8ba6a0a</Sha>
+      <Sha>6ee6f5445fcd2cb2c992867ce281105c800bc8dc</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.317-servicing.26358.3">
+    <Dependency Name="Microsoft.TemplateEngine.Mocks" Version="9.0.318-servicing.26411.5">
       <Uri>https://github.com/dotnet/templating</Uri>
-      <Sha>2bd479cb5468578fff053d61c5e2a874c8ba6a0a</Sha>
+      <Sha>6ee6f5445fcd2cb2c992867ce281105c800bc8dc</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
     <Dependency Name="Microsoft.SourceBuild.Intermediate.templating" Version="9.0.300-preview.25209.5">
@@ -555,34 +555,34 @@
     </Dependency>
   </ProductDependencies>
   <ToolsetDependencies>
-    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.26301.4">
+    <Dependency Name="Microsoft.DotNet.Arcade.Sdk" Version="9.0.0-beta.26410.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>efce34e9f9f25af27e2b471fbbf8c21f1ac2e318</Sha>
+      <Sha>216020cfc0f97a6dd5075191faa55c61a7c27609</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.26301.4">
+    <Dependency Name="Microsoft.DotNet.Build.Tasks.Installers" Version="9.0.0-beta.26410.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>efce34e9f9f25af27e2b471fbbf8c21f1ac2e318</Sha>
+      <Sha>216020cfc0f97a6dd5075191faa55c61a7c27609</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.26301.4">
+    <Dependency Name="Microsoft.DotNet.Helix.Sdk" Version="9.0.0-beta.26410.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>efce34e9f9f25af27e2b471fbbf8c21f1ac2e318</Sha>
+      <Sha>216020cfc0f97a6dd5075191faa55c61a7c27609</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.SignTool" Version="9.0.0-beta.26301.4">
+    <Dependency Name="Microsoft.DotNet.SignTool" Version="9.0.0-beta.26410.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>efce34e9f9f25af27e2b471fbbf8c21f1ac2e318</Sha>
+      <Sha>216020cfc0f97a6dd5075191faa55c61a7c27609</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.26301.4">
+    <Dependency Name="Microsoft.DotNet.XUnitExtensions" Version="9.0.0-beta.26410.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>efce34e9f9f25af27e2b471fbbf8c21f1ac2e318</Sha>
+      <Sha>216020cfc0f97a6dd5075191faa55c61a7c27609</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.26301.4">
+    <Dependency Name="Microsoft.DotNet.XliffTasks" Version="9.0.0-beta.26410.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>efce34e9f9f25af27e2b471fbbf8c21f1ac2e318</Sha>
+      <Sha>216020cfc0f97a6dd5075191faa55c61a7c27609</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.26301.4">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.arcade" Version="9.0.0-beta.26410.4">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>efce34e9f9f25af27e2b471fbbf8c21f1ac2e318</Sha>
+      <Sha>216020cfc0f97a6dd5075191faa55c61a7c27609</Sha>
       <SourceBuild RepoName="arcade" ManagedOnly="true" />
     </Dependency>
     <Dependency Name="System.Reflection.MetadataLoadContext" Version="9.0.19">
@@ -597,14 +597,14 @@
       <Uri>https://github.com/dotnet/arcade-services</Uri>
       <Sha>e156e649f28395d9d0ee1e848225a689b59e0fd3</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26302.1">
+    <Dependency Name="Microsoft.DotNet.ScenarioTests.SdkTemplateTests" Version="9.0.0-preview.26407.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>623d5a21e18d6d1f370b5b9d1ebaf8d687464c0b</Sha>
+      <Sha>83d50199a618f84d9cb5d442dcc70c46023d1108</Sha>
     </Dependency>
     <!-- Intermediate is necessary for source build. -->
-    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26302.1">
+    <Dependency Name="Microsoft.SourceBuild.Intermediate.scenario-tests" Version="9.0.0-preview.26407.1">
       <Uri>https://github.com/dotnet/scenario-tests</Uri>
-      <Sha>623d5a21e18d6d1f370b5b9d1ebaf8d687464c0b</Sha>
+      <Sha>83d50199a618f84d9cb5d442dcc70c46023d1108</Sha>
       <SourceBuild RepoName="scenario-tests" ManagedOnly="true" />
     </Dependency>
     <!--
