@@ -290,7 +290,7 @@ extends:
             # should not move them (point the short-url vars at test links to validate this step).
             - task: AzureCLI@2
               displayName: Fetch aka.ms client certificate
-              condition: succeeded()
+              condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
               inputs:
                 azureSubscription: $(AkaMsCertServiceConnection)
                 scriptType: pscore
@@ -466,7 +466,7 @@ extends:
                   Remove-Item -Force -ErrorAction SilentlyContinue $b64Path
                 }
               displayName: Update aka.ms search cache links
-              condition: succeeded()
+              condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
               env:
                 SEARCH_CACHE_URL: $(capture.SearchCacheDownloadUrl)
                 NON_TEMPLATE_PACKS_URL: $(capture.NonTemplatePacksDownloadUrl)
