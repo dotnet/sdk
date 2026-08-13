@@ -168,15 +168,13 @@ the same process-start or apphost failure path as managed `dotnet run`.
 
 **MSBuild evaluation and project commands** — The AOT bridge registers the
 SDK-shipped workload and NuGet SDK resolvers through MSBuild's static registration APIs.
-For a physical project, solution, current directory, or file-based app passed to
-`dotnet build`, `dotnet clean`, `dotnet msbuild`, `dotnet restore`, `dotnet pack`, or
-`dotnet publish`, it forwards the command target to the selected SDK's `MSBuild.dll` out of
-process. Build, pack, and publish also forward restore when requested; pack and publish first
-evaluate the project properties needed to honor `PackRelease` or `PublishRelease`. File-based
-apps without `#:` directives use
-an AOT-safe subset of the existing virtual-project builder for evaluation, including SDK
-imports and implicit files such as `Directory.Build.props`; compilation and
-directive-aware project construction still defer to the managed CLI. SDK-relative paths
+For a physical project, solution, or current directory, it forwards the command target to the
+selected SDK's `MSBuild.dll` out of process. Build, pack, and publish also forward restore when
+requested. Pack and publish first evaluate the project properties needed to honor `PackRelease`
+or `PublishRelease`. File-based app inputs use the existing virtual-project builder in AOT,
+including `#:` directives, SDK imports, and implicit files such as `Directory.Build.props`.
+File-based app build operations then report the reason for managed fallback because they require
+in-process MSBuild. SDK-relative paths
 (`MSBuild.dll`, `Sdks`,
 `MSBuildExtensionsPath`, and the telemetry logger) come from
 `SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. `.nuspec` inputs also defer
@@ -184,9 +182,8 @@ because they use the in-process NuGet pack engine. The shared `RestoringCommand`
 workload advertising and vulnerability-cache maintenance in both modes. Its AOT closure
 reuses the existing NuGet downloader, file-based and administrative-MSI manifest
 extraction, and read-only workload records without linking workload install/repair or
-elevated MSI IPC. The `dotnet clean file-based-apps` maintenance
-subcommand also remains managed-only because it discovers and removes artifacts directly
-rather than forwarding an MSBuild target.
+elevated MSI IPC. The `dotnet clean file-based-apps` maintenance subcommand runs directly
+in AOT with source-generated JSON metadata.
 
 **Slow path** — When `DOTNET_CLI_ENABLEAOT` is disabled (`false`/`0`/`no`/`off`)
 or the AOT bridge does

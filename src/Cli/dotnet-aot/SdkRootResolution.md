@@ -88,4 +88,4 @@ loading. Command-specific tests additionally verify that `PackRelease`/`PublishR
 evaluation and the child MSBuild process use the versioned SDK directory. End-to-end
 parity toggles `DOTNET_CLI_ENABLEAOT` on the same redist muxer; telemetry must report
 `cli.runtime=aot` for physical project packing and publishing, and `cli.runtime=managed`
-for `.nuspec` and file-based fallbacks.
+for `.nuspec` and file-based build fallbacks.
