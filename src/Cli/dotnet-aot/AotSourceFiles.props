@@ -220,6 +220,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Build\BuildCommandParser.cs" Link="Commands\Build\BuildCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\CleanCommand.cs" Link="Commands\Clean\CleanCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\CleanCommandParser.cs" Link="Commands\Clean\CleanCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Clean\FileBasedAppArtifacts\CleanFileBasedAppArtifactsCommand.cs" Link="Commands\Clean\FileBasedAppArtifacts\CleanFileBasedAppArtifactsCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildCommand.cs" Link="Commands\MSBuild\MSBuildCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildCommandParser.cs" Link="Commands\MSBuild\MSBuildCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\VirtualProjectBuildingCommand.cs" Link="Commands\Run\VirtualProjectBuildingCommand.cs" />
@@ -230,6 +231,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommand.cs" Link="Commands\Restore\RestoreCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoreCommandParser.cs" Link="Commands\Restore\RestoreCommandParser.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Restore\RestoringCommand.cs" Link="Commands\Restore\RestoringCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunFileJsonSerializerContext.cs" Link="Commands\Run\RunFileJsonSerializerContext.cs" />
   </ItemGroup>
 
   <!--

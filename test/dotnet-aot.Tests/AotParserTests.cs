@@ -227,12 +227,12 @@ public partial class AotParserTests
     }
 
     [TestMethod]
-    public void InvokeCleanFileBasedApps_FallsBackToManaged()
+    public void InvokeCleanFileBasedApps_ExecutesWithoutManagedFallback()
     {
-        var result = Parser.Parse(["clean", "file-based-apps"]);
+        var result = Parser.Parse(["clean", "file-based-apps", "--dry-run"]);
 
         Assert.IsEmpty(result.Errors);
-        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+        Assert.AreEqual(0, Parser.Invoke(result));
     }
 
     [TestMethod]
