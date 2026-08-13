@@ -26,7 +26,7 @@ import {
   selectEvaluationCandidates,
   suppressTrackedIssueCandidates,
   selectUnprocessedFailures
-} from "./collect-ci-evidence.mjs";
+} from "../collect-ci-evidence.mjs";
 
 test("CiEvidenceCollector owns one Azure client per registered pipeline", () => {
   const pipeline = {

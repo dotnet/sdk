@@ -4,7 +4,7 @@ import test from "node:test";
 import {
   createTestKbeCandidate,
   validateErrorMessagePattern
-} from "./known-build-error.mjs";
+} from "../known-build-error.mjs";
 
 const failure = {
   fullyQualifiedName: "Sdk.Tests.PackageTest.UpdatesPackages",
