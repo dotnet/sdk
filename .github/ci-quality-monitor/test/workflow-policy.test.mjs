@@ -26,3 +26,24 @@ test("same pull request attempts are not independent recurrence", async () =>
 
     assert.match(workflow, /Attempts of the same pull request are not independent recurrence, even across different commits\./);
 });
+
+test("failed Azure check suites trigger build ID resolution", async () =>
+{
+    const workflow = await readFile(workflowUrl, "utf8");
+
+    assert.match(workflow, /check_suite:\s*\n\s*types: \[completed\]/);
+    assert.match(workflow, /github\.event\.check_suite\.app\.slug == 'azure-pipelines'/);
+    assert.match(workflow, /github\.event\.check_suite\.conclusion != 'success'/);
+    assert.match(workflow, /resolveAzureBuildId\(checks\)/);
+});
+
+test("merged pull requests pass stable-target metadata to the collector", async () =>
+{
+    const workflow = await readFile(workflowUrl, "utf8");
+
+    assert.match(workflow, /pull_request:\s*\n\s*types: \[closed\]/);
+    assert.match(workflow, /github\.event\.pull_request\.merged == true/);
+    assert.match(workflow, /MERGED_PR_NUMBER: \$\{\{ github\.event\.pull_request\.number \}\}/);
+    assert.match(workflow, /MERGED_PR_BASE_REF: \$\{\{ github\.event\.pull_request\.base\.ref \}\}/);
+    assert.match(workflow, /MERGED_PR_COMMIT_SHA: \$\{\{ github\.event\.pull_request\.merge_commit_sha \}\}/);
+});

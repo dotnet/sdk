@@ -56,16 +56,12 @@ jobs:
               check_suite_id: context.payload.check_suite.id,
               per_page: 100
             });
-            const roots = checks.filter(check => check.name === 'dotnet-sdk-public-ci');
-            if (roots.length > 1) {
-              core.setFailed(`Expected at most one dotnet-sdk-public-ci root check, found ${roots.length}.`);
-              return;
-            }
-            const buildId = roots.length === 1
-              ? new URL(roots[0].details_url).searchParams.get('buildId')
-              : null;
-            if (buildId !== null && !/^\d+$/.test(buildId)) {
-              core.setFailed('The Azure root check URL did not contain a numeric buildId.');
+            const { resolveAzureBuildId } = require('./.github/ci-quality-monitor/github/check-suite.js');
+            let buildId;
+            try {
+              buildId = resolveAzureBuildId(checks);
+            } catch (error) {
+              core.setFailed(error.message);
               return;
             }
             core.setOutput('build_id', buildId ?? '');
