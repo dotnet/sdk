@@ -282,6 +282,14 @@ The logger creates an internal activity for each build. When trace context is av
 the activity is a child of the invoking CLI trace. Server reuse changes telemetry delivery
 and correlation only. It does not change the listed data points or properties.
 
+The activity remains open through logger shutdown because MSBuild emits the final `build`
+telemetry event after `BuildFinished` (see
+[dotnet/sdk#55749](https://github.com/dotnet/sdk/issues/55749)).
+`TelemetryHostMatrixTests` validates the real OTLP export path for cold and hot MSBuild
+servers, in-process builds, server fallback, and telemetry opt-out. The test installs the
+pinned Aspire CLI version from the repository's configured feeds, runs its dashboard on
+loopback endpoints, and verifies exported events through the dashboard telemetry API.
+
 #### `msbuild/targetframeworkeval`
 
 **When fired**: When target framework is evaluated
