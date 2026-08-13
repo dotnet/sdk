@@ -108,52 +108,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
-#if CLI_AOT
-    public override int Execute()
-    {
-        if (NoBuild)
-        {
-            ThrowManagedFallback("the operation requires restore or full MSBuild execution");
-        }
-
-        BuildLevel buildLevel = GetBuildLevel(out FileBasedAppCacheInfo? cache);
-        cache?.CurrentEntry.BuildLevel = buildLevel;
-        LastBuild = (buildLevel, cache);
-
-        if (buildLevel is BuildLevel.None)
-        {
-            cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
-            MarkArtifactsFolderUsed();
-            return 0;
-        }
-
-        if (buildLevel is BuildLevel.Csc)
-        {
-            Debug.Assert(cache is not null);
-
-            int result = ExecuteCsc(cache, out bool fallbackToNormalBuild);
-            if (!fallbackToNormalBuild)
-            {
-                return result;
-            }
-        }
-
-        ThrowManagedFallback("the operation requires full MSBuild execution");
-        return -1;
-
-        static void ThrowManagedFallback(string reason)
-        {
-            Reporter.Verbose.WriteLine(
-                $"The Native AOT CLI is falling back to the managed CLI because {reason}.");
-            throw new CommandNotAvailableInAotException();
-        }
-    }
-#else
+#if !CLI_AOT
     [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
+#endif
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
+#if !CLI_AOT
         bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
@@ -164,15 +126,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ? new SimpleErrorLogger()
             : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
         var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
+#endif
 
         FileBasedAppCacheInfo? cache = null;
 
         if (msbuildGet)
         {
+#if CLI_AOT
+            return ThrowManagedFallback("the operation requires in-process MSBuild evaluation");
+#else
             LastBuild = (BuildLevel.None, Cache: null);
+#endif
         }
         else if (NoBuild)
         {
+#if CLI_AOT
+            return ThrowManagedFallback("the operation requires restore or full MSBuild execution");
+#else
             // This is reached only during `restore`, not `run --no-build`
             // (in the latter case, this virtual building command is not executed at all).
             Debug.Assert(!NoRestore);
@@ -184,6 +154,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 CreateTempSubdirectory(Builder.ArtifactsPath);
                 MarkArtifactsFolderUsed();
             }
+#endif
         }
         else
         {
@@ -193,10 +164,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (buildLevel is BuildLevel.None)
             {
+#if !CLI_AOT
                 if (binaryLogger is not null)
                 {
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
+#endif
 
                 // No rebuild, can reuse run properties.
                 cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
@@ -213,26 +186,35 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
                 if (!fallbackToNormalBuild)
                 {
+#if !CLI_AOT
                     if (binaryLogger is not null)
                     {
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                     }
+#endif
 
                     return result;
                 }
 
                 Debug.Assert(result != 0);
 
+#if !CLI_AOT
                 buildLevel = BuildLevel.All;
                 cache.CurrentEntry.BuildLevel = buildLevel;
                 LastBuild = (buildLevel, cache);
+#endif
             }
 
+#if CLI_AOT
+            return ThrowManagedFallback("the operation requires full MSBuild execution");
+#else
             Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
 
             MarkBuildStart();
+#endif
         }
 
+#if !CLI_AOT
         if (!NoWriteBuildMarkers && !msbuildGet)
         {
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
@@ -648,6 +630,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
             }
         }
+#endif
+    }
+
+#if CLI_AOT
+    private static int ThrowManagedFallback(string reason)
+    {
+        Reporter.Verbose.WriteLine(
+            $"The Native AOT CLI is falling back to the managed CLI because {reason}.");
+        throw new CommandNotAvailableInAotException();
     }
 #endif
 
