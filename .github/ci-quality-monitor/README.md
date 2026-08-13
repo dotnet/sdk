@@ -1,11 +1,12 @@
-# CI Quality Investigator 🕵️
+# CI Quality Investigator
 
 The CI Quality Investigator is a GitHub Agentic Workflow that reviews public
-Azure DevOps builds and previews issues for actionable, previously untracked SDK
+Azure DevOps builds and creates issues for actionable, previously untracked SDK
 build, test, and CI-integration failures. It does not require an Azure DevOps
-service hook or credential. The experiment uses the GitHub Actions token for Copilot
+service hook or credential. The workflow uses the GitHub Actions token for Copilot
 inference through the scoped `copilot-requests: write` permission and keeps all
-repository writes in GitHub AW safe-output jobs.
+repository writes in GitHub AW safe-output jobs. See [`DESIGN.md`](DESIGN.md)
+for policy, state semantics, and safety invariants.
 
 ## Architecture
 
@@ -57,9 +58,8 @@ test export surface. The run implementation lives in [`collector.mjs`](collector
 
 The workflow runs one daily routine and can be dispatched manually with a public
 Azure DevOps build ID. The daily routine reconciles stable-branch events and
-heartbeat state; a planned extension will also sample up to three developer PR
-failures in the same run. Manual dispatch ignores the processed-build ledger
-for the selected build, which makes repeatable validation possible.
+heartbeat state. Manual dispatch ignores the processed-build ledger for the
+selected build, which makes repeatable validation possible.
 
 ## Public Data Boundary
 
@@ -73,35 +73,24 @@ details so a wrapper crash is not mistaken for a test assertion. Anonymous AzDO 
 AzDO build-log downloads return `500` for the tested public SDK builds. The
 collector records unavailable evidence and never invents missing test details.
 
-Adding Azure DevOps authentication later would improve non-Helix test evidence,
-but is not required for the initial experiment.
+Azure DevOps authentication is outside the current public-data boundary.
 
 ## Failure Model
 
 The collector models each observation on independent axes:
 
-- `phase`: where execution stopped, such as `pipeline-validation`,
   `source-checkout`, `dependency-restore`, `compilation`, `signing`, or
   `test-execution`
-- `failureType`: what happened, such as `configuration-error`,
-  `network-failure`, `authentication-failure`, `compiler-error`, `timeout`, or
   `process-crash`
-- `evidenceSources`: how the conclusion was established, such as Azure
   validation, task logs, Helix TRX, console output, exit codes, or dumps
 
-This keeps transport failures independent from the build step that encountered
 them and keeps observation provenance independent from both. Artifact download
 cascades and generic Helix monitor parents are context only.
-The complete vocabulary and definitions are maintained in the
-[workflow design's Failure Taxonomy](../workflows/ci-quality-monitor.README.md#failure-taxonomy);
-the examples below and in the evaluation catalog demonstrate combinations of
-those independent axes rather than defining the vocabulary.
+The durable policy and vocabulary are maintained in [`DESIGN.md`](DESIGN.md).
 Each failure also exposes `issueCandidates`, the actionable observations from
 the selected current build. Related-build observations are recurrence context
 and cannot directly anchor an issue. Non-actionable current observations are
-emitted separately as `contextObservations`; raw timelines and task logs are
 used to derive observations but are not duplicated in the agent dossier.
-
 Named tests retain per-test fingerprints and a separate mechanism fingerprint.
 Different tests can share one issue only when their mechanism fingerprints and
 stable evidence match. The same test can therefore map to multiple issues when
@@ -141,8 +130,7 @@ binlog was checked when those facts are absent.
 SDK repository, so production runs report only repository-specific tests,
 product build breaks, and SDK-owned CI integrations. A broad Azure DevOps,
 Helix, machine-pool, or external-feed outage becomes a no-op with an explicit
-routing reason rather than a misplaced SDK issue. Fork-only evaluation may
-still create such issues to exercise classification and issue formatting.
+routing reason rather than a misplaced SDK issue.
 
 Every proposed issue must therefore contain a bounded root cause analysis with
 the observed facts, the most specific supported causal chain, a confidence
@@ -181,7 +169,7 @@ The new checkpoint is uploaded by the collector job before agent activation.
 This gives scheduled runs **at-most-once automatic AI delivery** per processing
 key: if inference, detection, or issue application later fails, the next
 scheduled run does not automatically spend tokens on the same completed build.
-Use manual dispatch with `build_id` for an intentional retry; manual evaluation
+Use manual dispatch with `build_id` for an intentional retry; manual collection
 bypasses the processed-build ledger.
 
 When no state can be restored, the run is marked as bootstrap. Bootstrap records
@@ -197,9 +185,7 @@ at once.
 
 ## Issue Policy
 
-Production issue creation is configured in staged mode; the disposable
-live-evaluation branch writes fork-only test issues. A production preview
-requires:
+Issue creation requires:
 
 - substantially the same stable test/crash/timeout failure in the current build
   and at least one recent build from a different commit, or one specific deterministic
@@ -219,8 +205,8 @@ output:
 
 - Ordinary build, YAML, heartbeat, Helix crash/timeout, and infrastructure
   issues must not request `Known Build Error` or contain Build Analysis JSON.
-- A recurring named-test KBE receives `agentic-workflows` and
-  `Known Build Error` only when its collector-generated pattern validated
+- A recurring named-test KBE may request `Known Build Error` only when its
+  collector-generated pattern has been validated
   against the original TRX and the same test/mechanism appeared in a prior
   build. The agent must copy the collector-generated `## Error Message` values
   verbatim rather than constructing a pattern.
@@ -233,14 +219,10 @@ fingerprint as a visible Build Information item so the agent can search for an
 existing issue before filing. Native title deduplication is a second,
 approximate safeguard.
 
-Production monitoring never requests `cookie`. Normal issue triage can add an
-area, type, `Test Debt`, and `cookie` when the resulting work is bounded enough
-for Issue Monster. The disposable live-evaluation branch requests `cookie` only
-to exercise that downstream handoff.
-
-GitHub AW applies the title prefix, fixed `agentic-workflows` label, staged-mode
-behavior, and limit of three issue writes per run. The agent may request only
-the additional labels allowlisted by the workflow.
+GitHub AW applies the title prefix, fixed `agentic-workflows` and `cookie`
+labels, and limit of three issue writes per run. Every filed issue therefore
+enters the Issue Monster queue automatically. The agent may request only the
+additional diagnostic labels allowlisted by the workflow.
 
 ## Adding Pipelines or Branches
 
@@ -259,7 +241,7 @@ post-merge trigger is confirmed.
 Run the deterministic tests:
 
 ```powershell
-node --test .github/ci-quality-monitor/collect-ci-evidence.test.mjs
+node --test .github/ci-quality-monitor/test/*.test.mjs
 ```
 
 Collect a known public build manually:
@@ -279,6 +261,3 @@ Compile the agentic workflow after any source change:
 ```
 
 The generated `.lock.yml` must be committed with its source workflow.
-
-For verified public failure examples and batch evaluation, see
-[`EVALUATION.md`](EVALUATION.md) and [`evaluation-builds.json`](evaluation-builds.json).

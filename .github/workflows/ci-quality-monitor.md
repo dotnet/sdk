@@ -2,7 +2,7 @@
 emoji: "🕵️"
 name: CI Quality Investigator
 description: Investigates public dotnet/sdk CI failures and identifies actionable, previously untracked build and test quality issues.
-# See `ci-quality-monitor.README.md` for trigger coverage and fallback behavior.
+# See `../ci-quality-monitor/DESIGN.md` for policy and state semantics.
 on:
   check_suite:
     types: [completed]
