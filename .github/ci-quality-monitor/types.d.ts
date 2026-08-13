@@ -42,6 +42,7 @@ export interface CiEvidenceDossier {
   manualBuildId: string | null;
   eventBuildId: string | null;
   eventHeadSha: string | null;
+  mergedPullRequest: Record<string, unknown> | null;
   bootstrap: boolean;
   pipelineHealth: Observation[];
   failures: Array<{

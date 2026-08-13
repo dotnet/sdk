@@ -1,6 +1,7 @@
 export const AZURE_API_VERSION = "7.1";
 export const DEFAULT_BUILD_LIMIT = 20;
 export const MAX_CONSOLE_CHARACTERS = 16_000;
+export const MAX_HELIX_REFERENCES = 20;
 export const MAX_LOG_CHARACTERS = 4_000;
 export const MAX_PROCESSED_BUILD_KEYS = 100;
 export const MAX_RELATED_BUILDS = 5;

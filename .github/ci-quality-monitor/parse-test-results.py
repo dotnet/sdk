@@ -54,7 +54,7 @@ def result_summary(root):
     }
 
 
-def failed_results(root):
+def failed_results(root, max_failures, max_characters):
     definitions = test_definitions(root)
     failures = []
     failed_outcomes = {"failed", "error", "timeout", "aborted"}
@@ -64,21 +64,28 @@ def failed_results(root):
         outcome = result.attrib.get("outcome", "")
         if outcome.lower() not in failed_outcomes:
             continue
+        if len(failures) >= max_failures:
+            break
         test_name = result.attrib.get("testName", "")
         failures.append({
             "testName": test_name,
             "fullyQualifiedName": definitions.get(result.attrib.get("testId"), test_name),
             "outcome": outcome,
             "duration": result.attrib.get("duration"),
-            "errorMessage": child_text(result, "Message"),
-            "stackTrace": child_text(result, "StackTrace"),
+            "errorMessage": child_text(result, "Message")[:max_characters],
+            "stackTrace": child_text(result, "StackTrace")[:max_characters],
         })
     return failures
 
 
 def main():
+    max_failures = int(sys.argv[1])
+    max_characters = int(sys.argv[2])
     root = ET.fromstring(sys.stdin.buffer.read())
-    json.dump({"summary": result_summary(root), "failures": failed_results(root)}, sys.stdout)
+    json.dump({
+        "summary": result_summary(root),
+        "failures": failed_results(root, max_failures, max_characters),
+    }, sys.stdout)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
 import { createPipelineObservation, createTaskObservations } from "./azure/observations.mjs";
-import { MAX_RELATED_BUILDS, MAX_RELATED_HELIX_REFERENCES, MAX_TASK_LOGS } from "./constants.mjs";
+import { MAX_HELIX_REFERENCES, MAX_RELATED_BUILDS, MAX_RELATED_HELIX_REFERENCES, MAX_TASK_LOGS } from "./constants.mjs";
 import { createBuildSummary, isFailedBuild, normalizeEvidenceText } from "./evidence-utils.mjs";
 import { applyKbeRecurrence, getTimelineFailuresFromRecords } from "./collector-policy.mjs";
 
@@ -42,7 +42,7 @@ export class FailureEvidenceCollector {
     const timeline = await azure.getTimeline(build.id);
     const timelineFailures = getTimelineFailuresFromRecords(timeline.records);
     const pipelineObservation = createPipelineObservation(detailedBuild, timeline.records ?? []);
-    const helixObservations = await this.helixEvidence.collectObservations(timelineFailures);
+    const helixObservations = await this.helixEvidence.collectObservations(timelineFailures, MAX_HELIX_REFERENCES);
     const relatedFailureSummaries = await this.collectRelatedFailureEvidence(pipeline, build.id, history);
     const logFailures = await this.collectTaskLogs(azure, build.id, timelineFailures);
     const taskObservations = createTaskObservations(
