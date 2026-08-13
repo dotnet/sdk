@@ -361,7 +361,8 @@ public class MSBuildEvaluationTests
 
             var command = new VirtualProjectBuildingCommand(
                 sourcePath,
-                MSBuildArgs.FromProperties(null));
+                MSBuildArgs.FromProperties(null).CloneWithExplicitArgs(["-noconsolelogger"]));
+            Assert.IsTrue(command.NoConsoleLogger);
             ProjectInstance project = command.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
 
             Assert.AreEqual("true", project.GetPropertyValue("PackRelease"));

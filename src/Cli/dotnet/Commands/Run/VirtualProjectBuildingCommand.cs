@@ -54,6 +54,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// </summary>
     public bool NoWriteBuildMarkers { get; init; }
 
+    public bool NoConsoleLogger { get; init; }
+
     public VirtualProjectBuilder Builder { get; }
     public MSBuildArgs MSBuildArgs { get; }
 
@@ -65,9 +67,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
             CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
 
-#if !CLI_AOT
         NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
-#endif
 
         Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
@@ -91,8 +91,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// Filled during <see cref="Execute"/>.
     /// </summary>
     public RunProperties? LastRunProperties { get; private set; }
-
-    public bool NoConsoleLogger { get; init; }
 
     public ImmutableArray<CSharpDirective> Directives
     {
