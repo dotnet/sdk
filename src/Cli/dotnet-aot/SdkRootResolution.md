@@ -87,5 +87,5 @@ workload-locator imports through `SdkResolver.Register` without reflective plugi
 loading. Command-specific tests additionally verify that `PackRelease`/`PublishRelease`
 evaluation and the child MSBuild process use the versioned SDK directory. End-to-end
 parity toggles `DOTNET_CLI_ENABLEAOT` on the same redist muxer; telemetry must report
-`cli.runtime=aot` for physical project packing and publishing, and `cli.runtime=managed`
-for `.nuspec` and file-based build fallbacks.
+`cli.runtime=aot` for physical project packing and publishing and direct-compiled file-based
+apps, and `cli.runtime=managed` for `.nuspec` and full-MSBuild file-based build fallbacks.

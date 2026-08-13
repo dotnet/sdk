@@ -316,10 +316,10 @@ public partial class AotIntegrationTests
     }
 
     /// <summary>
-    /// Verifies synthetic no-build launch across explicit, positional, shorthand, and profile forms, plus conservative managed fallback.
+    /// Verifies synthetic no-build launch across explicit, positional, shorthand, and profile forms without rebuilding changed source.
     /// </summary>
     [TestMethod]
-    public void AotRun_NoBuildSyntheticCache_LaunchesAndConservativelyFallsBack()
+    public void AotRun_NoBuildSyntheticCache_LaunchesWithoutRebuilding()
     {
         SkipIfDnUnavailable();
 
@@ -553,11 +553,11 @@ public partial class AotIntegrationTests
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", projectShorthandStderr);
             File.Delete(projectPath);
 
-            byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
-            File.AppendAllText(entryPointPath, $"{Environment.NewLine}// #: conservative fallback");
+            byte[] successCacheBeforeSourceChange = File.ReadAllBytes(successCachePath);
+            File.AppendAllText(entryPointPath, $"{Environment.NewLine}// changed after the build");
             File.SetLastWriteTimeUtc(entryPointPath, File.GetLastWriteTimeUtc(successCachePath).AddSeconds(2));
 
-            var (fallbackExitCode, fallbackStdout, fallbackStderr) = RunDn(
+            var (changedSourceExitCode, changedSourceStdout, changedSourceStderr) = RunDn(
                 [
                     "run",
                     "--file", entryPointPath,
@@ -570,11 +570,73 @@ public partial class AotIntegrationTests
                 extraEnv: environment,
                 workingDirectory: testDirectory);
 
-            Assert.AreEqual(0, fallbackExitCode, fallbackStderr);
-            Assert.AreEqual("AOT_RUN_FILE:value:arg one|--flag", fallbackStdout.Trim());
-            Assert.Contains("Getting target command: for csc-built program.", fallbackStderr);
-            Assert.DoesNotContain("AOT run tier: LaunchOnly", fallbackStderr);
-            Assert.AreSequenceEqual(successCacheBeforeFallback, File.ReadAllBytes(successCachePath));
+            Assert.AreEqual(0, changedSourceExitCode, changedSourceStderr);
+            Assert.AreEqual("AOT_RUN_FILE:value:arg one|--flag", changedSourceStdout.Trim());
+            Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", changedSourceStderr);
+            Assert.DoesNotContain("Getting target command:", changedSourceStderr);
+            Assert.AreSequenceEqual(successCacheBeforeSourceChange, File.ReadAllBytes(successCachePath));
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+            if (Directory.Exists(artifactsPath))
+            {
+                Directory.Delete(artifactsPath, recursive: true);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Verifies that a fresh, simple file-based app is compiled and launched without managed fallback.
+    /// </summary>
+    [TestMethod]
+    public void AotRun_FreshSimpleFileCompilesAndLaunches()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-build-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(testDirectory);
+        string entryPointPath = Path.Join(testDirectory, "Program.cs");
+        File.WriteAllText(
+            entryPointPath,
+            """Console.WriteLine("AOT_FRESH:" + Environment.GetEnvironmentVariable("TEST_AOT_RUN") + ":" + string.Join("|", args));""");
+        string artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointPath);
+        if (Directory.Exists(artifactsPath))
+        {
+            Directory.Delete(artifactsPath, recursive: true);
+        }
+
+        string? hostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        if (string.IsNullOrEmpty(hostPath) || !File.Exists(hostPath))
+        {
+            Assert.Inconclusive("DOTNET_HOST_PATH must identify the dotnet host for direct-compilation integration setup.");
+        }
+
+        var environment = CreateRunEnvironment(hostPath);
+        environment["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString;
+        environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString;
+
+        try
+        {
+            var (exitCode, stdout, stderr) = RunDn(
+                [
+                    "run",
+                    "--file", entryPointPath,
+                    "--no-launch-profile",
+                    "-e", "TEST_AOT_RUN=value",
+                    "--", "arg one", "--flag",
+                ],
+                enableAot: true,
+                timeoutMs: 60_000,
+                extraEnv: environment,
+                workingDirectory: testDirectory);
+
+            Assert.AreEqual(0, exitCode, stderr);
+            Assert.AreEqual("AOT_FRESH:value:arg one|--flag", stdout.Trim());
+            Assert.Contains("Compiler server processed compilation.", stderr);
+            Assert.Contains("AOT run tier: CachedLaunch (CacheValid).", stderr);
+            Assert.DoesNotContain("falling back to the managed CLI", stderr);
+            Assert.IsTrue(File.Exists(Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName)));
         }
         finally
         {

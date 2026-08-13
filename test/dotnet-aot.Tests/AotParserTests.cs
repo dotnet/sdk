@@ -277,7 +277,7 @@ public partial class AotParserTests
 
             Assert.ContainsSingle(
                 messages.Where(message => message.Contains(
-                    "file-based app build operation is not yet supported in the AOT command path",
+                    "the operation requires full MSBuild execution",
                     StringComparison.Ordinal)));
         }
         finally

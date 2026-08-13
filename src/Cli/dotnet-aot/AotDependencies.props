@@ -25,6 +25,8 @@
     <PackageReference Include="Microsoft.Build.Framework" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.Build.NuGetSdkResolver" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="Microsoft.CodeAnalysis.BuildClient" />
+    <PackageReference Include="Microsoft.NET.HostModel" />
     <PackageReference Include="NuGet.Configuration" />
     <PackageReference Include="NuGet.Credentials" />
     <PackageReference Include="NuGet.Packaging" />

@@ -71,6 +71,26 @@ internal static class AotRunCommand
             definition,
             entryPointFileFullPath);
 
+        if (!noBuild)
+        {
+            if (profileResult.Profile?.DotNetRunMessages == true)
+            {
+                Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
+            }
+
+            var buildCommand = new VirtualProjectBuildingCommand(
+                entryPointFileFullPath,
+                MSBuildArgs.FromProperties(CreateGlobalProperties(parseResult, definition).AsReadOnly()))
+            {
+                NoRestore = parseResult.HasOption(definition.NoRestoreOption),
+            };
+            int buildResult = buildCommand.Execute();
+            if (buildResult != 0)
+            {
+                return buildResult;
+            }
+        }
+
         string command;
         string commandArguments;
         string? workingDirectory;
@@ -174,10 +194,6 @@ internal static class AotRunCommand
             (name, value) => launchEnvironment[name] = value);
 
         profileResult.WriteMessages();
-        if (!noBuild && profileResult.Profile?.DotNetRunMessages == true)
-        {
-            Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
-        }
         Reporter.Verbose.WriteLine($"AOT run tier: {runTier} ({decisionReason}).");
 
         if (artifactsPath is not null)

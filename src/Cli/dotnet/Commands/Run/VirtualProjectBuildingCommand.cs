@@ -12,12 +12,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 #if !CLI_AOT
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
 #endif
 using Microsoft.DotNet.Cli.Utils;
@@ -111,9 +111,42 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 #if CLI_AOT
     public override int Execute()
     {
-        Reporter.Verbose.WriteLine(
-            "The Native AOT CLI is falling back to the managed CLI because this file-based app build operation is not yet supported in the AOT command path.");
-        throw new CommandNotAvailableInAotException();
+        if (NoBuild)
+        {
+            ThrowManagedFallback("the operation requires restore or full MSBuild execution");
+        }
+
+        BuildLevel buildLevel = GetBuildLevel(out FileBasedAppCacheInfo? cache);
+        cache?.CurrentEntry.BuildLevel = buildLevel;
+        LastBuild = (buildLevel, cache);
+
+        if (buildLevel is BuildLevel.None)
+        {
+            cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
+            MarkArtifactsFolderUsed();
+            return 0;
+        }
+
+        if (buildLevel is BuildLevel.Csc)
+        {
+            Debug.Assert(cache is not null);
+
+            int result = ExecuteCsc(cache, out bool fallbackToNormalBuild);
+            if (!fallbackToNormalBuild)
+            {
+                return result;
+            }
+        }
+
+        ThrowManagedFallback("the operation requires full MSBuild execution");
+        return -1;
+
+        static void ThrowManagedFallback(string reason)
+        {
+            Reporter.Verbose.WriteLine(
+                $"The Native AOT CLI is falling back to the managed CLI because {reason}.");
+            throw new CommandNotAvailableInAotException();
+        }
     }
 #else
     [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
@@ -176,27 +209,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 Debug.Assert(cache is not null);
 
-                MarkBuildStart();
-
-                // Execute CSC.
-                int result = new CSharpCompilerCommand
-                {
-                    EntryPointFileFullPath = Builder.EntryPointFileFullPath,
-                    ArtifactsPath = Builder.ArtifactsPath,
-                    CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
-                    CscArguments = cache.PreviousEntry?.CscArguments ?? [],
-                    BuildResultFile = cache.PreviousEntry?.BuildResultFile,
-                }
-                .Execute(out bool fallbackToNormalBuild);
+                int result = ExecuteCsc(cache, out bool fallbackToNormalBuild);
 
                 if (!fallbackToNormalBuild)
                 {
-                    if (result == 0)
-                    {
-                        ReuseInfoFromPreviousCacheEntry(cache);
-                        MarkBuildSuccess(cache);
-                    }
-
                     if (binaryLogger is not null)
                     {
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
@@ -635,6 +651,29 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 #endif
 
+    private int ExecuteCsc(FileBasedAppCacheInfo cache, out bool fallbackToNormalBuild)
+    {
+        MarkBuildStart();
+
+        int result = new CSharpCompilerCommand
+        {
+            EntryPointFileFullPath = Builder.EntryPointFileFullPath,
+            ArtifactsPath = Builder.ArtifactsPath,
+            CanReuseAuxiliaryFiles = cache.DetermineFinalCanReuseAuxiliaryFiles(),
+            CscArguments = cache.PreviousEntry?.CscArguments ?? [],
+            BuildResultFile = cache.PreviousEntry?.BuildResultFile,
+        }
+        .Execute(out fallbackToNormalBuild);
+
+        if (!fallbackToNormalBuild && result == 0)
+        {
+            ReuseInfoFromPreviousCacheEntry(cache);
+            MarkBuildSuccess(cache);
+        }
+
+        return result;
+    }
+
     private static void ReuseInfoFromPreviousCacheEntry(FileBasedAppCacheInfo cache)
     {
         Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
@@ -663,7 +702,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-#if !CLI_AOT
     /// <summary>
     /// Determines the work required to make the virtual project outputs current.
     /// </summary>
@@ -696,7 +734,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         cache = plan.Cache;
         return plan.ToBuildLevel();
     }
-#endif
 
     public void MarkArtifactsFolderUsed()
     {
@@ -781,7 +818,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             $"{new SourceFile(path, text).GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
             innerException);
 
-#if !CLI_AOT
     public static SourceFile RemoveDirectivesFromFile(SourceFile sourceFile)
     {
         var editor = FileBasedAppSourceEditor.Load(sourceFile);
@@ -799,5 +835,4 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         var modifiedFile = RemoveDirectivesFromFile(sourceFile);
         (modifiedFile with { Path = targetFilePath }).Save();
     }
-#endif
 }
