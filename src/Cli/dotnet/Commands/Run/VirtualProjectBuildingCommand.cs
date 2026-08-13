@@ -738,25 +738,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         return CreateProjectInstance(projectCollection, additionalGlobalProperties: null);
     }
 
-#if !CLI_AOT
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification = "The managed CLI supports Roslyn-based file directives; the Native AOT implementation uses the no-directive project builder.")]
-#endif
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
 #if CLI_AOT
-        // Roslyn's directive parser roots Assembly.Location, which is not Native AOT-compatible.
-        // Remove this fallback when https://github.com/dotnet/roslyn/issues/84574 is fixed.
-        if (File.ReadLines(Builder.EntryPointFileFullPath)
-            .Any(static line => line.TrimStart().StartsWith("#:", StringComparison.Ordinal)))
-        {
-            throw new CommandNotAvailableInAotException();
-        }
-
-        IProjectInstance project = Builder.CreateProjectInstanceWithoutDirectivesAsync(
+        var result = Builder.CreateProjectInstanceAsync(
             projectCollection.Wrap(),
-            additionalGlobalProperties).AsTask().GetAwaiter().GetResult();
+            ThrowingReporter,
+            additionalGlobalProperties: additionalGlobalProperties).AsTask().GetAwaiter().GetResult();
 
-        return project.Unwrap();
+        return result.Project.Unwrap();
 #else
         var projectCollectionWrapped = projectCollection.Wrap();
 
@@ -791,13 +781,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         }
     }
 
-#if !CLI_AOT
     public static readonly ErrorReporter ThrowingReporter =
         static (text, path, textSpan, message, innerException) =>
             throw new GracefulException(
             $"{new SourceFile(path, text).GetLocationString(textSpan)}: {FileBasedProgramsResources.DirectiveError}: {message}",
             innerException);
 
+#if !CLI_AOT
     public static SourceFile RemoveDirectivesFromFile(SourceFile sourceFile)
     {
         var editor = FileBasedAppSourceEditor.Load(sourceFile);

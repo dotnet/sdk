@@ -264,15 +264,10 @@ public partial class AotParserTests
     }
 
     [TestMethod]
-    public void InvokePackFileBasedAppWithDirective_FallsBackToManaged()
+    public void InvokePackFileBasedApp_FallsBackToManagedBuild()
     {
         string sourceFile = Path.Combine(Path.GetTempPath(), $"aot-pack-{Guid.NewGuid():N}.cs");
-        File.WriteAllText(
-            sourceFile,
-            """
-            #:property PackRelease=true
-            Console.WriteLine("hi");
-            """);
+        File.WriteAllText(sourceFile, """Console.WriteLine("hi");""");
         try
         {
             var result = Parser.Parse(["pack", sourceFile, "--configuration", "Debug"]);

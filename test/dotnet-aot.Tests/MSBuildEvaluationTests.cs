@@ -332,7 +332,7 @@ public class MSBuildEvaluationTests
     }
 
     [TestMethod]
-    public void VirtualFileProjectCanBeEvaluated()
+    public void VirtualFileProjectCanBeEvaluatedWithAndWithoutDirectives()
     {
         string sdkDirectory = GetRequiredSdkDirectory();
 
@@ -379,14 +379,15 @@ public class MSBuildEvaluationTests
             File.WriteAllText(
                 sourcePath,
                 """
-                #:property PackRelease=true
+                #:property DirectiveValue=from-directive
                 Console.WriteLine("Hello");
                 """);
             var commandWithDirectives = new VirtualProjectBuildingCommand(
                 sourcePath,
                 MSBuildArgs.FromProperties(null));
-            Assert.ThrowsExactly<CommandNotAvailableInAotException>(
-                () => commandWithDirectives.CreateProjectInstance(ProjectCollection.GlobalProjectCollection));
+            ProjectInstance projectWithDirectives =
+                commandWithDirectives.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
+            Assert.AreEqual("from-directive", projectWithDirectives.GetPropertyValue("DirectiveValue"));
         }
         finally
         {
