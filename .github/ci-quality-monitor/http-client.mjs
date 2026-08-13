@@ -1,3 +1,11 @@
+export class HttpResponseError extends Error {
+  constructor(url, status, statusText) {
+    super(`GET ${url} returned ${status} ${statusText}.`);
+    this.name = "HttpResponseError";
+    this.status = status;
+  }
+}
+
 export class HttpClient {
   constructor(fetchImplementation = fetch) {
     this.fetch = fetchImplementation;
@@ -8,7 +16,7 @@ export class HttpClient {
       headers: { Accept: accept, "User-Agent": "dotnet-sdk-ci-quality-monitor" }
     });
     if (!response.ok) {
-      throw new Error(`GET ${url} returned ${response.status} ${response.statusText}.`);
+      throw new HttpResponseError(url, response.status, response.statusText);
     }
     return response;
   }

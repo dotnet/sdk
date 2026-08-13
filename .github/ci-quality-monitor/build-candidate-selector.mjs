@@ -34,7 +34,7 @@ export class BuildCandidateSelector {
         const build = await this.getAzureClient(pipeline).getBuild(buildId);
         if (matchesPipeline(build, pipeline)) return { pipeline, build };
       } catch (error) {
-        if (!error.message.includes("returned 404")) throw error;
+        if (error.status !== 404) throw error;
       }
     }
     throw new Error(`Build ${buildId} is not from a pipeline and repository in the registry.`);

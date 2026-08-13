@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+import { BuildCandidateSelector } from "../build-candidate-selector.mjs";
 
 import {
   applyKbeRecurrence,
@@ -38,6 +39,26 @@ test("CiEvidenceCollector owns one Azure client per registered pipeline", () => 
     async () => { throw new Error("not called"); });
 
   assert.equal(collector.getAzureClient(pipeline), collector.getAzureClient(pipeline));
+});
+
+test("manual build lookup continues after a pipeline returns 404", async () => {
+  const pipelines = [
+    { definitionId: 1, repository: "dotnet/sdk" },
+    { definitionId: 2, repository: "dotnet/sdk" }
+  ];
+  const build = { definition: { id: 2 }, repository: { id: "dotnet/sdk" } };
+  const selector = new BuildCandidateSelector(
+    { pipelines },
+    { schemaVersion: 1, pipelines: {} },
+    pipeline => ({
+      getBuild: async () => {
+        if (pipeline === pipelines[0]) throw Object.assign(new Error("not found"), { status: 404 });
+        return build;
+      }
+    }),
+    null);
+
+  assert.deepEqual(await selector.selectManualBuild("42"), { pipeline: pipelines[1], build });
 });
 
 test("parseArguments requires registry and output", () => {
