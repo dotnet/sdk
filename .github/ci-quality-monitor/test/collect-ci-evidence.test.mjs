@@ -23,7 +23,6 @@ import {
   summarizeHelixConsole,
   summarizeSharedTestMechanism,
   shouldRunAgent,
-  selectEvaluationCandidates,
   suppressTrackedIssueCandidates,
   selectUnprocessedFailures
 } from "../collect-ci-evidence.mjs";
@@ -566,45 +565,12 @@ test("tracked issue fingerprints suppress candidates before agent activation", a
   assert.equal(shouldRunAgent(dossier), false);
 });
 
-test("archived evaluation issues do not suppress replacement candidates", async () => {
-  const fingerprint = "test-execution|timeout|dotnet-watch|hang";
-  const fetchImplementation = async () => new Response(JSON.stringify([{
-    title: "[Archived taxonomy v1 evaluation] timeout",
-    body: `- **Failure fingerprint:** \`${fingerprint}\``
-  }]), { status: 200 });
-
-  const tracked = await getRecentlyTrackedFingerprints("nagilson/sdk", "token", fetchImplementation);
-
-  assert.equal(tracked.has(fingerprint), false);
-});
-
 test("Helix artifacts contribute TRX and dump evidence sources", () => {
   assert.deepEqual(getArtifactEvidenceSources([
     { FileName: "results.trx" },
     { FileName: "dotnet_hang.dmp" },
     { FileName: "console.log" }
   ]), ["helix-trx", "helix-dump"]);
-});
-
-test("evaluation scenarios retain only the intended current-build mechanism", () => {
-  const dossier = {
-    failures: [{ issueCandidates: [
-      { phase: "dependency-restore", failureType: "network-failure", evidenceSources: ["azure-task-log"], component: "Build", mechanism: "NuGet.targets error 503 Service Unavailable" },
-      { phase: "test-execution", failureType: "test-assertion", evidenceSources: ["helix-trx"], component: "CliSchema", mechanism: "snapshot mismatch" }
-    ] }]
-  };
-
-  selectEvaluationCandidates(dossier, {
-    name: "Feed service failure",
-    expectedPhases: ["dependency-restore"],
-    expectedFailureTypes: ["network-failure"],
-    expectedEvidenceSources: ["azure-task-log"],
-    expectedMechanismIncludes: ["NuGet.targets", "503", "Service Unavailable"],
-    evidence: "NuGet restore failed"
-  });
-
-  assert.deepEqual(dossier.failures[0].issueCandidates.map(candidate => candidate.failureType), ["network-failure"]);
-  assert.equal(dossier.evaluationScenario.name, "Feed service failure");
 });
 
 test("test observations separate execution phase from wrapped network failures", () => {
