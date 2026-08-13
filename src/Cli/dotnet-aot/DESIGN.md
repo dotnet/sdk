@@ -173,8 +173,8 @@ selected SDK's `MSBuild.dll` out of process. Build, pack, and publish also forwa
 requested. Pack and publish first evaluate the project properties needed to honor `PackRelease`
 or `PublishRelease`. File-based app inputs use the existing virtual-project builder in AOT,
 including `#:` directives, SDK imports, and implicit files such as `Directory.Build.props`.
-File-based app build operations then report the reason for managed fallback because they require
-in-process MSBuild. SDK-relative paths
+The current AOT command path does not execute file-based app build operations. It reports this
+limitation and falls back to the managed CLI. SDK-relative paths
 (`MSBuild.dll`, `Sdks`,
 `MSBuildExtensionsPath`, and the telemetry logger) come from
 `SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. `.nuspec` inputs also defer

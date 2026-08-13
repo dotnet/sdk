@@ -76,7 +76,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         Reporter.Verbose.WriteLine(
-            "The Native AOT CLI is falling back to the managed CLI because file-based app build operations require in-process MSBuild.");
+            "The Native AOT CLI is falling back to the managed CLI because this file-based app build operation is not yet supported in the AOT command path.");
         throw new CommandNotAvailableInAotException();
     }
 #else
