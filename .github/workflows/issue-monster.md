@@ -67,6 +67,10 @@ imports:
 runs-on-slim: ubuntu-latest
 timeout-minutes: 30
 
+pre-steps:
+  - name: Force fresh Copilot CLI install
+    run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
+
 tools:
   # Route GitHub tools and Safe Outputs through the generated CLI proxy to avoid a bug in agentic workflows blocking itself
   cli-proxy: true
@@ -94,6 +98,9 @@ safe-outputs:
     engine:
       id: copilot
       model: gpt-5.6-luna
+    steps:
+      - name: Force fresh Copilot CLI install
+        run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
   dispatch-workflow:
     max: 3
     workflows: [issue-monster-assigner]
