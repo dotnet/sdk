@@ -301,13 +301,13 @@ Some issues may be blocked by an integrity policy when you try to read them with
 
 ### 4. Dispatch Issues to the Assigner
 
-For each selected issue, call the `dispatch_workflow` safe-output tool to dispatch the `issue-monster-assigner` workflow, passing the issue number and the concrete base branch you selected in the `inputs` object:
+For each selected issue, call the generated `issue_monster_assigner` safe-output tool, passing the issue number and the concrete base branch you selected:
 
 ```
-dispatch_workflow(workflow_name="issue-monster-assigner", inputs={"issue_number": <issue_number>, "base_branch": "<base_branch>"})
+issue_monster_assigner(issue_number=<issue_number>, base_branch="<base_branch>")
 ```
 
-`dispatch_workflow` is the tool listed in your available safe-output tools; it routes to the `issue-monster-assigner` workflow. (gh-aw also registers a convenience alias named `issue_monster_assigner` that takes the same `issue_number` and `base_branch` fields directly; either works, but prefer `dispatch_workflow` since it is always advertised.)
+Do not use the generic `dispatch_workflow` tool. The generated tool requires both workflow inputs and prevents an empty or incomplete dispatch request from being recorded.
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
@@ -334,7 +334,7 @@ Keeping each Issue Monster run lean is critical to avoid unbounded token spend.
 - **Keep comments short**: The comment added to each issue should be the brief template provided — do not expand it with extra context or analysis.
 - **Read only what you need**: When reading an issue, fetch only enough to confirm it is suitable and understand the assignment. Do not read every comment thread unless needed to resolve a conflict.
 - **Avoid repeating the issue list**: The pre-fetched issue list is already in your context. Do not make additional API calls to fetch the list again, and do not generate a summary of the entire list.
-- **One tool call per action**: Dispatch and comment in two calls per issue. Do not make extra verification calls after a successful dispatch.
+- **One tool call per action**: Call `issue_monster_assigner` exactly once and comment exactly once per issue. Do not retry or make extra verification calls after a successful dispatch.
 
 **Target tokens/run**: 50K–150K
 **Alert threshold**: >300K tokens
@@ -375,7 +375,7 @@ A successful run means:
 1. You used the pre-fetched prioritized list (and body context) without re-searching
 2. You selected up to three issues that are clearly separate in topic
 3. You used body-first validation and only fetched comments when strictly necessary
-4. You dispatched each selected issue and its selected base branch to the `issue-monster-assigner` workflow using `dispatch_workflow`
+4. You dispatched each selected issue and its selected base branch using `issue_monster_assigner`
 5. You commented on each dispatched issue (or called `noop` when no dispatches were made)
 
 ## Error Handling
