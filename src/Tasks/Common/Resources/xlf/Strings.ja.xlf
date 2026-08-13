@@ -526,6 +526,11 @@
         <target state="translated">NETSDK1191: プロパティ '{0}' のランタイム識別子を推論できませんでした。RID を明示的に指定してください。</target>
         <note>{StrBegins="NETSDK1191: "}</note>
       </trans-unit>
+      <trans-unit id="IncludeAllContentForSelfExtractIsLegacy">
+        <source>NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</source>
+        <target state="new">NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</target>
+        <note>{StrBegins="NETSDK1244: "}{Locked="IncludeAllContentForSelfExtract"}</note>
+      </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
         <source>NETSDK1020: Package Root {0} was incorrectly given for Resolved library {1}</source>
         <target state="translated">NETSDK1020: 解決されたライブラリ {1} に対して指定されたパッケージ ルート {0} が正しくありません。</target>

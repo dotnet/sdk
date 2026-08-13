@@ -4,22 +4,26 @@ This document describes the design for adding a NativeAOT-compiled entry point
 to the .NET SDK CLI. The goal is to achieve near-instant startup for common
 commands while preserving full functionality through the managed CLI.
 
-The current implementation uses a standalone `dn.exe` host that lives alongside
-the existing `dotnet` CLI. `dn.exe` emulates the muxer's `try_invoke_aot_sdk`
+The `dotnet` muxer invokes the Native AOT CLI through its `try_invoke_aot_sdk`
 function — see
 [dotnet/runtime#126171](https://github.com/dotnet/runtime/issues/126171). The
 muxer looks for `dotnet-aot` in the resolved SDK directory and, when found,
-calls `dotnet_execute` directly. `dn.exe` follows the same contract and serves
-as a local development and testing entry point. The AOT fast path is enabled by
-default on all platforms (see [Opting out](#opting-out-dotnet_cli_enableaot));
+calls `dotnet_execute` directly. The standalone `dn.exe` host follows the same
+contract for focused bridge development and debugging, but full redist
+`dotnet.exe` is the authoritative integration entry point. The AOT fast path is
+enabled by default on all platforms (see [Opting out](#opting-out-dotnet_cli_enableaot));
 setting `DOTNET_CLI_ENABLEAOT=false` (or `0`/`no`/`off`) opts out, and the bridge
 falls through to the managed CLI immediately.
 
 ## Opting out (`DOTNET_CLI_ENABLEAOT`)
 
-The AOT command-handling fast path is **enabled by default on all platforms**. The
-fast path is designed to be behaviorally identical to the managed CLI, transparently
-deferring to it for anything it cannot handle, so it should require no action from users.
+The AOT command-handling fast path is **enabled by default on all platforms**. It
+preserves command semantics and transparently defers to the managed CLI for unsupported
+functionality. Restore-based AOT commands run the same background workload advertising-
+manifest and SDK vulnerability-cache refreshes, and display the same workload update
+notification, as the managed CLI. The native closure contains only the workload
+advertising services; workload installation, repair, and elevated MSI IPC still defer to
+the managed CLI.
 
 If you need to bypass the AOT path entirely — for example to diagnose a suspected parity
 issue — set the `DOTNET_CLI_ENABLEAOT` environment variable to a falsy value before
@@ -47,22 +51,22 @@ debugged differently.
 
 | Layer | Project | Output | Compilation |
 |-------|---------|--------|-------------|
-| 1 — Native Host | `src/Cli/dn/` | `dn.exe` | NativeAOT (`PublishAot`, `OutputType=Exe`) |
+| 1 — Native Host | `dotnet` muxer (`src/native/corehost`) | `dotnet.exe` | Native host |
 | 2 — AOT Bridge | `src/Cli/dotnet-aot/` | `dotnet-aot.dll` / `.so` / `.dylib` | NativeAOT (`PublishAot`, `NativeLib=Shared`) |
 | 3 — Managed CLI | `src/Cli/dotnet/` | `dotnet.dll` | Standard managed build |
 
 ```mermaid
 graph TD
-    User["User runs dn.exe"] --> L1
+    User["User runs dotnet.exe"] --> L1
 
-    subgraph L1["Layer 1 · dn.exe  (Native AOT Executable)"]
-        Resolve["Resolve DOTNET_ROOT, hostfxr path"]
+    subgraph L1["Layer 1 · dotnet muxer"]
+        Resolve["Resolve SDK, DOTNET_ROOT, hostfxr path"]
         Marshal["Marshal args to native strings"]
-        PInvoke["P/Invoke: dotnet_execute()"]
-        Resolve --> Marshal --> PInvoke
+        NativeExport["Call native export: dotnet_execute()"]
+        Resolve --> Marshal --> NativeExport
     end
 
-    PInvoke -->|"DLL import"| L2
+    NativeExport --> L2
 
     subgraph L2["Layer 2 · dotnet-aot.dll  (Native AOT Shared Library)"]
         Entry["NativeEntryPoint.Execute()"]
@@ -92,11 +96,12 @@ graph TD
     style L3 fill:#2d6b3a,stroke:#27ae60,color:#fff
 ```
 
-### Layer 1 — `dn.exe` (Native Host)
+### Layer 1 — `dotnet` muxer (Native Host)
 
-A minimal NativeAOT executable whose only job is to locate the .NET installation,
-resolve `hostfxr`, marshal command-line arguments into platform-native strings,
-and call into Layer 2 via P/Invoke.
+The existing native muxer resolves the .NET installation and selected SDK, then
+loads Layer 2 and calls its native export. `src/Cli/dn` provides a smaller
+development host for debugging the same contract, but is not the end-to-end test
+harness.
 
 Key responsibilities:
 
@@ -116,9 +121,10 @@ the dual-path dispatch logic.
 bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
-can run entirely in AOT (`--version`, `--info`, and the AOT-capable `sln`
-subcommands) execute immediately and return. Every other built-in command is
-wired with a fallback action that throws `CommandNotAvailableInAotException`;
+can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
+subcommands, and the narrow file-based run path described below) execute immediately and return.
+Other built-in command shapes are wired with a fallback action that throws
+`CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
 falls through to the managed CLI.
 
@@ -132,12 +138,42 @@ the managed CLI uses — minus the MSBuild/NuGet project-tools resolver — via
 then invokes the resolved `CommandSpec` out-of-process through
 `CommandFactoryUsingResolver` + `Command.Execute()`. The resolution step is
 side-effect free, so the bridge defers to the managed CLI whenever it cannot
-handle the invocation: file-based apps (handled by the managed `run` pipeline),
-commands that only the full project-tools resolver can find, anything that does
+handle the invocation: unsupported implicit file-based shapes, commands that only the full
+project-tools resolver can find, anything that does
 not resolve, or any resolution error. Because the managed CLI re-resolves with
 its full resolver set, deferral produces identical user-facing behavior. Out-of-
 process invocation only happens after a non-null spec, so a command is never
-executed twice.
+executed twice. If resolution returns no command, reuse-only implicit file-based apps
+(`dotnet app.cs --no-build`) enter the launch-only gate. Build-enabled shorthand can also use an
+unchanged validated cache; other shorthand shapes defer. The native path also supports explicit
+`dotnet run --file` and positional `dotnet run app.cs`.
+
+**No-build file launch** — `AotRunCommand` handles explicit `--file` and positional
+`dotnet run <path> --no-build` when the prior cache records a synthetic CSC build. Positional discovery runs natively
+only when the current directory contains no project; otherwise it defers so the project receives
+the path as an application argument. The native path preserves arguments after `--`, `-e`
+environment variables, the architecture-specific
+`DOTNET_ROOT`, working directory, Ctrl-C handling, and exit code. Project launch
+profiles decorate the cached apphost; Executable profiles bypass the cache and launch their
+configured command. Runs requiring compile/build work and unsupported options continue through
+managed fallback.
+
+The validated-cache launch additionally handles unchanged replayed/MSBuild caches, including package apps.
+The bridge validates versions, global properties, source and tracked filesystem inputs, and the
+serialized `RunProperties` contract before using its command, arguments, working directory, and
+RID/framework values. Stale or ambiguous caches defer before launch. Missing launch output follows
+the same process-start or apphost failure path as managed `dotnet run`.
+
+**MSBuild evaluation infrastructure** — The Native AOT closure includes the
+SDK-shipped workload and NuGet SDK resolvers and a reflection-free project evaluator
+that uses MSBuild's static resolver registration APIs. SDK-relative paths
+(`MSBuild.dll`, `Sdks`, `MSBuildExtensionsPath`, and the telemetry logger) come from
+`SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. This infrastructure is
+available to command handlers but is not registered or invoked during Native AOT
+startup yet. The shared `RestoringCommand` starts workload advertising and
+vulnerability-cache maintenance in both modes. Its AOT closure reuses the existing
+NuGet downloader, file-based and administrative-MSI manifest extraction, and read-only
+workload records without linking workload install/repair or elevated MSI IPC.
 
 **Slow path** — When `DOTNET_CLI_ENABLEAOT` is disabled (`false`/`0`/`no`/`off`)
 or the AOT bridge does
@@ -150,7 +186,7 @@ exactly as the muxer would configure it for an SDK command.
 
 ```mermaid
 sequenceDiagram
-    participant dn as dn.exe (Layer 1)
+    participant dn as dotnet muxer (Layer 1)
     participant aot as dotnet-aot.dll (Layer 2)
     participant tool as external tool / process
     participant hfxr as hostfxr
@@ -169,7 +205,7 @@ sequenceDiagram
             aot->>tool: Command.Execute() (out of process)
             tool-->>aot: exit code
             aot-->>dn: exit code
-        else Command not handled, unresolved, or file-based app
+        else Command not handled, unresolved, or unsupported file-based shape
             aot->>cli: ManagedHost.RunApp(args) → managed fallback (see below)
             cli-->>aot: exit code
             aot-->>dn: exit code
@@ -214,14 +250,16 @@ In the shared files:
   isolated to small inline `#if CLI_AOT` regions: the managed build wires the
   real command handlers, while the AOT build attaches a managed-fallback handler
   to every command (overriding it with real implementations where AOT can run
-  the command, e.g. `sln`). The help writer (`DotnetHelpBuilder`) has no
+  the command, e.g. `sln` and the narrow cached `run` action). The help writer (`DotnetHelpBuilder`) has no
   conditional compilation: help for the external-tool commands
   (msbuild/nuget/vstest/format/fsi) renders from AOT because those forwarding
   apps use AOT-friendly out-of-process codepaths under `#if CLI_AOT`.
 - **`ParserOptionActions.cs`** — The shared `--help`/`--version`/`--info` option
-  actions. `PrintInfoAction` uses `#if !CLI_AOT` to omit the workload and MSBuild
-  details that aren't AOT-compatible yet; the diagnostics and `--cli-schema`
-  actions are `#if !CLI_AOT` (the AOT build defers those to the managed CLI).
+  actions. `PrintInfoAction` reports the workload and MSBuild details in both modes;
+  the AOT build substitutes its runtime RID and resolved versioned SDK directory
+  where the managed implementation relies on hostfxr state. The diagnostics and
+  `--cli-schema` actions are `#if !CLI_AOT` (the AOT build defers those to the
+  managed CLI).
 
 The two projects have **different entry-point shapes and do not share a
 `Program.cs`**:
@@ -522,11 +560,9 @@ dialog (or auto-attaches in configured environments).
 
 ## Future Work
 
-- **Muxer integration** — The muxer's `try_invoke_aot_sdk` function
-  ([dotnet/runtime#126171](https://github.com/dotnet/runtime/issues/126171))
-  already calls `dotnet_execute` from the resolved SDK directory, passing
-  `host_path`, `dotnet_root`, `sdk_dir`, and `hostfxr_path`. `dn.exe`
-  emulates this same contract for local development and testing.
+- **Broaden muxer-path coverage** — Continue validating new AOT command handlers
+  through a full redist `dotnet.exe`, using `dn.exe` only for focused native-host
+  development and debugging.
 - **Remove AOT commands from managed package** — After the AOT path is
   validated and shipping, the `#if CLI_AOT` implementations in `Parser.cs`
   can be removed from the managed `dotnet.dll` build.

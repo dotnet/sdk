@@ -28,12 +28,17 @@
   <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->
   <ItemGroup Condition="'$(TargetOS)' != 'windows'">
     <Compile Remove="WindowsInstallerTests.cs" />
+    <Compile Remove="CommandTests\Workload\Install\GivenAWindowsMsiManifestInstaller.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenAnMsiInstallation.cs" />
     <Compile Remove="CommandTests\Workload\List\GivenDotnetWorkloadList.cs" />
     <Compile Remove="CommandTests\Workload\List\VisualStudioWorkloadsTests.cs" />
   </ItemGroup>
 
   <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>AspireCliVersion</_Parameter1>
+      <_Parameter2>$(AspireCliVersion)</_Parameter2>
+    </AssemblyAttribute>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>MSTestVersion</_Parameter1>
       <_Parameter2>$(MSTestVersion)</_Parameter2>
@@ -74,6 +79,7 @@
     <ProjectReference Include="..\Microsoft.DotNet.Tools.Tests.ComponentMocks\Microsoft.DotNet.Tools.Tests.ComponentMocks.csproj" />
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
     <ProjectReference Include="..\..\src\Cli\Microsoft.DotNet.Cli.Utils\Microsoft.DotNet.Cli.Utils.csproj" />
+    <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.NativeWrapper\Microsoft.DotNet.NativeWrapper.csproj" />
     <ProjectReference Include="..\Msbuild.Tests.Utilities\Msbuild.Tests.Utilities.csproj" />
   </ItemGroup>
 

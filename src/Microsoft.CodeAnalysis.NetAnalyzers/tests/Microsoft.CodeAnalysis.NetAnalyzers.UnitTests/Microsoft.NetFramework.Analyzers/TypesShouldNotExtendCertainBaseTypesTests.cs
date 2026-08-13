@@ -7,10 +7,10 @@ using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.TypesShouldNotExtendCertainBaseTypesAnalyzer,
-    Microsoft.NetFramework.CSharp.Analyzers.CSharpTypesShouldNotExtendCertainBaseTypesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.TypesShouldNotExtendCertainBaseTypesAnalyzer,
-    Microsoft.NetFramework.VisualBasic.Analyzers.BasicTypesShouldNotExtendCertainBaseTypesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
 {

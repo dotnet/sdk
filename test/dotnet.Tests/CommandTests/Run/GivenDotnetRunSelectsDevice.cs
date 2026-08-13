@@ -376,6 +376,23 @@ public class GivenDotnetRunSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItSetsDotnetHostPathForDirectDeviceTargets()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices", identifier: "DotnetHostPath")
+            .WithSource();
+
+        var command = new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path);
+        command.EnvironmentToRemove.Add("DOTNET_HOST_PATH");
+
+        command.Execute(
+            "--framework",
+            ToolsetInfo.CurrentTargetFramework,
+            "-p:SingleDevice=true")
+            .Should().Pass();
+    }
+
+    [TestMethod]
     public void ItPassesRuntimeIdentifierToDeployToDeviceTarget()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetRunDevices")

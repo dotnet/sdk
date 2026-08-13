@@ -257,7 +257,8 @@ internal sealed partial class CSharpCompilerCommand
             File.WriteAllText(editorconfig, GetGeneratedMSBuildEditorConfigContent());
         }
 
-        var apphostTarget = Path.Join(binDir, $"{FileNameWithoutExtension}{FileNameSuffixes.CurrentPlatform.Exe}");
+        var launchArtifacts = FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(EntryPointFileFullPath, ArtifactsPath);
+        string apphostTarget = launchArtifacts.AppHost;
         if (ShouldEmit(apphostTarget))
         {
             var rid = RuntimeInformation.RuntimeIdentifier;
@@ -269,7 +270,7 @@ internal sealed partial class CSharpCompilerCommand
                 enableMacOSCodeSign: OperatingSystem.IsMacOS());
         }
 
-        var runtimeConfig = Path.Join(binDir, $"{FileNameWithoutExtension}{FileNameSuffixes.RuntimeConfigJson}");
+        string runtimeConfig = launchArtifacts.RuntimeConfig;
         if (ShouldEmit(runtimeConfig))
         {
             File.WriteAllText(runtimeConfig, GetRuntimeConfigContent());

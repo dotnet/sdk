@@ -1169,5 +1169,91 @@ Public Class NoDisposeMethod
 End Class
 ");
         }
+
+        [TestMethod]
+        public async Task CA1001CSharpCodeFixNestedTypesAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+using System;
+using System.IO;
+
+public class [|Outer|]
+{
+    FileStream newFile = new FileStream("""", FileMode.Append);
+
+    public class [|Inner|]
+    {
+        FileStream otherFile = new FileStream("""", FileMode.Append);
+    }
+}
+",
+@"
+using System;
+using System.IO;
+
+public class Outer : IDisposable
+{
+    FileStream newFile = new FileStream("""", FileMode.Append);
+
+    public class Inner : IDisposable
+    {
+        FileStream otherFile = new FileStream("""", FileMode.Append);
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+        }
+    }
+
+    public void Dispose()
+    {
+        throw new NotImplementedException();
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA1001BasicCodeFixNestedTypesAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Imports System
+Imports System.IO
+
+Public Class [|Outer|]
+
+    Dim newFile As FileStream = New FileStream("""", FileMode.Append)
+
+    Public Class [|Inner|]
+
+        Dim otherFile As FileStream = New FileStream("""", FileMode.Append)
+    End Class
+End Class
+",
+@"
+Imports System
+Imports System.IO
+
+Public Class Outer
+    Implements IDisposable
+
+    Dim newFile As FileStream = New FileStream("""", FileMode.Append)
+
+    Public Class Inner
+        Implements IDisposable
+
+        Dim otherFile As FileStream = New FileStream("""", FileMode.Append)
+
+        Public Sub Dispose() Implements IDisposable.Dispose
+            Throw New NotImplementedException()
+        End Sub
+    End Class
+
+    Public Sub Dispose() Implements IDisposable.Dispose
+        Throw New NotImplementedException()
+    End Sub
+End Class
+");
+        }
     }
 }
