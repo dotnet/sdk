@@ -363,10 +363,12 @@ public class MSBuildEvaluationTests
                 sourcePath,
                 MSBuildArgs.FromProperties(null).CloneWithExplicitArgs(["-noconsolelogger"]));
             Assert.IsTrue(command.NoConsoleLogger);
+            Assert.IsEmpty(command.Directives);
             ProjectInstance project = command.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
 
             Assert.AreEqual("true", project.GetPropertyValue("PackRelease"));
             Assert.AreEqual("net11.0", project.GetPropertyValue("TargetFramework"));
+            Assert.IsEmpty(command.EvaluatedDirectives);
             Assert.AreEqual(
                 VirtualProjectBuilder.GetVirtualProjectPath(sourcePath),
                 project.FullPath);
@@ -386,9 +388,11 @@ public class MSBuildEvaluationTests
             var commandWithDirectives = new VirtualProjectBuildingCommand(
                 sourcePath,
                 MSBuildArgs.FromProperties(null));
+            Assert.HasCount(1, commandWithDirectives.Directives);
             ProjectInstance projectWithDirectives =
                 commandWithDirectives.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
             Assert.AreEqual("from-directive", projectWithDirectives.GetPropertyValue("DirectiveValue"));
+            Assert.HasCount(1, commandWithDirectives.EvaluatedDirectives);
         }
         finally
         {

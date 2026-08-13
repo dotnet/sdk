@@ -1,10 +1,12 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#if !CLI_AOT
 using System.Collections.Immutable;
+#if !CLI_AOT
 using System.Collections.ObjectModel;
+#endif
 using System.Diagnostics;
+#if !CLI_AOT
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 #endif
@@ -56,30 +58,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public bool NoConsoleLogger { get; init; }
 
-    public VirtualProjectBuilder Builder { get; }
-    public MSBuildArgs MSBuildArgs { get; }
-
-    public VirtualProjectBuildingCommand(
-        string entryPointFileFullPath,
-        MSBuildArgs msbuildArgs,
-        string? artifactsPath = null)
-    {
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
-            CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
-
-        NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
-
-        Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
-    }
-
-#if CLI_AOT
-    public override int Execute()
-    {
-        Reporter.Verbose.WriteLine(
-            "The Native AOT CLI is falling back to the managed CLI because this file-based app build operation is not yet supported in the AOT command path.");
-        throw new CommandNotAvailableInAotException();
-    }
-#else
     internal const string FileBasedProgramCanSkipMSBuild = nameof(FileBasedProgramCanSkipMSBuild);
 
     /// <summary>
@@ -114,6 +92,30 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public ImmutableArray<CSharpDirective> EvaluatedDirectives { get; private set; }
 
+    public VirtualProjectBuilder Builder { get; }
+    public MSBuildArgs MSBuildArgs { get; }
+
+    public VirtualProjectBuildingCommand(
+        string entryPointFileFullPath,
+        MSBuildArgs msbuildArgs,
+        string? artifactsPath = null)
+    {
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
+            CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
+
+        NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
+
+        Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+    }
+
+#if CLI_AOT
+    public override int Execute()
+    {
+        Reporter.Verbose.WriteLine(
+            "The Native AOT CLI is falling back to the managed CLI because this file-based app build operation is not yet supported in the AOT command path.");
+        throw new CommandNotAvailableInAotException();
+    }
+#else
     [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute()
@@ -738,14 +740,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
-#if CLI_AOT
-        var result = Builder.CreateProjectInstanceAsync(
-            projectCollection.Wrap(),
-            ThrowingReporter,
-            additionalGlobalProperties: additionalGlobalProperties).AsTask().GetAwaiter().GetResult();
-
-        return result.Project.Unwrap();
-#else
         var projectCollectionWrapped = projectCollection.Wrap();
 
         var result = Builder.CreateProjectInstanceAsync(
@@ -757,7 +751,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         EvaluatedDirectives = result.EvaluatedDirectives;
 
         return result.Project.Unwrap();
-#endif
     }
 
     /// <summary>
