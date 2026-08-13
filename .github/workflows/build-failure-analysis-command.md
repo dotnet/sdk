@@ -70,6 +70,14 @@ timeout-minutes: 30
 # overriding a type replaces it wholesale, so `max` and `hide-older-comments`
 # are restated verbatim and must not be allowed to drift.
 safe-outputs:
+  # Restated from shared/build-failure-analysis-shared.md, which explains why it
+  # is off — it CANNOT be inherited. In gh-aw v0.82.9 `threat-detection: false`
+  # parses to a nil config, and the import merge in `mergeImportedSafeOutputs`
+  # guards on `importedConfig.ThreatDetection != nil`, so a disabled detection
+  # coming from an import is silently dropped and the workflow falls back to the
+  # auto-default (enabled). Verified: dropping this line puts the `detection` job
+  # and its `Log detection run` step straight back into the lock file.
+  threat-detection: false
   add-comment:
     max: 5
     target: "triggering"
