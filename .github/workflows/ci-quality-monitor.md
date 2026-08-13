@@ -227,7 +227,7 @@ safe-outputs:
     - "*.blob.core.windows.net"
   create-issue:
     title-prefix: "[AI discovered CI] "
-    labels: [agentic-workflows]
+    labels: [agentic-workflows, cookie]
     allowed-labels: ["Known Build Error", "Test Debt", live-build-incident]
     deduplicate-by-title: true
     max: 3
