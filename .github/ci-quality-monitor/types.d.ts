@@ -1,4 +1,5 @@
-export interface Pipeline {
+export interface Pipeline
+{
   organization: string;
   project: string;
   definitionId: number;
@@ -7,7 +8,8 @@ export interface Pipeline {
   stableBranches: string[];
 }
 
-export interface Observation {
+export interface Observation
+{
   kind: string;
   phase: string;
   failureType: string;
@@ -20,7 +22,8 @@ export interface Observation {
   [detail: string]: unknown;
 }
 
-export interface BuildCandidate {
+export interface BuildCandidate
+{
   pipeline: Pipeline;
   build: Record<string, unknown>;
   history: Array<Record<string, unknown>>;
@@ -30,13 +33,15 @@ export interface BuildCandidate {
   mergedPullRequest?: Record<string, unknown>;
 }
 
-export interface CandidateSelection {
+export interface CandidateSelection
+{
   candidates: BuildCandidate[];
   bootstrap: boolean;
   pipelineHealth: Observation[];
 }
 
-export interface CiEvidenceDossier {
+export interface CiEvidenceDossier
+{
   schemaVersion: 1;
   generatedAt: string;
   manualBuildId: string | null;

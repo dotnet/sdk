@@ -93,25 +93,6 @@ When neither state source is available, the collector bootstraps its build
 window without activating the agent. This prevents state loss from causing a
 burst of historical investigations.
 
-## Issue Safety
-
-The agent receives only the bounded dossier produced by the collector. Before
-requesting an issue, it must search for the exact failure fingerprint and a
-second mechanism-specific phrase. The workflow uses GitHub Agentic Workflows'
-`create-issue` safe output with fixed and allowlisted labels and a per-run
-write limit. The fixed `agentic-workflows` and `cookie` labels place every
-successfully filed issue directly into the Issue Monster queue.
-
-Ordinary build and infrastructure issues do not use the `Known Build Error`
-label. A named-test KBE uses collector-generated `ErrorMessage` values only
-after they have been validated against the original TRX using Arcade's ordered
-`String.Contains` semantics.
-
-Issue bodies include build information, failure history, error details, root
-cause analysis, and suggested investigation. The root cause analysis separates
-observed evidence from inference, assigns a confidence level, and identifies
-the next discriminating check when the underlying cause is not established.
-
 ## Scope Configuration
 
 [`pipelines.json`](pipelines.json) is the allowlist for public pipeline and

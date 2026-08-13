@@ -1,8 +1,10 @@
-import { normalizeEvidenceText, splitNonEmptyLines } from "../evidence-utils.mjs";
+import {normalizeEvidenceText, splitNonEmptyLines} from "../evidence-utils.mjs";
 
-export function parseHelixWorkItemReferences(messages) {
+export function parseHelixWorkItemReferences(messages)
+{
   const pattern = /Work item '([^']+)' in job '(.+) \(([0-9a-f-]{36})\)' failed \([^,]+, exit code (-?\d+)\)\./i;
-  return messages.flatMap(message => {
+  return messages.flatMap(message =>
+  {
     const match = `${message}`.match(pattern);
     return match ? [{
       workItem: match[1],
@@ -13,13 +15,16 @@ export function parseHelixWorkItemReferences(messages) {
   });
 }
 
-export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
-  if (testFailures.length > 0) {
-    return { phase: "test-execution", failureType: "test-assertion", evidenceSources: ["helix-trx"] };
+export function classifyWorkItem(exitCode, consoleText, testFailures = [])
+{
+  if (testFailures.length > 0)
+  {
+    return {phase: "test-execution", failureType: "test-assertion", evidenceSources: ["helix-trx"]};
   }
   const text = `${consoleText ?? ""}`;
   if (/test run completed|detected test end tag/i.test(text)
-      && /app_crash|timed_out|exit(?:ed)? with (?:80|143)/i.test(text)) {
+    && /app_crash|timed_out|exit(?:ed)? with (?:80|143)/i.test(text))
+  {
     return {
       phase: "test-post-processing",
       failureType: /app_crash/i.test(text) ? "process-crash" : "harness-error",
@@ -27,7 +32,8 @@ export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
     };
   }
   if (/workload timed out|run timed out|timed_out|timeout|timed out/i.test(text)
-      || exitCode === 130 || exitCode === 143) {
+    || exitCode === 130 || exitCode === 143)
+  {
     return {
       phase: "test-execution",
       failureType: "timeout",
@@ -35,14 +41,16 @@ export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
     };
   }
   if (/segmentation fault|stack overflow|core dump(?:ed)?|assert failed|app_crash|created crash dump/i.test(text)
-      || [133, 134, 139].includes(exitCode)) {
+    || [133, 134, 139].includes(exitCode))
+  {
     return {
       phase: "test-execution",
       failureType: "process-crash",
       evidenceSources: ["helix-console", "process-exit-code"]
     };
   }
-  if ([137, 143, 255].includes(exitCode)) {
+  if ([137, 143, 255].includes(exitCode))
+  {
     return {
       phase: "test-execution",
       failureType: "process-termination",
@@ -50,7 +58,8 @@ export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
     };
   }
   if (/device_not_found|infrastructure error|agent connection|machine is not available/i.test(text)
-      || [-4, 71, 81].includes(exitCode)) {
+    || [-4, 71, 81].includes(exitCode))
+  {
     return {
       phase: "test-execution",
       failureType: "infrastructure-unavailable",
@@ -64,7 +73,8 @@ export function classifyWorkItem(exitCode, consoleText, testFailures = []) {
   };
 }
 
-export function summarizeHelixConsole(consoleText) {
+export function summarizeHelixConsole(consoleText)
+{
   const lines = splitNonEmptyLines(consoleText);
   const runningTestsMarker = lines.findIndex(line => /tests were still running when dump was taken/i.test(line));
   const markedActiveTest = runningTestsMarker >= 0
@@ -87,13 +97,15 @@ export function summarizeHelixConsole(consoleText) {
   };
 }
 
-export function summarizeTestMechanism(errorMessage, outcome) {
+export function summarizeTestMechanism(errorMessage, outcome)
+{
   const lines = splitNonEmptyLines(errorMessage);
   const salient = lines.filter(line => /exception|error|expected|actual|exit code|status code|timed? ?out|failed/i.test(line));
   return normalizeEvidenceText((salient.length > 0 ? salient : lines).slice(0, 8).join("\n") || `${outcome} test result`);
 }
 
-export function summarizeSharedTestMechanism(errorMessage, outcome) {
+export function summarizeSharedTestMechanism(errorMessage, outcome)
+{
   const lines = splitNonEmptyLines(errorMessage);
   const diagnosticLines = lines.filter(line => /\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b/i.test(line));
   const responseLines = lines.filter(line => /response status code/i.test(line))

@@ -1,50 +1,64 @@
-import { MAX_TIMELINE_FAILURES } from "../constants.mjs";
-import { createFailureFingerprint, normalizeEvidenceText, splitNonEmptyLines } from "../evidence-utils.mjs";
+import {MAX_TIMELINE_FAILURES} from "../constants.mjs";
+import {createFailureFingerprint, normalizeEvidenceText, splitNonEmptyLines} from "../evidence-utils.mjs";
 
-export function classifyTaskFailure(name, issues = []) {
+export function classifyTaskFailure(name, issues = [])
+{
   const text = `${name}\n${issues.join("\n")}`;
   const diagnosticCode = text.match(/\b(?:MSB|NETSDK|CS|NU)\d{4}\b/i)?.[0]?.toUpperCase() ?? null;
-  if (/artifact (?:was )?not found|download previous build|missing artifact/i.test(text)) {
-    return { phase: "artifact-transfer", failureType: "artifact-missing", diagnosticCode };
+  if (/artifact (?:was )?not found|download previous build|missing artifact/i.test(text))
+  {
+    return {phase: "artifact-transfer", failureType: "artifact-missing", diagnosticCode};
   }
-  if (/yaml|pipeline validation|unexpected value|mapping was not expected|template expression/i.test(text)) {
-    return { phase: "pipeline-validation", failureType: "configuration-error", diagnosticCode };
+  if (/yaml|pipeline validation|unexpected value|mapping was not expected|template expression/i.test(text))
+  {
+    return {phase: "pipeline-validation", failureType: "configuration-error", diagnosticCode};
   }
-  if (/monitor helix jobs|send to helix|testbuild tests/i.test(text)) {
-    return { phase: "test-orchestration", failureType: "downstream-failure", diagnosticCode };
+  if (/monitor helix jobs|send to helix|testbuild tests/i.test(text))
+  {
+    return {phase: "test-orchestration", failureType: "downstream-failure", diagnosticCode};
   }
-  if (/checkout|couldn't find remote ref|repository not found/i.test(text)) {
-    return { phase: "source-checkout", failureType: "source-unavailable", diagnosticCode };
+  if (/checkout|couldn't find remote ref|repository not found/i.test(text))
+  {
+    return {phase: "source-checkout", failureType: "source-unavailable", diagnosticCode};
   }
-  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed|credentials? (?:were )?rejected/i.test(text)) {
-    return { phase: inferTaskPhase(name, text), failureType: "authentication-failure", diagnosticCode };
+  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed|credentials? (?:were )?rejected/i.test(text))
+  {
+    return {phase: inferTaskPhase(name, text), failureType: "authentication-failure", diagnosticCode};
   }
-  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text)) {
-    return { phase: inferTaskPhase(name, text), failureType: "network-failure", diagnosticCode };
+  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text))
+  {
+    return {phase: inferTaskPhase(name, text), failureType: "network-failure", diagnosticCode};
   }
-  if (diagnosticCode?.startsWith("CS")) {
-    return { phase: "compilation", failureType: "compiler-error", diagnosticCode };
+  if (diagnosticCode?.startsWith("CS"))
+  {
+    return {phase: "compilation", failureType: "compiler-error", diagnosticCode};
   }
-  if (/exec format error|cannot execute binary|signing failed|signtool|sn\.exe/i.test(text)) {
-    return { phase: "signing", failureType: "tool-execution-error", diagnosticCode };
+  if (/exec format error|cannot execute binary|signing failed|signtool|sn\.exe/i.test(text))
+  {
+    return {phase: "signing", failureType: "tool-execution-error", diagnosticCode};
   }
-  if (/\bNU19\d{2}\b|known (?:low|moderate|high|critical) severity vulnerability/i.test(text)) {
-    return { phase: "dependency-restore", failureType: "package-policy-error", diagnosticCode };
+  if (/\bNU19\d{2}\b|known (?:low|moderate|high|critical) severity vulnerability/i.test(text))
+  {
+    return {phase: "dependency-restore", failureType: "package-policy-error", diagnosticCode};
   }
-  if (diagnosticCode?.startsWith("NU") || /restore|nuget|feed/i.test(text)) {
-    return { phase: "dependency-restore", failureType: "package-resolution-error", diagnosticCode };
+  if (diagnosticCode?.startsWith("NU") || /restore|nuget|feed/i.test(text))
+  {
+    return {phase: "dependency-restore", failureType: "package-resolution-error", diagnosticCode};
   }
-  if (/initialize container|install|acquire|setup/i.test(text)) {
-    return { phase: "environment-setup", failureType: "tool-execution-error", diagnosticCode };
+  if (/initialize container|install|acquire|setup/i.test(text))
+  {
+    return {phase: "environment-setup", failureType: "tool-execution-error", diagnosticCode};
   }
-  if (/\b(?:MSB\d{4}|NETSDK\d{4})\b|\bbuild\b|compile/i.test(text)) {
-    return { phase: "compilation", failureType: "build-task-error", diagnosticCode };
+  if (/\b(?:MSB\d{4}|NETSDK\d{4})\b|\bbuild\b|compile/i.test(text))
+  {
+    return {phase: "compilation", failureType: "build-task-error", diagnosticCode};
   }
-  if (/test/i.test(text)) return { phase: "test-execution", failureType: "unknown-error", diagnosticCode };
-  return { phase: "unknown", failureType: "unknown-error", diagnosticCode };
+  if (/test/i.test(text)) return {phase: "test-execution", failureType: "unknown-error", diagnosticCode};
+  return {phase: "unknown", failureType: "unknown-error", diagnosticCode};
 }
 
-function inferTaskPhase(name, text) {
+function inferTaskPhase(name, text)
+{
   if (/checkout/i.test(name)) return "source-checkout";
   if (/restore|nuget|feed|NuGet\.targets/i.test(text)) return "dependency-restore";
   if (/sign|sn\.exe/i.test(text)) return "signing";
@@ -54,10 +68,12 @@ function inferTaskPhase(name, text) {
   return "unknown";
 }
 
-function timelinePath(record, recordsById) {
+function timelinePath(record, recordsById)
+{
   const names = [record.name];
   let parentId = record.parentId;
-  while (parentId && recordsById.has(parentId)) {
+  while (parentId && recordsById.has(parentId))
+  {
     const parent = recordsById.get(parentId);
     names.unshift(parent.name);
     parentId = parent.parentId;
@@ -65,13 +81,15 @@ function timelinePath(record, recordsById) {
   return names;
 }
 
-export function getTimelineFailuresFromRecords(records = [], parseHelixReferences = () => []) {
+export function getTimelineFailuresFromRecords(records = [], parseHelixReferences = () => [])
+{
   const recordsById = new Map(records.map(record => [record.id, record]));
   return records
     .filter(record => record.result === "failed" || record.result === "partiallySucceeded")
     .filter(record => record.type === "Job" || record.type === "Task")
     .slice(0, MAX_TIMELINE_FAILURES)
-    .map(record => {
+    .map(record =>
+    {
       const messages = (record.issues ?? []).map(issue => issue.message);
       return {
         type: record.type,
@@ -88,14 +106,16 @@ export function getTimelineFailuresFromRecords(records = [], parseHelixReference
     });
 }
 
-function summarizeTaskLog(logText) {
+function summarizeTaskLog(logText)
+{
   const lines = splitNonEmptyLines(logText);
   const diagnostics = lines.filter(line => /\b(?:MSB\d{4}|NETSDK\d{4}|CS\d{4})\b|response status|unable to|service unavailable|timed? ?out|connection refused|exec format error/i.test(line));
   const fallback = lines.filter(line => /\b(?:error|fatal|exception|failed)\b/i.test(line) && !/\bat\s+\S+\(/i.test(line));
   return [...new Set((diagnostics.length > 0 ? diagnostics : fallback.length > 0 ? fallback : lines).slice(-8))];
 }
 
-function selectTaskMechanism(evidence, taskName) {
+function selectTaskMechanism(evidence, taskName)
+{
   const usable = evidence
     .filter(line => !/back off .* before retry/i.test(line))
     .filter(line => !/^Bash exited with code/i.test(line));
@@ -111,10 +131,12 @@ function selectTaskMechanism(evidence, taskName) {
     ?? taskName;
 }
 
-export function createTaskObservations(timelineFailures, logsById = new Map()) {
+export function createTaskObservations(timelineFailures, logsById = new Map())
+{
   return timelineFailures
     .filter(failure => failure.type === "Task")
-    .map(failure => {
+    .map(failure =>
+    {
       const logExcerpt = summarizeTaskLog(logsById.get(failure.logId));
       const evidence = [...failure.issues, ...logExcerpt];
       const classification = classifyTaskFailure(failure.name, evidence);
@@ -139,7 +161,8 @@ export function createTaskObservations(timelineFailures, logsById = new Map()) {
     });
 }
 
-export function createPipelineObservation(build, timelineRecords = []) {
+export function createPipelineObservation(build, timelineRecords = [])
+{
   const validations = (build.validationResults ?? [])
     .filter(validation => `${validation.result ?? ""}`.toLowerCase() !== "ok")
     .map(validation => normalizeEvidenceText(validation.message ?? validation.result));

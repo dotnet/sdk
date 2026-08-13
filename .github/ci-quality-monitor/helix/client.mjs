@@ -1,45 +1,51 @@
-import { MAX_CONSOLE_CHARACTERS, MAX_TEST_FAILURES } from "../constants.mjs";
-import { createFailureFingerprint, normalizeEvidenceText } from "../evidence-utils.mjs";
-import { createTestKbeCandidate } from "../known-build-error.mjs";
-import { parseTestResultXml } from "../test-results.mjs";
-import { HttpClient } from "../http-client.mjs";
-import {
+import {MAX_CONSOLE_CHARACTERS, MAX_TEST_FAILURES} from "../constants.mjs";
+import {createFailureFingerprint, normalizeEvidenceText} from "../evidence-utils.mjs";
+import {HttpClient} from "../http-client.mjs";
+import {createTestKbeCandidate} from "../known-build-error.mjs";
+import {parseTestResultXml} from "../test-results.mjs";
+import
+{
   classifyWorkItem,
   summarizeHelixConsole,
   summarizeSharedTestMechanism,
   summarizeTestMechanism
 } from "./parsing.mjs";
 
-function getUniqueHelixReferences(timelineFailures) {
+function getUniqueHelixReferences(timelineFailures)
+{
   const references = timelineFailures.flatMap(failure => failure.helixReferences ?? []);
   return [...new Map(references.map(reference => [`${reference.jobId}:${reference.workItem}`, reference])).values()];
 }
 
-function helixWorkItemUrl(reference) {
+function helixWorkItemUrl(reference)
+{
   return `https://helix.dot.net/api/2019-06-17/jobs/${encodeURIComponent(reference.jobId)}/workitems/${encodeURIComponent(reference.workItem)}`;
 }
 
-function selectArtifactLinks(files = []) {
+function selectArtifactLinks(files = [])
+{
   return files
     .filter(file => /\.(?:trx|xml|binlog|dmp|core|crash|log)$/i.test(file.FileName))
     .slice(0, 10)
-    .map(file => ({ name: file.FileName, url: file.Uri }));
+    .map(file => ({name: file.FileName, url: file.Uri}));
 }
 
-export function getArtifactEvidenceSources(files = []) {
+export function getArtifactEvidenceSources(files = [])
+{
   const sources = [];
   if (files.some(file => /\.(?:trx|xml)$/i.test(file.FileName))) sources.push("helix-trx");
   if (files.some(file => /\.(?:dmp|core|crash)$/i.test(file.FileName))) sources.push("helix-dump");
   return sources;
 }
 
-function createTestObservation(reference, test, testSummary) {
+function createTestObservation(reference, test, testSummary)
+{
   const component = test.fullyQualifiedName || test.testName;
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
   const sharedMechanism = summarizeSharedTestMechanism(test.errorMessage, test.outcome);
   const phase = "test-execution";
   const failureType = classifyTestFailureType(test.errorMessage);
-  const fingerprint = createFailureFingerprint({ phase, failureType, component, mechanism });
+  const fingerprint = createFailureFingerprint({phase, failureType, component, mechanism});
   return {
     kind: "test",
     phase,
@@ -63,12 +69,15 @@ function createTestObservation(reference, test, testSummary) {
   };
 }
 
-function classifyTestFailureType(errorMessage) {
+function classifyTestFailureType(errorMessage)
+{
   const text = `${errorMessage ?? ""}`;
-  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed/i.test(text)) {
+  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed/i.test(text))
+  {
     return "authentication-failure";
   }
-  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text)) {
+  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text))
+  {
     return "network-failure";
   }
   if (/timed? ?out|timeout/i.test(text)) return "timeout";
@@ -77,41 +86,51 @@ function classifyTestFailureType(errorMessage) {
   return "test-assertion";
 }
 
-export class HelixEvidenceClient {
-  constructor(fetchImplementation = fetch) {
+export class HelixEvidenceClient
+{
+  constructor(fetchImplementation = fetch)
+  {
     this.http = new HttpClient(fetchImplementation);
   }
 
-  async getConsoleEvidence(url) {
+  async getConsoleEvidence(url)
+  {
     const text = await (await this.http.response(url)).text();
     return normalizeEvidenceText(text.slice(-MAX_CONSOLE_CHARACTERS), MAX_CONSOLE_CHARACTERS);
   }
 
-  async getTestResults(workItem) {
+  async getTestResults(workItem)
+  {
     const testFile = (workItem.Files ?? []).find(file => /\.(?:trx|xml)$/i.test(file.FileName));
-    if (!testFile) return { summary: null, failures: [] };
+    if (!testFile) return {summary: null, failures: []};
     const response = await this.http.response(testFile.Uri);
     const results = parseTestResultXml(Buffer.from(await response.arrayBuffer()));
-    return { ...results, failures: results.failures.slice(0, MAX_TEST_FAILURES) };
+    return {...results, failures: results.failures.slice(0, MAX_TEST_FAILURES)};
   }
 
-  async collectWorkItemObservations(reference) {
+  async collectWorkItemObservations(reference)
+  {
     const url = helixWorkItemUrl(reference);
     const workItem = await this.http.json(url);
     let consoleText = "";
-    let testResults = { summary: null, failures: [] };
+    let testResults = {summary: null, failures: []};
     const unavailable = [];
-    try {
+    try
+    {
       consoleText = await this.getConsoleEvidence(`${url}/console`);
-    } catch (error) {
+    } catch (error)
+    {
       unavailable.push(normalizeEvidenceText(error.message));
     }
-    try {
+    try
+    {
       testResults = await this.getTestResults(workItem);
-    } catch (error) {
+    } catch (error)
+    {
       unavailable.push(normalizeEvidenceText(error.message));
     }
-    if (testResults.failures.length > 0) {
+    if (testResults.failures.length > 0)
+    {
       return testResults.failures.map(test => createTestObservation(reference, test, testResults.summary));
     }
     const classification = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
@@ -151,12 +170,16 @@ export class HelixEvidenceClient {
     }];
   }
 
-  async collectObservations(timelineFailures, maxReferences = Number.POSITIVE_INFINITY) {
+  async collectObservations(timelineFailures, maxReferences = Number.POSITIVE_INFINITY)
+  {
     const observations = [];
-    for (const reference of getUniqueHelixReferences(timelineFailures).slice(0, maxReferences)) {
-      try {
+    for (const reference of getUniqueHelixReferences(timelineFailures).slice(0, maxReferences))
+    {
+      try
+      {
         observations.push(...await this.collectWorkItemObservations(reference));
-      } catch (error) {
+      } catch (error)
+      {
         observations.push({
           kind: "helix-work-item",
           phase: "test-execution",
