@@ -62,6 +62,10 @@ imports:
 runs-on-slim: ubuntu-latest
 timeout-minutes: 10
 
+pre-steps:
+  - name: Force fresh Copilot CLI install
+    run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
+
 tools:
   github: false
 
@@ -107,6 +111,9 @@ safe-outputs:
     engine:
       id: copilot
       model: claude-sonnet-4.6
+    steps:
+      - name: Force fresh Copilot CLI install
+        run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
   noop:
     report-as-issue: false
 ---
