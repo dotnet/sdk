@@ -31,13 +31,11 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
-#if !CLI_AOT
-    internal const string FileBasedProgramCanSkipMSBuild = nameof(FileBasedProgramCanSkipMSBuild);
-#endif
-
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
     public static string TargetFramework => $"net{Product.TargetFrameworkVersion}";
 
+    // Shared command factories initialize these options before the Native AOT path
+    // evaluates the virtual project and falls back to the managed build implementation.
     public bool NoRestore { get; init; }
 
     /// <summary>
@@ -48,7 +46,37 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public bool NoBuild { get; init; }
 
+    /// <summary>
+    /// If <see langword="true"/>, no build markers are written
+    /// (like <see cref="FileBasedAppRunPlan.BuildStartCacheFileName"/> and <see cref="FileBasedAppRunPlan.BuildSuccessCacheFileName"/>).
+    /// Also skips automatic cleanup.
+    /// This property does not control whether the markers are checked, use <see cref="NoCache"/> for that.
+    /// </summary>
+    public bool NoWriteBuildMarkers { get; init; }
+
+    public VirtualProjectBuilder Builder { get; }
+    public MSBuildArgs MSBuildArgs { get; }
+
+    public VirtualProjectBuildingCommand(
+        string entryPointFileFullPath,
+        MSBuildArgs msbuildArgs,
+        string? artifactsPath = null)
+    {
+        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
+            CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
+
 #if !CLI_AOT
+        NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
+#endif
+
+        Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
+    }
+
+#if CLI_AOT
+    public override int Execute() => throw new CommandNotAvailableInAotException();
+#else
+    internal const string FileBasedProgramCanSkipMSBuild = nameof(FileBasedProgramCanSkipMSBuild);
+
     /// <summary>
     /// Filled during <see cref="Execute"/>.
     /// </summary>
@@ -58,22 +86,9 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     /// Filled during <see cref="Execute"/>.
     /// </summary>
     public RunProperties? LastRunProperties { get; private set; }
-#endif
-
-    /// <summary>
-    /// If <see langword="true"/>, no build markers are written
-    /// (like <see cref="FileBasedAppRunPlan.BuildStartCacheFileName"/> and <see cref="FileBasedAppRunPlan.BuildSuccessCacheFileName"/>).
-    /// Also skips automatic cleanup.
-    /// This property does not control whether the markers are checked, use <see cref="NoCache"/> for that.
-    /// </summary>
-    public bool NoWriteBuildMarkers { get; init; }
 
     public bool NoConsoleLogger { get; init; }
 
-    public VirtualProjectBuilder Builder { get; }
-    public MSBuildArgs MSBuildArgs { get; }
-
-#if !CLI_AOT
     public ImmutableArray<CSharpDirective> Directives
     {
         get
@@ -95,22 +110,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
     public ImmutableArray<CSharpDirective> EvaluatedDirectives { get; private set; }
-#endif
 
-    public VirtualProjectBuildingCommand(
-        string entryPointFileFullPath,
-        MSBuildArgs msbuildArgs,
-        string? artifactsPath = null)
-    {
-        MSBuildArgs = msbuildArgs.CloneWithAdditionalProperties(
-            CommonRunHelpers.CreateFileBasedRunGlobalProperties().AsReadOnly());
-
-        NoConsoleLogger = LoggerUtility.HasNoConsoleLoggerArgument(MSBuildArgs.OtherMSBuildArgs);
-
-        Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
-    }
-
-#if !CLI_AOT
     [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
     [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute()
@@ -641,11 +641,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
     }
-#else
-    public override int Execute() => throw new CommandNotAvailableInAotException();
-#endif
-
-#if !CLI_AOT
     private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
         return FileBasedAppRunPlan.ReadCacheEntry(
