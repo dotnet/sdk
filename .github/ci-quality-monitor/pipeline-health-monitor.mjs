@@ -17,7 +17,9 @@ export class PipelineHealthMonitor {
       const heartbeat = createHeartbeatObservation(
         pipeline, branch, head, recentBuilds.filter(build => isRegisteredBuild(build, pipeline)));
       const trackedHeartbeat = recordHeartbeatCheck(this.state, stateKey, heartbeat);
-      return trackedHeartbeat;
+      return trackedHeartbeat && (pipeline.stableBranches ?? []).includes(branch)
+        ? { ...trackedHeartbeat, monitoringScope: "stable-branch", priority: "HIGH" }
+        : trackedHeartbeat;
     } catch (error) {
       return {
         kind: "pipeline-heartbeat",
