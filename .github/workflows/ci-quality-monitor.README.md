@@ -36,9 +36,8 @@ current behavior from planned categories and priorities.
 5. PR analysis does not spend tokens or file repository-wide findings for failures
   caused only by the PR's own changes.
 6. Production monitoring does not apply `cookie`; normal triage controls Issue
-  Monster eligibility. Fork-only evaluation may apply it to test the handoff.
-  Stable live incidents and technical or infrastructure debt receive their
-  corresponding allowlisted labels.
+  Monster eligibility. Stable live incidents and technical or infrastructure
+  debt receive their corresponding allowlisted labels.
 7. Test flakes are filed only as validated Known Build Errors. A KBE match must
   not hide or permit unrelated failures in the same CI run.
 8. The investigator detects pipeline YAML rejection, including failures that
@@ -130,8 +129,7 @@ as unknown unless another evidence source establishes it.
 | Azure `check_suite: completed` | Stable branch; infrastructure PR | For a non-success `azure-pipelines` suite, resolve and verify the definition `101` build. A direct allowlisted stable-branch failure is HIGH. Planned MED support may accept verified codeflow PR failures. Ordinary open PR failures do not file in the HIGH-only milestone. |
 | `pull_request: closed` with `merged == true` | Stable branch; infrastructure PR lifecycle | A merge is an evidence and lifecycle event, not a failure by itself. Link the PR to its final Azure validation. If that final validation failed and the target is allowlisted as stable, create a HIGH candidate. A successful PR build creates no incident. The current collector does not compare tested and landed trees, so it cannot claim exact landed-content validation. |
 | Daily routine | Stable branch; planned developer PR | Reconcile missed stable-branch check-suite events and poll only branches verified to have direct public branch CI. Detect a branch head for which Azure created no build record after two daily polls. The planned LOW extension will use this same run to select at most three newest unprocessed, completed, non-draft failures from distinct PRs and apply the independent-recurrence policy before AI may file anything. |
-| Manual dispatch with `build_id` | Evaluation only | Accept any completed registered public build for repeatable investigation and bypass automatic processing state. The current manual path does not assign a production monitoring scope or priority and therefore cannot promote a build to HIGH. |
-| Fork-only evaluation push | Test harness only | Disposable validation mechanism. It is not a production monitoring scope or production trigger policy. |
+| Manual dispatch with `build_id` | Diagnostic only | Accept any completed registered public build for repeatable investigation and bypass automatic processing state. The manual path follows normal ownership and recurrence rules, does not assign a production monitoring scope or priority, and therefore cannot promote a build to HIGH. |
 
 ## Audit Processing and Promotion
 
@@ -286,5 +284,5 @@ surfaced. The current collector emits the following values:
   separate enrollment decisions.
 - Developer PR LOW support requires independent recurrence data and bounded
   daily sampling before it can be enabled.
-- Manual evaluation bypasses automatic processing state but currently assigns
-  no production monitoring scope or priority.
+- Manual investigation bypasses automatic processing state but assigns no
+  production monitoring scope or priority.
