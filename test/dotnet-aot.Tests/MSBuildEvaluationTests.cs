@@ -223,7 +223,7 @@ public class MSBuildEvaluationTests
     }
 
     [TestMethod]
-    public void PublishCommandEvaluatesDefaultPublishReleaseAndForwardsToVersionedSdk()
+    public void PublishCommandEvaluatesPublishReleaseForTargetRuntimeAndForwardsToVersionedSdk()
     {
         string sdkDirectory = GetRequiredSdkDirectory();
 
@@ -240,8 +240,8 @@ public class MSBuildEvaluationTests
             """
             <Project Sdk="Microsoft.NET.Sdk">
               <PropertyGroup>
-                <TargetFramework>net11.0-windows</TargetFramework>
-                <UseWindowsForms>true</UseWindowsForms>
+                <TargetFramework>net11.0</TargetFramework>
+                <PublishRelease Condition="'$(RuntimeIdentifier)' == 'win-arm64'">true</PublishRelease>
               </PropertyGroup>
             </Project>
             """);
@@ -253,7 +253,7 @@ public class MSBuildEvaluationTests
             MSBuildSdkResolverRegistration.Register();
 
             var command = (PublishCommand)PublishCommand.FromArgs(
-                [projectPath, "--no-restore", "-r", "win-arm64", "/p:EnableWindowsTargeting=true", $"-bl:{binlogPath}"]);
+                [projectPath, "--no-restore", "-r", "win-arm64", $"-bl:{binlogPath}"]);
             string[] arguments = command.GetArgumentTokensToMSBuild();
 
             Assert.Contains("--target:Publish", arguments);
