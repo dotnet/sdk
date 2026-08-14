@@ -19,4 +19,13 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Project="$(StaticWebAssetsSdkCurrentVersionTargets)" />
 
+  <Target Name="ResolveWebAssemblyProjectReferences">
+    <MSBuild
+        Projects="@(ProjectReference)"
+        Targets="GetWebAssemblyProjectReference"
+        BuildInParallel="true"
+        SkipNonexistentTargets="true">
+      <Output TaskParameter="TargetOutputs" ItemName="WebAssemblyProjectReference" />
+    </MSBuild>
+  </Target>
 </Project>
