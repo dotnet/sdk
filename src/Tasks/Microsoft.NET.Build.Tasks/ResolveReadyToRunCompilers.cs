@@ -210,7 +210,7 @@ namespace Microsoft.NET.Build.Tasks
             string portablePlatform = NuGetUtils.GetBestMatchingRid(
                     runtimeGraph,
                     _targetRuntimeIdentifier,
-                    ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku"],
+                    ["linux", "android", "osx", "win", "ios", "iossimulator", "tvos", "tvossimulator", "maccatalyst", "freebsd", "openbsd", "illumos", "solaris", "haiku", "browser", "wasi"],
                     out _);
 
             targetOS = portablePlatform switch
@@ -229,6 +229,8 @@ namespace Microsoft.NET.Build.Tasks
                 "illumos" => "illumos",
                 "solaris" => "solaris",
                 "haiku" => "haiku",
+                "browser" => "browser",
+                "wasi" => "wasi",
                 _ => null
             };
 
@@ -288,6 +290,11 @@ namespace Microsoft.NET.Build.Tasks
                 case "x86":
                     architecture = Architecture.X86;
                     break;
+#if !NETFRAMEWORK
+                case "wasm":
+                    architecture = Architecture.Wasm;
+                    break;
+#endif
                 default:
                     return false;
             }
@@ -452,6 +459,7 @@ namespace Microsoft.NET.Build.Tasks
 #if !NETFRAMEWORK
                 Architecture.RiscV64 => "riscv64",
                 Architecture.LoongArch64 => "loongarch64",
+                Architecture.Wasm => "wasm",
 #endif
                 _ => null
             };
