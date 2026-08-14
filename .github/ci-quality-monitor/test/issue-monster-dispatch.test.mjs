@@ -8,7 +8,7 @@ const {
     getCreatedIssueNumbers,
 } = require("../issue-monster-dispatch.js");
 
-test("collects all created issues in the current repository", () =>
+test("collects all newly created issues in the current repository", () =>
 {
     const issueNumbers = getCreatedIssueNumbers({
         temporaryIdMapInput: JSON.stringify({
