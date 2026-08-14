@@ -5,7 +5,7 @@
 An agentic workflow that investigates CI evidence and files
 actionable build, test, and infrastructure issues in the .NET SDK repository.
 
-Eligible issues can then be assigned to Copilot by the [Issue Monster](https://github.com/dotnet/sdk/pull/55243) for a proposed fix.
+Eligible issues are dispatched to the [Issue Monster](https://github.com/dotnet/sdk/pull/55243) immediately after creation so Copilot can propose a fix.
 
 This specification defines the investigator's monitoring policy and separates
 current behavior from planned categories and priorities.
@@ -36,7 +36,8 @@ current behavior from planned categories and priorities.
 5. PR analysis does not spend tokens or file repository-wide findings for failures
   caused only by the PR's own changes.
 6. Production monitoring applies `cookie` so filed issues are eligible for Issue
-  Monster and applies `live-build-incident` to every filed issue. Technical or
+  Monster, applies `live-build-incident` to every filed issue, and dispatches
+  Issue Monster with each successfully created issue number. Technical or
   infrastructure debt receives its corresponding allowlisted label.
 7. Test flakes are filed only as validated Known Build Errors. A KBE match must
   not hide or permit unrelated failures in the same CI run.

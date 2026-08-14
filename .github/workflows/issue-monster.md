@@ -3,6 +3,12 @@ emoji: "👾"
 name: Issue Monster Orchestrator
 description: Selects issues and dispatches branch-aware Copilot assignments
 on:
+  # As in issue-monster-assigner.md, the calling workflow dispatches as
+  # github-actions[bot], which has no repository membership for gh-aw's default
+  # role check. This only bypasses that activation check: the workflow_dispatch
+  # API still requires Actions write permission, so roles: all does not allow
+  # arbitrary users to trigger the workflow.
+  roles: all
   workflow_dispatch:
     inputs:
       issue_number:
