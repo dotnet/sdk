@@ -22,6 +22,7 @@ test("created issues are dispatched directly to Issue Monster", async () =>
     assert.match(workflow, /needs\.safe_outputs\.outputs\.process_safe_outputs_temporary_id_map/);
     assert.match(workflow, /github-token: \$\{\{ secrets\.GH_AW_GITHUB_TOKEN \|\| secrets\.GITHUB_TOKEN \}\}/);
     assert.match(workflow, /dispatchCreatedIssues/);
+    assert.doesNotMatch(workflow, /if: needs\.safe_outputs\.outputs\.created_issue_number != ''/);
 });
 
 test("named test assertions require the recurring KBE gate", async () =>

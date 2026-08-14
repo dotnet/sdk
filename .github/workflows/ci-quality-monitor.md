@@ -159,7 +159,6 @@ jobs:
         with:
           persist-credentials: false
       - name: Dispatch Issue Monster for created issues
-        if: needs.safe_outputs.outputs.created_issue_number != ''
         uses: actions/github-script@v9.0.0
         env:
           # gh-aw exports only the first issue directly; the map contains all
