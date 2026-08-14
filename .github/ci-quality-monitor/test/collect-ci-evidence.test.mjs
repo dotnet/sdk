@@ -215,6 +215,7 @@ test("direct stable-branch check-suite builds audit once at HIGH", async () => {
 });
 
 test("merged stable-target PR failures promote the same Azure attempt once", async () => {
+  const requestedUrls = [];
   const build = {
     id: 44,
     result: "failed",
@@ -228,6 +229,7 @@ test("merged stable-target PR failures promote the same Azure attempt once", asy
     validationResults: [{ result: "error", message: "Unexpected parameter 'example'" }]
   };
   const fetchImplementation = async url => {
+    requestedUrls.push(url);
     if (url.includes("/build/builds/44?")) return { ok: true, json: async () => build };
     if (url.includes("/build/builds/44/timeline?")) return { ok: true, status: 204, json: async () => ({ records: [] }) };
     if (url.includes("/runs?")) return { ok: true, json: async () => ({ value: [] }) };
@@ -252,6 +254,7 @@ test("merged stable-target PR failures promote the same Azure attempt once", asy
   assert.equal(promoted.failures[0].priority, "HIGH");
   assert.equal(promoted.failures[0].auditContext, "stable-merge:124:landed-sha");
   assert.equal(redelivery.failures.length, 0);
+  assert.ok(requestedUrls.some(url => url.includes("branchName=refs%2Fpull%2F124%2Fmerge")));
 });
 
 test("merged PR audits require a landed commit identity", async () => {

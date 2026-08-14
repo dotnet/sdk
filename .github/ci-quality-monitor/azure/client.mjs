@@ -62,9 +62,11 @@ export class AzureDevOpsClient
     return this.listBuilds({branchName: branch, queryOrder: "queueTimeDescending"});
   }
 
-  async findPullRequestBuildByHead(headSha)
+  async findPullRequestBuildByHead(headSha, pullRequestNumber = null)
   {
-    const builds = await this.listBuilds({statusFilter: "completed", queryOrder: "finishTimeDescending"});
+    const parameters = {statusFilter: "completed", queryOrder: "finishTimeDescending"};
+    if (pullRequestNumber) parameters.branchName = `refs/pull/${pullRequestNumber}/merge`;
+    const builds = await this.listBuilds(parameters);
     return builds.find(build => build.reason?.toLowerCase() === "pullrequest"
       && build.triggerInfo?.["pr.sourceSha"] === headSha);
   }

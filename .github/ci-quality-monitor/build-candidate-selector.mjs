@@ -93,7 +93,8 @@ export class BuildCandidateSelector
   {
     for (const pipeline of this.registry.pipelines)
     {
-      const build = await this.getAzureClient(pipeline).findPullRequestBuildByHead(headSha);
+      const build = await this.getAzureClient(pipeline).findPullRequestBuildByHead(
+        headSha, mergedPullRequest?.number);
       if (build) return this.selectEventCandidate(`${build.id}`, mergedPullRequest);
     }
     return emptySelection();
