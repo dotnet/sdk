@@ -224,8 +224,8 @@ safe-outputs:
     - "*.blob.core.windows.net"
   create-issue:
     title-prefix: "[AI discovered CI] "
-    labels: [agentic-workflows, cookie]
-    allowed-labels: ["Known Build Error", "Test Debt", live-build-incident]
+    labels: [agentic-workflows, cookie, live-build-incident]
+    allowed-labels: ["Known Build Error", "Test Debt"]
     deduplicate-by-title: true
     max: 3
   noop:
@@ -265,7 +265,7 @@ Follow these steps in order:
 12. For each remaining candidate, form an evidence-bounded causal chain: the observed failure, its proximate cause, any supported trigger or contributing condition, and the resulting impact. Separate facts from inference. Explicitly reject generic parent failures and artifact cascades as causes.
 13. Assign `High`, `Medium`, or `Low` confidence. Use `High` only when a specific diagnostic or artifact establishes the causal chain; recurrence alone establishes a flake pattern, not its underlying cause. Never call a failure flaky, infrastructure, PR-related, or safe to retry without the corresponding evidence in the dossier.
 14. Record plausible alternatives or missing evidence and name the cheapest next check that would distinguish them. Relevant checks may include target-branch comparison, PR changed-file correlation, build progression, Build Analysis status, a binlog, dump analysis, or source inspection; describe these as follow-up work, not completed verification.
-15. If no actionable candidate remains, call `noop` with the reason. Otherwise call `create_issue` at most three times. Request `Test Debt` and `live-build-incident` only when the dossier marks the failure as `monitoringScope: stable-branch` and `priority: HIGH`. When one run has more than three distinct actionable mechanisms, create the two highest-impact issues separately and use the third issue as an overflow aggregate whose title says `multiple additional CI mechanisms`; list every remaining fingerprint, component, build link, and next check in its body. Never silently omit an actionable HIGH mechanism. Normal issue triage decides whether each production issue is bounded enough for Issue Monster.
+15. If no actionable candidate remains, call `noop` with the reason. Otherwise call `create_issue` at most three times. `live-build-incident` is applied automatically to every created issue. Request `Test Debt` only when the dossier marks the failure as `monitoringScope: stable-branch` and `priority: HIGH`. When one run has more than three distinct actionable mechanisms, create the two highest-impact issues separately and use the third issue as an overflow aggregate whose title says `multiple additional CI mechanisms`; list every remaining fingerprint, component, build link, and next check in its body. Never silently omit an actionable HIGH mechanism. Normal issue triage decides whether each production issue is bounded enough for Issue Monster.
 
 ## Ordinary CI issue requirements
 

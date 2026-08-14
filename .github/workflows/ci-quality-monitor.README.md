@@ -36,8 +36,8 @@ current behavior from planned categories and priorities.
 5. PR analysis does not spend tokens or file repository-wide findings for failures
   caused only by the PR's own changes.
 6. Production monitoring applies `cookie` so filed issues are eligible for Issue
-  Monster. Stable live incidents and technical or infrastructure debt receive
-  their corresponding allowlisted labels.
+  Monster and applies `live-build-incident` to every filed issue. Technical or
+  infrastructure debt receives its corresponding allowlisted label.
 7. Test flakes are filed only as validated Known Build Errors. A KBE match must
   not hide or permit unrelated failures in the same CI run.
 8. The investigator detects pipeline YAML rejection, including failures that
