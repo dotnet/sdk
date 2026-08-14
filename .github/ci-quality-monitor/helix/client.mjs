@@ -102,7 +102,9 @@ export class HelixEvidenceClient
 
   async getTestResults(workItem)
   {
-    const testFile = (workItem.Files ?? []).find(file => /\.(?:trx|xml)$/i.test(file.FileName));
+    const files = workItem.Files ?? [];
+    const testFile = files.find(file => /\.trx$/i.test(file.FileName))
+      ?? files.find(file => /\.xml$/i.test(file.FileName));
     if (!testFile) return {summary: null, failures: []};
     const response = await this.http.response(testFile.Uri);
     const results = parseTestResultXml(Buffer.from(await response.arrayBuffer()));

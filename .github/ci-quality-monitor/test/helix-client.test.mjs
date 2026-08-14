@@ -33,6 +33,23 @@ async function collect({files, bodies, consoleText = "work item failed", exitCod
   return new HelixEvidenceClient(fetchImplementation).collectWorkItemObservations(reference);
 }
 
+test("prefers TRX over unrelated XML artifacts", async () =>
+{
+  const observations = await collect({
+    files: [
+      {FileName: "coverage.xml", Uri: "https://files/coverage.xml"},
+      {FileName: "results.trx", Uri: "https://files/results.trx"}
+    ],
+    bodies: {
+      "https://files/coverage.xml": "<coverage />",
+      "https://files/results.trx": trxResult()
+    }
+  });
+
+  assert.equal(observations[0].kind, "test");
+  assert.equal(observations[0].component, "Example");
+});
+
 test("uses explicit TRX timeout and aborted outcomes", async () =>
 {
   for (const [outcome, failureType] of [["Timeout", "timeout"], ["Aborted", "process-termination"]])
