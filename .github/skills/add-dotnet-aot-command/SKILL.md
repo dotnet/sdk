@@ -195,8 +195,8 @@ and binary-size delta.
 - **`DotnetCsproj` is defined for dotnet-aot.** A newly linked file can expose extra conditional code.
   Inspect that closure and narrow the owning conditional; do not copy a helper merely to avoid tracing it.
 - **Do not pass `-noRestore` with `-getItem`.** The response file already appends it (`MSB1001`).
-- **`dotnet-aot.Tests` uses Microsoft.Testing.Platform.** `dotnet test` is not the runner; invoke the
-  built executable for a focused managed iteration or use `run-aot-tests.ps1` for native execution.
+- **`dotnet-aot.Tests` uses Microsoft.Testing.Platform.** Use `run-tests` for a focused managed
+  iteration and `run-aot-tests.ps1` for native execution.
 - **Existing tests may assert exclusions.** Search before enabling a command; an intentional
   `DoesNotContain` can need a carefully justified inversion.
 - **A Roslyn pragma is not native-publish evidence.** ILC can report the same trim/AOT warning during
@@ -264,16 +264,16 @@ Common blockers:
 
 ## Validation ladder
 
-Run the cheapest discriminating check after each edit, then broaden. Use the **targeted-test** skill when
-the request explicitly asks to select or run narrow SDK tests.
+Run the cheapest discriminating check after each edit, then broaden. Use the **run-tests** skill when
+the request explicitly asks to select or run SDK tests.
 
 ### 1. Focused parser/entry-point test
 
-Use the targeted-test runner so it builds the project, resolves the evaluated `TargetPath`, and invokes
+Use the run-tests runner so it builds the project, resolves the evaluated `TargetPath`, and invokes
 the Microsoft.Testing.Platform application without assuming its generated executable is on `PATH`:
 
 ```powershell
-.\.dotnet\dotnet.exe .github\skills\targeted-test\scripts\RunTargetedTests.cs -- `
+.\.dotnet\dotnet.exe scripts\RunTests.cs -- `
   --project test\dotnet-aot.Tests\dotnet-aot.Tests.csproj `
   --filter "FullyQualifiedName~<name>"
 ```
