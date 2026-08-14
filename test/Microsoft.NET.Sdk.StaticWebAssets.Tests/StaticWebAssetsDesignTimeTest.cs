@@ -36,7 +36,7 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
             "blazorhosted");
         msbuild.WithWorkingDirectory(testAsset.TestRoot);
 
-        var result = msbuild.ExecuteWithoutRestore("-getItem:WebAssemblyProjectReference", "-nologo");
+        var result = msbuild.Execute("-getItem:WebAssemblyProjectReference", "-nologo");
         result.Should().Pass();
 
         using var output = JsonDocument.Parse(result.StdOut);
