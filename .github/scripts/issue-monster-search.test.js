@@ -243,3 +243,31 @@ test("manual requests require the work queue label", async () =>
     assert.equal(core.outputs.has_issues, "false");
     assert.deepEqual(calls, ["recent-pr-search", "issue-get:123"]);
 });
+
+test("requested live incidents still require the work queue label", async () =>
+{
+    const requestedIssue = createIssue(123, {
+        labels: [{name: "live-build-incident"}],
+    });
+    const {core, calls} = await runScenario({issues: {123: requestedIssue}}, "123");
+
+    assert.equal(core.outputs.issue_count, 0);
+    assert.equal(core.outputs.has_issues, "false");
+    assert.deepEqual(calls, ["recent-pr-search", "issue-get:123"]);
+});
+
+test("requested live incidents with the work queue label bypass the candidate search", async () =>
+{
+    const requestedIssue = createIssue(123, {
+        labels: [{name: "cookie"}, {name: "live-build-incident"}],
+    });
+    const {core, calls} = await runScenario({issues: {123: requestedIssue}}, "123");
+
+    assert.equal(core.outputs.issue_numbers, "123");
+    assert.deepEqual(calls, [
+        "recent-pr-search",
+        "issue-get:123",
+        "issue-get:123",
+        "issue-details:123",
+    ]);
+});

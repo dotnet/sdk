@@ -3,6 +3,15 @@ emoji: "👾"
 name: Issue Monster Orchestrator
 description: Selects issues and dispatches branch-aware Copilot assignments
 on:
+  # CI Quality Investigator issues are created with this label already applied.
+  # Trigger only for opened live incidents so unrelated issue updates do not
+  # start the orchestrator, and route the triggering issue through the existing
+  # single-issue path instead of searching the normal queue.
+  issues:
+    types: [opened]
+    names: [live-build-incident]
+  bots: [github-actions]
+  roles: all
   workflow_dispatch:
     inputs:
       issue_number:
@@ -32,7 +41,7 @@ on:
             github,
             context,
             core,
-            requestedIssueNumberInput: `${{ github.event.inputs.issue_number || '' }}`,
+            requestedIssueNumberInput: `${{ github.event.issue.number || github.event.inputs.issue_number || '' }}`,
           });
 
 
