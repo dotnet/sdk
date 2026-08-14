@@ -1,0 +1,33 @@
+{
+  "pipelines": [
+    {
+      "organization": "dnceng-public",
+      "project": "public",
+      "definitionId": 101,
+      "repository": "dotnet/sdk",
+      "branches": [
+        "refs/heads/main"
+      ],
+      "stableBranches": [
+        "refs/heads/main",
+        "refs/heads/release/dnup",
+        "refs/heads/release/8.0.1xx",
+        "refs/heads/release/8.0.2xx",
+        "refs/heads/release/8.0.3xx",
+        "refs/heads/release/8.0.4xx",
+        "refs/heads/release/9.0.1xx",
+        "refs/heads/release/9.0.2xx",
+        "refs/heads/release/9.0.3xx",
+        "refs/heads/release/9.0.4xx",
+        "refs/heads/release/10.0.1xx",
+        "refs/heads/release/10.0.2xx",
+        "refs/heads/release/10.0.3xx",
+        "refs/heads/release/10.0.4xx",
+        "refs/heads/release/11.0.1xx",
+        "refs/heads/release/11.0.2xx",
+        "refs/heads/release/11.0.3xx",
+        "refs/heads/release/11.0.4xx"
+      ]
+    }
+  ]
+}
