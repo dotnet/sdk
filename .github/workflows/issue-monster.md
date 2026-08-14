@@ -192,11 +192,16 @@ ${{ needs.pre_activation.outputs.issue_context }}
 Work with this pre-fetched, filtered, and prioritized list of issues. Do not perform additional searches - candidate issue numbers and body excerpts are already identified above.
 
 **Choose a Base Branch for Each Selected Issue:**
-- Issues with a `dotnetup` label target `release/dnup`.
-- Issues that explicitly mention `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, target that release branch.
-- Issues that mention an SDK train like `10.0.3xx` near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix target such as `release/10.0.3xx` (generically, `release/{hotfix-target}` while replacing `hotfix-target` with the form `release/X.0.Yxx`).
-- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal to the latest `release/{hotfix-target}` branch..
-- Choose one concrete base branch independently for each selected issue.
+- Determine the requested destination from the issue title and body before applying label or version heuristics. Explicit target language such as "into", "to", "target", "backport to", or "fix on" is authoritative.
+- Distinguish source branches from destination branches. A branch that contains existing content, is linked for reference, or appears after "from" is not automatically the PR base.
+- Issues with a `dotnetup` label default to `release/dnup` only when the issue does not explicitly request another destination.
+- Route to `release/X.0.Yxx`, where X has one or two digits and Y is 1, 2, 3, or 4, when the issue either explicitly targets that branch or mentions the corresponding SDK train (for example, `10.0.3xx`) near a servicing signal such as backport, servicing, release branch, broken test, regression, or hotfix. Merely mentioning a release branch as the source of content does not target it.
+- Generic version mentions like `.NET 9 SDK` do not by themselves route to servicing; those stay on `main` unless there is an explicit servicing/backport signal to the latest `release/{hotfix-target}` branch.
+- Examples:
+  - "Merge documentation from `release/dnup` to `main`" targets `main`; `release/dnup` is the source.
+  - "Backport the fix from `main` to `release/10.0.3xx`" targets `release/10.0.3xx`; `main` is the source.
+  - A `dotnetup` issue with no explicit destination targets `release/dnup`.
+- Choose one concrete base branch independently for each selected issue and include a one-sentence source/destination rationale in the final summary. If the requested destination remains ambiguous, skip that issue rather than guessing.
 
 ### 1a. Handle Parent-Child Issue Relationships (for "task" or "plan" labeled issues)
 
