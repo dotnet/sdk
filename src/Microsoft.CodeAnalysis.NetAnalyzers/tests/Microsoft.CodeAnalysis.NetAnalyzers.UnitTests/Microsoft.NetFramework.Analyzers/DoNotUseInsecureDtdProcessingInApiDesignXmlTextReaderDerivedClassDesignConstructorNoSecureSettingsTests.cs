@@ -1,8 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingInApiDesignAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,7 +13,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
     public partial class DoNotUseInsecureDtdProcessingInApiDesignAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TextReaderDerivedTypeWithEmptyConstructorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -43,7 +42,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeNullResolverAndProhibitInOnlyCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -77,7 +76,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeUrlResolverAndProhibitInOnlyCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -112,7 +111,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSecureResolverAndParseInOnlyCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -147,7 +146,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeNullResolverInOnlyCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -180,7 +179,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeIgnoreInOnlyCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -213,7 +212,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetInsecureResolverInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -259,7 +258,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSecureSettingsForVariableInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -295,7 +294,7 @@ End Namespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSecureSettingsWithOutThisInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -331,7 +330,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetSecureSettingsToAXmlTextReaderFieldInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -368,7 +367,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetSecureSettingsAtLeastOnceInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -415,7 +414,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetSecureSettingsAtLeastOnceInCtorShouldNotGenerateDiagnosticFalseNegAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -462,7 +461,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetIgnoreToHidingFieldInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -499,7 +498,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetNullToHidingFieldInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -536,7 +535,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetNullToBaseXmlResolverInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -572,7 +571,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetProhibitToBaseInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -608,7 +607,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetSecureSettingsToBaseWithHidingFieldsInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -646,7 +645,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetSecureSettingsToBaseInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -680,7 +679,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetUrlResolverToBaseXmlResolverInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -719,7 +718,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetNullToHidingPropertyInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -766,7 +765,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetProhibitToHidingPropertyInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -813,7 +812,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetSecureSettingsToHidingPropertiesInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -870,7 +869,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetNullToBaseWithHidingPropertyInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -916,7 +915,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetIgnoreToBaseWithHidingPropertyInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -962,7 +961,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetParseToBaseWithHidingPropertyInCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

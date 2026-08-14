@@ -1,8 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.TestForNaNCorrectlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpTestForNaNCorrectlyFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class TestForNaNCorrectlyFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixFloatForEqualityWithFloatNaNAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -50,7 +50,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixFloatForInequalityWithFloatNaNAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -86,7 +86,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixDoubleForEqualityWithDoubleNaNAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -122,7 +122,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixDoubleForInequalityWithDoubleNaNAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -158,7 +158,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNOnLeftAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -195,7 +195,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixOnlyOneDiagnosticForComparisonWithNaNOnBothSidesAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -232,7 +232,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInFunctionArgumentAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -286,7 +286,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInTernaryOperatorAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -331,7 +331,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInThrowStatementAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -357,7 +357,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInCatchFilterClauseAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -387,7 +387,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInYieldReturnStatementAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -417,7 +417,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInSwitchStatementAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -451,7 +451,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInForLoopAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -483,7 +483,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInWhileLoopAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -513,7 +513,7 @@ public class A
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2242_FixForComparisonWithNaNInDoWhileLoopAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -542,6 +542,46 @@ public class A
         while (!float.IsNaN(_n));
     }
 }
+");
+        }
+
+        [TestMethod]
+        public async Task CA2242_NestedComparison_FixAllRewritesBoth_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class A
+{
+    public bool Compare(float f, float g)
+    {
+        return [|([|f == float.NaN|] ? f : g) == float.NaN|];
+    }
+}
+", @"
+public class A
+{
+    public bool Compare(float f, float g)
+    {
+        return float.IsNaN((float.IsNaN(f) ? f : g));
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA2242_NestedComparison_FixAllRewritesBoth_BasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class A
+    Public Function Compare(s As Single, t As Single) As Boolean
+        Return [|If([|s = Single.NaN|], s, t) = Single.NaN|]
+    End Function
+End Class
+", @"
+Public Class A
+    Public Function Compare(s As Single, t As Single) As Boolean
+        Return Single.IsNaN(If(Single.IsNaN(s), s, t))
+    End Function
+End Class
 ");
         }
     }

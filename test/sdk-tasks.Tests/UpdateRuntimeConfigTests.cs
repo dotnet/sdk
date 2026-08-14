@@ -6,9 +6,10 @@ using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-public class UpdateRuntimeConfigTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class UpdateRuntimeConfigTests : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void ItUpdatesSingleFrameworkVersion()
     {
     var dir = TestAssetsManager.CreateTestDirectory().Path;
@@ -39,7 +40,7 @@ public class UpdateRuntimeConfigTests(ITestOutputHelper log) : SdkTest(log)
         result.Should().Contain("\"name\": \"Microsoft.NETCore.App\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItUpdatesMultipleFrameworkVersions()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;
@@ -80,7 +81,7 @@ public class UpdateRuntimeConfigTests(ITestOutputHelper log) : SdkTest(log)
         result.Should().NotContain("\"1.0.0\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItPreservesUnknownFrameworks()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;

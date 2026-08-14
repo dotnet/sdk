@@ -1,8 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.SealMethodsThatSatisfyPrivateInterfacesAnalyzer,
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.SealMethodsThatSatisfyPrivateInterfacesFixer>;
@@ -12,9 +11,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class SealMethodsThatSatisfyPrivateInterfacesFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_OverriddenMethodChangedToSealedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -53,7 +53,7 @@ public class C : B, IFace
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_VirtualMethodChangedToNotVirtualAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -82,7 +82,7 @@ public class C : IFace
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_AbstractMethodChangedToNotAbstractAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -109,7 +109,7 @@ public abstract class C : IFace
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ContainingTypeChangedToSealedAsync()
         {
             await new VerifyCS.Test
@@ -160,10 +160,10 @@ public sealed class C : B, IFace
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeSealed",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -214,10 +214,10 @@ internal class C : B, IFace
                 },
                 CodeActionIndex = 2,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_AbstractContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -268,10 +268,10 @@ internal abstract class C : B, IFace
                 },
                 CodeActionIndex = 1, // sealed option is not available because class is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToSealedAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -308,7 +308,7 @@ public sealed class C : B, IFace
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ImplicitOverride_ContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -357,10 +357,10 @@ internal class C : B, IFace
                 },
                 CodeActionIndex = 1,
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCSharp_ImplicitOverride_AbstractContainingTypeChangedToInternalAsync()
         {
             await new VerifyCS.Test
@@ -405,10 +405,10 @@ internal abstract class C : B, IFace
                 },
                 CodeActionIndex = 0, // sealed option is not available because type is abstract
                 CodeActionEquivalenceKey = "MakeDeclaringTypeInternal",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_OverriddenMethodChangedToSealedAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -445,7 +445,7 @@ Public Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestBasic_VirtualMethodChangedToNotVirtualAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -472,7 +472,7 @@ Public Class C
 End Class");
         }
 
-        [Fact(Skip = "https://github.com/dotnet/roslyn-analyzers/issues/2285")]
+        [TestMethod, Ignore("https://github.com/dotnet/roslyn-analyzers/issues/2285")]
         public async Task TestBasic_AbstractMethodChangedToNotAbstractAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(

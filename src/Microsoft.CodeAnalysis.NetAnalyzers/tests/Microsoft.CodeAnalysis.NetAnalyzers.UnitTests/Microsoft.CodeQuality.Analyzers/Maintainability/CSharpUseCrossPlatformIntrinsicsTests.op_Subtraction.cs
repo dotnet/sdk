@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -14,17 +13,17 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("byte", "AdvSimd.Subtract")]
-        [InlineData("sbyte", "AdvSimd.Subtract")]
-        [InlineData("short", "AdvSimd.Subtract")]
-        [InlineData("ushort", "AdvSimd.Subtract")]
-        [InlineData("int", "AdvSimd.Subtract")]
-        [InlineData("uint", "AdvSimd.Subtract")]
-        [InlineData("long", "AdvSimd.SubtractScalar")]
-        [InlineData("ulong", "AdvSimd.SubtractScalar")]
-        [InlineData("float", "AdvSimd.Subtract")]
-        [InlineData("double", "AdvSimd.SubtractScalar")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Subtract")]
+        [DataRow("sbyte", "AdvSimd.Subtract")]
+        [DataRow("short", "AdvSimd.Subtract")]
+        [DataRow("ushort", "AdvSimd.Subtract")]
+        [DataRow("int", "AdvSimd.Subtract")]
+        [DataRow("uint", "AdvSimd.Subtract")]
+        [DataRow("long", "AdvSimd.SubtractScalar")]
+        [DataRow("ulong", "AdvSimd.SubtractScalar")]
+        [DataRow("float", "AdvSimd.Subtract")]
+        [DataRow("double", "AdvSimd.SubtractScalar")]
         public async Task Fixer_opSubtractionArmV64Async(string type, string method)
         {
             // lang=C#-test
@@ -59,11 +58,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "AdvSimd.SubtractScalar")]
+        [TestMethod]
+        [DataRow("float", "AdvSimd.SubtractScalar")]
         public async Task Fixer_opSubtractionArmV64Async_NoReplacement(string type, string method)
         {
             // lang=C#-test
@@ -87,20 +86,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 ExpectedDiagnostics = { },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "AdvSimd.Subtract")]
-        [InlineData("sbyte", "AdvSimd.Subtract")]
-        [InlineData("short", "AdvSimd.Subtract")]
-        [InlineData("ushort", "AdvSimd.Subtract")]
-        [InlineData("int", "AdvSimd.Subtract")]
-        [InlineData("uint", "AdvSimd.Subtract")]
-        [InlineData("long", "AdvSimd.Subtract")]
-        [InlineData("ulong", "AdvSimd.Subtract")]
-        [InlineData("float", "AdvSimd.Subtract")]
-        [InlineData("double", "AdvSimd.Arm64.Subtract")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Subtract")]
+        [DataRow("sbyte", "AdvSimd.Subtract")]
+        [DataRow("short", "AdvSimd.Subtract")]
+        [DataRow("ushort", "AdvSimd.Subtract")]
+        [DataRow("int", "AdvSimd.Subtract")]
+        [DataRow("uint", "AdvSimd.Subtract")]
+        [DataRow("long", "AdvSimd.Subtract")]
+        [DataRow("ulong", "AdvSimd.Subtract")]
+        [DataRow("float", "AdvSimd.Subtract")]
+        [DataRow("double", "AdvSimd.Arm64.Subtract")]
         public async Task Fixer_opSubtractionArmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -135,20 +134,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "PackedSimd.Subtract")]
-        [InlineData("sbyte", "PackedSimd.Subtract")]
-        [InlineData("short", "PackedSimd.Subtract")]
-        [InlineData("ushort", "PackedSimd.Subtract")]
-        [InlineData("int", "PackedSimd.Subtract")]
-        [InlineData("uint", "PackedSimd.Subtract")]
-        [InlineData("long", "PackedSimd.Subtract")]
-        [InlineData("ulong", "PackedSimd.Subtract")]
-        [InlineData("float", "PackedSimd.Subtract")]
-        [InlineData("double", "PackedSimd.Subtract")]
+        [TestMethod]
+        [DataRow("byte", "PackedSimd.Subtract")]
+        [DataRow("sbyte", "PackedSimd.Subtract")]
+        [DataRow("short", "PackedSimd.Subtract")]
+        [DataRow("ushort", "PackedSimd.Subtract")]
+        [DataRow("int", "PackedSimd.Subtract")]
+        [DataRow("uint", "PackedSimd.Subtract")]
+        [DataRow("long", "PackedSimd.Subtract")]
+        [DataRow("ulong", "PackedSimd.Subtract")]
+        [DataRow("float", "PackedSimd.Subtract")]
+        [DataRow("double", "PackedSimd.Subtract")]
         public async Task Fixer_opSubtractionWasmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -183,20 +182,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Sse2.Subtract")]
-        [InlineData("sbyte", "Sse2.Subtract")]
-        [InlineData("short", "Sse2.Subtract")]
-        [InlineData("ushort", "Sse2.Subtract")]
-        [InlineData("int", "Sse2.Subtract")]
-        [InlineData("uint", "Sse2.Subtract")]
-        [InlineData("long", "Sse2.Subtract")]
-        [InlineData("ulong", "Sse2.Subtract")]
-        [InlineData("float", "Sse.Subtract")]
-        [InlineData("double", "Sse2.Subtract")]
+        [TestMethod]
+        [DataRow("byte", "Sse2.Subtract")]
+        [DataRow("sbyte", "Sse2.Subtract")]
+        [DataRow("short", "Sse2.Subtract")]
+        [DataRow("ushort", "Sse2.Subtract")]
+        [DataRow("int", "Sse2.Subtract")]
+        [DataRow("uint", "Sse2.Subtract")]
+        [DataRow("long", "Sse2.Subtract")]
+        [DataRow("ulong", "Sse2.Subtract")]
+        [DataRow("float", "Sse.Subtract")]
+        [DataRow("double", "Sse2.Subtract")]
         public async Task Fixer_opSubtractionx86V128Async(string type, string method)
         {
             // lang=C#-test
@@ -231,20 +230,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Avx2.Subtract")]
-        [InlineData("sbyte", "Avx2.Subtract")]
-        [InlineData("short", "Avx2.Subtract")]
-        [InlineData("ushort", "Avx2.Subtract")]
-        [InlineData("int", "Avx2.Subtract")]
-        [InlineData("uint", "Avx2.Subtract")]
-        [InlineData("long", "Avx2.Subtract")]
-        [InlineData("ulong", "Avx2.Subtract")]
-        [InlineData("float", "Avx.Subtract")]
-        [InlineData("double", "Avx.Subtract")]
+        [TestMethod]
+        [DataRow("byte", "Avx2.Subtract")]
+        [DataRow("sbyte", "Avx2.Subtract")]
+        [DataRow("short", "Avx2.Subtract")]
+        [DataRow("ushort", "Avx2.Subtract")]
+        [DataRow("int", "Avx2.Subtract")]
+        [DataRow("uint", "Avx2.Subtract")]
+        [DataRow("long", "Avx2.Subtract")]
+        [DataRow("ulong", "Avx2.Subtract")]
+        [DataRow("float", "Avx.Subtract")]
+        [DataRow("double", "Avx.Subtract")]
         public async Task Fixer_opSubtractionx86V256Async(string type, string method)
         {
             // lang=C#-test
@@ -279,20 +278,20 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "Avx512BW.Subtract")]
-        [InlineData("sbyte", "Avx512BW.Subtract")]
-        [InlineData("short", "Avx512BW.Subtract")]
-        [InlineData("ushort", "Avx512BW.Subtract")]
-        [InlineData("int", "Avx512F.Subtract")]
-        [InlineData("uint", "Avx512F.Subtract")]
-        [InlineData("long", "Avx512F.Subtract")]
-        [InlineData("ulong", "Avx512F.Subtract")]
-        [InlineData("float", "Avx512F.Subtract")]
-        [InlineData("double", "Avx512F.Subtract")]
+        [TestMethod]
+        [DataRow("byte", "Avx512BW.Subtract")]
+        [DataRow("sbyte", "Avx512BW.Subtract")]
+        [DataRow("short", "Avx512BW.Subtract")]
+        [DataRow("ushort", "Avx512BW.Subtract")]
+        [DataRow("int", "Avx512F.Subtract")]
+        [DataRow("uint", "Avx512F.Subtract")]
+        [DataRow("long", "Avx512F.Subtract")]
+        [DataRow("ulong", "Avx512F.Subtract")]
+        [DataRow("float", "Avx512F.Subtract")]
+        [DataRow("double", "Avx512F.Subtract")]
         public async Task Fixer_opSubtractionx86V512Async(string type, string method)
         {
             // lang=C#-test
@@ -327,7 +326,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

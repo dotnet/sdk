@@ -2,16 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Tasks.DoNotUseConfigureAwaitWithSuppressThrowing,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
+    [TestClass]
     public class DoNotUseConfigureAwaitWithSuppressThrowingTests
     {
-        [Fact]
+        [TestMethod]
         public async Task ValidateCSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""

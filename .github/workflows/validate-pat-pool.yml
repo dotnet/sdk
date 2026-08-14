@@ -8,8 +8,12 @@ on:
 # No GitHub API permissions needed
 permissions: {}
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   validate:
+    environment: copilot-pat-pool
     name: Validate Copilot PAT Pool
     if: ${{ github.event_name == 'workflow_dispatch' || !github.event.repository.fork }}
     runs-on: ubuntu-latest
@@ -39,7 +43,7 @@ jobs:
         id: pat0
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_0 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -49,7 +53,7 @@ jobs:
         id: pat1
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_1 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_1 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -59,7 +63,7 @@ jobs:
         id: pat2
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_2 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_2 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -69,7 +73,7 @@ jobs:
         id: pat3
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_3 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_3 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -79,7 +83,7 @@ jobs:
         id: pat4
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_4 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_4 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -89,7 +93,7 @@ jobs:
         id: pat5
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_5 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_5 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -99,7 +103,7 @@ jobs:
         id: pat6
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_6 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_6 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -109,7 +113,7 @@ jobs:
         id: pat7
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_7 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_7 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -119,7 +123,7 @@ jobs:
         id: pat8
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_8 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_8 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"
@@ -129,7 +133,7 @@ jobs:
         id: pat9
         continue-on-error: true
         env:
-          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_9 }}
+         COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_PAT_9 }}
         shell: bash
         run: |
           # copilot --prompt "Say OK"

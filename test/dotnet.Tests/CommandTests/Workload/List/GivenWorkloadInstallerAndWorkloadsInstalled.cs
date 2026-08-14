@@ -17,6 +17,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
+    [TestClass]
     public class GivenInstalledWorkloadAndManifestUpdater : SdkTest
     {
         private const string CurrentSdkVersion = "6.0.101";
@@ -32,7 +33,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         private MockNuGetPackageDownloader _nugetDownloader;
         private string _dotnetRoot;
 
-        public GivenInstalledWorkloadAndManifestUpdater(ITestOutputHelper log) : base(log)
+        public GivenInstalledWorkloadAndManifestUpdater()
         {
         }
 
@@ -122,7 +123,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 workloadResolver: workloadResolver);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItShouldGetAvailableUpdate()
         {
             Setup();
@@ -136,7 +137,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             result[0].Description.Should().Be(XamarinAndroidDescription);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItShouldGetListOfWorkloadWithCurrentSdkVersionBand()
         {
             Setup();
@@ -144,7 +145,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             _reporter.Lines.Should().Contain(c => c.Contains("\"installed\":[\"xamarin-android\"]"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenLowerTargetVersionItShouldThrow()
         {
             _workloadListCommand = new WorkloadListCommand(
@@ -164,7 +165,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             a.Should().Throw<ArgumentException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenSameLowerTargetVersionBandItShouldNotThrow()
         {
             _workloadListCommand = new WorkloadListCommand(

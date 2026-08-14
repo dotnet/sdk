@@ -40,9 +40,11 @@ Additionally, the implicit project file has the following customizations:
 
 - The following are virtual only, i.e., not preserved after [converting to a project](#grow-up):
 
-  - `ArtifactsPath` is set to a [temp directory](#build-outputs).
+  - `ArtifactsPath` is set to a [temp directory](#build-outputs),
+    unless [artifacts output layout][artifacts-output] is enabled.
 
-  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app.
+  - `PublishDir` and `PackageOutputPath` are set to `./artifacts/` so the outputs of `dotnet publish` and `dotnet pack` are next to the file-based app,
+    unless [artifacts output layout][artifacts-output] is enabled.
 
   - `RuntimeHostConfigurationOption`s are set for `EntryPointFilePath` and `EntryPointFileDirectoryPath` (except for `Publish` and `Pack` targets)
     which can be accessed in the app via `AppContext`:
@@ -132,8 +134,8 @@ again, you can opt out via `#:property PackAsTool=false`.
 
 Command `dotnet clean file.cs` can be used to clean build artifacts of the file-based program.
 
-Commands `dotnet package add PackageName --file app.cs` and `dotnet package remove PackageName --file app.cs`
-can be used to manipulate `#:package` directives in the C# files, similarly to what the commands do for project-based apps.
+Sub-commands of `dotnet package add` and `dotnet reference` can be used to manipulate `#:package`/`#:project`/`#:ref` directives in the C# files,
+similarly to what the commands do for project-based apps. For example, `dotnet package add PackageName --file app.cs`.
 
 ## Multiple files
 
@@ -156,7 +158,9 @@ and the conversion process only copying the items that were included in the orig
 
 ## Build outputs
 
-Build outputs are placed under a subdirectory whose name is hashed file path of the entry point
+If [artifacts output layout][artifacts-output] is enabled, build outputs of the file-based app are placed there
+(except caching markers which are placed in the global temp directory described next).
+Otherwise, build outputs are placed under a subdirectory whose name is hashed file path of the entry point
 inside a temp or app data directory which should be owned by and unique to the current user per [runtime guidelines][temp-guidelines].
 The subdirectory is created by the SDK CLI with permissions restricting access to it to the current user (`0700`) and the run fails if that is not possible.
 Note that it is possible for multiple users to run the same file-based program, however each user's run uses different build artifacts since the base directory is unique per user.
@@ -287,7 +291,7 @@ For project-based programs, `#:` directives are an error (reported by Roslyn whe
 Along with `#:`, the language also ignores `#!` which could be then used for [shebang][shebang] support.
 
 ```cs
-#!/usr/bin/dotnet run
+#!/usr/bin/env dotnet
 Console.WriteLine("Hello");
 ```
 
@@ -359,13 +363,15 @@ which is needed if one wants to use `/usr/bin/env` to find the `dotnet` executab
 so `dotnet file.cs` instead of `dotnet run file.cs` should be used in shebangs:
 
 ```cs
-#!/usr/bin/env dotnet run
-// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
-```
-```cs
 #!/usr/bin/env dotnet
 // ^ Should work in all shells.
 ```
+
+```cs
+#!/usr/bin/env dotnet run
+// ^ Might not work in all shells. "dotnet run" might be passed as a single argument to "env".
+```
+
 ```cs
 #!/usr/bin/env -S dotnet run
 // ^ Works in some shells.
@@ -385,8 +391,6 @@ We could also add `dotnet compile` command that would be the equivalent of `dotn
 
 `dotnet clean` could be extended to support cleaning all file-based app outputs,
 e.g., `dotnet clean --all-file-based-apps`.
-
-More NuGet commands (like `dotnet nuget why` or `dotnet package list`) could be supported for file-based programs as well.
 
 ### Explicit importing
 

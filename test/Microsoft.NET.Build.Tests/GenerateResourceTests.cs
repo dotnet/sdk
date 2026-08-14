@@ -1,17 +1,15 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GenerateResourceTests : SdkTest
     {
 
-        public GenerateResourceTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [WindowsOnlyTheory]
-        [InlineData(ToolsetInfo.CurrentTargetFramework, true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
         public void DependentUponTest(string targetFramework, bool isExe)
         {
             var testProject = new TestProject

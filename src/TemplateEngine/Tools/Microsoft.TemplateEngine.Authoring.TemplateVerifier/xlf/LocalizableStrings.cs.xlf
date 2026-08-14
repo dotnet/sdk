@@ -7,6 +7,11 @@
         <target state="translated">Očekávalo se, že instalace šablony bude úspěšné, ale měla ukončovací kód{0}.</target>
         <note />
       </trans-unit>
+      <trans-unit id="VerificationEngine_Error_NoDirectoryVerifier">
+        <source>No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</source>
+        <target state="new">No directory verifier was configured. Set VerificationEngine.DirectoryVerifier to your test framework's Verifier.VerifyDirectory (for example VerifyXunit.Verifier.VerifyDirectory or VerifyMSTest.Verifier.VerifyDirectory), or supply a custom verifier via TemplateVerifierOptions.WithCustomDirectoryVerifier.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="VerificationEngine_Error_ScrubberExtension">
         <source>File extension passed to scrubber should not start with dot.</source>
         <target state="translated">Přípona souboru předaná scrubberu by neměla začínat tečkou.</target>

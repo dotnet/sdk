@@ -1,9 +1,8 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -25,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleDoNotUseDtdProcessingOverloads).WithLocation(line, column).WithArguments("Deserialize");
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -68,7 +67,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeInGetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -113,7 +112,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeInSetShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -169,7 +168,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeInTryShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -219,7 +218,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeInCatchShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -267,7 +266,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeInFinallyShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -316,7 +315,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeInDelegateShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -361,7 +360,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeInAsyncAwaitShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -413,7 +412,7 @@ End Class",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlSerializerDeserializeWithXmlReaderShouldNoGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(

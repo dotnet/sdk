@@ -9,14 +9,38 @@
     <Nullable Condition="'$(csharpFeature_Nullable)' == 'true'">enable</Nullable>
     <IsPackable Condition="'$(EnablePack)' == 'true'">true</IsPackable>
     <IsPackable Condition="'$(EnablePack)' != 'true'">false</IsPackable>
+<!--#if (XUnitVersion == "v3")-->
+    <OutputType>Exe</OutputType>
+<!--#endif-->
+<!--#if (XUnitVersion == "v3" && TestRunner == "Microsoft.Testing.Platform")-->
+    <UseMicrosoftTestingPlatformRunner>true</UseMicrosoftTestingPlatformRunner>
+<!--#endif-->
   </PropertyGroup>
 
+<!--#if (XUnitVersion == "v3")-->
+  <ItemGroup>
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="IfDifferent" />
+  </ItemGroup>
+
+<!--#if (TestRunner == "Microsoft.Testing.Platform")-->
+  <ItemGroup>
+    <PackageReference Include="xunit.v3.mtp-v2" Version="3.2.2" />
+  </ItemGroup>
+<!--#else-->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.6.0" />
+    <PackageReference Include="xunit.v3.mtp-off" Version="3.2.2" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+<!--#endif-->
+<!--#else-->
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.4" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
+<!--#endif-->
 
 <!--#if (csharpFeature_ImplicitUsings)-->
   <ItemGroup>

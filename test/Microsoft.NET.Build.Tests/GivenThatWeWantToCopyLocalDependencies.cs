@@ -5,13 +5,11 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToCopyLocalDependencies : SdkTest
     {
-        public GivenThatWeWantToCopyLocalDependencies(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_local_package_dependencies_on_build()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -44,6 +42,7 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
                 "Newtonsoft.Json.dll",
                 "runtimes/linux-x64/native/libsqlite3.so",
                 "runtimes/osx-x64/native/libsqlite3.dylib",
@@ -54,7 +53,7 @@ namespace Microsoft.NET.Build.Tests
             outputDirectory.Should().OnlyHaveFiles(expectedFiles);
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_copy_local_package_dependencies_when_requested_not_to()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -84,10 +83,11 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_local_specific_runtime_package_dependencies_on_build()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -123,13 +123,14 @@ namespace Microsoft.NET.Build.Tests
                 $"{ProjectName}.dll",
                 $"{ProjectName}.pdb",
                 $"{ProjectName}.runtimeconfig.json",
+                $"{ProjectName}.runtimeconfig.dev.json",
                 "Newtonsoft.Json.dll",
                 // NOTE: this may break in the future when the SDK supports platforms that libuv does not
                 $"libuv{FileConstants.DynamicLibSuffix}"
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_copy_local_package_dependencies_for_lib_projects()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -161,7 +162,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_local_package_dependencies_for_lib_projects_when_requested_to()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -199,7 +200,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_copy_local_package_dependencies_for_netstandard_projects()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -230,7 +231,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_local_package_dependencies_for_netstandard_projects_when_requested_to()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -268,7 +269,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_does_not_copy_local_runtime_dependencies_for_netframework_projects()
         {
             const string ProjectName = "TestProjWithPackageDependencies";
@@ -299,7 +300,7 @@ namespace Microsoft.NET.Build.Tests
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_copies_local_all_assets_on_self_contained_build()
         {
             const string ProjectName = "TestProjWithPackageDependencies";

@@ -1,18 +1,18 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideGetHashCodeOnOverridingEqualsAnalyzer,
     Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicOverrideGetHashCodeOnOverridingEqualsFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OverrideGetHashCodeOnOverridingEqualsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task Good_Class_EqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -27,7 +27,7 @@ Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Good_Class_NoEqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -35,7 +35,7 @@ Class C
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Good_Structure_EqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -50,7 +50,7 @@ Structure C
 End Structure");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Good_Structure_NoEqualsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -58,7 +58,7 @@ Structure C
 End Structure");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_ClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -71,7 +71,7 @@ End Class",
             GetBasicResultAt(2, 7));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_StructureAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -84,7 +84,7 @@ End Structure",
             GetBasicResultAt(2, 11));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_NotOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -101,7 +101,7 @@ End Class",
             GetBasicResultAt(2, 7));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Bad_FalseOverrideAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

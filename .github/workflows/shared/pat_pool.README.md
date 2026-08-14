@@ -2,7 +2,7 @@
 
 Selects a random Copilot PAT from a numbered pool of secrets. This addresses limitations that arise from having a single PAT shared across all agentic workflows, such as rate-limiting.
 
-**This is a stop-gap workaround.** As soon as organization/enterprise billing is offered for agentic workflows, this approach will be removed from our workflows.
+**This is a stop-gap workaround.** As soon as organization/enterprise billing is available to the dotnet org, this approach will be removed from our workflows.
 
 ## Repository Onboarding
 
@@ -19,9 +19,19 @@ gh extension install github/gh-aw --force
 gh aw --version
 ```
 
+### Environment
+
+Create an environment for the agentic workflows:
+  - _Configuring these settings requires repo admin permission_
+  - https://github.com/dotnet/{repo}/settings/environments
+  - Recommended Name: **copilot-pat-pool**
+  - Recommended Deployment branches and tags: **Protected branches only**
+
+This environment is used for all agentic workflows, restricting agentic workflows to the repo's protected branches and preventing the workflows from accessing secrets defined for other environments.
+
 ## PAT Management
 
-Team members provide PATs into the pools for the repository by adding them as repository secrets with secret names matching the pattern of `<pool_name>_<0-9>`, such as `COPILOT_PAT_0`.
+Team members provide PATs into the pool with secret names matching the pattern of `{pool-name}_{0-9}`, such as `COPILOT_PAT_0`.
 
 [Use this link to prefill the PAT creation form with the required settings][create-pat]:
 
@@ -32,12 +42,30 @@ Team members provide PATs into the pools for the repository by adding them as re
 
 The **Token Name** _does not_ need to match the secret name and is only visible to the owner of the PAT. It's recommended to use a token name indicating the PAT is used for dotnet org agentic workflows. The **Description** is also only used for your own reference.
 
-Team members providing PATs for workflows should set weekly recurring reminders to regenerate and update their PATs in the repository secrets. With an 8-day expiration, renewal can be done on the same day each week.
+Team members providing PATs for workflows should set weekly recurring reminders to regenerate and update their PATs in the PAT pool. With an 8-day expiration, renewal can be done on the same day each week.
 
-PATs are added to repositories through the **Settings > Secrets and variables > Actions** UI, saved as **Repository secrets** and matching the `<pool_name>_<0-9>` naming convention. This can also be done using the GitHub CLI.
+## PAT Pool Secrets
+
+For a PAT pool that is specific to an environment, PATs can be added to repositories as **Environment Secrets** for the environment created above. _This requires repo admin permission_.
+
+* **Settings** >
+   * **Environments** >
+      * **copilot-pat-pool** (or other environment name) >
+         * **Add environment secret** (or edit your existing secret)
+            * Enter your secret name of `COPILOT_PAT_{0-9}` and paste in your PAT
+
+This can also be accomplished using the `gh` CLI, specifying the repo and environment arguments.
 
 ```sh
-gh aw secrets set "<pool_name>_<0-9>" --value "<your-github-pat>" --repo <org>/<repo>
+# Register the PAT secret. This will prompt for you to paste the PAT.
+gh secret set "<pool_name>_<0-9>" --repo <org>/<repo> --env "copilot-pat-pool"
+```
+
+It's also helpful to record who owns each PAT within the pool. To capture which team member is associated with each PAT, a `<pool_name>_<0-9>_<username>` "sidecar secret" can be added alongside the PAT secret to make the username for the PAT pool entry visible. This sidecar secret must have a non-empty value, but it's never consumed, so any value is sufficient.
+
+```sh
+# Record a sidecar secret that presents who owns this PAT.
+gh secret set "<pool_name>_<0-9>_<username>" --body "<username>" --repo <org>/<repo> --env "copilot-pat-pool"
 ```
 
 ## Workflow Output Attribution
@@ -51,16 +79,22 @@ The [`pat_pool.md`](./pat_pool.md) workflow import defines a custom job with a `
 ```yml
 # ###############################################################
 # Select a PAT from the pool and override COPILOT_GITHUB_TOKEN.
+# Run agentic jobs in an isolated `copilot-pat-pool` environment.
+#
 # When org-level billing is available, this will be removed.
 # See `shared/pat_pool.README.md` for more information.
 # ###############################################################
 imports:
-  - shared/pat_pool.md
+  - uses: shared/pat_pool.md
+    with:
+      environment: copilot-pat-pool
+
+environment: copilot-pat-pool
 
 engine:
   id: copilot
   env:
-     COPILOT_GITHUB_TOKEN: |
+    COPILOT_GITHUB_TOKEN: |
       ${{ case(
         needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0,
         needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1,
@@ -72,15 +106,19 @@ engine:
         needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7,
         needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8,
         needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9,
-        secrets.COPILOT_GITHUB_TOKEN)
+        'NO COPILOT PAT AVAILABLE')
       }}
 ```
 
-The expression can be collapsed onto a single line if desired. `gh-aw compile` automatically wires `pat_pool` into the activation and agent jobs' `needs:` graph because of the `needs.pat_pool.` references within the `engine.env` property.
+The `COPILOT_GITHUB_TOKEN` expression can be collapsed onto a single line if desired. `gh-aw compile` automatically wires `pat_pool` into the activation and agent jobs' `needs:` graph because of the `needs.pat_pool.` references within the `engine.env` property.
 
 ```sh
 gh aw compile <workflow-name> --schedule-seed <org>/<repo>
 ```
+
+### Specifying the environment
+
+The `environment` must be specified both to the `pat_pool.md` import and to the containing workflow to ensure both jobs access the PAT pool from the same environment. The `copilot-pat-pool` environment name is recommended as the isolated environment for agentic workflows that use the PAT pool.
 
 ### Customizing the pool
 
@@ -101,7 +139,7 @@ The secrets passed via `with:` must match the secrets referenced in the consumin
 engine:
   id: copilot
   env:
-    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.MY_TEAM_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.MY_TEAM_PAT_1, ..., secrets.COPILOT_GITHUB_TOKEN) }}
+    COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.MY_TEAM_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.MY_TEAM_PAT_1, ..., 'NO COPILOT PAT AVAILABLE') }}
 ```
 
 This approach aligns with GitHub's documented guidance for [passing secrets][passing-secrets] between workflows, where the `pat_pool` job returns a PAT number and the `case` statement acts as a secret store to look the PAT secret up based on the selected number.
@@ -114,8 +152,13 @@ There are several details of this implementation that keep our workflows and rep
    provided to a dedicated step within the `pat_pool` job. That job runs
    after `pre_activation` and contains only the trusted checkout and action
    steps--no untrusted context or input is within scope. The
-   `select-pat-number` action only references the secret values to determine
-   which are non-empty, filtering the secret numbers to those with values.
+  `select-pat-number` action sends each non-empty secret only to the fixed
+  `https://api.github.com/user` endpoint and includes only entries that return
+  HTTP 200. Response bodies are discarded. This excludes expired, revoked,
+  and otherwise unauthenticated PATs before random selection. This check does
+  not verify Copilot permissions or licensing; the scheduled
+  [`validate-pat-pool.yml`](../validate-pat-pool.yml) workflow exercises those
+  separately with an actual Copilot request.
 1. **The `pat_pool` job emits only a number, never a secret.** Its sole output,
    `pat_number`, is the 0-9 index of the selected PAT (or empty when the pool
    is empty). The actual secret materializes only later, in the activation
@@ -124,9 +167,11 @@ There are several details of this implementation that keep our workflows and rep
    [passing secrets][passing-secrets] between jobs or workflows, with the
    `case` statement acting as a very simple secret store.
 1. **The `select-pat-number` action does not require any permissions.** It
-   reads only the `COPILOT_PAT_#` environment variables passed to it and writes
-   only to `GITHUB_OUTPUT`. The job that hosts it sets `permissions:` to the
-   workflow defaults (no elevated scopes).
+  reads only the `COPILOT_PAT_#` environment variables passed to it, makes
+  authentication checks against GitHub, and writes only the selected number
+  to `GITHUB_OUTPUT`. The job that hosts it sets `permissions:` to the workflow
+  defaults (no elevated scopes). PAT values and API response bodies are never
+  written to logs, summaries, artifacts, outputs, or command arguments.
 1. **The implementation uses supported Agentic Workflow extensibility hooks.**
    Defining a custom job inside an [imported workflow file][imports] is
    supported by `gh aw compile`. gh-aw automatically

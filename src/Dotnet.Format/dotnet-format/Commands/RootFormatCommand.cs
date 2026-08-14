@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Tools.Commands
 
                 formatOptions = formatOptions with { FixCategory = FixCategory.Whitespace | FixCategory.CodeStyle | FixCategory.Analyzers };
 
-                return await FormatAsync(formatOptions, logger, cancellationToken).ConfigureAwait(false);
+                return await FormatAsync(formatOptions, logger, cancellationToken);
             }
         }
     }

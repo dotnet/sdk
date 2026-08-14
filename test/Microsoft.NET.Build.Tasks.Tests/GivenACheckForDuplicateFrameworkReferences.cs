@@ -5,9 +5,10 @@ using Microsoft.Build.Framework;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenACheckForDuplicateFrameworkReferences
     {
-        [Fact]
+        [TestMethod]
         public void DetectsDuplicates()
         {
             var task = new CheckForDuplicateFrameworkReferences
@@ -33,7 +34,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToAdd.Should().HaveCount(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void NoDuplicates_NoOutput()
         {
             var task = new CheckForDuplicateFrameworkReferences
@@ -58,7 +59,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToAdd.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void NullFrameworkReferences_Succeeds()
         {
             var task = new CheckForDuplicateFrameworkReferences
@@ -73,7 +74,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToAdd.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyArray_Succeeds()
         {
             var task = new CheckForDuplicateFrameworkReferences
@@ -88,7 +89,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToAdd.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyItemSpec_HandlesGracefully()
         {
             var task = new CheckForDuplicateFrameworkReferences
@@ -112,7 +113,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             task.ItemsToRemove.Should().HaveCount(1, "the implicit duplicate with empty ItemSpec should be removed");
         }
 
-        [Fact]
+        [TestMethod]
         public void RelativePathItemSpec_PreservesFormat()
         {
             const string relativePathSpec = "some/relative/path.dll";
@@ -144,7 +145,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 "output ItemSpec must preserve the exact input format without path normalization");
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleExplicitDuplicates_LogsError()
         {
             var engine = new MockBuildEngine();
