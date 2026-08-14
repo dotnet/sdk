@@ -33,8 +33,8 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
         var msbuild = new MSBuildCommand(
             testAsset,
             "ResolveWebAssemblyProjectReferences",
-            "blazorhosted")
-            .WithWorkingDirectory(testAsset.TestRoot);
+            "blazorhosted");
+        msbuild.WithWorkingDirectory(testAsset.TestRoot);
 
         var result = msbuild.ExecuteWithoutRestore("-getItem:WebAssemblyProjectReference", "-nologo");
         result.Should().Pass();
