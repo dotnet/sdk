@@ -170,6 +170,12 @@ namespace Microsoft.NET.Build.Tasks
                 (!version5 || _targetRuntimeIdentifier == _hostRuntimeIdentifier) &&
                 GetCrossgen2ComponentsPaths(version5);
 
+            // WebAssembly ReadyToRun is only supported with the .NET 11+ crossgen2 pack, which ships the wasm cross-JIT.
+            if ((_targetPlatform == "browser" || _targetPlatform == "wasi") && crossgen2PackVersion.Major < 11)
+            {
+                isSupportedTarget = false;
+            }
+
             if (!isSupportedTarget)
             {
                 Log.LogError(Strings.ReadyToRunTargetNotSupportedError);
