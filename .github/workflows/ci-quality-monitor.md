@@ -19,7 +19,7 @@ on:
 
 concurrency:
   group: ci-quality-monitor
-  cancel-in-progress: false
+  queue: max
 
 env:
   DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
