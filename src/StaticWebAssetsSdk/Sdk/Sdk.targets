@@ -23,15 +23,15 @@ Copyright (c) .NET Foundation. All rights reserved.
     <ItemGroup>
       <!-- It is explicitly ok to take a dependency on _MSBuildProjectReferenceExistent as it is
         something many other products already take a dependency on. -->
-      <_WebAssemblyProjectReference Include="@(_MSBuildProjectReferenceExistent)" Condition="'%(BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != ''" />
+      <_WebAssemblyProjectReferenceCandidate Include="@(_MSBuildProjectReferenceExistent)" Condition="'%(BuildReference)' == 'true' and '@(ProjectReferenceWithConfiguration)' != ''" />
     </ItemGroup>
 
     <MSBuild
-      Condition="'@(_WebAssemblyProjectReference)' != ''"
-      Projects="@(_WebAssemblyProjectReference)"
+      Condition="'@(_WebAssemblyProjectReferenceCandidate)' != ''"
+      Projects="@(_WebAssemblyProjectReferenceCandidate)"
       Targets="GetWebAssemblyProjectReference"
-      Properties="%(_WebAssemblyProjectReference.SetConfiguration);%(_WebAssemblyProjectReference.SetPlatform);%(_WebAssemblyProjectReference.SetTargetFramework)"
-      RemoveProperties="%(_WebAssemblyProjectReference.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences)"
+      Properties="%(_WebAssemblyProjectReferenceCandidate.SetConfiguration);%(_WebAssemblyProjectReferenceCandidate.SetPlatform);%(_WebAssemblyProjectReferenceCandidate.SetTargetFramework)"
+      RemoveProperties="%(_WebAssemblyProjectReferenceCandidate.GlobalPropertiesToRemove);$(_GlobalPropertiesToRemoveFromProjectReferences)"
       BuildInParallel="$(BuildInParallel)"
       SkipNonexistentTargets="true">
       <Output TaskParameter="TargetOutputs" ItemName="WebAssemblyProjectReference" />
