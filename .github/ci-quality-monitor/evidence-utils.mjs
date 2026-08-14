@@ -5,6 +5,18 @@ export function splitNonEmptyLines(value)
     return `${value ?? ""}`.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
 }
 
+export function isAuthenticationFailure(value)
+{
+    return /(?:http|response status(?: code)?|status code)[^\r\n]*(?:401|403)\b|unauthorized|forbidden|authentication failed|credentials? (?:were )?rejected/i
+        .test(`${value ?? ""}`);
+}
+
+export function isNetworkFailure(value)
+{
+    return /(?:http|response status(?: code)?|status code)[^\r\n]*(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i
+        .test(`${value ?? ""}`);
+}
+
 export function normalizeEvidenceText(value, maxCharacters = MAX_LOG_CHARACTERS)
 {
     return `${value ?? ""}`

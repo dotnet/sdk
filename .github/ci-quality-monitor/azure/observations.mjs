@@ -1,5 +1,11 @@
 import {MAX_TIMELINE_FAILURES} from "../constants.mjs";
-import {createFailureFingerprint, normalizeEvidenceText, splitNonEmptyLines} from "../evidence-utils.mjs";
+import {
+  createFailureFingerprint,
+  isAuthenticationFailure,
+  isNetworkFailure,
+  normalizeEvidenceText,
+  splitNonEmptyLines
+} from "../evidence-utils.mjs";
 
 export function classifyTaskFailure(name, issues = [])
 {
@@ -17,17 +23,17 @@ export function classifyTaskFailure(name, issues = [])
   {
     return {phase: "test-orchestration", failureType: "downstream-failure", diagnosticCode};
   }
-  if (/checkout|couldn't find remote ref|repository not found/i.test(text))
-  {
-    return {phase: "source-checkout", failureType: "source-unavailable", diagnosticCode};
-  }
-  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed|credentials? (?:were )?rejected/i.test(text))
+  if (isAuthenticationFailure(text))
   {
     return {phase: inferTaskPhase(name, text), failureType: "authentication-failure", diagnosticCode};
   }
-  if (/(?:http|response status(?: code)?|status code)[^\r\n]*(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text))
+  if (isNetworkFailure(text))
   {
     return {phase: inferTaskPhase(name, text), failureType: "network-failure", diagnosticCode};
+  }
+  if (/checkout|couldn't find remote ref|repository not found/i.test(text))
+  {
+    return {phase: "source-checkout", failureType: "source-unavailable", diagnosticCode};
   }
   if (diagnosticCode?.startsWith("CS"))
   {
