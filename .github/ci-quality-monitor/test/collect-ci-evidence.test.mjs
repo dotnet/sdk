@@ -123,6 +123,34 @@ test("subsequent polls select only unseen failures", () => {
   assert.deepEqual(selected.failures.map(build => build.id), [4]);
 });
 
+test("bootstrapping a new branch does not suppress failures on initialized branches", async () => {
+  const pipeline = {
+    organization: "dnceng-public", project: "public", definitionId: 101, repository: "dotnet/sdk",
+    branches: ["refs/heads/main", "refs/heads/release/new"],
+    stableBranches: ["refs/heads/main", "refs/heads/release/new"]
+  };
+  const mainFailure = {
+    id: 2, result: "failed", sourceBranch: "refs/heads/main", finishTime: "2026-08-14T12:00:00Z",
+    definition: {id: 101}, repository: {id: "dotnet/sdk"}
+  };
+  const releaseFailure = {
+    id: 3, result: "failed", sourceBranch: "refs/heads/release/new", finishTime: "2026-08-14T12:00:00Z",
+    definition: {id: 101}, repository: {id: "dotnet/sdk"}
+  };
+  const mainKey = "dnceng-public/public/101:refs/heads/main";
+  const state = {schemaVersion: 1, pipelines: {[mainKey]: {processedBuildKeys: []}}};
+  const azure = {
+    listCompletedBuilds: async branch => branch === "refs/heads/main" ? [mainFailure] : [releaseFailure]
+  };
+  const selector = new BuildCandidateSelector(
+    {pipelines: [pipeline]}, state, () => azure, {checkPipeline: async () => null});
+
+  const selected = await selector.selectScheduledCandidates();
+
+  assert.equal(selected.bootstrap, false);
+  assert.deepEqual(selected.candidates.map(candidate => candidate.build.id), [mainFailure.id]);
+});
+
 test("same build ID is reconsidered when its completed attempt changes", () => {
   const original = { id: 4, result: "failed", finishTime: "2026-07-24T14:00:00Z" };
   const retried = { id: 4, result: "failed", finishTime: "2026-07-24T15:00:00Z" };

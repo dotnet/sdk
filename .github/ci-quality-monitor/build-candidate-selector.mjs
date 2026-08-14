@@ -120,17 +120,19 @@ export class BuildCandidateSelector
   {
     const candidates = [];
     const pipelineHealth = [];
-    let bootstrap = false;
+    let branchCount = 0;
+    let bootstrappedBranchCount = 0;
     for (const pipeline of this.registry.pipelines)
     {
       for (const branch of pipeline.branches)
       {
+        branchCount++;
         const azure = this.getAzureClient(pipeline);
         const history = (await azure.listCompletedBuilds(branch)).filter(build => isRegisteredBuild(build, pipeline));
         const key = createPipelineStateKey(pipeline, branch);
         const selected = selectUnprocessedFailures(this.state, key, history);
-        bootstrap ||= selected.bootstrap;
-        for (const build of selected.failures)
+        if (selected.bootstrap) bootstrappedBranchCount++;
+        for (const build of selected.bootstrap ? [] : selected.failures)
         {
           if ((pipeline.stableBranches ?? []).includes(branch))
           {
@@ -150,6 +152,7 @@ export class BuildCandidateSelector
         recordProcessedBuilds(this.state, key, history);
       }
     }
+    const bootstrap = branchCount > 0 && branchCount === bootstrappedBranchCount;
     return {candidates, bootstrap, pipelineHealth};
   }
 
