@@ -1,5 +1,10 @@
 import {MAX_CONSOLE_CHARACTERS, MAX_TEST_FAILURES} from "../constants.mjs";
-import {createFailureFingerprint, normalizeEvidenceText} from "../evidence-utils.mjs";
+import {
+  createFailureFingerprint,
+  isAuthenticationFailure,
+  isNetworkFailure,
+  normalizeEvidenceText
+} from "../evidence-utils.mjs";
 import {HttpClient} from "../http-client.mjs";
 import {createTestKbeCandidate} from "../known-build-error.mjs";
 import {parseTestResultXml} from "../test-results.mjs";
@@ -44,7 +49,7 @@ function createTestObservation(reference, test, testSummary)
   const mechanism = summarizeTestMechanism(test.errorMessage, test.outcome);
   const sharedMechanism = summarizeSharedTestMechanism(test.errorMessage, test.outcome);
   const phase = "test-execution";
-  const failureType = classifyTestFailureType(test.errorMessage);
+  const failureType = classifyTestFailureType(test.errorMessage, test.outcome);
   const fingerprint = createFailureFingerprint({phase, failureType, component, mechanism});
   return {
     kind: "test",
@@ -69,17 +74,13 @@ function createTestObservation(reference, test, testSummary)
   };
 }
 
-function classifyTestFailureType(errorMessage)
+function classifyTestFailureType(errorMessage, outcome)
 {
   const text = `${errorMessage ?? ""}`;
-  if (/\b(?:401|403)\b|unauthorized|forbidden|authentication failed/i.test(text))
-  {
-    return "authentication-failure";
-  }
-  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text))
-  {
-    return "network-failure";
-  }
+  if (`${outcome}`.toLowerCase() === "timeout") return "timeout";
+  if (`${outcome}`.toLowerCase() === "aborted") return "process-termination";
+  if (isAuthenticationFailure(text)) return "authentication-failure";
+  if (isNetworkFailure(text)) return "network-failure";
   if (/timed? ?out|timeout/i.test(text)) return "timeout";
   if (/segmentation fault|stack overflow|core dump|app_crash/i.test(text)) return "process-crash";
   if (/\bCS\d{4}\b/i.test(text)) return "compiler-error";
