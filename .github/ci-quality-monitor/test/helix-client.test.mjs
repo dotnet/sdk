@@ -71,3 +71,15 @@ test("does not treat bare assertion numbers as HTTP status codes", async () =>
 
   assert.equal(observations[0].failureType, "test-assertion");
 });
+
+test("preserves a teardown hang alongside a failed assertion", async () =>
+{
+  const observations = await collect({
+    files: [{FileName: "results.trx", Uri: "https://files/results.trx"}],
+    bodies: {"https://files/results.trx": trxResult()},
+    consoleText: "Hang timeout expired. Test host crashed. exit code is 137",
+    exitCode: 137
+  });
+
+  assert.deepEqual(observations.map(observation => observation.failureType), ["test-assertion", "timeout"]);
+});

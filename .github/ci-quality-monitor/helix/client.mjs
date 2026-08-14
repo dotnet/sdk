@@ -87,6 +87,39 @@ function classifyTestFailureType(errorMessage, outcome)
   return "test-assertion";
 }
 
+function createWorkItemObservation(reference, workItem, consoleText, testResults, unavailable)
+{
+  const classification = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
+  const consoleSummary = summarizeHelixConsole(consoleText);
+  const causalConsoleLines = consoleSummary.hangEvidence.filter(line => line === consoleSummary.activeTest
+    || /still running|hang timeout|timed? ?out|test host crashed|recovered \d+ test result|exit code/i.test(line));
+  const mechanismLines = causalConsoleLines.length > 0
+    ? causalConsoleLines
+    : consoleText.split(/\r?\n/).filter(Boolean).slice(-8);
+  const mechanism = mechanismLines.join("\n") || `Exit code ${workItem.ExitCode ?? reference.exitCode}`;
+  const artifacts = selectArtifactLinks(workItem.Files);
+  return {
+    kind: "helix-work-item",
+    ...classification,
+    evidenceSources: [...new Set([...classification.evidenceSources, ...getArtifactEvidenceSources(workItem.Files)])],
+    component: reference.workItem,
+    mechanism,
+    fingerprint: createFailureFingerprint({...classification, component: reference.workItem, mechanism}),
+    actionable: classification.failureType !== "infrastructure-unavailable",
+    jobId: reference.jobId,
+    queue: reference.queue,
+    exitCode: workItem.ExitCode ?? reference.exitCode,
+    state: workItem.State,
+    machine: workItem.MachineName,
+    duration: workItem.Duration,
+    testSummary: testResults.summary,
+    consoleSummary,
+    consoleUrl: workItem.ConsoleOutputUri,
+    artifacts,
+    unavailable
+  };
+}
+
 export class HelixEvidenceClient
 {
   constructor(fetchImplementation = fetch)
@@ -132,45 +165,14 @@ export class HelixEvidenceClient
     {
       unavailable.push(normalizeEvidenceText(error.message));
     }
-    if (testResults.failures.length > 0)
-    {
-      return testResults.failures.map(test => createTestObservation(reference, test, testResults.summary));
-    }
-    const classification = classifyWorkItem(workItem.ExitCode ?? reference.exitCode, consoleText);
-    const consoleSummary = summarizeHelixConsole(consoleText);
-    const causalConsoleLines = consoleSummary.hangEvidence.filter(line => line === consoleSummary.activeTest
-      || /still running|hang timeout|timed? ?out|test host crashed|recovered \d+ test result|exit code/i.test(line));
-    const mechanismLines = causalConsoleLines.length > 0
-      ? causalConsoleLines
-      : consoleText.split(/\r?\n/).filter(Boolean).slice(-8);
-    const mechanism = mechanismLines.join("\n") || `Exit code ${workItem.ExitCode ?? reference.exitCode}`;
-    const artifacts = selectArtifactLinks(workItem.Files);
-    const evidenceSources = [...new Set([
-      ...classification.evidenceSources,
-      ...getArtifactEvidenceSources(workItem.Files)
-    ])];
-    return [{
-      kind: "helix-work-item",
-      ...classification,
-      evidenceSources,
-      component: reference.workItem,
-      mechanism,
-      fingerprint: createFailureFingerprint({
-        ...classification, component: reference.workItem, mechanism
-      }),
-      actionable: classification.failureType !== "infrastructure-unavailable",
-      jobId: reference.jobId,
-      queue: reference.queue,
-      exitCode: workItem.ExitCode ?? reference.exitCode,
-      state: workItem.State,
-      machine: workItem.MachineName,
-      duration: workItem.Duration,
-      testSummary: testResults.summary,
-      consoleSummary,
-      consoleUrl: workItem.ConsoleOutputUri,
-      artifacts,
-      unavailable
-    }];
+    const testObservations = testResults.failures
+      .map(test => createTestObservation(reference, test, testResults.summary));
+    const workItemObservation = createWorkItemObservation(
+      reference, workItem, consoleText, testResults, unavailable);
+    if (testObservations.length === 0) return [workItemObservation];
+    const independentlyClassified = workItemObservation.failureType !== "unknown-error"
+      && !testObservations.some(observation => observation.failureType === workItemObservation.failureType);
+    return independentlyClassified ? [...testObservations, workItemObservation] : testObservations;
   }
 
   async collectObservations(timelineFailures, maxReferences = Number.POSITIVE_INFINITY)
