@@ -13,6 +13,17 @@ test("every created issue receives live-build-incident", async () =>
     assert.match(workflow, /`live-build-incident` is applied automatically to every created issue\./);
 });
 
+test("created issues are dispatched directly to Issue Monster", async () =>
+{
+    const workflow = await readFile(workflowUrl, "utf8");
+
+    assert.match(workflow, /actions: write/);
+    assert.match(workflow, /needs\.safe_outputs\.outputs\.created_issue_number/);
+    assert.match(workflow, /needs\.safe_outputs\.outputs\.process_safe_outputs_temporary_id_map/);
+    assert.match(workflow, /github-token: \$\{\{ secrets\.GH_AW_GITHUB_TOKEN \|\| secrets\.GITHUB_TOKEN \}\}/);
+    assert.match(workflow, /dispatchCreatedIssues/);
+});
+
 test("named test assertions require the recurring KBE gate", async () =>
 {
     const workflow = await readFile(workflowUrl, "utf8");
