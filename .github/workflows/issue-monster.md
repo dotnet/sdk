@@ -67,6 +67,10 @@ imports:
 runs-on-slim: ubuntu-latest
 timeout-minutes: 30
 
+pre-steps:
+  - name: Force fresh Copilot CLI install
+    run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
+
 tools:
   # Route GitHub tools and Safe Outputs through the generated CLI proxy to avoid a bug in agentic workflows blocking itself
   cli-proxy: true
@@ -94,6 +98,11 @@ safe-outputs:
     engine:
       id: copilot
       model: gpt-5.6-luna
+      env:
+        COPILOT_GITHUB_TOKEN: ${{ case(needs.pat_pool.outputs.pat_number == '0', secrets.COPILOT_PAT_0, needs.pat_pool.outputs.pat_number == '1', secrets.COPILOT_PAT_1, needs.pat_pool.outputs.pat_number == '2', secrets.COPILOT_PAT_2, needs.pat_pool.outputs.pat_number == '3', secrets.COPILOT_PAT_3, needs.pat_pool.outputs.pat_number == '4', secrets.COPILOT_PAT_4, needs.pat_pool.outputs.pat_number == '5', secrets.COPILOT_PAT_5, needs.pat_pool.outputs.pat_number == '6', secrets.COPILOT_PAT_6, needs.pat_pool.outputs.pat_number == '7', secrets.COPILOT_PAT_7, needs.pat_pool.outputs.pat_number == '8', secrets.COPILOT_PAT_8, needs.pat_pool.outputs.pat_number == '9', secrets.COPILOT_PAT_9, 'NO COPILOT PAT AVAILABLE') }}
+    steps:
+      - name: Force fresh Copilot CLI install
+        run: sudo rm -rf -- /opt/hostedtoolcache/copilot-cli
   dispatch-workflow:
     max: 3
     workflows: [issue-monster-assigner]

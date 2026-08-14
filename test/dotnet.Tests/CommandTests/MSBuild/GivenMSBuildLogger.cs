@@ -268,6 +268,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
             eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
 
+            Activity.Current.Should().NotBeSameAs(parentActivity);
+            stoppedActivity.Should().BeNull();
+
+            logger.Shutdown();
+
             Activity.Current.Should().BeSameAs(parentActivity);
             stoppedActivity.Should().NotBeNull();
             stoppedActivity.Status.Should().Be(ActivityStatusCode.Ok);
@@ -328,6 +333,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 eventSource.Dispatch(new BuildStartedEventArgs("Build started.", helpKeyword: null));
                 Activity activity = Activity.Current;
                 eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
+                logger.Shutdown();
                 return activity;
             }
         }
