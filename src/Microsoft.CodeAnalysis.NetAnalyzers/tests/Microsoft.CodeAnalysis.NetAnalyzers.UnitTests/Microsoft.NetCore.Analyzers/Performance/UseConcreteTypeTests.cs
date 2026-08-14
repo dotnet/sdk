@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics.CodeAnalysis;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -475,7 +476,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [DataRow("public", "private", false)]
         [DataRow("public", "public", true)]
         [DataRow("public", "public,private", true)]
-        public static async Task ConfigTest(string accessibility, string editorConfigText, bool trigger)
+        public async Task ConfigTest(string accessibility, string editorConfigText, bool trigger)
         {
             var source = $@"
                 namespace Example
