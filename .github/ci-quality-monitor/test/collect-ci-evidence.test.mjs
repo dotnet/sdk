@@ -328,6 +328,8 @@ test("classifyTaskFailure identifies roots and artifact cascades", () => {
   assert.deepEqual(classifyTaskFailure("Build", ["ResolvePackageAssets.cs: error CS1061: missing member"]), {
     phase: "compilation", failureType: "compiler-error", diagnosticCode: "CS1061"
   });
+  assert.equal(classifyTaskFailure("Build", ["C:\\src\\Program.cs(429,1): error CS1002: ; expected"]).failureType, "compiler-error");
+  assert.equal(classifyTaskFailure("Restore", ["Response status code does not indicate success: 503"]).failureType, "network-failure");
   assert.equal(classifyTaskFailure("Build", ["NuGet.targets error 503 Service Unavailable"]).failureType, "network-failure");
   assert.equal(classifyTaskFailure("Restore", ["401 Unauthorized from package source"]).failureType, "authentication-failure");
   assert.equal(classifyTaskFailure("Restore", ["error NU1902: known vulnerability"]).failureType, "package-policy-error");

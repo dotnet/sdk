@@ -25,7 +25,7 @@ export function classifyTaskFailure(name, issues = [])
   {
     return {phase: inferTaskPhase(name, text), failureType: "authentication-failure", diagnosticCode};
   }
-  if (/\b(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text))
+  if (/(?:http|response status(?: code)?|status code)[^\r\n]*(?:429|5\d\d)\b|service unavailable|connection (?:refused|reset)|unable to load the service index|network is unreachable/i.test(text))
   {
     return {phase: inferTaskPhase(name, text), failureType: "network-failure", diagnosticCode};
   }
