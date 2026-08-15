@@ -273,6 +273,20 @@ public class EnvShellProviderTests
     }
 
     [TestMethod]
+    public void PowerShellProvider_ProfileEntry_ShouldCheckForDotnetupBeforeInvokingIt()
+    {
+        var provider = new PowerShellEnvShellProvider();
+
+        var profileEntry = provider.GenerateProfileEntry("/test/dotnetup'preview");
+
+        var guard = "if (Test-Path -LiteralPath '/test/dotnetup''preview' -PathType Leaf)";
+        var invocation = "& '/test/dotnetup''preview' env script";
+        profileEntry.Should().Contain(guard);
+        profileEntry.IndexOf(guard, StringComparison.Ordinal).Should().BeLessThan(
+            profileEntry.IndexOf(invocation, StringComparison.Ordinal));
+    }
+
+    [TestMethod]
     [DataRow("bash")]
     [DataRow("zsh")]
     [DataRow("fish")]
