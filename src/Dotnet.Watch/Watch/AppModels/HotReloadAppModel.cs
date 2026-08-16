@@ -9,6 +9,9 @@ namespace Microsoft.DotNet.Watch;
 
 internal abstract partial class HotReloadAppModel()
 {
+    public abstract ProjectGraphNode LaunchingProject { get; }
+    public virtual ProjectGraphNode StaticAssetProject => LaunchingProject;
+
     public abstract ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken);
 
     protected static string GetInjectedAssemblyPath(string targetFramework, string assemblyName)

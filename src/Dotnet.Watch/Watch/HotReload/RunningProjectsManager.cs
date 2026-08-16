@@ -50,6 +50,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
     public async Task<RunningProject?> TrackRunningProjectAsync(
         ProjectGraphNode projectNode,
+        ProjectGraphNode staticAssetProject,
         ProjectOptions projectOptions,
         HotReloadClients clients,
         ILogger clientLogger,
@@ -127,6 +128,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
 
             var runningProject = new RunningProject(
                 projectNode,
+                staticAssetProject,
                 projectOptions,
                 clients,
                 clientLogger,

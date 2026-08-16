@@ -12,6 +12,8 @@ namespace Microsoft.DotNet.Watch;
 /// </summary>
 internal sealed class DefaultAppModel(ProjectGraphNode project) : HotReloadAppModel
 {
+    public override ProjectGraphNode LaunchingProject => project;
+
     public override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
         => new(new HotReloadClients(
             clients: IsManagedAgentSupported(project, clientLogger)
