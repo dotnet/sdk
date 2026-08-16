@@ -66,16 +66,20 @@
       <TestProjects>
         test/dotnet-watch.Tests/**/*.csproj;
         test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/**/*.csproj;
+        test/Microsoft.DotNet.HotReload.Client.Tests/**/*.csproj;
         test/Microsoft.DotNet.HotReload.Watch.Aspire.Tests/**/*.csproj;
+        test/Microsoft.Extensions.DotNetDeltaApplier.Tests/**/*.csproj;
         test/Microsoft.WebTools.AspireService.Tests/**/*.csproj
       </TestProjects>
       <TriggerPaths>
         src/Cli/**;
         src/Dotnet.Format/**;
         src/Dotnet.Watch/**;
+        src/Microsoft.DotNet.ProjectTools/**;
         test/dotnet-watch*/**;
         test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/**;
         test/Microsoft.DotNet.HotReload*/**;
+        test/Microsoft.Extensions.DotNetDeltaApplier.Tests/**;
         test/Microsoft.WebTools.AspireService.Tests/**;
         test/TestAssets/TestProjects/DotnetRunDevices*/**;
         test/TestAssets/TestProjects/FSharpTestAppSimple/**;
