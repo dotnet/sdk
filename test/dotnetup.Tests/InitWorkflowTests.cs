@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
+using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -256,5 +257,13 @@ public class InitWorkflowTests : IDisposable
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
     }
 
+    [TestMethod]
+    public void DisplayEnvironmentSetupProgress_ExplainsPostInstallDelay()
+    {
+        using var output = new ConsoleOutputCapture();
 
+        InitWorkflows.DisplayEnvironmentSetupProgress();
+
+        output.GetOutput().Should().Contain("Setting up your environment.");
+    }
 }
