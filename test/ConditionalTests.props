@@ -76,6 +76,9 @@
         src/Dotnet.Format/**;
         src/Dotnet.Watch/**;
         src/Microsoft.DotNet.ProjectTools/**;
+        src/RazorSdk/**;
+        src/StaticWebAssetsSdk/**;
+        src/WasmSdk/**;
         test/dotnet-watch*/**;
         test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/**;
         test/Microsoft.DotNet.HotReload*/**;
