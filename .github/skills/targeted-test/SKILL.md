@@ -57,7 +57,6 @@ limited to common areas rather than being an exhaustive test-project catalog.
 | MSBuild SDK resolution | `test/Microsoft.DotNet.MSBuildSdkResolver.Tests/Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj` |
 | Containers | `test/Microsoft.NET.Build.Containers.UnitTests/Microsoft.NET.Build.Containers.UnitTests.csproj` |
 | Containers with registry/runtime behavior | `test/Microsoft.NET.Build.Containers.IntegrationTests/Microsoft.NET.Build.Containers.IntegrationTests.csproj` |
-| `dotnet watch` | `test/dotnet-watch.Tests/dotnet-watch.Tests.csproj` |
 | Static Web Assets | `test/Microsoft.NET.Sdk.StaticWebAssets.Tests/Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj` |
 | Web SDK | `test/Microsoft.NET.Sdk.Web.Tests/Microsoft.NET.Sdk.Web.Tests.csproj` |
 | Razor SDK | `test/Microsoft.NET.Sdk.Razor.Tests/Microsoft.NET.Sdk.Razor.Tests.csproj` |
