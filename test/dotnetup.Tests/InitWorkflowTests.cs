@@ -10,6 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -256,5 +257,18 @@ public class InitWorkflowTests : IDisposable
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
     }
 
+    [TestMethod]
+    public void DisplayEnvironmentSetupProgress_ExplainsPostInstallDelay()
+    {
+        var output = new StringWriter();
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(output),
+            Ansi = AnsiSupport.No,
+        });
 
+        InitWorkflows.DisplayEnvironmentSetupProgress(console);
+
+        output.ToString().Should().Contain("Setting up your environment.");
+    }
 }
