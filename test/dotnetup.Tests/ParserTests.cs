@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Reflection;
 using Microsoft.DotNet.Tools.Bootstrapper;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
@@ -346,10 +347,17 @@ public class ParserTests
     {
         // Parser.Version should return the dotnetup assembly version, not any other assembly
         var version = Parser.Version;
+        var expectedLabel = typeof(Parser).Assembly
+            .GetCustomAttributes<AssemblyMetadataAttribute>()
+            .Single(a => a.Key == "DotnetupPreReleaseVersionLabel").Value;
 
         // Should be a valid version format (not "unknown")
         version.Should().NotBe("unknown");
         version.Should().NotBeNullOrEmpty();
+        if (!version.EndsWith("-dev", StringComparison.Ordinal))
+        {
+            version.Should().Contain($"-{expectedLabel}.");
+        }
     }
 
     [TestMethod]
