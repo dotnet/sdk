@@ -137,6 +137,7 @@
 
   <!-- Test Dependencies -->
   <PropertyGroup>
+    <AspireCliVersion>13.4.6</AspireCliVersion>
     <AwesomeAssertionsVersion>8.0.2</AwesomeAssertionsVersion>
     <AwesomeAssertionsJsonVersion>8.0.0</AwesomeAssertionsJsonVersion>
     <MicrosoftTypeScriptMSBuildPackageVersion>5.9.3</MicrosoftTypeScriptMSBuildPackageVersion>
