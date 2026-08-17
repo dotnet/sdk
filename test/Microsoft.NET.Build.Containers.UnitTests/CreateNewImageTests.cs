@@ -11,6 +11,250 @@ namespace Microsoft.NET.Build.Containers.UnitTests;
 [TestClass]
 public class CreateNewImageTests
 {
+    private const string BaseManifestDigest = "sha256:0000000000000000000000000000000000000000000000000000000000000000";
+
+    public TestContext TestContext { get; set; } = default!;
+
+    [TestMethod]
+    public void ArchiveIncrementalFingerprintTracksInputs()
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            string publishedFile = Path.Combine(publishDirectory, "app.dll");
+            File.WriteAllText(publishedFile, "first");
+
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            string initial = ComputeResolvedFingerprint(task);
+
+            File.WriteAllText(publishedFile, "second");
+            string contentChanged = ComputeResolvedFingerprint(task);
+            Assert.AreNotEqual(initial, contentChanged);
+
+            File.WriteAllText(publishedFile, "first");
+            task.WorkingDirectory = "/changed";
+            string configurationChanged = ComputeResolvedFingerprint(task);
+            Assert.AreNotEqual(initial, configurationChanged);
+
+            task.WorkingDirectory = "/app";
+            const string changedBaseManifestDigest = "sha256:1111111111111111111111111111111111111111111111111111111111111111";
+            string baseImageChanged = ContainerArchiveCache.ComputeFingerprint(
+                task,
+                changedBaseManifestDigest,
+                baseImageIsResolved: true,
+                TestContext.CancellationToken);
+            Assert.AreNotEqual(initial, baseImageChanged);
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ArchiveIncrementalFingerprintTracksLabels()
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            File.WriteAllText(Path.Combine(publishDirectory, "app.dll"), "content");
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            task.GenerateLabels = true;
+            TaskItem createdLabel = new("org.opencontainers.image.created");
+            createdLabel.SetMetadata("Value", "first");
+            task.Labels = [createdLabel];
+
+            string initial = ComputeResolvedFingerprint(task);
+            createdLabel.SetMetadata("Value", "second");
+
+            Assert.AreNotEqual(
+                initial,
+                ComputeResolvedFingerprint(task));
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ArchiveIncrementalFingerprintIgnoresDisabledLabels()
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            task.GenerateLabels = false;
+            task.GenerateCreatedLabels = true;
+            task.GenerateDigestLabel = true;
+            TaskItem label = new("label");
+            label.SetMetadata("Value", "first");
+            task.Labels = [label];
+            string initial = ComputeResolvedFingerprint(task);
+
+            task.GenerateCreatedLabels = false;
+            task.GenerateDigestLabel = false;
+            label.SetMetadata("Value", "second");
+
+            Assert.AreEqual(initial, ComputeResolvedFingerprint(task));
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ResolvedBaseFingerprintIgnoresReferenceSelectors()
+    {
+        string rootDirectory = CreateTempDirectory();
+        try
+        {
+            string publishDirectory = Path.Combine(rootDirectory, "publish");
+            string runtimeIdentifierGraph = Path.Combine(rootDirectory, "runtime.json");
+            Directory.CreateDirectory(publishDirectory);
+            File.WriteAllText(runtimeIdentifierGraph, "{}");
+            CreateNewImage task = CreateIncrementalTask(publishDirectory, runtimeIdentifierGraph);
+            string initial = ComputeResolvedFingerprint(task);
+
+            task.BaseRegistry = "example.invalid";
+            task.BaseImageName = "different/image";
+            task.BaseImageTag = "different";
+            task.BaseImageDigest = "sha256:ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff";
+            task.ContainerRuntimeIdentifier = "linux-arm64";
+            File.WriteAllText(task.RuntimeIdentifierGraphPath, """{"different":true}""");
+
+            Assert.AreEqual(initial, ComputeResolvedFingerprint(task));
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ArchiveIncrementalFingerprintIsStableAcrossDirectories()
+    {
+        string rootDirectory = CreateTempDirectory();
+        try
+        {
+            string firstPublishDirectory = Path.Combine(rootDirectory, "first", "publish");
+            string secondPublishDirectory = Path.Combine(rootDirectory, "second", "publish");
+            string firstGraph = Path.Combine(rootDirectory, "first", "runtime.json");
+            string secondGraph = Path.Combine(rootDirectory, "second", "runtime.json");
+            Directory.CreateDirectory(firstPublishDirectory);
+            Directory.CreateDirectory(secondPublishDirectory);
+            File.WriteAllText(Path.Combine(firstPublishDirectory, "app.dll"), "content");
+            File.WriteAllText(Path.Combine(secondPublishDirectory, "app.dll"), "content");
+            File.WriteAllText(firstGraph, "{}");
+            File.WriteAllText(secondGraph, "{}");
+            if (!OperatingSystem.IsWindows())
+            {
+                File.SetUnixFileMode(firstGraph, UnixFileMode.UserRead | UnixFileMode.UserWrite);
+                File.SetUnixFileMode(secondGraph, UnixFileMode.UserRead | UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+            }
+            CreateNewImage firstTask = CreateIncrementalTask(firstPublishDirectory, firstGraph);
+            CreateNewImage secondTask = CreateIncrementalTask(secondPublishDirectory, secondGraph);
+
+            string first = ContainerArchiveCache.ComputeFingerprint(
+                firstTask,
+                BaseManifestDigest,
+                baseImageIsResolved: false,
+                TestContext.CancellationToken);
+            string second = ContainerArchiveCache.ComputeFingerprint(
+                secondTask,
+                BaseManifestDigest,
+                baseImageIsResolved: false,
+                TestContext.CancellationToken);
+
+            Assert.AreEqual(first, second);
+        }
+        finally
+        {
+            Directory.Delete(rootDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ArchiveIncrementalFingerprintHonorsCancellation()
+    {
+        string publishDirectory = CreateTempDirectory();
+        try
+        {
+            CreateNewImage task = CreateIncrementalTask(publishDirectory);
+            using CancellationTokenSource cancellation = new();
+            cancellation.Cancel();
+
+            Assert.ThrowsExactly<OperationCanceledException>(
+                () => ContainerArchiveCache.ComputeFingerprint(
+                    task,
+                    BaseManifestDigest,
+                    baseImageIsResolved: true,
+                    cancellation.Token));
+        }
+        finally
+        {
+            Directory.Delete(publishDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public async System.Threading.Tasks.Task ArchiveIncrementalCacheRestoresOutputsBeforeResolvingBaseImage()
+    {
+        string tempDirectory = CreateTempDirectory();
+        try
+        {
+            string publishDirectory = Path.Combine(tempDirectory, "publish");
+            Directory.CreateDirectory(publishDirectory);
+            File.WriteAllText(Path.Combine(publishDirectory, "app.dll"), "content");
+            string archivePath = Path.Combine(tempDirectory, "archives");
+            string resolvedArchivePath = Path.Combine(archivePath, "test.tar.gz");
+            string cachePath = Path.Combine(tempDirectory, "obj", "publish.cache.json");
+            Directory.CreateDirectory(archivePath);
+            File.WriteAllText(resolvedArchivePath, "archive");
+
+            CreateNewImage original = CreateIncrementalTask(publishDirectory);
+            original.BaseRegistry = "invalid.example";
+            original.BaseImageDigest = BaseManifestDigest;
+            original.ArchiveOutputPath = archivePath;
+            original.ArchiveIncrementalCachePath = cachePath;
+            original.GeneratedContainerManifest = "manifest";
+            original.GeneratedContainerConfiguration = "configuration";
+            original.GeneratedContainerDigest = "sha256:digest";
+            original.GeneratedContainerMediaType = "application/vnd.oci.image.manifest.v1+json";
+            original.GeneratedContainerNames = [new TaskItem("test:latest")];
+            string fingerprint = ContainerArchiveCache.ComputeFingerprint(
+                original,
+                BaseManifestDigest,
+                baseImageIsResolved: false,
+                TestContext.CancellationToken);
+            ContainerArchiveCache.Save(original, fingerprint);
+            DateTime archiveWriteTime = File.GetLastWriteTimeUtc(resolvedArchivePath);
+
+            CreateNewImage cached = CreateIncrementalTask(publishDirectory);
+            cached.BaseRegistry = "invalid.example";
+            cached.BaseImageDigest = BaseManifestDigest;
+            cached.ArchiveOutputPath = archivePath;
+            cached.ArchiveIncrementalCachePath = cachePath;
+            cached.EnableArchiveIncrementalCache = true;
+            cached.BuildEngine = new Mock<IBuildEngine>().Object;
+
+            Assert.IsTrue(await cached.ExecuteAsync(CancellationToken.None));
+            Assert.AreEqual("manifest", cached.GeneratedContainerManifest);
+            Assert.AreEqual("configuration", cached.GeneratedContainerConfiguration);
+            Assert.AreEqual("sha256:digest", cached.GeneratedContainerDigest);
+            Assert.AreEqual("test:latest", cached.GeneratedContainerNames.Single().ItemSpec);
+            Assert.AreEqual(archiveWriteTime, File.GetLastWriteTimeUtc(resolvedArchivePath));
+
+            File.WriteAllText(resolvedArchivePath, "different archive");
+            Assert.IsFalse(ContainerArchiveCache.TryRestore(cached, fingerprint));
+        }
+        finally
+        {
+            Directory.Delete(tempDirectory, recursive: true);
+        }
+    }
+
     [TestMethod]
     [DataRow("0", 0L)]
     [DataRow("1636374896", 1636374896L)]
@@ -123,5 +367,40 @@ public class CreateNewImageTests
 
         static ITaskItem[] CreateTaskItems(string value)
             => value.Split(';', StringSplitOptions.RemoveEmptyEntries).Select(s => new TaskItem(s)).ToArray();
+    }
+
+    private string ComputeResolvedFingerprint(CreateNewImage task)
+        => ContainerArchiveCache.ComputeFingerprint(
+            task,
+            BaseManifestDigest,
+            baseImageIsResolved: true,
+            TestContext.CancellationToken);
+
+    private static CreateNewImage CreateIncrementalTask(string publishDirectory, string? runtimeIdentifierGraph = null)
+    {
+        runtimeIdentifierGraph ??= Path.Combine(publishDirectory, "runtime.json");
+        if (!File.Exists(runtimeIdentifierGraph))
+        {
+            File.WriteAllText(runtimeIdentifierGraph, "{}");
+        }
+        return new CreateNewImage
+        {
+            BaseRegistry = "mcr.microsoft.com",
+            BaseImageName = "dotnet/runtime",
+            BaseImageTag = "latest",
+            Repository = "test",
+            ImageTags = ["latest"],
+            PublishDirectory = publishDirectory,
+            WorkingDirectory = "/app",
+            ContainerRuntimeIdentifier = "linux-x64",
+            RuntimeIdentifierGraphPath = runtimeIdentifierGraph,
+        };
+    }
+
+    private static string CreateTempDirectory()
+    {
+        string path = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
+        Directory.CreateDirectory(path);
+        return path;
     }
 }
