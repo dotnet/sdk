@@ -10,7 +10,7 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
-using Microsoft.DotNet.Tools.Dotnetup.Tests.Utilities;
+using Spectre.Console;
 
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
@@ -260,10 +260,15 @@ public class InitWorkflowTests : IDisposable
     [TestMethod]
     public void DisplayEnvironmentSetupProgress_ExplainsPostInstallDelay()
     {
-        using var output = new ConsoleOutputCapture();
+        var output = new StringWriter();
+        var console = AnsiConsole.Create(new AnsiConsoleSettings
+        {
+            Out = new AnsiConsoleOutput(output),
+            Ansi = AnsiSupport.No,
+        });
 
-        InitWorkflows.DisplayEnvironmentSetupProgress();
+        InitWorkflows.DisplayEnvironmentSetupProgress(console);
 
-        output.GetOutput().Should().Contain("Setting up your environment.");
+        output.ToString().Should().Contain("Setting up your environment.");
     }
 }

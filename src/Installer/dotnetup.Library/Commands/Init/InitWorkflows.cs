@@ -161,7 +161,7 @@ internal class InitWorkflows
             installFailure = ExceptionDispatchInfo.Capture(ex);
         }
 
-        DisplayEnvironmentSetupProgress();
+        DisplayEnvironmentSetupProgress(SpectreAnsiConsole.Console);
 
         // Save config and apply configuration(s) regardless of partial install failure, so the
         // user's choice persists and the successful installs are usable (PATH / shell profile).
@@ -267,8 +267,8 @@ internal class InitWorkflows
         InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, noProgress, command);
     }
 
-    internal static void DisplayEnvironmentSetupProgress()
-        => SpectreAnsiConsole.MarkupLine("Setting up your environment.");
+    internal static void DisplayEnvironmentSetupProgress(IAnsiConsole console)
+        => console.MarkupLine("Setting up your environment.");
 
     private static DotnetAccessMode GetInitAccessMode(bool interactive, IEnvShellProvider? shellProvider = null)
     {
