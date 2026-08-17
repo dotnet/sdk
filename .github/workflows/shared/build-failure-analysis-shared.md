@@ -133,8 +133,10 @@ Do **not** try to spawn a sub-agent: the `task` tool is intentionally not
 available here. Work directly with the tools you do have: `binlog-mcp` to
 read the logs, the `github` tools to read PR/repo context (the GitHub MCP
 server is **read-only** here), the `safeoutputs` tools (`add_comment`,
-`create_pull_request_review_comment`, `noop`) to post results, and a small set
-of read-only `shell` commands (including `cat`).
+`create_pull_request_review_comment`, `noop`, and — only in the automatic
+`build-failure-analysis` workflow — `push_to_pull_request_branch`) to post
+results, and a small set of `shell` commands (including `cat` and, where the
+caller allows it, `git add`/`git commit` for authoring a fix commit).
 
 ## Instructions
 
@@ -178,6 +180,14 @@ of read-only `shell` commands (including `cat`).
      the pull request `GH_AW_PR_NUMBER` explicitly** (these workflows use
      `target: "*"`, so there is no implicit "triggering PR" — pass the number
      on every safe-output call).
+   - When the fix belongs to a file the PR never touched, an inline
+     `suggestion` cannot deliver it (GitHub only accepts suggestions on diff
+     lines). If — and only if — `push_to_pull_request_branch` is available to
+     you, follow **Step 6b** of the playbook to append a mechanical fix commit
+     to the PR branch. Every one of its conditions must hold (same-repo PR,
+     `src/` or `test/` only, provable from the compiler error, no earlier
+     `[build-failure-analysis]` commit on the branch); otherwise just describe
+     the fix in the summary comment.
    - `submit_pull_request_review` is **not** a safe output for this workflow;
      inline comments stand alone.
 
