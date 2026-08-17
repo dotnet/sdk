@@ -202,7 +202,7 @@ GitHub only accepts a `suggestion` block on lines that are **part of the PR diff
 3. The PR head repository equals the base repository (read the PR and compare `head.repo.full_name` with `base.repo.full_name`). gh-aw refuses pushes to fork branches, so attempting one only wastes the run.
 4. Every file you touch is under `src/` or `test/`. The workflow's `allowed-files` allowlist refuses anything else, and build infrastructure (`eng/`, `global.json`, `NuGet.config`, `.github/`) must never be "fixed" this way.
 5. The fix is **mechanical and provable from the compiler error itself** — a renamed or moved API, an argument that must now be passed by name, a moved namespace. Anything that requires a design decision, changes behavior, suppresses an analyzer, or that you cannot fully verify against source you have actually read is a comment, not a commit.
-6. **Loop guard.** List the PR's commits first. If any commit on the branch already carries the marker `[build-failure-analysis]` in its message, do **not** push again: a previous run already attempted a fix and the build still failed, which means the automated fix is not converging and a human must take over. Say exactly that in the summary comment instead.
+6. **Loop guard.** List the PR's commits **with the GitHub tools** (the `pull_requests` toolset) — not `git log`: the workspace is a shallow, depth-1 checkout and does not contain the branch's history. If any commit on the branch already carries the marker `[build-failure-analysis]` in its message, do **not** push again: a previous run already attempted a fix and the build still failed, which means the automated fix is not converging and a human must take over. Say exactly that in the summary comment instead.
 
 How to push:
 
@@ -222,7 +222,7 @@ How to push:
 4. Call `push_to_pull_request_branch` targeting pull request `GH_AW_PR_NUMBER`.
 5. Post the Step 5 summary comment **as well**, stating near the top that a fix commit was pushed to the branch and still requires human review.
 
-Never run `git push`, `git checkout`, `git reset`, `git rebase` or `git merge`: the safe-outputs job performs the push, and rewriting history on a branch you do not own is never acceptable. Push at most one commit per run.
+Never run `git push`, `git checkout`, `git switch`, `git branch`, `git rm`, `git reset`, `git rebase` or `git merge`. Enabling the push safe output makes gh-aw widen the shell allowlist with several of these on its own — an allowlist entry is not permission. The safe-outputs job performs the push, and switching branches or rewriting history on a branch you do not own is never acceptable. Push at most one commit per run.
 
 ### Step 7 — Stop
 
