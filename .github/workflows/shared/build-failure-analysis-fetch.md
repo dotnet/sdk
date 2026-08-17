@@ -60,6 +60,7 @@ jobs:
       pr-head-sha: ${{ steps.fetch.outputs.pr-head-sha }}
       pr-merge-sha: ${{ steps.fetch.outputs.pr-merge-sha }}
       pr-checkout-ref: ${{ steps.fetch.outputs.pr-checkout-ref }}
+      base-ref: ${{ steps.fetch.outputs.base-ref }}
       push-blocked: ${{ steps.fetch.outputs.push-blocked }}
       ado-build-id: ${{ steps.fetch.outputs.ado-build-id }}
       ado-build-url: ${{ steps.fetch.outputs.ado-build-url }}
@@ -345,6 +346,15 @@ jobs:
             # gh-aw refuses pushes to fork branches, so the loop guard is moot
             # here and must not suppress the (comment-only) analysis.
             PUSH_BLOCKED=false
+          elif [ -n "${CHECK_PR_NUMBER}" ] && [ "${CHECK_PR_NUMBER}" != "${PR_NUMBER}" ]; then
+            # The push target is bound to `check_run.pull_requests[0].number`
+            # (see the `safe-outputs` block in the automatic workflow), while
+            # everything else keys off PR_NUMBER, which prefers the Azure
+            # Pipelines build's own source branch. Those agree in practice, but
+            # if they ever disagree the guard below would be checking one pull
+            # request while a push landed on another, so the loop would no
+            # longer be bounded. Refuse the run instead.
+            echo "::warning::The check payload names PR #${CHECK_PR_NUMBER} but the Azure Pipelines build belongs to PR #${PR_NUMBER}; skipping this run because the push target and the loop guard would disagree."
           elif [ -z "${PR_TIP_SHA}" ]; then
             echo "::warning::Could not resolve the head commit of PR #${PR_NUMBER}; skipping this run rather than risking a repeated automated fix."
           elif TIP_SUBJECT=$(gh api "repos/${GH_AW_REPO}/commits/${PR_TIP_SHA}" --jq '.commit.message | split("\n")[0]'); then
@@ -738,6 +748,7 @@ jobs:
             echo "pr-head-sha=${HEAD_SHA}"
             echo "pr-merge-sha=${BUILD_MERGE_SHA}"
             echo "pr-checkout-ref=${CHECKOUT_REF}"
+            echo "base-ref=${BASE_REF}"
             echo "push-blocked=${PUSH_BLOCKED}"
             echo "ado-build-id=${BUILD_ID}"
             echo "ado-build-url=${ADO_BUILD_UI}?buildId=${BUILD_ID}"

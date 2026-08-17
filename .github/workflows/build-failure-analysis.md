@@ -133,7 +133,13 @@ timeout-minutes: 30
 # this workflow.
 checkout:
   - ref: ${{ needs.fetch-binlog.outputs.pr-checkout-ref }}
-  - ref: ${{ github.event.repository.default_branch }}
+  # The pull request's own base branch (resolved from the GitHub API by the
+  # shared fetch job), not the repository default branch: a `release/*` pull
+  # request must be analyzed with the playbook and agent config that branch
+  # actually carries, otherwise the restore below would silently swap in
+  # `main`'s instructions. Falls back to the default branch if the API lookup
+  # returned nothing.
+  - ref: ${{ needs.fetch-binlog.outputs.base-ref || github.event.repository.default_branch }}
     path: .gh-aw-base-config
     fetch-depth: 1
     # Cone mode (the `actions/checkout` default) materializes every top-level
@@ -159,7 +165,7 @@ pre-agent-steps:
   - name: Restore agent config from the base branch
     shell: bash
     env:
-      BASE_BRANCH: ${{ github.event.repository.default_branch }}
+      BASE_BRANCH: ${{ needs.fetch-binlog.outputs.base-ref || github.event.repository.default_branch }}
     run: |
       set -euo pipefail
       BASE=".gh-aw-base-config"
@@ -212,7 +218,9 @@ pre-agent-steps:
       # The restored files differ from the PR head, so leave them staged-free and
       # let git see them as modifications: the agent only ever commits the single
       # source file it fixes, and gh-aw builds its patch from commits, never from
-      # the dirty worktree. Fail loudly if that assumption ever breaks.
+      # the dirty worktree. The listing below is diagnostic only — it makes the
+      # restored set visible in the job log when a push has to be explained
+      # after the fact, and deliberately never fails the run.
       git -c core.fileMode=false status --porcelain -- .github .agents AGENTS.md | head -n 20 || true
 
 # `tools:` and `safe-outputs:` are otherwise shared with the slash-command
@@ -251,9 +259,14 @@ safe-outputs:
   # agent append the fix commit to the PR branch instead.
   #
   # Guardrails, in order of how much they actually protect:
-  #   * gh-aw's handler refuses fork PRs outright (the workflow token has no
-  #     write access to a fork), so this only ever reaches same-repo branches —
-  #     i.e. dependency-flow (`darc-*`) branches and branches from people who
+  #   * The push target is bound to the pull request in the `check_run`
+  #     webhook payload rather than to a number the agent supplies, so the
+  #     agent cannot redirect the push at another pull request. Because GitHub
+  #     leaves that field empty for fork-originated check runs, fork pull
+  #     requests have no push target at all — on top of which gh-aw's handler
+  #     refuses fork branches outright (the workflow token has no write access
+  #     to a fork). So this only ever reaches same-repo branches — i.e.
+  #     dependency-flow (`darc-*`) branches and branches from people who
   #     already have write access. It is append-only; force-push is impossible.
   #   * `allowed-files` is an exclusive allowlist: anything outside `src/` and
   #     `test/` is refused by the handler regardless of what the agent produced.
@@ -262,9 +275,11 @@ safe-outputs:
   #     `blocked` policy on top of that.
   #   * `max: 1` bounds a single run; the fail → push → rebuild → fail loop is
   #     bounded by trusted code rather than by model compliance. `commit-title-
-  #     suffix` makes gh-aw's push handler stamp `[build-failure-analysis]` onto
-  #     the commit title as it applies the patch — the marker is written by the
-  #     handler, never by the model — and the shared fetch job (step 2c) refuses
+  #     suffix` (with `patch-format: am`, the only transport on which the
+  #     handler rewrites commit titles) makes gh-aw's push handler stamp
+  #     `[build-failure-analysis]` onto the commit title as it applies the
+  #     patch — the marker is written by the handler, never by the model —
+  #     and the shared fetch job (step 2c) refuses
   #     to activate this workflow at all when the branch tip already carries it.
   #     Because the activation and agent jobs are skipped, gh-aw's own
   #     `safe_outputs` job (conditioned on the agent not being skipped) is
@@ -288,11 +303,31 @@ safe-outputs:
   # `administration: read` just for a pre-flight the platform enforces anyway.
   push-to-pull-request-branch:
     max: 1
-    target: "*"
+    # Deliberately NOT `target: "*"`. With `*`, gh-aw's handler takes the pull
+    # request number from the agent's own tool call, and only then checks
+    # whether *that* pull request is a fork — so the number is model-controlled
+    # and a prompt injection (build log, source comment, PR description) could
+    # aim the push at an unrelated same-repo pull request. Binding it to the
+    # check payload removes the choice: the number comes from GitHub's own
+    # webhook, is never routed through the model, and the handler rejects
+    # anything else.
+    # This also disables the escape hatch on fork pull requests at no extra
+    # cost: GitHub omits `pull_requests` for check runs on fork-originated
+    # commits, so the expression resolves to an empty string and no push target
+    # exists at all (verified against live `dotnet-sdk-public-ci` check runs —
+    # same-repo pull requests report exactly one entry, the fork ones report
+    # none). The comment-only analysis is unaffected, which is the whole point
+    # of keeping this gate here instead of in the job-level `if:`.
+    target: "${{ github.event.check_run.pull_requests[0].number || github.event.inputs['pr-number'] }}"
     allowed-files:
       - "src/**"
       - "test/**"
     commit-title-suffix: " [build-failure-analysis]"
+    # Required for `commit-title-suffix` to do anything: `patch-format`
+    # defaults to `bundle`, and the handler only rewrites commit titles on the
+    # `git am` path. On the default transport the marker would never be
+    # applied, and the loop guard that keys off it would never fire.
+    patch-format: am
     if-no-changes: "ignore"
     ignore-missing-branch-failure: true
     fallback-as-pull-request: false
