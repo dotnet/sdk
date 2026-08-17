@@ -353,7 +353,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
                     if (!fullPath.StartsWith(Path.GetFullPath(targetFolder.Value) + Path.DirectorySeparatorChar))
                     {
-                        throw new InvalidOperationException(string.Format(CliStrings.ResolvedPathEscapesTargetDirectory, fullPath, targetFolder.Value));
+                        throw new GracefulException(string.Format(CliStrings.ResolvedPathEscapesTargetDirectory, fullPath, targetFolder.Value));
                     }
 
                     _filePermissionSetter
