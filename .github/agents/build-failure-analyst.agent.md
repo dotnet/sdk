@@ -217,7 +217,7 @@ How to push:
    by name at both call sites.
    ```
 
-   Do **not** add a `[build-failure-analysis]` marker yourself. The workflow configures `commit-title-suffix`, so the safe-outputs job appends the marker to the commit title as it applies the patch. That is deliberate: the loop guard must not depend on the model remembering — or correctly spelling — a marker.
+   Do **not** add a `[build-failure-analysis]` marker yourself. The workflow configures `commit-title-suffix`, so the safe-outputs job appends the marker to the commit title as it applies the patch. That is deliberate: the loop guard must not depend on the model remembering — or correctly spelling — a marker. Keep the first line to 60 characters or fewer: the marker is appended to it, and git folds longer subject lines when the commit travels as a patch, which strands the marker in the middle of the title.
 
 4. Call `push_to_pull_request_branch`. You do not choose — and cannot override — which pull request it lands on: the workflow pins the target to the pull request in the `check_run` payload, so the tool always pushes to the branch you are analyzing.
 5. Do **not** post a second comment. The run posts exactly one summary comment (Step 5); post it after this step and state near the top that a fix commit has been **requested** on the branch — the push is carried out by a later job and can still be rejected — and that it requires human review either way. Name the files you changed so a reviewer can act even if the push does not land.

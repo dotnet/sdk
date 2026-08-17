@@ -358,7 +358,18 @@ jobs:
           elif [ -z "${PR_TIP_SHA}" ]; then
             echo "::warning::Could not resolve the head commit of PR #${PR_NUMBER}; skipping this run rather than risking a repeated automated fix."
           elif TIP_SUBJECT=$(gh api "repos/${GH_AW_REPO}/commits/${PR_TIP_SHA}" --jq '.commit.message | split("\n")[0]'); then
-            if printf '%s' "${TIP_SUBJECT}" | grep -qF '[build-failure-analysis]'; then
+            # Deliberately a substring match, not an end-of-subject anchor.
+            # gh-aw appends the suffix by rewriting the first `Subject:` line
+            # of a `git format-patch` mbox, and git folds subjects longer than
+            # ~72 characters onto continuation lines, so `git am` reassembles
+            # the title with the marker in the *middle*, e.g.
+            #   Fix CS1503 after [build-failure-analysis] Microsoft.DotNet...
+            # Anchoring to the end would silently miss exactly those commits
+            # and let the push loop run unbounded — the one direction this
+            # guard must never fail in. The leading space is required, which
+            # is what the handler always inserts, so a subject that merely
+            # opens with the marker is not mistaken for an automated fix.
+            if printf '%s' "${TIP_SUBJECT}" | grep -qF ' [build-failure-analysis]'; then
               echo "::warning::PR #${PR_NUMBER}'s tip commit is an automated [build-failure-analysis] fix and the build still fails, so the automated fix is not converging; skipping the automatic run and leaving the pull request to a human. Any further commit on the branch re-enables the analysis."
             else
               PUSH_BLOCKED=false
