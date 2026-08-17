@@ -182,6 +182,17 @@ partial class CreateNewImage
     /// </summary>
     public bool NoCache { get; set; }
 
+    /// <summary>
+    /// If true, an unchanged single-platform archive can be reused without rebuilding the image.
+    /// Mutable base image tags are resolved before cache lookup; digest-pinned base images can be reused without registry access.
+    /// </summary>
+    public bool EnableArchiveIncrementalCache { get; set; }
+
+    /// <summary>
+    /// The file used to persist the incremental archive fingerprint and generated task outputs.
+    /// </summary>
+    public string ArchiveIncrementalCachePath { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
@@ -229,6 +240,7 @@ partial class CreateNewImage
         LocalRegistry = "";
         ContainerUser = "";
         SourceDateEpoch = "";
+        ArchiveIncrementalCachePath = "";
 
         GeneratedContainerConfiguration = "";
         GeneratedContainerManifest = "";
