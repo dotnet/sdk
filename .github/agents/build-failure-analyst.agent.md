@@ -113,7 +113,7 @@ If the source line at the reported `file:line` does not look like a plausible ca
 
 This step applies **only when you have confirmed a genuine build failure** (at least one leg has build errors or failed-target/process evidence). If every leg compiled cleanly, do not reach this step — `noop` silently per Step 2 instead.
 
-When there is a build failure, first re-verify the target revision: read PR `GH_AW_PR_NUMBER` with the GitHub `pull_requests` read tool exposed by the github MCP server (the pull-request "get"/read operation) and take `head.sha` and `merge_commit_sha`. If `head.sha` cannot be read or no longer equals `GH_AW_PR_HEAD_SHA` — or `GH_AW_PR_MERGE_SHA` is non-empty and `merge_commit_sha` is non-empty but differs from it (the base branch advanced) — the PR moved while you were downloading/analyzing, so `noop` with a short reason and stop: your inline suggestions carry no `commit_id` and would land on the wrong lines of the new diff/merge. Otherwise post **exactly one** summary comment via `add_comment` (targeting the pull request `GH_AW_PR_NUMBER`). Mark it with the HTML marker `<!-- build-failure-analysis -->` so future runs (and humans) can identify and supersede it. The gh-aw `add-comment` config in `build-failure-analysis.md` has `hide-older-comments: true`, which collapses prior runs on update.
+When there is a build failure, first re-verify the target revision: read PR `GH_AW_PR_NUMBER` with the GitHub `pull_requests` read tool exposed by the github MCP server (the pull-request "get"/read operation) and take `head.sha` and `merge_commit_sha`. If `head.sha` cannot be read or no longer equals `GH_AW_PR_HEAD_SHA` — or `GH_AW_PR_MERGE_SHA` is non-empty and `merge_commit_sha` is non-empty but differs from it (the base branch advanced) — the PR moved while you were downloading/analyzing, so `noop` with a short reason and stop: your inline suggestions carry no `commit_id` and would land on the wrong lines of the new diff/merge. Otherwise post **exactly one** summary comment via `add_comment` (targeting the pull request `GH_AW_PR_NUMBER`) — compose it here, but post it once as the last action of the run, after Steps 6 and 6b, so that it can report a requested push. Never post it twice. Mark it with the HTML marker `<!-- build-failure-analysis -->` so future runs (and humans) can identify and supersede it. The gh-aw `add-comment` config in `build-failure-analysis.md` has `hide-older-comments: true`, which collapses prior runs on update.
 
 Template:
 
@@ -202,25 +202,25 @@ GitHub only accepts a `suggestion` block on lines that are **part of the PR diff
 3. The PR head repository equals the base repository (read the PR and compare `head.repo.full_name` with `base.repo.full_name`). gh-aw refuses pushes to fork branches, so attempting one only wastes the run.
 4. Every file you touch is under `src/` or `test/`. The workflow's `allowed-files` allowlist refuses anything else, and build infrastructure (`eng/`, `global.json`, `NuGet.config`, `.github/`) must never be "fixed" this way.
 5. The fix is **mechanical and provable from the compiler error itself** — a renamed or moved API, an argument that must now be passed by name, a moved namespace. Anything that requires a design decision, changes behavior, suppresses an analyzer, or that you cannot fully verify against source you have actually read is a comment, not a commit.
-6. **Loop guard.** List the PR's commits **with the GitHub tools** (the `pull_requests` toolset) — not `git log`: the workspace is a shallow, depth-1 checkout and does not contain the branch's history. If any commit on the branch already carries the marker `[build-failure-analysis]` in its message, do **not** push again: a previous run already attempted a fix and the build still failed, which means the automated fix is not converging and a human must take over. Say exactly that in the summary comment instead. This one is also enforced outside your control — when the workflow sees the marker on the branch it installs a git hook that refuses every commit, so ignoring this rule produces a failed `git commit`, never a push.
+6. **Loop guard.** You do not have to check this one, and you cannot influence it: before the workflow starts, a trusted job reads the branch tip and skips the entire run — agent included — when the tip commit is itself an automated `[build-failure-analysis]` fix. So if you are running at all, the previous automated attempt is not the head of this branch. Never try to re-establish the guard yourself from `git log`: the workspace is a shallow, depth-1 checkout and does not contain the branch's history.
 
 How to push:
 
 1. Edit the file(s) in the checked-out working tree. The workspace is checked out at the PR's head branch, so **verify `git rev-parse HEAD` equals `GH_AW_PR_HEAD_SHA` before editing** and abandon the push if it does not — the branch moved while you were analyzing and your fix would be based on a revision you never inspected. Note that the agent-config paths in the workspace (`.github/`, `.agents/`, the other engine-recognized config folders and the root instruction files) are deliberately restored from the base branch and will therefore show as modified; ignore them and never stage them.
 2. Stage only the files you changed (`git add <path>`), then verify with `git status` that nothing else is staged.
-3. Commit with a first line naming the fix and the marker on its own line, e.g.:
+3. Commit with a first line naming the fix and a body explaining it, e.g.:
 
    ```text
    Fix CS1503 after Microsoft.Build package bump
 
    BuildAsync gained a parameter before cancellationToken, so pass the token
    by name at both call sites.
-
-   [build-failure-analysis]
    ```
 
+   Do **not** add a `[build-failure-analysis]` marker yourself. The workflow configures `commit-title-suffix`, so the safe-outputs job appends the marker to the commit title as it applies the patch. That is deliberate: the loop guard must not depend on the model remembering — or correctly spelling — a marker.
+
 4. Call `push_to_pull_request_branch` targeting pull request `GH_AW_PR_NUMBER`.
-5. Post the Step 5 summary comment **as well**, stating near the top that a fix commit was pushed to the branch and still requires human review.
+5. Do **not** post a second comment. The run posts exactly one summary comment (Step 5); post it after this step and state near the top that a fix commit has been **requested** on the branch — the push is carried out by a later job and can still be rejected — and that it requires human review either way. Name the files you changed so a reviewer can act even if the push does not land.
 
 Never run `git push`, `git checkout`, `git switch`, `git branch`, `git rm`, `git reset`, `git rebase` or `git merge`. Enabling the push safe output makes gh-aw widen the shell allowlist with several of these on its own — an allowlist entry is not permission. The safe-outputs job performs the push, and switching branches or rewriting history on a branch you do not own is never acceptable. Push at most one commit per run.
 

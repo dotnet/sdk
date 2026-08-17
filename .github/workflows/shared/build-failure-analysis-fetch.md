@@ -314,20 +314,47 @@ jobs:
           fi
           echo "Agent checkout ref: '${CHECKOUT_REF}' (head repo '${HEAD_REPO}')"
 
-          # --- 2c. Deterministic loop guard for the push escape hatch ---
-          # Only the automatic workflow enables `push-to-pull-request-branch`;
-          # the analyst is told not to push a second fix (Step 6b), but an
-          # instruction is not enforcement. When a fix commit is already on the
-          # branch and the build still fails, the automated fix is not
-          # converging and a human has to take over, so the agent job installs a
-          # git hook that refuses to create any commit at all (see
-          # `pre-agent-steps`) — no commit means gh-aw has nothing to bundle and
-          # the push cannot happen, whatever the model decides to do.
-          PUSH_BLOCKED=false
-          if gh api "repos/${GH_AW_REPO}/pulls/${PR_NUMBER}/commits" --paginate \
-               --jq '.[].commit.message' 2>/dev/null | grep -qF '[build-failure-analysis]'; then
-            PUSH_BLOCKED=true
-            echo "PR #${PR_NUMBER} already carries a [build-failure-analysis] commit: the previous automated fix did not make the build pass, so the push escape hatch is disabled for this run and a human needs to take over."
+          # --- 2c. Trusted loop guard for the push escape hatch ---
+          # Only the automatic workflow enables `push-to-pull-request-branch`.
+          # The analyst is told not to push a second fix (Step 6b), but an
+          # instruction is not enforcement, and neither is anything installed
+          # inside the agent's sandbox. So the decision is made here, in trusted
+          # workflow code, and the automatic workflow applies it in its job-level
+          # `if:`: when this output is `true` the activation and agent jobs never
+          # run, and `safe_outputs` is skipped with them, so no push is even
+          # reachable. The command workflow ignores this output — it is
+          # comment-only and has nothing to guard.
+          #
+          # The condition is "the branch tip is itself an automated fix": the
+          # previous attempt is the newest thing on the branch and the build
+          # still fails, so it did not converge and a human has to take over.
+          # Scoping it to the tip rather than to the whole history means the
+          # workflow resumes the moment anyone pushes anything else, instead of
+          # abandoning the pull request forever after one attempt.
+          #
+          # The `[build-failure-analysis]` marker is not written by the model:
+          # the workflow sets `commit-title-suffix`, so gh-aw's push handler
+          # appends it to the commit title while applying the patch. A guard
+          # that depended on the agent remembering to write its own marker
+          # would not be a guard.
+          #
+          # Fails closed: an unreadable commit blocks the escape hatch.
+          PUSH_BLOCKED=true
+          PR_TIP_SHA=$(printf '%s' "${PR_JSON}" | jq -r '.head.sha // empty')
+          if [ "${HEAD_REPO}" != "${GH_AW_REPO}" ]; then
+            # gh-aw refuses pushes to fork branches, so the loop guard is moot
+            # here and must not suppress the (comment-only) analysis.
+            PUSH_BLOCKED=false
+          elif [ -z "${PR_TIP_SHA}" ]; then
+            echo "::warning::Could not resolve the head commit of PR #${PR_NUMBER}; skipping this run rather than risking a repeated automated fix."
+          elif TIP_SUBJECT=$(gh api "repos/${GH_AW_REPO}/commits/${PR_TIP_SHA}" --jq '.commit.message | split("\n")[0]'); then
+            if printf '%s' "${TIP_SUBJECT}" | grep -qF '[build-failure-analysis]'; then
+              echo "::warning::PR #${PR_NUMBER}'s tip commit is an automated [build-failure-analysis] fix and the build still fails, so the automated fix is not converging; skipping the automatic run and leaving the pull request to a human. Any further commit on the branch re-enables the analysis."
+            else
+              PUSH_BLOCKED=false
+            fi
+          else
+            echo "::warning::Could not read commit ${PR_TIP_SHA} of PR #${PR_NUMBER}; skipping this run rather than risking a repeated automated fix."
           fi
 
           # --- 3. Validate the build, whichever way it was resolved ---
