@@ -111,8 +111,9 @@ timeout-minutes: 30
 # list through the GitHub tools rather than `git log`, which cannot see the
 # branch's history here.
 #
-# It does, however, put PR-controlled `.github/`, `.agents/` and `AGENTS.md`
-# content in the workspace, and the agent reads its playbook from there. gh-aw's
+# It does, however, put PR-controlled `.github/`, `.agents/`, `AGENTS.md` and
+# every other agent-config path in the workspace, and the agent reads its
+# playbook from there. gh-aw's
 # own base-branch restore (`restore_base_github_folders.sh`) is gated on its
 # built-in PR-checkout step, which never fires for `check_run` (that event
 # carries no `pull_request` payload), so the second checkout below fetches the
@@ -126,27 +127,42 @@ checkout:
     path: .gh-aw-base-config
     fetch-depth: 1
     # Cone mode (the `actions/checkout` default) materializes every top-level
-    # file in addition to the listed directories, which is how the base
-    # branch's `AGENTS.md`/`CLAUDE.md`/`GEMINI.md`/`.mcp.json` arrive. The
-    # restore step below does not rely on that: it consults the base tree
-    # directly, so a sparse-checkout change cannot turn "restore" into "delete".
+    # file in addition to the listed directories. The restore step below does
+    # not rely on that: it consults the base tree directly, so a sparse-checkout
+    # change cannot turn "restore" into "delete". The directory list mirrors
+    # gh-aw's own `GH_AW_AGENT_FOLDERS` (see the generated lock) — every path
+    # the engine treats as agent configuration, not just the ones this repo
+    # happens to use today, so a PR cannot introduce e.g. `.claude/` and have it
+    # survive into the agent's context.
     sparse-checkout: |
-      .github
       .agents
+      .antigravity
+      .claude
+      .codex
+      .crush
+      .gemini
+      .github
+      .opencode
+      .pi
 
 pre-agent-steps:
   - name: Restore agent config from the base branch
     shell: bash
     env:
       BASE_BRANCH: ${{ github.event.repository.default_branch }}
+      PUSH_BLOCKED: ${{ needs.fetch-binlog.outputs.push-blocked }}
     run: |
       set -euo pipefail
       BASE=".gh-aw-base-config"
       # Mirror gh-aw's restore_base_github_folders.sh: for each agent-config
       # path, prefer the base-branch copy, and delete anything the PR added that
-      # the base branch does not have. Root instruction files are handled the
-      # same way because the engine auto-loads them.
-      for FOLDER in .github .agents; do
+      # the base branch does not have. The two lists below are gh-aw's own
+      # `GH_AW_AGENT_FOLDERS`/`GH_AW_AGENT_FILES` (see the generated lock), with
+      # `.mcp.json` added because this engine also auto-loads it — keeping them
+      # in sync means the mitigation covers every path the engine recognizes,
+      # not only the ones this repo uses. Unknown paths simply do not exist and
+      # cost nothing.
+      for FOLDER in .agents .antigravity .claude .codex .crush .gemini .github .opencode .pi; do
         rm -rf "${FOLDER}"
         if [ -d "${BASE}/${FOLDER}" ]; then
           cp -r "${BASE}/${FOLDER}" "${FOLDER}"
@@ -156,7 +172,7 @@ pre-agent-steps:
         fi
       done
       BASE_ROOT_FILES=$(git -C "${BASE}" ls-tree --name-only HEAD)
-      for FILE in AGENTS.md CLAUDE.md GEMINI.md .mcp.json; do
+      for FILE in .crush.json .mcp.json AGENTS.md ANTIGRAVITY.md CLAUDE.md GEMINI.md PI.md opencode.jsonc; do
         rm -f "${FILE}"
         if [ -f "${BASE}/${FILE}" ]; then
           cp "${BASE}/${FILE}" "${FILE}"
@@ -189,6 +205,27 @@ pre-agent-steps:
       # source file it fixes, and gh-aw builds its patch from commits, never from
       # the dirty worktree. Fail loudly if that assumption ever breaks.
       git -c core.fileMode=false status --porcelain -- .github .agents AGENTS.md | head -n 20 || true
+
+      # Deterministic loop guard. The fetch job (step 2c) already established
+      # whether this branch carries a `[build-failure-analysis]` commit, i.e.
+      # whether a previous run's automated fix failed to make the build pass.
+      # In that case a human has to take over, so refuse commits outright rather
+      # than trusting the agent to honour Step 6b: gh-aw assembles the patch
+      # from the agent's commits, so a repository that cannot produce a commit
+      # cannot produce a push. `git config` is not in the agent's tool
+      # allowlist, so it cannot undo this.
+      if [ "${PUSH_BLOCKED}" = "true" ]; then
+        HOOKS_DIR="${RUNNER_TEMP}/gh-aw-refuse-commits"
+        mkdir -p "${HOOKS_DIR}"
+        {
+          echo '#!/usr/bin/env bash'
+          echo 'echo "This pull request already carries a [build-failure-analysis] fix commit and the build still failed, so the automated fix is not converging. Commits are refused for this run; report the analysis in a comment and leave the fix to a human." >&2'
+          echo 'exit 1'
+        } > "${HOOKS_DIR}/pre-commit"
+        chmod +x "${HOOKS_DIR}/pre-commit"
+        git config --local core.hooksPath "${HOOKS_DIR}"
+        echo "::warning::A [build-failure-analysis] commit is already on this branch; the push escape hatch is disabled for this run."
+      fi
 
 # `tools:` and `safe-outputs:` are otherwise shared with the slash-command
 # workflow via `shared/build-failure-analysis-shared.md`. These additions are
@@ -235,11 +272,23 @@ safe-outputs:
   #     Build infrastructure (`eng/`, `global.json`, `.github/`, `NuGet.config`)
   #     is therefore out of reach, and `protected-files` stays at its default
   #     `blocked` policy on top of that.
-  #   * `max: 1` plus the agent's own marker check (see the analyst agent's
-  #     "Step 6b") bounds the fail → push → rebuild → fail loop. The push is
-  #     made with GITHUB_TOKEN, which does not re-trigger GitHub Actions, but
-  #     Azure DevOps' GitHub app *does* rebuild — so the loop guard is the agent
-  #     refusing to push twice, not GitHub declining to re-run us.
+  #   * `max: 1` bounds a single run; the fail → push → rebuild → fail loop is
+  #     bounded deterministically instead of by model compliance. The fetch job
+  #     (step 2c) checks whether the branch already carries a
+  #     `[build-failure-analysis]` commit, and if it does, the `pre-agent-steps`
+  #     step above points `core.hooksPath` at a `pre-commit` hook that refuses
+  #     every commit. gh-aw builds the patch from the agent's commits, so with
+  #     no commit there is nothing to push no matter what the model decides.
+  #     The agent's own marker check ("Step 6b") is the polite layer on top.
+  #     This matters because our push is made with GITHUB_TOKEN — which does not
+  #     re-trigger GitHub Actions — but Azure DevOps' GitHub app *does* rebuild,
+  #     so a new run can follow every push.
+  #     Note the optional `GH_AW_CI_TRIGGER_TOKEN` magic secret (gh-aw wires it
+  #     into the generated lock unconditionally) is deliberately NOT configured:
+  #     it exists only to push an extra empty commit so *Actions* CI re-triggers.
+  #     Unset, the expression resolves to an empty string and that step is
+  #     skipped, so this workflow has no new secret prerequisite — and our CI is
+  #     Azure DevOps, which rebuilds on its own.
   # `fallback-as-pull-request: false` keeps a diverged branch from silently
   # turning into a surprise PR (and drops the extra `pull-requests: write`
   # requirement); `check-branch-protection: false` avoids needing

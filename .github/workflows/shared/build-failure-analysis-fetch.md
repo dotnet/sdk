@@ -60,6 +60,7 @@ jobs:
       pr-head-sha: ${{ steps.fetch.outputs.pr-head-sha }}
       pr-merge-sha: ${{ steps.fetch.outputs.pr-merge-sha }}
       pr-checkout-ref: ${{ steps.fetch.outputs.pr-checkout-ref }}
+      push-blocked: ${{ steps.fetch.outputs.push-blocked }}
       ado-build-id: ${{ steps.fetch.outputs.ado-build-id }}
       ado-build-url: ${{ steps.fetch.outputs.ado-build-url }}
       missing-legs: ${{ steps.fetch.outputs.missing-legs }}
@@ -312,6 +313,22 @@ jobs:
             CHECKOUT_REF="refs/pull/${PR_NUMBER}/head"
           fi
           echo "Agent checkout ref: '${CHECKOUT_REF}' (head repo '${HEAD_REPO}')"
+
+          # --- 2c. Deterministic loop guard for the push escape hatch ---
+          # Only the automatic workflow enables `push-to-pull-request-branch`;
+          # the analyst is told not to push a second fix (Step 6b), but an
+          # instruction is not enforcement. When a fix commit is already on the
+          # branch and the build still fails, the automated fix is not
+          # converging and a human has to take over, so the agent job installs a
+          # git hook that refuses to create any commit at all (see
+          # `pre-agent-steps`) — no commit means gh-aw has nothing to bundle and
+          # the push cannot happen, whatever the model decides to do.
+          PUSH_BLOCKED=false
+          if gh api "repos/${GH_AW_REPO}/pulls/${PR_NUMBER}/commits" --paginate \
+               --jq '.[].commit.message' 2>/dev/null | grep -qF '[build-failure-analysis]'; then
+            PUSH_BLOCKED=true
+            echo "PR #${PR_NUMBER} already carries a [build-failure-analysis] commit: the previous automated fix did not make the build pass, so the push escape hatch is disabled for this run and a human needs to take over."
+          fi
 
           # --- 3. Validate the build, whichever way it was resolved ---
           # It must be the dotnet-sdk-public-ci definition (101), have failed,
@@ -694,6 +711,7 @@ jobs:
             echo "pr-head-sha=${HEAD_SHA}"
             echo "pr-merge-sha=${BUILD_MERGE_SHA}"
             echo "pr-checkout-ref=${CHECKOUT_REF}"
+            echo "push-blocked=${PUSH_BLOCKED}"
             echo "ado-build-id=${BUILD_ID}"
             echo "ado-build-url=${ADO_BUILD_UI}?buildId=${BUILD_ID}"
           } >> "$GITHUB_OUTPUT"
