@@ -108,7 +108,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
         bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
-        bool binaryLogRequested = MSBuildArgs.OtherMSBuildArgs?.Any(LoggerUtility.IsBinLogArgument) == true;
+        IReadOnlyList<string> otherMSBuildArgs = MSBuildArgs.OtherMSBuildArgs ?? [];
+        bool binaryLogRequested = otherMSBuildArgs.Any(LoggerUtility.IsBinLogArgument);
 #if !CLI_AOT
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
@@ -117,8 +118,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ? null
             : minimizeStdOut
             ? new SimpleErrorLogger()
-            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
-        var binaryLogger = binaryLogRequested ? GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs) : null;
+            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. otherMSBuildArgs]));
+        var binaryLogger = GetBinaryLogger(otherMSBuildArgs);
 #endif
 
         FileBasedAppCacheInfo? cache = null;
