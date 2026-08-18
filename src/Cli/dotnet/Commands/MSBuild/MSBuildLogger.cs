@@ -91,6 +91,11 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string SdkContainerPublishErrorEventName = "sdk/container/publish/error";
 
     /// <summary>
+    /// Emitted by the Roslyn <c>Csc</c>/<c>Vbc</c> build task.
+    /// </summary>
+    internal const string RoslynCompilerCacheEventName = "roslyn/compilercache";
+
+    /// <summary>
     /// Stores aggregated telemetry data by event name and property name.
     /// </summary>
     /// <remarks>
@@ -324,6 +329,9 @@ public sealed class MSBuildLogger : INodeLogger
                 TrackEvent(telemetry, $"msbuild/{TasksDetailsTelemetryEventName}", args.Properties,
                     toBeHashed: []
                 );
+                break;
+            case RoslynCompilerCacheEventName:
+                TrackEvent(telemetry, $"msbuild/{RoslynCompilerCacheEventName}", args.Properties);
                 break;
             // Pass through events that don't need special handling
             case SdkTaskBaseCatchExceptionTelemetryEventName:
