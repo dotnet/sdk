@@ -13,7 +13,8 @@
         group, otherwise the duplicate <Compile>/<EmbeddedResource> items will fail the
         build once both changes merge.
       * Each command contributes its own clearly-labeled group below, referencing only
-        its command-specific sources and dependencies.
+        its command-specific sources and resources. Add package and project dependencies
+        to AotDependencies.props so the product and tests consume the same closure.
 
     NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer because
     ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper and the test
