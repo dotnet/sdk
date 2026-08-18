@@ -31,7 +31,7 @@ Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj)
 
 ### PublishAot (Native AOT)
 
-**Status: Optimized (this PR)**
+**Status: Optimized**
 
 - `IlcCompile` reads `@(IntermediateAssembly)` from `obj\` and produces a native binary
 - The full `Build` was running a self-contained deployment to `bin\<config>\<tfm>\<rid>\`,
@@ -91,7 +91,7 @@ applies when the outermost mode is optimized:
 
 ### What Changed
 
-Starting in .NET 10, `dotnet publish` with `PublishAot=true` no longer runs a full `Build`
+Starting in .NET 11, `dotnet publish` with `PublishAot=true` no longer runs a full `Build`
 before publish. Instead, it runs only `Compile` (and resource/satellite assembly targets).
 
 ### Impact
