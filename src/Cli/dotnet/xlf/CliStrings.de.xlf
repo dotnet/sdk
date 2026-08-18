@@ -696,6 +696,11 @@ setx PATH "%PATH%;{0}"
         <target state="translated">Der erforderliche Befehl wurde nicht bereitgestellt.</target>
         <note />
       </trans-unit>
+      <trans-unit id="ResolvedPathEscapesTargetDirectory">
+        <source>The resolved path '{0}' escapes the target directory '{1}'.</source>
+        <target state="new">The resolved path '{0}' escapes the target directory '{1}'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ResolvingCommandSpec">
         <source>{0}: resolving commandspec from {1} Tool Libraries.</source>
         <target state="translated">{0}: commandspec aus {1} Toolbibliotheken wird aufgelöst.</target>
