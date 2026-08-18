@@ -166,6 +166,11 @@ partial class CreateNewImage
     /// </summary>
     public bool SkipPublishing { get; set; }
 
+    /// <summary>
+    /// If true, the tooling will upload the image without checking whether its manifest already exists in the destination registry.
+    /// </summary>
+    public bool NoCache { get; set; }
+
     [Output]
     public string GeneratedContainerManifest { get; set; }
 
