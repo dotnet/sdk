@@ -4,7 +4,11 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.NugetSearch;
+using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Common;
+using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace dotnet.Tests.ToolSearchTests;
@@ -12,11 +16,6 @@ namespace dotnet.Tests.ToolSearchTests;
 [TestClass]
 public class ToolSearchCommandTests
 {
-    private const string EmptyResultJson = """{"data":[]}""";
-
-    private const string OneResultJsonTemplate =
-        """{{"data":[{{"id":"{0}","version":"1.0.0","description":"desc","summary":"sum","tags":[],"authors":["author"],"totalDownloads":1,"verified":false,"versions":[{{"version":"1.0.0","downloads":1}}]}}]}}""";
-
     [TestMethod]
     public void ExecuteReturnsOneWhenNoSourcesAreConfiguredOrEnabled()
     {
@@ -40,11 +39,11 @@ public class ToolSearchCommandTests
         const string source2 = "https://source2.example.test/v3/index.json";
         const string source3 = "https://source3.example.test/v3/index.json";
 
-        var fake = new FakeNugetToolSearchApiRequest(successResponses: new Dictionary<string, string>
+        var fake = new FakeNugetToolSearchApiRequest(successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>
         {
-            [source1] = EmptyResultJson,
-            [source2] = EmptyResultJson,
-            [source3] = EmptyResultJson,
+            [source1] = [],
+            [source2] = [],
+            [source3] = [],
         });
 
         int exitCode = RunToolSearch(
@@ -63,10 +62,10 @@ public class ToolSearchCommandTests
         const string source1 = "https://source1.example.test/v3/index.json";
         const string source2 = "https://source2.example.test/v3/index.json";
 
-        var fake = new FakeNugetToolSearchApiRequest(successResponses: new Dictionary<string, string>
+        var fake = new FakeNugetToolSearchApiRequest(successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>
         {
-            [source1] = EmptyResultJson,
-            [source2] = EmptyResultJson,
+            [source1] = [],
+            [source2] = [],
         });
 
         int exitCode = RunToolSearch(
@@ -100,9 +99,9 @@ public class ToolSearchCommandTests
         const string badSource = "https://bad.example.test/v3/index.json";
 
         var fake = new FakeNugetToolSearchApiRequest(
-            successResponses: new Dictionary<string, string>
+            successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>
             {
-                [goodSource] = string.Format(OneResultJsonTemplate, "sample.tool"),
+                [goodSource] = [CreateSearchResultPackage("sample.tool")],
             },
             failureMessages: new Dictionary<string, string>
             {
@@ -124,6 +123,27 @@ public class ToolSearchCommandTests
         error.Lines.Should().Contain(l => l.Contains(badSource));
         error.Lines.Should().Contain(l => l.Contains("the feed did not respond"));
         error.Lines.Should().NotContain(l => l.Contains(goodSource));
+    }
+
+    [TestMethod]
+    public void ExecuteContinuesWhenASourceDoesNotProvidePackageSearchResource()
+    {
+        const string goodSource = "https://good.example.test/v3/index.json";
+        const string unsupportedSource = "https://unsupported.example.test/v3/index.json";
+        var request = new NugetToolSearchApiRequest(
+            (source, _) => Task.FromResult<PackageSearchResource?>(
+                source.Source == unsupportedSource ? null : new EmptyPackageSearchResource()));
+
+        int exitCode = RunToolSearch(
+            ["dotnet", "tool", "search", "mytool", "--source", unsupportedSource, "--source", goodSource],
+            request,
+            out BufferedReporter output,
+            out BufferedReporter error);
+
+        exitCode.Should().Be(0);
+        output.Lines.Should().Contain(l => l.Contains(goodSource));
+        error.Lines.Should().Contain(l => l.Contains(unsupportedSource));
+        error.Lines.Should().Contain(l => l.Contains(nameof(PackageSearchResource)));
     }
 
     [TestMethod]
@@ -158,10 +178,10 @@ public class ToolSearchCommandTests
         const string exclusiveSource = "https://exclusive.example.test/v3/index.json";
         const string additionalSource = "https://additional.example.test/v3/index.json";
 
-        var fake = new FakeNugetToolSearchApiRequest(successResponses: new Dictionary<string, string>
+        var fake = new FakeNugetToolSearchApiRequest(successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>
         {
-            [exclusiveSource] = EmptyResultJson,
-            [additionalSource] = EmptyResultJson,
+            [exclusiveSource] = [],
+            [additionalSource] = [],
         });
 
         int exitCode = RunToolSearch(
@@ -208,19 +228,35 @@ public class ToolSearchCommandTests
         }
     }
 
+    private static SearchResultPackage CreateSearchResultPackage(string id) =>
+        new(
+            new PackageId(id),
+            "1.0.0",
+            "desc",
+            "sum",
+            [],
+            ["author"],
+            1,
+            false,
+            [new SearchResultPackageVersion("1.0.0", 1)]);
+
     private sealed class FakeNugetToolSearchApiRequest(
-        IReadOnlyDictionary<string, string>? successResponses = null,
+        IReadOnlyDictionary<string, IReadOnlyCollection<SearchResultPackage>>? successResponses = null,
         IReadOnlyDictionary<string, string>? failureMessages = null) : INugetToolSearchApiRequest
     {
-        private readonly IReadOnlyDictionary<string, string> _successResponses = successResponses ?? new Dictionary<string, string>();
+        private readonly IReadOnlyDictionary<string, IReadOnlyCollection<SearchResultPackage>> _successResponses =
+            successResponses ?? new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>();
         private readonly IReadOnlyDictionary<string, string> _failureMessages = failureMessages ?? new Dictionary<string, string>();
 
         public List<string> RequestedSourceUrls { get; } = [];
 
         public List<NugetSearchApiParameter> RequestedParameters { get; } = [];
 
-        public Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter, string sourceUrl)
+        public Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
+            NugetSearchApiParameter nugetSearchApiParameter,
+            PackageSource source)
         {
+            string sourceUrl = source.Source;
             RequestedSourceUrls.Add(sourceUrl);
             RequestedParameters.Add(nugetSearchApiParameter);
 
@@ -229,13 +265,27 @@ public class ToolSearchCommandTests
                 throw new NugetSearchApiRequestException(failureMessage);
             }
 
-            if (_successResponses.TryGetValue(sourceUrl, out string? json))
+            if (_successResponses.TryGetValue(sourceUrl, out IReadOnlyCollection<SearchResultPackage>? packages))
             {
-                return Task.FromResult(json);
+                return Task.FromResult(packages);
             }
 
             throw new InvalidOperationException($"Test setup error: no response configured for source '{sourceUrl}'.");
         }
+    }
+
+    private sealed class EmptyPackageSearchResource : PackageSearchResource
+    {
+        public override bool SupportsPackageTypeFiltering => true;
+
+        public override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            ILogger log,
+            CancellationToken cancellationToken)
+            => Task.FromResult<IEnumerable<IPackageSearchMetadata>>([]);
     }
 
     private sealed class TemporaryDirectory : IDisposable
