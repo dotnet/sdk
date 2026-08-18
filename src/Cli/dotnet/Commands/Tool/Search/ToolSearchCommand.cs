@@ -44,8 +44,7 @@ internal sealed class ToolSearchCommand(
             try
             {
                 IReadOnlyCollection<SearchResultPackage> searchResultPackages =
-                    NugetSearchApiResultDeserializer.Deserialize(
-                        _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter, source.Source).GetAwaiter().GetResult());
+                    _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter, source).GetAwaiter().GetResult();
 
                 _searchResultPrinter.PrintSourceHeading(source);
                 _searchResultPrinter.Print(isDetailed, searchResultPackages);

@@ -3,13 +3,17 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
+using NuGet.Configuration;
+
 namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal interface INugetToolSearchApiRequest
 {
     /// <summary>
-    /// Queries the search API for the given source's service index (e.g. a NuGet.Config
-    /// package source's Source URL) with the given search parameters.
+    /// Queries the given source using NuGet's package search resource.
     /// </summary>
-    Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter, string sourceUrl);
+    Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
+        NugetSearchApiParameter nugetSearchApiParameter,
+        PackageSource source);
 }
