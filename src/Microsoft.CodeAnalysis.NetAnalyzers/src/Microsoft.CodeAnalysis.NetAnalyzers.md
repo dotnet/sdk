@@ -1725,7 +1725,7 @@ Using concrete types avoids virtual or interface call overhead and enables inlin
 |Category|Performance|
 |Enabled|True|
 |Severity|Info|
-|CodeFix|False|
+|CodeFix|True|
 ---
 
 ## [CA1860](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca1860): Avoid using 'Enumerable.Any()' extension method
