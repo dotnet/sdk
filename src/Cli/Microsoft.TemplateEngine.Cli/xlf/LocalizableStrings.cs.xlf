@@ -183,6 +183,11 @@ Pokud si chcete zobrazit všechny aliasy, spusťte bez argumentů příkaz dotne
         <target state="translated">Změnit</target>
         <note />
       </trans-unit>
+      <trans-unit id="CliTemplateSearchCoordinator_Error_AllFeedsFailed">
+        <source>Unable to verify template package availability: none of the selected NuGet feeds could be reached.</source>
+        <target state="new">Unable to verify template package availability: none of the selected NuGet feeds could be reached.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CliTemplateSearchCoordinator_Error_NoSources">
         <source>No remoted sources defined to search for the templates.</source>
         <target state="translated">Nedefinovaly se žádné vzdálené zdroje, ve kterých by se daly hledat šablony.</target>

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.New;
 
@@ -187,4 +188,26 @@ public static class SharedOptionsFactory
     {
         Description = CommandDefinitionStrings.Option_ProjectPath
     }.AcceptExistingOnly();
+
+    public const string SourceOptionName = "--source";
+
+    // Note: System.CommandLine always resolves an unspecified array-typed option to Array.Empty<T>()
+    // (never null), regardless of DefaultValueFactory/CustomParser/nullable-type annotations. Consumers
+    // that need to distinguish "not specified" from "specified with zero entries" should treat an empty
+    // collection the same as null (see SearchCommandArgs.Sources/AddSources).
+    public static Option<string[]> CreateSourceOption() => new Option<string[]>(SourceOptionName, "-s")
+    {
+        Arity = new ArgumentArity(1, 99),
+        Description = CommandDefinitionStrings.SourceDescription,
+        HelpName = CommandDefinitionStrings.SourceArgumentName
+    }.AllowSingleArgPerToken();
+
+    public const string ConfigFileOptionName = "--configfile";
+
+    public static Option<string> CreateConfigFileOption() => new(ConfigFileOptionName)
+    {
+        Arity = new ArgumentArity(1, 1),
+        Description = CommandDefinitionStrings.ConfigFileDescription,
+        HelpName = CommandDefinitionStrings.ConfigFileArgumentName
+    };
 }

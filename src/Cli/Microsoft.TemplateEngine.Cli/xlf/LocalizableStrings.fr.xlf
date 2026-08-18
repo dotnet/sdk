@@ -183,6 +183,11 @@ Exécutez « dotnet {1} --show-aliases » sans arguments pour afficher tous le
         <target state="translated">Modification</target>
         <note />
       </trans-unit>
+      <trans-unit id="CliTemplateSearchCoordinator_Error_AllFeedsFailed">
+        <source>Unable to verify template package availability: none of the selected NuGet feeds could be reached.</source>
+        <target state="new">Unable to verify template package availability: none of the selected NuGet feeds could be reached.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CliTemplateSearchCoordinator_Error_NoSources">
         <source>No remoted sources defined to search for the templates.</source>
         <target state="translated">Aucune source distante définie pour rechercher les modèles.</target>

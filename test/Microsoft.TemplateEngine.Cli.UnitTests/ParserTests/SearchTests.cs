@@ -241,6 +241,132 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
+        [DataRow("new search source --source https://one.test/index.json --source https://two.test/index.json --configfile my-nuget.config --add-source https://add1.test/index.json --add-source https://add2.test/index.json --interactive")]
+        public void Search_CanParseSourceSelectionOptions(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.AreEqual("my-nuget.config", args.ConfigFile);
+            Assert.IsNotNull(args.Sources);
+            Assert.HasCount(2, args.Sources!);
+            Assert.Contains("https://one.test/index.json", args.Sources!);
+            Assert.Contains("https://two.test/index.json", args.Sources!);
+            Assert.IsNotNull(args.AddSources);
+            Assert.HasCount(2, args.AddSources!);
+            Assert.Contains("https://add1.test/index.json", args.AddSources!);
+            Assert.Contains("https://add2.test/index.json", args.AddSources!);
+            Assert.IsTrue(args.Interactive);
+        }
+
+        [TestMethod]
+        // Regression test: --add-source must only bind a single following token so that it does not
+        // greedily consume the positional template-name argument. See LegacyOptions.CreateAddSourceOption()
+        // for the equivalent, pre-existing fix on the legacy `new --search` option.
+        [DataRow("new search --add-source https://add1.test/index.json console")]
+        public void Search_AddSourceOption_DoesNotConsumePositionalName(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNotNull(args.AddSources);
+            Assert.HasCount(1, args.AddSources!);
+            Assert.Contains("https://add1.test/index.json", args.AddSources!);
+            Assert.AreEqual("console", args.SearchNameCriteria);
+        }
+
+        [TestMethod]
+        // Confirms that disabling multiple-arguments-per-token does not regress the documented ability
+        // to pass multiple NuGet feeds by repeating --add-source; only a single --add-source occurrence
+        // consuming several tokens at once (the bug covered above) is disallowed.
+        [DataRow("new search --add-source https://add1.test/index.json --add-source https://add2.test/index.json console")]
+        public void Search_AddSourceOption_SupportsRepeatedFlag(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNotNull(args.AddSources);
+            Assert.HasCount(2, args.AddSources!);
+            Assert.Contains("https://add1.test/index.json", args.AddSources!);
+            Assert.Contains("https://add2.test/index.json", args.AddSources!);
+            Assert.AreEqual("console", args.SearchNameCriteria);
+        }
+
+        [TestMethod]
+        [DataRow("new search source -s https://one.test/index.json")]
+        public void Search_CanParseSourceOptionShortAlias(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNotNull(args.Sources);
+            Assert.HasCount(1, args.Sources!);
+            Assert.Contains("https://one.test/index.json", args.Sources!);
+        }
+
+        [TestMethod]
+        [DataRow("new search source --nuget-source https://add1.test/index.json")]
+        public void Search_CanParseAddSourceOptionAlias(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNotNull(args.AddSources);
+            Assert.Contains("https://add1.test/index.json", args.AddSources!);
+        }
+
+        [TestMethod]
+        [DataRow("new search source")]
+        [DataRow("new --search source")]
+        public void Search_SourceSelectionOptionsDefaultToUnset(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
+
+            Assert.IsNull(args.ConfigFile);
+            // System.CommandLine always resolves an unspecified array-typed option to an empty array
+            // (never null); both are valid "not specified" evidence per SearchCommandArgs' documented contract.
+            Assert.IsTrue(args.Sources is null || args.Sources.Count == 0);
+            Assert.IsTrue(args.AddSources is null || args.AddSources.Count == 0);
+            Assert.IsFalse(args.Interactive);
+        }
+
+        [TestMethod]
+        // The legacy `new --search` syntax never registers the feed-selection options, so attempting to use
+        // them on that branch must be a parse error rather than silently accepted.
+        [DataRow("new --search source --source https://one.test/index.json")]
+        [DataRow("new --search source --configfile my-nuget.config")]
+        [DataRow("new --search source --add-source https://add1.test/index.json")]
+        [DataRow("new --search source --interactive")]
+        public void Search_Legacy_CannotParseSourceSelectionOptions(string command)
+        {
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse(command);
+
+            Assert.IsNotEmpty(parseResult.Errors);
+        }
+
+        [TestMethod]
         public void CommandExampleCanShowParentCommandsBeyondNew()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));

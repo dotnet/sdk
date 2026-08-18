@@ -387,6 +387,15 @@ namespace Microsoft.TemplateEngine.Cli {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Unable to verify template package availability: none of the selected NuGet feeds could be reached..
+        /// </summary>
+        internal static string CliTemplateSearchCoordinator_Error_AllFeedsFailed {
+            get {
+                return ResourceManager.GetString("CliTemplateSearchCoordinator_Error_AllFeedsFailed", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Search failed: not enough information specified for search..
         /// </summary>
         internal static string CliTemplateSearchCoordinator_Error_NoTemplateName {

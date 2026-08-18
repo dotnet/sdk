@@ -24,6 +24,17 @@ public sealed class NewSearchCommandDefinition : Command
     public readonly Option<string[]> ColumnsOption;
     public readonly FilterOptions FilterOptions;
 
+    // Source-selection options: modern `dotnet new search` only. The legacy `--search`
+    // syntax never supported feed selection, so these are not exposed on that branch.
+    public readonly Option<string[]> SourceOption = SharedOptionsFactory.CreateSourceOption();
+    public readonly Option<string> ConfigFileOption = SharedOptionsFactory.CreateConfigFileOption();
+    // Disable multiple arguments per token so a single `--add-source` occurrence cannot greedily
+    // consume the positional template-name argument (e.g. `--add-source <url> <name>`); this mirrors
+    // the same fix already applied to the legacy option in LegacyOptions.CreateAddSourceOption().
+    // Repeating `--add-source` multiple times is unaffected and remains supported.
+    public readonly Option<string[]> AddSourceOption = SharedOptionsFactory.CreateAddSourceOption().DisableAllowMultipleArgumentsPerToken();
+    public readonly Option<bool> InteractiveOption = SharedOptionsFactory.CreateInteractiveOption();
+
     public NewSearchCommandDefinition(NewCommandDefinition parent, bool isLegacy)
         : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_Search_Description)
     {
@@ -51,6 +62,17 @@ public sealed class NewSearchCommandDefinition : Command
             ColumnsAllOption,
             ColumnsOption,
         ]);
+
+        if (!isLegacy)
+        {
+            Options.AddRange(
+            [
+                SourceOption,
+                ConfigFileOption,
+                AddSourceOption,
+                InteractiveOption,
+            ]);
+        }
 
         this.AddNoLegacyUsageValidators(isLegacy ? [.. FilterOptions.AllNames, ColumnsAllOption.Name, ColumnsOption.Name, NewCommandDefinition.ShortNameArgumentName] : []);
 
