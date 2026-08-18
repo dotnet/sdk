@@ -30,7 +30,7 @@ jobs:
     value: $(Agent.BuildDirectory)/vmr
   - ${{ if not(parameters.noPush) }}:
     - ${{ if and( eq(variables['System.TeamProject'], 'internal'), or(startswith(variables['Build.SourceBranch'], 'refs/heads/release/'), eq(variables['Build.SourceBranch'], 'refs/heads/main'))) }}:
-      - group: VMR Synchronization - Push
+      - group: DotNetBot-GitHub
       - group: DotNetBot-GitHub-No-Scopes
       - name: vmrPublicUrl
         value: https://github.com/dotnet/dotnet
@@ -65,36 +65,16 @@ jobs:
       vmrBranch: ${{ parameters.vmrBranch }}
       targetRef: ${{ parameters.targetRef }}
 
-  # For official runs that push to GitHub, we need to get a GitHub App token to push to dotnet/dotnet
   - ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
     # Push main and release branches to the public VMR
     - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
-      # The template that signs GitHub App tokens does not support multi-repo checkout, so we need this workaround
-      - script: |
-          target_dir='$(System.DefaultWorkingDirectory)/eng/common'
-          mkdir -p "$target_dir"
-          cp -r Get-GitHubAppToken.ps1 "$target_dir/Get-GitHubAppToken.ps1"
-          cp -r pipeline-logging-functions.ps1 "$target_dir/pipeline-logging-functions.ps1"
-        displayName: Prepare scripts for GitHub App token generation
-        workingDirectory: $(Build.Repository.LocalPath)/eng/common
-
-      - template: /eng/common/templates-official/steps/get-github-app-token.yml
-        parameters:
-          azureSubscription: DncEng-VSTS
-          keyVaultName: dnceng-pipeline-secrets
-          keyName: vmr-synchronization-app-secret
-          appClientId: $(vmr-synchronization-app-client-id)
-          installationOwner: dotnet
-          outputVariableName: vmrPushToken
-          displayName: Get GitHub token for pushing to dotnet/dotnet
-
       - script: >
           ./.dotnet/dotnet darc vmr push
           --vmr '$(vmrPath)'
           --commit-verification-pat '$(BotAccount-dotnet-maestro-bot-no-scopes-PAT)'
           --branch '${{ parameters.vmrBranch }}'
           --remote-url '$(vmrPublicUrl)'
-          --github-pat '$(vmrPushToken)'
+          --github-pat '$(BotAccount-dotnet-bot-vmr-sync-PAT)'
           --verbose
         displayName: Push changes to dotnet/dotnet (public)
         workingDirectory: $(Agent.BuildDirectory)/sdk
