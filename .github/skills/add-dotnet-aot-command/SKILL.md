@@ -200,8 +200,8 @@ and binary-size delta.
 - **Existing tests may assert exclusions.** Search before enabling a command; an intentional
   `DoesNotContain` can need a carefully justified inversion.
 - **A Roslyn pragma is not native-publish evidence.** ILC can report the same trim/AOT warning during
-  publish. Use **dotnet-aot-compat**, keep suppression scope narrow, and add a tracking issue for temporary
-  dependency warnings.
+  publish. Use **dotnet-aot-compat**, keep suppression scope narrow, and reference an existing tracking
+  issue for temporary dependency warnings. Ask the user before creating a new issue.
 - **A shared Native AOT library is not a standalone AOT app.** On each affected OS, check interaction
   with native libraries and process-global state already loaded by the host.
 - **Flat layouts can hide SDK-root defects.** Use `-Layout Separated`; add `-SelfLocate` to exercise the
@@ -269,10 +269,13 @@ the request explicitly asks to select or run narrow SDK tests.
 
 ### 1. Focused parser/entry-point test
 
-Build `test/dotnet-aot.Tests/dotnet-aot.Tests.csproj`, then invoke the generated MTP executable with:
+Use the targeted-test runner so it builds the project, resolves the evaluated `TargetPath`, and invokes
+the Microsoft.Testing.Platform application without assuming its generated executable is on `PATH`:
 
 ```powershell
-dotnet-aot.Tests.exe --filter "FullyQualifiedName~<name>"
+.\.dotnet\dotnet.exe .github\skills\targeted-test\scripts\RunTargetedTests.cs -- `
+  --project test\dotnet-aot.Tests\dotnet-aot.Tests.csproj `
+  --filter "FullyQualifiedName~<name>"
 ```
 
 Record whether the test asserts AOT handling, fallback, or semantics. Do not call this a native run.
