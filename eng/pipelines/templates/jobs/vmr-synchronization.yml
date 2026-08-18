@@ -65,24 +65,20 @@ jobs:
       vmrBranch: ${{ parameters.vmrBranch }}
       targetRef: ${{ parameters.targetRef }}
 
-  # For official runs that push to GitHub, we need to get a GitHub App token to push to dotnet/dotnet
   - ${{ if and(not(parameters.noPush), not(in(variables['Build.Reason'], 'PullRequest')), eq(variables['System.TeamProject'], 'internal')) }}:
     # Push main and release branches to the public VMR
     - ${{ if or(eq(parameters.vmrBranch, 'main'), startsWith(parameters.vmrBranch, 'release/')) }}:
-      # The template that signs GitHub App tokens does not support multi-repo checkout, so we need this workaround
+      # Make sure the script is where we expect it to be, since the template does not support multi-repo checkout
       - script: |
-          target_dir='$(System.DefaultWorkingDirectory)/eng/common'
-          mkdir -p "$target_dir"
-          cp -r Get-GitHubAppToken.ps1 "$target_dir/Get-GitHubAppToken.ps1"
-          cp -r pipeline-logging-functions.ps1 "$target_dir/pipeline-logging-functions.ps1"
-        displayName: Prepare scripts for GitHub App token generation
-        workingDirectory: $(Build.Repository.LocalPath)/eng/common
+          mkdir -p $(System.DefaultWorkingDirectory)/eng/common
+          cp -r $(Build.Repository.LocalPath)/eng/common/Get-GitHubAppToken.ps1 $(System.DefaultWorkingDirectory)/eng/common
+        displayName: Copy GitHub App token script
 
       - template: /eng/common/templates-official/steps/get-github-app-token.yml
         parameters:
           azureSubscription: DncEng-VSTS
           keyVaultName: dnceng-pipeline-secrets
-          keyName: vmr-synchronization-app-secret
+          keyName: vmr-synchronization-app-client-secret
           appClientId: $(vmr-synchronization-app-client-id)
           installationOwner: dotnet
           outputVariableName: vmrPushToken
