@@ -17,7 +17,7 @@ internal class SearchResultPackage(
     string summary,
     IReadOnlyCollection<string> tags,
     IReadOnlyCollection<string> authors,
-    int totalDownloads,
+    long totalDownloads,
     bool verified,
     IReadOnlyCollection<SearchResultPackageVersion> versions)
 {
@@ -27,13 +27,13 @@ internal class SearchResultPackage(
     public string Summary { get; } = summary;
     public IReadOnlyCollection<string> Tags { get; } = tags ?? throw new ArgumentNullException(nameof(tags));
     public IReadOnlyCollection<string> Authors { get; } = authors ?? throw new ArgumentNullException(nameof(authors));
-    public int TotalDownloads { get; } = totalDownloads;
+    public long TotalDownloads { get; } = totalDownloads;
     public bool Verified { get; } = verified;
     public IReadOnlyCollection<SearchResultPackageVersion> Versions { get; } = versions ?? throw new ArgumentNullException(nameof(versions));
 }
 
-internal class SearchResultPackageVersion(string version, int downloads)
+internal class SearchResultPackageVersion(string version, long downloads)
 {
     public string Version { get; } = version ?? throw new ArgumentNullException(nameof(version));
-    public int Downloads { get; } = downloads;
+    public long Downloads { get; } = downloads;
 }

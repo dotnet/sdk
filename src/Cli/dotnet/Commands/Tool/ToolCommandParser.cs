@@ -11,7 +11,9 @@ using Microsoft.DotNet.Cli.Extensions;
 #endif
 using Microsoft.DotNet.Cli.Commands.Tool.List;
 using Microsoft.DotNet.Cli.Commands.Tool.Run;
+#if !CLI_AOT
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
+#endif
 using Microsoft.DotNet.Cli.Commands.Tool.Uninstall;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool;
@@ -23,10 +25,10 @@ internal static class ToolCommandParser
 #if CLI_AOT
         // ConfigureAotActions already set every `tool` subcommand (and the bare `tool` command) to
         // throw CommandNotAvailableInAotException by default, so we only override the paths that run
-        // in AOT. Only the local `list`/`uninstall`, `run`, and `search` paths are AOT-capable; the
-        // `--global`/`--tool-path` variants and `install`/`update`/`restore`/`execute` keep the
-        // default fallback because they depend on NuGet package install/restore infrastructure that
-        // isn't AOT-ready. NativeEntryPoint catches the exception and hosts the managed CLI.
+        // in AOT. Only the local `list`/`uninstall` and `run` paths are AOT-capable; the
+        // `--global`/`--tool-path` variants and commands that use NuGet.Protocol keep the default
+        // fallback because that infrastructure isn't AOT-ready. NativeEntryPoint catches the
+        // exception and hosts the managed CLI.
         command.ListCommand.SetAction(parseResult =>
             command.ListCommand.LocationOptions.IsGlobalOrToolPath(parseResult)
                 ? throw new CommandNotAvailableInAotException()
@@ -36,7 +38,6 @@ internal static class ToolCommandParser
                 ? throw new CommandNotAvailableInAotException()
                 : new ToolUninstallLocalCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
-        command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
 #else
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
         command.InstallCommand.SetAction(parseResult => new ToolInstallCommand(parseResult).Execute());
