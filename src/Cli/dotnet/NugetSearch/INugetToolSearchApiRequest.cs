@@ -7,5 +7,9 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal interface INugetToolSearchApiRequest
 {
-    Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter);
+    /// <summary>
+    /// Queries the search API for the given source's service index (e.g. a NuGet.Config
+    /// package source's Source URL) with the given search parameters.
+    /// </summary>
+    Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter, string sourceUrl);
 }
