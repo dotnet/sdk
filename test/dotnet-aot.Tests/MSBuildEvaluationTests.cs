@@ -3,12 +3,23 @@
 
 using System.CommandLine;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Xml;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
+using BuildCommand = Microsoft.DotNet.Cli.Commands.Build.BuildCommand;
+using CleanCommand = Microsoft.DotNet.Cli.Commands.Clean.CleanCommand;
+using MSBuildCommand = Microsoft.DotNet.Cli.Commands.MSBuild.MSBuildCommand;
+using PackCommand = Microsoft.DotNet.Cli.Commands.Pack.PackCommand;
+using PublishCommand = Microsoft.DotNet.Cli.Commands.Publish.PublishCommand;
+using RestoreCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoreCommand;
+using RestoringCommand = Microsoft.DotNet.Cli.Commands.Restore.RestoringCommand;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -74,6 +85,404 @@ public class MSBuildEvaluationTests
         Assert.AreEqual(
             sdkDirectory,
             forwardingApp.GetProcessStartInfo().Environment["MSBuildExtensionsPath"]);
+    }
+
+    [TestMethod]
+    public void BuildCommandForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        var command = Assert.IsInstanceOfType<RestoringCommand>(
+            BuildCommand.FromArgs(["test.csproj", "--no-restore"]));
+        string[] arguments = command.GetArgumentTokensToMSBuild();
+
+        Assert.Contains("test.csproj", arguments);
+        Assert.Contains("-consoleloggerparameters:Summary", arguments);
+        Assert.DoesNotContain("-restore", arguments);
+        Assert.Contains(
+            Path.Combine(sdkDirectory, "MSBuild.dll"),
+            command.GetProcessStartInfo().Arguments);
+
+        var restoreCommand = Assert.IsInstanceOfType<RestoringCommand>(
+            BuildCommand.FromArgs(["test.csproj"]));
+        Assert.Contains("-restore", restoreCommand.GetArgumentTokensToMSBuild());
+    }
+
+    [TestMethod]
+    public void RestoreCommandForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        var command = Assert.IsInstanceOfType<MSBuildForwardingApp>(
+            RestoreCommand.FromArgs(["test.csproj", "--no-cache"]));
+        string[] arguments = command.GetArgumentTokensToMSBuild();
+
+        Assert.Contains("test.csproj", arguments);
+        Assert.Contains("--target:Restore", arguments);
+        Assert.Contains("--property:RestoreNoCache=true", arguments);
+        Assert.Contains(
+            Path.Combine(sdkDirectory, "MSBuild.dll"),
+            command.GetProcessStartInfo().Arguments);
+    }
+
+    [TestMethod]
+    public void CleanCommandForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        var command = Assert.IsInstanceOfType<CleanCommand>(
+            CleanCommand.FromArgs(["test.csproj", "--configuration", "Release"]));
+        string[] arguments = command.GetArgumentTokensToMSBuild();
+
+        Assert.Contains("test.csproj", arguments);
+        Assert.Contains("--target:Clean", arguments);
+        Assert.Contains("--property:Configuration=Release", arguments);
+        Assert.Contains(
+            Path.Combine(sdkDirectory, "MSBuild.dll"),
+            command.GetProcessStartInfo().Arguments);
+    }
+
+    [TestMethod]
+    public void MSBuildCommandForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        MSBuildCommand command = MSBuildCommand.FromArgs(
+            ["test.csproj", "-target:Build", "-property:Configuration=Release"]);
+        string[] arguments = command.GetArgumentTokensToMSBuild();
+
+        Assert.Contains("test.csproj", arguments);
+        Assert.Contains("--target:Build", arguments);
+        Assert.Contains("--property:Configuration=Release", arguments);
+        Assert.Contains(
+            Path.Combine(sdkDirectory, "MSBuild.dll"),
+            command.GetProcessStartInfo().Arguments);
+    }
+
+    [TestMethod]
+    public void PackCommandEvaluatesPackReleaseAndForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-pack-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "TestProject.csproj");
+        string binlogPath = Path.Combine(testDirectory, "pack.binlog");
+        string previousCurrentDirectory = Directory.GetCurrentDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <PackRelease>true</PackRelease>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        try
+        {
+            Directory.SetCurrentDirectory(testDirectory);
+            MSBuildSdkResolverRegistration.Register();
+
+            var command = (PackCommand)PackCommand.FromArgs(
+                [projectPath, "--no-restore", $"-bl:{binlogPath}"]);
+            string[] arguments = command.GetArgumentTokensToMSBuild();
+
+            Assert.Contains("--target:Pack", arguments);
+            Assert.Contains("--property:_IsPacking=true", arguments);
+            Assert.Contains("--property:Configuration=Release", arguments);
+            Assert.Contains($"-bl:{binlogPath}", arguments);
+            Assert.DoesNotContain("-restore", arguments);
+            Assert.Contains(
+                Path.Combine(sdkDirectory, "MSBuild.dll"),
+                command.GetProcessStartInfo().Arguments);
+
+            var restoreCommand = (PackCommand)PackCommand.FromArgs([projectPath]);
+            Assert.Contains("-restore", restoreCommand.GetArgumentTokensToMSBuild());
+
+            var explicitConfigurationCommand = (PackCommand)PackCommand.FromArgs(
+                [projectPath, "--no-restore", "--configuration", "Debug"]);
+            string[] explicitConfigurationArguments = explicitConfigurationCommand.GetArgumentTokensToMSBuild();
+            Assert.Contains("--property:Configuration=Debug", explicitConfigurationArguments);
+            Assert.Contains(
+                "--property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true",
+                explicitConfigurationArguments);
+            Assert.DoesNotContain("--property:Configuration=Release", explicitConfigurationArguments);
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousCurrentDirectory);
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void PublishCommandEvaluatesPublishReleaseForTargetRuntimeAndForwardsToVersionedSdk()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-publish-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "TestProject.csproj");
+        string sourcePath = Path.Combine(testDirectory, "Program.cs");
+        string binlogPath = Path.Combine(testDirectory, "publish.binlog");
+        string previousCurrentDirectory = Directory.GetCurrentDirectory();
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <PublishRelease Condition="'$(RuntimeIdentifier)' == 'win-arm64'">true</PublishRelease>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(sourcePath, """Console.WriteLine("hi");""");
+
+        try
+        {
+            Directory.SetCurrentDirectory(testDirectory);
+            MSBuildSdkResolverRegistration.Register();
+
+            var command = (PublishCommand)PublishCommand.FromArgs(
+                [projectPath, "--no-restore", "-r", "win-arm64", $"-bl:{binlogPath}"]);
+            string[] arguments = command.GetArgumentTokensToMSBuild();
+
+            Assert.Contains("--target:Publish", arguments);
+            Assert.Contains("--property:_IsPublishing=true", arguments);
+            Assert.Contains("--property:Configuration=Release", arguments);
+            Assert.Contains($"-bl:{binlogPath}", arguments);
+            Assert.DoesNotContain("-restore", arguments);
+            Assert.Contains(
+                Path.Combine(sdkDirectory, "MSBuild.dll"),
+                command.GetProcessStartInfo().Arguments);
+
+            var restoreCommand = (PublishCommand)PublishCommand.FromArgs([projectPath]);
+            Assert.Contains("-restore", restoreCommand.GetArgumentTokensToMSBuild());
+
+            var explicitConfigurationCommand = (PublishCommand)PublishCommand.FromArgs(
+                [projectPath, "--no-restore", "--configuration", "Debug"]);
+            string[] explicitConfigurationArguments = explicitConfigurationCommand.GetArgumentTokensToMSBuild();
+            Assert.Contains("--property:Configuration=Debug", explicitConfigurationArguments);
+            Assert.Contains(
+                "--property:DOTNET_CLI_DISABLE_PUBLISH_AND_PACK_RELEASE=true",
+                explicitConfigurationArguments);
+            Assert.DoesNotContain("--property:Configuration=Release", explicitConfigurationArguments);
+
+            CommandBase fileCommand = PublishCommand.FromArgs([sourcePath, "--no-restore"]);
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => fileCommand.Execute());
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousCurrentDirectory);
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void ProjectCompletionsEvaluateCurrentProject()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-pack-completion-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "TestProject.csproj");
+        string previousCurrentDirectory = Directory.GetCurrentDirectory();
+        string? previousDotnetHostPath = Environment.GetEnvironmentVariable("DOTNET_HOST_PATH");
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            projectPath,
+            """
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>net11.0</TargetFramework>
+                <Configurations>CustomDebug;CustomRelease</Configurations>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        try
+        {
+            Directory.SetCurrentDirectory(testDirectory);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", "test-dotnet-host");
+            MSBuildSdkResolverRegistration.Register();
+
+            string[] completions = [.. Parser.Parse("pack --configuration ").GetCompletions().Select(item => item.Label)];
+            string[] targetFrameworks = [.. CliCompletion.TargetFrameworksFromProjectFile(null!).Select(item => item.Label)];
+
+            completions.Should().Equal("CustomDebug", "CustomRelease");
+            targetFrameworks.Should().Equal("net11.0");
+            Assert.AreEqual("test-dotnet-host", Environment.GetEnvironmentVariable("DOTNET_HOST_PATH"));
+        }
+        finally
+        {
+            Directory.SetCurrentDirectory(previousCurrentDirectory);
+            Environment.SetEnvironmentVariable("DOTNET_HOST_PATH", previousDotnetHostPath);
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void VirtualFileProjectCanBeEvaluatedWithAndWithoutDirectives()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-virtual-project-{Guid.NewGuid():N}");
+        string sourcePath = Path.Combine(testDirectory, "Program.cs");
+        string resultPath = Path.Combine(testDirectory, "result.json");
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(
+            sourcePath,
+            """
+            Console.WriteLine("Hello");
+            """);
+        File.WriteAllText(
+            Path.Combine(testDirectory, "Directory.Build.props"),
+            """
+            <Project>
+              <PropertyGroup>
+                <PackRelease>true</PackRelease>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        try
+        {
+            MSBuildSdkResolverRegistration.Register();
+
+            var command = new VirtualProjectBuildingCommand(
+                sourcePath,
+                MSBuildArgs.FromProperties(null).CloneWithExplicitArgs(["-noconsolelogger"]));
+            Assert.IsTrue(command.NoConsoleLogger);
+            Assert.IsEmpty(command.Directives);
+            ProjectInstance project = command.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
+
+            Assert.AreEqual("true", project.GetPropertyValue("PackRelease"));
+            Assert.AreEqual("net11.0", project.GetPropertyValue("TargetFramework"));
+            Assert.IsEmpty(command.EvaluatedDirectives);
+            Assert.AreEqual(
+                VirtualProjectBuilder.GetVirtualProjectPath(sourcePath),
+                project.FullPath);
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => command.Execute());
+
+            var packCommand = Assert.IsInstanceOfType<VirtualProjectBuildingCommand>(
+                PackCommand.FromArgs([sourcePath, "--no-restore"]));
+            Assert.AreEqual("Release", packCommand.MSBuildArgs.GlobalProperties?.GetValueOrDefault("Configuration"));
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => packCommand.Execute());
+
+            CommandBase queryCommand = BuildCommand.FromArgs([
+                sourcePath,
+                "--getProperty:TargetFramework",
+                "--getItem:Compile",
+                $"--getResultOutputFile:{resultPath}",
+            ]);
+            Assert.AreEqual(0, queryCommand.Execute());
+
+            using (JsonDocument result = JsonDocument.Parse(File.ReadAllText(resultPath)))
+            {
+                Assert.AreEqual(
+                    "net11.0",
+                    result.RootElement.GetProperty("Properties").GetProperty("TargetFramework").GetString());
+                Assert.Contains(
+                    sourcePath,
+                    result.RootElement.GetProperty("Items").GetProperty("Compile").EnumerateArray()
+                        .Select(item => item.GetProperty("Identity").GetString()));
+            }
+
+            foreach (string targetArgument in new[] { "--target:Build", "--getTargetResult:Build" })
+            {
+                CommandBase targetQueryCommand = BuildCommand.FromArgs([
+                    sourcePath,
+                    "--getProperty:TargetFramework",
+                    targetArgument,
+                ]);
+                Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => targetQueryCommand.Execute());
+            }
+
+            File.WriteAllText(
+                sourcePath,
+                """
+                #:property DirectiveValue=from-directive
+                Console.WriteLine("Hello");
+                """);
+            var commandWithDirectives = new VirtualProjectBuildingCommand(
+                sourcePath,
+                MSBuildArgs.FromProperties(null));
+            Assert.HasCount(1, commandWithDirectives.Directives);
+            ProjectInstance projectWithDirectives =
+                commandWithDirectives.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
+            Assert.AreEqual("from-directive", projectWithDirectives.GetPropertyValue("DirectiveValue"));
+            Assert.HasCount(1, commandWithDirectives.EvaluatedDirectives);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void PackCommandContinuesWhenPackReleaseEvaluationFails()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-pack-evaluation-error-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "Invalid.csproj");
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(projectPath, "<Project");
+
+        try
+        {
+            var command = Assert.IsInstanceOfType<PackCommand>(
+                PackCommand.FromArgs([projectPath, "--no-restore"]));
+            Assert.DoesNotContain("--property:Configuration=Release", command.GetArgumentTokensToMSBuild());
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void PackCommandContinuesWhenSolutionProjectEvaluationFails()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-pack-solution-evaluation-error-{Guid.NewGuid():N}");
+        string projectPath = Path.Combine(testDirectory, "Invalid.csproj");
+        string solutionPath = Path.Combine(testDirectory, "Invalid.slnx");
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(projectPath, "<Project");
+        File.WriteAllText(
+            solutionPath,
+            """
+            <Solution>
+              <Project Path="Invalid.csproj" />
+            </Solution>
+            """);
+
+        try
+        {
+            var command = Assert.IsInstanceOfType<PackCommand>(
+                PackCommand.FromArgs([solutionPath, "--no-restore"]));
+            Assert.DoesNotContain("--property:Configuration=Release", command.GetArgumentTokensToMSBuild());
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
     }
 
     [TestMethod]

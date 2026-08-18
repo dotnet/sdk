@@ -122,7 +122,9 @@ bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
 can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
-subcommands, and the narrow file-based run path described below) execute immediately and return.
+subcommands, the narrow file-based run path described below, plus `build`, `clean`,
+`msbuild`, `restore`, `pack`, and `publish` setup)
+execute immediately and return.
 Other built-in command shapes are wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
@@ -148,15 +150,19 @@ executed twice. If resolution returns no command, reuse-only implicit file-based
 unchanged validated cache; other shorthand shapes defer. The native path also supports explicit
 `dotnet run --file` and positional `dotnet run app.cs`.
 
-**No-build file launch** — `AotRunCommand` handles explicit `--file` and positional
-`dotnet run <path> --no-build` when the prior cache records a synthetic CSC build. Positional discovery runs natively
+**File-based app run** — `AotRunCommand` handles explicit `--file` and positional
+`dotnet run <path>`. For a fresh simple app, the native path uses the shared
+`CSharpCompilerCommand` fast path to write the response and auxiliary files, invoke the compiler
+server, create the apphost, and update the build-success cache before launching it. Apps whose
+directives, global properties, implicit build files, or missing package inputs require a full
+MSBuild build continue through managed fallback. `--no-build` can launch a prior synthetic CSC
+build without changing the cache. Positional discovery runs natively
 only when the current directory contains no project; otherwise it defers so the project receives
 the path as an application argument. The native path preserves arguments after `--`, `-e`
 environment variables, the architecture-specific
 `DOTNET_ROOT`, working directory, Ctrl-C handling, and exit code. Project launch
 profiles decorate the cached apphost; Executable profiles bypass the cache and launch their
-configured command. Runs requiring compile/build work and unsupported options continue through
-managed fallback.
+configured command. Unsupported options continue through managed fallback.
 
 The validated-cache launch additionally handles unchanged replayed/MSBuild caches, including package apps.
 The bridge validates versions, global properties, source and tracked filesystem inputs, and the
@@ -164,16 +170,25 @@ serialized `RunProperties` contract before using its command, arguments, working
 RID/framework values. Stale or ambiguous caches defer before launch. Missing launch output follows
 the same process-start or apphost failure path as managed `dotnet run`.
 
-**MSBuild evaluation infrastructure** — The Native AOT closure includes the
-SDK-shipped workload and NuGet SDK resolvers and a reflection-free project evaluator
-that uses MSBuild's static resolver registration APIs. SDK-relative paths
-(`MSBuild.dll`, `Sdks`, `MSBuildExtensionsPath`, and the telemetry logger) come from
-`SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. This infrastructure is
-available to command handlers but is not registered or invoked during Native AOT
-startup yet. The shared `RestoringCommand` starts workload advertising and
-vulnerability-cache maintenance in both modes. Its AOT closure reuses the existing
-NuGet downloader, file-based and administrative-MSI manifest extraction, and read-only
-workload records without linking workload install/repair or elevated MSI IPC.
+**MSBuild evaluation and project commands** — The AOT bridge registers the
+SDK-shipped workload and NuGet SDK resolvers through MSBuild's static registration APIs.
+For a physical project, solution, or current directory, it forwards the command target to the
+selected SDK's `MSBuild.dll` out of process. Build, pack, and publish also forward restore when
+requested. Pack and publish first evaluate the project properties needed to honor `PackRelease`
+or `PublishRelease`. File-based app inputs use the existing virtual-project builder in AOT,
+including `#:` directives, SDK imports, and implicit files such as `Directory.Build.props`.
+Simple `dotnet run` file inputs can use the direct CSC path above. File-based invocations that
+require restore or full in-process MSBuild execution report the boundary and fall back to the
+managed CLI. SDK-relative paths
+(`MSBuild.dll`, `Sdks`,
+`MSBuildExtensionsPath`, the Roslyn compiler server, and the telemetry logger) come from
+`SdkPaths.SdkDirectory`, not `AppContext.BaseDirectory`. `.nuspec` inputs also defer
+because they use the in-process NuGet pack engine. The shared `RestoringCommand` starts
+workload advertising and vulnerability-cache maintenance in both modes. Its AOT closure
+reuses the existing NuGet downloader, file-based and administrative-MSI manifest
+extraction, and read-only workload records without linking workload install/repair or
+elevated MSI IPC. The `dotnet clean file-based-apps` maintenance subcommand runs directly
+in AOT with source-generated JSON metadata.
 
 **Slow path** — When `DOTNET_CLI_ENABLEAOT` is disabled (`false`/`0`/`no`/`off`)
 or the AOT bridge does

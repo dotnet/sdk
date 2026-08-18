@@ -39,6 +39,12 @@
     <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
 
+    <!-- NuGet's AOT feature switch is configured in AotSourceFiles.props. NuGet.Packaging still
+         exposes Newtonsoft.Json-backed runtime-model APIs in the SDK resolver closure, while the
+         runtime dynamic assemblies also produce AOT rollups. Keep dependency rollups visible but
+         non-fatal; first-party IL warnings and all other warning codes remain errors. -->
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);IL2104;IL3053</WarningsNotAsErrors>
+
     <!--
       Enable control flow guard
       https://github.com/dotnet/docs/blob/main/docs/core/deploying/native-aot/security.md#control-flow-guard

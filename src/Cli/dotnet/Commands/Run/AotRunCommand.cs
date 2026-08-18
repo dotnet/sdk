@@ -60,6 +60,7 @@ internal static class AotRunCommand
             out bool noBuild,
             out string? entryPointFileFullPath,
             out string[]? applicationArguments,
+            out string[]? loggerArguments,
             out IReadOnlyDictionary<string, string>? environmentVariables,
             out string fallbackReason))
         {
@@ -71,6 +72,33 @@ internal static class AotRunCommand
             definition,
             entryPointFileFullPath);
 
+        RunPlan? plan = null;
+        if (!noBuild)
+        {
+            var buildCommand = new VirtualProjectBuildingCommand(
+                entryPointFileFullPath,
+                MSBuildArgs
+                    .FromProperties(CreateGlobalProperties(parseResult, definition).AsReadOnly())
+                    .CloneWithAdditionalArgs(loggerArguments))
+            {
+                NoRestore = parseResult.HasOption(definition.NoRestoreOption),
+                BuildStarted = profileResult.Profile?.DotNetRunMessages == true
+                    ? static () => Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding)
+                    : null,
+            };
+            int buildResult = buildCommand.Execute();
+            if (buildResult != 0)
+            {
+                return buildResult;
+            }
+
+            plan = FileBasedAppRunPlan.AnalyzeCompletedBuild(
+                entryPointFileFullPath,
+                buildCommand.Builder.ArtifactsPath,
+                buildCommand.LastBuild.Level,
+                buildCommand.LastBuild.Cache);
+        }
+
         string command;
         string commandArguments;
         string? workingDirectory;
@@ -78,7 +106,6 @@ internal static class AotRunCommand
         RunProperties? validatedRunProperties = null;
         RunTier runTier;
         RunDecisionReason decisionReason;
-        RunPlan? plan = null;
         if (noBuild && profileResult.Profile is not ExecutableLaunchProfile)
         {
             artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
@@ -116,7 +143,7 @@ internal static class AotRunCommand
         }
 
         if (profileResult.Profile is ExecutableLaunchProfile executableProfile &&
-            (executableCanBypassCache || plan?.Tier == RunTier.CachedLaunch))
+            (executableCanBypassCache || plan?.Tier is RunTier.CachedLaunch or RunTier.DirectCompile))
         {
             if (noBuild)
             {
@@ -174,10 +201,6 @@ internal static class AotRunCommand
             (name, value) => launchEnvironment[name] = value);
 
         profileResult.WriteMessages();
-        if (!noBuild && profileResult.Profile?.DotNetRunMessages == true)
-        {
-            Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
-        }
         Reporter.Verbose.WriteLine($"AOT run tier: {runTier} ({decisionReason}).");
 
         if (artifactsPath is not null)
@@ -283,12 +306,14 @@ internal static class AotRunCommand
         out bool noBuild,
         [NotNullWhen(true)] out string? entryPointFileFullPath,
         [NotNullWhen(true)] out string[]? applicationArguments,
+        [NotNullWhen(true)] out string[]? loggerArguments,
         [NotNullWhen(true)] out IReadOnlyDictionary<string, string>? environmentVariables,
         out string fallbackReason)
     {
         noBuild = parseResult.HasOption(definition.NoBuildOption);
         entryPointFileFullPath = null;
         applicationArguments = null;
+        loggerArguments = null;
         environmentVariables = null;
         fallbackReason = string.Empty;
 
@@ -308,6 +333,14 @@ internal static class AotRunCommand
             fallbackReason = "application arguments could not be separated at '--'";
             return false;
         }
+
+        LoggerUtility.SeparateLoggerArguments(
+            parsedApplicationArguments.Take(argumentCountBeforeDoubleDash),
+            out var parsedLoggerArguments,
+            out var nonLoggerArgumentsBeforeDoubleDash);
+        loggerArguments = [.. parsedLoggerArguments];
+        parsedApplicationArguments = [.. nonLoggerArgumentsBeforeDoubleDash, .. argumentsAfterDoubleDash];
+        argumentCountBeforeDoubleDash = nonLoggerArgumentsBeforeDoubleDash.Length;
 
         if (argumentCountBeforeDoubleDash > 0 && parsedApplicationArguments[0] == "-")
         {

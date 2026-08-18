@@ -5,7 +5,6 @@ using System.Collections.Immutable;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Diagnostics;
-using System.Runtime.CompilerServices;
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands;
@@ -48,7 +47,6 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         return false;
     }
 
-#if !CLI_AOT
     internal static CommandBase CreateVirtualOrPhysicalCommand(
         System.CommandLine.Command commandDefinition,
         Argument<string[]> catchAllUserInputArgument,
@@ -64,23 +62,16 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
         var forwardedArgs = parseResult.OptionValuesToBeForwarded(commandDefinition);
         if (nonLoggerArgs is [{ } arg] && VirtualProjectBuilder.IsValidEntryPointPath(arg))
         {
-            if (RuntimeFeature.IsDynamicCodeSupported)
-            {
-                var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. loggerArgs],
-                [
-                    .. optionsToUseWhenParsingMSBuildFlags,
-                    CommonOptions.CreateGetPropertyOption(),
-                    CommonOptions.CreateGetItemOption(),
-                    CommonOptions.CreateGetTargetResultOption(),
-                    CommonOptions.CreateGetResultOutputFileOption(),
-                ]);
-                msbuildArgs = transformer?.Invoke(msbuildArgs, nonLoggerArgs) ?? msbuildArgs;
-                return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
-            }
-            else
-            {
-                throw new PlatformNotSupportedException("Dynamic code generation is not supported on this platform.");
-            }
+            var msbuildArgs = MSBuildArgs.AnalyzeMSBuildArguments([.. forwardedArgs, .. loggerArgs],
+            [
+                .. optionsToUseWhenParsingMSBuildFlags,
+                CommonOptions.CreateGetPropertyOption(),
+                CommonOptions.CreateGetItemOption(),
+                CommonOptions.CreateGetTargetResultOption(),
+                CommonOptions.CreateGetResultOutputFileOption(),
+            ]);
+            msbuildArgs = transformer?.Invoke(msbuildArgs, nonLoggerArgs) ?? msbuildArgs;
+            return createVirtualCommand(msbuildArgs, Path.GetFullPath(arg));
         }
         else
         {
@@ -138,5 +129,4 @@ public class DotNetCommandFactory(bool alwaysRunOutOfProc = false, string? curre
             yield return arg;
         }
     }
-#endif
 }

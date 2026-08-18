@@ -203,20 +203,20 @@ public partial class NativeEntryPointTests
     }
 
     [TestMethod]
-    public void ExecuteCore_AotEnabled_UnrecognizedCommand_FallsBack()
+    public void ExecuteCore_AotEnabled_UnsupportedCommand_FallsBack()
     {
         WithEnvRestore(() =>
         {
             Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
 
-            // "build" parses cleanly, so the AOT path is taken but cannot execute it and falls back during invocation.
+            // "test" parses cleanly, so the AOT path is taken but cannot execute it and falls back during invocation.
             // Since sdkDir doesn't contain dotnet.dll, this returns 1 (no managed fallback)
             int exitCode = NativeEntryPoint.ExecuteCore(
                 hostPath: "test-host",
                 dotnetRoot: "test-root",
                 sdkDir: "nonexistent-sdk-dir",
                 hostfxrPath: "",
-                args: ["build"]);
+                args: ["test"]);
 
             Assert.AreEqual(1, exitCode);
         });
@@ -378,18 +378,18 @@ public partial class NativeEntryPointTests
         });
     }
 
-    /// <summary>Verifies that a build-enabled shorthand file invocation falls back to the managed CLI.</summary>
+    /// <summary>Verifies that a shorthand file invocation requiring full MSBuild falls back to the managed CLI.</summary>
     [TestMethod]
-    public void ExecuteCore_AotEnabled_BuildEnabledFileBasedApp_FallsBackToManaged()
+    public void ExecuteCore_AotEnabled_FileBasedAppRequiringMsbuild_FallsBackToManaged()
     {
         WithEnvRestore(() =>
         {
             Environment.SetEnvironmentVariable("DOTNET_CLI_ENABLEAOT", "true");
 
-            // Build-enabled `dotnet app.cs` remains outside the launch-only AOT contract and falls
-            // back to the managed run pipeline. The nonexistent SDK proves fallback was reached.
+            // A directive requires full MSBuild and therefore the managed run pipeline.
+            // The nonexistent SDK proves fallback was reached.
             var csFile = Path.Combine(Path.GetTempPath(), $"aot-entry-filebased-{Guid.NewGuid():N}.cs");
-            File.WriteAllText(csFile, "Console.WriteLine(\"hi\");");
+            File.WriteAllText(csFile, "#:property Example=true\nConsole.WriteLine(\"hi\");");
 
             var originalErr = Console.Error;
             var stderrWriter = new StringWriter();

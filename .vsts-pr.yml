@@ -52,6 +52,10 @@ resources:
     image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-arm64
     env:
       ROOTFS_DIR: /crossrootfs/arm64
+  - container: azureLinuxCrossX64
+    image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-amd64@sha256:ca817af24ff68c801a3e31f16a0fbf6bb7ba57764b0aeae5be260dbc70ae25cb
+    env:
+      ROOTFS_DIR: /crossrootfs/x64
 
 stages:
 ############### BUILD STAGE ###############
@@ -100,4 +104,3 @@ stages:
         helixTargetQueue: osx.15.amd64.open
         macOSJobParameterSets:
         - runtimeIdentifier: osx-x64
-

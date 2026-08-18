@@ -2,18 +2,22 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+#if !CLI_AOT
 using System.Collections.ObjectModel;
+#endif
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Execution;
+using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
+#if !CLI_AOT
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.Build.Logging.SimpleErrorLogger;
 using Microsoft.CodeAnalysis;
-using Microsoft.DotNet.Cli.Commands.Clean.FileBasedAppArtifacts;
 using Microsoft.DotNet.Cli.Commands.Restore;
+#endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -25,6 +29,12 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
+#if CLI_AOT
+    private static bool IsAotBuild => true;
+#else
+    private static bool IsAotBuild => false;
+#endif
+
     internal const string FileBasedProgramCanSkipMSBuild = nameof(FileBasedProgramCanSkipMSBuild);
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
@@ -39,6 +49,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public bool NoCache { get; init; }
 
     public bool NoBuild { get; init; }
+
+    public Action? BuildStarted { get; init; }
 
     /// <summary>
     /// Filled during <see cref="Execute"/>.
@@ -98,13 +110,13 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         Builder = new VirtualProjectBuilder(BuildService.Instance, entryPointFileFullPath, TargetFramework, MSBuildArgs.GetResolvedTargets(), artifactsPath);
     }
 
-#if !CLI_AOT
-    [UnconditionalSuppressMessage("AOT", "IL2026", Justification = "Temporary unblock for dotnet/msbuild#14064 (MSBuild build APIs are now [RequiresUnreferencedCode]). dotnet CLI runs MSBuild in-proc (not trimmed). Remove when dotnet/sdk#55225 is fixed.")]
-    [UnconditionalSuppressMessage("AOT", "IL3050", Justification ="In non-AOT mode we have MSBuild available, so using types from it is safe.")]
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
         bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
+        IReadOnlyList<string> otherMSBuildArgs = MSBuildArgs.OtherMSBuildArgs ?? [];
+        bool binaryLogRequested = otherMSBuildArgs.Any(LoggerUtility.IsBinLogArgument);
+#if !CLI_AOT
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
@@ -112,17 +124,30 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ? null
             : minimizeStdOut
             ? new SimpleErrorLogger()
-            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
-        var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
+            : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. otherMSBuildArgs]));
+        var binaryLogger = GetBinaryLogger(otherMSBuildArgs);
+#endif
 
         FileBasedAppCacheInfo? cache = null;
 
         if (msbuildGet)
         {
             LastBuild = (BuildLevel.None, Cache: null);
+            if (IsAotBuild && !evalOnly)
+            {
+                string operation = MSBuildArgs.GetTargetResult is [_, ..]
+                    ? "retrieving target results"
+                    : "querying properties or items while executing targets";
+                return ThrowManagedFallback($"{operation} requires full MSBuild execution");
+            }
         }
         else if (NoBuild)
         {
+            if (IsAotBuild)
+            {
+                return ThrowManagedFallback(GetFullMSBuildFallbackReason());
+            }
+
             // This is reached only during `restore`, not `run --no-build`
             // (in the latter case, this virtual building command is not executed at all).
             Debug.Assert(!NoRestore);
@@ -143,7 +168,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (buildLevel is BuildLevel.None)
             {
-                if (binaryLogger is not null)
+                if (binaryLogRequested)
                 {
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
@@ -159,6 +184,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 Debug.Assert(cache is not null);
 
+                BuildStarted?.Invoke();
                 MarkBuildStart();
 
                 // Execute CSC.
@@ -180,7 +206,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         MarkBuildSuccess(cache);
                     }
 
-                    if (binaryLogger is not null)
+                    if (binaryLogRequested)
                     {
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                     }
@@ -195,11 +221,35 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 LastBuild = (buildLevel, cache);
             }
 
+            if (IsAotBuild)
+            {
+                return ThrowManagedFallback(GetFullMSBuildFallbackReason());
+            }
+
             Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
 
             MarkBuildStart();
         }
 
+#if CLI_AOT
+        Debug.Assert(msbuildGet && evalOnly);
+
+        try
+        {
+            using var environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            using var projectCollection = new ProjectCollection(globalProperties: MSBuildArgs.GlobalProperties);
+            ProjectInstance projectInstance = CreateProjectInstance(projectCollection);
+            PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult: null);
+            return 0;
+        }
+        catch (Exception e)
+        {
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                e.ToString().Red().Bold() :
+                e.Message.Red().Bold());
+            return 1;
+        }
+#else
         if (!NoWriteBuildMarkers && !msbuildGet)
         {
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
@@ -224,6 +274,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
 
+#pragma warning disable IL2026, IL3050 // This managed-only path runs in the untrimmed CLI.
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;
@@ -297,6 +348,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 projectInstance = buildRequest.ProjectInstance;
                 buildOrRestoreResult = buildResult;
             }
+#pragma warning restore IL2026, IL3050
 
             // Print build information.
             if (msbuildGet)
@@ -425,6 +477,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
+#endif
+
         void ReuseInfoFromPreviousCacheEntry(FileBasedAppCacheInfo cache)
         {
             Debug.Assert(cache.CurrentEntry.AdditionalSources.Count == 0);
@@ -438,6 +492,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             }
         }
 
+#if !CLI_AOT
         void WriteCscRsp(FileBasedAppCacheInfo cache)
         {
             if (cache.CurrentEntry.CscArguments.IsDefaultOrEmpty)
@@ -508,6 +563,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             cache.CurrentEntry.AdditionalSources.Remove(Builder.EntryPointFileFullPath);
         }
+
+#endif
 
         void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
         {
@@ -628,9 +685,25 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
             }
         }
+
     }
 
-#endif
+    private string GetFullMSBuildFallbackReason()
+    {
+        return Builder.RequestedTargets switch
+        {
+            [string target] => $"executing the '{target}' target for the file-based app requires full MSBuild execution",
+            [_, ..] targets => $"executing the requested targets ({string.Join(", ", targets)}) for the file-based app requires full MSBuild execution",
+            _ => "building the file-based app requires full MSBuild execution",
+        };
+    }
+
+    private static int ThrowManagedFallback(string reason)
+    {
+        Reporter.Verbose.WriteLine(
+            $"The Native AOT CLI is falling back to the managed CLI because {reason}.");
+        throw new CommandNotAvailableInAotException();
+    }
 
     private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
@@ -718,13 +791,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         JsonSerializer.Serialize(stream, cache.CurrentEntry, RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection)
     {
         return CreateProjectInstance(projectCollection, additionalGlobalProperties: null);
     }
 
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance CreateProjectInstance(ProjectCollection projectCollection, IDictionary<string, string>? additionalGlobalProperties = null)
     {
         var projectCollectionWrapped = projectCollection.Wrap();

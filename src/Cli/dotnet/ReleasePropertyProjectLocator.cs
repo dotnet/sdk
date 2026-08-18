@@ -3,7 +3,6 @@
 
 using System.Collections.ObjectModel;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -44,7 +43,6 @@ internal sealed class ReleasePropertyProjectLocator(
     /// ... a boolean that may or may not exist in the targeted project.
     /// </summary>
     /// <returns>Returns a string such as -property:configuration=value for a projects desired config. May be empty string.</returns>
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ReadOnlyDictionary<string, string>? GetCustomDefaultConfigurationValueIfSpecified()
     {
         // Setup
@@ -98,7 +96,6 @@ internal sealed class ReleasePropertyProjectLocator(
     /// </summary>
     /// <returns>A project instance that will be targeted to publish/pack, etc. null if one does not exist.
     /// Will return an arbitrary project in the solution if one exists in the solution and there's no project targeted.</returns>
-    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public ProjectInstance? GetTargetedProject(ReadOnlyDictionary<string, string>? globalProps, EvaluationContext evaluationContext)
     {
         foreach (string arg in commandOptions.SlnOrProjectArgs.Append(Directory.GetCurrentDirectory()))

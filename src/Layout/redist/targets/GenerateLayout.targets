@@ -546,12 +546,12 @@
       <!--
         Global properties for the dotnet-aot Publish below. _IsPublishing=true is always required
         (see the note below). The outer build's target properties are already global and are inherited
-        by the MSBuild task. Same-OS cross-arch builds only need CrossBuild=true added explicitly. On
-        Linux the child maps SysRoot from the ROOTFS_DIR environment variable via
+        by the MSBuild task. CrossBuild=true is added for same-OS cross-arch builds and Linux builds
+        with a portable rootfs. The child maps SysRoot from the ROOTFS_DIR environment variable via
         LocateNativeCompiler.targets; on Windows/macOS no sysroot is needed.
       -->
       <_DotnetAotPublishProperties>_IsPublishing=true</_DotnetAotPublishProperties>
-      <_DotnetAotPublishProperties Condition="'$(_DotnetAotIsCrossBuild)' == 'true'">$(_DotnetAotPublishProperties);CrossBuild=true</_DotnetAotPublishProperties>
+      <_DotnetAotPublishProperties Condition="'$(_DotnetAotIsCrossBuild)' == 'true' or ('$(TargetOS)' == 'linux' and '$(ROOTFS_DIR)' != '')">$(_DotnetAotPublishProperties);CrossBuild=true</_DotnetAotPublishProperties>
     </PropertyGroup>
 
     <!--

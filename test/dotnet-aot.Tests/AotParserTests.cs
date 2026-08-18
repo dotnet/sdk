@@ -188,12 +188,68 @@ public partial class AotParserTests
     }
 
     [TestMethod]
-    public void InvokeKnownCommand_FallsBackToManaged()
+    public void InvokeUnsupportedKnownCommand_FallsBackToManaged()
     {
         // Commands that cannot run in AOT must signal a managed fallback rather than execute.
-        var result = Parser.Parse(["build"]);
+        var result = Parser.Parse(["test"]);
         Assert.IsEmpty(result.Errors);
         Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    [DataRow("build test.csproj --no-restore", "build")]
+    [DataRow("restore test.csproj --no-cache", "restore")]
+    [DataRow("clean test.csproj --configuration Release", "clean")]
+    [DataRow("msbuild test.csproj -target:Build", "msbuild")]
+    [DataRow("pack test.csproj --no-restore", "pack")]
+    [DataRow("publish test.csproj --no-restore", "publish")]
+    public void ParseMSBuildBackedCommand_UsesAotParser(string commandLine, string commandName)
+    {
+        var result = Parser.Parse(commandLine);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual(commandName, result.CommandResult.Command.Name);
+        Assert.IsFalse(result.RequiresManagedCommandResolution());
+    }
+
+    [TestMethod]
+    public void InvokeCleanFileBasedApps_ExecutesWithoutManagedFallback()
+    {
+        var result = Parser.Parse(["clean", "file-based-apps", "--dry-run"]);
+
+        Assert.IsEmpty(result.Errors);
+        Assert.AreEqual(0, Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokePackNuspec_FallsBackToManaged()
+    {
+        var result = Parser.Parse(["pack", "package.nuspec"]);
+        Assert.IsEmpty(result.Errors);
+        Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result));
+    }
+
+    [TestMethod]
+    public void InvokePackFileBasedApp_FallsBackToManagedBuild()
+    {
+        string sourceFile = Path.Combine(Path.GetTempPath(), $"aot-pack-{Guid.NewGuid():N}.cs");
+        File.WriteAllText(sourceFile, """Console.WriteLine("hi");""");
+        try
+        {
+            var result = Parser.Parse(["pack", sourceFile, "--configuration", "Debug"]);
+            Assert.IsEmpty(result.Errors);
+            IReadOnlyList<string> messages = CaptureVerboseMessages(
+                () => Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => Parser.Invoke(result)));
+
+            Assert.ContainsSingle(
+                messages.Where(message => message.Contains(
+                    "executing the 'Pack' target for the file-based app requires full MSBuild execution",
+                    StringComparison.Ordinal)));
+        }
+        finally
+        {
+            File.Delete(sourceFile);
+        }
     }
 
     [TestMethod]
@@ -499,6 +555,25 @@ public partial class AotParserTests
             Reporter.Reset();
             Console.SetOut(originalOut);
             Console.SetError(originalErr);
+        }
+    }
+
+    private static IReadOnlyList<string> CaptureVerboseMessages(Action action)
+    {
+        bool originalVerbose = CommandLoggingContext.IsVerbose;
+        var reporter = new BufferedReporter();
+        try
+        {
+            CommandLoggingContext.SetVerbose(true);
+            Reporter.SetVerbose(reporter);
+            action();
+            return reporter.Lines.ToArray();
+        }
+        finally
+        {
+            Reporter.SetVerbose(Reporter.ConsoleOutReporter);
+            CommandLoggingContext.SetVerbose(originalVerbose);
+            Reporter.Reset();
         }
     }
 }

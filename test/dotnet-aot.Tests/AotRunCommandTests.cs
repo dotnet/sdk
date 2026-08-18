@@ -44,6 +44,7 @@ public class AotRunCommandTests
             Directory.SetLastWriteTimeUtc(fixture.ArtifactsPath, oldArtifactsTime);
             var parseResult = Parser.Parse([
                 "run",
+                "-bl:test.binlog",
                 "--file", fixture.EntryPointPath,
                 "--no-build",
                 "--no-launch-profile",
