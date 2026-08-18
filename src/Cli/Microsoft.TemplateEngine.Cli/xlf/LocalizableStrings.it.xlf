@@ -183,6 +183,11 @@ Eseguire 'dotnet {1}--show-alias ' senza argomenti per mostrare tutti gli alias.
         <target state="translated">Cambiare</target>
         <note />
       </trans-unit>
+      <trans-unit id="CliTemplateSearchCoordinator_Error_AllFeedsFailed">
+        <source>Unable to verify template package availability: none of the selected NuGet feeds could be reached.</source>
+        <target state="new">Unable to verify template package availability: none of the selected NuGet feeds could be reached.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CliTemplateSearchCoordinator_Error_NoSources">
         <source>No remoted sources defined to search for the templates.</source>
         <target state="translated">Nessuna origine remota definita per cercare i modelli.</target>

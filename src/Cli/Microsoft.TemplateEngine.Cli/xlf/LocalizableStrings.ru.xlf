@@ -183,6 +183,11 @@ Run 'dotnet {1} --show-aliases' with no args to show all aliases.</source>
         <target state="translated">Изменение</target>
         <note />
       </trans-unit>
+      <trans-unit id="CliTemplateSearchCoordinator_Error_AllFeedsFailed">
+        <source>Unable to verify template package availability: none of the selected NuGet feeds could be reached.</source>
+        <target state="new">Unable to verify template package availability: none of the selected NuGet feeds could be reached.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CliTemplateSearchCoordinator_Error_NoSources">
         <source>No remoted sources defined to search for the templates.</source>
         <target state="translated">Для поиска шаблонов не определены удаленные источники.</target>

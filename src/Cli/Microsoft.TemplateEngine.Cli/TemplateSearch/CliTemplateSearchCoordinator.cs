@@ -12,6 +12,7 @@ using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
+using NuGet.Credentials;
 using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
 
 namespace Microsoft.TemplateEngine.Cli.TemplateSearch
@@ -61,6 +62,23 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return NewCommandStatus.NotFound;
             }
 
+            // The .NET template catalog can lag behind (or, via a replacement/proxy feed, diverge from) the NuGet
+            // feeds actually selected for this invocation. Narrow the catalog matches down to only the package
+            // id + version pairs that are confirmed available from at least one of the currently selected feeds
+            // before anything is displayed or suggested for install.
+            PackageAvailabilityResult availability = await FilterAvailablePackagesAsync(searchResults, commandArgs, cancellationToken).ConfigureAwait(false);
+            if (!availability.AnyFeedSucceeded)
+            {
+                return NewCommandStatus.NotFound;
+            }
+
+            Dictionary<SearchResult, IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>> filteredHitsByResult =
+                searchResults.ToDictionary(
+                    result => result,
+                    result => (IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)>)result.SearchHits
+                        .Where(hit => IsConfirmedAvailable(hit.PackageInfo, availability.AvailablePackages))
+                        .ToList());
+
             foreach (SearchResult result in searchResults)
             {
                 if (!result.Success)
@@ -70,10 +88,11 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                     continue;
                 }
 
+                IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> filteredHits = filteredHitsByResult[result];
                 Reporter.Output.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_MatchesFromSource, result.Provider.Factory.DisplayName);
-                if (result.SearchHits.Any())
+                if (filteredHits.Any())
                 {
-                    DisplayResultsForPack(result.SearchHits, environmentSettings, commandArgs, defaultLanguage);
+                    DisplayResultsForPack(filteredHits, environmentSettings, commandArgs, defaultLanguage);
                 }
                 else
                 {
@@ -88,9 +107,11 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 }
             }
             Reporter.Output.WriteLine();
-            if (searchResults.Where(r => r.Success).SelectMany(r => r.SearchHits).Any())
+            IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> allFilteredHits =
+                searchResults.Where(r => r.Success).SelectMany(r => filteredHitsByResult[r]).ToList();
+            if (allFilteredHits.Any())
             {
-                string packageIdToShow = EvaluatePackageToShow(searchResults);
+                string packageIdToShow = EvaluatePackageToShow(allFilteredHits);
                 Reporter.Output.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Info_InstallHelp);
                 Reporter.Output.WriteCommand(
                  Example
@@ -106,6 +127,83 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return NewCommandStatus.Success;
             }
             return NewCommandStatus.NotFound;
+        }
+
+        /// <summary>
+        /// Narrows the catalog search hits down to the package id + version pairs confirmed available from at
+        /// least one of the NuGet feeds selected for this invocation (via NuGet.config, <c>--configfile</c>,
+        /// <c>--source</c>, and <c>--add-source</c>). Also initializes the NuGet credential service when
+        /// <see cref="SearchCommandArgs.Interactive"/> is requested, mirroring <see cref="TemplatePackageCoordinator"/>.
+        /// </summary>
+        private static async Task<PackageAvailabilityResult> FilterAvailablePackagesAsync(
+            IReadOnlyList<SearchResult> searchResults,
+            SearchCommandArgs commandArgs,
+            CancellationToken cancellationToken)
+        {
+            InitializeNuGetCredentialService(commandArgs.Interactive);
+
+            NuGetSourceConfiguration sourceConfiguration = NuGetSourceConfiguration.Load(
+                nugetConfig: commandArgs.ConfigFile,
+                sourceFeedOverrides: commandArgs.Sources,
+                additionalSourceFeeds: commandArgs.AddSources,
+                invalidSource: invalidSource => Reporter.Error.WriteLine(string.Format(LocalizableStrings.DetailsCommand_UnableToLoadResource, invalidSource).Bold().Red()));
+
+            if (sourceConfiguration.PackageSources.Count == 0)
+            {
+                Reporter.Error.WriteLine(LocalizableStrings.DetailsCommand_NoNuGetSources.Bold().Red());
+                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: false);
+            }
+
+            HashSet<PackageAvailabilityCandidate> candidates = searchResults
+                .Where(r => r.Success)
+                .SelectMany(r => r.SearchHits)
+                .Where(hit => !string.IsNullOrEmpty(hit.PackageInfo.Version))
+                .Select(hit => new PackageAvailabilityCandidate(hit.PackageInfo.Name, hit.PackageInfo.Version!))
+                .ToHashSet();
+
+            if (candidates.Count == 0)
+            {
+                // Nothing to confirm: the catalog itself returned no versioned candidates. This is unrelated to feed
+                // availability (it is a normal "no matches" outcome), so it must not be reported as a feed failure -
+                // let the caller fall through to its regular no-hits handling.
+                return new PackageAvailabilityResult(candidates, anyFeedSucceeded: true);
+            }
+
+            PackageAvailabilityChecker checker = new(sourceConfiguration.PackageSources, sourceConfiguration.Settings);
+            PackageAvailabilityResult availability = await checker.GetAvailablePackagesAsync(candidates, cancellationToken).ConfigureAwait(false);
+            if (!availability.AnyFeedSucceeded)
+            {
+                // All selected feeds failed to respond at all (individual feed failures are already reported to
+                // stderr by the checker as they occur); give the user a clear top-level reason for the empty result.
+                Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_AllFeedsFailed.Bold().Red());
+            }
+            return availability;
+        }
+
+        /// <summary>
+        /// A catalog hit is kept when either it was confirmed available from a selected feed, or it has no version
+        /// to confirm (the catalog does not always report one) - in that case it is passed through unfiltered, since
+        /// there is no package id + version pair to validate against a feed.
+        /// </summary>
+        internal static bool IsConfirmedAvailable(ITemplatePackageInfo packageInfo, IReadOnlySet<PackageAvailabilityCandidate> availablePackages)
+        {
+            if (string.IsNullOrEmpty(packageInfo.Version))
+            {
+                return true;
+            }
+            return availablePackages.Contains(new PackageAvailabilityCandidate(packageInfo.Name, packageInfo.Version));
+        }
+
+        private static void InitializeNuGetCredentialService(bool interactive)
+        {
+            try
+            {
+                DefaultCredentialServiceUtility.SetupDefaultCredentialService(new CliNuGetLogger(), !interactive);
+            }
+            catch (Exception ex)
+            {
+                Reporter.Verbose.WriteLine(LocalizableStrings.TemplatePackageCoordinator_Verbose_NuGetCredentialServiceError, ex.ToString());
+            }
         }
 
         internal static async Task<(NugetPackageMetadata?, IReadOnlyList<ITemplateInfo>)> SearchForPackageDetailsAsync(
@@ -150,10 +248,9 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             return new List<ITemplateInfo>();
         }
 
-        private static string EvaluatePackageToShow(IReadOnlyList<SearchResult> searchResults)
+        private static string EvaluatePackageToShow(IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> searchHits)
         {
-            var microsoftAuthoredPackages = searchResults
-                .SelectMany(r => r.SearchHits)
+            var microsoftAuthoredPackages = searchHits
                 .Where(hit => hit.PackageInfo.Name.StartsWith("Microsoft", StringComparison.OrdinalIgnoreCase)
                                 && hit.MatchedTemplates.Any(t => t.Author == "Microsoft"))
                 .OrderByDescending(hit => hit.PackageInfo.TotalDownloads);
@@ -164,8 +261,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             }
             else
             {
-                return searchResults
-                        .SelectMany(r => r.SearchHits)
+                return searchHits
                         .OrderByDescending(hit => hit.PackageInfo.TotalDownloads)
                         .First().PackageInfo.Name;
             }
