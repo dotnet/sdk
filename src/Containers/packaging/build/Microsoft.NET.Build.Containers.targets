@@ -100,6 +100,7 @@
       <!-- Only default a tag name if no tag names at all are provided -->
       <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
+      <ContainerPushNoCache Condition="'$(ContainerPushNoCache)' == ''">false</ContainerPushNoCache>
     </PropertyGroup>
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
@@ -277,6 +278,7 @@
                     SourceDateEpoch="$(SOURCE_DATE_EPOCH)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
                     SkipPublishing="$(_SkipContainerPublishing)"
+                    NoCache="$(ContainerPushNoCache)"
                     GenerateLabels="$(ContainerGenerateLabels)"
                     GenerateCreatedLabels="$(ContainerGenerateLabelsImageCreated)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
@@ -335,6 +337,7 @@
           ContainerGenerateLabels=$(ContainerGenerateLabels);
           ContainerGenerateLabelsImageCreated=$(ContainerGenerateLabelsImageCreated);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
+          ContainerPushNoCache=$(ContainerPushNoCache);
           _SkipContainerPublishing=$(_SkipContainerPublishing);
           ContainerImageFormat=$(_SingleImageContainerFormat);
           _IsMultiRIDBuild=false;
