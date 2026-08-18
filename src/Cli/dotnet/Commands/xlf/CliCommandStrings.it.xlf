@@ -3568,6 +3568,11 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
         <target state="translated">Cerca negli strumenti dotnet in nuget.org</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSearchNoSourcesConfigured">
+        <source>No NuGet package sources are configured or enabled.</source>
+        <target state="new">No NuGet package sources are configured or enabled.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">
         <source>Include pre-release packages.</source>
         <target state="translated">Includi pacchetti pre-release.</target>

@@ -3568,6 +3568,11 @@ Nástroj {1} (verze {2}) byl úspěšně nainstalován.</target>
         <target state="translated">Hledat nástroje dotnet v nuget.org</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSearchNoSourcesConfigured">
+        <source>No NuGet package sources are configured or enabled.</source>
+        <target state="new">No NuGet package sources are configured or enabled.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">
         <source>Include pre-release packages.</source>
         <target state="translated">Zahrnuje balíčky v předběžné verzi.</target>

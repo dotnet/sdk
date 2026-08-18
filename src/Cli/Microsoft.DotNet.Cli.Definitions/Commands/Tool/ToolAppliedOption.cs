@@ -63,15 +63,15 @@ internal static class ToolAppliedOption
         HelpName = CommandDefinitionStrings.ToolInstallConfigFileOptionName
     };
 
-    public static Option<string[]> CreateSourceOption() => new Option<string[]>("--source")
+    public static Option<string[]> CreateSourceOption(string? description = null) => new Option<string[]>("--source")
     {
-        Description = CommandDefinitionStrings.ToolInstallSourceOptionDescription,
+        Description = description ?? CommandDefinitionStrings.ToolInstallSourceOptionDescription,
         HelpName = CommandDefinitionStrings.ToolInstallSourceOptionName
     }.AllowSingleArgPerToken();
 
-    public static Option<string[]> CreateAddSourceOption() => new Option<string[]>("--add-source")
+    public static Option<string[]> CreateAddSourceOption(string? description = null) => new Option<string[]>("--add-source")
     {
-        Description = CommandDefinitionStrings.ToolInstallAddSourceOptionDescription,
+        Description = description ?? CommandDefinitionStrings.ToolInstallAddSourceOptionDescription,
         HelpName = CommandDefinitionStrings.ToolInstallAddSourceOptionName
     }.AllowSingleArgPerToken();
 
