@@ -243,7 +243,7 @@ public partial class AotParserTests
 
             Assert.ContainsSingle(
                 messages.Where(message => message.Contains(
-                    "the operation requires full MSBuild execution",
+                    "executing the 'Pack' target for the file-based app requires full MSBuild execution",
                     StringComparison.Ordinal)));
         }
         finally

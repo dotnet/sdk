@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -597,6 +598,7 @@ public partial class AotIntegrationTests
         string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-build-{Guid.NewGuid():N}");
         Directory.CreateDirectory(testDirectory);
         string entryPointPath = Path.Join(testDirectory, "Program.cs");
+        string binlogPath = Path.Join(testDirectory, "file-app.binlog");
         File.WriteAllText(
             entryPointPath,
             """Console.WriteLine("AOT_FRESH:" + Environment.GetEnvironmentVariable("TEST_AOT_RUN") + ":" + string.Join("|", args));""");
@@ -621,6 +623,7 @@ public partial class AotIntegrationTests
             var (exitCode, stdout, stderr) = RunDn(
                 [
                     "run",
+                    $"-bl:{binlogPath}",
                     "--file", entryPointPath,
                     "--no-launch-profile",
                     "-e", "TEST_AOT_RUN=value",
@@ -632,11 +635,34 @@ public partial class AotIntegrationTests
                 workingDirectory: testDirectory);
 
             Assert.AreEqual(0, exitCode, stderr);
-            Assert.AreEqual("AOT_FRESH:value:arg one|--flag", stdout.Trim());
+            Assert.Contains(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc, stdout);
+            Assert.Contains("AOT_FRESH:value:arg one|--flag", stdout);
             Assert.Contains("Compiler server processed compilation.", stderr);
             Assert.Contains("AOT run tier: DirectCompile (DirectCompilationRequired).", stderr);
             Assert.DoesNotContain("falling back to the managed CLI", stderr);
+            Assert.IsFalse(File.Exists(binlogPath));
             Assert.IsTrue(File.Exists(Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName)));
+
+            (exitCode, stdout, stderr) = RunDn(
+                [
+                    "run",
+                    $"-bl:{binlogPath}",
+                    "--file", entryPointPath,
+                    "--no-launch-profile",
+                    "-e", "TEST_AOT_RUN=value",
+                    "--", "arg one", "--flag",
+                ],
+                enableAot: true,
+                timeoutMs: 60_000,
+                extraEnv: environment,
+                workingDirectory: testDirectory);
+
+            Assert.AreEqual(0, exitCode, stderr);
+            Assert.Contains(CliCommandStrings.NoBinaryLogBecauseUpToDate, stdout);
+            Assert.Contains("AOT_FRESH:value:arg one|--flag", stdout);
+            Assert.Contains("AOT run tier: CachedLaunch (CacheValid).", stderr);
+            Assert.DoesNotContain("falling back to the managed CLI", stderr);
+            Assert.IsFalse(File.Exists(binlogPath));
         }
         finally
         {

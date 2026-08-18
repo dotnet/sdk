@@ -108,6 +108,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
         bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
+        bool binaryLogRequested = MSBuildArgs.OtherMSBuildArgs?.Any(LoggerUtility.IsBinLogArgument) == true;
 #if !CLI_AOT
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
@@ -117,7 +118,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             : minimizeStdOut
             ? new SimpleErrorLogger()
             : CommonRunHelpers.GetConsoleLogger(MSBuildArgs.CloneWithExplicitArgs([$"--verbosity:{verbosity}", .. MSBuildArgs.OtherMSBuildArgs]));
-        var binaryLogger = GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs);
+        var binaryLogger = binaryLogRequested ? GetBinaryLogger(MSBuildArgs.OtherMSBuildArgs) : null;
 #endif
 
         FileBasedAppCacheInfo? cache = null;
@@ -128,14 +129,17 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 #if CLI_AOT
             if (!evalOnly)
             {
-                return ThrowManagedFallback("the operation requires full MSBuild execution");
+                string operation = MSBuildArgs.GetTargetResult is [_, ..]
+                    ? "retrieving target results"
+                    : "querying properties or items while executing targets";
+                return ThrowManagedFallback($"{operation} requires full MSBuild execution");
             }
 #endif
         }
         else if (NoBuild)
         {
 #if CLI_AOT
-            return ThrowManagedFallback("the operation requires restore or full MSBuild execution");
+            return ThrowManagedFallback(GetFullMSBuildFallbackReason());
 #else
             // This is reached only during `restore`, not `run --no-build`
             // (in the latter case, this virtual building command is not executed at all).
@@ -158,12 +162,10 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
             if (buildLevel is BuildLevel.None)
             {
-#if !CLI_AOT
-                if (binaryLogger is not null)
+                if (binaryLogRequested)
                 {
                     Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseUpToDate.Yellow());
                 }
-#endif
 
                 // No rebuild, can reuse run properties.
                 cache?.CurrentEntry.Run = cache.PreviousEntry?.Run;
@@ -198,27 +200,23 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         MarkBuildSuccess(cache);
                     }
 
-#if !CLI_AOT
-                    if (binaryLogger is not null)
+                    if (binaryLogRequested)
                     {
                         Reporter.Output.WriteLine(CliCommandStrings.NoBinaryLogBecauseRunningJustCsc.Yellow());
                     }
-#endif
 
                     return result;
                 }
 
                 Debug.Assert(result != 0);
 
-#if !CLI_AOT
                 buildLevel = BuildLevel.All;
                 cache.CurrentEntry.BuildLevel = buildLevel;
                 LastBuild = (buildLevel, cache);
-#endif
             }
 
 #if CLI_AOT
-            return ThrowManagedFallback("the operation requires full MSBuild execution");
+            return ThrowManagedFallback(GetFullMSBuildFallbackReason());
 #else
             Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
 
@@ -684,6 +682,16 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     }
 
 #if CLI_AOT
+    private string GetFullMSBuildFallbackReason()
+    {
+        return Builder.RequestedTargets switch
+        {
+            [string target] => $"executing the '{target}' target for the file-based app requires full MSBuild execution",
+            [_, ..] targets => $"executing the requested targets ({string.Join(", ", targets)}) for the file-based app requires full MSBuild execution",
+            _ => "building the file-based app requires full MSBuild execution",
+        };
+    }
+
     private static int ThrowManagedFallback(string reason)
     {
         Reporter.Verbose.WriteLine(
