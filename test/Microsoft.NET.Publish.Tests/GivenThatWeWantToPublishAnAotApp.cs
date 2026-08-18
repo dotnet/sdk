@@ -1395,6 +1395,7 @@ public class NativeLibraryClass
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
             testProject.RecordProperties("CoreBuildDependsOn");
+            testProject.RecordPropertiesBeforeTarget("Compile");
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
             new BuildCommand(testAsset)
