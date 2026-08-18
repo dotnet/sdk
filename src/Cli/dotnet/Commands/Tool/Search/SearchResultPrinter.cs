@@ -5,12 +5,47 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
-internal class SearchResultPrinter(IReporter reporter)
+internal class SearchResultPrinter(IReporter reporter, IReporter errorReporter = null)
 {
     private readonly IReporter _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
+    private readonly IReporter _errorReporter = errorReporter ?? Reporter.Error;
+
+    /// <summary>
+    /// Prints a heading identifying which source the following results came from.
+    /// </summary>
+    public void PrintSourceHeading(PackageSource source)
+    {
+        _reporter.WriteLine($"{CliCommandStrings.SourceArgumentName}: {source.Source}".Bold());
+    }
+
+    /// <summary>
+    /// Prints a per-source failure diagnostic to stderr and continues processing the remaining sources.
+    /// </summary>
+    public void PrintSourceFailure(PackageSource source, string message)
+    {
+        _errorReporter.WriteLine($"{CliCommandStrings.SourceArgumentName}: {source.Source}".Bold());
+        _errorReporter.WriteLine(message);
+    }
+
+    /// <summary>
+    /// Prints a diagnostic for a source string that could not be parsed/loaded as a NuGet package source.
+    /// </summary>
+    public void PrintInvalidSource(string invalidSource)
+    {
+        _errorReporter.WriteLine(string.Format(CliStrings.FailedToLoadNuGetSource, invalidSource));
+    }
+
+    /// <summary>
+    /// Prints a diagnostic indicating that there are no NuGet package sources to search.
+    /// </summary>
+    public void PrintNoSourcesConfigured()
+    {
+        _errorReporter.WriteLine(CliCommandStrings.ToolSearchNoSourcesConfigured);
+    }
 
     public void Print(bool isDetailed, IReadOnlyCollection<SearchResultPackage> searchResultPackages)
     {

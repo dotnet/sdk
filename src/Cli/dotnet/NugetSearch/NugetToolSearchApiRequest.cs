@@ -17,17 +17,36 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
 {
-    public async Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter)
+    // Fallback used only when a source URL isn't supplied (e.g. by pre-existing test overrides).
+    // Production calls always pass the selected NuGet package source's URL.
+    private const string NuGetOrgServiceIndexUrl = "https://api.nuget.org/v3/index.json";
+
+    public async Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter, string sourceUrl)
     {
         var queryUrl = await ConstructUrl(
             nugetSearchApiParameter.SearchTerm,
             nugetSearchApiParameter.Skip,
             nugetSearchApiParameter.Take,
-            nugetSearchApiParameter.Prerelease);
+            nugetSearchApiParameter.Prerelease,
+            serviceIndexUrl: sourceUrl);
 
         var httpClient = new HttpClient();
         using var cancellation = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-        HttpResponseMessage response = await httpClient.GetAsync(queryUrl, cancellation.Token);
+
+        HttpResponseMessage response;
+        try
+        {
+            response = await httpClient.GetAsync(queryUrl, cancellation.Token);
+        }
+        catch (Exception e) when (e is HttpRequestException or OperationCanceledException)
+        {
+            // Transient network failures (DNS, connection refused, timeout) are retriable.
+            throw new NugetSearchApiRequestException(
+                string.Format(
+                    CliStrings.RetriableNugetSearchFailure,
+                    queryUrl.AbsoluteUri, e.Message, "N/A"));
+        }
+
         if (!response.IsSuccessStatusCode)
         {
             if ((int)response.StatusCode >= 500 && (int)response.StatusCode < 600)
@@ -48,9 +67,9 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     }
 
     internal static async Task<Uri> ConstructUrl(string searchTerm = null, int? skip = null, int? take = null,
-        bool prerelease = false, Uri domainAndPathOverride = null)
+        bool prerelease = false, Uri domainAndPathOverride = null, string serviceIndexUrl = null)
     {
-        var uriBuilder = new UriBuilder(domainAndPathOverride ?? await DomainAndPath());
+        var uriBuilder = new UriBuilder(domainAndPathOverride ?? await DomainAndPath(serviceIndexUrl));
         NameValueCollection query = HttpUtility.ParseQueryString(uriBuilder.Query);
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
@@ -89,9 +108,9 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
     // service index directly over HTTP and select the SearchQueryService endpoint using
     // System.Text.Json source generation. Failures are translated into NugetSearchApiRequestException
     // (a GracefulException) with the same retriable/non-retriable messaging as GetResult.
-    private static async Task<Uri> DomainAndPath()
+    private static async Task<Uri> DomainAndPath(string serviceIndexUrl = null)
     {
-        const string serviceIndexUrl = "https://api.nuget.org/v3/index.json";
+        serviceIndexUrl ??= NuGetOrgServiceIndexUrl;
         const string searchQueryServiceType = "SearchQueryService/3.5.0";
 
         using var httpClient = new HttpClient();
@@ -165,12 +184,40 @@ internal class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         }
     }
 #else
-    private static async Task<Uri> DomainAndPath()
+    // Failures resolving or reading the service index (network/timeout issues or NuGet.Protocol
+    // errors, e.g. FatalProtocolException) are translated into NugetSearchApiRequestException
+    // (a GracefulException) so a single unreachable/misbehaving feed doesn't abort the per-feed
+    // search loop in ToolSearchCommand. This mirrors the AOT DomainAndPath's classification.
+    private static async Task<Uri> DomainAndPath(string serviceIndexUrl = null)
     {
-        var repository = Repository.Factory.GetCoreV3("https://api.nuget.org/v3/index.json");
-        var resource = await repository.GetResourceAsync<ServiceIndexResourceV3>();
-        var uris = resource.GetServiceEntryUris("SearchQueryService/3.5.0");
-        return uris[0];
+        serviceIndexUrl ??= NuGetOrgServiceIndexUrl;
+        const string searchQueryServiceType = "SearchQueryService/3.5.0";
+
+        try
+        {
+            var repository = Repository.Factory.GetCoreV3(serviceIndexUrl);
+            var resource = await repository.GetResourceAsync<ServiceIndexResourceV3>();
+            var uris = resource.GetServiceEntryUris(searchQueryServiceType);
+
+            if (uris.Count == 0)
+            {
+                throw new NugetSearchApiRequestException(
+                    string.Format(
+                        CliStrings.NonRetriableNugetSearchFailure,
+                        serviceIndexUrl, $"{searchQueryServiceType} not found in service index", "N/A"));
+            }
+
+            return uris[0];
+        }
+        catch (Exception e) when (e is NuGetProtocolException or HttpRequestException or OperationCanceledException)
+        {
+            // Transient network/protocol failures (DNS, connection refused, timeout, malformed
+            // service index response, etc.) are retriable.
+            throw new NugetSearchApiRequestException(
+                string.Format(
+                    CliStrings.RetriableNugetSearchFailure,
+                    serviceIndexUrl, e.Message, "N/A"));
+        }
     }
 #endif
 }
