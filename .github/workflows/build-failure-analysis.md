@@ -117,9 +117,10 @@ timeout-minutes: 30
 #
 # The PR-head checkout is intentionally shallow (`actions/checkout`'s default
 # depth of 1): gh-aw bundles only the commits the agent creates on top of it, so
-# no history is needed. Step 6b's loop guard therefore reads the PR's commit
-# list through the GitHub tools rather than `git log`, which cannot see the
-# branch's history here.
+# no history is needed. Nothing here needs it either: the loop guard runs in the
+# trusted fetch job (step 2c) and reads only the subject of the PR's *tip*
+# commit through the GitHub API — never `git log`, which cannot see the branch's
+# history in a depth-1 checkout.
 #
 # It does, however, put PR-controlled `.github/`, `.agents/`, `AGENTS.md` and
 # every other agent-config path in the workspace, and the agent reads its
@@ -242,9 +243,11 @@ tools:
   # (Step 6b) forbids the agent from using the injected branch/history commands.
   edit:
   bash:
+    # `git log` is deliberately absent: the checkout is depth-1 so it can only
+    # ever show the tip, and the loop guard it might be mistaken for lives in
+    # the trusted fetch job.
     - "git status:*"
     - "git diff:*"
-    - "git log:*"
     - "git rev-parse:*"
     - "git add:*"
     - "git commit:*"
@@ -285,9 +288,13 @@ safe-outputs:
   #     `safe_outputs` job (conditioned on the agent not being skipped) is
   #     skipped too, so no push code path remains. The agent playbook explains
   #     the rule, but nothing depends on the agent honouring it.
-  #     This matters because our push is made with GITHUB_TOKEN — which does not
-  #     re-trigger GitHub Actions — but Azure DevOps' GitHub app *does* rebuild,
-  #     so a new run can follow every push.
+  #     This matters because the push runs with
+  #     `secrets.GH_AW_GITHUB_TOKEN || secrets.GITHUB_TOKEN`: with the default
+  #     `GITHUB_TOKEN` the push does not re-trigger *Actions*, but a repository
+  #     that configures `GH_AW_GITHUB_TOKEN` as a PAT or App token gets Actions
+  #     re-runs too. Azure DevOps' GitHub app rebuilds either way, so a new run
+  #     can follow every push — which is precisely why the guard is enforced in
+  #     a trusted job rather than left to the token's behaviour.
   #     The guard is scoped to the branch *tip*, not to the whole history, so a
   #     pull request is not abandoned forever after one automated attempt: any
   #     later commit by anyone restores full analysis.

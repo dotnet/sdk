@@ -185,9 +185,10 @@ caller allows it, `git add`/`git commit` for authoring a fix commit).
      lines). If — and only if — `push_to_pull_request_branch` is available to
      you, follow **Step 6b** of the playbook to append a mechanical fix commit
      to the PR branch. Every one of its conditions must hold (same-repo PR,
-     `src/` or `test/` only, provable from the compiler error, no earlier
-     `[build-failure-analysis]` commit on the branch); otherwise just describe
-     the fix in the summary comment.
+     `src/` or `test/` only, provable from the compiler error); otherwise just
+     describe the fix in the summary comment. You do not need to check whether
+     an automated fix ran before — a trusted job already refused to start this
+     run if the branch *tip* is itself an automated fix.
    - `submit_pull_request_review` is **not** a safe output for this workflow;
      inline comments stand alone.
 
