@@ -129,7 +129,7 @@ public sealed class HttpTestHostGatewayTests
         using var client = new HttpClient(new HttpClientHandler { AllowAutoRedirect = false });
         using var wrongPathRequest = new HttpRequestMessage(
             HttpMethod.Options,
-            new Uri(gateway.Endpoint.GetLeftPart(UriPartial.Authority) + "/"));
+            new Uri(gateway.Endpoint, "wrong-path"));
         wrongPathRequest.Headers.Add("Origin", "http://127.0.0.1:5001");
 
         using HttpResponseMessage wrongPathResponse = await client.SendAsync(wrongPathRequest, TestContext.CancellationToken);
