@@ -60,6 +60,7 @@ internal static class AotRunCommand
             out bool noBuild,
             out string? entryPointFileFullPath,
             out string[]? applicationArguments,
+            out string[]? loggerArguments,
             out IReadOnlyDictionary<string, string>? environmentVariables,
             out string fallbackReason))
         {
@@ -76,7 +77,9 @@ internal static class AotRunCommand
         {
             var buildCommand = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath,
-                MSBuildArgs.FromProperties(CreateGlobalProperties(parseResult, definition).AsReadOnly()))
+                MSBuildArgs
+                    .FromProperties(CreateGlobalProperties(parseResult, definition).AsReadOnly())
+                    .CloneWithAdditionalArgs(loggerArguments))
             {
                 NoRestore = parseResult.HasOption(definition.NoRestoreOption),
                 BuildStarted = profileResult.Profile?.DotNetRunMessages == true
@@ -303,12 +306,14 @@ internal static class AotRunCommand
         out bool noBuild,
         [NotNullWhen(true)] out string? entryPointFileFullPath,
         [NotNullWhen(true)] out string[]? applicationArguments,
+        [NotNullWhen(true)] out string[]? loggerArguments,
         [NotNullWhen(true)] out IReadOnlyDictionary<string, string>? environmentVariables,
         out string fallbackReason)
     {
         noBuild = parseResult.HasOption(definition.NoBuildOption);
         entryPointFileFullPath = null;
         applicationArguments = null;
+        loggerArguments = null;
         environmentVariables = null;
         fallbackReason = string.Empty;
 
@@ -328,6 +333,14 @@ internal static class AotRunCommand
             fallbackReason = "application arguments could not be separated at '--'";
             return false;
         }
+
+        LoggerUtility.SeparateLoggerArguments(
+            parsedApplicationArguments.Take(argumentCountBeforeDoubleDash),
+            out var parsedLoggerArguments,
+            out var nonLoggerArgumentsBeforeDoubleDash);
+        loggerArguments = [.. parsedLoggerArguments];
+        parsedApplicationArguments = [.. nonLoggerArgumentsBeforeDoubleDash, .. argumentsAfterDoubleDash];
+        argumentCountBeforeDoubleDash = nonLoggerArgumentsBeforeDoubleDash.Length;
 
         if (argumentCountBeforeDoubleDash > 0 && parsedApplicationArguments[0] == "-")
         {
