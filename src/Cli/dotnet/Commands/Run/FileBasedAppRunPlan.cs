@@ -197,6 +197,58 @@ internal static class FileBasedAppRunPlan
             analyzedPlan.Cache);
     }
 
+    /// <summary>
+    /// Produces a launch contract from a build that completed in the current process.
+    /// </summary>
+    internal static RunPlan AnalyzeCompletedBuild(
+        string entryPointFileFullPath,
+        string artifactsPath,
+        BuildLevel buildLevel,
+        FileBasedAppCacheInfo? cache)
+    {
+        RunFileBuildCacheEntry? launchEntry = buildLevel is BuildLevel.None
+            ? cache?.PreviousEntry
+            : cache?.CurrentEntry;
+        RunProperties? runProperties = cache?.CurrentEntry.Run;
+        RunTier tier = buildLevel is BuildLevel.None
+            ? RunTier.CachedLaunch
+            : RunTier.DirectCompile;
+        RunDecisionReason reason = buildLevel is BuildLevel.None
+            ? RunDecisionReason.CacheValid
+            : RunDecisionReason.DirectCompilationRequired;
+
+        if (runProperties is { Command.Length: > 0 })
+        {
+            return new RunPlan(
+                tier,
+                reason,
+                cache,
+                new FileBasedAppLaunchInfo(runProperties.Command, artifactsPath, runProperties));
+        }
+
+        if (launchEntry is
+            {
+                BuildLevel: BuildLevel.Csc,
+                Run: null,
+                BuildResultFile: null,
+            } &&
+            launchEntry.CscArguments.IsDefaultOrEmpty)
+        {
+            return new RunPlan(
+                tier,
+                reason,
+                cache,
+                new FileBasedAppLaunchInfo(
+                    GetCscBuiltProgramLaunchArtifacts(entryPointFileFullPath, artifactsPath).AppHost,
+                    artifactsPath));
+        }
+
+        return new RunPlan(
+            RunTier.ManagedFallback,
+            RunDecisionReason.CachedLaunchNotEligible,
+            cache);
+    }
+
     private static BuildLevel AnalyzeBuildLevel(
         FileBasedAppRunPlanInputs inputs,
         out FileBasedAppCacheInfo? cache)

@@ -292,6 +292,43 @@ public class FileBasedAppRunPlanTests
         }
     }
 
+    /// <summary>Verifies that a completed direct compilation supplies a launch without re-reading the cache file.</summary>
+    [TestMethod]
+    public void AnalyzeCompletedBuildReturnsSyntheticLaunch()
+    {
+        string testDirectory = CreateTestDirectory();
+        try
+        {
+            string entryPointPath = Path.Join(testDirectory, "Program.cs");
+            string artifactsPath = Path.Join(testDirectory, "artifacts");
+            var cache = new FileBasedAppCacheInfo
+            {
+                EntryPointFile = new FileInfo(entryPointPath),
+                CurrentEntry = new RunFileBuildCacheEntry
+                {
+                    BuildLevel = BuildLevel.Csc,
+                },
+            };
+
+            RunPlan plan = FileBasedAppRunPlan.AnalyzeCompletedBuild(
+                entryPointPath,
+                artifactsPath,
+                BuildLevel.Csc,
+                cache);
+
+            Assert.AreEqual(RunTier.DirectCompile, plan.Tier);
+            Assert.AreEqual(RunDecisionReason.DirectCompilationRequired, plan.Reason);
+            Assert.AreEqual(
+                FileBasedAppRunPlan.GetCscBuiltProgramLaunchArtifacts(entryPointPath, artifactsPath).AppHost,
+                plan.Launch?.Command);
+            Assert.IsFalse(File.Exists(Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName)));
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
     /// <summary>Verifies auxiliary-file reuse decisions and diagnostics.</summary>
     [TestMethod]
     public void CacheInfoReportsAuxiliaryFileReuseDecision()

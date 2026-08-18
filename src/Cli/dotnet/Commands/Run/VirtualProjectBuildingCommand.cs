@@ -46,6 +46,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     public bool NoBuild { get; init; }
 
+    public Action? BuildStarted { get; init; }
+
     /// <summary>
     /// Filled during <see cref="Execute"/>.
     /// </summary>
@@ -174,6 +176,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             {
                 Debug.Assert(cache is not null);
 
+                BuildStarted?.Invoke();
                 MarkBuildStart();
 
                 // Execute CSC.

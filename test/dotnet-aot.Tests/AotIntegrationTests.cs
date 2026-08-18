@@ -634,7 +634,7 @@ public partial class AotIntegrationTests
             Assert.AreEqual(0, exitCode, stderr);
             Assert.AreEqual("AOT_FRESH:value:arg one|--flag", stdout.Trim());
             Assert.Contains("Compiler server processed compilation.", stderr);
-            Assert.Contains("AOT run tier: CachedLaunch (CacheValid).", stderr);
+            Assert.Contains("AOT run tier: DirectCompile (DirectCompilationRequired).", stderr);
             Assert.DoesNotContain("falling back to the managed CLI", stderr);
             Assert.IsTrue(File.Exists(Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName)));
         }

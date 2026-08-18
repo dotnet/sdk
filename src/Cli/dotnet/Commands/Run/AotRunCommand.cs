@@ -71,24 +71,29 @@ internal static class AotRunCommand
             definition,
             entryPointFileFullPath);
 
+        RunPlan? plan = null;
         if (!noBuild)
         {
-            if (profileResult.Profile?.DotNetRunMessages == true)
-            {
-                Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding);
-            }
-
             var buildCommand = new VirtualProjectBuildingCommand(
                 entryPointFileFullPath,
                 MSBuildArgs.FromProperties(CreateGlobalProperties(parseResult, definition).AsReadOnly()))
             {
                 NoRestore = parseResult.HasOption(definition.NoRestoreOption),
+                BuildStarted = profileResult.Profile?.DotNetRunMessages == true
+                    ? static () => Reporter.Output.WriteLine(CliCommandStrings.RunCommandBuilding)
+                    : null,
             };
             int buildResult = buildCommand.Execute();
             if (buildResult != 0)
             {
                 return buildResult;
             }
+
+            plan = FileBasedAppRunPlan.AnalyzeCompletedBuild(
+                entryPointFileFullPath,
+                buildCommand.Builder.ArtifactsPath,
+                buildCommand.LastBuild.Level,
+                buildCommand.LastBuild.Cache);
         }
 
         string command;
@@ -98,7 +103,6 @@ internal static class AotRunCommand
         RunProperties? validatedRunProperties = null;
         RunTier runTier;
         RunDecisionReason decisionReason;
-        RunPlan? plan = null;
         if (noBuild && profileResult.Profile is not ExecutableLaunchProfile)
         {
             artifactsPath = VirtualProjectBuilder.GetArtifactsPath(entryPointFileFullPath);
@@ -136,7 +140,7 @@ internal static class AotRunCommand
         }
 
         if (profileResult.Profile is ExecutableLaunchProfile executableProfile &&
-            (executableCanBypassCache || plan?.Tier == RunTier.CachedLaunch))
+            (executableCanBypassCache || plan?.Tier is RunTier.CachedLaunch or RunTier.DirectCompile))
         {
             if (noBuild)
             {
