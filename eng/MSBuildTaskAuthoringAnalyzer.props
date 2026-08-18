@@ -7,10 +7,9 @@
   This file is imported from the repo-root Directory.Build.targets so the opt-in property set in the
   project body is visible.
 
-  Report-only onboarding: MSBuildTask0001-0005 are downgraded to 'suggestion' in the root .editorconfig.
-  MSBuildTask0006-0008 remain warnings so they are visible in build output, but are excluded from warn-as-error
-  below while existing task implementations are migrated. Severity is re-raised incrementally per rule or per
-  task directory via .editorconfig as the multithreaded-task migration proceeds.
+  Report-only onboarding: MSBuildTask0001-0008 are downgraded to 'suggestion' in the root .editorconfig,
+  which keeps the build green while task migration to the multithreaded model proceeds. Severity is
+  re-raised incrementally per rule or per task directory via .editorconfig.
 
   The analyzer package is produced by the msbuild repo and flows to this repo via eng/Version.Details.xml
   (dotnet/dotnet). It is report-only and analyzers do not affect build output, so it is excluded from
@@ -26,9 +25,5 @@
   <ItemGroup Condition="'$(_UseMSBuildTaskAuthoringAnalyzer)' == 'true'">
     <PackageReference Include="Microsoft.Build.TaskAuthoring.Analyzer" PrivateAssets="all" IncludeAssets="analyzers" />
   </ItemGroup>
-
-  <PropertyGroup Condition="'$(_UseMSBuildTaskAuthoringAnalyzer)' == 'true'">
-    <WarningsNotAsErrors>$(WarningsNotAsErrors);MSBuildTask0006;MSBuildTask0007;MSBuildTask0008</WarningsNotAsErrors>
-  </PropertyGroup>
 
 </Project>
