@@ -1391,6 +1391,44 @@ public class NativeLibraryClass
         }
 
         [TestMethod]
+        public void Aot_optimized_publish_targets_are_reviewed_when_CoreBuildDependsOn_changes()
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
+            testProject.RecordProperties("CoreBuildDependsOn");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should().Pass();
+
+            var coreBuildDependsOn = testProject
+                .GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework)["CoreBuildDependsOn"]
+                .Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
+
+            coreBuildDependsOn.Should().Equal(
+                "_CheckForBuildWithNoBuild",
+                "BuildOnlySettings",
+                "PrepareForBuild",
+                "PreBuildEvent",
+                "ResolveReferences",
+                "PrepareResources",
+                "ResolveKeySource",
+                "Compile",
+                "ExportWindowsMDFile",
+                "UnmanagedUnregistration",
+                "GenerateSerializationAssemblies",
+                "CreateSatelliteAssemblies",
+                "GenerateManifests",
+                "GetTargetPath",
+                "PrepareForRun",
+                "UnmanagedRegistration",
+                "IncrementalClean",
+                "PostBuildEvent",
+                "GenerateBuildDependencyFile",
+                "GenerateBuildRuntimeConfigurationFiles");
+        }
+
+        [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
         public void NativeAot_publish_does_not_produce_managed_build_output()
         {
@@ -1412,7 +1450,7 @@ public class NativeLibraryClass
 
             var publishCommand = new PublishCommand(testAsset);
             publishCommand
-                .Execute("/p:UseCurrentRuntimeIdentifier=true", "/p:SelfContained=true")
+                .Execute()
                 .Should().Pass();
 
             var buildProperties = testProject.GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework);
@@ -1424,29 +1462,10 @@ public class NativeLibraryClass
             File.Exists(publishedExe).Should().BeTrue("the AOT-compiled native binary should exist in the publish directory");
             IsNativeImage(publishedExe).Should().BeTrue("the published binary should be a native image");
 
-            // The output directory (parent of publish\) should NOT contain managed build artifacts.
-            // It may contain subdirectories like native\ and publish\, but should not have managed
-            // apphost, .dll, .deps.json, .runtimeconfig.json, or runtime pack files.
+            // The output directory (parent of publish\) should only contain subdirectories.
             var outputDirectory = Path.GetDirectoryName(publishDirectory);
-            var managedBuildArtifacts = Directory.GetFiles(outputDirectory)
-                .Select(Path.GetFileName)
-                .ToList();
-
-            managedBuildArtifacts.Should().NotContain(f => f.Equals($"{projectName}{Constants.ExeSuffix}", StringComparison.OrdinalIgnoreCase),
-                "the output directory should not contain a managed apphost executable from Build");
-            managedBuildArtifacts.Should().NotContain(f => f.Equals($"{projectName}.dll", StringComparison.OrdinalIgnoreCase),
-                "the output directory should not contain a managed assembly from Build");
-            managedBuildArtifacts.Should().NotContain(f => f.Equals($"{projectName}.deps.json", StringComparison.OrdinalIgnoreCase),
-                "the output directory should not contain deps.json from Build");
-            managedBuildArtifacts.Should().NotContain(f => f.Equals($"{projectName}.runtimeconfig.json", StringComparison.OrdinalIgnoreCase),
-                "the output directory should not contain runtimeconfig.json from Build");
-            // Also verify no runtime pack assemblies leaked from a self-contained Build
-            managedBuildArtifacts.Should().NotContain(f => f.Equals("System.Private.CoreLib.dll", StringComparison.OrdinalIgnoreCase),
-                "the output directory should not contain runtime pack assemblies from Build");
-            managedBuildArtifacts.Should().NotContain(f => f.Equals("coreclr.dll", StringComparison.OrdinalIgnoreCase) ||
-                                                           f.Equals("libcoreclr.so", StringComparison.OrdinalIgnoreCase) ||
-                                                           f.Equals("libcoreclr.dylib", StringComparison.OrdinalIgnoreCase),
-                "the output directory should not contain the CoreCLR runtime from Build");
+            Directory.GetFiles(outputDirectory).Should().BeEmpty(
+                "the AOT-optimized publish should not produce Build output files");
         }
 
         [TestMethod]
