@@ -117,7 +117,8 @@ public class RunTestsScriptTests : SdkTest
 
         Assert.AreNotEqual(0, result.ExitCode);
         Assert.Contains("Target framework 'net999.0' is not listed in TargetFrameworks", result.StdErr);
-        Assert.Contains(@"Rerun: .\.dotnet\dotnet.exe scripts\RunTests.cs", result.StdErr);
+        Assert.Contains("Rerun:", result.StdErr);
+        Assert.Contains(Path.Combine("scripts", "RunTests.cs"), result.StdErr);
         Assert.DoesNotContain(_repoRoot, result.StdErr);
     }
 
