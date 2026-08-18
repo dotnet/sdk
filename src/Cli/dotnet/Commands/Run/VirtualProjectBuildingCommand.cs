@@ -19,9 +19,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.Cli.Commands.Restore;
 #endif
 using Microsoft.DotNet.Cli.Utils;
-#if !CLI_AOT
 using Microsoft.DotNet.Cli.Utils.Extensions;
-#endif
 using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -109,8 +107,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
     public override int Execute()
     {
         bool msbuildGet = MSBuildArgs.GetProperty is [_, ..] || MSBuildArgs.GetItem is [_, ..] || MSBuildArgs.GetTargetResult is [_, ..];
-#if !CLI_AOT
         bool evalOnly = msbuildGet && Builder.RequestedTargets is null or [];
+#if !CLI_AOT
         bool minimizeStdOut = msbuildGet && MSBuildArgs.GetResultOutputFile is null or [];
 
         var verbosity = MSBuildArgs.Verbosity ?? MSBuildForwardingAppWithoutLogging.DefaultVerbosity;
@@ -126,10 +124,12 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
         if (msbuildGet)
         {
-#if CLI_AOT
-            return ThrowManagedFallback("the operation requires in-process MSBuild evaluation");
-#else
             LastBuild = (BuildLevel.None, Cache: null);
+#if CLI_AOT
+            if (!evalOnly)
+            {
+                return ThrowManagedFallback("the operation requires full MSBuild execution");
+            }
 #endif
         }
         else if (NoBuild)
@@ -226,7 +226,25 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 #endif
         }
 
-#if !CLI_AOT
+#if CLI_AOT
+        Debug.Assert(msbuildGet && evalOnly);
+
+        try
+        {
+            using var environmentScope = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            using var projectCollection = new ProjectCollection(globalProperties: MSBuildArgs.GlobalProperties);
+            ProjectInstance projectInstance = CreateProjectInstance(projectCollection);
+            PrintBuildInformation(projectCollection, projectInstance, buildOrRestoreResult: null);
+            return 0;
+        }
+        catch (Exception e)
+        {
+            Reporter.Error.WriteLine(CommandLoggingContext.IsVerbose ?
+                e.ToString().Red().Bold() :
+                e.Message.Red().Bold());
+            return 1;
+        }
+#else
         if (!NoWriteBuildMarkers && !msbuildGet)
         {
             CleanFileBasedAppArtifactsCommand.StartAutomaticCleanupIfNeeded();
@@ -541,6 +559,8 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             cache.CurrentEntry.AdditionalSources.Remove(Builder.EntryPointFileFullPath);
         }
 
+#endif
+
         void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
         {
             var resultOutputFile = MSBuildArgs.GetResultOutputFile is [{ } file, ..] ? file : null;
@@ -660,7 +680,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 stream.Write(Encoding.UTF8.GetBytes(Environment.NewLine));
             }
         }
-#endif
+
     }
 
 #if CLI_AOT

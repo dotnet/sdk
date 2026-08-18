@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.Runtime.CompilerServices;
+using System.Text.Json;
 using System.Xml;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
@@ -393,6 +394,71 @@ public class MSBuildEvaluationTests
                 commandWithDirectives.CreateProjectInstance(ProjectCollection.GlobalProjectCollection);
             Assert.AreEqual("from-directive", projectWithDirectives.GetPropertyValue("DirectiveValue"));
             Assert.HasCount(1, commandWithDirectives.EvaluatedDirectives);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void VirtualFileProjectGetPropertyAndItemEvaluateWithoutBuilding()
+    {
+        string sdkDirectory = GetRequiredSdkDirectory();
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-virtual-project-get-{Guid.NewGuid():N}");
+        string sourcePath = Path.Combine(testDirectory, "Program.cs");
+        string resultPath = Path.Combine(testDirectory, "result.json");
+        using var _ = new SdkDirectoryScope(sdkDirectory);
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(sourcePath, """Console.WriteLine("Hello");""");
+
+        try
+        {
+            MSBuildSdkResolverRegistration.Register();
+
+            CommandBase command = BuildCommand.FromArgs([
+                sourcePath,
+                "--getProperty:TargetFramework",
+                "--getItem:Compile",
+                $"--getResultOutputFile:{resultPath}",
+            ]);
+
+            Assert.AreEqual(0, command.Execute());
+
+            using JsonDocument result = JsonDocument.Parse(File.ReadAllText(resultPath));
+            Assert.AreEqual(
+                "net11.0",
+                result.RootElement.GetProperty("Properties").GetProperty("TargetFramework").GetString());
+            Assert.Contains(
+                sourcePath,
+                result.RootElement.GetProperty("Items").GetProperty("Compile").EnumerateArray()
+                    .Select(item => item.GetProperty("Identity").GetString()));
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    [DataRow("--target:Build")]
+    [DataRow("--getTargetResult:Build")]
+    public void VirtualFileProjectGetWithTargetExecutionFallsBack(string targetArgument)
+    {
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"aot-virtual-project-get-target-{Guid.NewGuid():N}");
+        string sourcePath = Path.Combine(testDirectory, "Program.cs");
+        Directory.CreateDirectory(testDirectory);
+        File.WriteAllText(sourcePath, """Console.WriteLine("Hello");""");
+
+        try
+        {
+            CommandBase command = BuildCommand.FromArgs([
+                sourcePath,
+                "--getProperty:TargetFramework",
+                targetArgument,
+            ]);
+
+            Assert.ThrowsExactly<CommandNotAvailableInAotException>(() => command.Execute());
         }
         finally
         {
