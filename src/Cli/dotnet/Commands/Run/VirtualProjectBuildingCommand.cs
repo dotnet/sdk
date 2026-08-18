@@ -29,6 +29,12 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal sealed class VirtualProjectBuildingCommand : CommandBase
 {
+#if CLI_AOT
+    private static bool IsAotBuild => true;
+#else
+    private static bool IsAotBuild => false;
+#endif
+
     internal const string FileBasedProgramCanSkipMSBuild = nameof(FileBasedProgramCanSkipMSBuild);
 
     public static string TargetFrameworkVersion => Product.TargetFrameworkVersion;
@@ -127,21 +133,21 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         if (msbuildGet)
         {
             LastBuild = (BuildLevel.None, Cache: null);
-#if CLI_AOT
-            if (!evalOnly)
+            if (IsAotBuild && !evalOnly)
             {
                 string operation = MSBuildArgs.GetTargetResult is [_, ..]
                     ? "retrieving target results"
                     : "querying properties or items while executing targets";
                 return ThrowManagedFallback($"{operation} requires full MSBuild execution");
             }
-#endif
         }
         else if (NoBuild)
         {
-#if CLI_AOT
-            return ThrowManagedFallback(GetFullMSBuildFallbackReason());
-#else
+            if (IsAotBuild)
+            {
+                return ThrowManagedFallback(GetFullMSBuildFallbackReason());
+            }
+
             // This is reached only during `restore`, not `run --no-build`
             // (in the latter case, this virtual building command is not executed at all).
             Debug.Assert(!NoRestore);
@@ -153,7 +159,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 CreateTempSubdirectory(Builder.ArtifactsPath);
                 MarkArtifactsFolderUsed();
             }
-#endif
         }
         else
         {
@@ -216,13 +221,14 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 LastBuild = (buildLevel, cache);
             }
 
-#if CLI_AOT
-            return ThrowManagedFallback(GetFullMSBuildFallbackReason());
-#else
+            if (IsAotBuild)
+            {
+                return ThrowManagedFallback(GetFullMSBuildFallbackReason());
+            }
+
             Debug.Assert(buildLevel is BuildLevel.All or BuildLevel.Csc);
 
             MarkBuildStart();
-#endif
         }
 
 #if CLI_AOT
@@ -682,7 +688,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
 
     }
 
-#if CLI_AOT
     private string GetFullMSBuildFallbackReason()
     {
         return Builder.RequestedTargets switch
@@ -699,7 +704,6 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             $"The Native AOT CLI is falling back to the managed CLI because {reason}.");
         throw new CommandNotAvailableInAotException();
     }
-#endif
 
     private RunFileBuildCacheEntry? GetPreviousCacheEntry()
     {
