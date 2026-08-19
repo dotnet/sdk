@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
+using Microsoft.DotNet.ApiSymbolExtensions;
 using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
@@ -255,6 +256,49 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.AreEqual(
                 hasStringConstructor ? DifferenceSeverity.Informational : DifferenceSeverity.Error,
                 difference.Severity);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void FrameworkExperimentalAttributeWithoutAssemblyReferencesHonorsFilter(bool excludeExperimentalAttribute)
+        {
+            string leftAssemblyPath = SymbolFactory.EmitAssemblyFromSyntax($$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public void Experimental() { }
+                }
+                """, assemblyName: "ExperimentalAttributeMetadataLeft");
+            string rightAssemblyPath = SymbolFactory.EmitAssemblyFromSyntax(
+                "namespace CompatTests; public class Api { }",
+                assemblyName: "ExperimentalAttributeMetadataRight");
+
+            try
+            {
+                IAssemblySymbol left = new AssemblySymbolLoader(new SuppressibleTestLog()).LoadAssembly(leftAssemblyPath)
+                    ?? throw new InvalidOperationException($"Failed to load '{leftAssemblyPath}'.");
+                IAssemblySymbol right = new AssemblySymbolLoader(new SuppressibleTestLog()).LoadAssembly(rightAssemblyPath)
+                    ?? throw new InvalidOperationException($"Failed to load '{rightAssemblyPath}'.");
+                TestRuleFactory ruleFactory = new((settings, context) => new MembersMustExist(settings, context));
+                ApiComparer comparer = new(ruleFactory);
+                ISymbolFilter filter = SymbolFilterFactory.GetFilterFromList(
+                    excludeExperimentalAttribute ? ["T:System.Diagnostics.CodeAnalysis.ExperimentalAttribute"] : null);
+                comparer.Settings.AttributeDataSymbolFilter = filter;
+
+                CompatDifference difference = Assert.ContainsSingle(comparer.GetDifferences(left, right)
+                    .Where(difference => difference.ReferenceId == "M:CompatTests.Api.Experimental"));
+
+                Assert.AreEqual(
+                    excludeExperimentalAttribute ? DifferenceSeverity.Error : DifferenceSeverity.Informational,
+                    difference.Severity);
+            }
+            finally
+            {
+                Directory.Delete(Path.GetDirectoryName(leftAssemblyPath)!, recursive: true);
+                Directory.Delete(Path.GetDirectoryName(rightAssemblyPath)!, recursive: true);
+            }
         }
 
         [TestMethod]

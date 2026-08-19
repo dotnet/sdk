@@ -21,7 +21,8 @@ namespace Microsoft.DotNet.ApiCompatibility
             }
 
             CacheEntry classification = s_classifications.GetValue(symbol, CreateCacheEntry);
-            return classification.ExperimentalAttributeClasses.Any(attributeDataSymbolFilter.Include)
+            return classification.ExperimentalAttributeClasses.Any(
+                attributeClass => IsIncluded(attributeClass, attributeDataSymbolFilter))
                 ? ApiStability.Experimental
                 : ApiStability.Stable;
         }
@@ -61,10 +62,6 @@ namespace Microsoft.DotNet.ApiCompatibility
         }
 
         public static bool IsExperimentalAttribute(AttributeData attribute) =>
-            attribute.AttributeConstructor is
-            {
-                Parameters: [{ Type.SpecialType: SpecialType.System_String }]
-            } &&
             attribute.AttributeClass is
             {
                 MetadataName: ExperimentalAttributeName,
@@ -81,7 +78,33 @@ namespace Microsoft.DotNet.ApiCompatibility
                         }
                     }
                 }
+            } &&
+            HasExpectedConstructor(attribute);
+
+        private static bool HasExpectedConstructor(AttributeData attribute)
+        {
+            // ApiCompat commonly loads metadata without assembly references, in which case Roslyn cannot bind the constructor.
+            return attribute.AttributeConstructor is null ||
+                attribute.AttributeConstructor.Parameters is [{ Type.SpecialType: SpecialType.System_String }];
+        }
+
+        private static bool IsIncluded(INamedTypeSymbol attributeClass, ISymbolFilter filter)
+        {
+            if (attributeClass is not IErrorTypeSymbol)
+            {
+                return filter.Include(attributeClass);
+            }
+
+            return filter switch
+            {
+                AccessibilitySymbolFilter => true,
+                CompositeSymbolFilter { Mode: CompositeSymbolFilterMode.And } composite =>
+                    composite.Filters.All(innerFilter => IsIncluded(attributeClass, innerFilter)),
+                CompositeSymbolFilter { Mode: CompositeSymbolFilterMode.Or } composite =>
+                    composite.Filters.Any(innerFilter => IsIncluded(attributeClass, innerFilter)),
+                _ => filter.Include(attributeClass)
             };
+        }
 
         private sealed class CacheEntry(INamedTypeSymbol[] experimentalAttributeClasses)
         {
