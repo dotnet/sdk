@@ -1,5 +1,9 @@
 <Project>
   <ItemGroup>
+    <!-- Arcade 8.0 SignTool uses Windows-only sn.exe to apply the Open key. -->
+    <StrongNameSignInfo Remove="@(StrongNameSignInfo->WithMetadataValue('PublicKeyToken', 'cc7b13ffcd2ddd51'))"
+                        Condition="'$(OS)' != 'Windows_NT'" />
+
     <!-- Dlls from packages created for tests to consume -->
     <FileSignInfo Include="dotnet-dependency-context-test.dll" CertificateName="None" />
     <FileSignInfo Include="dotnet-fallbackfoldertool.dll" CertificateName="None" />
