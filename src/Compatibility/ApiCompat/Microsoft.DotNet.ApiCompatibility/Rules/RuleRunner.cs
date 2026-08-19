@@ -12,9 +12,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
     /// </summary>
     public class RuleRunner(IRuleFactory ruleFactory, IRuleContext context) : IRuleRunner
     {
+        private IRuleSettings _settings = null!;
+
         /// <inheritdoc />
         public void InitializeRules(IRuleSettings settings)
         {
+            _settings = settings;
+
             // Instantiate the rules but don't invoke anything on them as they register themselves on "events" inside their constructor.
             _ = ruleFactory.CreateRules(settings, context);
         }
@@ -93,8 +97,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
 
                 if (initialDifferenceCount < differences.Count)
                 {
-                    ApiStability? leftStability = leftSymbol is null ? null : ApiStabilityClassifier.Classify(leftSymbol);
-                    ApiStability? rightStability = rightSymbol is null ? null : ApiStabilityClassifier.Classify(rightSymbol);
+                    ApiStability? leftStability = leftSymbol is null ? null : ApiStabilityClassifier.Classify(leftSymbol, _settings.AttributeDataSymbolFilter);
+                    ApiStability? rightStability = rightSymbol is null ? null : ApiStabilityClassifier.Classify(rightSymbol, _settings.AttributeDataSymbolFilter);
 
                     for (int differenceIndex = initialDifferenceCount; differenceIndex < differences.Count; differenceIndex++)
                     {

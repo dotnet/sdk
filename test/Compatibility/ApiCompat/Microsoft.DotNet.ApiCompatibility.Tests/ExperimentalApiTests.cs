@@ -3,6 +3,7 @@
 
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.ApiCompatibility.Rules;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 using Microsoft.DotNet.ApiSymbolExtensions.Tests;
 
 namespace Microsoft.DotNet.ApiCompatibility.Tests
@@ -164,6 +165,51 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             Assert.IsNotEmpty(differences);
             Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
+        }
+
+        [TestMethod]
+        public void ExcludedExperimentalAttributeDoesNotChangeDifferenceSeverity()
+        {
+            string leftSyntax = $$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public void Removed() { }
+                }
+                """;
+            string rightSyntax = "namespace CompatTests; public class Api { }";
+
+            CompatDifference difference = Assert.ContainsSingle(GetDifferences(
+                leftSyntax,
+                rightSyntax,
+                attributeDataSymbolFilter: CreateExperimentalAttributeExclusionFilter()));
+
+            Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
+        }
+
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void ExcludedExperimentalAttributeDoesNotReportStabilityTransition(bool experimentalOnLeft)
+        {
+            string experimentalSyntax = $$"""
+                namespace CompatTests;
+                public class Api
+                {
+                    {{ExperimentalAttribute}}
+                    public void Changed() { }
+                }
+                """;
+            const string stableSyntax = "namespace CompatTests; public class Api { public void Changed() { } }";
+
+            CompatDifference[] differences = GetDifferences(
+                experimentalOnLeft ? experimentalSyntax : stableSyntax,
+                experimentalOnLeft ? stableSyntax : experimentalSyntax,
+                includeAttributesRule: true,
+                attributeDataSymbolFilter: CreateExperimentalAttributeExclusionFilter());
+
+            Assert.IsEmpty(differences);
         }
 
         [TestMethod]
@@ -485,7 +531,13 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
                 SymbolFactory.GetAssemblyFromSyntax(rightSyntax)).ToArray();
         }
 
-        private static CompatDifference[] GetDifferences(string leftSyntax, string rightSyntax, bool strictMode = false, bool includeAttributesRule = false, bool includeVirtualRule = false)
+        private static CompatDifference[] GetDifferences(
+            string leftSyntax,
+            string rightSyntax,
+            bool strictMode = false,
+            bool includeAttributesRule = false,
+            bool includeVirtualRule = false,
+            ISymbolFilter? attributeDataSymbolFilter = null)
         {
             TestRuleFactory ruleFactory = new(
                 (settings, context) => new MembersMustExist(settings, context),
@@ -504,8 +556,15 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             IAssemblySymbol left = SymbolFactory.GetAssemblyFromSyntax(leftSyntax);
             IAssemblySymbol right = SymbolFactory.GetAssemblyFromSyntax(rightSyntax);
             ApiComparer comparer = new(ruleFactory, new ApiComparerSettings(strictMode: strictMode));
+            if (attributeDataSymbolFilter is not null)
+            {
+                comparer.Settings.AttributeDataSymbolFilter = attributeDataSymbolFilter;
+            }
 
             return comparer.GetDifferences(left, right).ToArray();
         }
+
+        private static ISymbolFilter CreateExperimentalAttributeExclusionFilter() =>
+            DocIdSymbolFilter.CreateFromLists(["T:System.Diagnostics.CodeAnalysis.ExperimentalAttribute"]);
     }
 }

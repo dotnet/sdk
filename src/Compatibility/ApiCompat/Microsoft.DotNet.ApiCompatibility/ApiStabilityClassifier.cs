@@ -3,6 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using Microsoft.CodeAnalysis;
+using Microsoft.DotNet.ApiSymbolExtensions.Filtering;
 
 namespace Microsoft.DotNet.ApiCompatibility
 {
@@ -12,29 +13,51 @@ namespace Microsoft.DotNet.ApiCompatibility
 
         private static readonly ConditionalWeakTable<ISymbol, CacheEntry> s_classifications = new();
 
-        public static ApiStability Classify(ISymbol? symbol)
+        public static ApiStability Classify(ISymbol? symbol, ISymbolFilter attributeDataSymbolFilter)
         {
             if (symbol is null)
             {
                 return ApiStability.Stable;
             }
 
-            if (s_classifications.TryGetValue(symbol, out CacheEntry? cached))
+            CacheEntry classification = s_classifications.GetValue(symbol, CreateCacheEntry);
+            return classification.ExperimentalAttributeClasses.Any(attributeDataSymbolFilter.Include)
+                ? ApiStability.Experimental
+                : ApiStability.Stable;
+        }
+
+        private static CacheEntry CreateCacheEntry(ISymbol symbol)
+        {
+            List<INamedTypeSymbol> experimentalAttributeClasses = [];
+            AddExperimentalAttributeClasses(symbol, experimentalAttributeClasses);
+
+            if (symbol is IMethodSymbol { AssociatedSymbol: { } associatedSymbol })
             {
-                return cached.Stability;
+                AddExperimentalAttributeClasses(associatedSymbol, experimentalAttributeClasses);
             }
 
-            ApiStability stability = symbol.GetAttributes().Any(IsExperimentalAttribute) ||
-                symbol is IMethodSymbol { AssociatedSymbol: { } associatedSymbol } &&
-                    associatedSymbol.GetAttributes().Any(IsExperimentalAttribute) ||
-                symbol is not IModuleSymbol &&
-                    symbol.ContainingModule?.GetAttributes().Any(IsExperimentalAttribute) == true ||
-                symbol is not IAssemblySymbol &&
-                    symbol.ContainingAssembly?.GetAttributes().Any(IsExperimentalAttribute) == true
-                    ? ApiStability.Experimental
-                    : ApiStability.Stable;
+            if (symbol is not IModuleSymbol && symbol.ContainingModule is { } containingModule)
+            {
+                AddExperimentalAttributeClasses(containingModule, experimentalAttributeClasses);
+            }
 
-            return s_classifications.GetValue(symbol, _ => new(stability)).Stability;
+            if (symbol is not IAssemblySymbol && symbol.ContainingAssembly is { } containingAssembly)
+            {
+                AddExperimentalAttributeClasses(containingAssembly, experimentalAttributeClasses);
+            }
+
+            return new([.. experimentalAttributeClasses]);
+        }
+
+        private static void AddExperimentalAttributeClasses(ISymbol symbol, List<INamedTypeSymbol> experimentalAttributeClasses)
+        {
+            foreach (AttributeData attribute in symbol.GetAttributes())
+            {
+                if (IsExperimentalAttribute(attribute) && attribute.AttributeClass is { } attributeClass)
+                {
+                    experimentalAttributeClasses.Add(attributeClass);
+                }
+            }
         }
 
         public static bool IsExperimentalAttribute(AttributeData attribute) =>
@@ -56,9 +79,9 @@ namespace Microsoft.DotNet.ApiCompatibility
                 }
             };
 
-        private sealed class CacheEntry(ApiStability stability)
+        private sealed class CacheEntry(INamedTypeSymbol[] experimentalAttributeClasses)
         {
-            public ApiStability Stability { get; } = stability;
+            public INamedTypeSymbol[] ExperimentalAttributeClasses { get; } = experimentalAttributeClasses;
         }
     }
 }

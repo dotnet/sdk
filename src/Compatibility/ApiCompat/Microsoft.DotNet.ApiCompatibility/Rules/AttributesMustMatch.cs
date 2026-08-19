@@ -156,6 +156,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                                 rightContaining,
                                 leftMetadata,
                                 rightMetadata,
+                                _settings.AttributeDataSymbolFilter,
                                 differences);
                             continue;
                         }
@@ -183,6 +184,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules
                             rightContaining,
                             leftMetadata,
                             rightMetadata,
+                            _settings.AttributeDataSymbolFilter,
                             differences);
                         continue;
                     }
