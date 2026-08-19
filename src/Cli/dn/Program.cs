@@ -119,9 +119,9 @@ partial class Program
     }
 
     /// <summary>
-    ///  Resolves the directory dotnet-aot is loaded from (and passed as sdk_dir). Honors the
+    ///  Resolves the directory passed to dotnet-aot as <c>sdk_dir</c>. Honors the
     ///  DOTNET_AOT_SDK_DIR override for emulating the deployed non-flat layout; otherwise defaults
-    ///  to dn's own directory.
+    ///  to dn's own directory. The native-library load directory is resolved separately.
     /// </summary>
     private static string ResolveAotSdkDir(string baseDir)
     {
