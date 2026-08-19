@@ -80,7 +80,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         }
 
         Dictionary<string, string> annotations = new(StringComparer.Ordinal);
-        DateTime createdAt = CreateNewImage.ParseSourceDateEpoch(SourceDateEpoch) ?? DateTime.UtcNow;
+        DateTime createdAt = SourceDateEpochParser.Parse(SourceDateEpoch) ?? DateTime.UtcNow;
         foreach (ITaskItem annotation in indexAnnotations)
         {
             annotations[annotation.ItemSpec] = ContainerAnnotationScopes.GetValue(annotation, createdAt);

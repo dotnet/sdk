@@ -18,23 +18,6 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
     public void Cancel() => _cancellationTokenSource.Cancel();
 
-    internal static DateTime? ParseSourceDateEpoch(string? value)
-    {
-        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
-        {
-            return null;
-        }
-
-        try
-        {
-            return DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
-        }
-        catch (ArgumentOutOfRangeException)
-        {
-            return null;
-        }
-    }
-
     public override bool Execute()
     {
         try
@@ -193,7 +176,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return false;
         }
 
-        DateTime createdAt = ParseSourceDateEpoch(SourceDateEpoch) ?? DateTime.UtcNow;
+        DateTime createdAt = SourceDateEpochParser.Parse(SourceDateEpoch) ?? DateTime.UtcNow;
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
         Layer newLayer = Layer.FromDirectory(
             PublishDirectory,
