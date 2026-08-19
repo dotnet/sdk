@@ -213,6 +213,51 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         }
 
         [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
+        public void UserDefinedExperimentalAttributeRequiresStringConstructor(bool hasStringConstructor)
+        {
+            string constructorParameterType = hasStringConstructor ? "string" : "int";
+            string constructorArgument = hasStringConstructor ? "\"TEST001\"" : "1";
+            string attributeDefinition = $$"""
+                #pragma warning disable CS0436
+                namespace System.Diagnostics.CodeAnalysis
+                {
+                    [global::System.AttributeUsage(global::System.AttributeTargets.All)]
+                    public sealed class ExperimentalAttribute : global::System.Attribute
+                    {
+                        public ExperimentalAttribute({{constructorParameterType}} diagnosticId) { }
+                    }
+                }
+                """;
+            string leftSyntax = $$"""
+                {{attributeDefinition}}
+                namespace CompatTests
+                {
+                    public class Api
+                    {
+                        [System.Diagnostics.CodeAnalysis.Experimental({{constructorArgument}})]
+                        public void Removed() { }
+                    }
+                }
+                """;
+            string rightSyntax = $$"""
+                {{attributeDefinition}}
+                namespace CompatTests
+                {
+                    public class Api { }
+                }
+                """;
+
+            CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax)
+                .Where(difference => difference.ReferenceId == "M:CompatTests.Api.Removed"));
+
+            Assert.AreEqual(
+                hasStringConstructor ? DifferenceSeverity.Informational : DifferenceSeverity.Error,
+                difference.Severity);
+        }
+
+        [TestMethod]
         public void BreakingChangesToMemberInExperimentalTypeRemainErrors()
         {
             string leftSyntax = $$"""

@@ -61,6 +61,10 @@ namespace Microsoft.DotNet.ApiCompatibility
         }
 
         public static bool IsExperimentalAttribute(AttributeData attribute) =>
+            attribute.AttributeConstructor is
+            {
+                Parameters: [{ Type.SpecialType: SpecialType.System_String }]
+            } &&
             attribute.AttributeClass is
             {
                 MetadataName: ExperimentalAttributeName,
