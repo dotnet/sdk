@@ -239,10 +239,11 @@ public partial class AotIntegrationTests
         string aotLib = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
             : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
             : "libdotnet-aot.so";
-        string aotSource = Path.Combine(sdkLayoutDir, aotLib);
+        string aotLibraryDir = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR") ?? sdkLayoutDir;
+        string aotSource = Path.Combine(aotLibraryDir, aotLib);
         if (!File.Exists(aotSource))
         {
-            Assert.Inconclusive($"{aotLib} not found next to dn; build with NativeAOT to enable this test.");
+            Assert.Inconclusive($"{aotLib} not found; build with NativeAOT to enable this test.");
         }
 
         string sdkSubDir = Path.Combine(Path.GetTempPath(), "aot-sep-" + Guid.NewGuid().ToString("N"));
@@ -256,7 +257,11 @@ public partial class AotIntegrationTests
                 Path.Combine(sdkSubDir, ".version"),
                 ["0123456789abcdef", expectedVersion]);
 
-            var env = new Dictionary<string, string> { ["DOTNET_AOT_SDK_DIR"] = sdkSubDir };
+            var env = new Dictionary<string, string>
+            {
+                ["DOTNET_AOT_SDK_DIR"] = sdkSubDir,
+                ["DOTNET_AOT_LIBRARY_DIR"] = sdkSubDir,
+            };
             if (selfLocate)
             {
                 env["DOTNET_AOT_BLANK_SDKDIR"] = "1";
@@ -553,9 +558,25 @@ public partial class AotIntegrationTests
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", projectShorthandStderr);
             File.Delete(projectPath);
 
-            byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
             File.AppendAllText(entryPointPath, $"{Environment.NewLine}// #: conservative fallback");
+            RunFileBuildCacheEntry? fallbackCacheEntry;
+            using (FileStream stream = File.OpenRead(successCachePath))
+            {
+                fallbackCacheEntry = JsonSerializer.Deserialize(
+                    stream,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            Assert.IsNotNull(fallbackCacheEntry);
+            fallbackCacheEntry.CscArguments = ["/nologo"];
+            using (FileStream stream = File.Create(successCachePath))
+            {
+                JsonSerializer.Serialize(
+                    stream,
+                    fallbackCacheEntry,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
             File.SetLastWriteTimeUtc(entryPointPath, File.GetLastWriteTimeUtc(successCachePath).AddSeconds(2));
+            byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
 
             var (fallbackExitCode, fallbackStdout, fallbackStderr) = RunDn(
                 [
