@@ -308,8 +308,10 @@ on each affected OS rather than cross-publishing and assuming native execution.
 .\test\dotnet-aot.Tests\run-aot-tests.ps1 -Trx
 ```
 
-The script publishes the MTP test application with Native AOT, verifies the executable exists, supplies
-the SDK/host paths, runs it, and can emit a TRX. Report executed, passed, failed, and skipped counts.
+The script publishes the MTP test application, product `dotnet-aot` library, and `dn` host with Native
+AOT. It loads the test-built library while using a complete installed SDK for SDK-relative assets and
+managed fallback, then runs the suite and can emit a TRX. Report executed, passed, failed, and skipped
+counts; required `dn` integration tests must not be skipped.
 
 ### 5. Real `dn` integration and parity
 

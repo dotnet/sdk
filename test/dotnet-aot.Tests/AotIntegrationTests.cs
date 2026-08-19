@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Microsoft.NET.TestFramework.Utilities;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -239,10 +240,11 @@ public partial class AotIntegrationTests
         string aotLib = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
             : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
             : "libdotnet-aot.so";
-        string aotSource = Path.Combine(sdkLayoutDir, aotLib);
+        string aotLibraryDir = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR") ?? sdkLayoutDir;
+        string aotSource = Path.Combine(aotLibraryDir, aotLib);
         if (!File.Exists(aotSource))
         {
-            Assert.Inconclusive($"{aotLib} not found next to dn; build with NativeAOT to enable this test.");
+            Assert.Inconclusive($"{aotLib} not found; build with NativeAOT to enable this test.");
         }
 
         string sdkSubDir = Path.Combine(Path.GetTempPath(), "aot-sep-" + Guid.NewGuid().ToString("N"));
@@ -256,7 +258,11 @@ public partial class AotIntegrationTests
                 Path.Combine(sdkSubDir, ".version"),
                 ["0123456789abcdef", expectedVersion]);
 
-            var env = new Dictionary<string, string> { ["DOTNET_AOT_SDK_DIR"] = sdkSubDir };
+            var env = new Dictionary<string, string>
+            {
+                ["DOTNET_AOT_SDK_DIR"] = sdkSubDir,
+                ["DOTNET_AOT_LIBRARY_DIR"] = sdkSubDir,
+            };
             if (selfLocate)
             {
                 env["DOTNET_AOT_BLANK_SDKDIR"] = "1";
@@ -323,7 +329,8 @@ public partial class AotIntegrationTests
     {
         SkipIfDnUnavailable();
 
-        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}");
+        string testDirectory = TestPathUtility.ResolveTempPrefixLink(
+            Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}"));
         Directory.CreateDirectory(testDirectory);
         string entryPointPath = Path.Join(testDirectory, "Program.cs");
         File.WriteAllText(entryPointPath, """
@@ -372,6 +379,27 @@ public partial class AotIntegrationTests
 
             Assert.AreEqual(0, setupExitCode, setupOutput + setupError);
             Assert.AreEqual("AOT_RUN_FILE::", setupOutput.Trim());
+
+            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
+            RunFileBuildCacheEntry? syntheticCacheEntry;
+            using (FileStream stream = File.OpenRead(successCachePath))
+            {
+                syntheticCacheEntry = JsonSerializer.Deserialize(
+                    stream,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            Assert.IsNotNull(syntheticCacheEntry);
+            syntheticCacheEntry.BuildLevel = BuildLevel.Csc;
+            syntheticCacheEntry.Run = null;
+            syntheticCacheEntry.BuildResultFile = null;
+            syntheticCacheEntry.CscArguments = [];
+            using (FileStream stream = File.Create(successCachePath))
+            {
+                JsonSerializer.Serialize(
+                    stream,
+                    syntheticCacheEntry,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
 
             environment["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString;
             environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString;
@@ -469,7 +497,6 @@ public partial class AotIntegrationTests
             Assert.AreEqual(projectProfileStdout.Trim(), shorthandProfileStdout.Trim());
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", shorthandProfileStderr);
 
-            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
             byte[] successCacheBeforeExecutableProfile = File.ReadAllBytes(successCachePath);
             File.Delete(successCachePath);
             DateTime artifactsTimeBeforeExecutableProfile = Directory.GetLastWriteTimeUtc(artifactsPath);
@@ -553,9 +580,25 @@ public partial class AotIntegrationTests
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", projectShorthandStderr);
             File.Delete(projectPath);
 
-            byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
             File.AppendAllText(entryPointPath, $"{Environment.NewLine}// #: conservative fallback");
+            RunFileBuildCacheEntry? fallbackCacheEntry;
+            using (FileStream stream = File.OpenRead(successCachePath))
+            {
+                fallbackCacheEntry = JsonSerializer.Deserialize(
+                    stream,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            Assert.IsNotNull(fallbackCacheEntry);
+            fallbackCacheEntry.CscArguments = ["/nologo"];
+            using (FileStream stream = File.Create(successCachePath))
+            {
+                JsonSerializer.Serialize(
+                    stream,
+                    fallbackCacheEntry,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
             File.SetLastWriteTimeUtc(entryPointPath, File.GetLastWriteTimeUtc(successCachePath).AddSeconds(2));
+            byte[] successCacheBeforeFallback = File.ReadAllBytes(successCachePath);
 
             var (fallbackExitCode, fallbackStdout, fallbackStderr) = RunDn(
                 [

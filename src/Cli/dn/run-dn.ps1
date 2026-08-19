@@ -139,6 +139,7 @@ $environmentVariableNames = @(
     "DOTNET_ROOT",
     "DOTNET_CLI_TELEMETRY_OPTOUT",
     "DOTNET_AOT_SDK_DIR",
+    "DOTNET_AOT_LIBRARY_DIR",
     "DOTNET_AOT_BLANK_SDKDIR",
     "DOTNET_CLI_ENABLEAOT"
 )
@@ -154,6 +155,7 @@ foreach ($variableName in $environmentVariableNames) {
 try {
     $env:DOTNET_ROOT = (Join-Path $repoRoot ".dotnet")
     $env:DOTNET_CLI_TELEMETRY_OPTOUT = "1"
+    Remove-Item Env:\DOTNET_AOT_LIBRARY_DIR -ErrorAction SilentlyContinue
 
     # Emulate the deployed non-flat layout: tell dn to load dotnet-aot from (and pass as sdk_dir) the
     # versioned SDK subfolder, optionally forcing the self-locate fallback by blanking sdk_dir.
