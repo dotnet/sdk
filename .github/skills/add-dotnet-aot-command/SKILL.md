@@ -359,4 +359,4 @@ Report:
 - **code-review** - findings-first review presentation for PR or local changes.
 - **dotnet-aot-compat** - resolve IL trim/AOT warnings surfaced by native publish.
 - **incremental-test** - run managed `dotnet.Tests` against the redist SDK layout.
-- **targeted-test** - select and run the smallest relevant SDK tests with retained diagnostics.
+- **run-tests** - select and run SDK tests through the diagnostic-preserving local entry point.
