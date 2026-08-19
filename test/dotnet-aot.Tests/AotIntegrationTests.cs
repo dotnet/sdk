@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
+using Microsoft.NET.TestFramework.Utilities;
 
 namespace Microsoft.DotNet.Cli.Tests;
 
@@ -328,7 +329,8 @@ public partial class AotIntegrationTests
     {
         SkipIfDnUnavailable();
 
-        string testDirectory = Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}");
+        string testDirectory = TestPathUtility.ResolveTempPrefixLink(
+            Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}"));
         Directory.CreateDirectory(testDirectory);
         string entryPointPath = Path.Join(testDirectory, "Program.cs");
         File.WriteAllText(entryPointPath, """
