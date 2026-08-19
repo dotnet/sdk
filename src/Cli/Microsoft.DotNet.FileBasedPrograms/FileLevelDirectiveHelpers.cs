@@ -464,7 +464,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         var text = context.DirectiveText;
 
         // Quoting is the "new" form; parse strictly with full validation once a quote is present.
-        if (text.IndexOf('"') >= 0)
+        if (text.Contains('"'))
         {
             return Tokenize(context);
         }
@@ -474,19 +474,19 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return ImmutableArray<string>.Empty;
         }
 
-        var rawTokens = Patterns.Whitespace.Split(text);
+        var rawTokens = ImmutableArray.CreateRange(Patterns.Whitespace.Split(text));
 
         // A single token (no internal whitespace) is unambiguous.
         if (rawTokens.Length <= 1)
         {
-            return ImmutableArray.Create(rawTokens);
+            return rawTokens;
         }
 
         // Multiple unquoted whitespace-separated tokens. Interpret the trailing ones as item metadata
         // only when metadata is supported and every trailing token is a valid 'Name=Value' pair.
         if (allowMetadata && AllValidMetadata(rawTokens, start: 1))
         {
-            return ImmutableArray.Create(rawTokens);
+            return rawTokens;
         }
 
         // Legacy: the whole remainder is a single value (preserves pre-quoting behavior).

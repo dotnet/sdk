@@ -3,8 +3,7 @@
 
 #nullable enable
 
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+using System.Collections.Immutable;
 using System.Xml;
 using Microsoft.CodeAnalysis.CSharp;
 
@@ -14,20 +13,26 @@ namespace Microsoft.DotNet.FileBasedPrograms;
 /// Low-level primitives for parsing and formatting the values of file-based program <c>#:</c>
 /// directives. These are source-shared between the CLI directive parser
 /// (<c>FileLevelDirectiveHelpers</c>) and the analyzer that flags the deprecated unquoted form
-/// (<c>FileBasedProgramDirectiveQuoting</c>), so both agree on quoting, name validity, and metadata
-/// detection instead of each duplicating the logic.
+/// (<c>FileBasedProgramDirectiveQuoting</c>).
 /// </summary>
 internal static class FileBasedProgramDirectiveValueHelpers
 {
-    // Characters that are not allowed in a directive or metadata name because they would be confused
-    // with a separator: whitespace, '@', '=', '/'.
-    private static readonly Regex s_disallowedNameCharacters = new("""[\s@=/]""");
-
     /// <summary>
     /// Returns whether <paramref name="name"/> contains a character that is not allowed in a directive
     /// or metadata name (whitespace or one of the separator characters <c>@</c>, <c>=</c>, <c>/</c>).
     /// </summary>
-    public static bool ContainsDisallowedNameCharacter(string name) => s_disallowedNameCharacters.IsMatch(name);
+    public static bool ContainsDisallowedNameCharacter(string name)
+    {
+        foreach (var c in name)
+        {
+            if (char.IsWhiteSpace(c) || c is '@' or '=' or '/')
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
 
     /// <summary>
     /// Validates that <paramref name="name"/> is a valid XML NCName, the constraint MSBuild applies to
@@ -54,9 +59,9 @@ internal static class FileBasedProgramDirectiveValueHelpers
     /// Returns whether every token from <paramref name="start"/> onwards is a valid <c>Name=Value</c>
     /// item-metadata pair (a valid MSBuild name, then <c>'='</c>, then any value).
     /// </summary>
-    public static bool AllValidMetadata(IReadOnlyList<string> tokens, int start)
+    public static bool AllValidMetadata(ImmutableArray<string> tokens, int start)
     {
-        for (var i = start; i < tokens.Count; i++)
+        for (var i = start; i < tokens.Length; i++)
         {
             var token = tokens[i];
             var separatorIndex = token.IndexOf('=');

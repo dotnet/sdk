@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -82,7 +83,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             var tokens = SplitWhitespace(value);
 
             // A single whitespace-separated token is unambiguous and never the legacy form.
-            if (tokens.Count <= 1)
+            if (tokens.Length <= 1)
             {
                 return false;
             }
@@ -204,9 +205,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             return -1;
         }
 
-        private static List<string> SplitWhitespace(string text)
+        private static ImmutableArray<string> SplitWhitespace(string text)
         {
-            var tokens = new List<string>();
+            var tokens = ImmutableArray.CreateBuilder<string>();
             var start = -1;
             for (var i = 0; i < text.Length; i++)
             {
@@ -229,7 +230,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                 tokens.Add(text.Substring(start));
             }
 
-            return tokens;
+            return tokens.ToImmutable();
         }
     }
 }

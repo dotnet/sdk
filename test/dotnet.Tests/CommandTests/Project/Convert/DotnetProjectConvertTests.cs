@@ -2452,7 +2452,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             baseDirectory: testInstance.Path,
             inputCSharp: """
                 #:property Description="Hello World"
-                #:package Foo@1.0.0 Note="see the docs"
+                #:package Foo@1.0.0 Note="see the docs" Label="second quoted value"
                 """,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -2470,6 +2470,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                   <ItemGroup>
                     <PackageReference Include="Foo" Version="1.0.0">
                       <Note>see the docs</Note>
+                      <Label>second quoted value</Label>
                     </PackageReference>
                   </ItemGroup>
 
@@ -2565,6 +2566,61 @@ public sealed class DotnetProjectConvertTests : SdkTest
             [
                 (1, FileBasedProgramsResources.InvalidQuoteInDirective),
             ]);
+    }
+
+    [TestMethod]
+    public void Directives_QuoteFollowedByComment()
+    {
+        // To the C# lexer, the '//' is trailing trivia of the preceding string literal and runs to the
+        // end of the line. Directive text is not C#, so the rest of the line must still be tokenized as
+        // metadata - here reported as an invalid metadata name rather than silently dropped as a comment.
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Foo@1.0.0 Note="x" //y="z"
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, "//y", "Name cannot begin with the '/' character, hexadecimal value 0x2F.")),
+            ]);
+    }
+
+    [TestMethod]
+    public void Directives_CommentLikeMetadataValue()
+    {
+        // '//' is only meaningful to the C# lexer, never in directive text, so it round-trips verbatim
+        // in a metadata value both bare and inside a quoted value.
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Foo@1.0.0 Note="x" Bare=//y Quoted="//server/my share"
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Foo" Version="1.0.0">
+                      <Note>x</Note>
+                      <Bare>//y</Bare>
+                      <Quoted>//server/my share</Quoted>
+                    </PackageReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
     }
 
     [TestMethod]

@@ -217,7 +217,7 @@ static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Property.Parse(in Micr
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Ref?
 static Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk.Parse(in Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext context) -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Sdk?
 static Microsoft.DotNet.FileBasedPrograms.ErrorReporters.CreateCollectingReporter(out System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.SimpleDiagnostic!>.Builder! builder) -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
-static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.AllValidMetadata(System.Collections.Generic.IReadOnlyList<string!>! tokens, int start) -> bool
+static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.AllValidMetadata(System.Collections.Immutable.ImmutableArray<string!> tokens, int start) -> bool
 static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.ContainsDisallowedNameCharacter(string! name) -> bool
 static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.IsValidMSBuildName(string! name, out string? errorMessage) -> bool
 static Microsoft.DotNet.FileBasedPrograms.FileBasedProgramDirectiveValueHelpers.QuoteIfNeeded(string! value) -> string!
