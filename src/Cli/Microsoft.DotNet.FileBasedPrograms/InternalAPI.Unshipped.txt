@@ -91,6 +91,8 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveKind.ge
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveKind.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveText.get -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveText.init -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveTextStart.get -> int
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.DirectiveTextStart.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ErrorReporter.get -> Microsoft.DotNet.FileBasedPrograms.ErrorReporter!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ErrorReporter.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.Info.get -> Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo
@@ -98,6 +100,8 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.Info.init -> voi
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ParseContext() -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ReportError(Microsoft.CodeAnalysis.Text.TextSpan span, string! message) -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ReportError(string! message) -> void
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ValueLexer.get -> Microsoft.DotNet.FileBasedPrograms.DirectiveValueLexer!
+Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.ValueLexer.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.SourceFile.get -> Microsoft.DotNet.FileBasedPrograms.SourceFile
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseContext.SourceFile.init -> void
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.ParseInfo
@@ -155,6 +159,10 @@ Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Shebang.Shebang(in Microsoft.
 Microsoft.DotNet.FileBasedPrograms.DirectiveDeduplicator
 Microsoft.DotNet.FileBasedPrograms.DirectiveDeduplicator.CheckDirective(Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named! directive, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! reportError, out bool shouldKeep) -> void
 Microsoft.DotNet.FileBasedPrograms.DirectiveDeduplicator.DirectiveDeduplicator() -> void
+Microsoft.DotNet.FileBasedPrograms.DirectiveValueLexer
+Microsoft.DotNet.FileBasedPrograms.DirectiveValueLexer.DirectiveValueLexer(Microsoft.CodeAnalysis.Text.SourceText! text, Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser? parser) -> void
+Microsoft.DotNet.FileBasedPrograms.DirectiveValueLexer.Dispose() -> void
+Microsoft.DotNet.FileBasedPrograms.DirectiveValueLexer.LexStringLiteral(int position) -> Microsoft.CodeAnalysis.SyntaxToken
 Microsoft.DotNet.FileBasedPrograms.ErrorReporter
 Microsoft.DotNet.FileBasedPrograms.ErrorReporters
 Microsoft.DotNet.FileBasedPrograms.ExternalHelpers
@@ -226,7 +234,7 @@ static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.GetRelativePath(string
 static Microsoft.DotNet.FileBasedPrograms.ExternalHelpers.IsPathFullyQualified(string! path) -> bool
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.CreateTokenizer(Microsoft.CodeAnalysis.Text.SourceText! text) -> Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser!
 static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, bool reportAllErrors, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter, bool checkDuplicates = true) -> System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>
-static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindLeadingDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.SyntaxTriviaList triviaList, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>.Builder? builder, bool checkDuplicates = true) -> void
+static Microsoft.DotNet.FileBasedPrograms.FileLevelDirectiveHelpers.FindLeadingDirectives(Microsoft.DotNet.FileBasedPrograms.SourceFile sourceFile, Microsoft.CodeAnalysis.SyntaxTriviaList triviaList, Microsoft.DotNet.FileBasedPrograms.ErrorReporter! errorReporter, System.Collections.Immutable.ImmutableArray<Microsoft.DotNet.FileBasedPrograms.CSharpDirective!>.Builder? builder, bool checkDuplicates = true, Microsoft.CodeAnalysis.CSharp.SyntaxTokenParser? tokenizer = null) -> void
 static Microsoft.DotNet.FileBasedPrograms.MSBuildUtilities.ConvertStringToBool(string? parameterValue, bool defaultValue = false) -> bool
 static Microsoft.DotNet.FileBasedPrograms.Patterns.EscapedCompilerOption.get -> System.Text.RegularExpressions.Regex!
 static Microsoft.DotNet.FileBasedPrograms.Patterns.Whitespace.get -> System.Text.RegularExpressions.Regex!

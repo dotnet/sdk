@@ -43,7 +43,9 @@ internal static class FileLevelDirectiveHelpers
         var result = tokenizer.ParseLeadingTrivia();
         var triviaList = result.Token.LeadingTrivia;
 
-        FindLeadingDirectives(sourceFile, triviaList, errorReporter, builder, checkDuplicates);
+        tokenizer.ResetTo(result);
+
+        FindLeadingDirectives(sourceFile, triviaList, errorReporter, builder, checkDuplicates, tokenizer);
 
         // In conversion mode, we want to report errors for any invalid directives in the rest of the file
         // so users don't end up with invalid directives in the converted project.
@@ -86,10 +88,12 @@ internal static class FileLevelDirectiveHelpers
         SyntaxTriviaList triviaList,
         ErrorReporter errorReporter,
         ImmutableArray<CSharpDirective>.Builder? builder,
-        bool checkDuplicates = true)
+        bool checkDuplicates = true,
+        SyntaxTokenParser? tokenizer = null)
     {
         var deduplicator = new DirectiveDeduplicator();
         TextSpan previousWhiteSpaceSpan = default;
+        using var valueLexer = new DirectiveValueLexer(sourceFile.Text, tokenizer);
 
         for (var index = 0; index < triviaList.Count; index++)
         {
@@ -125,9 +129,21 @@ internal static class FileLevelDirectiveHelpers
             {
                 TextSpan span = GetFullSpan(previousWhiteSpaceSpan, trivia);
 
-                var message = trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content }
-                    ? content.Text.AsSpan().Trim()
-                    : "";
+                ReadOnlySpan<char> message;
+                int messageStart;
+                if (trivia.GetStructure() is IgnoredDirectiveTriviaSyntax { Content: { RawKind: (int)SyntaxKind.StringLiteralToken } content })
+                {
+                    var contentText = content.Text.AsSpan();
+                    var trimmedStart = contentText.TrimStart();
+                    message = trimmedStart.TrimEnd();
+                    messageStart = content.SpanStart + (contentText.Length - trimmedStart.Length);
+                }
+                else
+                {
+                    message = default;
+                    messageStart = 0;
+                }
+
                 var parts = Patterns.Whitespace.Split(message.ToString(), 2);
                 var name = parts.Length > 0 ? parts[0] : "";
                 var value = parts.Length > 1 ? parts[1] : "";
@@ -146,6 +162,8 @@ internal static class FileLevelDirectiveHelpers
                     ErrorReporter = errorReporter,
                     DirectiveKind = name,
                     DirectiveText = value,
+                    DirectiveTextStart = messageStart + (message.Length - value.Length),
+                    ValueLexer = valueLexer,
                 };
 
                 if (CSharpDirective.Parse(context) is { } directive)
@@ -246,6 +264,45 @@ internal static partial class Patterns
     public static Regex EscapedCompilerOption { get; } = new Regex("""^/\w+:".*"$""", RegexOptions.Compiled | RegexOptions.Singleline);
 }
 
+internal sealed class DirectiveValueLexer(SourceText text, SyntaxTokenParser? parser) : IDisposable
+{
+    private readonly bool _ownsParser = parser is null;
+    private SyntaxTokenParser? _parser = parser;
+    private SyntaxTokenParser.Result? _previous;
+
+    /// <summary>
+    /// Lexes a single token starting at <paramref name="position"/>,
+    /// which must be at or after the position of the previously lexed token
+    /// (directive values are always requested in source order).
+    /// </summary>
+    public SyntaxToken LexStringLiteral(int position)
+    {
+        _parser ??= FileLevelDirectiveHelpers.CreateTokenizer(text);
+
+        // ParseNextToken also consumes the token's trailing trivia,
+        // which for a '//' comment runs to the end of the line,
+        // so the lexer can end up past the position wanted next.
+        if (_previous is { } previous)
+        {
+            Debug.Assert(position >= previous.Token.FullSpan.Start);
+            _parser.ResetTo(previous);
+        }
+
+        _parser.SkipForwardTo(position);
+        var result = _parser.ParseNextToken();
+        _previous = result;
+        return result.Token;
+    }
+
+    public void Dispose()
+    {
+        if (_ownsParser)
+        {
+            _parser?.Dispose();
+        }
+    }
+}
+
 internal struct WhiteSpaceInfo
 {
     /// <summary>
@@ -293,6 +350,16 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         public required ErrorReporter ErrorReporter { get; init; }
         public required string DirectiveKind { get; init; }
         public required string DirectiveText { get; init; }
+
+        /// <summary>
+        /// Position of <see cref="DirectiveText"/> within <see cref="ParseInfo.SourceFile"/>'s text.
+        /// </summary>
+        public required int DirectiveTextStart { get; init; }
+
+        /// <summary>
+        /// Lexer shared by all directives of one parse operation, used to lex quoted values.
+        /// </summary>
+        public required DirectiveValueLexer ValueLexer { get; init; }
 
         public void ReportError(string message)
             => ErrorReporter(Info.SourceFile.Text, Info.SourceFile.Path, Info.Span, message);
@@ -357,7 +424,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 // escape sequences. Verbatim (@"...") literals can't start here (the '@' would precede the
                 // quote and fail the check above), and raw ("""...""") literals lex to a different token kind
                 // and are rejected below.
-                var token = SyntaxFactory.ParseToken(text, offset: i);
+                var token = context.ValueLexer.LexStringLiteral(context.DirectiveTextStart + i);
                 var errors = token.GetDiagnostics().Where(static d => d.Severity == DiagnosticSeverity.Error).ToList();
                 if (errors.Count > 0)
                 {
