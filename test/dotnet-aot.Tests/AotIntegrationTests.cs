@@ -378,6 +378,27 @@ public partial class AotIntegrationTests
             Assert.AreEqual(0, setupExitCode, setupOutput + setupError);
             Assert.AreEqual("AOT_RUN_FILE::", setupOutput.Trim());
 
+            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
+            RunFileBuildCacheEntry? syntheticCacheEntry;
+            using (FileStream stream = File.OpenRead(successCachePath))
+            {
+                syntheticCacheEntry = JsonSerializer.Deserialize(
+                    stream,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+            Assert.IsNotNull(syntheticCacheEntry);
+            syntheticCacheEntry.BuildLevel = BuildLevel.Csc;
+            syntheticCacheEntry.Run = null;
+            syntheticCacheEntry.BuildResultFile = null;
+            syntheticCacheEntry.CscArguments = [];
+            using (FileStream stream = File.Create(successCachePath))
+            {
+                JsonSerializer.Serialize(
+                    stream,
+                    syntheticCacheEntry,
+                    RunFileBuildCacheJsonSerializerContext.Default.RunFileBuildCacheEntry);
+            }
+
             environment["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString;
             environment["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString;
             var (exitCode, stdout, stderr) = RunDn(
@@ -474,7 +495,6 @@ public partial class AotIntegrationTests
             Assert.AreEqual(projectProfileStdout.Trim(), shorthandProfileStdout.Trim());
             Assert.Contains("AOT run tier: LaunchOnly (NoBuildSyntheticCache).", shorthandProfileStderr);
 
-            string successCachePath = Path.Join(artifactsPath, FileBasedAppRunPlan.BuildSuccessCacheFileName);
             byte[] successCacheBeforeExecutableProfile = File.ReadAllBytes(successCachePath);
             File.Delete(successCachePath);
             DateTime artifactsTimeBeforeExecutableProfile = Directory.GetLastWriteTimeUtc(artifactsPath);
