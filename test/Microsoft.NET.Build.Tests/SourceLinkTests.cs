@@ -289,7 +289,6 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
         [FullMSBuildOnly]
         public void Cpp()
         {

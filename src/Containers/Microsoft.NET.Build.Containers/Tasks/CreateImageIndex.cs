@@ -80,9 +80,10 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         }
 
         Dictionary<string, string> annotations = new(StringComparer.Ordinal);
+        DateTime createdAt = CreateNewImage.ParseSourceDateEpoch(SourceDateEpoch) ?? DateTime.UtcNow;
         foreach (ITaskItem annotation in indexAnnotations)
         {
-            annotations[annotation.ItemSpec] = annotation.GetMetadata("Value");
+            annotations[annotation.ItemSpec] = ContainerAnnotationScopes.GetValue(annotation, createdAt);
         }
         var multiArchImage = CreateMultiArchImage(images, destinationImageReference.Kind, annotations);
 

@@ -35,14 +35,16 @@ namespace Microsoft.CodeAnalysis.Tools
 
             var workspaceStopwatch = Stopwatch.StartNew();
 
-            using var workspace = formatOptions.WorkspaceType == WorkspaceType.Folder
+            using var loadedWorkspace = formatOptions.WorkspaceType == WorkspaceType.Folder
                 ? OpenFolderWorkspace(formatOptions.WorkspaceFilePath, formatOptions.FileMatcher)
                 : await OpenMSBuildWorkspaceAsync(formatOptions.WorkspaceFilePath, formatOptions.WorkspaceType, formatOptions.NoRestore, formatOptions.FixCategory != FixCategory.Whitespace, formatOptions.BinaryLogPath, logWorkspaceWarnings, logger, formatOptions.TargetFramework, cancellationToken);
 
-            if (workspace is null)
+            if (loadedWorkspace is null)
             {
                 return new WorkspaceFormatResult(filesFormatted: 0, fileCount: 0, exitCode: 1);
             }
+
+            var workspace = loadedWorkspace.Workspace;
 
             if (formatOptions.LogLevel <= LogLevel.Debug)
             {
@@ -58,13 +60,12 @@ namespace Microsoft.CodeAnalysis.Tools
             var loadWorkspaceMS = workspaceStopwatch.ElapsedMilliseconds;
             logger.LogTrace(Resources.Complete_in_0_ms, loadWorkspaceMS);
 
-            var projectPath = formatOptions.WorkspaceType == WorkspaceType.Project ? formatOptions.WorkspaceFilePath : string.Empty;
             var solution = workspace.CurrentSolution;
 
             logger.LogTrace(Resources.Determining_formattable_files);
 
             var (fileCount, formatableFiles) = await DetermineFormattableFilesAsync(
-                solution, projectPath, formatOptions, logger, cancellationToken);
+                solution, loadedWorkspace.ProjectId, formatOptions, logger, cancellationToken);
 
             var determineFilesMS = workspaceStopwatch.ElapsedMilliseconds - loadWorkspaceMS;
             logger.LogTrace(Resources.Complete_in_0_ms, determineFilesMS);
@@ -110,14 +111,14 @@ namespace Microsoft.CodeAnalysis.Tools
             return new WorkspaceFormatResult(documentIdsWithErrors.Length, fileCount, exitCode);
         }
 
-        private static Workspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
+        private static LoadedWorkspace OpenFolderWorkspace(string workspacePath, SourceFileMatcher fileMatcher)
         {
             var folderWorkspace = FolderWorkspace.Create();
             folderWorkspace.OpenFolder(workspacePath, fileMatcher);
-            return folderWorkspace;
+            return new LoadedWorkspace(folderWorkspace, ProjectId: null);
         }
 
-        private static async Task<Workspace?> OpenMSBuildWorkspaceAsync(
+        private static async Task<LoadedWorkspace?> OpenMSBuildWorkspaceAsync(
             string solutionOrProjectPath,
             WorkspaceType workspaceType,
             bool noRestore,
@@ -165,11 +166,13 @@ namespace Microsoft.CodeAnalysis.Tools
 
         internal static async Task<(int, ImmutableArray<DocumentId>)> DetermineFormattableFilesAsync(
             Solution solution,
-            string projectPath,
+            ProjectId? projectId,
             FormatOptions formatOptions,
             ILogger logger,
             CancellationToken cancellationToken)
         {
+            Debug.Assert((formatOptions.WorkspaceType is WorkspaceType.Project) == (projectId is not null));
+
             var totalFileCount = solution.Projects.Sum(project => project.DocumentIds.Count);
             var projectFileCount = 0;
 
@@ -187,7 +190,7 @@ namespace Microsoft.CodeAnalysis.Tools
                 }
 
                 // If a project is used as a workspace, then ignore other referenced projects.
-                if (!string.IsNullOrEmpty(projectPath) && !project.FilePath.Equals(projectPath, StringComparison.OrdinalIgnoreCase))
+                if (projectId != null && project.Id != projectId)
                 {
                     logger.LogDebug(Resources.Skipping_referenced_project_0, project.Name);
                     continue;

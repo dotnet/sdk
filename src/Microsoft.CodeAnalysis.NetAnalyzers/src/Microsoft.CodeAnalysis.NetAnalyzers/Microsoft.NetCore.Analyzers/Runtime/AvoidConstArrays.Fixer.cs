@@ -14,6 +14,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
@@ -30,32 +31,55 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         private static readonly ImmutableArray<string> s_collectionMemberEndings = ImmutableArray.Create("array", "collection", "enumerable", "list");
 
-        // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-        public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+        // Each extraction has to see the names the extractions before it took, so the per-document state is
+        // the set of names already handed out.
+        public sealed override FixAllProvider GetFixAllProvider()
+            => SyntaxEditorFixAllProvider.Create<HashSet<string>>(_ => new HashSet<string>(), ExtractConstArrayAsync);
 
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        public override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             Document document = context.Document;
-            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode node = root.FindNode(context.Span);
+            ImmutableArray<Diagnostic> diagnostics = context.Diagnostics;
 
             context.RegisterCodeFix(CodeAction.Create(
                     MicrosoftNetCoreAnalyzersResources.AvoidConstArraysCodeFixTitle,
-                    async ct => await ExtractConstArrayAsync(document, root, node, context.Diagnostics[0].Properties, ct).ConfigureAwait(false),
+                    ct => ExtractConstArraysAsync(document, diagnostics, ct),
                     equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.AvoidConstArraysCodeFixTitle)),
-                context.Diagnostics);
+                diagnostics);
+
+            return Task.CompletedTask;
         }
 
-        private static async Task<Document> ExtractConstArrayAsync(Document document, SyntaxNode root, SyntaxNode node,
-            ImmutableDictionary<string, string?> properties, CancellationToken cancellationToken)
+        private static Task<Document> ExtractConstArraysAsync(Document document, ImmutableArray<Diagnostic> diagnostics, CancellationToken cancellationToken)
         {
+            HashSet<string> extractedNames = new();
+
+            return SyntaxEditorFixAllProvider.ApplyFixesAsync(
+                document,
+                diagnostics,
+                (d, diagnostic, editor, ct) => ExtractConstArrayAsync(d, diagnostic, editor, extractedNames, ct),
+                cancellationToken);
+        }
+
+        private static async Task ExtractConstArrayAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor,
+            HashSet<string> extractedNames, CancellationToken cancellationToken)
+        {
+            SyntaxNode root = editor.OriginalRoot;
+            SyntaxNode node = root.FindNode(diagnostic.Location.SourceSpan);
+            ImmutableDictionary<string, string?> properties = diagnostic.Properties;
+
             SemanticModel model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
             SyntaxGenerator generator = editor.Generator;
             IArrayCreationOperation arrayArgument = GetArrayCreationOperation(node, model, cancellationToken, out bool isInvoked);
+            if (arrayArgument.Type is not ITypeSymbol arrayType)
+            {
+                return;
+            }
+
             ISymbol enclosingSymbol = model.GetEnclosingSymbol(node.SpanStart, cancellationToken)!;
             INamedTypeSymbol containingType = enclosingSymbol.ContainingType;
             HashSet<string> identifiers = new(containingType.MemberNames);
+            identifiers.AddRange(extractedNames);
             bool isTopLevelStatements = false;
             if (enclosingSymbol is IMethodSymbol method)
             {
@@ -71,6 +95,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             // Get a valid member name for the extracted constant
             string newMemberName = GetExtractedMemberName(identifiers, properties["paramName"] ?? GetMemberNameFromType(arrayArgument));
+            extractedNames.Add(newMemberName);
 
             // Get method containing the symbol that is being diagnosed
             IOperation? methodContext = arrayArgument.GetAncestor<IMethodBodyOperation>(OperationKind.MethodBody);
@@ -80,7 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             // Create the new member
             SyntaxNode newMember = generator.FieldDeclaration(
                 newMemberName,
-                generator.TypeExpression(arrayArgument.Type),
+                generator.TypeExpression(arrayType),
                 GetAccessibility(methodContext is null ? null : model.GetEnclosingSymbol(methodContext.Syntax.SpanStart, cancellationToken)),
                 DeclarationModifiers.Static | DeclarationModifiers.ReadOnly,
                 arrayArgument.Syntax.WithoutTrailingTrivia() // don't include extra trivia before the end of the declaration
@@ -112,7 +137,12 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     {
                         // Insert after fields or properties
                         SyntaxNode lastFieldOrPropertyNode = root.FindNode(span);
-                        editor.InsertAfter(generator.GetDeclaration(lastFieldOrPropertyNode), newMember);
+                        if (generator.GetDeclaration(lastFieldOrPropertyNode) is not SyntaxNode lastFieldOrPropertyDeclaration)
+                        {
+                            return;
+                        }
+
+                        editor.InsertAfter(lastFieldOrPropertyDeclaration, newMember);
                     }
                     else if (methodContext != null)
                     {
@@ -138,9 +168,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 // add any extra trivia that was after the original argument
                 editor.ReplaceNode(node, generator.Argument(identifier).WithTriviaFrom(arrayArgument.Syntax));
             }
-
-            // Return changed document
-            return editor.GetChangedDocument();
         }
 
         private static IArrayCreationOperation GetArrayCreationOperation(SyntaxNode node, SemanticModel model, CancellationToken cancellationToken, out bool isInvoked)

@@ -12,6 +12,13 @@
 /src/Cli/ @dotnet/dotnet-cli
 /test/dotnet.Tests/ @dotnet/dotnet-cli
 
+# Area-run-file
+/src/Cli/Microsoft.DotNet.FileBasedPrograms/ @dotnet/run-file
+/src/Cli/dotnet/Commands/Run/ @dotnet/run-file
+/src/Cli/dotnet/Commands/Project/Convert/ @dotnet/run-file
+/test/dotnet.Tests/CommandTests/Run/ @dotnet/run-file
+/test/dotnet.Tests/CommandTests/Project/Convert/ @dotnet/run-file
+
 # Area-NetSDK
 /src/Tasks/Microsoft.NET.Build.Tasks/ @dotnet/dotnet-cli
 /test/Microsoft.NET.Build.Tests/ @dotnet/dotnet-cli
@@ -54,8 +61,10 @@
 /src/WasmSdk @lewing @akoeplinger @pavelsavara @maraf
 
 # Area-Format
-/src/Cli/dotnet/Commands/Format @phil-allen-msft
-/test/dotnet-format.UnitTests @phil-allen-msft
+/src/Cli/dotnet/Commands/Format @dotnet/roslyn-ide
+/src/Dotnet.Format @dotnet/roslyn-ide
+/test/dotnet-format.*Tests @dotnet/roslyn-ide
+/test/TestAssets/dotnet-format @dotnet/roslyn-ide
 
 # Area-NuGet
 /src/Cli/dotnet/Commands/NuGet @dotnet/nuget-team
@@ -91,12 +100,11 @@
 /test/TemplateEngine @dotnet/templating-engine-maintainers
 /template_feed @dotnet/templating-engine-maintainers
 
-# ILLink and ReadyToRun targets and tasks owned by runtime team
 # Area-ILLink Area-ReadyToRun
-/src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ILLink.targets @dotnet/illink
-/test/Microsoft.NET.Publish.Tests/GivenThatWeWantToRunILLink.cs @dotnet/illink
+/test/Microsoft.NET.ILLink.Tests @dotnet/illink
 # Publish.targets related to ILLink and ReadyToRun is own by both runtime and SDK team
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.Publish.targets @dotnet/illink @dotnet/dotnet-cli
+
 # Area-ClickOnce
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
@@ -116,10 +124,6 @@
 /src/Cli/Containers @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.IntegrationTests @dotnet/sdk-container-builds-maintainers
 /test/Microsoft.NET.Build.Containers.UnitTests @dotnet/sdk-container-builds-maintainers
-
-# Area-Format
-/src/BuiltInTools/dotnet-format @dotnet/roslyn-ide
-/test/dotnet-format.UnitTests @dotnet/roslyn-ide
 
 # Area-Microsoft.CodeAnalysis.NetAnalyzers
 /src/Microsoft.CodeAnalysis.NetAnalyzers @dotnet/dotnet-analyzers
