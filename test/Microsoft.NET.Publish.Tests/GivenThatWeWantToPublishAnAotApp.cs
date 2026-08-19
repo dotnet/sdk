@@ -1394,19 +1394,18 @@ public class NativeLibraryClass
         public void Aot_optimized_publish_targets_are_reviewed_when_CoreBuildDependsOn_changes()
         {
             var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "CoreBuildDependsOn", true);
-            testProject.RecordProperties("CoreBuildDependsOn");
-            testProject.RecordPropertiesBeforeTarget("Compile");
             var testAsset = TestAssetsManager.CreateTestProject(testProject);
 
-            new BuildCommand(testAsset)
+            var getValuesCommand = new GetValuesCommand(testAsset, "CoreBuildDependsOn")
+            {
+                ShouldCompile = false
+            };
+
+            getValuesCommand
                 .Execute()
                 .Should().Pass();
 
-            var coreBuildDependsOn = testProject
-                .GetPropertyValues(testAsset.TestRoot, ToolsetInfo.CurrentTargetFramework)["CoreBuildDependsOn"]
-                .Split(';', StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries);
-
-            coreBuildDependsOn.Should().Equal(
+            getValuesCommand.GetValues().Should().Equal(
                 "_CheckForBuildWithNoBuild",
                 "BuildOnlySettings",
                 "PrepareForBuild",
