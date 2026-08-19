@@ -167,7 +167,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         }
 
         [TestMethod]
-        public void BreakingChangesRemainInformationalWhileApiRemainsExperimental()
+        public void BreakingChangesToMemberInExperimentalTypeRemainErrors()
         {
             string leftSyntax = $$"""
                 namespace CompatTests;
@@ -183,7 +183,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
 
             Assert.IsNotEmpty(differences);
-            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Informational));
+            Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
         }
 
         [TestMethod]
@@ -210,22 +210,26 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
         }
 
         [TestMethod]
-        public void MemberInExperimentalContainingTypeUsesContainingTypeStability()
+        public void ExperimentalContainingTypeDoesNotMakeMemberExperimental()
         {
             string leftSyntax = $$"""
                 namespace CompatTests;
-                {{ExperimentalAttribute}}
-                public class Api { public void Changed() { } }
+                {{ExperimentalAttribute}} public class ExperimentalBase { public void Changed() { } }
+                #pragma warning disable TEST001
+                public class StableDerived : ExperimentalBase { }
+                #pragma warning restore TEST001
                 """;
             string rightSyntax = $$"""
                 namespace CompatTests;
-                {{ExperimentalAttribute}}
-                public class Api { }
+                {{ExperimentalAttribute}} public class ExperimentalBase { }
+                #pragma warning disable TEST001
+                public class StableDerived : ExperimentalBase { }
+                #pragma warning restore TEST001
                 """;
 
             CompatDifference difference = Assert.ContainsSingle(GetDifferences(leftSyntax, rightSyntax)
-                .Where(difference => difference.ReferenceId == "M:CompatTests.Api.Changed"));
-            Assert.AreEqual(DifferenceSeverity.Informational, difference.Severity);
+                .Where(difference => difference.ReferenceId == "M:CompatTests.ExperimentalBase.Changed"));
+            Assert.AreEqual(DifferenceSeverity.Error, difference.Severity);
         }
 
         [TestMethod]
@@ -301,9 +305,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
 
             CompatDifference[] differences = GetDifferences(leftSyntax, rightSyntax);
 
-            Assert.HasCount(2, differences);
+            Assert.HasCount(1, differences);
             Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "T:CompatTests.Api"));
-            Assert.ContainsSingle(differences.Where(difference => difference.ReferenceId == "M:CompatTests.Api.#ctor"));
             Assert.IsTrue(differences.All(difference => difference.DiagnosticId == DiagnosticIds.StableApiBecomesExperimental));
             Assert.IsTrue(differences.All(difference => difference.Severity == DifferenceSeverity.Error));
         }

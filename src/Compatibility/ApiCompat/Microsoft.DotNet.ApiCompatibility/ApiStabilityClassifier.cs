@@ -24,12 +24,13 @@ namespace Microsoft.DotNet.ApiCompatibility
                 return cached.Stability;
             }
 
-            ISymbol? parentSymbol = symbol is IMethodSymbol { AssociatedSymbol: { } associatedSymbol }
-                ? associatedSymbol
-                : symbol.ContainingSymbol;
-
             ApiStability stability = symbol.GetAttributes().Any(IsExperimentalAttribute) ||
-                Classify(parentSymbol) == ApiStability.Experimental
+                symbol is IMethodSymbol { AssociatedSymbol: { } associatedSymbol } &&
+                    associatedSymbol.GetAttributes().Any(IsExperimentalAttribute) ||
+                symbol is not IModuleSymbol &&
+                    symbol.ContainingModule?.GetAttributes().Any(IsExperimentalAttribute) == true ||
+                symbol is not IAssemblySymbol &&
+                    symbol.ContainingAssembly?.GetAttributes().Any(IsExperimentalAttribute) == true
                     ? ApiStability.Experimental
                     : ApiStability.Stable;
 
