@@ -14,6 +14,7 @@ using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.VisualStudio.SolutionPersistence.Model;
 using System.Diagnostics.CodeAnalysis;
 using System.Collections.Immutable;
@@ -87,6 +88,11 @@ internal static class MSBuildUtility
     {
         using var _ = MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
 
+        if (VirtualProjectBuilder.IsValidEntryPointPath(projectFilePath))
+        {
+            return GetProjectsFromFile(projectFilePath, buildOptions, buildSession);
+        }
+
         // Pre-build device selection: evaluate the project to select devices BEFORE building,
         // so that device-provided RuntimeIdentifiers are included in the build.
         var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
@@ -114,6 +120,51 @@ internal static class MSBuildUtility
         IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects = SolutionAndProjectUtility.GetProjectProperties(
             projectFilePath, collection, evaluationContext, buildOptions, buildSession, configuration: null, platform: null,
             CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs));
+        return (projects, buildExitCode);
+    }
+
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    private static (IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> Projects, int BuildExitCode) GetProjectsFromFile(
+        string entryPointFilePath,
+        BuildOptions buildOptions,
+        MSBuildSession buildSession)
+    {
+        var msbuildArgs = SolutionAndProjectUtility.AnalyzeStandardTestMSBuildArgs(buildOptions.MSBuildArgs);
+        string fullEntryPointFilePath = Path.GetFullPath(entryPointFilePath);
+        var buildCommand = new VirtualProjectBuildingCommand(
+            fullEntryPointFilePath,
+            msbuildArgs)
+        {
+            NoRestore = buildOptions.HasNoRestore,
+            NoCache = true,
+        };
+
+        int buildExitCode = buildOptions.HasNoBuild ? 0 : buildCommand.Execute();
+        if (buildExitCode != 0)
+        {
+            return ([], buildExitCode);
+        }
+
+        Dictionary<string, string> globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+        ProjectInstance EvaluateProject(string? targetFramework)
+        {
+            var properties = new Dictionary<string, string>(globalProperties, StringComparer.OrdinalIgnoreCase);
+            if (targetFramework is not null)
+            {
+                properties[ProjectProperties.TargetFramework] = targetFramework;
+            }
+
+            var evaluationCommand = new VirtualProjectBuildingCommand(fullEntryPointFilePath, msbuildArgs);
+            return evaluationCommand.CreateProjectInstance(buildSession.ProjectCollection, properties);
+        }
+
+        IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projects =
+            SolutionAndProjectUtility.GetProjectProperties(
+                VirtualProjectBuilder.GetVirtualProjectPath(fullEntryPointFilePath),
+                EvaluateProject,
+                buildOptions,
+                buildSession);
+
         return (projects, buildExitCode);
     }
 
@@ -213,14 +264,37 @@ internal static class MSBuildUtility
     {
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
 
-        LoggerUtility.SeparateLoggerArguments(parseResult.UnmatchedTokens, out var loggerArgs, out var otherArgs);
+        ImmutableArray<string> unmatchedTokens = [.. parseResult.UnmatchedTokens];
+        ImmutableArray<string> loggerArgs;
+        ImmutableArray<string> otherArgs;
+        int positionalArgumentCount;
+        if (CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
+            parseResult,
+            unmatchedTokens,
+            out int unmatchedTokenCountBeforeDoubleDash,
+            out string[] argumentsAfterDoubleDash))
+        {
+            LoggerUtility.SeparateLoggerArguments(
+                unmatchedTokens[..unmatchedTokenCountBeforeDoubleDash],
+                out loggerArgs,
+                out var argumentsBeforeDoubleDash);
+            positionalArgumentCount = argumentsBeforeDoubleDash.Length;
+            otherArgs = [.. argumentsBeforeDoubleDash, .. argumentsAfterDoubleDash];
+        }
+        else
+        {
+            LoggerUtility.SeparateLoggerArguments(unmatchedTokens, out loggerArgs, out otherArgs);
+            positionalArgumentCount = otherArgs.Length;
+        }
 
         if (parseResult.GetValue(definition.NoLogoOption) && !otherArgs.Contains("--no-banner"))
         {
             otherArgs = otherArgs.Add("--no-banner");
         }
 
-        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(ref otherArgs);
+        var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(
+            positionalArgumentCount,
+            ref otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
             .Concat(loggerArgs);
@@ -278,7 +352,9 @@ internal static class MSBuildUtility
             EnvironmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty);
     }
 
-    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(ref ImmutableArray<string> otherArgs)
+    private static (string? PositionalProjectOrSolution, string? PositionalTestModules) GetPositionalArguments(
+        int positionalArgumentCount,
+        ref ImmutableArray<string> otherArgs)
     {
         string? positionalProjectOrSolution = null;
         string? positionalTestModules = null;
@@ -288,7 +364,7 @@ internal static class MSBuildUtility
         // So, disabling validation is okay if the user scenario is valid.
         bool throwOnUnexpectedFilePassedAsNonFirstPositionalArgument = Environment.GetEnvironmentVariable("DOTNET_TEST_DISABLE_SWITCH_VALIDATION") is not ("true" or "1");
 
-        for (int i = 0; i < otherArgs.Length; i++)
+        for (int i = 0; i < positionalArgumentCount; i++)
         {
             var token = otherArgs[i];
             if ((token.EndsWith(".sln", StringComparison.OrdinalIgnoreCase) ||
@@ -312,6 +388,19 @@ internal static class MSBuildUtility
                 // container projects such as dirs.proj / *.proj). This mirrors ValidateProjectOrSolutionPath,
                 // which accepts any "*proj" extension. Recognizing it here ensures the project path is not
                 // accidentally forwarded to the test application as an argument.
+                if (i == 0)
+                {
+                    positionalProjectOrSolution = token;
+                    otherArgs = otherArgs.RemoveAt(0);
+                    break;
+                }
+                else if (throwOnUnexpectedFilePassedAsNonFirstPositionalArgument)
+                {
+                    throw new GracefulException(CliCommandStrings.TestCommandUseProject);
+                }
+            }
+            else if (VirtualProjectBuilder.IsValidEntryPointPath(token, requireFileToExist: i != 0))
+            {
                 if (i == 0)
                 {
                     positionalProjectOrSolution = token;

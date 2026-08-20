@@ -585,8 +585,8 @@ Isso equivale a excluir o project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Define o caminho do arquivo de projeto ou de solução a ser testado. Usar o caminho do arquivo de projeto ou o caminho do diretório que contém o arquivo de projeto. Se não for especificado, o padrão será o diretório atual.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Define o caminho do arquivo de projeto ou de solução a ser testado. Usar o caminho do arquivo de projeto ou o caminho do diretório que contém o arquivo de projeto. Se não for especificado, o padrão será o diretório atual.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
