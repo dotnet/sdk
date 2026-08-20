@@ -3,6 +3,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+// Contributor-facing entry point for local dotnet/sdk test execution.
+
 #:package System.CommandLine
 
 using System.CommandLine;
@@ -22,7 +24,7 @@ Option<string> projectOption = new("--project")
 Option<string?> filterOption = new("--filter")
 {
     Arity = ArgumentArity.ExactlyOne,
-    Description = "VSTest filter, for example FullyQualifiedName~TestClass."
+    Description = "Test filter expression, for example FullyQualifiedName~TestClass."
 };
 Option<string> configurationOption = new("--configuration", "-c")
 {
@@ -39,28 +41,28 @@ configurationOption.Validators.Add(optionResult =>
         optionResult.AddError($"Unsupported configuration '{configuration}'. Use Debug or Release.");
     }
 });
-Option<bool> noBuildOption = new("--no-build")
-{
-    Description = "Do not build the test project before running it."
-};
-Option<string?> repoRootOption = new("--repo-root")
+Option<string?> frameworkOption = new("--framework", "-f")
 {
     Arity = ArgumentArity.ExactlyOne,
-    Description = "Repository root; inferred from the current directory by default."
+    Description = "Target framework to run. Multi-targeted projects default to SdkTargetFramework, then their first TFM."
+};
+Option<bool> skipRedistCheckOption = new("--skip-redist-check")
+{
+    Description = "Allow tests that do not exercise the assembled SDK to run without a redist layout."
 };
 
 rootCommand.Options.Add(projectOption);
 rootCommand.Options.Add(filterOption);
 rootCommand.Options.Add(configurationOption);
-rootCommand.Options.Add(noBuildOption);
-rootCommand.Options.Add(repoRootOption);
+rootCommand.Options.Add(frameworkOption);
+rootCommand.Options.Add(skipRedistCheckOption);
 
 rootCommand.SetAction((parseResult, cancellationToken) => RunAsync(
     parseResult.GetValue(projectOption)!,
     parseResult.GetValue(filterOption),
     parseResult.GetValue(configurationOption)!,
-    parseResult.GetValue(noBuildOption),
-    parseResult.GetValue(repoRootOption),
+    parseResult.GetValue(frameworkOption),
+    parseResult.GetValue(skipRedistCheckOption),
     cancellationToken));
 
 return await rootCommand
@@ -71,8 +73,8 @@ static async Task<int> RunAsync(
     string project,
     string? filter,
     string configuration,
-    bool noBuild,
-    string? repoRootArgument,
+    string? framework,
+    bool skipRedistCheck,
     CancellationToken cancellationToken)
 {
     cancellationToken.ThrowIfCancellationRequested();
@@ -80,13 +82,10 @@ static async Task<int> RunAsync(
     // Resolve every path from the repository root. Agents may launch this script from a
     // subdirectory, and allowing the current directory to influence individual paths would
     // make the same command target different projects or artifact locations.
-    var repoRoot = repoRootArgument is null
-        ? FindRepoRoot(Environment.CurrentDirectory)
-        : Path.GetFullPath(repoRootArgument);
-    if (repoRoot is null || !IsRepoRoot(repoRoot))
+    var repoRoot = FindRepoRoot(Environment.CurrentDirectory);
+    if (repoRoot is null)
     {
-        return Fail(
-            "Could not find the dotnet/sdk repository root. Run from inside the checkout or pass --repo-root <path>.");
+        return Fail("Could not find the dotnet/sdk repository root. Run from inside the checkout.");
     }
 
     var projectPath = Path.GetFullPath(project, repoRoot);
@@ -126,12 +125,12 @@ static async Task<int> RunAsync(
     // while still testing stale or missing product bits, so fail early when that layout does
     // not exist instead of producing a misleading test result.
     var redistRoot = Path.Combine(repoRoot, "artifacts", "bin", "redist", configuration, "dotnet");
-    if (!Directory.Exists(redistRoot))
+    if (!skipRedistCheck && !Directory.Exists(redistRoot))
     {
         return Fail(
             $"The {configuration} redist SDK does not exist at {redistRoot}.{Environment.NewLine}"
-            + $"Run {(OperatingSystem.IsWindows() ? @".\build.cmd" : "./build.sh")} "
-            + $"{(configuration.Equals("Release", StringComparison.OrdinalIgnoreCase) ? "-c Release" : "")} first.");
+            + $"Run {(OperatingSystem.IsWindows() ? @".\build.cmd" : "./build.sh")}"
+            + $"{(configuration.Equals("Release", StringComparison.OrdinalIgnoreCase) ? " -c Release" : string.Empty)} first.");
     }
 
     // Give each invocation its own directory. The timestamp makes runs easy to inspect while
@@ -141,128 +140,224 @@ static async Task<int> RunAsync(
         repoRoot,
         "artifacts",
         "log",
-        "targeted-tests",
+        "test-runs",
         projectName,
         $"{DateTime.UtcNow:yyyyMMdd-HHmmss}-{Environment.ProcessId}");
     Directory.CreateDirectory(runDirectory);
 
     var trxPath = Path.Combine(runDirectory, "test-results.trx");
     var binlogPath = Path.Combine(runDirectory, "build.binlog");
+    var rerunCommand = GetRerunCommand(
+        dotnetPath,
+        repoRoot,
+        relativeProjectPath,
+        configuration,
+        framework,
+        filter,
+        skipRedistCheck);
 
-    // The repository contains both MSTest.Sdk/Microsoft.Testing.Platform projects and projects
-    // that still run through `dotnet test`. Query evaluated MSBuild properties instead of
-    // guessing from package references or project text, which may be supplied by imports.
+    // Query evaluated MSBuild properties instead of guessing from project text, which may be
+    // supplied by imports.
     var projectProperties = await GetProjectProperties(
         dotnetPath,
         projectPath,
         configuration,
+        framework,
         repoRoot,
         cancellationToken);
     if (projectProperties is null)
     {
+        PrintArtifacts(repoRoot, trxPath, binlogPath);
+        Console.Error.WriteLine($"Rerun: {rerunCommand}");
         return 1;
     }
+    framework = projectProperties.TargetFramework;
+    rerunCommand = GetRerunCommand(
+        dotnetPath,
+        repoRoot,
+        relativeProjectPath,
+        configuration,
+        framework,
+        filter,
+        skipRedistCheck);
 
-    // MSTest.Sdk projects are executable test applications. Build them explicitly so the
-    // build failure has its own exit code and binlog, then execute TargetPath below. Running
-    // `dotnet test` for these projects can succeed while discovering zero tests.
-    if (projectProperties.Value.UsesMSTestSdk && !noBuild)
+    if (!projectProperties.UsesMSTestSdk)
     {
-        var buildArguments = new List<string>
-        {
-            "build",
-            projectPath,
-            "--configuration",
-            configuration,
-            "--nologo",
-            $"-bl:{binlogPath}"
-        };
-        Console.WriteLine($"Build command: {FormatCommand(dotnetPath, buildArguments, repoRoot)}");
-        Console.WriteLine();
-        var buildExitCode = await RunProcess(dotnetPath, buildArguments, repoRoot, cancellationToken);
-        if (buildExitCode != 0)
-        {
-            Console.Error.WriteLine($"Targeted test project build failed with exit code {buildExitCode}.");
-            PrintArtifacts(repoRoot, trxPath, binlogPath);
-            return buildExitCode;
-        }
+        var exitCode = Fail(
+            "The project does not use MSTest.Sdk. All supported dotnet/sdk test projects "
+            + "must use the repository's Microsoft.Testing.Platform configuration.");
+        PrintArtifacts(repoRoot, trxPath, binlogPath);
+        Console.Error.WriteLine($"Rerun: {rerunCommand}");
+        return exitCode;
     }
 
-    // Microsoft.Testing.Platform accepts test options after the assembly path, while the
-    // traditional path accepts them through `dotnet test`. Construct the appropriate command
-    // once so logging, filtering, display, and rerun guidance all describe the exact process.
-    var testArguments = projectProperties.Value.UsesMSTestSdk
-        ? new List<string>
-        {
-            "exec",
-            projectProperties.Value.TargetPath,
-            "--report-trx",
-            "--report-trx-filename",
-            "test-results.trx",
-            "--results-directory",
-            runDirectory
-        }
-        : new List<string>
-        {
-            "test",
-            projectPath,
-            "--configuration",
-            configuration,
-            "--logger",
-            "console;verbosity=detailed",
-            "--logger",
-            "trx;LogFileName=test-results.trx",
-            "--results-directory",
-            runDirectory,
-            $"-bl:{binlogPath}"
-        };
-
-    // The explicit MSTest.Sdk build above is already skipped when --no-build is set. Only the
-    // `dotnet test` command needs the switch forwarded.
-    if (noBuild && !projectProperties.Value.UsesMSTestSdk)
+    int buildExitCode = await BuildTestProject(
+        dotnetPath,
+        projectPath,
+        configuration,
+        framework,
+        binlogPath,
+        repoRoot,
+        cancellationToken);
+    if (buildExitCode != 0)
     {
-        testArguments.Add("--no-build");
+        Console.Error.WriteLine($"Test project build failed with exit code {buildExitCode}.");
+        PrintArtifacts(repoRoot, trxPath, binlogPath);
+        Console.Error.WriteLine($"Rerun: {rerunCommand}");
+        return buildExitCode;
+    }
+
+    if (!projectProperties.IsTestApplication)
+    {
+        var exitCode = Fail(
+            $"The project uses MSTest.Sdk but IsTestApplication is false for this configuration. "
+            + "It cannot be executed as a Microsoft.Testing.Platform test application on this platform.");
+        PrintArtifacts(repoRoot, trxPath, binlogPath);
+        Console.Error.WriteLine($"Rerun: {rerunCommand}");
+        return exitCode;
+    }
+
+    if (string.Equals(
+        projectProperties.TargetFrameworkIdentifier,
+        ".NETFramework",
+        StringComparison.OrdinalIgnoreCase)
+        && !OperatingSystem.IsWindows())
+    {
+        var exitCode = Fail(
+            $"Target framework '{framework}' requires a .NET Framework test executable, "
+            + "which can only run on Windows.");
+        PrintArtifacts(repoRoot, trxPath, binlogPath);
+        Console.Error.WriteLine($"Rerun: {rerunCommand}");
+        return exitCode;
+    }
+
+    if (!File.Exists(projectProperties.TargetPath))
+    {
+        var exitCode = Fail(
+            $"Built MSTest test assembly not found at {projectProperties.TargetPath}. "
+            + "The test project build completed without producing its expected output.");
+        PrintArtifacts(repoRoot, trxPath, binlogPath);
+        Console.Error.WriteLine($"Rerun: {rerunCommand}");
+        return exitCode;
+    }
+
+    TestInvocation invocation = CreateTestInvocation(
+        dotnetPath,
+        projectProperties,
+        runDirectory,
+        filter);
+    Console.WriteLine($"Project: {relativeProjectPath}");
+    Console.WriteLine($"Framework: {framework}");
+    Console.WriteLine($"Run directory: {Path.GetRelativePath(repoRoot, runDirectory)}");
+    Console.WriteLine($"Command: {FormatCommand(invocation.Executable, invocation.Arguments, repoRoot)}");
+    Console.WriteLine();
+
+    int testExitCode = await RunProcess(
+        invocation.Executable,
+        invocation.Arguments,
+        repoRoot,
+        cancellationToken);
+    return ReportTestResult(
+        testExitCode,
+        repoRoot,
+        trxPath,
+        binlogPath,
+        rerunCommand);
+}
+
+static async Task<int> BuildTestProject(
+    string dotnetPath,
+    string projectPath,
+    string configuration,
+    string? framework,
+    string binlogPath,
+    string repoRoot,
+    CancellationToken cancellationToken)
+{
+    var arguments = new List<string>
+    {
+        "build",
+        projectPath,
+        "--configuration",
+        configuration,
+        "--nologo",
+        $"-bl:{binlogPath}"
+    };
+    if (!string.IsNullOrWhiteSpace(framework))
+    {
+        arguments.Add("--framework");
+        arguments.Add(framework);
+    }
+
+    Console.WriteLine($"Build command: {FormatCommand(dotnetPath, arguments, repoRoot)}");
+    Console.WriteLine();
+    return await RunProcess(dotnetPath, arguments, repoRoot, cancellationToken);
+}
+
+static TestInvocation CreateTestInvocation(
+    string dotnetPath,
+    TestProjectProperties projectProperties,
+    string runDirectory,
+    string? filter)
+{
+    string executable;
+    List<string> arguments;
+    if (string.Equals(
+        projectProperties.TargetFrameworkIdentifier,
+        ".NETFramework",
+        StringComparison.OrdinalIgnoreCase))
+    {
+        executable = projectProperties.TargetPath;
+        arguments = [];
+    }
+    else
+    {
+        executable = dotnetPath;
+        arguments = ["exec", projectProperties.TargetPath];
+    }
+
+    if (projectProperties.TrxReportEnabled)
+    {
+        arguments.Add("--report-trx");
+        arguments.Add("--report-trx-filename");
+        arguments.Add("test-results.trx");
+        arguments.Add("--results-directory");
+        arguments.Add(runDirectory);
+    }
+    else
+    {
+        Console.Error.WriteLine(
+            "The project does not enable Microsoft.Testing.Extensions.TrxReport; "
+            + "the test run will continue without a TRX.");
     }
 
     if (!string.IsNullOrWhiteSpace(filter))
     {
-        testArguments.Add("--filter");
-        testArguments.Add(filter);
+        arguments.Add("--filter");
+        arguments.Add(filter);
     }
 
-    // Print the command before execution so live logs remain useful if the process hangs or is
-    // cancelled before it can produce a TRX.
-    var displayCommand = FormatCommand(dotnetPath, testArguments, repoRoot);
-    Console.WriteLine($"Project: {relativeProjectPath}");
-    Console.WriteLine($"Artifacts: {Path.GetRelativePath(repoRoot, runDirectory)}");
-    Console.WriteLine($"Command: {displayCommand}");
+    return new TestInvocation(executable, arguments);
+}
+
+static int ReportTestResult(
+    int exitCode,
+    string repoRoot,
+    string trxPath,
+    string binlogPath,
+    string rerunCommand)
+{
     Console.WriteLine();
-
-    // In --no-build mode, TargetPath may describe where output would be written even when the
-    // file is absent. Detect that case here and explain how to recover instead of forwarding a
-    // less actionable dotnet exec "file not found" error.
-    if (projectProperties.Value.UsesMSTestSdk && !File.Exists(projectProperties.Value.TargetPath))
+    if (exitCode == 0)
     {
-        return Fail(
-            $"Built MSTest test assembly not found at {projectProperties.Value.TargetPath}. "
-            + "Build the project or omit --no-build.");
-    }
-
-    var testExitCode = await RunProcess(dotnetPath, testArguments, repoRoot, cancellationToken);
-
-    Console.WriteLine();
-    if (testExitCode == 0)
-    {
-        Console.WriteLine("Targeted tests passed.");
+        Console.WriteLine("Tests passed.");
         PrintArtifacts(repoRoot, trxPath, binlogPath);
         return 0;
     }
 
-    Console.Error.WriteLine($"Targeted tests failed with exit code {testExitCode}.");
+    Console.Error.WriteLine($"Tests failed with exit code {exitCode}.");
     if (File.Exists(trxPath))
     {
-        // Surface names in the console for immediate triage while retaining the complete TRX
-        // for stack traces, output, timings, and larger failure sets.
         PrintFailedTests(trxPath);
     }
     else
@@ -270,12 +365,9 @@ static async Task<int> RunAsync(
         Console.Error.WriteLine("No TRX was produced; the failure occurred before test results were written.");
     }
 
-    // Always show whatever diagnostics exist. Build failures may produce only a binlog, while
-    // early test-host failures may produce neither; stating that explicitly is more actionable
-    // than making the caller search the artifact tree.
     PrintArtifacts(repoRoot, trxPath, binlogPath);
-    Console.Error.WriteLine($"Rerun: {displayCommand}");
-    return testExitCode;
+    Console.Error.WriteLine($"Rerun: {rerunCommand}");
+    return exitCode;
 }
 
 static string? FindRepoRoot(string startDirectory)
@@ -302,26 +394,116 @@ static bool IsRepoRoot(string path) =>
     && File.Exists(Path.Combine(path, "sdk.slnx"))
     && (Directory.Exists(Path.Combine(path, ".git")) || File.Exists(Path.Combine(path, ".git")));
 
-static async Task<(bool UsesMSTestSdk, string TargetPath)?> GetProjectProperties(
+static async Task<TestProjectProperties?> GetProjectProperties(
     string dotnetPath,
     string projectPath,
     string configuration,
+    string? requestedFramework,
+    string repoRoot,
+    CancellationToken cancellationToken)
+{
+    Dictionary<string, string>? properties = await EvaluateProjectProperties(
+        dotnetPath,
+        projectPath,
+        configuration,
+        requestedFramework,
+        repoRoot,
+        cancellationToken);
+    if (properties is null)
+    {
+        return null;
+    }
+
+    string targetFramework = properties["TargetFramework"];
+    string targetFrameworks = properties["TargetFrameworks"];
+    string[] frameworks = targetFrameworks.Split(
+        ';',
+        StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+    if (requestedFramework is not null
+        && frameworks.Length > 0
+        && !frameworks.Contains(requestedFramework, StringComparer.OrdinalIgnoreCase))
+    {
+        Console.Error.WriteLine(
+            $"Error: Target framework '{requestedFramework}' is not listed in TargetFrameworks "
+            + $"('{targetFrameworks}') for {Path.GetRelativePath(repoRoot, projectPath)}.");
+        return null;
+    }
+
+    if (string.IsNullOrWhiteSpace(targetFramework) && !string.IsNullOrWhiteSpace(targetFrameworks))
+    {
+        string? selectedFramework = requestedFramework;
+        selectedFramework ??= frameworks.FirstOrDefault(framework =>
+            string.Equals(
+                framework,
+                properties["SdkTargetFramework"],
+                StringComparison.OrdinalIgnoreCase));
+        selectedFramework ??= frameworks.First();
+
+        properties = await EvaluateProjectProperties(
+            dotnetPath,
+            projectPath,
+            configuration,
+            selectedFramework,
+            repoRoot,
+            cancellationToken);
+        if (properties is null)
+        {
+            return null;
+        }
+
+        targetFramework = properties["TargetFramework"];
+    }
+
+    bool usesMSTestSdk = IsTrue(properties["UsingMSTestSdk"]);
+    string targetPath = properties["TargetPath"];
+    if (usesMSTestSdk && string.IsNullOrWhiteSpace(targetPath))
+    {
+        Console.Error.WriteLine(
+            "Error: MSBuild returned an empty TargetPath for the selected MSTest.Sdk target framework.");
+        return null;
+    }
+
+    if (!string.IsNullOrWhiteSpace(targetPath))
+    {
+        targetPath = Path.GetFullPath(
+            targetPath,
+            Path.GetDirectoryName(projectPath)
+                ?? throw new InvalidOperationException($"Could not determine project directory for {projectPath}."));
+    }
+
+    return new TestProjectProperties(
+        usesMSTestSdk,
+        IsTrue(properties["IsTestApplication"]),
+        IsTrue(properties["EnableMicrosoftTestingExtensionsTrxReport"]),
+        targetPath,
+        targetFramework,
+        properties["TargetFrameworkIdentifier"]);
+}
+
+static async Task<Dictionary<string, string>?> EvaluateProjectProperties(
+    string dotnetPath,
+    string projectPath,
+    string configuration,
+    string? framework,
     string repoRoot,
     CancellationToken cancellationToken)
 {
     // -getProperty asks MSBuild for the fully evaluated values and emits a small JSON document.
     // Running the repo-local MSBuild process guarantees evaluation with this checkout's pinned
-    // SDK, imports, workload resolvers, and MSBuild version. Using the MSBuild APIs in-process
-    // would require package dependencies, toolset registration, assembly-load management, and
-    // isolation from MSBuild's global state for the sake of reading only these two properties.
-    var arguments = new[]
+    // SDK, imports, workload resolvers, and MSBuild version.
+    var arguments = new List<string>
     {
         "msbuild",
         projectPath,
-        "-getProperty:UsingMSTestSdk,TargetPath",
+        "-getProperty:UsingMSTestSdk,IsTestApplication,EnableMicrosoftTestingExtensionsTrxReport,TargetPath,TargetFramework,TargetFrameworks,SdkTargetFramework,TargetFrameworkIdentifier",
         $"-p:Configuration={configuration}",
         "--nologo"
     };
+    if (!string.IsNullOrWhiteSpace(framework))
+    {
+        arguments.Add($"-p:TargetFramework={framework}");
+    }
+
     var startInfo = CreateProcessStartInfo(dotnetPath, arguments, repoRoot);
     startInfo.RedirectStandardOutput = true;
     startInfo.RedirectStandardError = true;
@@ -365,25 +547,17 @@ static async Task<(bool UsesMSTestSdk, string TargetPath)?> GetProjectProperties
     using (document)
     {
         var properties = document.RootElement.GetProperty("Properties");
-
-        // UsingMSTestSdk is a string-valued MSBuild property, so compare it using MSBuild's
-        // case-insensitive boolean convention instead of relying on JSON boolean parsing.
-        var usesMSTestSdk = string.Equals(
-            properties.GetProperty("UsingMSTestSdk").GetString(),
-            "true",
-            StringComparison.OrdinalIgnoreCase);
-        var targetPath = properties.GetProperty("TargetPath").GetString();
-        if (string.IsNullOrWhiteSpace(targetPath))
-        {
-            Console.Error.WriteLine("Error: MSBuild returned an empty TargetPath for the test project.");
-            return null;
-        }
-
-        // TargetPath may be relative depending on project configuration. Normalize it now so the
-        // later existence check and dotnet exec invocation are independent of process cwd.
-        return (usesMSTestSdk, Path.GetFullPath(targetPath, repoRoot));
+        return properties
+            .EnumerateObject()
+            .ToDictionary(
+                property => property.Name,
+                property => property.Value.GetString() ?? string.Empty,
+                StringComparer.OrdinalIgnoreCase);
     }
 }
+
+static bool IsTrue(string value) =>
+    string.Equals(value, "true", StringComparison.OrdinalIgnoreCase);
 
 static async Task<int> RunProcess(
     string executable,
@@ -482,6 +656,42 @@ static void PrintArtifacts(string repoRoot, string trxPath, string binlogPath)
             : "  Binlog: not produced");
 }
 
+static string GetRerunCommand(
+    string dotnetPath,
+    string repoRoot,
+    string relativeProjectPath,
+    string configuration,
+    string? framework,
+    string? filter,
+    bool skipRedistCheck)
+{
+    var arguments = new List<string>
+    {
+        Path.Combine("scripts", "RunTests.cs"),
+        "--",
+        "--project",
+        relativeProjectPath,
+        "--configuration",
+        configuration
+    };
+    if (!string.IsNullOrWhiteSpace(framework))
+    {
+        arguments.Add("--framework");
+        arguments.Add(framework);
+    }
+    if (skipRedistCheck)
+    {
+        arguments.Add("--skip-redist-check");
+    }
+    if (!string.IsNullOrWhiteSpace(filter))
+    {
+        arguments.Add("--filter");
+        arguments.Add(filter);
+    }
+
+    return FormatCommand(dotnetPath, arguments, repoRoot);
+}
+
 static string FormatCommand(string executable, IEnumerable<string> arguments, string repoRoot)
 {
     // Display the repo-local executable as a relative path so the rerun command is portable to
@@ -519,3 +729,13 @@ static int Fail(string message)
     Console.Error.WriteLine($"Error: {message}");
     return 1;
 }
+
+sealed record TestProjectProperties(
+    bool UsesMSTestSdk,
+    bool IsTestApplication,
+    bool TrxReportEnabled,
+    string TargetPath,
+    string TargetFramework,
+    string TargetFrameworkIdentifier);
+
+sealed record TestInvocation(string Executable, IReadOnlyList<string> Arguments);

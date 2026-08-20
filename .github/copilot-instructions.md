@@ -151,20 +151,12 @@ Canonical scenarios:
     that resolves against this repo.
   - The built SDK is output to `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
   - The first build is slow; subsequent builds are incremental.
-- Run tests: prefer targeted runs — a single test project or test (see the
-  [Testing](#testing) section) and the `targeted-test` skill. `build.cmd -test` /
-  `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
-  avoid running the full suite for routine local or agent work.
+- Run tests through the `run-tests` skill. It selects the appropriate focused, scoped, or
+  full-suite workflow and retains actionable diagnostics for focused runs (see
+  [Testing](#testing)).
 - Release build: `build.cmd -c Release`.
-- Run a single test project after a full build:
-  `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
-  See the [Testing](#testing) section for assembly filtering and more examples.
 - Validate changes locally using the SDK you built at
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
-- Use the `targeted-test` skill to select projects from the shared
-  `test/ConditionalTests.props` scopes when available and retain detailed failure output,
-  a TRX, and a binlog. For fast inner-loop runs of `dotnet.Tests` without a full rebuild,
-  use `incremental-test`.
 
 ## Guardrails
 
@@ -256,7 +248,8 @@ property:
 
 - Large changes should always include test changes.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
-- Use the `targeted-test` skill to choose projects from `test/ConditionalTests.props`
+- Use the `run-tests` skill for every local test execution. Choose projects from
+  `test/ConditionalTests.props`
   when the changed paths match a configured scope, or use its fallback mappings for
   unscoped common areas. Run one project, class, or method with detailed live output and
   retained TRX/binlog diagnostics.
