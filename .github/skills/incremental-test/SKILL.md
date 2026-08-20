@@ -72,12 +72,9 @@ Copy-Item artifacts\bin\dotnet\Debug\net10.0\dotnet.dll artifacts\bin\redist\Deb
 
 ### Step 4: Run the tests
 
-Use the **run-tests** runner so the test project is built incrementally and failures
-retain detailed output, a TRX, and a binlog:
-
-```shell
-./.dotnet/dotnet scripts/RunTests.cs -- --project test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~TestMethodName"
-```
+Invoke the [`run-tests`](../run-tests/SKILL.md) skill for `test/dotnet.Tests/dotnet.Tests.csproj` with a filter for
+the affected tests. It builds the test project incrementally and retains detailed output,
+a TRX, and a binlog.
 
 ## Common project paths
 

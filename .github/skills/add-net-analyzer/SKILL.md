@@ -141,12 +141,12 @@ mirroring the analyzer's folder. Full conventions are in
 ```powershell
 # ~10s incremental once .dotnet is provisioned; the first run provisions it.
 ./build.cmd -projects src/Microsoft.CodeAnalysis.NetAnalyzers/Microsoft.CodeAnalysis.NetAnalyzers.slnx -c Debug
-
-.\.dotnet\dotnet.exe scripts\RunTests.cs -- `
-  --project src\Microsoft.CodeAnalysis.NetAnalyzers\tests\Microsoft.CodeAnalysis.NetAnalyzers.UnitTests\Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj `
-  --filter "FullyQualifiedName~<Name>Tests" `
-  --skip-redist-check
 ```
+
+Then invoke the [`run-tests`](../run-tests/SKILL.md) skill for
+`src/Microsoft.CodeAnalysis.NetAnalyzers/tests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests/Microsoft.CodeAnalysis.NetAnalyzers.UnitTests.csproj`
+with a filter for `<Name>Tests`. This project does not consume the assembled SDK, so the
+runner may skip its redist check.
 
 Then `git status` and commit the regenerated files along with your change. `./build.sh` on
 Linux/macOS; never pass `-restore`/`-build` alongside `-projects`.
