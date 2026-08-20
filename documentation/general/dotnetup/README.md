@@ -10,9 +10,10 @@ using a system package manager.
 - A terminal.
 - Bash on macOS or Linux, or PowerShell on Windows, to run the download script.
 
-The default installation and all access modes use your user profile. They do
-not require administrator access. A custom installation path can require
-additional file permissions.
+On Windows, the default setup uses the `everywhere` access mode and requires
+elevation to update the system `PATH`. Choose `none` or `shell` to avoid this
+requirement. For details, see
+[dotnetup environment configuration](concepts/environment.md).
 
 ## Download dotnetup
 
@@ -83,9 +84,8 @@ Setup complete!
 The paths, progress display, and environment guidance depend on your system and
 the selected mode.
 
-The recommended mode is Everywhere Mode on Windows. On macOS and Linux, it is
-Terminal Mode when `dotnetup` detects a supported shell. It is Isolation Mode
-when shell detection is not available.
+The recommended access mode is `everywhere` on Windows. On macOS and Linux, it
+is `shell` when `dotnetup` detects a supported shell and `none` otherwise.
 
 Select **No, customize setup** to choose the SDK channel, access mode, and
 migration options.
@@ -111,43 +111,40 @@ Exact versions do not advance during updates. For all accepted forms, see
 
 ### Choose how to access .NET
 
-The access mode controls how terminals and applications find the managed
-`dotnet` command.
+The access mode controls how terminals and applications find the
+dotnetup-managed .NET installation.
 
-| Mode | Behavior |
+| Access mode | Behavior |
 | --- | --- |
-| Isolation Mode | Use `dotnetup dotnet <command>`. Existing .NET installations remain the default. |
-| Terminal Mode | Update the selected shell profile. Applications launched from that shell use the managed installation. |
-| Everywhere Mode | Update the Windows user environment and shell profile. New terminals and user applications use the managed installation. Windows only. |
+| `none` | Does not modify these environment variables. Run .NET with `dotnetup dotnet`. |
+| `shell` | Modifies the shell profile to set these environment variables. Processes started from that shell use the .NET SDKs and Runtimes installed by dotnetup. |
+| `everywhere` | Modifies the system `PATH` and sets the user-level `DOTNET_ROOT` environment variable. Only available on Windows. |
 
-Terminal Mode supports Bash, Z shell, Fish, PowerShell Core, and Windows
-PowerShell.
-
-For more information, see
+For more details and considerations for `everywhere` mode, see
 [dotnetup environment configuration](concepts/environment.md).
 
 ### Migrate existing installations
 
-Setup can find SDKs and runtimes in the system-managed .NET directory. It can
-install matching native-architecture versions in the dotnetup-managed
-directory. This keeps existing projects working after you change the access
-mode.
+Setup can offer to migrate existing machine-wide .NET SDK and Runtime
+installations into the dotnetup-managed installation. See
+[Everywhere mode considerations](concepts/environment.md#everywhere-mode-considerations)
+for why migration is especially important with `everywhere` mode.
 
 ## Verify setup
 
 Open a new terminal after setup changes your environment.
 
-For Terminal Mode or Everywhere Mode, run:
+For `shell` or `everywhere` mode, run:
 
 ```dotnetcli
 dotnet --version
 dotnetup list
 ```
 
-For Isolation Mode, run:
+For `none` mode, run:
 
 ```dotnetcli
-dotnetup dotnet --version
+dotnetup dotnet -- --version
 dotnetup list
 ```
 
