@@ -5,7 +5,7 @@ description: >-
   entry point. REQUIRED whenever an agent will select, run, or rerun local dotnet/sdk
   tests, including a project, class, method, targeted test, focused test, smallest
   relevant test, or completed-change validation. NEVER invoke when the user says not to
-  run tests yet. DO NOT USE for the complete repository test suite.
+  run tests yet.
 license: MIT
 ---
 
@@ -15,6 +15,15 @@ Use this workflow for every local SDK test execution. Select the smallest projec
 filter that cover the changed behavior, then invoke the centralized runner. It streams
 detailed output and writes a TRX plus an MSBuild binlog under
 `artifacts/log/test-runs/`.
+
+## Choose the execution scope
+
+- For one test, class, or project, invoke `scripts/RunTests.cs` as described below.
+- For an area represented in `test/ConditionalTests.props`, expand the scope and invoke
+  `scripts/RunTests.cs` once per concrete project.
+- When the user explicitly requests the complete repository test suite, explain that it
+  is very large and then run `build.cmd -test` on Windows or `./build.sh --test` on
+  macOS/Linux. Do not use the complete suite for routine validation.
 
 ## Select configured test scopes first
 
