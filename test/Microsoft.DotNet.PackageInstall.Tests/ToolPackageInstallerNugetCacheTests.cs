@@ -21,8 +21,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenNugetConfigInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
@@ -66,8 +65,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public void GivenNugetConfigVersionRangeInstallSucceeds(bool testMockBehaviorIsInSync)
         {
             string testDirectory = TestAssetsManager.CreateTestDirectory(identifier: testMockBehaviorIsInSync.ToString()).Path;
