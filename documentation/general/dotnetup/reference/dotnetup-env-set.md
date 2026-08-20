@@ -2,7 +2,7 @@
 title: dotnetup env set command
 description: Command reference for applying dotnetup environment settings.
 ms.topic: reference
-ms.date: 08/07/2026
+ms.date: 08/11/2026
 ---
 
 # dotnetup env set command
@@ -23,11 +23,14 @@ dotnetup env set [<MODE>] [options]
 
 The optional .NET access mode:
 
-| Value | Behavior |
+| Access mode | Behavior |
 | --- | --- |
-| `none` | Do not wire the managed `dotnet`. |
-| `shell` | Wire the managed `dotnet` through a shell profile. |
-| `everywhere` | Wire the managed `dotnet` through the Windows user environment and shell profile. Windows only. |
+| `none` | Does not modify these environment variables. Run .NET with `dotnetup dotnet`. |
+| `shell` | Modifies the shell profile to set these environment variables. Processes started from that shell use the .NET SDKs and Runtimes installed by dotnetup. |
+| `everywhere` | Modifies the system `PATH` and sets the user-level `DOTNET_ROOT` environment variable. Only available on Windows. |
+
+For details about each mode and considerations for `everywhere`, see
+[dotnetup environment configuration](../concepts/environment.md).
 
 When you omit `MODE`, the command reapplies the stored mode. The command
 fails if no readable configuration exists.

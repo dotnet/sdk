@@ -2,13 +2,15 @@
 title: Configure access to dotnetup-managed .NET
 description: Configure shell profiles, user environment variables, or command forwarding.
 ms.topic: how-to
-ms.date: 08/07/2026
+ms.date: 08/11/2026
 ---
 
 # Configure access to dotnetup-managed .NET
 
 Installation and environment configuration are separate operations. Select
-the access mode that fits your workflow.
+the access mode that fits your workflow. For descriptions of the available
+modes, see
+[dotnetup environment configuration](../concepts/environment.md).
 
 ## Use command forwarding
 
@@ -38,16 +40,22 @@ Open a new shell after the command finishes, or activate the current shell to ap
 dotnetup env script --shell pwsh | Invoke-Expression
 ```
 
-## Configure the Windows user environment
+## Configure all Windows user applications
 
-On Windows, the `everywhere` mode updates the persistent user environment
-and the selected shell profile:
+On Windows, use `everywhere` mode to make the managed installation available
+to terminals and other user applications:
 
 ```dotnetcli
 dotnetup env set everywhere --shell pwsh
 ```
 
 This mode is not available on Linux or macOS.
+
+> [!IMPORTANT]
+> Before enabling `everywhere`, review
+> [Everywhere mode considerations](../concepts/environment.md#everywhere-mode-considerations),
+> including how the mode interacts with machine-wide installations and
+> framework-dependent applications.
 
 ## Inspect and correct drift
 

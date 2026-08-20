@@ -28,6 +28,9 @@ dotnetup env set none --dotnetup-on-path false
 
 It does not uninstall .NET.
 
+For more information about access modes, see
+[dotnetup environment configuration](../concepts/environment.md).
+
 ## Options
 
 | Option | Description |

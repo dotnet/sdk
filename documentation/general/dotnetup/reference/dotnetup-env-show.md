@@ -26,6 +26,9 @@ the requested settings.
 
 If the configuration has drifted, run `dotnetup env set` to reapply it.
 
+For more information about access modes, see
+[dotnetup environment configuration](../concepts/environment.md).
+
 ## Options
 
 | Option | Description |

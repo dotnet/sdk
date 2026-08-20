@@ -23,7 +23,8 @@ dotnetup init [options]
 The setup flow presents the effective install path and starter SDK channel.
 It lets you select an access mode and whether the `dotnetup` executable is on
 `PATH`. It can also offer to migrate matching native-architecture
-system-managed installations.
+system-managed installations. For descriptions of the access modes, see
+[dotnetup environment configuration](../concepts/environment.md).
 
 Run this command again to reconfigure dotnetup.
 
