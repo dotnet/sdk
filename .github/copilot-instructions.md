@@ -151,20 +151,12 @@ Canonical scenarios:
     that resolves against this repo.
   - The built SDK is output to `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
   - The first build is slow; subsequent builds are incremental.
-- Run tests through the `run-tests` skill — prefer a single test project, class, or method
-  (see the [Testing](#testing) section). `build.cmd -test` /
-  `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
-  avoid running the full suite for routine local or agent work.
+- Run tests through the `run-tests` skill. It selects the appropriate focused, scoped, or
+  full-suite workflow and retains actionable diagnostics for focused runs (see
+  [Testing](#testing)).
 - Release build: `build.cmd -c Release`.
-- Run a single test through the centralized runner:
-  `./.dotnet/dotnet scripts/RunTests.cs -- --project test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
-  See the [Testing](#testing) section for project selection and more examples.
 - Validate changes locally using the SDK you built at
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
-- Use the `run-tests` skill to select projects from the shared
-  `test/ConditionalTests.props` scopes when available and retain detailed failure output,
-  a TRX, and a binlog. For fast inner-loop runs of `dotnet.Tests` without a full rebuild,
-  use `incremental-test`.
 
 ## Guardrails
 
