@@ -252,11 +252,6 @@ internal abstract class MessageDescriptor(string? format, Emoji emoji, LogLevel 
     public static readonly MessageDescriptor<(string, string, string)> FailedToLaunchProcess = Create<(string, string, string)>("Failed to launch '{0}' with arguments '{1}': {2}", Emoji.Error, LogLevel.Error);
     public static readonly MessageDescriptor<string> ApplicationFailed = Create<string>("Application failed: {0}", Emoji.Error, LogLevel.Error);
     public static readonly MessageDescriptor<(int, long, int?)> ProcessRunAndExited = Create<(int, long, int?)>("Process id {0} ran for {1}ms and exited with exit code {2}.", Emoji.Watch, LogLevel.Debug);
-    public static readonly MessageDescriptor<(int, int)> WaitingForProcessToExitWithin = Create<(int, int)>("Waiting for process {0} to exit within {1}s.", Emoji.Watch, LogLevel.Debug);
-    public static readonly MessageDescriptor<(int, int)> WaitingForProcessToExit = Create<(int, int)>("Waiting for process {0} to exit ({1}).", Emoji.Watch, LogLevel.Debug);
-    public static readonly MessageDescriptor<(int, string)> FailedToKillProcess = Create<(int, string)>("Failed to kill process {0}: {1}.", Emoji.Error, LogLevel.Error);
-    public static readonly MessageDescriptor<(int, string)> TerminatingProcess = Create<(int, string)>("Terminating process {0} ({1}).", Emoji.Watch, LogLevel.Debug);
-    public static readonly MessageDescriptor<(string, int, string)> FailedToSendSignalToProcess = Create<(string, int, string)>("Failed to send {0} signal to process {1}: {2}", Emoji.Warning, LogLevel.Warning);
     public static readonly MessageDescriptor<(string, int, string)> ErrorReadingProcessOutput = Create<(string, int, string)>("Error reading {0} of process {1}: {2}", Emoji.Watch, LogLevel.Debug);
     public static readonly MessageDescriptor<string> SendingStaticAssetUpdateRequest = Create(LogEvents.SendingStaticAssetUpdateRequest, Emoji.Default);
     public static readonly MessageDescriptor<string> HotReloadCapabilities = Create<string>("Hot reload capabilities: {0}.", Emoji.HotReload, LogLevel.Debug);

@@ -1,11 +1,17 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-namespace Microsoft.DotNet.Watch;
+#nullable enable
+
+using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Microsoft.DotNet.HotReload;
 
 internal sealed class RunningProcess(
     int id,
-    Task<int> task,
+    Task<int?> task,
     CancellationTokenSource exitedSource,
     CancellationTokenSource terminationSource) : IAsyncDisposable
 {
@@ -17,7 +23,11 @@ internal sealed class RunningProcess(
     /// </summary>
     public readonly CancellationToken ExitedCancellationToken = exitedSource.Token;
 
-    public Task<int> Task => task;
+    /// <summary>
+    /// Task that tracks the lifetime of the process. The task completes when the process exits, either normally or due to termination.
+    /// </summary>
+    public Task<int?> Task => task;
+
     public int Id => id;
 
     ValueTask IAsyncDisposable.DisposeAsync()
