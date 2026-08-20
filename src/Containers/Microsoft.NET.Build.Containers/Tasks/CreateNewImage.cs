@@ -66,6 +66,21 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return !Log.HasLoggedErrors;
         }
 
+        string? archiveIncrementalFingerprint = null;
+        if (EnableArchiveIncrementalCache && !string.IsNullOrEmpty(BaseImageDigest))
+        {
+            archiveIncrementalFingerprint = ContainerArchiveCache.ComputeFingerprint(
+                this,
+                BaseImageDigest,
+                baseImageIsResolved: false,
+                cancellationToken);
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return true;
+            }
+        }
+
         bool credentialsSet = false;
         VSHostObject hostObj = new(HostObject, Log);
         if (hostObj.TryGetCredentials() is (string userName, string pass))
@@ -83,7 +98,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         try
         {
-            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, cancellationToken).ConfigureAwait(false);
+            return await ExecuteAsyncCore(logger, msbuildLoggerFactory, archiveIncrementalFingerprint, cancellationToken).ConfigureAwait(false);
         }
         finally
         {
@@ -96,7 +111,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         }
     }
 
-    private async Task<bool> ExecuteAsyncCore(ILogger logger, ILoggerFactory msbuildLoggerFactory, CancellationToken cancellationToken)
+    private async Task<bool> ExecuteAsyncCore(
+        ILogger logger,
+        ILoggerFactory msbuildLoggerFactory,
+        string? archiveIncrementalFingerprint,
+        CancellationToken cancellationToken)
     {
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
         Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
@@ -158,6 +177,20 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             Log.LogErrorWithCodeFromResources(nameof(Strings.BaseImageNotFound), sourceImageReference, ContainerRuntimeIdentifier);
             return !Log.HasLoggedErrors;
+        }
+
+        if (EnableArchiveIncrementalCache && archiveIncrementalFingerprint is null)
+        {
+            archiveIncrementalFingerprint = ContainerArchiveCache.ComputeFingerprint(
+                this,
+                imageBuilder.BaseImageManifestDigest,
+                baseImageIsResolved: true,
+                cancellationToken);
+            if (ContainerArchiveCache.TryRestore(this, archiveIncrementalFingerprint))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                return true;
+            }
         }
 
         (string message, object[] parameters) = SkipPublishing ?
@@ -261,6 +294,11 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         {
             await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, NoCache, Log, telemetry, cancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        if (archiveIncrementalFingerprint is not null && !Log.HasLoggedErrors)
+        {
+            ContainerArchiveCache.Save(this, archiveIncrementalFingerprint);
         }
 
         return !Log.HasLoggedErrors;

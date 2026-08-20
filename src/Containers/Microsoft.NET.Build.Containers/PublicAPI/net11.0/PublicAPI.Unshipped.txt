@@ -188,6 +188,8 @@ Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFramewor
 Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.TargetFrameworkVersion.set -> void
 override Microsoft.NET.Build.Containers.Tasks.ComputeDotnetBaseImageAndTag.Execute() -> bool
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveIncrementalCachePath.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.ArchiveIncrementalCachePath.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.get -> string!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageName.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageTag.get -> string!
@@ -211,6 +213,8 @@ Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Entrypoint.get -> Microsoft.
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.Entrypoint.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EntrypointArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EntrypointArgs.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EnableArchiveIncrementalCache.get -> bool
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.EnableArchiveIncrementalCache.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.DefaultArgs.get -> Microsoft.Build.Framework.ITaskItem![]!
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.DefaultArgs.set -> void
 Microsoft.NET.Build.Containers.Tasks.CreateNewImage.AppCommand.get -> Microsoft.Build.Framework.ITaskItem![]!
