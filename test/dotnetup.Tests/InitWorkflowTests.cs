@@ -216,6 +216,87 @@ public class InitWorkflowTests : IDisposable
     // deterministically by InitWorkflowShellFallbackTests, which mutates SHELL and therefore runs
     // in a serialized collection.
 
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void InitWalkthrough_SkipsForLocalSdkPath()
+    {
+        Directory.CreateDirectory(Path.Combine(_tempDir, ".dotnet"));
+        File.WriteAllText(
+            Path.Combine(_tempDir, "global.json"),
+            """
+            {
+              "sdk": {
+                "paths": [".dotnet"]
+              }
+            }
+            """);
+
+        var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir);
+        var parseResult = Parser.Parse(["init"]);
+        var command = new InitCommand(parseResult);
+
+        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
+            () => new InitWorkflows(mock).InitWalkthrough(command));
+
+        requests.Should().BeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(0);
+        mock.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        mock.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        mock.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+        DotnetupConfig.Exists().Should().BeFalse();
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void HasLocalSdkPathGlobalJson_ReturnsFalseForHostSentinel()
+    {
+        File.WriteAllText(
+            Path.Combine(_tempDir, "global.json"),
+            """
+            {
+              "sdk": {
+                "paths": ["$host$"]
+              }
+            }
+            """);
+
+        bool hasLocalSdkPath = RunFromTempDirectory(InitWorkflows.HasLocalSdkPathGlobalJson);
+
+        hasLocalSdkPath.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void InitWalkthrough_DryRunIgnoresLocalSdkPath()
+    {
+        Directory.CreateDirectory(Path.Combine(_tempDir, ".dotnet"));
+        File.WriteAllText(
+            Path.Combine(_tempDir, "global.json"),
+            """
+            {
+              "sdk": {
+                "paths": [".dotnet"]
+              }
+            }
+            """);
+
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls: []);
+        var parseResult = Parser.Parse(["init", "--dry-run"]);
+        var command = new InitCommand(parseResult);
+
+        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
+            () => new InitWorkflows(mock).InitWalkthrough(command));
+
+        requests.Should().BeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(1);
+        mock.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        mock.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        mock.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+        DotnetupConfig.Exists().Should().BeFalse();
+    }
+
     // ── ResolveDefaultMigrations ──
 
     [TestMethod]
@@ -250,5 +331,19 @@ public class InitWorkflowTests : IDisposable
         InitWorkflows.DisplayEnvironmentSetupProgress(console);
 
         output.ToString().Should().Contain("Setting up your environment.");
+    }
+
+    private T RunFromTempDirectory<T>(Func<T> action)
+    {
+        string originalCurrentDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+            return action();
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalCurrentDirectory;
+        }
     }
 }
