@@ -7,12 +7,19 @@ ms.date: 08/11/2026
 
 # dotnetup environment configuration
 
-Dotnetup can configure the environment to make the .NET SDKs and Runtimes it installs available.  It does this by setting the following environment variables:
+Dotnetup can configure the environment to make the .NET SDKs and Runtimes it
+installs available.  It does this by setting the following environment
+variables:
 
-- **`PATH`**: Makes the `dotnet` command available on the command line.  Dev tools such as Visual Studio or C# Dev Kit also use the `PATH` to locate .NET SDKs and Runtimes.
-- **`DOTNET_ROOT`**: Tells framework-dependent application executables where to find a .NET installation and its shared runtimes.
+- **`PATH`**: Makes the `dotnet` command available on the command line.  Dev
+  tools such as Visual Studio or C# Dev Kit also use the `PATH` to locate .NET
+  SDKs and Runtimes.
+- **`DOTNET_ROOT`**: Tells framework-dependent application executables where to
+  find a .NET installation and its shared runtimes.
 
-Dotnetup supports different access modes which control where these environment variables are set.  You can choose an access mode in the initial dotnetup setup or later with the `dotnetup env` command.
+Dotnetup supports different access modes which control where these environment
+variables are set.  You can choose an access mode in the initial dotnetup setup
+or later with the `dotnetup env` command.
 
 | Access Mode | Behavior |
 | --- | --- |
@@ -20,21 +27,49 @@ Dotnetup supports different access modes which control where these environment v
 | `shell` | Modifies the shell profile to set these environment variables. Processes started from that shell use the .NET SDKs and Runtimes installed by dotnetup. |
 | `everywhere` | Modifies the system `PATH` and sets the user-level `DOTNET_ROOT` environment variable. Only available on Windows. |
 
-By default, dotnetup also adds itself to the `PATH`, regardless of the access mode setting.  This can be controlled with `dotnetup env set --dotnetup-on-path <true|false>`.
+By default, dotnetup also adds itself to the `PATH`, regardless of the access
+mode setting.  This can be controlled with
+`dotnetup env set --dotnetup-on-path <true|false>`.
 
 ## Everywhere mode considerations
 
-Everywhere mode is the default on Windows so that SDKs and runtimes installed by dotnetup will be available from dev tools and from terminals using `cmd` as the shell.  However, there are some things to be aware of, primarily around how it interacts with machine-wide installations of the .NET SDK and Runtime.
+Everywhere mode is the default on Windows so that SDKs and runtimes installed
+by dotnetup will be available from dev tools and from terminals using `cmd` as
+the shell.  However, there are some things to be aware of, primarily around how
+it interacts with machine-wide installations of the .NET SDK and Runtime.
 
-Machine-wide installations of .NET are located under the Program Files folder.  They can be installed with installers that can be downloaded from the .NET downloads page.  Visual Studio installs machine-wide installations of the .NET SDK and Runtime, and installers for framework-dependent applications may also install the .NET Runtime they depend on in the machine-wide location.
+Machine-wide installations of .NET are located under the Program Files folder.
+They can be installed with installers that can be downloaded from the .NET
+downloads page.  Visual Studio installs machine-wide installations of the .NET
+SDK and Runtime, and installers for framework-dependent applications may also
+install the .NET Runtime they depend on in the machine-wide location.
 
-In everywhere mode, the user-local dotnetup-managed .NET installation root will override the machine-wide .NET installation root.  This means that .NET SDKs and Runtimes installed in Program Files will not be available.  Projects that depend on those SDKs will fail to build if a matching SDK is not installed.  If a matching runtime is not installed, framework-dependent applications will fail to launch with an error that says "You must install or update .NET to run this application."
+In everywhere mode, the user-local dotnetup-managed .NET installation root will
+override the machine-wide .NET installation root.  This means that .NET SDKs
+and Runtimes installed in Program Files will not be available.  Projects that
+depend on those SDKs will fail to build if a matching SDK is not installed.  If
+a matching runtime is not installed, framework-dependent applications will fail
+to launch with an error that says "You must install or update .NET to run this
+application."
 
-To avoid these failures, the initial dotnetup setup offers the option to migrate existing system .NET SDK and Runtime installs.  You can also migrate them explicitly by running `dotnetup sdk install --migrate-from-system` for SDKs or `dotnetup runtime install --migrate-from-system` for runtimes.
+To avoid these failures, the initial dotnetup setup offers the option to
+migrate existing system .NET SDK and Runtime installs.  You can also migrate
+them explicitly by running `dotnetup sdk install --migrate-from-system` for
+SDKs or `dotnetup runtime install --migrate-from-system` for runtimes.
 
-Turning everywhere mode on or off requires modifying the system PATH, which requires elevation (i.e. a UAC prompt approval, or "Run as Administrator").  This is because the machine-wide installers for .NET add the Program Files .NET installation root to the system PATH, and the system PATH takes precedence over the user-level PATH when resolving commands.  So dotnetup needs to modify the system PATH to make the dotnetup .NET installation root take precedence.
+Turning everywhere mode on or off requires modifying the system PATH, which
+requires elevation (i.e. a UAC prompt approval, or "Run as Administrator").
+This is because the machine-wide installers for .NET add the Program Files .NET
+installation root to the system PATH, and the system PATH takes precedence over
+the user-level PATH when resolving commands.  So dotnetup needs to modify the
+system PATH to make the dotnetup .NET installation root take precedence.
 
-Because the system PATH applies to all users, these changes can impact other users.  The path that is added to the system PATH is by default under the user's local AppData folder.  This won't normally be accessible to other users so it wouldn't affect which version of `dotnet` is resolved.  However, elevated processes (i.e. running as Administrator) would be able to read the path, and could end up unexpectedly resolving .NET SDKs or Runtimes from another user.
+Because the system PATH applies to all users, these changes can impact other
+users.  The path that is added to the system PATH is by default under the
+user's local AppData folder.  This won't normally be accessible to other users
+so it wouldn't affect which version of `dotnet` is resolved.  However, elevated
+processes (i.e. running as Administrator) would be able to read the path, and
+could end up unexpectedly resolving .NET SDKs or Runtimes from another user.
 
 ## Supported shells
 
