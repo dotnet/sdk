@@ -11,7 +11,7 @@ namespace dotnet.Tests.CommandTests.Test;
 public class FileArtifactMessagesSerializerTests
 {
     [TestMethod]
-    public void RoundTrip_PreservesArtifactKind()
+    public void RoundTrip_PreservesArtifactKindAndInputProvenance()
     {
         var original = new FileArtifactMessages(
             ExecutionId: "exec-1",
@@ -25,7 +25,8 @@ public class FileArtifactMessagesSerializerTests
                     TestUid: null,
                     TestDisplayName: null,
                     SessionUid: "session-1",
-                    Kind: "trx"),
+                    Kind: "trx",
+                    InputArtifactPaths: ["/repo/TestResults/first.trx", "/repo/TestResults/second.trx"]),
             ]);
 
         var serializer = new FileArtifactMessagesSerializer();
@@ -37,5 +38,7 @@ public class FileArtifactMessagesSerializerTests
 
         roundTripped.FileArtifacts.Should().ContainSingle();
         roundTripped.FileArtifacts[0].Kind.Should().Be("trx");
+        roundTripped.FileArtifacts[0].InputArtifactPaths.Should()
+            .Equal("/repo/TestResults/first.trx", "/repo/TestResults/second.trx");
     }
 }

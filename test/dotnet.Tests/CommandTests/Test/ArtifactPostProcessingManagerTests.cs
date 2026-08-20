@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text;
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
@@ -106,6 +107,36 @@ public class ArtifactPostProcessingManagerTests
         output.Should().NotContain("tagged-second.xml");
         output.Should().NotContain("legacy-first.xml");
         output.Should().NotContain("legacy-second.xml");
+    }
+
+    [TestMethod]
+    public void ApplyOutputs_WithInputProvenance_RemovesOnlyExactConsumedInputs()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        ArtifactPostProcessingArtifact first = CreateArtifact("first.coverage", "microsoft.codecoverage");
+        ArtifactPostProcessingArtifact second = CreateArtifact("second.coverage", "microsoft.codecoverage");
+        ArtifactPostProcessingApplication application = CreateApplication();
+        var group = new ArtifactPostProcessingGroup(
+            "microsoft.codecoverage",
+            IsKind: true,
+            [first, second],
+            [application]);
+        var job = new ArtifactPostProcessingJob(application, [group]);
+        reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", "execution-1", null, first.Path);
+        reporter.ArtifactAdded(false, "B.dll", "net10.0", "x64", "execution-2", null, second.Path);
+        ArtifactPostProcessingArtifact converted = CreateArtifact(
+            "coverage.cobertura.xml",
+            "cobertura",
+            inputArtifactPaths: [first.Path]);
+
+        ArtifactPostProcessingManager.ApplyOutputs(reporter, job, [converted]);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        output.Should().Contain("coverage.cobertura.xml");
+        output.Should().NotContain("first.coverage");
+        output.Should().Contain("second.coverage");
     }
 
     [TestMethod]
@@ -220,8 +251,7 @@ public class ArtifactPostProcessingManagerTests
         => MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
             CreateTestOptions(),
             noArtifactPostProcessingRequested: false,
-            cancellationRequested: false,
-            TestRunCancellationReason.None).Should().BeTrue();
+            cancellationRequested: false).Should().BeTrue();
 
     [TestMethod]
     public void ShouldPostProcessArtifacts_HelpOrDiscovery_MergesNothing()
@@ -229,14 +259,12 @@ public class ArtifactPostProcessingManagerTests
         MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
             CreateTestOptions(isHelp: true),
             noArtifactPostProcessingRequested: false,
-            cancellationRequested: false,
-            TestRunCancellationReason.None).Should().BeFalse("help prints usage and produces no artifacts");
+            cancellationRequested: false).Should().BeFalse("help prints usage and produces no artifacts");
 
         MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
             CreateTestOptions(isDiscovery: true),
             noArtifactPostProcessingRequested: false,
-            cancellationRequested: false,
-            TestRunCancellationReason.None).Should().BeFalse("discovery runs no tests and produces no artifacts");
+            cancellationRequested: false).Should().BeFalse("discovery runs no tests and produces no artifacts");
     }
 
     [TestMethod]
@@ -244,31 +272,60 @@ public class ArtifactPostProcessingManagerTests
         => MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
             CreateTestOptions(),
             noArtifactPostProcessingRequested: true,
-            cancellationRequested: false,
-            TestRunCancellationReason.None).Should().BeFalse();
+            cancellationRequested: false).Should().BeFalse();
 
     [TestMethod]
-    public void ShouldPostProcessArtifacts_TruncatedRun_MergesNothing()
+    public void ShouldPostProcessArtifacts_CtrlC_MergesNothing()
+        => MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
+            CreateTestOptions(),
+            noArtifactPostProcessingRequested: false,
+            cancellationRequested: true).Should().BeFalse("Ctrl+C is an unconditional user cancellation");
+
+    [TestMethod]
+    [DataRow((int)TestRunCancellationReason.MaximumFailedTests, "maximumFailedTests")]
+    [DataRow((int)TestRunCancellationReason.Timeout, "timeout")]
+    public void WriteManifest_PolicyTruncatedRun_WritesTruncationReason(
+        int cancellationReason,
+        string expectedTruncationReason)
     {
-        // Merging the artifacts of a run that was cut short would hide the truncation behind one
-        // authoritative-looking report, so every way of cutting a run short has to skip the merge.
-        MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
-            CreateTestOptions(),
-            noArtifactPostProcessingRequested: false,
-            cancellationRequested: true,
-            TestRunCancellationReason.None).Should().BeFalse("Ctrl+C leaves a truncated run");
+        string manifestPath = Path.Combine(Path.GetTempPath(), $"manifest-{Guid.NewGuid():N}.json");
+        try
+        {
+            ArtifactPostProcessingManager.WriteManifest(
+                manifestPath,
+                "/results",
+                [CreateArtifact("first.summary", "example.summary")],
+                (TestRunCancellationReason)cancellationReason);
 
-        MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
-            CreateTestOptions(),
-            noArtifactPostProcessingRequested: false,
-            cancellationRequested: false,
-            TestRunCancellationReason.MaximumFailedTests).Should().BeFalse("--maximum-failed-tests leaves a truncated run");
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            manifest.RootElement.GetProperty("truncationReason").GetString()
+                .Should().Be(expectedTruncationReason);
+        }
+        finally
+        {
+            File.Delete(manifestPath);
+        }
+    }
 
-        MicrosoftTestingPlatformTestCommand.ShouldPostProcessArtifacts(
-            CreateTestOptions(),
-            noArtifactPostProcessingRequested: false,
-            cancellationRequested: false,
-            TestRunCancellationReason.Timeout).Should().BeFalse("--timeout leaves a truncated run");
+    [TestMethod]
+    public void WriteManifest_CompletedRun_OmitsTruncationReason()
+    {
+        string manifestPath = Path.Combine(Path.GetTempPath(), $"manifest-{Guid.NewGuid():N}.json");
+        try
+        {
+            ArtifactPostProcessingManager.WriteManifest(
+                manifestPath,
+                "/results",
+                [CreateArtifact("first.trx", "microsoft.testing.trx")],
+                TestRunCancellationReason.None);
+
+            using JsonDocument manifest = JsonDocument.Parse(File.ReadAllText(manifestPath));
+            manifest.RootElement.TryGetProperty("truncationReason", out _).Should().BeFalse();
+        }
+        finally
+        {
+            File.Delete(manifestPath);
+        }
     }
 
     private static TestOptions CreateTestOptions(bool isHelp = false, bool isDiscovery = false)
@@ -373,6 +430,8 @@ public class ArtifactPostProcessingManagerTests
             "net10.0",
             "x64",
             new HashSet<string>(StringComparer.Ordinal) { "microsoft.testing.trx", "microsoft.codecoverage" },
+            new HashSet<string>(StringComparer.Ordinal),
+            new HashSet<string>(StringComparer.Ordinal),
             new HashSet<string>(StringComparer.Ordinal));
         return new ArtifactPostProcessingJob(
             application,
@@ -391,7 +450,11 @@ public class ArtifactPostProcessingManagerTests
         ArtifactPostProcessingManager manager = CreateManagerWithMergeableArtifacts("first\0.trx", "second\0.trx");
         using var ctrlC = CreateCancellationManager();
 
-        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC);
+        await manager.ExecuteAsync(
+            CreateBuildOptions(),
+            reporter,
+            ctrlC,
+            TestRunCancellationReason.None);
         reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
 
         console.GetOutput().Should().Contain(
@@ -424,7 +487,11 @@ public class ArtifactPostProcessingManagerTests
 
         try
         {
-            await manager.ExecuteAsync(CreateBuildOptions(resultsDirectory), reporter, ctrlC);
+            await manager.ExecuteAsync(
+                CreateBuildOptions(resultsDirectory),
+                reporter,
+                ctrlC,
+                TestRunCancellationReason.None);
 
             Directory.Exists(resultsDirectory).Should().BeFalse(
                 "a cancelled run must not start the jobs it planned");
@@ -449,7 +516,11 @@ public class ArtifactPostProcessingManagerTests
             "second.trx");
         using var ctrlC = CreateCancellationManager();
 
-        await manager.ExecuteAsync(CreateBuildOptions(), reporter, ctrlC);
+        await manager.ExecuteAsync(
+            CreateBuildOptions(),
+            reporter,
+            ctrlC,
+            TestRunCancellationReason.None);
 
         console.GetOutput().Should().NotContain(CliCommandStrings.ArtifactPostProcessingStarted);
     }
@@ -558,6 +629,8 @@ public class ArtifactPostProcessingManagerTests
             "net10.0",
             "x64",
             new HashSet<string>(StringComparer.Ordinal) { "microsoft.testing.trx", "microsoft.codecoverage" },
+            new HashSet<string>(StringComparer.Ordinal),
+            new HashSet<string>(StringComparer.Ordinal),
             new HashSet<string>(StringComparer.Ordinal));
     }
 
@@ -572,6 +645,16 @@ public class ArtifactPostProcessingManagerTests
             DotnetRootArchVariableName: null,
             EnvironmentVariables: new Dictionary<string, string>());
 
-    private static ArtifactPostProcessingArtifact CreateArtifact(string path, string? kind)
-        => new(path, kind, "A.dll", "net10.0", "x64", Guid.NewGuid().ToString("N"));
+    private static ArtifactPostProcessingArtifact CreateArtifact(
+        string path,
+        string? kind,
+        IReadOnlyList<string>? inputArtifactPaths = null)
+        => new(
+            path,
+            kind,
+            "A.dll",
+            "net10.0",
+            "x64",
+            Guid.NewGuid().ToString("N"),
+            inputArtifactPaths);
 }
