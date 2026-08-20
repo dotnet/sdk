@@ -351,7 +351,7 @@ internal class WorkloadAdvertisingManifestUpdater(
         try
         {
             var currentVersion = NuGetVersion.Parse(_workloadResolver.GetManifestVersion(manifest.ToString()));
-            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand));
+            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand), _packageSourceLocation);
             return latestVersion > currentVersion;
         }
         catch (Exception)

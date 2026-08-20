@@ -3,9 +3,17 @@
 
 #nullable disable
 
+using Microsoft.DotNet.Cli.Commands.Tool.Search;
+using NuGet.Configuration;
+
 namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal interface INugetToolSearchApiRequest
 {
-    Task<string> GetResult(NugetSearchApiParameter nugetSearchApiParameter);
+    /// <summary>
+    /// Queries the given source using NuGet's package search resource.
+    /// </summary>
+    Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
+        NugetSearchApiParameter nugetSearchApiParameter,
+        PackageSource source);
 }

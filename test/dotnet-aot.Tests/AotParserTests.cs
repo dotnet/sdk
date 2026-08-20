@@ -404,10 +404,9 @@ public partial class AotParserTests
     [DataRow("tool list --local")]
     [DataRow("tool run mytool")]
     [DataRow("tool uninstall mypackage")]
-    [DataRow("tool search mysearchterm")]
     public void ParseAotToolCommand_HasNoErrors(string commandLine)
     {
-        // The AOT-capable `tool` subcommands (local list/uninstall, run, search) parse cleanly
+        // The AOT-capable `tool` subcommands (local list/uninstall and run) parse cleanly
         // because their real implementations are linked into the AOT CLI.
         var result = Parser.Parse(commandLine.Split(' '));
         Assert.IsEmpty(result.Errors);
@@ -435,6 +434,7 @@ public partial class AotParserTests
     [DataRow("tool update mypackage")]               // update is not AOT-capable
     [DataRow("tool restore")]                        // restore is not AOT-capable
     [DataRow("tool execute dotnetsay")]              // execute is not AOT-capable
+    [DataRow("tool search mysearchterm")]             // search uses NuGet.Protocol
     public void InvokeManagedOnlyToolCommand_FallsBackToManaged(string commandLine)
     {
         // The global/tool-path variants and install/update/restore depend on NuGet package

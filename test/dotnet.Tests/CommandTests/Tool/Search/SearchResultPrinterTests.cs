@@ -6,6 +6,7 @@
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.ToolPackage;
+using NuGet.Configuration;
 
 namespace dotnet.Tests.ToolSearchTests
 {
@@ -13,6 +14,7 @@ namespace dotnet.Tests.ToolSearchTests
     public class SearchResultPrinterTests
     {
         private readonly BufferedReporter _reporter;
+        private readonly BufferedReporter _errorReporter;
         private readonly SearchResultPrinter _searchResultPrinter;
         private readonly SearchResultPackage _filledSearchResultPackage;
         private readonly SearchResultPackage _mostEmptyToCheckNullException;
@@ -20,7 +22,8 @@ namespace dotnet.Tests.ToolSearchTests
         public SearchResultPrinterTests()
         {
             _reporter = new BufferedReporter();
-            _searchResultPrinter = new SearchResultPrinter(_reporter);
+            _errorReporter = new BufferedReporter();
+            _searchResultPrinter = new SearchResultPrinter(_reporter, _errorReporter);
 
             _filledSearchResultPackage = new SearchResultPackage(
                 new PackageId("my.tool"),
@@ -111,6 +114,53 @@ namespace dotnet.Tests.ToolSearchTests
             _searchResultPrinter.Print(true, searchResultPackages);
             _reporter.Lines.Count.Should().Be(1);
             _reporter.Lines.Should().Contain(CliCommandStrings.NoResult);
+        }
+
+        [TestMethod]
+        public void PrintSourceHeadingWritesTheSourceUrlToTheReporter()
+        {
+            var source = new PackageSource("https://contoso.example/v3/index.json");
+
+            _searchResultPrinter.PrintSourceHeading(source);
+
+            _reporter.Lines.Should().ContainSingle(l => l.Contains(source.Source));
+            _errorReporter.Lines.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void PrintSourceFailureWritesTheHeadingAndMessageToTheErrorReporter()
+        {
+            var source = new PackageSource("https://contoso.example/v3/index.json");
+            const string failureMessage = "Something went wrong contacting the source.";
+
+            _searchResultPrinter.PrintSourceFailure(source, failureMessage);
+
+            _errorReporter.Lines.Should().Contain(l => l.Contains(source.Source));
+            _errorReporter.Lines.Should().Contain(failureMessage);
+            _reporter.Lines.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void PrintInvalidSourceWritesToTheErrorReporter()
+        {
+            const string invalidSource = "not a valid source";
+
+            _searchResultPrinter.PrintInvalidSource(invalidSource);
+
+            _errorReporter.Lines.Should().ContainSingle(l => l.Contains(invalidSource));
+            _reporter.Lines.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void WhenErrorReporterIsNotProvidedItDefaultsToReporterError()
+        {
+            var printer = new SearchResultPrinter(_reporter);
+            var source = new PackageSource("https://contoso.example/v3/index.json");
+
+            // Should not throw even though no errorReporter was explicitly supplied;
+            // it falls back to Reporter.Error internally.
+            Action a = () => printer.PrintSourceFailure(source, "boom");
+            a.Should().NotThrow();
         }
     }
 }

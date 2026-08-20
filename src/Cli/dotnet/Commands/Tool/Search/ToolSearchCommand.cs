@@ -6,33 +6,57 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Microsoft.DotNet.Cli.Utils;
+using NuGet.Configuration;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 internal sealed class ToolSearchCommand(
     ParseResult result,
-    INugetToolSearchApiRequest nugetToolSearchApiRequest = null)
+    INugetToolSearchApiRequest nugetToolSearchApiRequest = null,
+    string currentWorkingDirectory = null)
     : CommandBase<ToolSearchCommandDefinition>(result)
 {
     private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
+    private readonly string _currentWorkingDirectory = currentWorkingDirectory;
     private readonly SearchResultPrinter _searchResultPrinter = new(Reporter.Output);
 
     public override int Execute()
     {
         var isDetailed = _parseResult.GetValue(Definition.DetailOption);
-        if (!PathUtility.CheckForNuGetInNuGetConfig())
+
+        NuGetSourceConfiguration sourceConfiguration = NuGetSourceConfiguration.Load(
+            nugetConfig: _parseResult.GetValue(Definition.ConfigOption),
+            sourceFeedOverrides: _parseResult.GetValue(Definition.SourceOption),
+            additionalSourceFeeds: _parseResult.GetValue(Definition.AddSourceOption),
+            basePath: _currentWorkingDirectory,
+            invalidSource: _searchResultPrinter.PrintInvalidSource);
+
+        if (sourceConfiguration.PackageSources.Count == 0)
         {
-            Reporter.Output.WriteLine(CliCommandStrings.NeedNuGetInConfig);
-            return 0;
+            _searchResultPrinter.PrintNoSourcesConfigured();
+            return 1;
+        }
+        NugetSearchApiParameter nugetSearchApiParameter = GetNugetSearchApiParameter();
+        int successCount = 0;
+
+        foreach (PackageSource source in sourceConfiguration.PackageSources)
+        {
+            try
+            {
+                IReadOnlyCollection<SearchResultPackage> searchResultPackages =
+                    _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter, source).GetAwaiter().GetResult();
+
+                _searchResultPrinter.PrintSourceHeading(source);
+                _searchResultPrinter.Print(isDetailed, searchResultPackages);
+                successCount++;
+            }
+            catch (NugetSearchApiRequestException e)
+            {
+                _searchResultPrinter.PrintSourceFailure(source, e.Message);
+            }
         }
 
-        IReadOnlyCollection<SearchResultPackage> searchResultPackages =
-            NugetSearchApiResultDeserializer.Deserialize(
-                _nugetToolSearchApiRequest.GetResult(GetNugetSearchApiParameter()).GetAwaiter().GetResult());
-
-        _searchResultPrinter.Print(isDetailed, searchResultPackages);
-
-        return 0;
+        return successCount > 0 ? 0 : 1;
     }
 
     internal NugetSearchApiParameter GetNugetSearchApiParameter()

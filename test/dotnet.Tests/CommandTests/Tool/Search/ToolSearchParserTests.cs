@@ -33,5 +33,87 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.GetValue(definition.TakeOption).Should().Be("4");
             result.GetValue(definition.PrereleaseOption).Should().Be(true);
         }
+
+        [TestMethod]
+        public void ToolSearchParserCanGetConfigFileOption()
+        {
+            var result = Parser.Parse(@"dotnet tool search mytool --configfile C:\TestAssetLocalNugetFeed");
+
+            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
+        }
+
+        [TestMethod]
+        public void ToolSearchParserCanParseSourceOption()
+        {
+            const string expectedSourceValue = "TestSourceValue";
+
+            var result = Parser.Parse($"dotnet tool search mytool --source {expectedSourceValue}");
+
+            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.SourceOption).First().Should().Be(expectedSourceValue);
+        }
+
+        [TestMethod]
+        public void ToolSearchParserCanParseMultipleSourceOption()
+        {
+            const string expectedSourceValue1 = "TestSourceValue1";
+            const string expectedSourceValue2 = "TestSourceValue2";
+
+            var result =
+                Parser.Parse(
+                    $"dotnet tool search mytool " +
+                    $"--source {expectedSourceValue1} " +
+                    $"--source {expectedSourceValue2}");
+
+            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.SourceOption)[0].Should().Be(expectedSourceValue1);
+            result.GetRequiredValue(definition.SourceOption)[1].Should().Be(expectedSourceValue2);
+        }
+
+        [TestMethod]
+        public void ToolSearchParserCanParseAddSourceOption()
+        {
+            const string expectedSourceValue = "TestSourceValue";
+
+            var result = Parser.Parse($"dotnet tool search mytool --add-source {expectedSourceValue}");
+
+            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.AddSourceOption).First().Should().Be(expectedSourceValue);
+        }
+
+        [TestMethod]
+        public void ToolSearchParserCanParseMultipleAddSourceOption()
+        {
+            const string expectedSourceValue1 = "TestSourceValue1";
+            const string expectedSourceValue2 = "TestSourceValue2";
+
+            var result =
+                Parser.Parse(
+                    $"dotnet tool search mytool " +
+                    $"--add-source {expectedSourceValue1} " +
+                    $"--add-source {expectedSourceValue2}");
+
+            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.AddSourceOption)[0].Should().Be(expectedSourceValue1);
+            result.GetRequiredValue(definition.AddSourceOption)[1].Should().Be(expectedSourceValue2);
+        }
+
+        [TestMethod]
+        public void ToolSearchParserCanParseSourceAndAddSourceTogether()
+        {
+            const string expectedSourceValue = "TestSourceValue";
+            const string expectedAddSourceValue = "TestAddSourceValue";
+
+            var result =
+                Parser.Parse(
+                    $"dotnet tool search mytool " +
+                    $"--source {expectedSourceValue} " +
+                    $"--add-source {expectedAddSourceValue}");
+
+            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            result.GetRequiredValue(definition.SourceOption).First().Should().Be(expectedSourceValue);
+            result.GetRequiredValue(definition.AddSourceOption).First().Should().Be(expectedAddSourceValue);
+        }
     }
 }

@@ -3568,6 +3568,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">在 nuget.org 中搜索 dotnet 工具</target>
         <note />
       </trans-unit>
+      <trans-unit id="ToolSearchNoSourcesConfigured">
+        <source>No NuGet package sources are configured or enabled.</source>
+        <target state="new">No NuGet package sources are configured or enabled.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">
         <source>Include pre-release packages.</source>
         <target state="translated">包括预发行包。</target>
