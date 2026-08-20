@@ -89,6 +89,7 @@ internal sealed class ProjectLauncher(
 
         return await runningProjectsManager.TrackRunningProjectAsync(
             projectNode,
+            appModel.StaticAssetProject,
             projectOptions,
             clients,
             clientLogger,

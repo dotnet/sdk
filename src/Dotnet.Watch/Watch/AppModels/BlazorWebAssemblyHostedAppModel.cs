@@ -18,6 +18,7 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
     : WebApplicationAppModel(context)
 {
     public override ProjectGraphNode LaunchingProject => serverProject;
+    public override ProjectGraphNode StaticAssetProject => clientProject;
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
 
