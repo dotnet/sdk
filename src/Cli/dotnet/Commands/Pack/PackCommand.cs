@@ -121,6 +121,9 @@ public class PackCommand(
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
 
+        if (parseResult.GetValue(definition.IncludeSymbolsOption))
+            packArgs.Symbols = true;
+
         var configuration = parseResult.GetValue(definition.ConfigurationOption) ?? "Debug";
         packArgs.Properties["configuration"] = configuration;
 

@@ -44,6 +44,7 @@ jobs:
             branch=update-man-page-$date
             git checkout -b $branch
             git commit -m "$title"
+            gh auth setup-git
             git push -u origin $branch --force
             gh pr create --base release/10.0.1xx --head $branch --title "$title" --body "$body"
           fi

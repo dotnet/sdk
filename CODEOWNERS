@@ -12,6 +12,13 @@
 /src/Cli/ @dotnet/dotnet-cli
 /test/dotnet.Tests/ @dotnet/dotnet-cli
 
+# Area-run-file
+/src/Cli/Microsoft.DotNet.FileBasedPrograms/ @dotnet/run-file
+/src/Cli/dotnet/Commands/Run/ @dotnet/run-file
+/src/Cli/dotnet/Commands/Project/Convert/ @dotnet/run-file
+/test/dotnet.Tests/CommandTests/Run/ @dotnet/run-file
+/test/dotnet.Tests/CommandTests/Project/Convert/ @dotnet/run-file
+
 # Area-NetSDK
 /src/Tasks/Microsoft.NET.Build.Tasks/ @dotnet/dotnet-cli
 /test/Microsoft.NET.Build.Tests/ @dotnet/dotnet-cli

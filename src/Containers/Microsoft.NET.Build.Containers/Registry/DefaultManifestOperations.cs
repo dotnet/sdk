@@ -24,6 +24,19 @@ internal class DefaultManifestOperations : IManifestOperations
         _registryName = registryName;
     }
 
+    public async Task<bool> ExistsAsync(string repositoryName, string reference, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        using HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Head, new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}")).AcceptManifestFormats();
+        using HttpResponseMessage response = await _client.SendAsync(request, cancellationToken).ConfigureAwait(false);
+        return response.StatusCode switch
+        {
+            HttpStatusCode.OK => true,
+            _ when (int)response.StatusCode >= 500 => await LogAndThrowContainerHttpException<bool>(response, cancellationToken).ConfigureAwait(false),
+            _ => false,
+        };
+    }
+
     public async Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
