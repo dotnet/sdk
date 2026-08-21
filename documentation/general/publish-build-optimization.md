@@ -39,6 +39,7 @@ Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj)
 - **None of these files are used** by the AOT pipeline
 - **Optimization**: Replace `Build` with `Compile` (plus resource/satellite targets)
 - **Opt-out**: Set `UseAotOptimizedPublish=false` to restore full Build behavior
+- `UseAotOptimizedPublish` has no effect when `PublishAot` is not enabled
 
 Target chain for optimized AOT publish:
 ```
@@ -101,7 +102,8 @@ before publish. Instead, it runs only `Compile` (and resource/satellite assembly
   `BeforeTargets="Build"` / `AfterTargets="Build"`, they will not run.
   - **Workaround**: Attach your targets to `BeforeTargets="Publish"` / `AfterTargets="Publish"`,
     or to `BeforeTargets="Compile"` / `AfterTargets="Compile"` instead.
-- **PostBuildEvent**: Will not execute during AOT publish (consistent with `--no-build` behavior).
+- **PreBuildEvent / PostBuildEvent**: These will not execute during AOT publish (consistent
+  with `--no-build` behavior).
 - **Third-party NuGet Build hooks**: Targets from NuGet packages that hook into `Build` will be
   skipped (consistent with `--no-build` behavior).
 - **Output directory**: `bin\<config>\<tfm>\<rid>\` will no longer contain managed apphost,

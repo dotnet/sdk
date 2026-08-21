@@ -1429,6 +1429,27 @@ public class NativeLibraryClass
         }
 
         [TestMethod]
+        public void UseAotOptimizedPublish_does_not_skip_build_for_non_Aot_publish()
+        {
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NonAotOptimizedPublish", true);
+            testProject.AdditionalProperties["UseAotOptimizedPublish"] = "true";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject)
+                .WithProjectChanges(project =>
+                {
+                    project.Root.Add(XElement.Parse("""
+                        <Target Name="ConfirmBuildExecuted" AfterTargets="Build">
+                          <Message Importance="High" Text="Build target executed" />
+                        </Target>
+                        """));
+                });
+
+            new PublishCommand(testAsset)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("Build target executed");
+        }
+
+        [TestMethod]
         [RequiresMSBuildVersion("17.0.0.32901")]
         public void NativeAot_publish_does_not_produce_managed_build_output()
         {

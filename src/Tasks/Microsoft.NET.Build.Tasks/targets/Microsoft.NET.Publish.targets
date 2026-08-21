@@ -155,7 +155,8 @@ Copyright (c) .NET Foundation. All rights reserved.
          pack files) in the output directory that would confuse users and automation.
          Set UseAotOptimizedPublish=false to restore the previous behavior of running full Build. -->
     <UseAotOptimizedPublish Condition="'$(UseAotOptimizedPublish)' == '' and '$(PublishAot)' == 'true'">true</UseAotOptimizedPublish>
-    <_BeforePublishAotBuildTargets Condition="'$(UseAotOptimizedPublish)' == 'true'">
+    <_UseAotOptimizedPublish Condition="'$(PublishAot)' == 'true' and '$(UseAotOptimizedPublish)' == 'true'">true</_UseAotOptimizedPublish>
+    <_BeforePublishAotBuildTargets Condition="'$(_UseAotOptimizedPublish)' == 'true'">
       BuildOnlySettings;
       PrepareForBuild;
       PrepareResources;
@@ -165,7 +166,7 @@ Copyright (c) .NET Foundation. All rights reserved.
   </PropertyGroup>
 
   <Target Name="_PublishBuildAlternative"
-          Condition="'$(NoBuild)' != 'true' and '$(UseAotOptimizedPublish)' != 'true'"
+          Condition="'$(NoBuild)' != 'true' and '$(_UseAotOptimizedPublish)' != 'true'"
           DependsOnTargets="Build;$(_CorePublishTargets)" />
 
   <!-- $(_AdditionalAotBuildAlternativeTargets) is an extension point for SDKs (e.g. Static Web Assets)
@@ -173,7 +174,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        It runs after Compile so contributors can rely on the intermediate assembly, and before the core
        publish targets that consume its outputs. -->
   <Target Name="_PublishAotBuildAlternative"
-          Condition="'$(NoBuild)' != 'true' and '$(UseAotOptimizedPublish)' == 'true'"
+          Condition="'$(NoBuild)' != 'true' and '$(_UseAotOptimizedPublish)' == 'true'"
           DependsOnTargets="$(_BeforePublishAotBuildTargets);$(_AdditionalAotBuildAlternativeTargets);$(_CorePublishTargets)" />
 
   <Target Name="_PublishNoBuildAlternative"
