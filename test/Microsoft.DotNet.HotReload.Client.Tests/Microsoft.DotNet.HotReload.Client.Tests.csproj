@@ -38,4 +38,9 @@
   <Import Project="..\..\src\Dotnet.Watch\HotReloadClient\Microsoft.DotNet.HotReload.Client.projitems" Label="Shared" />
   <Import Project="..\..\src\Dotnet.Watch\HotReloadAgent.PipeRpc\Microsoft.DotNet.HotReload.Agent.PipeRpc.projitems" Label="Shared" />
   <Import Project="..\..\src\Dotnet.Watch\HotReloadAgent.Data\Microsoft.DotNet.HotReload.Agent.Data.projitems" Label="Shared" />
+
+  <ItemGroup>
+    <PackageReference Include="Combinatorial.MSTest" />
+    <Using Include="Combinatorial.MSTest" />
+  </ItemGroup>
 </Project>
