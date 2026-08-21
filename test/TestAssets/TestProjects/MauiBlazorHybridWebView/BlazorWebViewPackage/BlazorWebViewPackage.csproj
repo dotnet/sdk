@@ -1,0 +1,52 @@
+<!--
+  Simulates the Microsoft.AspNetCore.Components.WebView package for the MAUI Blazor Hybrid static
+  web assets scenario in https://github.com/dotnet/sdk/issues/54779.
+
+  blazor.modules.json is modeled as a Framework asset (via StaticWebAssetFrameworkPattern), exactly
+  like Microsoft.AspNetCore.Components.WebAssembly ships its framework assets. It is materialized
+  once into the consuming project at build and becomes an ordinary project asset; the app's own
+  generated manifest then wins, with this manifest serving as the fallback when the app has no JS
+  modules. This is what avoids the two-`All`-assets collision on `_framework/blazor.modules.json`
+  that previously threw "Sequence contains more than one element" during publish.
+
+  The real package authoring lives in dotnet/aspnetcore (update this asset to match if it changes):
+    src/Components/WebView/WebView/src/Microsoft.AspNetCore.Components.WebView.csproj
+  See dotnet/aspnetcore#67374 for the package-side fix being tracked.
+
+  Two details that matter:
+   * Use StaticWebAssetBasePath '/' with the '_framework/' prefix IN the relative path (ship the
+     file under wwwroot/_framework/) so the path survives materialization to the consumer base
+     path '/'. A BasePath of '/_framework' would be rebased away during materialization.
+   * The framework pattern is matched against the relative path without fingerprint tokens.
+-->
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+
+    <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+    <StaticWebAssetFrameworkPattern>**/*.js;**/blazor.modules.json</StaticWebAssetFrameworkPattern>
+
+    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
+    <BlazorWebViewPackageVersion Condition="'$(BlazorWebViewPackageVersion)' == ''">1.0.0</BlazorWebViewPackageVersion>
+    <PackageVersion>$(BlazorWebViewPackageVersion)</PackageVersion>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="wwwroot\_framework\blazor.modules.json"
+      AssetTraitName="JSModule" AssetTraitValue="JSModuleManifest" />
+  </ItemGroup>
+
+  <!-- Pack the build props so the consuming project picks them up automatically. -->
+  <ItemGroup>
+    <None Include="build\**" Pack="true" PackagePath="build\" />
+    <None Include="build\**" Pack="true" PackagePath="buildTransitive\" />
+  </ItemGroup>
+
+</Project>

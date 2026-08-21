@@ -1,0 +1,14 @@
+<!--
+  Auto-imported by the consuming app via the package's build/ folder. Points the SDK's generated JS
+  module manifest at the BlazorWebView location and disables compression (BlazorWebView serves
+  assets from the local file system).
+
+  Mirrors the build props shipped by dotnet/aspnetcore:
+    src/Components/WebView/WebView/src/build/Microsoft.AspNetCore.Components.WebView.props
+-->
+<Project>
+  <PropertyGroup>
+    <JSModuleManifestRelativePath>_framework/blazor.modules.json</JSModuleManifestRelativePath>
+    <CompressionEnabled>false</CompressionEnabled>
+  </PropertyGroup>
+</Project>
