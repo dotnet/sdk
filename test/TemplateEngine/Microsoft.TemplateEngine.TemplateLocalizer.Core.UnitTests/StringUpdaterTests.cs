@@ -147,8 +147,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public async Task UnchangedFileShouldntBeOverwritten(bool fileStartsWithBom)
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);
@@ -255,8 +254,7 @@ namespace Microsoft.TemplateEngine.TemplateLocalizer.Core.UnitTests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public async Task BomPreambleIsPreserved(bool fileStartsWithBom)
         {
             CancellationTokenSource cts = new CancellationTokenSource(10000);

@@ -154,14 +154,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         }
 
         [TestMethod]
-        [DataRow(false, false, false)]
-        [DataRow(false, false, true)]
-        [DataRow(false, true, false)]
-        [DataRow(false, true, true)]
-        [DataRow(true, false, false)]
-        [DataRow(true, false, true)]
-        [DataRow(true, true, false)]
-        [DataRow(true, true, true)]
+        [CombinatorialData]
         public void VerifyWhitespaceHandlerConsumeWholeLine(bool trim, bool trimForward, bool trimBackward)
         {
             MockOperation o = new MockOperation(
@@ -187,10 +180,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
         }
 
         [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(true, true)]
+        [CombinatorialData]
         public void VerifyWhitespaceHandlerTrim(bool trimForward, bool trimBackward)
         {
             MockOperation o = new MockOperation(
