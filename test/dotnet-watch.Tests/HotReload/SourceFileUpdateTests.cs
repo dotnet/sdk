@@ -171,8 +171,7 @@ public class SourceFileUpdateTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task RenameSourceFile(bool useMove)
     {
         if (useMove)
@@ -234,8 +233,7 @@ public class SourceFileUpdateTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    [DataRow(true)]
-    [DataRow(false)]
+    [CombinatorialData]
     public async Task RenameDirectory(bool useMove)
     {
         Log("RenameSourceFile started");
