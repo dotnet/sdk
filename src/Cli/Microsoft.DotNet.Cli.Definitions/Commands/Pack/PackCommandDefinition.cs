@@ -61,6 +61,8 @@ internal sealed class PackCommandDefinition : Command
 
     public readonly Option<Utils.VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
 
+    public readonly Option<IEnumerable<string>> LoggerOption = CommonOptions.CreateLoggerOption();
+
     public readonly Option<string> ArtifactsPathOption = CommonOptions.CreateArtifactsPathOption();
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveMsBuildForwardOption();
     public readonly Option<string> VersionSuffixOption = CommonOptions.CreateVersionSuffixOption();
@@ -106,6 +108,7 @@ internal sealed class PackCommandDefinition : Command
         Options.Add(InteractiveOption);
         Options.Add(NoRestoreOption);
         Options.Add(VerbosityOption);
+        Options.Add(LoggerOption);
         Options.Add(VersionSuffixOption);
         Options.Add(VersionOption);
         Options.Add(ConfigurationOption);
