@@ -11,8 +11,7 @@ namespace Microsoft.NET.ToolPack.Tests
     public class GivenThatWeWantToPackAToolProjectWithComplexNugetDependency : SdkTest
     {
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void It_has_native_and_transitive_dependencies_dll(bool multiTarget)
         {
             TestAsset helloWorldAsset = TestAssetsManager
