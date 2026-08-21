@@ -21,7 +21,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                 var root = context.Tree.GetRoot(context.CancellationToken);
                 foreach (var trivia in root.GetLeadingTrivia())
                 {
-                    if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value))
+                    if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value, out _))
                     {
                         continue;
                     }

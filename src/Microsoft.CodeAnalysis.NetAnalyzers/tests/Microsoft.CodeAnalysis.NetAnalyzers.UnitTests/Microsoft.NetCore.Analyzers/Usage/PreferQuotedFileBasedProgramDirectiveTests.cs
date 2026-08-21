@@ -48,7 +48,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
-        public async Task PropertySpacesAroundSeparator_FixCollapsesAsync()
+        public async Task PropertySpacesAroundSeparator_FixPreservesWhitespaceAsync()
         {
             await new VerifyCS.Test
             {
@@ -57,7 +57,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     Sources =
                     {
                         ("Test0.cs", """
-                            #:property Prop = Value
+                            #:property    Prop = Value
                             class Program { static void Main() { } }
                             """),
                     },
@@ -68,7 +68,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     Sources =
                     {
                         ("Test0.cs", """
-                            #:property Prop=Value
+                            #:property    Prop = "Value"
                             class Program { static void Main() { } }
                             """),
                     },
@@ -149,7 +149,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         [TestMethod]
         [DataRow("sdk")]
         [DataRow("package")]
-        public async Task SpacesAroundNameVersionSeparator_FixCollapsesAsync(string kind)
+        public async Task SpacesAroundNameVersionSeparator_FixPreservesWhitespaceAsync(string kind)
         {
             await new VerifyCS.Test
             {
@@ -158,7 +158,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     Sources =
                     {
                         ("Test0.cs", $$"""
-                            #:{{kind}} First @ 1.0
+                            #:{{kind}}    First @ 1.0
                             class Program { static void Main() { } }
                             """),
                     },
@@ -169,7 +169,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     Sources =
                     {
                         ("Test0.cs", $$"""
-                            #:{{kind}} First@1.0
+                            #:{{kind}}    First @ "1.0"
                             class Program { static void Main() { } }
                             """),
                     },
@@ -190,7 +190,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     {
                         ("Test0.cs", """
                             #:property Description=Hello World
-                            #:project ../My Library
+                            #:project  ../My Library
                             class Program { static void Main() { } }
                             """),
                     },
@@ -206,7 +206,7 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
                     {
                         ("Test0.cs", """
                             #:property Description="Hello World"
-                            #:project "../My Library"
+                            #:project  "../My Library"
                             class Program { static void Main() { } }
                             """),
                     },

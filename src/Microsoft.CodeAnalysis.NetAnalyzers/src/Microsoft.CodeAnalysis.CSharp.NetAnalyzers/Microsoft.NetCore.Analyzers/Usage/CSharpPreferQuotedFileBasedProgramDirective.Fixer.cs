@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var trivia = root.FindTrivia(context.Span.Start);
-            if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value) ||
+            if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value, out _) ||
                 !FileBasedProgramDirectiveQuoting.TryGetQuotedForm(kind, value, out _))
             {
                 return;
@@ -38,10 +38,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
         protected override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
             var trivia = editor.OriginalRoot.FindTrivia(diagnostic.Location.SourceSpan.Start);
-            if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value) ||
+            if (!FileBasedProgramDirectiveQuoting.TryParse(trivia, out var kind, out var value, out var valueLeadingWhitespace) ||
                 !FileBasedProgramDirectiveQuoting.TryGetQuotedForm(kind, value, out var newValue) ||
                 trivia.GetStructure() is not { } structure ||
-                SyntaxFactory.ParseLeadingTrivia("#:" + kind + " " + newValue + "\n").FirstOrDefault().GetStructure() is not { } newStructure)
+                SyntaxFactory.ParseLeadingTrivia("#:" + kind + valueLeadingWhitespace + newValue + "\n").FirstOrDefault().GetStructure() is not { } newStructure)
             {
                 return Task.CompletedTask;
             }

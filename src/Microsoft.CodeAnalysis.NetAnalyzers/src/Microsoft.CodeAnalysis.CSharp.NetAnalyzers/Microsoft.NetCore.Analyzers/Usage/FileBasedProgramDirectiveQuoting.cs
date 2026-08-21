@@ -24,10 +24,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
         /// Extracts the directive kind (e.g. <c>property</c>) and its value text from a file-based program
         /// <c>#:</c> directive trivia. Returns <see langword="false"/> for any other trivia.
         /// </summary>
-        public static bool TryParse(SyntaxTrivia trivia, out string kind, out string value)
+        public static bool TryParse(SyntaxTrivia trivia, out string kind, out string value, out string valueLeadingWhitespace)
         {
             kind = string.Empty;
             value = string.Empty;
+            valueLeadingWhitespace = string.Empty;
 
             // '#:' directives are represented as directive trivia whose structure carries a single
             // string literal token holding the text after '#:'. Exclude the '#!' shebang explicitly.
@@ -63,7 +64,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             else
             {
                 kind = text.Substring(0, whitespaceIndex);
-                value = text.Substring(whitespaceIndex).TrimStart();
+                var valueWithLeadingWhitespace = text.Substring(whitespaceIndex);
+                value = valueWithLeadingWhitespace.TrimStart();
+                valueLeadingWhitespace = valueWithLeadingWhitespace.Substring(0, valueWithLeadingWhitespace.Length - value.Length);
             }
 
             return true;
@@ -129,7 +132,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
 
                 case "sdk":
                 case "package":
-                    return TryCollapseNameAndVersion(value, out newValue);
+                    return TryQuoteVersion(value, out newValue);
 
                 case "project":
                 case "ref":
@@ -159,12 +162,14 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                 return false;
             }
 
-            var innerValue = value.Substring(separatorIndex + 1).TrimStart();
-            newValue = name + "=" + QuoteIfNeeded(innerValue);
+            var valueAfterSeparator = value.Substring(separatorIndex + 1);
+            var innerValue = valueAfterSeparator.TrimStart();
+            var leadingWhitespace = valueAfterSeparator.Substring(0, valueAfterSeparator.Length - innerValue.Length);
+            newValue = value.Substring(0, separatorIndex + 1) + leadingWhitespace + SymbolDisplay.FormatLiteral(innerValue, quote: true);
             return true;
         }
 
-        private static bool TryCollapseNameAndVersion(string value, out string newValue)
+        private static bool TryQuoteVersion(string value, out string newValue)
         {
             newValue = value;
 
@@ -180,15 +185,16 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
                 return false;
             }
 
-            // The version follows '@'; the parser does not allow quoting there, so a version with internal
-            // whitespace has no valid quoted form and is left alone (it is a broken version anyway).
-            var version = value.Substring(separatorIndex + 1).TrimStart();
+            // A version with internal whitespace is already invalid and is left alone.
+            var valueAfterSeparator = value.Substring(separatorIndex + 1);
+            var version = valueAfterSeparator.TrimStart();
             if (version.Length == 0 || IndexOfWhitespace(version) >= 0)
             {
                 return false;
             }
 
-            newValue = name + "@" + version;
+            var leadingWhitespace = valueAfterSeparator.Substring(0, valueAfterSeparator.Length - version.Length);
+            newValue = value.Substring(0, separatorIndex + 1) + leadingWhitespace + SymbolDisplay.FormatLiteral(version, quote: true);
             return true;
         }
 
