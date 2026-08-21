@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections;
 using System.Runtime.CompilerServices;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Framework;
@@ -88,10 +89,9 @@ public sealed class ProjectInitializer
                     {
                         // we don't want to copy the MSBuild-reserved metadata, if any,
                         // so only use the custom metadata
-                        var customMetadata = item.CloneCustomMetadata();
-                        foreach (var key in customMetadata)
+                        foreach (DictionaryEntry metadata in item.CloneCustomMetadata())
                         {
-                            newItem.SetMetadataValue((string)key, customMetadata[key] as string);
+                            newItem.SetMetadataValue((string)metadata.Key, metadata.Value as string);
                         }
                     }
                 }
