@@ -142,8 +142,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void ItAssignsDiagnosticLevel(bool useAlias)
         {
             const string target1 = ".NETCoreApp,Version=v1.0";
