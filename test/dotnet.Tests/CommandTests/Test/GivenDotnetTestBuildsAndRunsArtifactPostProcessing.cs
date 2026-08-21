@@ -168,7 +168,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                         .Should()
                         .Pass();
 
-                    return Directory.GetFiles(testProjectDirectory, "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
+                    // Avoid hitting random paths with directories that include "bin", e.g. 4binkypz.fkl
+                    return Directory.GetFiles(Path.Combine(testProjectDirectory, "bin"), "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
                 });
 
         private void BuildDataCollectorNoMerge()
@@ -183,7 +184,8 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                             .Should()
                             .Pass();
 
-                return Directory.GetFiles(testProjectDirectory, "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
+                // Avoid hitting random paths with directories that include "bin", e.g. 4binkypz.fkl
+                return Directory.GetFiles(Path.Combine(testProjectDirectory, "bin"), "AttachmentProcessorDataCollector.dll", SearchOption.AllDirectories).Single(x => x.Contains("bin"));
             });
 
         private static string GetRunsetting(string directory)
