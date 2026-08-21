@@ -497,6 +497,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 {
                     if (analysisValue is PlatformMethodValue info)
                     {
+                        // A negated guard can exclude this platform entirely at the call site's minimum version.
+                        if (info.Negated && IsPlatformExcludedByCallsite(info, originalCsAttributes))
+                        {
+                            attributes.Remove(info.PlatformName);
+                            continue;
+                        }
+
                         if (attributes.TryGetValue(info.PlatformName, out var attribute))
                         {
                             if (info.Negated)
@@ -595,7 +602,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         {
                             // it is checking one exact platform, other unsupported should be suppressed
                             RemoveUnsupportsOnDifferentPlatforms(attributes, info.PlatformName);
-                            csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, null);
+                            if (IsPlatformSupportSuppressedByCallsite(info, attributes, originalAttributes, originalCsAttributes))
+                            {
+                                RemoveOtherSupportsOnDifferentPlatforms(attributes, info.PlatformName);
+                            }
+                            else
+                            {
+                                csAttributes = SetCallSiteSupportedAttribute(csAttributes, info, null);
+                            }
                         }
                     }
                 }
@@ -656,10 +670,33 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return true;
             }
 
+            // A call site without a minimum supported version for the platform cannot prove the branch unreachable,
+            // so 'SupportedFirst' being null must not exclude the platform.
+            static bool IsPlatformExcludedByCallsite(
+                PlatformMethodValue value,
+                SmallDictionary<string, Versions>? callsiteAttributes)
+                => callsiteAttributes != null &&
+                    callsiteAttributes.TryGetValue(value.PlatformName, out Versions? attributes) &&
+                    attributes.SupportedFirst != null &&
+                    attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version);
+
             static bool IsPlatformSupportWasSuppresed(PlatformMethodValue parentValue, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> originalAttributes)
                 => !parentValue.Negated && !attributes.ContainsKey(parentValue.PlatformName) &&
                     originalAttributes.TryGetValue(parentValue.PlatformName, out Versions? version) &&
                     parentValue.Version.IsGreaterThanOrEqualTo(version.SupportedFirst);
+
+            static bool IsPlatformSupportSuppressedByCallsite(
+                PlatformMethodValue value,
+                SmallDictionary<string, Versions> attributes,
+                SmallDictionary<string, Versions> originalAttributes,
+                SmallDictionary<string, Versions>? callsiteAttributes)
+                => !attributes.ContainsKey(value.PlatformName) &&
+                    originalAttributes.TryGetValue(value.PlatformName, out Versions? originalVersion) &&
+                    originalVersion.SupportedFirst != null &&
+                    callsiteAttributes != null &&
+                    callsiteAttributes.TryGetValue(value.PlatformName, out Versions? callsiteVersion) &&
+                    callsiteVersion.SupportedFirst != null &&
+                    callsiteVersion.SupportedFirst.IsGreaterThanOrEqualTo(originalVersion.SupportedFirst);
 
             static bool IsOnlySupportNeedsGuard(string platformName, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> csAttributes)
                  => csAttributes.TryGetValue(platformName, out var versions) &&
