@@ -61,6 +61,7 @@ internal static class AotRunCommand
             out string? entryPointFileFullPath,
             out string[]? applicationArguments,
             out IReadOnlyDictionary<string, string>? environmentVariables,
+            out string? workingDirectoryOverride,
             out string fallbackReason))
         {
             throw CreateManagedFallbackException(fallbackReason);
@@ -149,6 +150,7 @@ internal static class AotRunCommand
         {
             throw CreateManagedFallbackException("no eligible cached launch contract was found");
         }
+        workingDirectory = workingDirectoryOverride ?? workingDirectory;
 
         var launchEnvironment = new Dictionary<string, string?>(StringComparer.Ordinal);
         if (profileResult.Profile is not ExecutableLaunchProfile)
@@ -284,12 +286,14 @@ internal static class AotRunCommand
         [NotNullWhen(true)] out string? entryPointFileFullPath,
         [NotNullWhen(true)] out string[]? applicationArguments,
         [NotNullWhen(true)] out IReadOnlyDictionary<string, string>? environmentVariables,
+        out string? workingDirectoryOverride,
         out string fallbackReason)
     {
         noBuild = parseResult.HasOption(definition.NoBuildOption);
         entryPointFileFullPath = null;
         applicationArguments = null;
         environmentVariables = null;
+        workingDirectoryOverride = null;
         fallbackReason = string.Empty;
 
         if (GetUnsupportedOption(parseResult, definition) is { } unsupportedOption)
@@ -299,6 +303,21 @@ internal static class AotRunCommand
         }
 
         string[] parsedApplicationArguments = parseResult.GetValue(definition.ApplicationArguments) ?? [];
+        bool fileMode = parseResult.GetValue(definition.FileModeOption);
+        string? workingDirectory = parseResult.GetValue(definition.WorkingDirectoryOption);
+        if (workingDirectory is not null)
+        {
+            try
+            {
+                workingDirectoryOverride = Path.GetFullPath(workingDirectory, currentDirectory);
+            }
+            catch (Exception exception) when (exception is ArgumentException or NotSupportedException or SecurityException)
+            {
+                fallbackReason = "the working directory could not be normalized";
+                return false;
+            }
+        }
+
         if (!CommonRunHelpers.TrySplitApplicationArgumentsAtDoubleDash(
             parseResult,
             parsedApplicationArguments,
@@ -316,7 +335,14 @@ internal static class AotRunCommand
         }
 
         string? entryPointPath = parseResult.GetValue(definition.FileOption);
-        if (string.IsNullOrEmpty(entryPointPath))
+        if (fileMode)
+        {
+            (entryPointPath, applicationArguments) = CommonRunHelpers.ProcessFileModeArguments(
+                parsedApplicationArguments,
+                currentDirectory,
+                workingDirectoryOverride);
+        }
+        else if (string.IsNullOrEmpty(entryPointPath))
         {
             string? projectFilePath;
             try
@@ -359,7 +385,9 @@ internal static class AotRunCommand
 
         try
         {
-            entryPointFileFullPath = Path.GetFullPath(entryPointPath, currentDirectory);
+            entryPointFileFullPath = Path.GetFullPath(
+                entryPointPath,
+                fileMode ? workingDirectoryOverride ?? currentDirectory : currentDirectory);
         }
         catch (Exception exception) when (exception is ArgumentException or NotSupportedException or SecurityException)
         {
@@ -378,7 +406,7 @@ internal static class AotRunCommand
             return false;
         }
 
-        applicationArguments = argumentsAfterDoubleDash;
+        applicationArguments ??= argumentsAfterDoubleDash;
         environmentVariables = parseResult.GetValue(definition.EnvOption)
             ?? new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         fallbackReason = string.Empty;
@@ -391,6 +419,8 @@ internal static class AotRunCommand
             .FirstOrDefault(optionResult =>
                 !optionResult.Implicit
                 && optionResult.Option != definition.FileOption
+                && optionResult.Option != definition.FileModeOption
+                && optionResult.Option != definition.WorkingDirectoryOption
                 && optionResult.Option != definition.LaunchProfileOption
                 && optionResult.Option != definition.NoLaunchProfileOption
                 && optionResult.Option != definition.NoBuildOption

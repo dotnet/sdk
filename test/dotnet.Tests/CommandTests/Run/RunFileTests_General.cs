@@ -164,6 +164,129 @@ public sealed class RunFileTests_General : RunFileTestBase
                 """);
     }
 
+    [TestMethod]
+    [DataRow("Program.cs", false)]
+    [DataRow("app", true)]
+    public void FilePath_WithDnx_Args(string fileName, bool addShebang)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(
+            Path.Join(testInstance.Path, fileName),
+            addShebang ? $"#!/usr/bin/env dotnet{Environment.NewLine}{s_program}" : s_program);
+
+        string dnxPath = Path.Join(
+            Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            OperatingSystem.IsWindows() ? "dnx.cmd" : "dnx");
+
+        new RunExeCommand(Log, dnxPath, Path.Join(".", fileName), "arg0", "--version", "1.2.3", "--help", "--", "arg")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"""
+                echo args:arg0;--version;1.2.3;--help;--;arg
+                Hello from {Path.GetFileNameWithoutExtension(fileName)}
+                """);
+    }
+
+    [TestMethod]
+    public void FilePath_WithDnx_Help()
+    {
+        string dnxPath = Path.Join(
+            Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            OperatingSystem.IsWindows() ? "dnx.cmd" : "dnx");
+
+        new RunExeCommand(Log, dnxPath, "--help")
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("Run a file-based app or execute a tool package")
+            .And.HaveStdOutContaining("<FILE_OR_PACKAGE>")
+            .And.HaveStdOutContaining("Arguments forwarded to the file-based app or tool.");
+    }
+
+    [TestMethod]
+    public void FilePath_WithDnx_RequiresQualifiedPath()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var packageSource = Path.Join(testInstance.Path, "packages");
+        Directory.CreateDirectory(packageSource);
+
+        const string fileName = "DefinitelyNotARealToolPackage";
+        File.WriteAllText(
+            Path.Join(testInstance.Path, fileName),
+            """
+            #!/usr/bin/env dotnet
+            Console.WriteLine("file app ran");
+            """);
+
+        string dnxPath = Path.Join(
+            Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            OperatingSystem.IsWindows() ? "dnx.cmd" : "dnx");
+
+        new RunExeCommand(Log, dnxPath, fileName, "--version", "1.0.0", "--source", packageSource)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Fail()
+            .And.NotHaveStdOutContaining("file app ran");
+    }
+
+    [TestMethod]
+    public void FilePath_WithDnx_Context()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var workingDirectory = Path.Join(testInstance.Path, "working");
+        var sourceDirectory = Path.Join(testInstance.Path, "source");
+        Directory.CreateDirectory(workingDirectory);
+        Directory.CreateDirectory(sourceDirectory);
+
+        File.WriteAllText(
+            Path.Join(sourceDirectory, "global.json"),
+            $$"""{ "sdk": { "version": "{{SdkTestContext.Current.ToolsetUnderTest.SdkVersion}}", "rollForward": "disable" } }""");
+        File.WriteAllText(Path.Join(workingDirectory, "global.json"), """{ "sdk": { "version": "999.0.0" } }""");
+        File.WriteAllText(
+            Path.Join(sourceDirectory, "Directory.Build.props"),
+            """
+            <Project>
+              <PropertyGroup>
+                <DefineConstants>$(DefineConstants);SOURCE_DIRECTORY_BUILD_PROPS</DefineConstants>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(
+            Path.Join(sourceDirectory, "app"),
+            $$"""
+            #!/usr/bin/env dotnet
+            {{s_program}}
+            Console.WriteLine("cwd:" + Environment.CurrentDirectory);
+            #if SOURCE_DIRECTORY_BUILD_PROPS
+            Console.WriteLine("source Directory.Build.props");
+            #endif
+            """);
+
+        string dnxPath = Path.Join(
+            Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath),
+            OperatingSystem.IsWindows() ? "dnx.cmd" : "dnx");
+
+        new RunExeCommand(Log, dnxPath, Path.Join("..", "source", "app"), "arg0", "arg1")
+            .WithWorkingDirectory(workingDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut($"""
+                echo args:arg0;arg1
+                Hello from app
+                cwd:{workingDirectory}
+                source Directory.Build.props
+                """);
+
+        string sourceGlobalJsonPath = Path.Join(sourceDirectory, "global.json");
+        File.WriteAllText(sourceGlobalJsonPath, """{ "sdk": { "version": "999.0.0" } }""");
+
+        new RunExeCommand(Log, dnxPath, Path.Join("..", "source", "app"))
+            .WithWorkingDirectory(workingDirectory)
+            .Execute()
+            .Should().Fail()
+            .And.HaveStdErrContaining(sourceGlobalJsonPath);
+    }
+
     /// <summary>
     /// Casing of the argument is used for the output binary name.
     /// </summary>
@@ -208,6 +331,29 @@ public sealed class RunFileTests_General : RunFileTestBase
             .Execute()
             .Should().Pass()
             .And.HaveStdOut("Hello from Program");
+    }
+
+    [TestMethod]
+    public void WorkingDirectoryOption()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        string sourceDirectory = Path.Join(testInstance.Path, "source");
+        string workingDirectory = Path.Join(testInstance.Path, "working");
+        Directory.CreateDirectory(sourceDirectory);
+        Directory.CreateDirectory(workingDirectory);
+        File.WriteAllText(
+            Path.Join(sourceDirectory, "Program.cs"),
+            """Console.WriteLine(Environment.CurrentDirectory);""");
+
+        new DotnetCommand(
+            Log,
+            "run",
+            "--working-directory", "working",
+            Path.Join("source", "Program.cs"))
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(workingDirectory);
     }
 
     /// <summary>

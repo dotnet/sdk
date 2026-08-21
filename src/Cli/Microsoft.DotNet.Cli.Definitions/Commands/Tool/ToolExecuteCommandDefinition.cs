@@ -16,7 +16,7 @@ internal sealed class ToolExecuteCommandDefinition : ToolExecuteCommandDefinitio
 
 internal abstract class ToolExecuteCommandDefinitionBase : Command
 {
-    public readonly Argument<PackageIdentityWithRange> PackageIdentityArgument = CommonArguments.CreateRequiredPackageIdentityArgument("dotnetsay", "2.1.7");
+    public readonly Argument<PackageIdentityWithRange> PackageIdentityArgument;
 
     public readonly Argument<IEnumerable<string>> CommandArgument = new("commandArguments")
     {
@@ -34,9 +34,13 @@ internal abstract class ToolExecuteCommandDefinitionBase : Command
 
     public readonly NuGetRestoreOptions RestoreOptions = new(forward: true);
 
-    public ToolExecuteCommandDefinitionBase(string name)
+    public ToolExecuteCommandDefinitionBase(string name, string packageIdentityArgumentName = CommonArguments.PackageIdArgumentName)
         : base(name, CommandDefinitionStrings.ToolExecuteCommandDescription)
     {
+        PackageIdentityArgument = CommonArguments.CreateRequiredPackageIdentityArgument(
+            "dotnetsay",
+            "2.1.7",
+            packageIdentityArgumentName);
         Arguments.Add(PackageIdentityArgument);
         Arguments.Add(CommandArgument);
 
