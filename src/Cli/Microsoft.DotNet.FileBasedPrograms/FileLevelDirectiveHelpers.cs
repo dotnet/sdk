@@ -322,6 +322,9 @@ internal struct WhiteSpaceInfo
 /// </summary>
 internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 {
+    internal static readonly StringComparer MetadataNameComparer = StringComparer.OrdinalIgnoreCase;
+    internal static readonly StringComparer MetadataValueComparer = StringComparer.Ordinal;
+
     public ParseInfo Info { get; } = info;
 
     public readonly struct ParseInfo
@@ -736,7 +739,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
         }
 
         var builder = ImmutableArray.CreateBuilder<(string Name, string Value)>(tokens.Length - start);
-        var names = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var names = new HashSet<string>(MetadataNameComparer);
 
         for (var i = start; i < tokens.Length; i++)
         {
@@ -756,7 +759,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (name.Equals(conflictingName, StringComparison.OrdinalIgnoreCase))
+            if (MetadataNameComparer.Equals(name, conflictingName))
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, name));
                 return null;
@@ -1476,9 +1479,32 @@ internal struct DirectiveDeduplicator
                 string.Equals(existing.Value, current.Value, StringComparison.Ordinal),
             (CSharpDirective.Package existing, CSharpDirective.Package current) =>
                 string.Equals(existing.Version, current.Version, StringComparison.Ordinal) &&
-                existing.Metadata.SequenceEqual(current.Metadata),
+                HasSameMetadata(existing.Metadata, current.Metadata),
             _ => false,
         };
+    }
+
+    private static bool HasSameMetadata(
+        ImmutableArray<(string Name, string Value)> existingMetadata,
+        ImmutableArray<(string Name, string Value)> currentMetadata)
+    {
+        if (existingMetadata.Length != currentMetadata.Length)
+        {
+            return false;
+        }
+
+        for (var i = 0; i < existingMetadata.Length; i++)
+        {
+            var existing = existingMetadata[i];
+            var current = currentMetadata[i];
+            if (!CSharpDirective.MetadataNameComparer.Equals(existing.Name, current.Name) ||
+                !CSharpDirective.MetadataValueComparer.Equals(existing.Value, current.Value))
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
 

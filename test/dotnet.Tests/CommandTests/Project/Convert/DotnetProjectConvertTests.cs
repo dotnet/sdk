@@ -3595,6 +3595,36 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
+    public void Directives_DuplicatePackageMetadataNamesAreCaseInsensitive()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Name@1.0 PrivateAssets=all
+                #:package Name@1.0 privateassets=all
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
+    public void Directives_DuplicatePackageMetadataValuesAreCaseSensitive()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package Name@1.0 PrivateAssets=all
+                #:package Name@1.0 privateassets=ALL
+                """,
+            expectedCSharp: "",
+            expectedErrors:
+            [
+                (2, string.Format(FileBasedProgramsResources.DuplicateDirective, "#:package Name")),
+            ]);
+    }
+
+    [TestMethod]
     public void Directives_Duplicate_AcrossIncludedFiles()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
