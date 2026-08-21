@@ -202,6 +202,15 @@ value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A
 It is an error if a quote is left unterminated or if a quoted value contains an invalid escape
 sequence (e.g., `"a\q"`).
 
+Whitespace may surround the separator (`@` or `=`) of any directive, so `#:property Xyz="abc "`,
+`#:property Xyz ="abc "`, and `#:property Xyz = "abc "` are equivalent, as are
+`#:package Foo@1.0.0 Note="see the docs"` and `#:package Foo @ 1.0.0 Note = "see the docs"`.
+Whitespace inside the quotes is preserved as part of the value.
+Either side of the separator can be quoted, e.g., `#:package "Humanizer"@2.0`.
+An empty value keeps its own token, so the trailing metadata in `#:package Foo@ ExcludeAssets=runtime`
+is metadata rather than the package version. Quote a value that should keep a `Name=Value` shape
+(e.g., `#:package Foo@1.0.0 Note="Key=Value"`).
+
 Because a bare value keeps a backslash literal while a quoted value follows C# escape rules, a Windows
 path is simplest written bare (`#:project C:\src\lib`) or with forward slashes if quoting is needed
 (`#:project "C:/src/my lib"`); quoting a backslash path requires escaping it (`"C:\\src\\my lib"`).

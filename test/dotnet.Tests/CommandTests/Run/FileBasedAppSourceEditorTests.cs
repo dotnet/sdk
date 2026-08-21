@@ -357,6 +357,25 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
     }
 
     [TestMethod]
+    public void AddWithVersionNeedingQuotes()
+    {
+        Verify(
+            """
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default)
+            {
+                Name = "MyPackage",
+                Version = "1.0 beta",
+            }),
+            """
+            #:package MyPackage@"1.0 beta"
+
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
     public void RefWithMetadataRoundTrips()
     {
         // A #:ref directive with trailing metadata is parsed and preserved verbatim when other edits happen.

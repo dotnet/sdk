@@ -2452,7 +2452,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
             baseDirectory: testInstance.Path,
             inputCSharp: """
                 #:property Description="Hello World"
-                #:package Foo@1.0.0 Note="see the docs" Label="second quoted value"
+                #:package P1@1.0.0 Note="see the docs" Label="second quoted value"
                 """,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -2468,10 +2468,140 @@ public sealed class DotnetProjectConvertTests : SdkTest
                   </PropertyGroup>
 
                   <ItemGroup>
-                    <PackageReference Include="Foo" Version="1.0.0">
+                    <PackageReference Include="P1" Version="1.0.0">
                       <Note>see the docs</Note>
                       <Label>second quoted value</Label>
                     </PackageReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
+    public void Directives_WhitespaceAroundSeparator()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Lib.csproj"), """
+            <Project Sdk="Microsoft.NET.Sdk" />
+            """);
+
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:sdk My.Sdk @ "1.2.3"
+                #:property Xyz = "abc "
+                #:package P1 @ "1.0.0" Note = "see the docs"
+                #:project Lib.csproj Private = "false" OutputItemType = Analyzer
+                """,
+            expectedProject: $"""
+                <Project Sdk="My.Sdk/1.2.3">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <Xyz>abc{" "}</Xyz>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="P1" Version="1.0.0">
+                      <Note>see the docs</Note>
+                    </PackageReference>
+                  </ItemGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="Lib.csproj">
+                      <Private>false</Private>
+                      <OutputItemType>Analyzer</OutputItemType>
+                    </ProjectReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
+    public void Directives_QuotedNameBeforeSeparator()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:sdk "My.Sdk"@1.2.3
+                #:property "Xyz"="abc "
+                #:package "Humanizer"@2.0
+                """,
+            expectedProject: $"""
+                <Project Sdk="My.Sdk/1.2.3">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                    <Xyz>abc{" "}</Xyz>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="Humanizer" Version="2.0" />
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
+    }
+
+    [TestMethod]
+    [DataRow("""#:package "we@ird"@2.0""", "package", "@")]
+    [DataRow("""#:sdk "we@ird"@2.0""", "sdk", "@")]
+    [DataRow("""#:property "a=b"=c""", "property", "=")]
+    public void Directives_QuotedNameContainingSeparator(string directive, string directiveKind, string expectedSeparator)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: directive,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.InvalidDirectiveName, directiveKind, expectedSeparator)),
+            ]);
+    }
+
+    [TestMethod]
+    public void Directives_QuotedVersion()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:sdk My.Sdk@"1.0 beta"
+                #:package P1@"1.0 beta"
+                """,
+            expectedProject: $"""
+                <Project Sdk="My.Sdk/1.0 beta">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="P1" Version="1.0 beta" />
                   </ItemGroup>
 
                 </Project>
@@ -2491,7 +2621,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                 #:property Quote="a\"b"
                 #:property Backslash="a\\b"
                 #:property Tab="a\tb c"
-                #:package Foo@1.0.0 Note="quote\"and\\slash"
+                #:package P1@1.0.0 Note="quote\"and\\slash"
                 """,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -2509,7 +2639,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                   </PropertyGroup>
 
                   <ItemGroup>
-                    <PackageReference Include="Foo" Version="1.0.0">
+                    <PackageReference Include="P1" Version="1.0.0">
                       <Note>quote&quot;and\slash</Note>
                     </PackageReference>
                   </ItemGroup>
@@ -2578,7 +2708,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:package Foo@1.0.0 Note="x" //y="z"
+                #:package P1@1.0.0 Note="x" //y="z"
                 """,
             expectedErrors:
             [
@@ -2595,7 +2725,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:package Foo@1.0.0 Note="x" Bare=//y Quoted="//server/my share"
+                #:package P1@1.0.0 Note="x" Bare=//y Quoted="//server/my share"
                 """,
             expectedProject: $"""
                 <Project Sdk="Microsoft.NET.Sdk">
@@ -2610,7 +2740,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
                   </PropertyGroup>
 
                   <ItemGroup>
-                    <PackageReference Include="Foo" Version="1.0.0">
+                    <PackageReference Include="P1" Version="1.0.0">
                       <Note>x</Note>
                       <Bare>//y</Bare>
                       <Quoted>//server/my share</Quoted>
@@ -2647,7 +2777,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:package Foo@1.0.0 1Invalid="value"
+                #:package P1@1.0.0 1Invalid="value"
                 """,
             expectedErrors:
             [
@@ -2662,7 +2792,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:package Foo@1.0.0 ="value"
+                #:package P1@1.0.0 ="value"
                 """,
             expectedErrors:
             [
@@ -2677,7 +2807,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: """
-                #:package Foo@1.0.0 Version=2.0.0
+                #:package P1@1.0.0 Version=2.0.0
                 """,
             expectedErrors:
             [
@@ -2686,7 +2816,7 @@ public sealed class DotnetProjectConvertTests : SdkTest
     }
 
     [TestMethod]
-    [DataRow("#:package Foo@1.0.0 Note=a note=b", "note")]
+    [DataRow("#:package P1@1.0.0 Note=a note=b", "note")]
     [DataRow("#:project Lib.csproj Private=false private=true", "private")]
     [DataRow("#:ref Lib.cs Alias=a Alias=b", "Alias")]
     public void Directives_DuplicateMetadata(string directive, string duplicateName)
@@ -2781,6 +2911,8 @@ public sealed class DotnetProjectConvertTests : SdkTest
     [TestMethod]
     [DataRow("")]
     [DataRow(" ")]
+    [DataRow("\"\"")]
+    [DataRow(" \"\"")]
     public void Directives_EmptyValue(string value)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -2820,12 +2952,55 @@ public sealed class DotnetProjectConvertTests : SdkTest
         VerifyConversion(
             baseDirectory: testInstance.Path,
             inputCSharp: $"""
-                #:project{value}
+                #:project {value}
                 """,
             expectedErrors:
             [
                 (1, string.Format(FileBasedProgramsResources.MissingDirectiveName, "project")),
             ]);
+    }
+
+    [TestMethod]
+    public void Directives_EmptyValueBeforeMetadata()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package P1@ IncludeAssets=build Note="two words"
+                #:package P2@1.0 First= Second=false
+                #:package P3@ IncludeAssets = "build"
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="P1" Version="">
+                      <IncludeAssets>build</IncludeAssets>
+                      <Note>two words</Note>
+                    </PackageReference>
+                    <PackageReference Include="P2" Version="1.0">
+                      <First></First>
+                      <Second>false</Second>
+                    </PackageReference>
+                    <PackageReference Include="P3" Version="">
+                      <IncludeAssets>build</IncludeAssets>
+                    </PackageReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
     }
 
     [TestMethod]
@@ -2841,6 +3016,77 @@ public sealed class DotnetProjectConvertTests : SdkTest
             [
                 (1, FileBasedProgramsResources.PropertyDirectiveMissingParts),
             ]);
+    }
+
+    [TestMethod]
+    [DataRow("sdk")]
+    [DataRow("property")]
+    [DataRow("package")]
+    [DataRow("project")]
+    [DataRow("ref")]
+    [DataRow("include")]
+    [DataRow("exclude")]
+    public void Directives_EmptyQuotedName(string directiveKind)
+    {
+        // Quoting makes an explicitly empty name expressible; it is rejected like a missing one.
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: $"""
+                #:{directiveKind} ""
+                """,
+            expectedErrors:
+            [
+                (1, string.Format(FileBasedProgramsResources.MissingDirectiveName, directiveKind)),
+            ]);
+    }
+
+    [TestMethod]
+    public void Directives_EmptyMetadataValue()
+    {
+        // Item metadata may have an empty value, bare or quoted, in trailing as well as middle position.
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Lib.csproj"), """
+            <Project Sdk="Microsoft.NET.Sdk" />
+            """);
+
+        VerifyConversion(
+            baseDirectory: testInstance.Path,
+            inputCSharp: """
+                #:package P1@1.0 Bare= Quoted="" Last=
+                #:project Lib.csproj Private= Trailing=""
+                """,
+            expectedProject: $"""
+                <Project Sdk="Microsoft.NET.Sdk">
+
+                  <PropertyGroup>
+                    <OutputType>Exe</OutputType>
+                    <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+                    <ImplicitUsings>enable</ImplicitUsings>
+                    <Nullable>enable</Nullable>
+                    <PublishAot>true</PublishAot>
+                    <PackAsTool>true</PackAsTool>
+                  </PropertyGroup>
+
+                  <ItemGroup>
+                    <PackageReference Include="P1" Version="1.0">
+                      <Bare></Bare>
+                      <Quoted></Quoted>
+                      <Last></Last>
+                    </PackageReference>
+                  </ItemGroup>
+
+                  <ItemGroup>
+                    <ProjectReference Include="Lib.csproj">
+                      <Private></Private>
+                      <Trailing></Trailing>
+                    </ProjectReference>
+                  </ItemGroup>
+
+                </Project>
+
+                """,
+            expectedCSharp: "");
     }
 
     [TestMethod]
