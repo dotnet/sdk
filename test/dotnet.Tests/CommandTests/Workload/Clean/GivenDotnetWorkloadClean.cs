@@ -45,10 +45,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         }
 
         [TestMethod]
-        [DataRow(true, true)]
-        [DataRow(false, true)]
-        [DataRow(true, false)]
-        [DataRow(false, false)]
+        [CombinatorialData]
         public void GivenWorkloadCleanFileBasedItRemovesPacksAndPackRecords(bool userLocal, bool cleanAll)
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, cleanAll);
@@ -76,8 +73,7 @@ namespace Microsoft.DotNet.Cli.Workload.Clean.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenWorkloadCleanAllFileBasedItCleansAllFeatureBands(bool userLocal)
         {
             var (testDirectory, dotnetRoot, userProfileDir, workloadResolver, nugetDownloader) = Setup(userLocal, true);

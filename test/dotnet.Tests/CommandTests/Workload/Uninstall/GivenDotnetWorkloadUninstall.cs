@@ -59,8 +59,7 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenWorkloadUninstallItCanUninstallWorkload(bool userLocal)
         {
             var installingWorkload = "mock-1";
@@ -96,8 +95,7 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenWorkloadUninstallItCanUninstallOnlySpecifiedWorkload(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;
@@ -140,8 +138,7 @@ namespace Microsoft.DotNet.Cli.Workload.Uninstall.Tests
         }
 
         [TestMethod]
-        [DataRow(true)]
-        [DataRow(false)]
+        [CombinatorialData]
         public void GivenWorkloadUninstallItCanUninstallOnlySpecifiedFeatureBand(bool userLocal)
         {
             var testDirectory = TestAssetsManager.CreateTestDirectory(identifier: userLocal ? "userlocal" : "default").Path;

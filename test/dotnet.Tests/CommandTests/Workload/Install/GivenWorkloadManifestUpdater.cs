@@ -207,8 +207,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public async Task ItCanFallbackAndAdvertiseCorrectUpdate(bool useOfflineCache)
         {
             //  Currently installed - 6.0.200 workload manifest
@@ -285,8 +284,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public async Task ItCanFallbackWithNoUpdates(bool useOfflineCache)
         {
             //  Currently installed - none
@@ -351,8 +349,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [TestMethod]
-        [DataRow(false)]
-        [DataRow(true)]
+        [CombinatorialData]
         public async Task GivenNoUpdatesAreAvailableAndNoRollbackItGivesAppropriateMessage(bool useOfflineCache)
         {
             //  Currently installed - none
