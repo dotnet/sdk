@@ -19,6 +19,7 @@ internal static class DotnetCommandCallbacks
         IEnumerable<string> commandArgs = ["add", projectPath, "package", packageName];
 
         var packageAddCommandDef = new PackageAddCommandDefinition();
+        commandArgs = commandArgs.Append(packageAddCommandDef.NoRestoreOption.Name);
         if (!string.IsNullOrWhiteSpace(version))
         {
             commandArgs = commandArgs.Append(packageAddCommandDef.VersionOption.Name).Append(version);
