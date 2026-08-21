@@ -31,6 +31,8 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
         public string ProjectRoot { get; set; }
 
+        public string CSharpLanguageVersion { get; set; }
+
         public bool UseSourceGenerator { get; set; }
 
         internal override string Command => "discover";
@@ -106,6 +108,12 @@ namespace Microsoft.AspNetCore.Razor.Tasks
 
             builder.AppendLine("-c");
             builder.AppendLine(Configuration[0].GetMetadata(Identity));
+
+            if (!string.IsNullOrEmpty(CSharpLanguageVersion))
+            {
+                builder.AppendLine("--csharp-language-version");
+                builder.AppendLine(CSharpLanguageVersion);
+            }
 
             for (var i = 0; i < Extensions.Length; i++)
             {
