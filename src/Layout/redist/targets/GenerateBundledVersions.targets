@@ -273,6 +273,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <Net110RuntimePackRids Include="
@@ -292,6 +293,7 @@
         openbsd-x64;
         openbsd-arm64;
         browser-wasm;
+        linux-armel;
         " />
 
       <NetCoreAppHostRids Include="@(Net110AppHostRids)" />
@@ -423,6 +425,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <Crossgen2SupportedRids Include="@(Net110Crossgen2SupportedRids);" />
@@ -474,6 +477,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
@@ -541,6 +545,7 @@
         solaris-x64;
         openbsd-x64;
         openbsd-arm64;
+        linux-armel;
         " />
 
       <NativeAOTRuntimePackRids Include="
