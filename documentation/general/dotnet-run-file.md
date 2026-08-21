@@ -215,11 +215,14 @@ Because a bare value keeps a backslash literal while a quoted value follows C# e
 path is simplest written bare (`#:project C:\src\lib`) or with forward slashes if quoting is needed
 (`#:project "C:/src/my lib"`); quoting a backslash path requires escaping it (`"C:\\src\\my lib"`).
 
-For backward compatibility, a directive whose value contains no double quotes is still accepted in a
-*legacy mode*: the entire remainder after the name and separator is taken verbatim as a single value
-(including any internal whitespace), matching how these directives behaved before quoting and metadata
-were supported. Analyzer [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)
-flags such legacy directives and offers a code fix to rewrite them into the quoted form.
+For backward compatibility, a directive whose value contains no double quotes is still accepted in a *legacy mode*
+when its trailing whitespace-separated tokens cannot be parsed as the new metadata form:
+the entire remainder after the name and separator is taken verbatim as a single value (including any internal whitespace),
+matching how these directives behaved before quoting and metadata were supported.
+For `#:package`, `#:project`, and `#:ref`, if every trailing token is valid `Name=Value` metadata,
+those tokens are treated as metadata instead; for example, `#:project path A=B` has the value `path` and the metadata `A=B`.
+Analyzer [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)
+flags legacy directives and offers a code fix to rewrite them into the quoted form.
 
 `#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
 e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
