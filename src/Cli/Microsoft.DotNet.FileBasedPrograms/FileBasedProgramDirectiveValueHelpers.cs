@@ -4,16 +4,16 @@
 #nullable enable
 
 using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.Xml;
 using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.DotNet.FileBasedPrograms;
 
 /// <summary>
-/// Low-level primitives for parsing and formatting the values of file-based program <c>#:</c>
-/// directives. These are source-shared between the CLI directive parser
-/// (<c>FileLevelDirectiveHelpers</c>) and the analyzer that flags the deprecated unquoted form
-/// (<c>FileBasedProgramDirectiveQuoting</c>).
+/// Low-level primitives for parsing and formatting the values of file-based program <c>#:</c> directives.
+/// These are source-shared between the CLI directive parser (<c>FileLevelDirectiveHelpers</c>)
+/// and the analyzer that flags the deprecated unquoted form (<c>FileBasedProgramDirectiveQuoting</c>).
 /// </summary>
 internal static class FileBasedProgramDirectiveValueHelpers
 {
@@ -35,12 +35,11 @@ internal static class FileBasedProgramDirectiveValueHelpers
     }
 
     /// <summary>
-    /// Validates that <paramref name="name"/> is a valid XML NCName, the constraint MSBuild applies to
-    /// property and item-metadata names (an NCName additionally disallows the ':' that a plain XML name
-    /// permits). Returns <see langword="true"/> when valid; otherwise returns <see langword="false"/> and
-    /// sets <paramref name="errorMessage"/> to the underlying validation-failure message.
+    /// Validates that <paramref name="name"/> is a valid XML NCName,
+    /// the constraint MSBuild applies to property and item-metadata names
+    /// (an NCName additionally disallows the ':' that a plain XML name permits).
     /// </summary>
-    public static bool IsValidMSBuildName(string name, out string? errorMessage)
+    public static bool IsValidMSBuildName(string name, [NotNullWhen(returnValue: false)] out string? errorMessage)
     {
         try
         {
@@ -56,8 +55,9 @@ internal static class FileBasedProgramDirectiveValueHelpers
     }
 
     /// <summary>
-    /// Returns whether every token from <paramref name="start"/> onwards is a valid <c>Name=Value</c>
-    /// item-metadata pair (a valid MSBuild name, then <c>'='</c>, then any value).
+    /// Returns whether every token from <paramref name="start"/> onwards
+    /// is a valid <c>Name=Value</c> item-metadata pair
+    /// (a valid MSBuild name, then <c>'='</c>, then any value).
     /// </summary>
     public static bool AllValidMetadata(ImmutableArray<string> tokens, int start)
     {
@@ -80,9 +80,8 @@ internal static class FileBasedProgramDirectiveValueHelpers
     }
 
     /// <summary>
-    /// Wraps <paramref name="value"/> in a C# string literal when it contains a character (whitespace or
-    /// a double quote) that cannot appear in a bare directive token, so it round-trips through the parser
-    /// (which lexes a quoted value as a regular C# string literal). Otherwise returns it unchanged.
+    /// Wraps <paramref name="value"/> in a C# string literal when it contains a character (whitespace or a double quote)
+    /// that cannot appear in a bare directive token. Otherwise returns it unchanged.
     /// </summary>
     public static string QuoteIfNeeded(string value)
     {
@@ -90,8 +89,6 @@ internal static class FileBasedProgramDirectiveValueHelpers
         {
             if (char.IsWhiteSpace(c) || c == '"')
             {
-                // FormatLiteral produces a properly escaped C# string literal (e.g. "a\"b", "a\tb") that
-                // the parser decodes back to the original value.
                 return SymbolDisplay.FormatLiteral(value, quote: true);
             }
         }

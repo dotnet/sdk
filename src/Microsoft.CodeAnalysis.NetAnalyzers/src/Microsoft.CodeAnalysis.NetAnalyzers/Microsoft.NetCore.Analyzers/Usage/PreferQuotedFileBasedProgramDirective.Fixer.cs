@@ -4,10 +4,9 @@
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.NetAnalyzers;
 
-namespace Microsoft.NetCore.Analyzers.Usage
+namespace Microsoft.NetCore.Analyzers.Usage;
+
+public abstract class PreferQuotedFileBasedProgramDirectiveFixer : SyntaxEditorBasedCodeFixProvider
 {
-    public abstract class PreferQuotedFileBasedProgramDirectiveFixer : SyntaxEditorBasedCodeFixProvider
-    {
-        public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PreferQuotedFileBasedProgramDirective.RuleId);
-    }
+    public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PreferQuotedFileBasedProgramDirective.RuleId);
 }

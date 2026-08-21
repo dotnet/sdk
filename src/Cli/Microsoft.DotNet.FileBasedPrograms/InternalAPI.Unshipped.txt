@@ -75,6 +75,8 @@ static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.WriteProjectFile
 static Microsoft.DotNet.Utilities.Extensions.ToHashSet<T>(this System.Collections.Generic.IEnumerable<T>! source, System.Collections.Generic.IEqualityComparer<T>! comparer) -> System.Collections.Generic.HashSet<T>!
 static Microsoft.DotNet.Utilities.Sha256Hasher.Hash(string! text) -> string!
 static Microsoft.DotNet.Utilities.Sha256Hasher.HashWithNormalizedCasing(string! text) -> string!
+static readonly Microsoft.DotNet.FileBasedPrograms.CSharpDirective.MetadataNameComparer -> System.StringComparer!
+static readonly Microsoft.DotNet.FileBasedPrograms.CSharpDirective.MetadataValueComparer -> System.StringComparer!
 virtual Microsoft.DotNet.FileBasedPrograms.CSharpDirective.KindToString() -> string!
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named
 Microsoft.DotNet.FileBasedPrograms.CSharpDirective.Named.Name.get -> string!

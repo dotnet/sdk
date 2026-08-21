@@ -451,17 +451,16 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                     return null;
                 }
 
-                // Lex a regular C# string literal (like '#r') so the value can contain whitespace and use
-                // escape sequences. Verbatim (@"...") literals can't start here (the '@' would precede the
-                // quote and fail the check above), and raw ("""...""") literals lex to a different token kind
-                // and are rejected below.
+                // Lex a regular C# string literal (like '#r') so the value can contain whitespace and use escape sequences.
+                // Verbatim (@"...") literals can't start here (the '@' would precede the quote and fail the check above),
+                // and raw ("""...""") literals lex to a different token kind and are rejected below.
                 var token = context.ValueLexer.LexStringLiteral(context.DirectiveTextStart + i);
                 var errors = token.GetDiagnostics().Where(static d => d.Severity == DiagnosticSeverity.Error).ToList();
                 if (errors.Count > 0)
                 {
-                    // CS1010 ("Newline in constant") means the literal was left unterminated; give it our
-                    // clearer directive-specific message. Any other lexer error (e.g. CS1009 for an invalid
-                    // escape sequence) forwards Roslyn's already-localized message so it stays accurate.
+                    // CS1010 ("Newline in constant") means the literal was left unterminated;
+                    // give it our clearer directive-specific message.
+                    // Forward Roslyn's message for any other lexer error (e.g. CS1009 for an invalid escape sequence).
                     if (errors.Any(static d => d.Id == "CS1010"))
                     {
                         context.ReportError(FileBasedProgramsResources.UnterminatedQuoteInDirective);
@@ -476,21 +475,15 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
                 if (!token.IsKind(SyntaxKind.StringLiteralToken))
                 {
-                    // Any token carrying a lexer error was already reported (and Roslyn's diagnostic
-                    // forwarded) above, so the only thing that reaches here is a *well-formed* literal
-                    // that starts with '"' yet isn't a simple string literal. Today that can only be a
-                    // raw string literal ('"""..."""'); verbatim ('@"..."') can't start here because the
-                    // '@' would precede the quote and fail the position check. Raw/verbatim literals are
-                    // intentionally unsupported (we match '#r'/'#load', which accept only a simple string
-                    // literal). Report the actual token text so the message shows the user exactly what was
-                    // wrong, and stays accurate even if a future Roslyn lexer change routes some other kind
-                    // here.
+                    // Any token carrying a lexer error was already reported above,
+                    // so the only thing that reaches here is a *well-formed* literal that starts with '"' yet isn't a simple string literal.
+                    // Today that can only be a raw string literal ('"""..."""').
                     context.ReportError(string.Format(FileBasedProgramsResources.ExpectedSimpleStringLiteralInDirective, token.Text));
                     return null;
                 }
 
-                // The decoded value is appended to the current token (which may already hold a 'Name='
-                // prefix); a quote starts a token even if it is empty (e.g., '""' is an empty token).
+                // The decoded value is appended to the current token (which may already hold a 'Name=' prefix);
+                // a quote starts a token even if it is empty (e.g., '""' is an empty token).
                 current.Append(token.ValueText);
                 tokenStarted = true;
                 quoteClosed = true;
@@ -504,7 +497,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 // Whitespace around the token's separator does not end the token, so
                 // '#:property Name = "value"' is the same as '#:property Name="value"'.
                 // After the separator it still ends the token when the next segment is a 'Name=Value' metadata pair,
-                // so an empty value keeps its own token and does not swallow the metadata that follows it (e.g. '#:package Foo@ ExcludeAssets=runtime').
+                // so an empty value keeps its own token and does not swallow the metadata that follows it (e.g. '#:package Package@ ExcludeAssets=runtime').
                 var beforeValue = afterSeparator && !(allowMetadata && StartsMetadataToken(text, i + 1));
                 if (tokenStarted && (beforeValue || IsNextNonWhiteSpace(text, i, separator, separatorIndex)))
                 {
@@ -608,22 +601,23 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     /// <summary>
     /// Tokenizes <see cref="ParseContext.DirectiveText"/> like <see cref="Tokenize"/> for the "new" form
-    /// (which may use double quotes and/or trailing <c>Name=Value</c> metadata), but falls back to the
-    /// pre-quoting "legacy" behavior to avoid a breaking change: before quoting and metadata were
-    /// supported, a directive value could contain unquoted whitespace and was taken verbatim.
+    /// (which may use double quotes and/or trailing <c>Name=Value</c> metadata),
+    /// but falls back to the pre-quoting "legacy" behavior to avoid a breaking change:
+    /// before quoting and metadata were supported, a directive value could contain unquoted whitespace and was taken verbatim.
     /// <para>
     /// Rules (double quotes were previously disallowed, so their presence unambiguously means the new form):
     /// <list type="bullet">
     /// <item>If the text contains a double quote, it is parsed strictly via <see cref="Tokenize"/>.</item>
     /// <item>Otherwise, if there is at most one whitespace-separated token, it is returned as-is.</item>
-    /// <item>Otherwise, the trailing tokens are treated as metadata only when <paramref name="allowMetadata"/>
-    /// is set and every trailing token is a valid <c>Name=Value</c> pair; then the split tokens are returned.
+    /// <item>Otherwise, the trailing tokens are treated as metadata
+    /// only when <paramref name="allowMetadata"/> is set and every trailing token is a valid <c>Name=Value</c> pair;
+    /// then the split tokens are returned.
     /// This is unlikely to be a breaking change as it requires a construct like
     /// <c>#:package X@1 A=B</c> (which would previously fail because space is disallowed in version)
     /// or <c>#:ref ./f.cs A=B</c> (which is unlikely to be a real path).</item>
-    /// <item>Otherwise the whole (already trimmed) remainder is returned as a single legacy value with its
-    /// internal whitespace preserved, and <paramref name="isLegacy"/> is set. The deprecated legacy form is
-    /// flagged by an analyzer rather than erroring here.</item>
+    /// <item>Otherwise the whole (already trimmed) remainder is returned as a single legacy value
+    /// with its internal whitespace preserved, and <paramref name="isLegacy"/> is set.
+    /// The deprecated legacy form is flagged by an analyzer rather than erroring here.</item>
     /// </list>
     /// </para>
     /// </summary>
@@ -655,8 +649,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             return ToLegacyTokens(rawTokens, nameSeparator);
         }
 
-        // Multiple unquoted whitespace-separated tokens. Interpret the trailing ones as item metadata
-        // only when metadata is supported and every trailing token is a valid 'Name=Value' pair.
+        // Multiple unquoted whitespace-separated tokens.
+        // Interpret the trailing ones as item metadata only when metadata is supported and every trailing token is a valid 'Name=Value' pair.
         if (allowMetadata && AllValidMetadata(rawTokens, start: 1))
         {
             return ToLegacyTokens(rawTokens, nameSeparator);
@@ -680,8 +674,8 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
     /// <summary>
     /// Splits the first of <paramref name="tokens"/> into a required name and optional value
-    /// on the first occurrence of <paramref name="separator"/> (e.g., <c>Name@Version</c>),
-    /// validating the name. Used by <c>#:sdk</c>, <c>#:property</c>, and <c>#:package</c>.
+    /// on the first occurrence of <paramref name="separator"/> (e.g., <c>Name@Version</c>), validating the name.
+    /// Used by <c>#:sdk</c>, <c>#:property</c>, and <c>#:package</c>.
     /// When <paramref name="trimAroundSeparator"/> is set (legacy form, where the token may contain unquoted whitespace),
     /// whitespace adjacent to the separator is trimmed to match the pre-quoting behavior.
     /// </summary>
@@ -723,11 +717,10 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     }
 
     /// <summary>
-    /// Parses the trailing <paramref name="tokens"/> (starting at <paramref name="start"/>) as
-    /// <c>Name=Value</c> item metadata pairs. Returns <see langword="null"/> and reports an error
-    /// if a token is not a valid metadata pair.
+    /// Parses the trailing <paramref name="tokens"/> (starting at <paramref name="start"/>) as <c>Name=Value</c> item metadata pairs.
+    /// Returns <see langword="default"/> and reports an error if a token is not a valid metadata pair.
     /// </summary>
-    private static ImmutableArray<(string Name, string Value)>? ParseMetadata(
+    private static ImmutableArray<(string Name, string Value)> ParseMetadata(
         in ParseContext context,
         ImmutableArray<DirectiveToken> tokens,
         int start,
@@ -747,7 +740,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (separatorIndex <= 0)
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.InvalidDirectiveMetadata, text));
-                return null;
+                return default;
             }
 
             var name = text.Substring(0, separatorIndex);
@@ -756,19 +749,19 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             if (!IsValidMSBuildName(name, out var nameError))
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.DirectiveMetadataInvalidName, name, nameError));
-                return null;
+                return default;
             }
 
             if (MetadataNameComparer.Equals(name, conflictingName))
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.ConflictingDirectiveMetadata, name));
-                return null;
+                return default;
             }
 
             if (!names.Add(name))
             {
                 context.ReportError(string.Format(FileBasedProgramsResources.DuplicateDirectiveMetadata, name));
-                return null;
+                return default;
             }
 
             builder.Add((name, value));
@@ -932,7 +925,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
         /// <summary>
         /// Additional item metadata specified as trailing <c>Name=Value</c> pairs,
-        /// e.g. <c>#:package Foo@1.0.0 ExcludeAssets=runtime PrivateAssets=all</c>.
+        /// e.g. <c>#:package Package@1.0.0 ExcludeAssets=runtime PrivateAssets=all</c>.
         /// </summary>
         public ImmutableArray<(string Name, string Value)> Metadata { get; init; }
 
@@ -948,7 +941,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseMetadata(context, tokens, start: 1, conflictingName: packageVersion is null ? null : "Version") is not { } metadata)
+            if (ParseMetadata(context, tokens, start: 1, conflictingName: packageVersion is null ? null : "Version") is not { IsDefault: false } metadata)
             {
                 return null;
             }
@@ -1024,7 +1017,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseMetadata(context, tokens, start: 1) is not { } metadata)
+            if (ParseMetadata(context, tokens, start: 1) is not { IsDefault: false } metadata)
             {
                 return null;
             }
@@ -1158,7 +1151,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                 return null;
             }
 
-            if (ParseMetadata(context, tokens, start: 1) is not { } metadata)
+            if (ParseMetadata(context, tokens, start: 1) is not { IsDefault: false } metadata)
             {
                 return null;
             }

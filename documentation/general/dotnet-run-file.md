@@ -193,27 +193,29 @@ and any leading and trailing white space is not considered part of the name and 
 
 The remainder of a directive (after the kind) is split into whitespace-separated tokens.
 Whitespace inside a value is not allowed unless the value is enclosed in double quotes (`"`).
-A value is written either bare or wrapped entirely in double quotes. A quoted value is lexed as a
-regular C# string literal (the same way `#r`/`#load` directives lex their argument), so its escape
-sequences are decoded, e.g., `#:property Description="Hello World"` sets the value to `Hello World`,
-`#:property Path="a\\b"` sets it to `a\b`, and `#:property Text="a\"b"` sets it to `a"b`. Verbatim
-(`@"..."`) and raw (`"""..."""`) string literals are not supported. Quotes can only enclose a whole
-value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
-It is an error if a quote is left unterminated or if a quoted value contains an invalid escape
-sequence (e.g., `"a\q"`).
+A value is written either bare or wrapped entirely in double quotes.
+A quoted value is lexed as a regular C# string literal (the same way `#r`/`#load` directives lex their argument),
+so its escape sequences are decoded, e.g., `#:property Description="Hello World"` sets the value to `Hello World`,
+`#:property Path="a\\b"` sets it to `a\b`, and `#:property Text="a\"b"` sets it to `a"b`.
+Verbatim (`@"..."`) and raw (`"""..."""`) string literals are not supported.
+Quotes can only enclose a whole value, so `#:property A=B` and `#:property A="B"` are allowed, but `#:property A=B"C"` is an error.
+It is an error if a quote is left unterminated or if a quoted value contains an invalid escape sequence (e.g., `"a\q"`).
 
-Whitespace may surround the separator (`@` or `=`) of any directive, so `#:property Xyz="abc "`,
-`#:property Xyz ="abc "`, and `#:property Xyz = "abc "` are equivalent, as are
-`#:package Foo@1.0.0 Note="see the docs"` and `#:package Foo @ 1.0.0 Note = "see the docs"`.
-Whitespace inside the quotes is preserved as part of the value.
+`#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
+e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
+Each metadata name must be a unique valid XML element name; each metadata value can be quoted to contain whitespace.
+When a `#:package` directive specifies its version after `@`, it cannot also specify `Version` metadata.
+The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
+
+Whitespace may surround the separator (`@` or `=`) of any directive,
+so `#:property Xyz="abc "`, `#:property Xyz ="abc "`, and `#:property Xyz = "abc "` are equivalent,
+as are `#:package Package@1.0.0 Note="see the docs"` and `#:package Package @ 1.0.0 Note = "see the docs"`.
 Either side of the separator can be quoted, e.g., `#:package "Humanizer"@2.0`.
-An empty value keeps its own token, so the trailing metadata in `#:package Foo@ ExcludeAssets=runtime`
-is metadata rather than the package version. Quote a value that should keep a `Name=Value` shape
-(e.g., `#:package Foo@1.0.0 Note="Key=Value"`).
 
-Because a bare value keeps a backslash literal while a quoted value follows C# escape rules, a Windows
-path is simplest written bare (`#:project C:\src\lib`) or with forward slashes if quoting is needed
-(`#:project "C:/src/my lib"`); quoting a backslash path requires escaping it (`"C:\\src\\my lib"`).
+Because a bare value keeps a backslash literal while a quoted value follows C# escape rules,
+a Windows path is simplest written bare (`#:project C:\src\lib`)
+or with forward slashes if quoting is needed (`#:project "C:/src/my lib"`);
+quoting a backslash path requires escaping it (`"C:\\src\\my lib"`).
 
 For backward compatibility, a directive whose value contains no double quotes is still accepted in a *legacy mode*
 when its trailing whitespace-separated tokens cannot be parsed as the new metadata form:
@@ -223,12 +225,6 @@ For `#:package`, `#:project`, and `#:ref`, if every trailing token is valid `Nam
 those tokens are treated as metadata instead; for example, `#:project path A=B` has the value `path` and the metadata `A=B`.
 Analyzer [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267)
 flags legacy directives and offers a code fix to rewrite them into the quoted form.
-
-`#:package`, `#:project`, and `#:ref` directives can specify additional MSBuild item metadata as trailing `Name=Value` tokens,
-e.g., `#:package Microsoft.Build@17.0.0 ExcludeAssets=runtime PrivateAssets=all`.
-Each metadata name must be a unique valid XML element name; each metadata value can be quoted to contain whitespace.
-When a `#:package` directive specifies its version after `@`, it cannot also specify `Version` metadata.
-The other directive kinds do not support trailing metadata and it is an error to specify extra tokens for them.
 
 The directives are processed as follows:
 
