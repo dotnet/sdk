@@ -5,6 +5,10 @@ using System.Formats.Tar;
 using System.IO.Compression;
 using System.Security.Cryptography;
 
+using Docker = OrasProject.Oras.Docker;
+
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [TestClass]
@@ -29,7 +33,7 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, Docker.MediaType.Manifest);
 
         Console.WriteLine(l.Descriptor);
 
@@ -54,7 +58,7 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true, SchemaTypes.DockerManifestV2);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "C:\\app", true, Docker.MediaType.Manifest);
 
         var allEntries = LoadAllTarEntries(l.BackingFile);
         Assert.IsTrue(allEntries.TryGetValue("Files", out var filesEntry) && filesEntry.EntryType == TarEntryType.Directory, "Missing Files directory entry");
@@ -88,7 +92,7 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
 
         File.WriteAllText(testFilePath, testString);
 
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, Docker.MediaType.Manifest);
 
         VerifyDescriptorInfo(l);
 
@@ -109,7 +113,7 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         File.WriteAllText(testFilePath, testString);
 
         var userId = 1234;
-        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, SchemaTypes.DockerManifestV2, userId: userId);
+        Layer l = Layer.FromDirectory(directory: folder.Path, containerPath: "/app", false, Docker.MediaType.Manifest, userId: userId);
         var allEntries = LoadAllTarEntries(l.BackingFile);
         Assert.IsTrue(allEntries.TryGetValue("app", out var appEntry) && appEntry.EntryType == TarEntryType.Directory, "Missing app directory entry");
         Assert.IsTrue(allEntries.TryGetValue("app/TestFile.txt", out var fileEntry) && fileEntry.EntryType == TarEntryType.RegularFile, "Missing TestFile.txt file entry");
@@ -139,7 +143,7 @@ public sealed class LayerEndToEndTests : SdkTest, IDisposable
         }
 
         Assert.AreEqual(Convert.ToHexStringLower(hashBytes), l.Descriptor.Digest.Substring("sha256:".Length));
-        Assert.AreEqual(Convert.ToHexStringLower(uncompressedHashBytes), l.Descriptor.UncompressedDigest?.Substring("sha256:".Length));
+        Assert.AreEqual(Convert.ToHexStringLower(uncompressedHashBytes), l.UncompressedDigest?.Substring("sha256:".Length));
     }
 
     TransientTestFolder? testSpecificArtifactRoot;

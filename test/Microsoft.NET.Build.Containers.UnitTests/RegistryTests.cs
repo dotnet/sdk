@@ -11,6 +11,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Moq;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
@@ -66,7 +70,7 @@ public class RegistryTests : IDisposable
         foreach (string tag in tags)
         {
             manifestOperations
-                .Setup(m => m.PutAsync(repository, tag, "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
+                .Setup(m => m.PutAsync(repository, tag, "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
         }
 
@@ -79,8 +83,8 @@ public class RegistryTests : IDisposable
             ImageDigest = "sha256:config",
             Manifest = "{}",
             ManifestDigest = manifestDigest,
-            ManifestMediaType = SchemaTypes.OciManifestV1,
-            Layers = [new ManifestLayer(SchemaTypes.OciLayerGzipV1, 123, "sha256:layer", null)],
+            ManifestMediaType = Oci.MediaType.ImageManifest,
+            Layers = [new Descriptor { MediaType = Oci.MediaType.ImageLayerGzip, Size = 123, Digest = "sha256:layer" }],
             OS = "linux",
             Architecture = "amd64",
         };
@@ -92,7 +96,7 @@ public class RegistryTests : IDisposable
         manifestOperations.Verify(m => m.ExistsAsync(repository, manifestDigest, It.IsAny<CancellationToken>()), Times.Once);
         foreach (string tag in tags)
         {
-            manifestOperations.Verify(m => m.PutAsync(repository, tag, "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
+            manifestOperations.Verify(m => m.PutAsync(repository, tag, "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()), Times.Once);
         }
         api.VerifyGet(a => a.Blob, Times.Never);
     }
@@ -110,7 +114,7 @@ public class RegistryTests : IDisposable
             .ReturnsAsync(true);
         Mock<IManifestOperations> manifestOperations = new(MockBehavior.Strict);
         manifestOperations
-            .Setup(m => m.PutAsync(repository, "latest", "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
+            .Setup(m => m.PutAsync(repository, "latest", "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
         Mock<IRegistryAPI> api = new(MockBehavior.Strict);
         api.SetupGet(a => a.Blob).Returns(blobOperations.Object);
@@ -123,7 +127,7 @@ public class RegistryTests : IDisposable
             ImageDigest = configDigest,
             Manifest = "{}",
             ManifestDigest = "sha256:manifest",
-            ManifestMediaType = SchemaTypes.OciManifestV1,
+            ManifestMediaType = Oci.MediaType.ImageManifest,
             Layers = [],
             OS = "linux",
             Architecture = "amd64",
@@ -135,7 +139,7 @@ public class RegistryTests : IDisposable
 
         manifestOperations.Verify(m => m.ExistsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         blobOperations.Verify(b => b.ExistsAsync(repository, It.Is<Descriptor>(d => d.Digest == configDigest), It.IsAny<CancellationToken>()), Times.Once);
-        manifestOperations.Verify(m => m.PutAsync(repository, "latest", "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
+        manifestOperations.Verify(m => m.PutAsync(repository, "latest", "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [TestMethod]
@@ -143,7 +147,12 @@ public class RegistryTests : IDisposable
     {
         ILogger logger = _loggerFactory.CreateLogger(nameof(PushLayerAsync_UsesRegistryBlobOperations));
         const string repository = "testRepo";
-        Descriptor descriptor = new("application/octet-stream", "sha256:fafafafafafafafafafafafafafafafa", 1000);
+        Descriptor descriptor = new()
+        {
+            MediaType = "application/octet-stream",
+            Digest = "sha256:fafafafafafafafafafafafafafafafa",
+            Size = 1000,
+        };
         Mock<Layer> layer = new(MockBehavior.Strict);
         layer.Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
         layer.Setup(l => l.Descriptor).Returns(descriptor);
@@ -340,7 +349,12 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", 1234);
+        var descriptor = new Descriptor
+        {
+            MediaType = Oci.MediaType.ImageLayerGzip,
+            Digest = "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+            Size = 1234,
+        };
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -380,7 +394,12 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_ThrowsAfterMaxRetries));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad", 1234);
+        var descriptor = new Descriptor
+        {
+            MediaType = Oci.MediaType.ImageLayerGzip,
+            Digest = "sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad",
+            Size = 1234,
+        };
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);

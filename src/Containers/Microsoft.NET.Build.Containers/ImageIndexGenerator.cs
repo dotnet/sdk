@@ -5,6 +5,11 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.NET.Build.Containers.Resources;
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -31,13 +36,13 @@ internal static class ImageIndexGenerator
             throw new ArgumentException(Strings.MixedMediaTypes);
         }
 
-        if (manifestMediaType == SchemaTypes.DockerManifestV2)
+        if (manifestMediaType == Docker.MediaType.Manifest)
         {
-            return (GenerateImageIndex(images, SchemaTypes.DockerManifestV2, SchemaTypes.DockerManifestListV2), SchemaTypes.DockerManifestListV2);
+            return (GenerateImageIndex(images, Docker.MediaType.Manifest, Docker.MediaType.ManifestList), Docker.MediaType.ManifestList);
         }
-        else if (manifestMediaType == SchemaTypes.OciManifestV1)
+        else if (manifestMediaType == Oci.MediaType.ImageManifest)
         {
-            return (GenerateImageIndex(images, SchemaTypes.OciManifestV1, SchemaTypes.OciImageIndexV1), SchemaTypes.OciImageIndexV1);
+            return (GenerateImageIndex(images, Oci.MediaType.ImageManifest, Oci.MediaType.ImageIndex), Oci.MediaType.ImageIndex);
         }
         else
         {
@@ -61,30 +66,28 @@ internal static class ImageIndexGenerator
             throw new ArgumentException(Strings.ImagesEmpty);
         }
 
-        // Here we are using ManifestListV2 struct, but we could use ImageIndexV1 struct as well.
-        // We are filling the same fields, so we can use the same struct.
-        var manifests = new PlatformSpecificManifest[images.Length];
+        var manifests = new Descriptor[images.Length];
         
         for (int i = 0; i < images.Length; i++)
         {
-            manifests[i] = new PlatformSpecificManifest
+            manifests[i] = new Descriptor
             {
-                mediaType = manifestMediaType,
-                size = images[i].Manifest.Length,
-                digest = images[i].ManifestDigest,
-                platform = new PlatformInformation
+                MediaType = manifestMediaType,
+                Size = images[i].Manifest.Length,
+                Digest = images[i].ManifestDigest,
+                Platform = new Oci.Platform
                 {
-                    architecture = images[i].Architecture,
-                    os = images[i].OS
+                    Architecture = images[i].Architecture,
+                    Os = images[i].OS
                 }
             };
         }
 
-        var imageIndex = new ManifestListV2
+        var imageIndex = new Oci.Index
         {
-            schemaVersion = 2,
-            mediaType = imageIndexMediaType,
-            manifests = manifests
+            SchemaVersion = 2,
+            MediaType = imageIndexMediaType,
+            Manifests = manifests
         };
 
         return GetJsonStringFromImageIndex(imageIndex);
@@ -96,21 +99,21 @@ internal static class ImageIndexGenerator
         long manifestSize,
         string repository,
         string[] tags,
-        PlatformInformation platform = default)
+        Oci.Platform? platform = null)
     {
         string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
         
-        var manifests = new PlatformSpecificOciManifest[tags.Length];
+        var manifests = new Descriptor[tags.Length];
         for (int i = 0; i < tags.Length; i++)
         {
             var tag = tags[i];
-            manifests[i] = new PlatformSpecificOciManifest
+            manifests[i] = new Descriptor
             {
-                mediaType = manifestMediaType,
-                size = manifestSize,
-                digest = manifestDigest,
-                platform = platform,
-                annotations = new Dictionary<string, string> 
+                MediaType = manifestMediaType,
+                Size = manifestSize,
+                Digest = manifestDigest,
+                Platform = platform,
+                Annotations = new Dictionary<string, string>
                 {
                     { "io.containerd.image.name", $"{containerdImageNamePrefix}{repository}:{tag}" },
                     { "org.opencontainers.image.ref.name", tag } 
@@ -118,11 +121,11 @@ internal static class ImageIndexGenerator
             };
         }
 
-        var index = new ImageIndexV1
+        var index = new Oci.Index
         {
-            schemaVersion = 2,
-            mediaType = SchemaTypes.OciImageIndexV1,
-            manifests = manifests
+            SchemaVersion = 2,
+            MediaType = Oci.MediaType.ImageIndex,
+            Manifests = manifests
         };
 
         return GetJsonStringFromImageIndex(index);

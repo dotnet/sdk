@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -31,14 +32,9 @@ public class DockerRegistryManager
 
     internal class SameArchManifestPicker : IManifestPicker
     {
-        public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier)
+        public Descriptor? PickBestManifestForRid(IReadOnlyDictionary<string, Descriptor> manifestList, string runtimeIdentifier)
         {
-            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
-        }
-
-        public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier)
-        {
-            return manifestList.Values.SingleOrDefault(m => m.platform.os == "linux" && m.platform.architecture == "amd64");
+            return manifestList.Values.SingleOrDefault(m => m.Platform?.Os == "linux" && m.Platform.Architecture == "amd64");
         }
     }
 

@@ -4,6 +4,8 @@
 using System.Formats.Tar;
 using System.IO.Compression;
 
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]

@@ -3,6 +3,8 @@
 
 using Microsoft.NET.Build.Containers.Resources;
 
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 internal static class ContentStore

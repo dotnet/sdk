@@ -4,6 +4,9 @@
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
 
+using Docker = OrasProject.Oras.Docker;
+using Oci = OrasProject.Oras.Oci;
+
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
@@ -697,19 +700,18 @@ public class ImageBuilderTests
 
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
     {
-        var manifest = new ManifestV2()
+        var manifest = new Oci.Manifest
         {
             SchemaVersion = 2,
-            MediaType = SchemaTypes.DockerManifestV2,
-            Config = new ManifestConfig()
+            MediaType = Docker.MediaType.Manifest,
+            Config = new Descriptor
             {
-                mediaType = "",
-                size = 0,
-                digest = "sha256:"
+                MediaType = "",
+                Size = 0,
+                Digest = "sha256:"
             },
-            Layers = new List<ManifestLayer>(),
-            KnownDigest = StaticKnownDigestValue
+            Layers = new List<Descriptor>(),
         };
-        return new ImageBuilder(manifest, manifest.MediaType, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));
+        return new ImageBuilder(manifest, StaticKnownDigestValue, manifest.MediaType, new ImageConfig(baseImageConfig), _loggerFactory.CreateLogger(testName));
     }
 }

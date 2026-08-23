@@ -6,7 +6,7 @@ using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using OrasProject.Oras.Registry.Remote.Exceptions;
-using OrasDescriptor = OrasProject.Oras.Oci.Descriptor;
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -19,7 +19,7 @@ internal sealed class DefaultBlobOperations(
     {
         try
         {
-            return await repositoryFactory.Create(repositoryName).Blobs.ExistsAsync(ToOrasDescriptor(descriptor), cancellationToken).ConfigureAwait(false);
+            return await repositoryFactory.Create(repositoryName).Blobs.ExistsAsync(descriptor, cancellationToken).ConfigureAwait(false);
         }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
@@ -43,7 +43,7 @@ internal sealed class DefaultBlobOperations(
     {
         try
         {
-            return await repositoryFactory.Create(repositoryName).Blobs.FetchAsync(ToOrasDescriptor(descriptor), cancellationToken).ConfigureAwait(false);
+            return await repositoryFactory.Create(repositoryName).Blobs.FetchAsync(descriptor, cancellationToken).ConfigureAwait(false);
         }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
@@ -60,7 +60,7 @@ internal sealed class DefaultBlobOperations(
     {
         try
         {
-            await repositoryFactory.Create(repositoryName).Blobs.PushAsync(ToOrasDescriptor(descriptor), content, cancellationToken).ConfigureAwait(false);
+            await repositoryFactory.Create(repositoryName).Blobs.PushAsync(descriptor, content, cancellationToken).ConfigureAwait(false);
         }
         catch (ResponseException e) when (e.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
         {
@@ -83,7 +83,7 @@ internal sealed class DefaultBlobOperations(
         try
         {
             await repositoryFactory.Create(destinationRepository).MountAsync(
-                ToOrasDescriptor(descriptor),
+                descriptor,
                 sourceRepository,
                 getContent,
                 cancellationToken).ConfigureAwait(false);
@@ -98,13 +98,6 @@ internal sealed class DefaultBlobOperations(
             throw CreateContainerHttpException(e);
         }
     }
-
-    private static OrasDescriptor ToOrasDescriptor(Descriptor descriptor) => new()
-    {
-        MediaType = descriptor.MediaType,
-        Digest = descriptor.Digest,
-        Size = descriptor.Size,
-    };
 
     private static ContainerHttpException CreateContainerHttpException(ResponseException exception)
         => new(Resource.GetString(nameof(Strings.RegistryPullFailed)), exception.RequestUri?.ToString(), exception.StatusCode);

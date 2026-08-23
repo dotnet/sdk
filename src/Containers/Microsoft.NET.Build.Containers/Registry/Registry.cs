@@ -2,18 +2,24 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 using NuGet.RuntimeModel;
 using System.Security.Cryptography;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
+
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 internal interface IManifestPicker
 {
-    public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> manifestList, string runtimeIdentifier);
-    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> manifestList, string runtimeIdentifier);
+    public Descriptor? PickBestManifestForRid(IReadOnlyDictionary<string, Descriptor> manifestList, string runtimeIdentifier);
 }
 
 internal sealed class RidGraphManifestPicker : IManifestPicker
@@ -24,17 +30,7 @@ internal sealed class RidGraphManifestPicker : IManifestPicker
     {
         _runtimeGraph = GetRuntimeGraphForDotNet(runtimeIdentifierGraphPath);
     }
-    public PlatformSpecificManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificManifest> ridManifestDict, string runtimeIdentifier)
-    {
-        var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
-        if (bestManifestRid is null)
-        {
-            return null;
-        }
-        return ridManifestDict[bestManifestRid];
-    }
-
-    public PlatformSpecificOciManifest? PickBestManifestForRid(IReadOnlyDictionary<string, PlatformSpecificOciManifest> ridManifestDict, string runtimeIdentifier)
+    public Descriptor? PickBestManifestForRid(IReadOnlyDictionary<string, Descriptor> ridManifestDict, string runtimeIdentifier)
     {
         var bestManifestRid = GetBestMatchingRid(_runtimeGraph, runtimeIdentifier, ridManifestDict.Keys);
         if (bestManifestRid is null)
@@ -171,12 +167,6 @@ internal sealed class Registry
 
     public bool IsAzureContainerRegistry => RegistryName.EndsWith(".azurecr.io", StringComparison.OrdinalIgnoreCase);
 
-    /// <summary>
-    /// Pushing to ECR uses a much larger chunk size. To avoid getting too many socket disconnects trying to do too many
-    /// parallel uploads be more conservative and upload one layer at a time.
-    /// </summary>
-    private bool SupportsParallelUploads => !IsAmazonECRRegistry && _settings.ParallelUploadEnabled;
-
     public async Task<ImageBuilder> GetImageManifestAsync(string repositoryName, string reference, string runtimeIdentifier, IManifestPicker manifestPicker, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -184,23 +174,11 @@ internal sealed class Registry
 
         return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
         {
-            SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
-                repositoryName,
-                await ReadManifest().ConfigureAwait(false),
-                initialManifestResponse.Content.Headers.ContentType.MediaType,
-                cancellationToken).ConfigureAwait(false),
-            SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
+            Docker.MediaType.Manifest or Oci.MediaType.ImageManifest => await ReadSingleManifest().ConfigureAwait(false),
+            Docker.MediaType.ManifestList or Oci.MediaType.ImageIndex => await PickBestImageFromIndexAsync(
                 repositoryName,
                 reference,
-                await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
-                runtimeIdentifier,
-                manifestPicker,
-                cancellationToken).ConfigureAwait(false),
-            SchemaTypes.OciImageIndexV1 =>
-                await PickBestImageFromImageIndexAsync(
-                repositoryName,
-                reference,
-                await initialManifestResponse.Content.ReadFromJsonAsync<ImageIndexV1>(cancellationToken: cancellationToken).ConfigureAwait(false),
+                await initialManifestResponse.Content.ReadFromJsonAsync<Oci.Index>(cancellationToken: cancellationToken).ConfigureAwait(false),
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -212,52 +190,60 @@ internal sealed class Registry
                 unknownMediaType))
         };
 
-        async Task<ManifestV2> ReadManifest()
+        async Task<ImageBuilder> ReadSingleManifest()
         {
+            byte[] manifestBytes = await initialManifestResponse.Content.ReadAsByteArrayAsync(cancellationToken).ConfigureAwait(false);
+            Oci.Manifest manifest = JsonSerializer.Deserialize<Oci.Manifest>(manifestBytes)
+                ?? throw new InvalidDataException("The image manifest contained invalid JSON.");
             initialManifestResponse.Headers.TryGetValues("Docker-Content-Digest", out var knownDigest);
-            var manifest = (await initialManifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false))!;
+            string manifestDigest;
             if (knownDigest?.FirstOrDefault() is string knownDigestValue)
             {
                 DigestUtils.ValidateDigest(knownDigestValue);
-                manifest.KnownDigest = knownDigestValue;
+                manifestDigest = knownDigestValue;
             }
-            return manifest;
+            else
+            {
+                manifestDigest = Descriptor.Create(manifestBytes, initialManifestResponse.Content.Headers.ContentType!.MediaType!).Digest;
+            }
+
+            return await ReadSingleImageAsync(
+                repositoryName,
+                manifest,
+                manifestDigest,
+                initialManifestResponse.Content.Headers.ContentType!.MediaType!,
+                cancellationToken).ConfigureAwait(false);
         }
     }
 
-    internal async Task<ManifestListV2?> GetManifestListAsync(string repositoryName, string reference, CancellationToken cancellationToken)
+    internal async Task<Oci.Index?> GetManifestListAsync(string repositoryName, string reference, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         using HttpResponseMessage initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
 
         return initialManifestResponse.Content.Headers.ContentType?.MediaType switch
         {
-            SchemaTypes.DockerManifestListV2 => await initialManifestResponse.Content.ReadFromJsonAsync<ManifestListV2>(cancellationToken: cancellationToken).ConfigureAwait(false),
+            Docker.MediaType.ManifestList => await initialManifestResponse.Content.ReadFromJsonAsync<Oci.Index>(cancellationToken: cancellationToken).ConfigureAwait(false),
             _ => null
         };
     }
 
-    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, ManifestV2 manifest, string manifestMediaType, CancellationToken cancellationToken)
+    private async Task<ImageBuilder> ReadSingleImageAsync(string repositoryName, Oci.Manifest manifest, string manifestDigest, string manifestMediaType, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        ManifestConfig config = manifest.Config;
-        string configSha = config.digest;
-
-        Descriptor configDescriptor = new(config.mediaType, config.digest, config.size);
-        JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, configDescriptor, cancellationToken).ConfigureAwait(false);
+        JsonNode configDoc = await _registryAPI.Blob.GetJsonAsync(repositoryName, manifest.Config, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        // ManifestV2.MediaType can be null, so we also provide manifest mediaType from http response
-        return new ImageBuilder(manifest, manifest.MediaType ?? manifestMediaType, new ImageConfig(configDoc), _logger);
+        // Manifest.MediaType can be null, so we also provide the media type returned with the manifest.
+        return new ImageBuilder(manifest, manifestDigest, manifest.MediaType ?? manifestMediaType, new ImageConfig(configDoc), _logger);
     }
 
-
-    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(PlatformSpecificManifest[] manifestList)
+    private static IReadOnlyDictionary<string, Descriptor> GetManifestsByRid(IList<Descriptor> manifestList)
     {
-        var ridDict = new Dictionary<string, PlatformSpecificManifest>();
+        var ridDict = new Dictionary<string, Descriptor>();
         foreach (var manifest in manifestList)
         {
-            if (CreateRidForPlatform(manifest.platform) is { } rid)
+            if (manifest.Platform is not null && CreateRidForPlatform(manifest.Platform) is { } rid)
             {
                 ridDict.TryAdd(rid, manifest);
             }
@@ -266,24 +252,10 @@ internal sealed class Registry
         return ridDict;
     }
 
-    private static IReadOnlyDictionary<string, PlatformSpecificOciManifest> GetManifestsByRid(PlatformSpecificOciManifest[] manifestList)
-    {
-        var ridDict = new Dictionary<string, PlatformSpecificOciManifest>();
-        foreach (var manifest in manifestList)
-        {
-            if (CreateRidForPlatform(manifest.platform) is { } rid)
-            {
-                ridDict.TryAdd(rid, manifest);
-            }
-        }
-
-        return ridDict;
-    }
-
-    private static string? CreateRidForPlatform(PlatformInformation platform)
+    private static string? CreateRidForPlatform(Oci.Platform platform)
     {
         // we only support linux and windows containers explicitly, so anything else we should skip past.
-        var osPart = platform.os switch
+        var osPart = platform.Os switch
         {
             "linux" => "linux",
             "windows" => "win",
@@ -291,16 +263,16 @@ internal sealed class Registry
         };
         // TODO: this part needs a lot of work, the RID graph isn't super precise here and version numbers (especially on windows) are _whack_
         // TODO: we _may_ need OS-specific version parsing. Need to do more research on what the field looks like across more manifest lists.
-        var versionPart = platform.version?.Split('.') switch
+        var versionPart = platform.OsVersion?.Split('.') switch
         {
         [var major, ..] => major,
             _ => null
         };
-        var platformPart = platform.architecture switch
+        var platformPart = platform.Architecture switch
         {
             "amd64" => "x64",
             "x386" => "x86",
-            "arm" => $"arm{(platform.variant != "v7" ? platform.variant : "")}",
+            "arm" => $"arm{(platform.Variant != "v7" ? platform.Variant : "")}",
             "arm64" => "arm64",
             "ppc64le" => "ppc64le",
             "s390x" => "s390x",
@@ -314,50 +286,28 @@ internal sealed class Registry
     }
 
 
-    private async Task<ImageBuilder> PickBestImageFromManifestListAsync(
+    private async Task<ImageBuilder> PickBestImageFromIndexAsync(
         string repositoryName,
         string reference,
-        ManifestListV2 manifestList,
+        Oci.Index? index,
         string runtimeIdentifier,
         IManifestPicker manifestPicker,
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var ridManifestDict = GetManifestsByRid(manifestList.manifests);
-        if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificManifest matchingManifest)
+        if (index is null)
         {
-            return await ReadImageFromManifest(
-                repositoryName,
-                reference,
-                matchingManifest.digest,
-                matchingManifest.mediaType,
-                runtimeIdentifier,
-                ridManifestDict.Keys,
-                cancellationToken);
+            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, []);
         }
-        else
-        {
-            throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, ridManifestDict.Keys);
-        }
-    }
 
-    private async Task<ImageBuilder> PickBestImageFromImageIndexAsync(
-        string repositoryName,
-        string reference,
-        ImageIndexV1 index,
-        string runtimeIdentifier,
-        IManifestPicker manifestPicker,
-        CancellationToken cancellationToken)
-    {
-        cancellationToken.ThrowIfCancellationRequested();
-        var ridManifestDict = GetManifestsByRid(index.manifests);
-        if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is PlatformSpecificOciManifest matchingManifest)
+        var ridManifestDict = GetManifestsByRid(index.Manifests);
+        if (manifestPicker.PickBestManifestForRid(ridManifestDict, runtimeIdentifier) is Descriptor matchingManifest)
         {
             return await ReadImageFromManifest(
                 repositoryName,
                 reference,
-                matchingManifest.digest,
-                matchingManifest.mediaType,
+                matchingManifest.Digest,
+                matchingManifest.MediaType,
                 runtimeIdentifier,
                 ridManifestDict.Keys,
                 cancellationToken);
@@ -380,13 +330,13 @@ internal sealed class Registry
         using HttpResponseMessage manifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, manifestDigest, cancellationToken).ConfigureAwait(false);
 
         cancellationToken.ThrowIfCancellationRequested();
-        var manifest = await manifestResponse.Content.ReadFromJsonAsync<ManifestV2>(cancellationToken: cancellationToken).ConfigureAwait(false);
+        var manifest = await manifestResponse.Content.ReadFromJsonAsync<Oci.Manifest>(cancellationToken: cancellationToken).ConfigureAwait(false);
         if (manifest is null) throw new BaseImageNotFoundException(runtimeIdentifier, repositoryName, reference, rids);
         DigestUtils.ValidateDigest(manifestDigest);
-        manifest.KnownDigest = manifestDigest;
         return await ReadSingleImageAsync(
             repositoryName,
             manifest,
+            manifestDigest,
             mediaType,
             cancellationToken).ConfigureAwait(false);
     }
@@ -562,7 +512,7 @@ internal sealed class Registry
 
         if (!manifestExists)
         {
-            if (SupportsParallelUploads)
+            if (_settings.ParallelUploadEnabled)
             {
                 await Task.WhenAll(builtImage.LayerDescriptors.Select(descriptor => uploadLayerFunc(descriptor))).ConfigureAwait(false);
             }
@@ -578,10 +528,12 @@ internal sealed class Registry
             using (MemoryStream stringStream = new(Encoding.UTF8.GetBytes(builtImage.Config)))
             {
                 var configDigest = builtImage.ImageDigest!;
-                Descriptor configDescriptor = new(
-                    builtImage.ManifestMediaType == SchemaTypes.DockerManifestV2 ? SchemaTypes.DockerContainerV1 : SchemaTypes.OciImageConfigV1,
-                    configDigest,
-                    stringStream.Length);
+                Descriptor configDescriptor = new()
+                {
+                    MediaType = builtImage.ManifestMediaType == Docker.MediaType.Manifest ? Docker.MediaType.Config : Oci.MediaType.ImageConfig,
+                    Digest = configDigest,
+                    Size = stringStream.Length,
+                };
                 _logger.LogInformation(Strings.Registry_ConfigUploadStarted, configDigest);
                 await UploadBlobAsync(destination.Repository, configDescriptor, stringStream, cancellationToken).ConfigureAwait(false);
                 _logger.LogInformation(Strings.Registry_ConfigUploaded);

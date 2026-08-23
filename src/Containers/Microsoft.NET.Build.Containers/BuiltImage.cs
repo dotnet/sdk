@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
@@ -41,7 +43,7 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image layers.
     /// </summary>
-    internal List<ManifestLayer>? Layers { get; init; }
+    internal IList<Descriptor>? Layers { get; init; }
 
     /// <summary>
     /// Gets image OS.
@@ -56,15 +58,6 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets layers descriptors.
     /// </summary>
-    internal IEnumerable<Descriptor> LayerDescriptors
-    {
-        get
-        {
-            List<ManifestLayer> layersNode = Layers ?? throw new NotImplementedException("Tried to get layer information but there is no layer node?");
-            foreach (ManifestLayer layer in layersNode)
-            {
-                yield return new(layer.mediaType, layer.digest, layer.size);
-            }
-        }
-    }
+    internal IEnumerable<Descriptor> LayerDescriptors =>
+        Layers ?? throw new NotImplementedException("Tried to get layer information but there is no layer node?");
 }

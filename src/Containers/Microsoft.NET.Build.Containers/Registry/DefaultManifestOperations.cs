@@ -8,6 +8,8 @@ using OrasProject.Oras.Exceptions;
 using OrasProject.Oras.Registry.Remote.Exceptions;
 using OrasDescriptor = OrasProject.Oras.Oci.Descriptor;
 
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 internal sealed class DefaultManifestOperations : IManifestOperations
