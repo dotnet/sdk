@@ -94,13 +94,12 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol iAsyncEnumerable, INamedTypeSymbol configuredAsyncEnumerable)
         {
-            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: { } collectionType } forEachOperation &&
+            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: INamedTypeSymbol collectionType } forEachOperation &&
                 !collectionType.IsRefLikeType &&
                 !collectionType.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
             {
                 // Type is itself IAsyncEnumerable<T> or implements/extends IAsyncEnumerable<T>
-                if (collectionType.OriginalDefinition.Equals(iAsyncEnumerable, SymbolEqualityComparer.Default) ||
-                    collectionType.AllInterfaces.Any(i => i.OriginalDefinition.Equals(iAsyncEnumerable, SymbolEqualityComparer.Default)))
+                if (collectionType.DerivesFromOrImplementsAnyConstructionOf(iAsyncEnumerable))
                 {
                     context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
                 }
