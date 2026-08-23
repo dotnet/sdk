@@ -697,6 +697,22 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         }
 
         [TestMethod]
+        public async Task SpanParameter_WrittenViaTupleAssignment_NoDiagnostic()
+        {
+            await VerifyAnalyzerAsync("""
+                using System;
+
+                class C
+                {
+                    private void M(Span<char> values, int x, int y)
+                    {
+                        (values[x], values[y]) = (values[y], values[x]);
+                    }
+                }
+                """);
+        }
+
+        [TestMethod]
         public async Task SpanParameter_PassedAsRefParameter_NoDiagnostic()
         {
             await VerifyAnalyzerAsync("""
