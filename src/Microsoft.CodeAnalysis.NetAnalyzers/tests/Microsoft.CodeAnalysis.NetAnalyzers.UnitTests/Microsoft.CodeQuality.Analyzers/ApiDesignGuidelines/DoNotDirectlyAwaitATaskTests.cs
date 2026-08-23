@@ -1181,7 +1181,7 @@ public class C
 
                     public class C
                     {
-                        public async Task Test{{(genericMethod ? "<T>" : "")}}(IAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(MyAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
                         {
                             await foreach (var i in [|enumerable|])
                             {
@@ -1201,7 +1201,7 @@ public class C
 
                     public class C
                     {
-                        public async Task Test{{(genericMethod ? "<T>" : "")}}(IAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
+                        public async Task Test{{(genericMethod ? "<T>" : "")}}(MyAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
                         {
                             await foreach (var i in enumerable.ConfigureAwait(false))
                             {
@@ -1310,8 +1310,7 @@ public class C
                     {
                         public async Task Test{{(genericMethod ? "<T>" : "")}}()
                         {
-                            MyAsyncEnumerableLikeStruct<{{(genericMethod ? "T" : "int")}}> enumerable = default;
-                            await foreach (var i in enumerable)
+                            await foreach (var i in new MyAsyncEnumerableLikeStruct<{{(genericMethod ? "T" : "int")}}>())
                             {
                             }
                         }
