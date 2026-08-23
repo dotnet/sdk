@@ -13,6 +13,7 @@ public class PackageTests
     {
         IReadOnlyList<string> knownPackageReferences = new List<string>()
         {
+            "Docker.DotNet.Enhanced",
             "Microsoft.Build.Utilities.Core",
             "Microsoft.CodeAnalysis.PublicApiAnalyzers",
             "Nuget.Packaging",
@@ -22,7 +23,8 @@ public class PackageTests
         IReadOnlyList<string> knownProjectReferences = new List<string>()
         {
             "..\\..\\Cli\\Microsoft.DotNet.Cli.Utils\\Microsoft.DotNet.Cli.Utils.csproj",
-            "..\\..\\Microsoft.Extensions.Logging.MSBuild\\Microsoft.Extensions.Logging.MSBuild.csproj"
+            "..\\..\\Microsoft.Extensions.Logging.MSBuild\\Microsoft.Extensions.Logging.MSBuild.csproj",
+            "..\\OrasProject.Oras.SourceBuild\\OrasProject.Oras.SourceBuild.csproj"
         };
 
         string projectFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "ProjectFiles", "Microsoft.NET.Build.Containers.csproj");
@@ -50,18 +52,27 @@ public class PackageTests
               "Icon.png",
               "Microsoft.NET.Build.Containers.nuspec",
               "README.md",
+              $"tasks/{netTFM}/Docker.DotNet.Handler.Abstractions.dll",
+              $"tasks/{netTFM}/Docker.DotNet.LegacyHttp.dll",
+              $"tasks/{netTFM}/Docker.DotNet.NativeHttp.dll",
+              $"tasks/{netTFM}/Docker.DotNet.NPipe.dll",
+              $"tasks/{netTFM}/Docker.DotNet.Unix.dll",
+              $"tasks/{netTFM}/Docker.DotNet.dll",
               $"tasks/{netTFM}/Microsoft.DotNet.Cli.Utils.dll",
+              $"tasks/{netTFM}/Microsoft.Extensions.Caching.Memory.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.DependencyInjection.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.dll",
               $"tasks/{netTFM}/Microsoft.Extensions.Logging.MSBuild.dll",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.deps.json",
               $"tasks/{netTFM}/Microsoft.NET.Build.Containers.dll",
+              $"tasks/{netTFM}/Microsoft.Net.Http.Client.dll",
               $"tasks/{netTFM}/Newtonsoft.Json.dll",
               $"tasks/{netTFM}/NuGet.Common.dll",
               $"tasks/{netTFM}/NuGet.Configuration.dll",
               $"tasks/{netTFM}/NuGet.Frameworks.dll",
               $"tasks/{netTFM}/NuGet.Packaging.dll",
               $"tasks/{netTFM}/NuGet.Versioning.dll",
+              $"tasks/{netTFM}/OrasProject.Oras.dll",
               $"tasks/{netTFM}/Valleysoft.DockerCredsProvider.dll"
         };
 

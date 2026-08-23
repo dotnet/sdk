@@ -54,6 +54,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Docker.DotNet.Enhanced" />
     <PackageReference Include="Valleysoft.DockerCredsProvider" />
 
     <!-- References that are also carried in the SDK itself so don't need to be redistributed -->

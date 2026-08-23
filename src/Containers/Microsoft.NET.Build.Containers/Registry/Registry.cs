@@ -69,7 +69,7 @@ internal enum RegistryMode
     PullFromOutput
 }
 
-internal sealed class Registry
+internal sealed class Registry : IImageSource
 {
     private const string DockerHubRegistry1 = "registry-1.docker.io";
     private const string DockerHubRegistry2 = "registry.hub.docker.com";
@@ -252,7 +252,7 @@ internal sealed class Registry
     }
 
 
-    private static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(PlatformSpecificManifest[] manifestList)
+    internal static IReadOnlyDictionary<string, PlatformSpecificManifest> GetManifestsByRid(PlatformSpecificManifest[] manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificManifest>();
         foreach (var manifest in manifestList)
@@ -266,7 +266,7 @@ internal sealed class Registry
         return ridDict;
     }
 
-    private static IReadOnlyDictionary<string, PlatformSpecificOciManifest> GetManifestsByRid(PlatformSpecificOciManifest[] manifestList)
+    internal static IReadOnlyDictionary<string, PlatformSpecificOciManifest> GetManifestsByRid(PlatformSpecificOciManifest[] manifestList)
     {
         var ridDict = new Dictionary<string, PlatformSpecificOciManifest>();
         foreach (var manifest in manifestList)
@@ -280,7 +280,7 @@ internal sealed class Registry
         return ridDict;
     }
 
-    private static string? CreateRidForPlatform(PlatformInformation platform)
+    internal static string? CreateRidForPlatform(PlatformInformation platform)
     {
         // we only support linux and windows containers explicitly, so anything else we should skip past.
         var osPart = platform.os switch
@@ -468,6 +468,9 @@ internal sealed class Registry
         return localPath;
     }
 
+    Task<string> IImageSource.GetBlobPathAsync(string repository, Descriptor descriptor, CancellationToken cancellationToken)
+        => DownloadBlobAsync(repository, descriptor, cancellationToken);
+
     internal async Task PushLayerAsync(Layer layer, string repository, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
@@ -540,7 +543,7 @@ internal sealed class Registry
                 return;
             }
 
-            if (source.Registry is { } sourceRegistry)
+            if (source.EffectiveImageSource is { } imageSource)
             {
                 await _registryAPI.Blob.MountAsync(
                     destination.Repository,
@@ -548,7 +551,7 @@ internal sealed class Registry
                     descriptor,
                     async token =>
                     {
-                        string localPath = await sourceRegistry.DownloadBlobAsync(source.Repository, descriptor, token).ConfigureAwait(false);
+                        string localPath = await imageSource.GetBlobPathAsync(source.Repository, descriptor, token).ConfigureAwait(false);
                         return File.OpenRead(localPath);
                     },
                     cancellationToken).ConfigureAwait(false);
