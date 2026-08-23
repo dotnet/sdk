@@ -162,9 +162,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
                     return false;
                 }
 
-                var argumentsInParameterOrder = invocation.Arguments
-                    .OrderBy(a => a.Parameter?.Ordinal)
-                    .ToImmutableArray();
+                var argumentsInParameterOrder = invocation.Arguments.GetArgumentsInParameterOrder();
                 var typeOfArguments = argumentsInParameterOrder.WhereAsArray(
                     a => a.Value is ITypeOfOperation &&
                         SymbolEqualityComparer.Default.Equals(a.Parameter?.OriginalDefinition.Type, systemType));
