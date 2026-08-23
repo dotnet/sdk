@@ -10,6 +10,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(PreferReadOnlySpanPropertiesOverReadOnlyArrayFields.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider() => WellKnownFixAllProviders.BatchFixer;
+        public abstract override FixAllProvider GetFixAllProvider();
     }
 }

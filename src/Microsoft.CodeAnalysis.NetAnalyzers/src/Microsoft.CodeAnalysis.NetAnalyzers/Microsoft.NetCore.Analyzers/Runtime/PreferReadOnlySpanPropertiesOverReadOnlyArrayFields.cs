@@ -89,14 +89,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                             {
                                 foreach (var field in fieldInitializer.InitializedFields)
                                 {
-                                    if (field.IsStatic && field.IsReadOnly && field.IsPrivate())
+                                    if (field.IsStatic && field.IsReadOnly && field.IsPrivate() && symbols.CanMoveAttributesToProperty(field))
                                         cache.Candidates.Add(field);
                                 }
                             }
 
                             break;
                         case IFieldReferenceOperation fieldReference:
-                            if (fieldReference.GetValueUsageInfo(fieldReference.SemanticModel!.GetEnclosingSymbol(fieldReference.Syntax.SpanStart, context.CancellationToken)!) is
+                            if (fieldReference.IsWithinExpressionTree(symbols.LinqExpressionTreeType))
+                            {
+                                //  Eliminate candidates referenced within an expression tree, where a
+                                //  ReadOnlySpan<T> property cannot be used (CS8640).
+                                cache.Candidates.Eliminate(fieldReference.Field);
+                            }
+                            else if (fieldReference.GetValueUsageInfo(fieldReference.SemanticModel!.GetEnclosingSymbol(fieldReference.Syntax.SpanStart, context.CancellationToken)!) is
                                 ValueUsageInfo.ReadableWritableReference or ValueUsageInfo.WritableReference)
                             {
                                 //  Eliminate candidates that are assigned to ref or out variables.
@@ -233,7 +239,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                     conversion.Type is not null &&
                     conversion.Type.OriginalDefinition.Equals(_symbols.ReadOnlySpanType, SymbolEqualityComparer.Default))
                 {
-                    _cache.SavedOperations.Add((argument.Field, operation));
+                    //  Save the field reference itself rather than the wrapping argument so the fixer can
+                    //  locate it again by span. For a named argument (e.g. 'MemoryExtensions.AsSpan(array: a)')
+                    //  the argument syntax is wider than the field reference and would otherwise resolve to
+                    //  the wrong node in the fixer.
+                    _cache.SavedOperations.Add((argument.Field, argument.Operation));
                 }
                 else
                 {
@@ -306,6 +316,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 ArrayLengthProperty = arrayLengthProperty;
                 SupportedArrayElementTypes = GetSupportedArrayElementTypes(compilation);
                 AsSpanMethods = GetAsSpanMethods(compilation, readOnlySpanType);
+                LinqExpressionTreeType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemLinqExpressionsExpression1);
+                AttributeUsageAttributeType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute);
                 return;
 
                 //  Local functions.
@@ -357,9 +369,49 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             public IPropertySymbol ArrayLengthProperty { get; }
             public ImmutableHashSet<ITypeSymbol> SupportedArrayElementTypes { get; }
             public ImmutableHashSet<IMethodSymbol> AsSpanMethods { get; }
+            public INamedTypeSymbol? LinqExpressionTreeType { get; }
+            public INamedTypeSymbol? AttributeUsageAttributeType { get; }
 
             public bool IsSupportedArrayElementType(ITypeSymbol type) => SupportedArrayElementTypes.Contains(type);
             public bool IsAsSpanMethod(IMethodSymbol? method) => method is not null && AsSpanMethods.Contains(method.OriginalDefinition);
+
+            /// <summary>
+            /// Indicates whether every attribute applied to <paramref name="field"/> may also be applied to a
+            /// property, which the fixer needs because it moves them onto the property it generates.
+            /// </summary>
+            public bool CanMoveAttributesToProperty(IFieldSymbol field)
+            {
+                foreach (var attribute in field.GetAttributes())
+                {
+                    if (attribute.AttributeClass is INamedTypeSymbol attributeClass && !IsValidOnProperty(attributeClass))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
+            }
+
+            private bool IsValidOnProperty(INamedTypeSymbol attributeClass)
+            {
+                //  'AttributeUsageAttribute' is itself inherited, so a derived attribute type takes the
+                //  targets declared by the nearest base type that declares them.
+                for (INamedTypeSymbol? type = attributeClass; type is not null; type = type.BaseType)
+                {
+                    foreach (var usage in type.GetAttributes())
+                    {
+                        if (SymbolEqualityComparer.Default.Equals(usage.AttributeClass, AttributeUsageAttributeType) &&
+                            usage.ConstructorArguments.Length == 1 &&
+                            usage.ConstructorArguments[0].Value is int validOn)
+                        {
+                            return (validOn & (int)AttributeTargets.Property) != 0;
+                        }
+                    }
+                }
+
+                //  No '[AttributeUsage]' was found, so the attribute defaults to 'AttributeTargets.All'.
+                return true;
+            }
         }
 
         /// <summary>
