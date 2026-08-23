@@ -13,18 +13,18 @@ namespace Microsoft.NET.Build.Containers;
 /// </remarks>
 internal interface IBlobOperations
 {
-    public IBlobUploadOperations Upload { get; }
+    public Task<bool> ExistsAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken);
 
-    public Task<bool> ExistsAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task<JsonNode> GetJsonAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken);
 
-    public Task<JsonNode> GetJsonAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task<Stream> GetStreamAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken);
 
-    /// <summary>
-    /// Fetches the blob for <paramref name="digest"/> as a stream.
-    /// </summary>
-    /// <remarks>
-    /// Callers are responsible for checking stream contents against <paramref name="digest"/>.
-    /// <see cref="StreamExtensions.CopyToAndVerifyAsync"/> exists to help with this.
-    /// </remarks>
-    public Task<Stream> GetUnvalidatedStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task PushAsync(string repositoryName, Descriptor descriptor, Stream content, CancellationToken cancellationToken);
+
+    public Task MountAsync(
+        string destinationRepository,
+        string sourceRepository,
+        Descriptor descriptor,
+        Func<CancellationToken, Task<Stream>> getContent,
+        CancellationToken cancellationToken);
 }
