@@ -1094,12 +1094,12 @@ public class C
                     using System.Collections.Generic;
                     using System.Threading;
                     using System.Threading.Tasks;
-                    
+
                     public {{implKind}} MyAsyncEnumerable : IAsyncEnumerable<int>
                     {
                         public IAsyncEnumerator<int> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
                     }
-                    
+
                     public class C
                     {
                         public async Task Test(MyAsyncEnumerable enumerable)
@@ -1142,11 +1142,11 @@ public class C
                     using System.Collections.Generic;
                     using System.Threading;
                     using System.Threading.Tasks;
-                    
+
                     public interface IMyAsyncEnumerable : IAsyncEnumerable<int>
                     {
                     }
-                    
+
                     public class C
                     {
                         public async Task Test(IMyAsyncEnumerable enumerable)
@@ -1193,12 +1193,12 @@ public class C
                     using System.Collections.Generic;
                     using System.Threading;
                     using System.Threading.Tasks;
-                    
+
                     public {{implKind}} MyAsyncEnumerable<T> : IAsyncEnumerable<T>
                     {
                         public IAsyncEnumerator<T> GetAsyncEnumerator(CancellationToken cancellationToken = default) => null;
                     }
-                    
+
                     public class C
                     {
                         public async Task Test{{(genericMethod ? "<T>" : "")}}(IAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
@@ -1242,11 +1242,11 @@ public class C
                     using System.Collections.Generic;
                     using System.Threading;
                     using System.Threading.Tasks;
-                    
+
                     public interface IMyAsyncEnumerable<T> : IAsyncEnumerable<T>
                     {
                     }
-                    
+
                     public class C
                     {
                         public async Task Test{{(genericMethod ? "<T>" : "")}}(IMyAsyncEnumerable<{{(genericMethod ? "T" : "int")}}> enumerable)
