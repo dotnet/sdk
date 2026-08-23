@@ -30,10 +30,8 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Usage
 
             Dim invocationSyntax = CType(invocationContext.Syntax, InvocationExpressionSyntax)
             Dim typeArgumentSyntax = invocationContext.TypeArguments.Select(Function(t) SyntaxFactory.ParseTypeName(t.ToDisplayString()))
-            Dim otherArgumentsSyntax = invocationContext.OtherArguments _
-                .Where(Function(a) a.ArgumentKind <> Operations.ArgumentKind.DefaultValue) _
-                .Select(Function(a) a.Syntax) _
-                .OfType(Of ArgumentSyntax)
+            Dim otherArgumentsSyntax = invocationSyntax.ArgumentList.Arguments _
+                .Where(Function(a) Not invocationContext.IsTypeOfArgumentSyntax(a))
             Dim methodNameSyntax =
                 SyntaxFactory.GenericName(SyntaxFactory.Identifier(invocationContext.Method.Name),
                                           SyntaxFactory.TypeArgumentList(typeArgumentSyntax.ToArray()))

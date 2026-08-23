@@ -1205,29 +1205,19 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
-        public async Task ReturnTypeIsIgnoredForExpressionStatement_OffersFixer_CS()
+        public async Task GenericTypeParameterInExpressionStatement_NoDiagnostic_CS()
         {
             string source = """
                 class C
                 {
                     void Test()
                     {
-                        [|System.Collections.Immutable.ImmutableHashSet.Create(typeof(C))|];
+                        System.Collections.Immutable.ImmutableHashSet.Create(typeof(C));
                     }
                 }
                 """;
 
-            string fixedSource = """
-                class C
-                {
-                    void Test()
-                    {
-                        System.Collections.Immutable.ImmutableHashSet.Create<C>();
-                    }
-                }
-                """;
-
-            await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
+            await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
         [TestMethod]
@@ -2427,25 +2417,17 @@ namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
         }
 
         [TestMethod]
-        public async Task ReturnTypeIsIgnoredForExpressionStatement_OffersFixer_VB()
+        public async Task GenericTypeParameterInExpressionStatement_NoDiagnostic_VB()
         {
             string source = """
                 Class C
                     Sub Test()
-                        [|System.Collections.Immutable.ImmutableHashSet.Create(GetType(C))|]
+                        System.Collections.Immutable.ImmutableHashSet.Create(GetType(C))
                     End Sub
                 End Class
                 """;
 
-            string fixedSource = """
-                Class C
-                    Sub Test()
-                        System.Collections.Immutable.ImmutableHashSet.Create(Of C)()
-                    End Sub
-                End Class
-                """;
-
-            await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         [TestMethod]
