@@ -37,7 +37,7 @@ internal class RegistrySettings
     internal bool ForceChunkedUpload { get; init; }
 
     /// <summary>
-    /// Whether we should upload blobs in parallel (enabled by default, but disabled for certain registries in conjunction with the explicit support check below).
+    /// Whether we should upload blobs in parallel. Enabled by default.
     /// </summary>
     /// <remarks>
     /// Enabling this can swamp some registries, so this is an escape hatch.

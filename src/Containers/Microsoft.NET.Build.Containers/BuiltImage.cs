@@ -1,7 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -28,7 +28,7 @@ internal readonly struct BuiltImage
     /// <summary>
     /// Gets image manifest.
     /// </summary>
-    internal required string Manifest { get; init; } 
+    internal required string Manifest { get; init; }
 
     /// <summary>
     /// Gets manifest digest.

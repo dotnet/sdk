@@ -10,10 +10,8 @@ using System.Security.Cryptography.X509Certificates;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Moq;
-
-using Oci = OrasProject.Oras.Oci;
-
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
+using OrasProject.Oras.Oci;
+using OrasProject.Oras.Registry;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -63,28 +61,34 @@ public class RegistryTests : IDisposable
         const string manifestDigest = "sha256:manifest";
         string[] tags = ["latest", "stable"];
 
-        Mock<IManifestOperations> manifestOperations = new(MockBehavior.Strict);
-        manifestOperations
-            .Setup(m => m.ExistsAsync(repository, manifestDigest, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
+        Mock<IManifestStore> manifests = new(MockBehavior.Strict);
+        manifests
+            .Setup(m => m.ResolveAsync(manifestDigest, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Descriptor { MediaType = MediaType.ImageManifest, Digest = manifestDigest });
         foreach (string tag in tags)
         {
-            manifestOperations
-                .Setup(m => m.PutAsync(repository, tag, "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()))
+            manifests
+                .Setup(m => m.PushAsync(
+                    It.Is<Descriptor>(d => d.MediaType == MediaType.ImageManifest),
+                    It.IsAny<Stream>(),
+                    tag,
+                    It.IsAny<CancellationToken>()))
                 .Returns(Task.CompletedTask);
         }
 
-        Mock<IRegistryAPI> api = new(MockBehavior.Strict);
-        api.SetupGet(a => a.Manifest).Returns(manifestOperations.Object);
-        Registry registry = new("example.com", logger, api.Object);
+        Mock<IRepository> repositoryClient = new(MockBehavior.Strict);
+        repositoryClient.SetupGet(r => r.Manifests).Returns(manifests.Object);
+        Mock<IRepositoryFactory> repositoryFactory = new(MockBehavior.Strict);
+        repositoryFactory.Setup(f => f.Create(repository)).Returns(repositoryClient.Object);
+        Registry registry = new("example.com", logger, repositoryFactory.Object);
         BuiltImage image = new()
         {
             Config = "{}",
             ImageDigest = "sha256:config",
             Manifest = "{}",
             ManifestDigest = manifestDigest,
-            ManifestMediaType = Oci.MediaType.ImageManifest,
-            Layers = [new Descriptor { MediaType = Oci.MediaType.ImageLayerGzip, Size = 123, Digest = "sha256:layer" }],
+            ManifestMediaType = MediaType.ImageManifest,
+            Layers = [new Descriptor { MediaType = MediaType.ImageLayerGzip, Size = 123, Digest = "sha256:layer" }],
             OS = "linux",
             Architecture = "amd64",
         };
@@ -93,12 +97,16 @@ public class RegistryTests : IDisposable
 
         await registry.PushAsync(image, source, destination, CancellationToken.None);
 
-        manifestOperations.Verify(m => m.ExistsAsync(repository, manifestDigest, It.IsAny<CancellationToken>()), Times.Once);
+        manifests.Verify(m => m.ResolveAsync(manifestDigest, It.IsAny<CancellationToken>()), Times.Once);
         foreach (string tag in tags)
         {
-            manifestOperations.Verify(m => m.PutAsync(repository, tag, "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()), Times.Once);
+            manifests.Verify(m => m.PushAsync(
+                It.Is<Descriptor>(d => d.MediaType == MediaType.ImageManifest),
+                It.IsAny<Stream>(),
+                tag,
+                It.IsAny<CancellationToken>()), Times.Once);
         }
-        api.VerifyGet(a => a.Blob, Times.Never);
+        repositoryClient.VerifyGet(r => r.Blobs, Times.Never);
     }
 
     [TestMethod]
@@ -108,26 +116,32 @@ public class RegistryTests : IDisposable
         const string repository = "test/repository";
         const string configDigest = "sha256:config";
 
-        Mock<IBlobOperations> blobOperations = new(MockBehavior.Strict);
-        blobOperations
-            .Setup(b => b.ExistsAsync(repository, It.Is<Descriptor>(d => d.Digest == configDigest), It.IsAny<CancellationToken>()))
+        Mock<IBlobStore> blobs = new(MockBehavior.Strict);
+        blobs
+            .Setup(b => b.ExistsAsync(It.Is<Descriptor>(d => d.Digest == configDigest), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
-        Mock<IManifestOperations> manifestOperations = new(MockBehavior.Strict);
-        manifestOperations
-            .Setup(m => m.PutAsync(repository, "latest", "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()))
+        Mock<IManifestStore> manifests = new(MockBehavior.Strict);
+        manifests
+            .Setup(m => m.PushAsync(
+                It.Is<Descriptor>(d => d.MediaType == MediaType.ImageManifest),
+                It.IsAny<Stream>(),
+                "latest",
+                It.IsAny<CancellationToken>()))
             .Returns(Task.CompletedTask);
-        Mock<IRegistryAPI> api = new(MockBehavior.Strict);
-        api.SetupGet(a => a.Blob).Returns(blobOperations.Object);
-        api.SetupGet(a => a.Manifest).Returns(manifestOperations.Object);
+        Mock<IRepository> repositoryClient = new(MockBehavior.Strict);
+        repositoryClient.SetupGet(r => r.Blobs).Returns(blobs.Object);
+        repositoryClient.SetupGet(r => r.Manifests).Returns(manifests.Object);
+        Mock<IRepositoryFactory> repositoryFactory = new(MockBehavior.Strict);
+        repositoryFactory.Setup(f => f.Create(repository)).Returns(repositoryClient.Object);
 
-        Registry registry = new("example.com", logger, api.Object);
+        Registry registry = new("example.com", logger, repositoryFactory.Object);
         BuiltImage image = new()
         {
             Config = "{}",
             ImageDigest = configDigest,
             Manifest = "{}",
             ManifestDigest = "sha256:manifest",
-            ManifestMediaType = Oci.MediaType.ImageManifest,
+            ManifestMediaType = MediaType.ImageManifest,
             Layers = [],
             OS = "linux",
             Architecture = "amd64",
@@ -137,9 +151,96 @@ public class RegistryTests : IDisposable
 
         await registry.PushAsync(image, source, destination, noCache: true, CancellationToken.None);
 
-        manifestOperations.Verify(m => m.ExistsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        blobOperations.Verify(b => b.ExistsAsync(repository, It.Is<Descriptor>(d => d.Digest == configDigest), It.IsAny<CancellationToken>()), Times.Once);
-        manifestOperations.Verify(m => m.PutAsync(repository, "latest", "{}", Oci.MediaType.ImageManifest, It.IsAny<CancellationToken>()), Times.Once);
+        manifests.Verify(m => m.ResolveAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        blobs.Verify(b => b.ExistsAsync(It.Is<Descriptor>(d => d.Digest == configDigest), It.IsAny<CancellationToken>()), Times.Once);
+        manifests.Verify(m => m.PushAsync(
+            It.Is<Descriptor>(d => d.MediaType == MediaType.ImageManifest),
+            It.IsAny<Stream>(),
+            "latest",
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [TestMethod]
+    public async Task PushAsync_UploadsLayersInParallelForAmazonECR()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_UploadsLayersInParallelForAmazonECR));
+        const string repository = "msp/test-repository";
+        const string configDigest = "sha256:config";
+        Descriptor[] layers =
+        [
+            new() { MediaType = MediaType.ImageLayerGzip, Size = 1, Digest = "sha256:layer1" },
+            new() { MediaType = MediaType.ImageLayerGzip, Size = 1, Digest = "sha256:layer2" },
+        ];
+
+        TaskCompletionSource bothMountsStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        TaskCompletionSource releaseMounts = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        int concurrentMounts = 0;
+        int maximumConcurrentMounts = 0;
+
+        Mock<IBlobStore> blobs = new(MockBehavior.Strict);
+        blobs
+            .Setup(b => b.ExistsAsync(It.IsAny<Descriptor>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Descriptor descriptor, CancellationToken _) => descriptor.Digest == configDigest);
+        Mock<IManifestStore> manifests = new(MockBehavior.Strict);
+        manifests
+            .Setup(m => m.PushAsync(
+                It.IsAny<Descriptor>(),
+                It.IsAny<Stream>(),
+                "latest",
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        Mock<IRepository> repositoryClient = new(MockBehavior.Strict);
+        repositoryClient.SetupGet(r => r.Blobs).Returns(blobs.Object);
+        repositoryClient.SetupGet(r => r.Manifests).Returns(manifests.Object);
+        repositoryClient
+            .Setup(r => r.MountAsync(
+                It.IsAny<Descriptor>(),
+                "base/image",
+                It.IsAny<Func<CancellationToken, Task<Stream>>>(),
+                It.IsAny<CancellationToken>()))
+            .Returns<Descriptor, string, Func<CancellationToken, Task<Stream>>, CancellationToken>(async (_, _, _, _) =>
+            {
+                int currentMounts = Interlocked.Increment(ref concurrentMounts);
+                Interlocked.Exchange(ref maximumConcurrentMounts, Math.Max(Volatile.Read(ref maximumConcurrentMounts), currentMounts));
+                if (currentMounts == layers.Length)
+                {
+                    bothMountsStarted.TrySetResult();
+                }
+
+                await releaseMounts.Task;
+                Interlocked.Decrement(ref concurrentMounts);
+            });
+
+        Mock<IRepositoryFactory> repositoryFactory = new(MockBehavior.Strict);
+        repositoryFactory.Setup(f => f.Create(repository)).Returns(repositoryClient.Object);
+
+        Registry registry = new("123456789012.dkr.ecr.eu-west-1.amazonaws.com", logger, repositoryFactory.Object);
+        BuiltImage image = new()
+        {
+            Config = "{}",
+            ImageDigest = configDigest,
+            Manifest = "{}",
+            ManifestDigest = "sha256:manifest",
+            ManifestMediaType = MediaType.ImageManifest,
+            Layers = layers,
+            OS = "linux",
+            Architecture = "amd64",
+        };
+        SourceImageReference source = new(registry, "base/image", "latest", null);
+        DestinationImageReference destination = new(registry, repository, ["latest"]);
+
+        Task push = registry.PushAsync(image, source, destination, noCache: true, TestContext.CancellationToken);
+        try
+        {
+            await bothMountsStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        }
+        finally
+        {
+            releaseMounts.TrySetResult();
+        }
+        await push;
+
+        Assert.AreEqual(layers.Length, maximumConcurrentMounts);
     }
 
     [TestMethod]
@@ -157,17 +258,19 @@ public class RegistryTests : IDisposable
         layer.Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
         layer.Setup(l => l.Descriptor).Returns(descriptor);
 
-        Mock<IBlobOperations> blobOperations = new(MockBehavior.Strict);
-        blobOperations.Setup(b => b.ExistsAsync(repository, descriptor, It.IsAny<CancellationToken>())).ReturnsAsync(false);
-        blobOperations.Setup(b => b.PushAsync(repository, descriptor, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
-        Mock<IRegistryAPI> api = new(MockBehavior.Strict);
-        api.SetupGet(a => a.Blob).Returns(blobOperations.Object);
+        Mock<IBlobStore> blobs = new(MockBehavior.Strict);
+        blobs.Setup(b => b.ExistsAsync(descriptor, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        blobs.Setup(b => b.PushAsync(descriptor, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        Mock<IRepository> repositoryClient = new(MockBehavior.Strict);
+        repositoryClient.SetupGet(r => r.Blobs).Returns(blobs.Object);
+        Mock<IRepositoryFactory> repositoryFactory = new(MockBehavior.Strict);
+        repositoryFactory.Setup(f => f.Create(repository)).Returns(repositoryClient.Object);
 
-        Registry registry = new("public.ecr.aws", logger, api.Object);
+        Registry registry = new("public.ecr.aws", logger, repositoryFactory.Object);
         await registry.PushLayerAsync(layer.Object, repository, CancellationToken.None);
 
-        blobOperations.Verify(b => b.ExistsAsync(repository, descriptor, It.IsAny<CancellationToken>()), Times.Once);
-        blobOperations.Verify(b => b.PushAsync(repository, descriptor, It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once);
+        blobs.Verify(b => b.ExistsAsync(descriptor, It.IsAny<CancellationToken>()), Times.Once);
+        blobs.Verify(b => b.PushAsync(descriptor, It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [TestMethod]
@@ -351,20 +454,24 @@ public class RegistryTests : IDisposable
         var repoName = "testRepo";
         var descriptor = new Descriptor
         {
-            MediaType = Oci.MediaType.ImageLayerGzip,
+            MediaType = MediaType.ImageLayerGzip,
             Digest = "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
             Size = 1234,
         };
         var cancellationToken = CancellationToken.None;
 
-        var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
-        mockRegistryAPI
-            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken))
+        var blobs = new Mock<IBlobStore>(MockBehavior.Strict);
+        blobs
+            .SetupSequence(b => b.FetchAsync(descriptor, cancellationToken))
             .ThrowsAsync(new Exception("Simulated failure 1")) // First attempt fails
             .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
             .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 })); // Third attempt succeeds
+        var repositoryClient = new Mock<IRepository>(MockBehavior.Strict);
+        repositoryClient.SetupGet(r => r.Blobs).Returns(blobs.Object);
+        var repositoryFactory = new Mock<IRepositoryFactory>(MockBehavior.Strict);
+        repositoryFactory.Setup(f => f.Create(repoName)).Returns(repositoryClient.Object);
 
-        Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
+        Registry registry = new(repoName, logger, repositoryFactory.Object, null, () => TimeSpan.Zero);
 
         string? result = null;
         try
@@ -375,7 +482,7 @@ public class RegistryTests : IDisposable
             // Assert
             Assert.IsNotNull(result);
             Assert.IsTrue(File.Exists(result)); // Ensure the file was successfully downloaded
-            mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken), Times.Exactly(3)); // Verify retries
+            blobs.Verify(b => b.FetchAsync(descriptor, cancellationToken), Times.Exactly(3)); // Verify retries
         }
         finally
         {
@@ -396,23 +503,27 @@ public class RegistryTests : IDisposable
         var repoName = "testRepo";
         var descriptor = new Descriptor
         {
-            MediaType = Oci.MediaType.ImageLayerGzip,
+            MediaType = MediaType.ImageLayerGzip,
             Digest = "sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad",
             Size = 1234,
         };
         var cancellationToken = CancellationToken.None;
 
-        var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
+        var blobs = new Mock<IBlobStore>(MockBehavior.Strict);
         // Simulate 5 failures (assuming your retry logic attempts 5 times before throwing)
-        mockRegistryAPI
-            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken))
+        blobs
+            .SetupSequence(b => b.FetchAsync(descriptor, cancellationToken))
             .ThrowsAsync(new Exception("Simulated failure 1"))
             .ThrowsAsync(new Exception("Simulated failure 2"))
             .ThrowsAsync(new Exception("Simulated failure 3"))
             .ThrowsAsync(new Exception("Simulated failure 4"))
             .ThrowsAsync(new Exception("Simulated failure 5"));
+        var repositoryClient = new Mock<IRepository>(MockBehavior.Strict);
+        repositoryClient.SetupGet(r => r.Blobs).Returns(blobs.Object);
+        var repositoryFactory = new Mock<IRepositoryFactory>(MockBehavior.Strict);
+        repositoryFactory.Setup(f => f.Create(repoName)).Returns(repositoryClient.Object);
 
-        Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
+        Registry registry = new(repoName, logger, repositoryFactory.Object, null, () => TimeSpan.Zero);
 
         // Act & Assert
         await Assert.ThrowsExactlyAsync<UnableToDownloadFromRepositoryException>(async () =>
@@ -420,7 +531,7 @@ public class RegistryTests : IDisposable
             await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
         });
 
-        mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken), Times.Exactly(5));
+        blobs.Verify(b => b.FetchAsync(descriptor, cancellationToken), Times.Exactly(5));
     }
 
     private class MockEnvironmentProvider : IEnvironmentProvider

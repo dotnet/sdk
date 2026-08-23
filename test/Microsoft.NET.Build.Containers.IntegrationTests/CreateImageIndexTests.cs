@@ -7,7 +7,6 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.IntegrationTests;
 using NuGet.Protocol;
-using Oci = OrasProject.Oras.Oci;
 using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
@@ -40,7 +39,8 @@ public class CreateImageIndexTests : SdkTest
 
         // Assert that the image index is created correctly
         cii.GeneratedImageIndex.Should().NotBeNullOrEmpty();
-        var imageIndex = cii.GeneratedImageIndex.FromJson<Oci.Index>();
+        var imageIndex = cii.GeneratedImageIndex.FromJson<OrasProject.Oras.Oci.Index>();
+        Assert.IsNotNull(imageIndex);
         imageIndex.Manifests.Should().HaveCount(2);
 
         imageIndex.Manifests[0].Digest.Should().Be(image1.GetMetadata("ManifestDigest"));

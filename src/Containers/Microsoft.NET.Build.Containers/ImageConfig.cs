@@ -4,8 +4,7 @@
 using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
-
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -231,7 +230,8 @@ internal sealed class ImageConfig
         _rootFsLayers.Add(l.UncompressedDigest!);
     }
 
-    internal void SetUser(string user, bool isUserInteraction = false) {
+    internal void SetUser(string user, bool isUserInteraction = false)
+    {
         // we don't let automatic/inferred user settings overwrite an explicit user request
         if (_userHasBeenExplicitlySet && !isUserInteraction)
         {

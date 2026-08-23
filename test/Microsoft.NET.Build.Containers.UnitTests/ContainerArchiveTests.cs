@@ -4,10 +4,7 @@
 using System.Formats.Tar;
 using System.Text.Json;
 using Microsoft.NET.Build.Containers.LocalDaemons;
-
-using Oci = OrasProject.Oras.Oci;
-
-using Docker = OrasProject.Oras.Docker;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -32,8 +29,8 @@ public class ContainerArchiveTests
     }
 
     [TestMethod]
-    [DataRow(Docker.MediaType.Manifest)]
-    [DataRow(Oci.MediaType.ImageManifest)]
+    [DataRow(OrasProject.Oras.Docker.MediaType.Manifest)]
+    [DataRow(MediaType.ImageManifest)]
     public async Task Requires_image_sha(string manifestMediaType)
     {
         BuiltImage image = new()
@@ -62,9 +59,9 @@ public class ContainerArchiveTests
             $$"""
             {
               "schemaVersion": 2,
-              "mediaType": "{{Docker.MediaType.Manifest}}",
+              "mediaType": "{{OrasProject.Oras.Docker.MediaType.Manifest}}",
               "config": {
-                "mediaType": "{{Docker.MediaType.Config}}",
+                "mediaType": "{{OrasProject.Oras.Docker.MediaType.Config}}",
                 "size": 2,
                 "digest": "{{imageDigest}}"
               },
@@ -79,7 +76,7 @@ public class ContainerArchiveTests
             ImageSha = imageSha,
             Manifest = manifest,
             ManifestDigest = manifestDigest,
-            ManifestMediaType = Docker.MediaType.Manifest,
+            ManifestMediaType = OrasProject.Oras.Docker.MediaType.Manifest,
             Layers = [],
             Architecture = "arm64",
             OS = "linux"
@@ -113,9 +110,9 @@ public class ContainerArchiveTests
         string manifestPath = $"blobs/sha256/{DigestUtils.GetEncoded(manifestDigest)}";
         Assert.AreEqual(manifest, entries[manifestPath]);
         using JsonDocument index = JsonDocument.Parse(entries["index.json"]);
-        Assert.AreEqual(Oci.MediaType.ImageIndex, index.RootElement.GetProperty("mediaType").GetString());
+        Assert.AreEqual(MediaType.ImageIndex, index.RootElement.GetProperty("mediaType").GetString());
         Assert.AreEqual(
-            Docker.MediaType.Manifest,
+            OrasProject.Oras.Docker.MediaType.Manifest,
             index.RootElement.GetProperty("manifests")[0].GetProperty("mediaType").GetString());
         Assert.AreEqual(
             "arm64",
@@ -165,7 +162,7 @@ public class ContainerArchiveTests
         using JsonDocument index = JsonDocument.Parse(entries["index.json"]);
         JsonElement manifests = index.RootElement.GetProperty("manifests");
         Assert.AreEqual(1, manifests.GetArrayLength());
-        Assert.AreEqual(Docker.MediaType.ManifestList, manifests[0].GetProperty("mediaType").GetString());
+        Assert.AreEqual(OrasProject.Oras.Docker.MediaType.ManifestList, manifests[0].GetProperty("mediaType").GetString());
         Assert.AreEqual("unknown", manifests[0].GetProperty("platform").GetProperty("architecture").GetString());
         Assert.AreEqual("unknown", manifests[0].GetProperty("platform").GetProperty("os").GetString());
         string imageIndexPath = $"blobs/sha256/{DigestUtils.GetEncoded(DigestUtils.ComputeSha256Digest(imageIndex))}";
@@ -183,9 +180,9 @@ public class ContainerArchiveTests
             $$"""
             {
               "schemaVersion": 2,
-              "mediaType": "{{Docker.MediaType.Manifest}}",
+              "mediaType": "{{OrasProject.Oras.Docker.MediaType.Manifest}}",
               "config": {
-                "mediaType": "{{Docker.MediaType.Config}}",
+                "mediaType": "{{OrasProject.Oras.Docker.MediaType.Config}}",
                 "size": {{config.Length}},
                 "digest": "{{imageDigest}}"
               },
@@ -200,7 +197,7 @@ public class ContainerArchiveTests
             ImageSha = imageSha,
             Manifest = manifest,
             ManifestDigest = DigestUtils.ComputeSha256Digest(manifest),
-            ManifestMediaType = Docker.MediaType.Manifest,
+            ManifestMediaType = OrasProject.Oras.Docker.MediaType.Manifest,
             Layers = [],
             Architecture = architecture,
             OS = "linux"

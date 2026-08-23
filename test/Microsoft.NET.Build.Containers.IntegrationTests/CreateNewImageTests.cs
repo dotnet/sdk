@@ -6,8 +6,7 @@ using FakeItEasy;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.IntegrationTests;
-
-using Oci = OrasProject.Oras.Oci;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
@@ -359,7 +358,7 @@ public class CreateNewImageTests : SdkTest
 
         Assert.IsTrue(cni.Execute(), FormatBuildMessages(errors));
 
-        cni.GeneratedContainerMediaType.Should().Be(Oci.MediaType.ImageManifest);
+        cni.GeneratedContainerMediaType.Should().Be(MediaType.ImageManifest);
         newProjectDir.Delete(true);
     }
 

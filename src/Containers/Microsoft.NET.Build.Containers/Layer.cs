@@ -7,12 +7,7 @@ using System.IO.Compression;
 using System.IO.Enumeration;
 using System.Security.Cryptography;
 using Microsoft.NET.Build.Containers.Resources;
-
-using Oci = OrasProject.Oras.Oci;
-
-using Docker = OrasProject.Oras.Docker;
-
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -238,9 +233,9 @@ internal class Layer
 
         string layerMediaType = manifestMediaType switch
         {
-             // TODO: configurable? gzip always?
-            Docker.MediaType.Manifest => SchemaTypes.DockerLayerGzip,
-            Oci.MediaType.ImageManifest => Oci.MediaType.ImageLayerGzip,
+            // TODO: configurable? gzip always?
+            OrasProject.Oras.Docker.MediaType.Manifest => SchemaTypes.DockerLayerGzip,
+            MediaType.ImageManifest => MediaType.ImageLayerGzip,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
         };
 

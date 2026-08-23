@@ -3,15 +3,13 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 using Task = System.Threading.Tasks.Task;
-
-using Oci = OrasProject.Oras.Oci;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.Tasks;
 
@@ -81,7 +79,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
         await ImagePublisher.PublishImageAsync(multiArchImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
-            .ConfigureAwait(false); 
+            .ConfigureAwait(false);
 
         return !Log.HasLoggedErrors;
     }
@@ -114,7 +112,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
 
             if (destinationKind == DestinationImageReferenceKind.LocalRegistry)
             {
-                Oci.Manifest? imageManifest = JsonSerializer.Deserialize<Oci.Manifest>(manifest);
+                Manifest? imageManifest = JsonSerializer.Deserialize<Manifest>(manifest);
                 if (imageManifest == null)
                 {
                     Log.LogError(Strings.InvalidImageManifest);
@@ -124,7 +122,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 imageDigest = imageManifest.Config.Digest;
                 imageSha = DigestUtils.GetEncoded(imageDigest);
                 layers = imageManifest.Layers;
-            }     
+            }
 
             images[i] = new BuiltImage()
             {
@@ -156,7 +154,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         {
             Log.LogError(Strings.ImageConfigMissingArchitecture);
             return (string.Empty, string.Empty);
-        } 
+        }
         var os = configJson["os"]?.ToString();
         if (string.IsNullOrEmpty(os))
         {
@@ -174,8 +172,8 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
                 return new MultiArchImage()
                 {
                     // For multi-arch we publish only oci-formatted image tarballs.
-                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, Oci.MediaType.ImageManifest, Oci.MediaType.ImageIndex),
-                    ImageIndexMediaType = Oci.MediaType.ImageIndex,
+                    ImageIndex = ImageIndexGenerator.GenerateImageIndex(images, MediaType.ImageManifest, MediaType.ImageIndex),
+                    ImageIndexMediaType = MediaType.ImageIndex,
                     Images = images
                 };
             case DestinationImageReferenceKind.RemoteRegistry:

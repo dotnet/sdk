@@ -6,12 +6,7 @@ using System.Text.RegularExpressions;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
-
-using Oci = OrasProject.Oras.Oci;
-
-using Docker = OrasProject.Oras.Docker;
-
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -23,7 +18,7 @@ internal sealed class ImageBuilder
     private readonly string _baseImageManifestDigest;
 
     // the mutable internal manifest that we're building by modifying the base and applying customizations
-    private readonly Oci.Manifest _manifest;
+    private readonly Manifest _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
 
@@ -40,10 +35,10 @@ internal sealed class ImageBuilder
     /// </summary>
     public string ManifestMediaType { get; set; }
 
-    internal ImageBuilder(Oci.Manifest manifest, string manifestDigest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
+    internal ImageBuilder(Manifest manifest, string manifestDigest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
     {
         _baseImageManifestDigest = manifestDigest;
-        _manifest = new Oci.Manifest
+        _manifest = new Manifest
         {
             SchemaVersion = manifest.SchemaVersion,
             Config = manifest.Config,
@@ -86,16 +81,16 @@ internal sealed class ImageBuilder
             Size = imageSize,
             MediaType = ManifestMediaType switch
             {
-                Oci.MediaType.ImageManifest => Oci.MediaType.ImageConfig,
-                Docker.MediaType.Manifest => Docker.MediaType.Config,
-                _ => Oci.MediaType.ImageConfig // opinion - defaulting to modern here, but really this should never happen
+                MediaType.ImageManifest => MediaType.ImageConfig,
+                OrasProject.Oras.Docker.MediaType.Manifest => OrasProject.Oras.Docker.MediaType.Config,
+                _ => MediaType.ImageConfig // opinion - defaulting to modern here, but really this should never happen
             },
             Urls = _manifest.Config.Urls,
             Annotations = _manifest.Config.Annotations,
             Data = _manifest.Config.Data,
         };
 
-        Oci.Manifest newManifest = new()
+        Manifest newManifest = new()
         {
             Config = newManifestConfig,
             SchemaVersion = _manifest.SchemaVersion,

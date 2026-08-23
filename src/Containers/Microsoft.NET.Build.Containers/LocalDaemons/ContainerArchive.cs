@@ -5,12 +5,7 @@ using System.Diagnostics;
 using System.Formats.Tar;
 using System.Text.Json.Nodes;
 using Microsoft.NET.Build.Containers.Resources;
-
-using Oci = OrasProject.Oras.Oci;
-
-using Docker = OrasProject.Oras.Docker;
-
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -42,11 +37,11 @@ internal static class ContainerArchive
         Stream imageStream,
         CancellationToken cancellationToken)
     {
-        if (image.ManifestMediaType == Docker.MediaType.Manifest)
+        if (image.ManifestMediaType == OrasProject.Oras.Docker.MediaType.Manifest)
         {
             await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken).ConfigureAwait(false);
         }
-        else if (image.ManifestMediaType == Oci.MediaType.ImageManifest)
+        else if (image.ManifestMediaType == MediaType.ImageManifest)
         {
             await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken).ConfigureAwait(false);
         }
@@ -233,7 +228,7 @@ internal static class ContainerArchive
             image.Manifest.Length,
             destinationReference.Repository,
             destinationReference.Tags,
-            new Oci.Platform
+            new Platform
             {
                 Architecture = image.Architecture,
                 Os = image.OS
@@ -297,7 +292,7 @@ internal static class ContainerArchive
             destinationReference.Tags,
             // OCI defines this descriptor as a referrer to the multi-platform index, so it has no single platform.
             // Apple container requires platform metadata here; Docker and Podman accept unknown values.
-            new Oci.Platform { Architecture = "unknown", Os = "unknown" });
+            new Platform { Architecture = "unknown", Os = "unknown" });
 
         using MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson));
         PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")

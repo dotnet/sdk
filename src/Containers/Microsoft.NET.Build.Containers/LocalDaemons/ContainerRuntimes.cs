@@ -6,10 +6,7 @@ using System.Text.Json;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
-
-using Oci = OrasProject.Oras.Oci;
-
-using Docker = OrasProject.Oras.Docker;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -69,8 +66,8 @@ internal abstract class ContainerRuntimeBase(ContainerRuntimeOperations operatio
         => imageFormat switch
         {
             null => defaultManifestMediaType,
-            KnownImageFormats.Docker => Docker.MediaType.Manifest,
-            KnownImageFormats.OCI => Oci.MediaType.ImageManifest,
+            KnownImageFormats.Docker => OrasProject.Oras.Docker.MediaType.Manifest,
+            KnownImageFormats.OCI => MediaType.ImageManifest,
             _ => defaultManifestMediaType
         };
 }
