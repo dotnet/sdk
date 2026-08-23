@@ -240,7 +240,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
             }
 
             public bool IsTypeOfArgumentSyntax(SyntaxNode argumentSyntax)
-                => TypeOfArguments.Any(a => argumentSyntax.Span.Contains(a.Value.Syntax.Span));
+                => TypeOfArguments.Any(a => a.Syntax.SyntaxTree == argumentSyntax.SyntaxTree && a.Syntax.Span == argumentSyntax.Span);
 
             public bool AreOtherArgumentsCompatible(IMethodSymbol method, Compilation compilation)
             {
