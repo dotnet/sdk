@@ -1262,6 +1262,88 @@ public class C
         }
 
         [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableConstrainedGenericParameter_Concrete_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<int>
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<int>
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
+        public Task CSharpAwaitIAsyncEnumerableConstrainedGenericParameter_Generic_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable, TElement>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<TElement>
+                        {
+                            await foreach (var i in [|enumerable|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System.Collections.Generic;
+                    using System.Threading;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        public async Task Test<TEnumerable, TElement>(TEnumerable enumerable)
+                            where TEnumerable : IAsyncEnumerable<TElement>
+                        {
+                            await foreach (var i in enumerable.ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod, WorkItem(6652, "https://github.com/dotnet/roslyn-analyzers/issues/6652")]
         public Task CSharpAwaitIAsyncEnumerableImplementationRefStruct_Concrete_NoDiagnosticAsync()
         {
             return new VerifyCS.Test

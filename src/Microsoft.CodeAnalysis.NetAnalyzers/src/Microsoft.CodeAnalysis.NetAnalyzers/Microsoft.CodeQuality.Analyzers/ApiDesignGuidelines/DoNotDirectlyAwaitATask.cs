@@ -94,12 +94,16 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
         private static void AnalyzeAwaitForEachLoopOperation(OperationAnalysisContext context, INamedTypeSymbol iAsyncEnumerable, INamedTypeSymbol configuredAsyncEnumerable)
         {
-            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: INamedTypeSymbol collectionType } forEachOperation &&
+            if (context.Operation is IForEachLoopOperation { IsAsynchronous: true, Collection.Type: { } collectionType } forEachOperation &&
                 !collectionType.IsRefLikeType &&
                 !collectionType.OriginalDefinition.Equals(configuredAsyncEnumerable, SymbolEqualityComparer.Default))
             {
-                // Type is itself IAsyncEnumerable<T> or implements/extends IAsyncEnumerable<T>
-                if (collectionType.DerivesFromOrImplementsAnyConstructionOf(iAsyncEnumerable))
+                // Type is:
+                // - Itself IAsyncEnumerable<T>
+                // - Implements/extends IAsyncEnumerable<T>
+                // - Is a type parameter constrained to IAsyncEnumerable<T>
+                if (collectionType is INamedTypeSymbol namedCollectionType && namedCollectionType.DerivesFromOrImplementsAnyConstructionOf(iAsyncEnumerable) ||
+                    collectionType is ITypeParameterSymbol typeParameterCollectionType && typeParameterCollectionType.ConstraintTypes.Any(c => SymbolEqualityComparer.Default.Equals(c.OriginalDefinition, iAsyncEnumerable)))
                 {
                     context.ReportDiagnostic(forEachOperation.Collection.CreateDiagnostic(Rule));
                 }
