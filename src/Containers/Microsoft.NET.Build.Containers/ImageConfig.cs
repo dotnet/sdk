@@ -5,6 +5,8 @@ using System.Collections.ObjectModel;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
@@ -226,7 +228,7 @@ internal sealed class ImageConfig
 
     internal void AddLayer(Layer l)
     {
-        _rootFsLayers.Add(l.Descriptor.UncompressedDigest!);
+        _rootFsLayers.Add(l.UncompressedDigest!);
     }
 
     internal void SetUser(string user, bool isUserInteraction = false) {

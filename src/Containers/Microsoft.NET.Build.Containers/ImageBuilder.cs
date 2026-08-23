@@ -7,6 +7,12 @@ using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
+
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
@@ -14,11 +20,10 @@ namespace Microsoft.NET.Build.Containers;
 /// </summary>
 internal sealed class ImageBuilder
 {
-    // a snapshot of the manifest that this builder is based on
-    private readonly ManifestV2 _baseImageManifest;
+    private readonly string _baseImageManifestDigest;
 
     // the mutable internal manifest that we're building by modifying the base and applying customizations
-    private readonly ManifestV2 _manifest;
+    private readonly Oci.Manifest _manifest;
     private readonly ImageConfig _baseImageConfig;
     private readonly ILogger _logger;
 
@@ -35,10 +40,19 @@ internal sealed class ImageBuilder
     /// </summary>
     public string ManifestMediaType { get; set; }
 
-    internal ImageBuilder(ManifestV2 manifest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
+    internal ImageBuilder(Oci.Manifest manifest, string manifestDigest, string manifestMediaType, ImageConfig baseImageConfig, ILogger logger)
     {
-        _baseImageManifest = manifest;
-        _manifest = new ManifestV2() { SchemaVersion = manifest.SchemaVersion, Config = manifest.Config, Layers = new(manifest.Layers), MediaType = manifest.MediaType };
+        _baseImageManifestDigest = manifestDigest;
+        _manifest = new Oci.Manifest
+        {
+            SchemaVersion = manifest.SchemaVersion,
+            Config = manifest.Config,
+            Layers = new List<Descriptor>(manifest.Layers),
+            MediaType = manifest.MediaType,
+            ArtifactType = manifest.ArtifactType,
+            Subject = manifest.Subject,
+            Annotations = manifest.Annotations,
+        };
         ManifestMediaType = manifestMediaType;
         _baseImageConfig = baseImageConfig;
         _logger = logger;
@@ -50,7 +64,7 @@ internal sealed class ImageBuilder
     public bool IsWindows => _baseImageConfig.IsWindows;
 
     // For tests
-    internal string ManifestConfigDigest => _manifest.Config.digest;
+    internal string ManifestConfigDigest => _manifest.Config.Digest;
 
     /// <summary>
     /// Builds the image configuration <see cref="BuiltImage"/> ready for further processing.
@@ -66,33 +80,41 @@ internal sealed class ImageBuilder
         string imageDigest = DigestUtils.FormatSha256Digest(imageSha);
         long imageSize = Encoding.UTF8.GetBytes(imageJsonStr).Length;
 
-        ManifestConfig newManifestConfig = _manifest.Config with
+        Descriptor newManifestConfig = new()
         {
-            digest = imageDigest,
-            size = imageSize,
-            mediaType = ManifestMediaType switch
+            Digest = imageDigest,
+            Size = imageSize,
+            MediaType = ManifestMediaType switch
             {
-                SchemaTypes.OciManifestV1 => SchemaTypes.OciImageConfigV1,
-                SchemaTypes.DockerManifestV2 => SchemaTypes.DockerContainerV1,
-                _ => SchemaTypes.OciImageConfigV1 // opinion - defaulting to modern here, but really this should never happen
-            }
+                Oci.MediaType.ImageManifest => Oci.MediaType.ImageConfig,
+                Docker.MediaType.Manifest => Docker.MediaType.Config,
+                _ => Oci.MediaType.ImageConfig // opinion - defaulting to modern here, but really this should never happen
+            },
+            Urls = _manifest.Config.Urls,
+            Annotations = _manifest.Config.Annotations,
+            Data = _manifest.Config.Data,
         };
 
-        ManifestV2 newManifest = new ManifestV2()
+        Oci.Manifest newManifest = new()
         {
             Config = newManifestConfig,
             SchemaVersion = _manifest.SchemaVersion,
             MediaType = ManifestMediaType,
-            Layers = _manifest.Layers
+            Layers = _manifest.Layers,
+            ArtifactType = _manifest.ArtifactType,
+            Subject = _manifest.Subject,
+            Annotations = _manifest.Annotations,
         };
+
+        string manifestJson = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "";
 
         return new BuiltImage()
         {
             Config = imageJsonStr,
             ImageDigest = imageDigest,
             ImageSha = imageSha,
-            Manifest = JsonSerializer.SerializeToNode(newManifest)?.ToJsonString() ?? "",
-            ManifestDigest = newManifest.GetDigest(),
+            Manifest = manifestJson,
+            ManifestDigest = DigestUtils.ComputeSha256Digest(manifestJson),
             ManifestMediaType = ManifestMediaType,
             Layers = _manifest.Layers,
             Architecture = BaseImageConfig.Architecture,
@@ -105,13 +127,13 @@ internal sealed class ImageBuilder
     /// </summary>
     internal void AddLayer(Layer l)
     {
-        _manifest.Layers.Add(new(l.Descriptor.MediaType, l.Descriptor.Size, l.Descriptor.Digest, l.Descriptor.Urls));
+        _manifest.Layers.Add(l.Descriptor);
         _baseImageConfig.AddLayer(l);
     }
 
     internal (string name, string value) AddBaseImageDigestLabel()
     {
-        var label = ("org.opencontainers.image.base.digest", _baseImageManifest.GetDigest());
+        var label = ("org.opencontainers.image.base.digest", _baseImageManifestDigest);
         AddLabel(label.Item1, label.Item2);
         return label;
     }

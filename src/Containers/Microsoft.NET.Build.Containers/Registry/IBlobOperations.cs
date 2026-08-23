@@ -3,6 +3,8 @@
 
 using System.Text.Json.Nodes;
 
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>

@@ -13,6 +13,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
+
 namespace Microsoft.NET.Build.Containers;
 
 // Wraps the 'docker'/'podman' cli.
@@ -287,11 +291,11 @@ internal sealed class DockerCli
 #if NET
     public static async Task WriteImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
-        if (image.ManifestMediaType == SchemaTypes.DockerManifestV2)
+        if (image.ManifestMediaType == Docker.MediaType.Manifest)
         {
             await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
         }
-        else if (image.ManifestMediaType == SchemaTypes.OciManifestV1)
+        else if (image.ManifestMediaType == Oci.MediaType.ImageManifest)
         {
             await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
         }
@@ -471,7 +475,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
-            SchemaTypes.OciManifestV1,
+            Oci.MediaType.ImageManifest,
             image.ManifestDigest,
             image.Manifest.Length,
             destinationReference.Repository,

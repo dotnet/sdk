@@ -8,6 +8,12 @@ using System.IO.Enumeration;
 using System.Security.Cryptography;
 using Microsoft.NET.Build.Containers.Resources;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
+
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 internal class Layer
@@ -34,17 +40,23 @@ internal class Layer
 
     public virtual Descriptor Descriptor { get; }
 
+    /// <summary>
+    /// Gets the digest of the uncompressed layer content used as the image configuration diff ID.
+    /// </summary>
+    public string? UncompressedDigest { get; }
+
     public string BackingFile { get; }
 
     internal Layer()
     {
-        Descriptor = new Descriptor();
+        Descriptor = new Descriptor { MediaType = string.Empty, Digest = string.Empty };
         BackingFile = "";
     }
-    internal Layer(string backingFile, Descriptor descriptor)
+    internal Layer(string backingFile, Descriptor descriptor, string? uncompressedDigest = null)
     {
         BackingFile = backingFile;
         Descriptor = descriptor;
+        UncompressedDigest = uncompressedDigest;
     }
 
     public static Layer FromDescriptor(Descriptor descriptor)
@@ -227,8 +239,8 @@ internal class Layer
         string layerMediaType = manifestMediaType switch
         {
              // TODO: configurable? gzip always?
-            SchemaTypes.DockerManifestV2 => SchemaTypes.DockerLayerGzip,
-            SchemaTypes.OciManifestV1 => SchemaTypes.OciLayerGzipV1,
+            Docker.MediaType.Manifest => SchemaTypes.DockerLayerGzip,
+            Oci.MediaType.ImageManifest => Oci.MediaType.ImageLayerGzip,
             _ => throw new ArgumentException(Resource.FormatString(nameof(Strings.UnrecognizedMediaType), manifestMediaType))
         };
 
@@ -237,7 +249,6 @@ internal class Layer
             MediaType = layerMediaType,
             Size = fileSize,
             Digest = $"sha256:{contentHash}",
-            UncompressedDigest = $"sha256:{uncompressedContentHash}",
         };
 
         string storedContent = ContentStore.PathForDescriptor(descriptor);
@@ -246,7 +257,7 @@ internal class Layer
 
         File.Move(tempTarballPath, storedContent, overwrite: true);
 
-        return new(storedContent, descriptor);
+        return new(storedContent, descriptor, $"sha256:{uncompressedContentHash}");
     }
 
     internal virtual Stream OpenBackingFile() => File.OpenRead(BackingFile);

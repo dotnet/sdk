@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.IntegrationTests;
 using NuGet.Protocol;
+using Oci = OrasProject.Oras.Oci;
 using Task = System.Threading.Tasks.Task;
 
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
@@ -39,16 +40,16 @@ public class CreateImageIndexTests : SdkTest
 
         // Assert that the image index is created correctly
         cii.GeneratedImageIndex.Should().NotBeNullOrEmpty();
-        var imageIndex = cii.GeneratedImageIndex.FromJson<ManifestListV2>();
-        imageIndex.manifests.Should().HaveCount(2);
+        var imageIndex = cii.GeneratedImageIndex.FromJson<Oci.Index>();
+        imageIndex.Manifests.Should().HaveCount(2);
 
-        imageIndex.manifests[0].digest.Should().Be(image1.GetMetadata("ManifestDigest"));
-        imageIndex.manifests[0].platform.os.Should().Be("linux");
-        imageIndex.manifests[0].platform.architecture.Should().Be("amd64");
+        imageIndex.Manifests[0].Digest.Should().Be(image1.GetMetadata("ManifestDigest"));
+        imageIndex.Manifests[0].Platform!.Os.Should().Be("linux");
+        imageIndex.Manifests[0].Platform!.Architecture.Should().Be("amd64");
 
-        imageIndex.manifests[1].digest.Should().Be(image2.GetMetadata("ManifestDigest"));
-        imageIndex.manifests[1].platform.os.Should().Be("linux");
-        imageIndex.manifests[1].platform.architecture.Should().Be("arm64");
+        imageIndex.Manifests[1].Digest.Should().Be(image2.GetMetadata("ManifestDigest"));
+        imageIndex.Manifests[1].Platform!.Os.Should().Be("linux");
+        imageIndex.Manifests[1].Platform!.Architecture.Should().Be("arm64");
 
         // Assert that the image index is pushed to the registry
         var loggerFactory = new TestLoggerFactory(Log);
@@ -159,4 +160,3 @@ public class CreateImageIndexTests : SdkTest
 
     private static string FormatBuildMessages(List<string?> messages) => string.Join("\r\n", messages);
 }
-

@@ -6,6 +6,12 @@ using System.Formats.Tar;
 using System.Text.Json.Nodes;
 using Microsoft.NET.Build.Containers.Resources;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
+
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers;
 
 /// <summary>
@@ -36,11 +42,11 @@ internal static class ContainerArchive
         Stream imageStream,
         CancellationToken cancellationToken)
     {
-        if (image.ManifestMediaType == SchemaTypes.DockerManifestV2)
+        if (image.ManifestMediaType == Docker.MediaType.Manifest)
         {
             await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken).ConfigureAwait(false);
         }
-        else if (image.ManifestMediaType == SchemaTypes.OciManifestV1)
+        else if (image.ManifestMediaType == Oci.MediaType.ImageManifest)
         {
             await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken).ConfigureAwait(false);
         }
@@ -227,10 +233,10 @@ internal static class ContainerArchive
             image.Manifest.Length,
             destinationReference.Repository,
             destinationReference.Tags,
-            new PlatformInformation
+            new Oci.Platform
             {
-                architecture = image.Architecture,
-                os = image.OS
+                Architecture = image.Architecture,
+                Os = image.OS
             });
 
         using MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson));
@@ -291,7 +297,7 @@ internal static class ContainerArchive
             destinationReference.Tags,
             // OCI defines this descriptor as a referrer to the multi-platform index, so it has no single platform.
             // Apple container requires platform metadata here; Docker and Podman accept unknown values.
-            new PlatformInformation { architecture = "unknown", os = "unknown" });
+            new Oci.Platform { Architecture = "unknown", Os = "unknown" });
 
         using MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson));
         PaxTarEntry indexEntry = new(TarEntryType.RegularFile, "index.json")

@@ -7,6 +7,8 @@ using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using Microsoft.NET.Build.Containers.IntegrationTests;
 
+using Oci = OrasProject.Oras.Oci;
+
 namespace Microsoft.NET.Build.Containers.Tasks.IntegrationTests;
 
 [TestClass]
@@ -357,7 +359,7 @@ public class CreateNewImageTests : SdkTest
 
         Assert.IsTrue(cni.Execute(), FormatBuildMessages(errors));
 
-        cni.GeneratedContainerMediaType.Should().Be(SchemaTypes.OciManifestV1);
+        cni.GeneratedContainerMediaType.Should().Be(Oci.MediaType.ImageManifest);
         newProjectDir.Delete(true);
     }
 

@@ -7,6 +7,10 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
+
 namespace Microsoft.NET.Build.Containers;
 
 internal abstract class ContainerRuntimeBase(ContainerRuntimeOperations operations, ILogger logger) : IContainerRuntime
@@ -65,8 +69,8 @@ internal abstract class ContainerRuntimeBase(ContainerRuntimeOperations operatio
         => imageFormat switch
         {
             null => defaultManifestMediaType,
-            KnownImageFormats.Docker => SchemaTypes.DockerManifestV2,
-            KnownImageFormats.OCI => SchemaTypes.OciManifestV1,
+            KnownImageFormats.Docker => Docker.MediaType.Manifest,
+            KnownImageFormats.OCI => Oci.MediaType.ImageManifest,
             _ => defaultManifestMediaType
         };
 }

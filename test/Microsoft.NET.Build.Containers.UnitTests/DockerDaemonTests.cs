@@ -3,6 +3,10 @@
 
 using Microsoft.NET.Build.Containers.Resources;
 
+using Oci = OrasProject.Oras.Oci;
+
+using Docker = OrasProject.Oras.Docker;
+
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
@@ -214,9 +218,9 @@ public class DockerDaemonTests : IDisposable
         DestinationImageReference destination = new(registry, "repository", ["tag"]);
 
         Assert.AreEqual(
-            SchemaTypes.DockerManifestV2,
+            Docker.MediaType.Manifest,
             ContainerHelpers.GetManifestMediaType(
-                SchemaTypes.OciManifestV1,
+                Oci.MediaType.ImageManifest,
                 KnownImageFormats.Docker,
                 destination));
     }

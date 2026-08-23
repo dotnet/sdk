@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
 [TestClass]
@@ -28,5 +30,5 @@ public class ContentStoreTests
     }
 
     private static Descriptor CreateDescriptorWithDigest(string digest) =>
-        new("application/vnd.oci.image.layer.v1.tar+gzip", digest, 1024);
+        new() { MediaType = "application/vnd.oci.image.layer.v1.tar+gzip", Digest = digest, Size = 1024 };
 }
