@@ -6,6 +6,7 @@ using System.Text;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using Microsoft.NET.Build.Containers.Resources;
+using OrasProject.Oras.Registry;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -129,7 +130,8 @@ public static class ContainerHelpers
     /// </summary>
     /// <param name="registryName"></param>
     /// <returns></returns>
-    internal static bool IsValidRegistry(string registryName) => ReferenceParser.AnchoredDomainRegexp.IsMatch(registryName);
+    internal static bool IsValidRegistry(string registryName) =>
+        Reference.TryParse($"{registryName}/repository", out _);
 
     /// <summary>
     /// Ensures the given image name is valid.
@@ -139,7 +141,7 @@ public static class ContainerHelpers
     /// <returns></returns>
     internal static bool IsValidImageName(string imageName)
     {
-        return ReferenceParser.anchoredNameRegexp.IsMatch(imageName);
+        return Reference.TryParse($"registry.invalid/{imageName}", out _);
     }
 
     /// <summary>
@@ -150,7 +152,7 @@ public static class ContainerHelpers
     /// <returns></returns>
     internal static bool IsValidImageTag(string imageTag)
     {
-        return ReferenceParser.anchoredTagRegexp.IsMatch(imageTag);
+        return Reference.TryParse($"registry.invalid/repository:{imageTag}", out _);
     }
 
     /// <summary>
@@ -216,70 +218,60 @@ public static class ContainerHelpers
                                                             out bool isRegistrySpecified
                                                             )
     {
+        containerRegistry = null;
+        containerName = null;
+        containerTag = null;
+        containerDigest = null;
+        isRegistrySpecified = false;
 
-        /// if we don't have a reference at all, bail out
-        var referenceMatch = ReferenceParser.ReferenceRegexp.Match(fullyQualifiedContainerName);
-        if (referenceMatch is not { Success: true })
+        int firstSlash = fullyQualifiedContainerName.IndexOf('/');
+        if (firstSlash >= 0)
         {
-            containerRegistry = null;
-            containerName = null;
-            containerTag = null;
-            containerDigest = null;
+            ReadOnlySpan<char> firstComponent = fullyQualifiedContainerName.AsSpan(0, firstSlash);
+            isRegistrySpecified = firstComponent.Contains('.')
+                || firstComponent.Contains(':')
+                || firstComponent.SequenceEqual("localhost")
+                || firstComponent.StartsWith('[');
+        }
+
+        string referenceValue = isRegistrySpecified
+            ? fullyQualifiedContainerName
+            : $"{DockerRegistryAlias}/{fullyQualifiedContainerName}";
+        if (!Reference.TryParse(referenceValue, out Reference? reference) || reference.Repository is null)
+        {
             isRegistrySpecified = false;
             return false;
         }
 
-        // if we have a reference, then we have three groups:
-        // * reference name
-        // * reference tag (optional)
-        // * reference digest (optional)
-
-        // this will always be successful if the ReferenceRegexp matched, so it's safe to index into.
-        var namePortion = referenceMatch.Groups[1].Value;
-        // we try to decompose the reference name into registry and image name parts.
-        var nameMatch = ReferenceParser.anchoredNameRegexp.Match(namePortion);
-        if (nameMatch is { Success: true })
+        containerRegistry = reference.Registry;
+        containerName = reference.Repository;
+        if (containerRegistry == DockerRegistryAlias && !containerName.Contains('/'))
         {
-            // the name regex has two groups:
-            // * registry (optional)
-            // * image name
+            containerName = $"library/{containerName}";
+        }
 
-            // safely discover the registry
-            var registryPortion = nameMatch.Groups[1];
-            isRegistrySpecified = registryPortion.Success;
-            containerRegistry = isRegistrySpecified ? registryPortion.Value
-                                                    : DockerRegistryAlias;
+        int digestSeparator = fullyQualifiedContainerName.LastIndexOf('@');
+        string nameAndTag = digestSeparator >= 0
+            ? fullyQualifiedContainerName[..digestSeparator]
+            : fullyQualifiedContainerName;
+        containerDigest = digestSeparator >= 0
+            ? fullyQualifiedContainerName[(digestSeparator + 1)..]
+            : null;
 
-            // direct access to the name portion is safe because the regex matched
-            var imageNamePortion = nameMatch.Groups[2];
-            containerName = imageNamePortion.Value;
-
-            if (containerRegistry == DockerRegistryAlias)
+        int tagSeparator = nameAndTag.LastIndexOf(':');
+        if (tagSeparator > nameAndTag.LastIndexOf('/'))
+        {
+            containerTag = nameAndTag[(tagSeparator + 1)..];
+            if (!IsValidImageTag(containerTag))
             {
-                // Add the 'library/' prefix to expand short names like 'ubuntu' to 'library/ubuntu'.
-                if (!containerName.Contains("/"))
-                {
-                    containerName = $"library/{containerName}";
-                }
+                containerRegistry = null;
+                containerName = null;
+                containerTag = null;
+                containerDigest = null;
+                isRegistrySpecified = false;
+                return false;
             }
         }
-        else
-        {
-            containerRegistry = null;
-            containerName = null;
-            containerTag = null;
-            containerDigest = null;
-            isRegistrySpecified = false;
-            return false;
-        }
-
-        // tag may not exist in the reference, so we must safely access it
-        var tagPortion = referenceMatch.Groups[2];
-        containerTag = tagPortion.Success ? tagPortion.Value : null;
-
-        // digest may not exist in the reference, so we must safely access it
-        var digestPortion = referenceMatch.Groups[3];
-        containerDigest = digestPortion.Success ? digestPortion.Value : null;
 
         return true;
     }

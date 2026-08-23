@@ -19,7 +19,6 @@ public class ContainerHelpersTests
     [DataRow("mcr.microsoft.com/", false)] // invalid url
     public void IsValidRegistry(string registry, bool expectedReturn)
     {
-        Console.WriteLine($"Domain pattern is '{ReferenceParser.AnchoredDomainRegexp.ToString()}'");
         Assert.AreEqual(expectedReturn, ContainerHelpers.IsValidRegistry(registry));
     }
 
@@ -27,6 +26,7 @@ public class ContainerHelpersTests
     [DataRow("mcr.microsoft.com/dotnet/runtime@sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true, "mcr.microsoft.com", "dotnet/runtime", null, "sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true)]
     // Handle both tag and digest
     [DataRow("mcr.microsoft.com/dotnet/runtime:6.0@sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true, "mcr.microsoft.com", "dotnet/runtime", "6.0", "sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", true)]
+    [DataRow("mcr.microsoft.com/dotnet/runtime:-invalid@sha256:6cec36412a215aad2a033cfe259890482be0a1dcb680e81fccc393b2d4069455", false, null, null, null, null, false)]
     [DataRow("mcr.microsoft.com/dotnet/runtime:6.0", true, "mcr.microsoft.com", "dotnet/runtime", "6.0", null, true)]
     [DataRow("mcr.microsoft.com/dotnet/runtime", true, "mcr.microsoft.com", "dotnet/runtime", null, null, true)]
     [DataRow("mcr.microsoft.com/", false, null, null, null, null, false)] // no image = nothing resolves

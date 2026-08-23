@@ -3,9 +3,7 @@
 
 using System.Runtime.CompilerServices;
 using System.Text.Json.Nodes;
-
-using Docker = OrasProject.Oras.Docker;
-using Oci = OrasProject.Oras.Oci;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -700,10 +698,10 @@ public class ImageBuilderTests
 
     private ImageBuilder FromBaseImageConfig(string baseImageConfig, [CallerMemberName] string testName = "")
     {
-        var manifest = new Oci.Manifest
+        var manifest = new Manifest
         {
             SchemaVersion = 2,
-            MediaType = Docker.MediaType.Manifest,
+            MediaType = OrasProject.Oras.Docker.MediaType.Manifest,
             Config = new Descriptor
             {
                 MediaType = "",

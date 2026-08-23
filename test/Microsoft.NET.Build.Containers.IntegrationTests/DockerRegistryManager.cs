@@ -3,7 +3,8 @@
 
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
+
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 

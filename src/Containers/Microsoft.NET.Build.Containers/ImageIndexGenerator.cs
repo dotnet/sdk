@@ -3,13 +3,8 @@
 
 using System.Text.Encodings.Web;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using Microsoft.NET.Build.Containers.Resources;
-using Descriptor = OrasProject.Oras.Oci.Descriptor;
-
-using Oci = OrasProject.Oras.Oci;
-
-using Docker = OrasProject.Oras.Docker;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -36,13 +31,13 @@ internal static class ImageIndexGenerator
             throw new ArgumentException(Strings.MixedMediaTypes);
         }
 
-        if (manifestMediaType == Docker.MediaType.Manifest)
+        if (manifestMediaType == OrasProject.Oras.Docker.MediaType.Manifest)
         {
-            return (GenerateImageIndex(images, Docker.MediaType.Manifest, Docker.MediaType.ManifestList), Docker.MediaType.ManifestList);
+            return (GenerateImageIndex(images, OrasProject.Oras.Docker.MediaType.Manifest, OrasProject.Oras.Docker.MediaType.ManifestList), OrasProject.Oras.Docker.MediaType.ManifestList);
         }
-        else if (manifestMediaType == Oci.MediaType.ImageManifest)
+        else if (manifestMediaType == MediaType.ImageManifest)
         {
-            return (GenerateImageIndex(images, Oci.MediaType.ImageManifest, Oci.MediaType.ImageIndex), Oci.MediaType.ImageIndex);
+            return (GenerateImageIndex(images, MediaType.ImageManifest, MediaType.ImageIndex), MediaType.ImageIndex);
         }
         else
         {
@@ -67,7 +62,7 @@ internal static class ImageIndexGenerator
         }
 
         var manifests = new Descriptor[images.Length];
-        
+
         for (int i = 0; i < images.Length; i++)
         {
             manifests[i] = new Descriptor
@@ -75,7 +70,7 @@ internal static class ImageIndexGenerator
                 MediaType = manifestMediaType,
                 Size = images[i].Manifest.Length,
                 Digest = images[i].ManifestDigest,
-                Platform = new Oci.Platform
+                Platform = new Platform
                 {
                     Architecture = images[i].Architecture,
                     Os = images[i].OS
@@ -83,7 +78,7 @@ internal static class ImageIndexGenerator
             };
         }
 
-        var imageIndex = new Oci.Index
+        var imageIndex = new OrasProject.Oras.Oci.Index
         {
             SchemaVersion = 2,
             MediaType = imageIndexMediaType,
@@ -99,10 +94,10 @@ internal static class ImageIndexGenerator
         long manifestSize,
         string repository,
         string[] tags,
-        Oci.Platform? platform = null)
+        Platform? platform = null)
     {
         string containerdImageNamePrefix = repository.Contains('/') ? "docker.io/" : "docker.io/library/";
-        
+
         var manifests = new Descriptor[tags.Length];
         for (int i = 0; i < tags.Length; i++)
         {
@@ -116,33 +111,29 @@ internal static class ImageIndexGenerator
                 Annotations = new Dictionary<string, string>
                 {
                     { "io.containerd.image.name", $"{containerdImageNamePrefix}{repository}:{tag}" },
-                    { "org.opencontainers.image.ref.name", tag } 
+                    { "org.opencontainers.image.ref.name", tag }
                 }
             };
         }
 
-        var index = new Oci.Index
+        var index = new OrasProject.Oras.Oci.Index
         {
             SchemaVersion = 2,
-            MediaType = Oci.MediaType.ImageIndex,
+            MediaType = MediaType.ImageIndex,
             Manifests = manifests
         };
 
         return GetJsonStringFromImageIndex(index);
     }
 
-    private static string GetJsonStringFromImageIndex<T>(T imageIndex)
+    private static string GetJsonStringFromImageIndex(OrasProject.Oras.Oci.Index imageIndex)
     {
-        var nullIgnoreOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
-        };
         // To avoid things like \u002B for '+' especially in media types ("application/vnd.oci.image.manifest.v1\u002Bjson"), we use UnsafeRelaxedJsonEscaping.
         var escapeOptions = new JsonSerializerOptions
         {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
         };
 
-        return JsonSerializer.SerializeToNode(imageIndex, nullIgnoreOptions)?.ToJsonString(escapeOptions) ?? "";
+        return JsonSerializer.Serialize(imageIndex, escapeOptions);
     }
 }
