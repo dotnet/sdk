@@ -42,7 +42,6 @@
              <NecessaryNetContainerTaskDependencies Include="@(_AllNetContainerTaskDependencies)" Condition="(
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('NuGet')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Newtonsoft')) or
-                                $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('OrasProject')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Valleysoft')) or
                                 $([MSBuild]::ValueOrDefault('%(_AllNetContainerTaskDependencies.NuGetPackageId)', '').Contains('Microsoft.Extensions'))
                             ) and
