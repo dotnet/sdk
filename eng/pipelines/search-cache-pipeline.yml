@@ -302,14 +302,11 @@ extends:
                 scriptLocation: inlineScript
                 inlineScript: |
                   $ErrorActionPreference = 'Stop'
-                  $value = az keyvault secret show --vault-name $env:AKAMS_CERT_VAULT --name $env:AKAMS_CERT_SECRET --query value -o tsv
+                  $value = az keyvault secret show --vault-name $env:AKAMSCERTVAULTNAME --name $env:AKAMSCERTSECRETNAME --query value -o tsv
                   if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrWhiteSpace($value)) { Write-Error 'Failed to read the aka.ms certificate secret from the key vault.'; exit 1 }
                   $path = Join-Path $env:AGENT_TEMPDIRECTORY 'akamscert.b64'
                   Set-Content -Path $path -Value $value -NoNewline
                   Write-Host "Wrote certificate material to $path"
-              env:
-                AKAMS_CERT_VAULT: $(AkaMsCertVaultName)
-                AKAMS_CERT_SECRET: $(AkaMsCertSecretName)
 
             # Authenticate as the aka.ms client app with the certificate and PUT both links. The agent's
             # key-vault certificate has a non-exportable private key, so we cannot emit a PEM for
@@ -321,12 +318,12 @@ extends:
                 $searchCacheUrl      = $env:SEARCH_CACHE_URL
                 $nonTemplatePacksUrl = $env:NON_TEMPLATE_PACKS_URL
                 $appId               = $env:AKAMS_APP_ID
-                $authorityTenant     = $env:AKAMS_AUTHORITY_TENANT
-                $shortUrl            = $env:AKAMS_SHORT_URL
-                $nonShortUrl         = $env:AKAMS_NONTEMPLATEPACKS_SHORT_URL
-                $tenant              = $env:AKAMS_TENANT_ID
-                $owners              = $env:AKAMS_OWNERS
-                $groupOwner          = $env:AKAMS_GROUP_OWNER
+                $authorityTenant     = $env:AKAMSAUTHORITYTENANTID
+                $shortUrl            = $env:AKAMSSHORTURL
+                $nonShortUrl         = $env:AKAMSNONTEMPLATEPACKSSHORTURL
+                $tenant              = $env:AKAMSTENANTID
+                $owners              = $env:AKAMSOWNERS
+                $groupOwner          = $env:AKAMSLINKGROUPOWNER
 
                 foreach ($required in @{ SEARCH_CACHE_URL = $searchCacheUrl; NON_TEMPLATE_PACKS_URL = $nonTemplatePacksUrl; AKAMS_APP_ID = $appId; AKAMS_AUTHORITY_TENANT = $authorityTenant; AKAMS_SHORT_URL = $shortUrl; AKAMS_NONTEMPLATEPACKS_SHORT_URL = $nonShortUrl; AKAMS_TENANT_ID = $tenant; AKAMS_OWNERS = $owners }.GetEnumerator()) {
                   if ([string]::IsNullOrWhiteSpace($required.Value)) { Write-Error "Required value '$($required.Key)' is empty."; exit 1 }
@@ -476,9 +473,3 @@ extends:
                 SEARCH_CACHE_URL: $(capture.SearchCacheDownloadUrl)
                 NON_TEMPLATE_PACKS_URL: $(capture.NonTemplatePacksDownloadUrl)
                 AKAMS_APP_ID: $(akams-app-id)
-                AKAMS_AUTHORITY_TENANT: $(AkaMsAuthorityTenantId)
-                AKAMS_SHORT_URL: $(AkaMsShortUrl)
-                AKAMS_NONTEMPLATEPACKS_SHORT_URL: $(AkaMsNonTemplatePacksShortUrl)
-                AKAMS_TENANT_ID: $(AkaMsTenantId)
-                AKAMS_OWNERS: $(AkaMsOwners)
-                AKAMS_GROUP_OWNER: $(AkaMsLinkGroupOwner)
