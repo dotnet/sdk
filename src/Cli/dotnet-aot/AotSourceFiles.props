@@ -210,6 +210,12 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
   </ItemGroup>
 
+  <!-- Dynamic shell completion over the shared command tree. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Hidden\Complete\CompleteCommand.cs" Link="Commands\Hidden\Complete\CompleteCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Hidden\Complete\CompleteCommandParser.cs" Link="Commands\Hidden\Complete\CompleteCommandParser.cs" />
+  </ItemGroup>
+
   <!-- Project-backed command completions. -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliCompletion.cs" Link="CliCompletion.cs" />

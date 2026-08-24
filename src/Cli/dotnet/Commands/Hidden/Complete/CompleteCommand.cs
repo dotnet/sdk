@@ -32,7 +32,9 @@ public class CompleteCommand
 
         try
         {
+#if !CLI_AOT
             result.HandleDebugSwitch();
+#endif
 
             var completions = Completions(result);
 

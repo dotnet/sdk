@@ -13,8 +13,8 @@ namespace Microsoft.DotNet.Cli.Tests;
 
 /// <summary>
 ///  Tests for the AOT-compiled CLI parser (the #if CLI_AOT path in Parser.cs).
-///  Validates that --version, --info, --help, and default usage are served entirely
-///  from AOT, that the full command surface now parses (matching the managed CLI),
+///  Validates that --version, --info, --help, dynamic completion, and default usage are served
+///  entirely from AOT, that the full command surface now parses (matching the managed CLI),
 ///  and that commands which require the managed CLI report this via
 ///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
@@ -332,6 +332,22 @@ public partial class AotParserTests
         stdout.Should().Contain($"\"version\": \"{Product.Version}\"");
         stdout.Should().Contain("\"subcommands\"");
         stdout.Should().Contain("\"build\"");
+    }
+
+    [TestMethod]
+    public void InvokeComplete_RendersCompletionsFromAot()
+    {
+        var (exitCode, stdout, stderr) = InvokeWithCapture([
+            "complete",
+            "--position", "9",
+            "dotnet bu",
+        ]);
+
+        Assert.AreEqual(0, exitCode);
+        Assert.IsTrue(string.IsNullOrEmpty(stderr));
+        Assert.AreSequenceEqual(
+            ["build", "build-server", "msbuild"],
+            stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
     }
 
     [TestMethod]
