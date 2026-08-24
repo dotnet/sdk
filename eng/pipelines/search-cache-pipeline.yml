@@ -14,7 +14,7 @@ schedules:
 
 parameters:
 - name: publishFiles
-  displayName: Publish files to ESRP (download.visualstudio.microsoft.com)?
+  displayName: Publish files to download.visualstudio.microsoft.com using ESRP?
   type: boolean
   default: true
 - name: updateAkaMsLink
