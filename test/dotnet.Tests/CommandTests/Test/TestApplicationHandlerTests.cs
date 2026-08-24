@@ -210,7 +210,7 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
-    public void OnFileArtifactsReceived_FromPostProcessor_PreservesInputProvenance()
+    public void OnFileArtifactsReceived_DuringArtifactPostProcessing_RecordsInputProvenance()
     {
         var invocation = new ArtifactPostProcessingInvocation("manifest.json");
         (TestApplicationHandler handler, _, _) = CreateHandler(
@@ -220,19 +220,20 @@ public class TestApplicationHandlerTests : IDisposable
         handler.OnHandshakeReceived(
             BuildHandshake(
                 HandshakeMessageExecutionModes.Tool,
-                hostType: HandshakeMessageHostTypes.ArtifactPostProcessor),
+                hostType: HandshakeMessageHostTypes.ArtifactPostProcessor,
+                includeInstanceId: false),
             gotSupportedVersion: true).Should().BeTrue();
-        string outputPath = Path.GetFullPath("merged.summary");
-        string[] inputPaths = [Path.GetFullPath("first.summary"), Path.GetFullPath("second.summary")];
+        string outputPath = Path.GetFullPath("merged.trx");
+        string[] inputPaths = [Path.GetFullPath("first.trx"), Path.GetFullPath("second.trx")];
 
         handler.OnFileArtifactsReceived(new FileArtifactMessages(
             "exec-1",
             "inst-1",
-            [new FileArtifactMessage(outputPath, "Summary", null, null, null, null, "example.summary", inputPaths)]));
+            [new FileArtifactMessage(outputPath, "Merged TRX", null, null, null, null, "microsoft.testing.trx", inputPaths)]));
 
-        ArtifactPostProcessingArtifact artifact = invocation.SnapshotOutputs().Should().ContainSingle().Subject;
-        artifact.Path.Should().Be(outputPath);
-        artifact.InputArtifactPaths.Should().Equal(inputPaths);
+        ArtifactPostProcessingArtifact output = invocation.SnapshotOutputs().Should().ContainSingle().Subject;
+        output.Path.Should().Be(outputPath);
+        output.InputArtifactPaths.Should().Equal(inputPaths);
     }
 
     [TestMethod]

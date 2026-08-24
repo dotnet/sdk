@@ -108,12 +108,13 @@ relaunched tool. On a policy-truncated run, the manifest also contains `truncati
 the value `maximumFailedTests` or `timeout`; Microsoft.Testing.Platform exposes that through
 `ArtifactPostProcessingContext`.
 
-The processed artifacts flow **back over the same pipe** as ordinary file-artifact messages,
-along with the exact input paths each output consumed, so they re-enter the normal reporter
-path. In the summary, the SDK
+The processed artifacts flow **back over the same pipe** as ordinary
+file-artifact messages, together with the exact manifest input paths represented by each output,
+so they re-enter the normal reporter path. In the summary, the SDK
 [removes only those consumed inputs and adds the processed output](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
-in their place. Older hosts that do not report input provenance retain the previous
-kind/extension-based replacement behavior.
+in their place. This provenance keeps an unrelated artifact listed even when it happens to share
+the processed output's file extension. Older hosts that do not report provenance retain the
+previous kind-and-extension inference for compatibility.
 
 The original per-module artifacts are **never deleted from disk** — only the run summary
 changes. If you need the individual files (for example a per-module TRX), they are still where
@@ -217,9 +218,9 @@ What `dotnet test` expects of a processor:
   a binary format cannot safely combine).
 - **Treat inputs as read-only** and write under the supplied `outputDirectory`. Never return one of
   the inputs as your output, and never delete a source file.
-- **Set `Kind` on the artifact you return.** That is what the SDK uses to decide which originals the
-  processed artifact represents. Microsoft.Testing.Platform separately reports the exact input
-  paths it consumed so the SDK removes only those originals from the run summary.
+- **Set `Kind` on the artifact you return.** The MTP dispatcher pairs the result with the exact
+  inputs supplied to that processor, and the SDK uses that provenance to replace only those
+  originals in the run summary.
 - **Set `SupportsTruncatedRuns` only when the output can accurately describe an incomplete run.**
   When enabled, inspect `context.TruncationReason` and make the truncation visible in the result.
   The capability covers an incomplete set of complete artifacts, not malformed or partially

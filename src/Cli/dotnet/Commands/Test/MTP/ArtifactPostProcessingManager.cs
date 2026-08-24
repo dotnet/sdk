@@ -386,23 +386,24 @@ internal sealed class ArtifactPostProcessingManager
         ArtifactPostProcessingJob job,
         IReadOnlyList<ArtifactPostProcessingArtifact> processedArtifacts)
     {
-        var plannedInputPaths = new HashSet<string>(
-            job.Groups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
-            FileUtilities.PathComparer);
-
+        HashSet<string>? jobInputPaths = null;
         foreach (ArtifactPostProcessingArtifact processedArtifact in processedArtifacts)
         {
             HashSet<string> consumedPaths;
-            if (processedArtifact.InputArtifactPaths is { } inputArtifactPaths)
+            if (processedArtifact.InputArtifactPaths is not null)
             {
-                consumedPaths = new HashSet<string>(inputArtifactPaths, FileUtilities.PathComparer);
-                consumedPaths.IntersectWith(plannedInputPaths);
+                jobInputPaths ??= new HashSet<string>(
+                    job.Groups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
+                    FileUtilities.PathComparer);
+                consumedPaths = new HashSet<string>(
+                    processedArtifact.InputArtifactPaths.Where(jobInputPaths.Contains),
+                    FileUtilities.PathComparer);
             }
             else
             {
+                // Older dispatchers do not report input provenance. Preserve their behavior by
+                // inferring consumed groups from the output kind and extension.
                 string outputExtension = Path.GetExtension(processedArtifact.Path).ToLowerInvariant();
-                // Older post-processing hosts do not report input provenance. Preserve their
-                // replacement behavior by inferring consumed groups from the output kind/extension.
                 consumedPaths = new HashSet<string>(
                     job.Groups
                         .Where(group =>
