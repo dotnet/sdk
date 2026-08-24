@@ -19,7 +19,8 @@ internal sealed record ArtifactPostProcessingArtifact(
     string ProducingTestModule,
     string? TargetFramework,
     string? Architecture,
-    string ExecutionId);
+    string ExecutionId,
+    IReadOnlyList<string>? InputArtifactPaths = null);
 
 internal sealed record ArtifactPostProcessingGroup(
     string Key,

@@ -206,6 +206,33 @@ public class TestApplicationHandlerTests : IDisposable
     }
 
     [TestMethod]
+    public void OnFileArtifactsReceived_DuringArtifactPostProcessing_RecordsInputProvenance()
+    {
+        var invocation = new ArtifactPostProcessingInvocation("manifest.json");
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingInvocation: invocation);
+        handler.OnHandshakeReceived(
+            BuildHandshake(
+                HandshakeMessageExecutionModes.Tool,
+                hostType: HandshakeMessageHostTypes.ArtifactPostProcessor,
+                includeInstanceId: false),
+            gotSupportedVersion: true).Should().BeTrue();
+        string outputPath = Path.GetFullPath("merged.trx");
+        string[] inputPaths = [Path.GetFullPath("first.trx"), Path.GetFullPath("second.trx")];
+
+        handler.OnFileArtifactsReceived(new FileArtifactMessages(
+            "exec-1",
+            "inst-1",
+            [new FileArtifactMessage(outputPath, "Merged TRX", null, null, null, null, "microsoft.testing.trx", inputPaths)]));
+
+        ArtifactPostProcessingArtifact output = invocation.SnapshotOutputs().Should().ContainSingle().Subject;
+        output.Path.Should().Be(outputPath);
+        output.InputArtifactPaths.Should().Equal(inputPaths);
+    }
+
+    [TestMethod]
     public void OnHandshakeReceived_WhenArtifactPostProcessorHandshakeFails_DoesNotFailTestRun()
     {
         var invocation = new ArtifactPostProcessingInvocation("manifest.json");
