@@ -97,7 +97,7 @@
   </Target>
 
   <Target Name="IncludeGeneratedFilesInPackage"
-          BeforeTargets="_GetPackageFiles"
+          BeforeTargets="$(GenerateNuspecDependsOn)"
           DependsOnTargets="GenerateAnalyzerConfigAndDocumentationFiles">
     <ItemGroup>
       <None Include="$(GeneratedRulesetsDir)/**/*" Pack="true" PackagePath="/rulesets" Visible="false" />
