@@ -1654,7 +1654,7 @@ public class TestReference
             AssertHostedBlazorWasmHtmlIsRewritten(publishCommand, publishArg);
         }
 
-        private static void AssertHostedBlazorWasmHtmlIsRewritten(PublishCommand publishCommand, string publishArg)
+        private void AssertHostedBlazorWasmHtmlIsRewritten(PublishCommand publishCommand, string publishArg)
         {
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
             var wwwroot = Path.Combine(publishDirectory, "wwwroot");
