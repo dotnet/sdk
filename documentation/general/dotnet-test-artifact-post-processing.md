@@ -100,9 +100,12 @@ and manifest option are defined in
 The SDK writes a JSON manifest listing the input artifacts (path, kind, producing module,
 target framework, architecture, execution id) and the output directory, then hands it to the
 relaunched tool. The merged artifacts flow **back over the same pipe** as ordinary
-file-artifact messages, so they re-enter the normal reporter path. In the summary, the SDK
-[removes the inputs it consumed and adds the merged output](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
-in their place.
+file-artifact messages, together with the exact manifest input paths represented by each output,
+so they re-enter the normal reporter path. In the summary, the SDK
+[removes only those consumed inputs and adds the merged output](../../src/Cli/dotnet/Commands/Test/MTP/ArtifactPostProcessingManager.cs)
+in their place. This provenance keeps an unrelated artifact listed even when it happens to share
+the merged output's file extension. Older merge hosts that do not report provenance retain the
+previous kind-and-extension inference for compatibility.
 
 The original per-module artifacts are **never deleted from disk** — only the run summary
 changes. If you need the individual files (for example a per-module TRX), they are still where
@@ -201,8 +204,9 @@ What `dotnet test` expects of a processor:
   a binary format cannot safely combine).
 - **Treat inputs as read-only** and write under the supplied `outputDirectory`. Never return one of
   the inputs as your output, and never delete a source file.
-- **Set `Kind` on the artifact you return.** That is what the SDK uses to decide which originals the
-  merged artifact replaced in the run summary.
+- **Set `Kind` on the artifact you return.** The MTP dispatcher pairs the result with the exact
+  inputs supplied to that processor, and the SDK uses that provenance to replace only those
+  originals in the run summary.
 - **Be deterministic**: the same set of inputs should produce the same output path.
 
 Two SDK behaviors are worth knowing about. The SDK relaunches the *fewest* test applications that

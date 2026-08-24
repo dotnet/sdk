@@ -109,6 +109,87 @@ public class ArtifactPostProcessingManagerTests
     }
 
     [TestMethod]
+    public void ApplyOutputs_WithInputProvenance_PreservesUnconsumedArtifactsSharingOutputExtension()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        ArtifactPostProcessingArtifact taggedFirst = CreateArtifact("tagged-first.xml", "example.junit");
+        ArtifactPostProcessingArtifact taggedSecond = CreateArtifact("tagged-second.xml", "example.junit");
+        ArtifactPostProcessingArtifact unrelated = CreateArtifact("unrelated.xml", kind: null);
+        ArtifactPostProcessingApplication application = CreateApplication();
+        var taggedGroup = new ArtifactPostProcessingGroup(
+            "example.junit",
+            IsKind: true,
+            [taggedFirst, taggedSecond],
+            [application]);
+        var fallbackGroup = new ArtifactPostProcessingGroup(
+            ".xml",
+            IsKind: false,
+            [unrelated],
+            [application]);
+        var job = new ArtifactPostProcessingJob(application, [taggedGroup, fallbackGroup]);
+        foreach (ArtifactPostProcessingArtifact artifact in taggedGroup.Artifacts.Concat(fallbackGroup.Artifacts))
+        {
+            reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", artifact.ExecutionId, null, artifact.Path);
+        }
+
+        ArtifactPostProcessingManager.ApplyOutputs(
+            reporter,
+            job,
+            [
+                CreateArtifact("merged.xml", "example.junit") with
+                {
+                    InputArtifactPaths = [taggedFirst.Path, taggedSecond.Path],
+                },
+            ]);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        output.Should().Contain("merged.xml");
+        output.Should().NotContain("tagged-first.xml");
+        output.Should().NotContain("tagged-second.xml");
+        output.Should().Contain("unrelated.xml");
+    }
+
+    [TestMethod]
+    public void ApplyOutputs_WithInputProvenance_CannotRemoveArtifactsOutsideJob()
+    {
+        var console = new CapturingConsole();
+        using var reporter = CreateReporter(console);
+        ArtifactPostProcessingArtifact first = CreateArtifact("first.trx", "microsoft.testing.trx");
+        ArtifactPostProcessingArtifact second = CreateArtifact("second.trx", "microsoft.testing.trx");
+        ArtifactPostProcessingArtifact outsideJob = CreateArtifact("outside-job.trx", "microsoft.testing.trx");
+        ArtifactPostProcessingApplication application = CreateApplication();
+        var group = new ArtifactPostProcessingGroup(
+            "microsoft.testing.trx",
+            IsKind: true,
+            [first, second],
+            [application]);
+        var job = new ArtifactPostProcessingJob(application, [group]);
+        foreach (ArtifactPostProcessingArtifact artifact in group.Artifacts.Append(outsideJob))
+        {
+            reporter.ArtifactAdded(false, "A.dll", "net10.0", "x64", artifact.ExecutionId, null, artifact.Path);
+        }
+
+        ArtifactPostProcessingManager.ApplyOutputs(
+            reporter,
+            job,
+            [
+                CreateArtifact("merged.trx", "microsoft.testing.trx") with
+                {
+                    InputArtifactPaths = [first.Path, second.Path, outsideJob.Path],
+                },
+            ]);
+        reporter.TestExecutionCompleted(DateTimeOffset.UtcNow, TestExitCode.Success);
+
+        string output = console.GetOutput();
+        output.Should().Contain("merged.trx");
+        output.Should().NotContain("first.trx");
+        output.Should().NotContain("second.trx");
+        output.Should().Contain("outside-job.trx");
+    }
+
+    [TestMethod]
     public void GetArtifactPostProcessingLaunchArguments_DotnetCommand_UsesOnlyExecAndTargetPath()
     {
         ArtifactPostProcessingApplication application = CreateApplication();

@@ -350,24 +350,37 @@ internal sealed class ArtifactPostProcessingManager
         ArtifactPostProcessingJob job,
         IReadOnlyList<ArtifactPostProcessingArtifact> processedArtifacts)
     {
+        HashSet<string>? jobInputPaths = null;
         foreach (ArtifactPostProcessingArtifact processedArtifact in processedArtifacts)
         {
-            string outputExtension = Path.GetExtension(processedArtifact.Path).ToLowerInvariant();
-            // The dispatcher gives one processor both its kind-tagged inputs and matching legacy
-            // extension inputs, so the returned output consumes both groups.
-            ArtifactPostProcessingGroup[] consumedGroups =
-            [
-                .. job.Groups.Where(group =>
-                    group.IsKind
-                        ? string.Equals(group.Key, processedArtifact.Kind, StringComparison.Ordinal)
-                        : string.Equals(group.Key, outputExtension, StringComparison.Ordinal))
-            ];
-
-            if (consumedGroups.Length > 0)
+            HashSet<string> consumedPaths;
+            if (processedArtifact.InputArtifactPaths is not null)
             {
-                var consumedPaths = new HashSet<string>(
-                    consumedGroups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
+                jobInputPaths ??= new HashSet<string>(
+                    job.Groups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
                     FileUtilities.PathComparer);
+                consumedPaths = new HashSet<string>(
+                    processedArtifact.InputArtifactPaths.Where(jobInputPaths.Contains),
+                    FileUtilities.PathComparer);
+            }
+            else
+            {
+                // Older dispatchers do not report input provenance. Preserve their behavior by
+                // inferring consumed groups from the output kind and extension.
+                string outputExtension = Path.GetExtension(processedArtifact.Path).ToLowerInvariant();
+                consumedPaths = new HashSet<string>(
+                    job.Groups
+                        .Where(group =>
+                            group.IsKind
+                                ? string.Equals(group.Key, processedArtifact.Kind, StringComparison.Ordinal)
+                                : string.Equals(group.Key, outputExtension, StringComparison.Ordinal))
+                        .SelectMany(group => group.Artifacts)
+                        .Select(artifact => artifact.Path),
+                    FileUtilities.PathComparer);
+            }
+
+            if (consumedPaths.Count > 0)
+            {
                 output.RemoveArtifacts(consumedPaths);
             }
 
@@ -434,7 +447,8 @@ internal sealed class ArtifactPostProcessingInvocation(string manifestPath)
                 module.TargetPath,
                 targetFramework,
                 architecture,
-                executionId));
+                executionId,
+                artifact.InputArtifactPaths));
         }
     }
 
