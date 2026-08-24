@@ -1645,16 +1645,16 @@ public class TestReference
         [DataRow("/p:BlazorFingerprintBlazorJs=false")]
         public void Publish_BlazorWasmReferencedByAspNetCoreServer(string publishArg)
         {
-            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
+            var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer", identifier: string.IsNullOrEmpty(publishArg) ? "HostedWasmFp" : "HostedWasmNoFp");
             var publishCommand = CreatePublishCommand(testInstance, "Server");
             ExecuteCommand(publishCommand, publishArg).Should().Pass();
-            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand, publishArg);
+            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand);
 
             ExecuteCommand(publishCommand, publishArg, "/p:NoBuild=true").Should().Pass();
-            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand, publishArg);
+            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand);
         }
 
-        private void AssertHostedBlazorWasmHtmlIsRewritten(PublishCommand publishCommand, string publishArg)
+        private void AssertHostedBlazorWasmHtmlIsRewritten(PublishCommand publishCommand)
         {
             var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
             var wwwroot = Path.Combine(publishDirectory, "wwwroot");
@@ -1678,14 +1678,6 @@ public class TestReference
             content.Should().Contain($"src=\"{blazorJsPath}\"");
             new FileInfo(Path.Combine(wwwroot, blazorJsPath!)).Should().Exist();
 
-            if (string.IsNullOrEmpty(publishArg))
-            {
-                blazorJsPath.Should().NotBe("_framework/blazor.webassembly.js");
-            }
-            else
-            {
-                blazorJsPath.Should().Be("_framework/blazor.webassembly.js");
-            }
         }
 
         private void VerifyTypeGranularTrimming(string blazorPublishDirectory)

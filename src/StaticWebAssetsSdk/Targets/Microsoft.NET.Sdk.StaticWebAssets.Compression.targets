@@ -318,13 +318,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <ItemGroup Condition="'$(StaticWebAssetBuildCompressAllAssets)' == 'true'">
-      <_CandidateAssetsForBuild Include="@(StaticWebAsset)" />
+      <_CandidateAssetsForBuild Include="@(StaticWebAsset)" Condition="'%(AssetKind)' != 'Publish'" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(StaticWebAssetBuildCompressAllAssets)' != 'true'">
       <_CandidateAssetsForBuild
         Include="@(StaticWebAsset)"
-        Condition="'%(SourceType)' == 'Discovered' or '%(SourceType)' == 'Computed'" />
+        Condition="'%(AssetKind)' != 'Publish' and ('%(SourceType)' == 'Discovered' or '%(SourceType)' == 'Computed')" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(CompressDiscoveredAssetsDuringBuild)' != 'true'">
