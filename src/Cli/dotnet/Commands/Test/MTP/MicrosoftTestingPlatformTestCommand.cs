@@ -14,6 +14,7 @@ using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Telemetry;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Test;
 
@@ -62,6 +63,13 @@ internal partial class MicrosoftTestingPlatformTestCommand
             && (buildOptions.ListDevices || !string.IsNullOrWhiteSpace(buildOptions.Device)))
         {
             throw new GracefulException(CliCommandStrings.CmdDeviceOptionsRequireProject);
+        }
+
+        if (buildOptions.PathOptions.ProjectOrSolutionPath is { } projectOrSolutionPath
+            && VirtualProjectBuilder.IsValidEntryPointPath(projectOrSolutionPath)
+            && (buildOptions.ListDevices || !string.IsNullOrWhiteSpace(buildOptions.Device)))
+        {
+            throw new GracefulException(CliCommandStrings.CmdDeviceOptionsNotSupportedForFileBasedApps);
         }
 
         FacadeLogger? logger = LoggerUtility.DetermineBinlogger([.. buildOptions.MSBuildArgs], "dotnet-test");
