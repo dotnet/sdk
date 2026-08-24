@@ -1648,6 +1648,44 @@ public class TestReference
             var testInstance = CreateAspNetSdkTestAsset("BlazorWasmReferencedByAspNetCoreServer");
             var publishCommand = CreatePublishCommand(testInstance, "Server");
             ExecuteCommand(publishCommand, publishArg).Should().Pass();
+            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand, publishArg);
+
+            ExecuteCommand(publishCommand, publishArg, "/p:NoBuild=true").Should().Pass();
+            AssertHostedBlazorWasmHtmlIsRewritten(publishCommand, publishArg);
+        }
+
+        private static void AssertHostedBlazorWasmHtmlIsRewritten(PublishCommand publishCommand, string publishArg)
+        {
+            var publishDirectory = publishCommand.GetOutputDirectory(DefaultTfm).ToString();
+            var wwwroot = Path.Combine(publishDirectory, "wwwroot");
+            var indexHtmlPath = Path.Combine(wwwroot, "index.html");
+            var content = File.ReadAllText(indexHtmlPath);
+
+            content.Should().NotContain("<script type=\"importmap\"></script>");
+            content.Should().Contain("<script type=\"importmap\">");
+            content.Should().NotContain("#[.{fingerprint}]");
+            content.Should().NotContain("id=\"webassembly\"");
+            content.Should().Contain("rel=\"preload\"");
+
+            using var endpointsDocument = JsonDocument.Parse(File.ReadAllText(Path.Combine(publishDirectory, "Server.staticwebassets.endpoints.json")));
+            var blazorJsEndpoint = endpointsDocument.RootElement.GetProperty("Endpoints")
+                .EnumerateArray()
+                .Single(endpoint => endpoint.GetProperty("Route").GetString() == "_framework/blazor.webassembly.js" &&
+                    endpoint.GetProperty("Selectors").GetArrayLength() == 0);
+            var blazorJsPath = blazorJsEndpoint.GetProperty("AssetFile").GetString();
+
+            blazorJsPath.Should().NotBeNull();
+            content.Should().Contain($"src=\"{blazorJsPath}\"");
+            new FileInfo(Path.Combine(wwwroot, blazorJsPath!)).Should().Exist();
+
+            if (string.IsNullOrEmpty(publishArg))
+            {
+                blazorJsPath.Should().NotBe("_framework/blazor.webassembly.js");
+            }
+            else
+            {
+                blazorJsPath.Should().Be("_framework/blazor.webassembly.js");
+            }
         }
 
         private void VerifyTypeGranularTrimming(string blazorPublishDirectory)
