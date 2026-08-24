@@ -24,6 +24,7 @@ Documents Index
 
 ## Specifications
 
+- [`dotnet test` for Blazor WebAssembly](specs/dotnet-test-for-blazor-webassembly.md)
 - [CLI installation scenarios](specs/cli-installation-scenarios.md)
 - [Runtime configuration file specification](specs/runtime-configuration-file.md)
 
