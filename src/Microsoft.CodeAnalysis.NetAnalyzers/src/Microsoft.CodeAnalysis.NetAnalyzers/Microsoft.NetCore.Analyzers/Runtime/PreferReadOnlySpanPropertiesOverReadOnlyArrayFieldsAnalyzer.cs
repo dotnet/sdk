@@ -80,7 +80,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             {
                 foreach (var member in namedType.GetMembers())
                 {
-                    if (member is IFieldSymbol field && IsPotentialField(field))
+                    if (member is IFieldSymbol field &&
+                        IsPotentialField(field, symbols.SupportsMultiBytePrimitiveTypes))
                     {
                         return true;
                     }
@@ -108,7 +109,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
                         break;
                     case IFieldReferenceOperation fieldReference:
-                        if (!IsPotentialField(fieldReference.Field))
+                        if (!IsPotentialField(fieldReference.Field, symbols.SupportsMultiBytePrimitiveTypes))
                         {
                             break;
                         }
@@ -170,9 +171,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         internal static bool IsValidCandidate(
             IFieldSymbol field,
             IOperation initializerValue,
-            INamedTypeSymbol? attributeUsageAttributeType)
+            INamedTypeSymbol? attributeUsageAttributeType,
+            bool supportsMultiBytePrimitiveTypes)
         {
-            if (!IsPotentialField(field) ||
+            if (!IsPotentialField(field, supportsMultiBytePrimitiveTypes) ||
                 !CanMoveAttributesToProperty(field, attributeUsageAttributeType) ||
                 field.Type is not IArrayTypeSymbol)
             {
@@ -212,20 +214,59 @@ namespace Microsoft.NetCore.Analyzers.Runtime
         }
 
         private static bool IsValidCandidate(IFieldSymbol field, IOperation initializerValue, RequiredSymbols symbols)
-            => IsValidCandidate(field, initializerValue, symbols.AttributeUsageAttributeType);
+            => IsValidCandidate(
+                field,
+                initializerValue,
+                symbols.AttributeUsageAttributeType,
+                symbols.SupportsMultiBytePrimitiveTypes);
 
-        private static bool IsSupportedArrayElementType(ITypeSymbol elementType)
-            => elementType.SpecialType is
+        private static bool IsSupportedArrayElementType(ITypeSymbol elementType, bool supportsMultiBytePrimitiveTypes)
+            => elementType.SpecialType switch
+            {
                 SpecialType.System_Boolean or
                 SpecialType.System_Byte or
-                SpecialType.System_SByte;
+                SpecialType.System_SByte => true,
+                SpecialType.System_Int16 or
+                SpecialType.System_UInt16 or
+                SpecialType.System_Char or
+                SpecialType.System_Int32 or
+                SpecialType.System_UInt32 or
+                SpecialType.System_Single or
+                SpecialType.System_Int64 or
+                SpecialType.System_UInt64 or
+                SpecialType.System_Double => supportsMultiBytePrimitiveTypes,
+                _ => false,
+            };
 
-        private static bool IsPotentialField(IFieldSymbol field)
+        private static bool IsPotentialField(IFieldSymbol field, bool supportsMultiBytePrimitiveTypes)
             => field.IsStatic &&
                 field.IsReadOnly &&
                 field.IsPrivate() &&
                 field.Type is IArrayTypeSymbol { Rank: 1 } arrayType &&
-                IsSupportedArrayElementType(arrayType.ElementType);
+                IsSupportedArrayElementType(arrayType.ElementType, supportsMultiBytePrimitiveTypes);
+
+        internal static bool SupportsMultiBytePrimitiveTypes(
+            Compilation compilation,
+            INamedTypeSymbol readOnlySpanType)
+        {
+            INamedTypeSymbol? runtimeHelpersType =
+                compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRuntimeCompilerServicesRuntimeHelpers);
+
+            return runtimeHelpersType?.GetMembers("CreateSpan").OfType<IMethodSymbol>().Any(
+                method =>
+                    method.IsStatic &&
+                    method.IsGenericMethod &&
+                    method.Arity == 1 &&
+                    method.DeclaredAccessibility == Accessibility.Public &&
+                    method.Parameters is [{ RefKind: RefKind.None, Type.SpecialType: SpecialType.System_RuntimeFieldHandle }] &&
+                    method.ReturnType is INamedTypeSymbol
+                    {
+                        Arity: 1,
+                        TypeArguments: [ITypeParameterSymbol returnTypeParameter],
+                    } returnType &&
+                    SymbolEqualityComparer.Default.Equals(returnType.OriginalDefinition, readOnlySpanType) &&
+                    SymbolEqualityComparer.Default.Equals(returnTypeParameter, method.TypeParameters[0])) == true;
+        }
 
         private static bool CanMoveAttributesToProperty(IFieldSymbol field, INamedTypeSymbol? attributeUsageAttributeType)
         {
@@ -360,6 +401,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             private RequiredSymbols(Compilation compilation, INamedTypeSymbol readOnlySpanType, IPropertySymbol arrayLengthProperty)
             {
                 ReadOnlySpanType = readOnlySpanType;
+                SupportsMultiBytePrimitiveTypes =
+                    PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.SupportsMultiBytePrimitiveTypes(
+                        compilation,
+                        readOnlySpanType);
                 ArrayLengthProperty = arrayLengthProperty;
                 MemoryExtensionsType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions);
                 SpanType = compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemSpan1);
@@ -381,6 +426,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             }
 
             public INamedTypeSymbol ReadOnlySpanType { get; }
+            public bool SupportsMultiBytePrimitiveTypes { get; }
             public IPropertySymbol ArrayLengthProperty { get; }
             public INamedTypeSymbol? MemoryExtensionsType { get; }
             public INamedTypeSymbol? SpanType { get; }

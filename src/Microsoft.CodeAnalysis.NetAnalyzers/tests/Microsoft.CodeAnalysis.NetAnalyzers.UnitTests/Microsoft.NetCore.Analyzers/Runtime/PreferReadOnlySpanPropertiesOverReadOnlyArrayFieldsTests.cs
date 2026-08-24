@@ -61,6 +61,66 @@ public class C
         }
 
         [TestMethod]
+        [DataRow("short", "1, -2")]
+        [DataRow("ushort", "1, 2")]
+        [DataRow("char", "'a', 'b'")]
+        [DataRow("int", "1, -2")]
+        [DataRow("uint", "1u, 2u")]
+        [DataRow("float", "1.0f, -2.0f")]
+        [DataRow("long", "1L, -2L")]
+        [DataRow("ulong", "1UL, 2UL")]
+        [DataRow("double", "1.0, -2.0")]
+        public Task MultiBytePrimitiveArrayFields_DiagnosticWhenCreateSpanIsAvailable_CS(
+            string arrayType,
+            string arrayInitializer)
+        {
+            string testDeclaration =
+                $"private static readonly {arrayType}[] {{|#0:_array|}} = new {arrayType}[] {{ {arrayInitializer} }};";
+            string fixedDeclaration =
+                $"private static ReadOnlySpan<{arrayType}> _array => new {arrayType}[] {{ {arrayInitializer} }};";
+            const string format = """
+                using System;
+                public class C
+                {{
+                    {0}
+                }}
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { string.Format(CultureInfo.InvariantCulture, format, testDeclaration) },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments(arrayType) },
+                },
+                FixedState =
+                {
+                    Sources = { string.Format(CultureInfo.InvariantCulture, format, fixedDeclaration) },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net70,
+                },
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task MultiBytePrimitiveArrayField_NoDiagnosticWithoutCreateSpan_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    public class C
+                    {
+                        private static readonly int[] _array = new int[] { 1, 2 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         public Task NoSystemUsing_Diagnostic_CS()
         {
             var test = new VerifyCS.Test
@@ -1004,6 +1064,7 @@ public class C
         [DataRow("private static byte[] A { get; } = new byte[] { 1 };")]
         [DataRow("private static readonly short[] a = new short[] { 1 };")]
         [DataRow("private static readonly int[] a = new int[] { 1 };")]
+        [DataRow("private static readonly decimal[] a = new decimal[] { 1 };")]
         [DataRow("private static readonly string[] a = new string[] { nameof(a) };")]
         [DataRow("private static readonly byte[] a;")]
         [DataRow("private static readonly byte[] a = new byte[123];")]

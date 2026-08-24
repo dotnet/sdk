@@ -373,10 +373,16 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 model.GetDeclaredSymbol(variableDeclaratorSyntax, cancellationToken) is not IFieldSymbol expectedField ||
                 variableDeclaratorSyntax.Initializer?.Value is not ExpressionSyntax initializerValue ||
                 model.GetOperation(initializerValue, cancellationToken) is not IOperation initializerOperation ||
-                !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute, out var attributeUsageAttributeType) ||
-                !PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.IsValidCandidate(expectedField, initializerOperation, attributeUsageAttributeType) ||
                 !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions, out var memoryExtensionsType) ||
-                !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1, out var readOnlySpanType))
+                !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1, out var readOnlySpanType) ||
+                !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute, out var attributeUsageAttributeType) ||
+                !PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.IsValidCandidate(
+                    expectedField,
+                    initializerOperation,
+                    attributeUsageAttributeType,
+                    PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.SupportsMultiBytePrimitiveTypes(
+                        model.Compilation,
+                        readOnlySpanType)))
             {
                 return default;
             }
