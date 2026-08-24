@@ -1429,10 +1429,10 @@ public class NativeLibraryClass
         }
 
         [TestMethod]
-        public void UseAotOptimizedPublish_does_not_skip_build_for_non_Aot_publish()
+        public void UseOptimizedPublish_does_not_skip_build_for_unsupported_publish_modes()
         {
-            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "NonAotOptimizedPublish", true);
-            testProject.AdditionalProperties["UseAotOptimizedPublish"] = "true";
+            var testProject = CreateHelloWorldTestProject(ToolsetInfo.CurrentTargetFramework, "UnsupportedOptimizedPublish", true);
+            testProject.AdditionalProperties["UseOptimizedPublish"] = "true";
             var testAsset = TestAssetsManager.CreateTestProject(testProject)
                 .WithProjectChanges(project =>
                 {

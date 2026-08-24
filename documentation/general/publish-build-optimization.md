@@ -38,8 +38,8 @@ Key insight: All post-processing steps read from `@(IntermediateAssembly)` (obj)
   including apphost, managed DLLs, deps.json, runtimeconfig.json, and runtime pack files
 - **None of these files are used** by the AOT pipeline
 - **Optimization**: Replace `Build` with `Compile` (plus resource/satellite targets)
-- **Opt-out**: Set `UseAotOptimizedPublish=false` to restore full Build behavior
-- `UseAotOptimizedPublish` has no effect when `PublishAot` is not enabled
+- **Opt-out**: Set `UseOptimizedPublish=false` to restore full Build behavior
+- `UseOptimizedPublish` currently has no effect when `PublishAot` is not enabled
 
 Target chain for optimized AOT publish:
 ```
@@ -116,14 +116,14 @@ To restore the previous behavior of running a full `Build` before AOT publish, s
 
 ```xml
 <PropertyGroup>
-  <UseAotOptimizedPublish>false</UseAotOptimizedPublish>
+  <UseOptimizedPublish>false</UseOptimizedPublish>
 </PropertyGroup>
 ```
 
 Or pass it on the command line:
 
 ```
-dotnet publish /p:UseAotOptimizedPublish=false
+dotnet publish /p:UseOptimizedPublish=false
 ```
 
 ## Future Work
@@ -133,7 +133,7 @@ The same optimization could be applied to `PublishTrimmed`, `PublishReadyToRun`,
 `@(IntermediateAssembly)` and resolved references rather than `Build` output. Each mode
 would need:
 
-1. Its own condition check (e.g., `UseTrimmingOptimizedPublish`)
+1. Compatibility analysis for Build hooks used by projects and NuGet packages
 2. The same target chain: `BuildOnlySettings → PrepareForBuild → PrepareResources → Compile → CreateSatelliteAssemblies`
-3. Tests verifying no managed artifacts in the output directory
+3. Tests verifying the expected build and publish outputs
 4. Documentation of the breaking change for that mode
