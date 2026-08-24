@@ -32,7 +32,7 @@ variables:
 # Static aka.ms constants (source-of-truth in this repo; not in the Variables UI). These rarely
 # change and are derived from our own code (short URLs) or are well-known fixed values (tenants).
 # The dnceng-owned certificate and owner values stay as pipeline Variables.
-- name: AkaMsTenantId                 # aka.ms redirection tenant in the /api/aka/1/{tenant} path (NOT an AAD GUID)
+- name: AkaMsRedirectionTenant
   value: ncd
   readonly: true
 - name: AkaMsAuthorityTenantId        # corp AAD tenant the app authenticates against (arcade hardcodes this too)
@@ -289,7 +289,7 @@ extends:
             #   AkaMsCertVaultName               - key vault holding the cert (e.g. EngKeyVault)
             #   AkaMsCertSecretName              - cert secret name (e.g. Redirection-UST-Client-NetCoreDeployment)
             #   AkaMsOwners                      - semicolon-delimited owner aliases (first is used as lastModifiedBy)
-            # Static in YAML (see the 'variables:' block): AkaMsTenantId, AkaMsAuthorityTenantId,
+            # Static in YAML (see the 'variables:' block): AkaMsRedirectionTenant, AkaMsAuthorityTenantId,
             # AkaMsShortUrl, AkaMsNonTemplatePacksShortUrl, AkaMsLinkGroupOwner.
             # Only repoint the production links from main; manual/test runs on other branches
             # should not move them (point the short-url vars at test links to validate this step).
@@ -321,11 +321,11 @@ extends:
                 $authorityTenant     = $env:AKAMSAUTHORITYTENANTID
                 $shortUrl            = $env:AKAMSSHORTURL
                 $nonShortUrl         = $env:AKAMSNONTEMPLATEPACKSSHORTURL
-                $tenant              = $env:AKAMSTENANTID
+                $tenant              = $env:AKAMSREDIRECTIONTENANT
                 $owners              = $env:AKAMSOWNERS
                 $groupOwner          = $env:AKAMSLINKGROUPOWNER
 
-                foreach ($required in @{ SEARCH_CACHE_URL = $searchCacheUrl; NON_TEMPLATE_PACKS_URL = $nonTemplatePacksUrl; AKAMS_APP_ID = $appId; AKAMS_AUTHORITY_TENANT = $authorityTenant; AKAMS_SHORT_URL = $shortUrl; AKAMS_NONTEMPLATEPACKS_SHORT_URL = $nonShortUrl; AKAMS_TENANT_ID = $tenant; AKAMS_OWNERS = $owners }.GetEnumerator()) {
+                foreach ($required in @{ SEARCH_CACHE_URL = $searchCacheUrl; NON_TEMPLATE_PACKS_URL = $nonTemplatePacksUrl; AKAMS_APP_ID = $appId; AKAMS_AUTHORITY_TENANT = $authorityTenant; AKAMS_SHORT_URL = $shortUrl; AKAMS_NONTEMPLATEPACKS_SHORT_URL = $nonShortUrl; AKAMS_REDIRECTION_TENANT = $tenant; AKAMS_OWNERS = $owners }.GetEnumerator()) {
                   if ([string]::IsNullOrWhiteSpace($required.Value)) { Write-Error "Required value '$($required.Key)' is empty."; exit 1 }
                 }
 
