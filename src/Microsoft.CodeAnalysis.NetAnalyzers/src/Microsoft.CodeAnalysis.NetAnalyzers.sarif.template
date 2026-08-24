@@ -3595,7 +3595,7 @@
           "properties": {
             "category": "Performance",
             "isEnabledByDefault": true,
-            "typeName": "PreferReadOnlySpanPropertiesOverReadOnlyArrayFields",
+            "typeName": "PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer",
             "languages": [
               "C#"
             ],

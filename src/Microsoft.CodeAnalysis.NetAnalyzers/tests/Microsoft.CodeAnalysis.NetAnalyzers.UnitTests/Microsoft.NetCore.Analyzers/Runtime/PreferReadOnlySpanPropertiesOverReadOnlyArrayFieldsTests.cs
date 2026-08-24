@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.PreferReadOnlySpanPropertiesOverReadOnlyArrayFields,
+    Microsoft.NetCore.Analyzers.Runtime.PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -61,6 +61,54 @@ public class C
         }
 
         [TestMethod]
+        public Task NoSystemUsing_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    public class C
+                    {
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                FixedCode = """
+                    public class C
+                    {
+                        private static System.ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task ImplicitArrayInitializer_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] {|#0:a|} = { 1, 2, 3 };
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         [DataRow(@"
     private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 }, {|#1:b|} = new byte[] { 5, 7 };",
             @"
@@ -87,6 +135,22 @@ public class C
     private static readonly byte[] b = new byte[] { field, 4 };
     private static ReadOnlySpan<byte> c => new byte[] { 5, 6, 7 };
     private static ReadOnlySpan<byte> a => new byte[] { 1, 2 };", 2)]
+        [DataRow(@"
+    [Obsolete]
+    private static readonly byte[] {|#0:a|} = new byte[] { 1 }, b = new byte[] { field };",
+            @"
+    [Obsolete]
+    private static readonly byte[] b = new byte[] { field };
+    [Obsolete]
+    private static ReadOnlySpan<byte> a => new byte[] { 1 };")]
+        [DataRow(@"
+    [Obsolete]
+    private static readonly byte[] {|#0:a|} = new byte[] { 1 }, {|#1:b|} = new byte[] { 2 };",
+            @"
+    [Obsolete]
+    private static ReadOnlySpan<byte> b => new byte[] { 2 };
+    [Obsolete]
+    private static ReadOnlySpan<byte> a => new byte[] { 1 };", 2)]
         public Task MultipleFieldsDeclaredSingleLine_FixedCorrectly_CS(string declaration, string fixedDeclaration, int expectedDiagnostics = 1)
         {
             string format = @"
@@ -112,6 +176,42 @@ public class C
             };
             var diagnostics = Enumerable.Range(0, expectedDiagnostics).Select(x => VerifyCS.Diagnostic(Rule).WithLocation(x).WithArguments("byte"));
             test.TestState.ExpectedDiagnostics.AddRange(diagnostics);
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task ManyDiagnostics_FixAllCompletesInOnePass_CS()
+        {
+            const int DiagnosticCount = 2;
+            string sourceFields = string.Join(
+                Environment.NewLine,
+                Enumerable.Range(0, DiagnosticCount).Select(i => $"    private static readonly byte[] {{|#{i}:a{i}|}} = new byte[] {{ {i} }};"));
+            string fixedFields = string.Join(
+                Environment.NewLine,
+                Enumerable.Range(0, DiagnosticCount).Select(i => $"    private static ReadOnlySpan<byte> a{i} => new byte[] {{ {i} }};"));
+            string format = """
+                using System;
+                public class C
+                {{
+                {0}
+                }}
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { string.Format(CultureInfo.InvariantCulture, format, sourceFields) },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+                },
+                FixedState =
+                {
+                    Sources = { string.Format(CultureInfo.InvariantCulture, format, fixedFields) },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+                },
+                NumberOfFixAllIterations = 1
+            };
+            test.TestState.ExpectedDiagnostics.AddRange(
+                Enumerable.Range(0, DiagnosticCount).Select(i => VerifyCS.Diagnostic(Rule).WithLocation(i).WithArguments("byte")));
             return test.RunAsync(CancellationToken.None);
         }
 
@@ -227,12 +327,99 @@ public class C
         }
 
         [TestMethod]
+        public Task FieldWithExplicitAttributeTarget_DiagnosticWithoutFix_CS()
+        {
+            // lang=C#-test
+            string source = """
+                using System;
+
+                [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+                internal sealed class AAttribute : Attribute
+                {
+                }
+
+                public class C
+                {
+                    [field: A]
+                    private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+                }
+                """;
+            // lang=C#-test
+            string fixedSource = """
+                using System;
+
+                [AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
+                internal sealed class AAttribute : Attribute
+                {
+                }
+
+                public class C
+                {
+                    [field: A]
+                    private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+                }
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
+                },
+                FixedState =
+                {
+                    Sources = { fixedSource },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task FieldWithDirectives_DiagnosticWithoutFix_CS()
+        {
+            const string Source = """
+                using System;
+                public class C
+                {
+                    private static readonly byte[]
+                #if DEBUG
+                        a
+                #else
+                        {|#0:b|}
+                #endif
+                        = new byte[] { 1, 2, 3 };
+                }
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { Source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
+                },
+                FixedState =
+                {
+                    Sources = { Source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
         [DataRow("int n = a[2];")]
         [DataRow("int n = a[1] + a[2];")]
         [DataRow("(byte, byte) t = (a[1], a[2]);")]
         [DataRow("byte b, c; (b, c) = (a[1], a[2]);")]
         [DataRow("int n = a.Length;")]
         [DataRow("a[0].ToString();")]
+        [DataRow("string name = nameof(a);")]
+        [DataRow("int n = (a).Length;")]
         public Task LegalUsage_Diagnostic_CS(string code)
         {
             string format = @"
@@ -263,17 +450,22 @@ public class C
         }
 
         [TestMethod]
-        [DataRow("a.AsSpan()", "a")]
-        [DataRow("MemoryExtensions.AsSpan(a)", "a")]
-        [DataRow("MemoryExtensions.AsSpan(array: a)", "a")]
-        [DataRow("a.AsSpan(3)", "a.Slice(3)")]
-        [DataRow("MemoryExtensions.AsSpan(a, 3)", "a.Slice(3)")]
-        [DataRow("MemoryExtensions.AsSpan(array: a, start: 3)", "a.Slice(start: 3)")]
-        [DataRow("MemoryExtensions.AsSpan(start: 3, array: a)", "a.Slice(start: 3)")]
-        [DataRow("a.AsSpan(1, 3)", "a.Slice(1, 3)")]
-        [DataRow("MemoryExtensions.AsSpan(a, 1, 3)", "a.Slice(1, 3)")]
-        [DataRow("MemoryExtensions.AsSpan(array: a, start: 1, length: 3)", "a.Slice(start: 1, length: 3)")]
-        [DataRow("MemoryExtensions.AsSpan(length: 3, start: 1, array: a)", "a.Slice(length: 3, start: 1)")]
+        [DataRow("{|#1:a|}.AsSpan()", "a")]
+        [DataRow("MemoryExtensions.AsSpan({|#1:a|})", "a")]
+        [DataRow("MemoryExtensions.AsSpan(array: {|#1:a|})", "a")]
+        [DataRow("{|#1:a|}.AsSpan(3)", "a.Slice(3)")]
+        [DataRow("MemoryExtensions.AsSpan({|#1:a|}, 3)", "a.Slice(3)")]
+        [DataRow("MemoryExtensions.AsSpan(array: {|#1:a|}, start: 3)", "a.Slice(start: 3)")]
+        [DataRow("MemoryExtensions.AsSpan(start: 3, array: {|#1:a|})", "a.Slice(start: 3)")]
+        [DataRow("{|#1:a|}.AsSpan(1, 3)", "a.Slice(1, 3)")]
+        [DataRow("MemoryExtensions.AsSpan({|#1:a|}, 1, 3)", "a.Slice(1, 3)")]
+        [DataRow("MemoryExtensions.AsSpan(array: {|#1:a|}, start: 1, length: 3)", "a.Slice(start: 1, length: 3)")]
+        [DataRow("MemoryExtensions.AsSpan(length: 3, start: 1, array: {|#1:a|})", "a.Slice(length: 3, start: 1)")]
+        [DataRow("{|#1:a|}.AsSpan(^2)", "a[(^2)..]")]
+        [DataRow("MemoryExtensions.AsSpan(array: {|#1:a|}, startIndex: ^2)", "a[(^2)..]")]
+        [DataRow("{|#1:a|}.AsSpan(1..3)", "a[1..3]")]
+        [DataRow("MemoryExtensions.AsSpan(range: 1..3, array: {|#1:a|})", "a[1..3]")]
+        [DataRow("({|#1:a|}).AsSpan()", "a")]
         public Task AsSpanCallToRosArgument_Diagnostic_CS(string code, string fixedCode)
         {
             string format = @"
@@ -285,7 +477,6 @@ public class C
     public void M()
     {{
         ConsumeRos({1});
-        ReadOnlySpan<byte> ros = {1};
     }}
 }}";
             var test = new VerifyCS.Test
@@ -294,11 +485,306 @@ public class C
                 {
                     Sources = { string.Format(CultureInfo.InvariantCulture, format, "readonly byte[] {|#0:a|} =", code) },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") }
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
                 },
                 FixedState =
                 {
                     Sources = { string.Format(CultureInfo.InvariantCulture, format, "ReadOnlySpan<byte> a =>", fixedCode) },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+                },
+                LanguageVersion = LanguageVersion.CSharp10
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [DataRow("new Index(1)")]
+        [DataRow("new Range(new Index(1), new Index(2))")]
+        public Task IndexOrRangeAsSpanCallBeforeCSharp8_DiagnosticWithoutFix_CS(string argument)
+        {
+            string source = $$"""
+                using System;
+                public class C
+                {
+                    private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+                    public static ReadOnlySpan<byte> M() => MemoryExtensions.AsSpan({|#1:a|}, {{argument}});
+                }
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
+                },
+                FixedState =
+                {
+                    Sources = { source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
+                },
+                LanguageVersion = LanguageVersion.CSharp7_3
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task AsSpanCallWithDirectives_DiagnosticWithoutFix_CS()
+        {
+            const string Source = """
+                using System;
+                public class C
+                {
+                    private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+                    public static ReadOnlySpan<byte> M() => MemoryExtensions.AsSpan(
+                #if DEBUG
+                        a,
+                #else
+                        {|#1:a|},
+                #endif
+                        1);
+                }
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { Source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
+                },
+                FixedState =
+                {
+                    Sources = { Source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task MultipleAsSpanCalls_AllFixed_CS()
+        {
+            // lang=C#-test
+            string source = """
+                using System;
+                public class C
+                {
+                    private static readonly byte[] {|#0:a|} = new byte[] { 2, 4, 8, 16 };
+
+                    private static void Consume(ReadOnlySpan<byte> value)
+                    {
+                    }
+
+                    public static void M()
+                    {
+                        Consume({|#1:a|}.AsSpan());
+                        Consume(MemoryExtensions.AsSpan(length: 2, array: {|#2:a|}, start: 1));
+                        Consume({|#3:a|}.AsSpan(^2));
+                    }
+                }
+                """;
+            // lang=C#-test
+            string fixedSource = """
+                using System;
+                public class C
+                {
+                    private static ReadOnlySpan<byte> a => new byte[] { 2, 4, 8, 16 };
+
+                    private static void Consume(ReadOnlySpan<byte> value)
+                    {
+                    }
+
+                    public static void M()
+                    {
+                        Consume(a);
+                        Consume(a.Slice(length: 2, start: 1));
+                        Consume(a[(^2)..]);
+                    }
+                }
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithLocation(2).WithLocation(3).WithArguments("byte") }
+                },
+                FixedState =
+                {
+                    Sources = { fixedSource },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+                },
+                LanguageVersion = LanguageVersion.CSharp10
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task AsSpanCallInAnotherPartialDeclaration_DiagnosticWithoutFix_CS()
+        {
+            // lang=C#-test
+            string fieldSource = """
+                using System;
+
+                public partial class C
+                {
+                    private static readonly byte[] {|#0:a|} = new byte[] { 2, 4, 8, 16 };
+                }
+                """;
+            // lang=C#-test
+            string useSource = """
+                using System;
+
+                public partial class C
+                {
+                    private static void Consume(ReadOnlySpan<byte> value)
+                    {
+                    }
+
+                    public static void M() => Consume(MemoryExtensions.AsSpan({|#1:a|}));
+                }
+                """;
+            // lang=C#-test
+            string fixedFieldSource = """
+                using System;
+
+                public partial class C
+                {
+                    private static readonly byte[] {|#0:a|} = new byte[] { 2, 4, 8, 16 };
+                }
+                """;
+            // lang=C#-test
+            string fixedUseSource = """
+                using System;
+
+                public partial class C
+                {
+                    private static void Consume(ReadOnlySpan<byte> value)
+                    {
+                    }
+
+                    public static void M() => Consume(MemoryExtensions.AsSpan({|#1:a|}));
+                }
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { ("Field.cs", fieldSource), ("Use.cs", useSource) },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
+                },
+                FixedState =
+                {
+                    Sources = { ("Field.cs", fixedFieldSource), ("Use.cs", fixedUseSource) },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task AsSpanCallInNestedType_Diagnostic_CS()
+        {
+            // lang=C#-test
+            string source = """
+                using System;
+                public class C
+                {
+                    private static readonly byte[] {|#0:a|} = new byte[] { 2, 4, 8, 16 };
+
+                    private class Inner
+                    {
+                        private static void Consume(ReadOnlySpan<byte> value)
+                        {
+                        }
+
+                        public static void M() => Consume({|#1:a|}.AsSpan());
+                    }
+                }
+                """;
+            // lang=C#-test
+            string fixedSource = """
+                using System;
+                public class C
+                {
+                    private static ReadOnlySpan<byte> a => new byte[] { 2, 4, 8, 16 };
+
+                    private class Inner
+                    {
+                        private static void Consume(ReadOnlySpan<byte> value)
+                        {
+                        }
+
+                        public static void M() => Consume(a);
+                    }
+                }
+                """;
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { source },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                    ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte") }
+                },
+                FixedState =
+                {
+                    Sources = { fixedSource },
+                    ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task ArrayUseInNestedType_NoDiagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 2, 4, 8, 16 };
+
+                        private class Inner
+                        {
+                            public static byte[] M() => a;
+                        }
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task ArrayUseInGeneratedPartial_NoDiagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        ("Field.cs", """
+                            public partial class C
+                            {
+                                private static readonly byte[] a = new byte[] { 2, 4, 8, 16 };
+                            }
+                            """),
+                        ("Use.g.cs", """
+                            public partial class C
+                            {
+                                public static byte[] M() => a;
+                            }
+                            """)
+                    },
                     ReferenceAssemblies = ReferenceAssemblies.Net.Net50
                 }
             };
@@ -398,6 +884,12 @@ public class C
         [DataRow("ConsumeImplicit(a);")]
         [DataRow("ConsumeExplicit((Explicit)a);")]
         [DataRow("new C(a);")]
+        [DataRow("if (a == null) { }")]
+        [DataRow("if (a is null) { }")]
+        [DataRow("lock (a) { }")]
+        [DataRow("byte[] local = a[0..];")]
+        [DataRow("ConsumeArray(a[1..3]);")]
+        [DataRow("byte c; ((a[0], b), c) = (((byte)1, (byte)2), (byte)3);")]
         public Task IllegalFieldUsage_NoDiagnostic_CS(string code)
         {
             var test = new VerifyCS.Test
@@ -462,11 +954,6 @@ public class C
 
         [TestMethod]
         [DataRow("ConsumeSpan(a.AsSpan());")]
-        [DataRow("ConsumeSpan(a.AsSpan(1));")]
-        [DataRow("ConsumeSpan(a.AsSpan(1, 3));")]
-        [DataRow("var span = a.AsSpan();")]
-        [DataRow("var span = a.AsSpan(1);")]
-        [DataRow("var span = a.AsSpan(1, 3);")]
         public Task IllegalAsSpanResultUsage_NoDiagnostic_CS(string code)
         {
             string format = @"
@@ -641,6 +1128,278 @@ public class C
             return test.RunAsync(CancellationToken.None);
         }
 
-        private static DiagnosticDescriptor Rule => PreferReadOnlySpanPropertiesOverReadOnlyArrayFields.Rule;
+        [TestMethod]
+        public Task ConstructedGenericAsSpan_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C<T>
+                    {
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+                        public static ReadOnlySpan<byte> M() => {|#1:C<int>.a|}.AsSpan();
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C<T>
+                    {
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+                        public static ReadOnlySpan<byte> M() => C<int>.a;
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = LanguageVersion.CSharp10,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte")
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task ConstructedGenericMutation_NoDiagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    public class C<T>
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+
+                        static C()
+                        {
+                            C<int>.a[0] = 0;
+                        }
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task NestedLambdaInExpressionTree_NoDiagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using System.Linq.Expressions;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                        public static Expression<Func<Func<int>>> M() => () => () => a.Length;
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task RangeArrayAsSpan_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3, 4 };
+                        private static void Consume(ReadOnlySpan<byte> value) { }
+                        public static void M()
+                        {
+                            Consume({|#1:a|}[1..3].AsSpan());
+                            Consume(MemoryExtensions.AsSpan({|#2:a|}[0..2]));
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3, 4 };
+                        private static void Consume(ReadOnlySpan<byte> value) { }
+                        public static void M()
+                        {
+                            Consume(a[1..3]);
+                            Consume(a[0..2]);
+                        }
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = LanguageVersion.CSharp10,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithLocation(2).WithArguments("byte")
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task AsSpanInSurvivingDeclaratorInitializer_Fixed_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte[] Copy(ReadOnlySpan<byte> value) => value.ToArray();
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1, 2 }, b = Copy({|#1:a|}.AsSpan());
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte[] Copy(ReadOnlySpan<byte> value) => value.ToArray();
+                        private static readonly byte[] b = Copy(a);
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithLocation(0).WithLocation(1).WithArguments("byte")
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task MultiDeclaratorComments_Preserved_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1 }, // b documentation
+                            {|#1:b|} = new byte[] { 2 };
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        // b documentation
+                        private static ReadOnlySpan<byte> b => new byte[] { 2 };
+                        private static ReadOnlySpan<byte> a => new byte[] { 1 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte"),
+                    VerifyCS.Diagnostic(Rule).WithLocation(1).WithArguments("byte")
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task CommentOnSurvivingDeclarator_NotDuplicated_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte value;
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1 }, // b documentation
+                            b = new byte[] { value };
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte value;
+                        // b documentation
+                        private static readonly byte[] b = new byte[] { value };
+                        private static ReadOnlySpan<byte> a => new byte[] { 1 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte")
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task MultilineSurvivingDeclarator_DoesNotAddBlankLine_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte value;
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1 },
+                            b = new byte[] { value };
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte value;
+                        private static readonly byte[] b = new byte[] { value };
+                        private static ReadOnlySpan<byte> a => new byte[] { 1 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte")
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task CommentOnConvertedMiddleDeclarator_NotDuplicated_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte value;
+                        private static readonly byte[] a = new byte[] { value }, /* b documentation */ {|#0:b|} = new byte[] { 1 }, c = new byte[] { value };
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static byte value;
+                        private static readonly byte[] a = new byte[] { value }, c = new byte[] { value };
+                        /* b documentation */
+                        private static ReadOnlySpan<byte> b => new byte[] { 1 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics =
+                {
+                    VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte")
+                }
+            };
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        private static DiagnosticDescriptor Rule => PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.Rule;
     }
 }

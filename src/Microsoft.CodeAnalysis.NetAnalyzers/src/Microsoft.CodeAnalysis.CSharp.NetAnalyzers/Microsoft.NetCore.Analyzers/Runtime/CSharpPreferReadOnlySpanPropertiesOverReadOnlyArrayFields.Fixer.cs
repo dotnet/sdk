@@ -19,18 +19,18 @@ using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
 using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeAnalysis.Operations;
-using Microsoft.CodeAnalysis.Options;
+using Microsoft.CodeAnalysis.Simplification;
+using Microsoft.CodeAnalysis.Text;
 using Microsoft.NetCore.Analyzers;
 using Microsoft.NetCore.Analyzers.Runtime;
 
 namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 {
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public sealed class CSharpPreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsFixer : PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsFixer
+    public sealed class CSharpPreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsFixer : CodeFixProvider
     {
         /// <summary>
-        /// Carries the declarators to convert, grouped by their containing field declaration, plus the
-        /// values every fix in the document shares.
+        /// Carries the declarators to convert, grouped by their containing field declaration.
         /// </summary>
         /// <remarks>
         /// Several array fields declared together produce one diagnostic each, and whether the declaration
@@ -42,16 +42,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             private readonly Dictionary<FieldDeclarationSyntax, List<VariableDeclaratorSyntax>> _declaratorsByField = new();
 
             public List<FieldDeclarationSyntax> OrderedFields { get; } = new();
-
-            public INamedTypeSymbol? ReadOnlySpanType { get; set; }
-
-            public OptionSet? Options { get; set; }
-
-            public CancellationToken CancellationToken { get; set; }
-
-            public string NewLine { get; set; } = Environment.NewLine;
-
-            public bool Initialized { get; set; }
 
             public List<VariableDeclaratorSyntax> GetDeclarators(FieldDeclarationSyntax fieldDeclaration)
             {
@@ -66,80 +56,90 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             }
         }
 
+        public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
+            ImmutableArray.Create(PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.RuleId);
+
         public override FixAllProvider GetFixAllProvider()
-            => SyntaxEditorFixAllProvider.Create<FixState>(
-                static _ => new FixState(),
+            => SyntaxEditorFixAllProvider.Create(
+                _ => new FixState(),
                 ApplyFixAsync,
-                fixAllTitle: null,
                 getFixedDocument: GetFixedDocument);
 
         public override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var root = await context.Document.GetSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            if (root is null ||
-                root.FindNode(context.Diagnostics[0].Location.SourceSpan) is not VariableDeclaratorSyntax { Parent.Parent: FieldDeclarationSyntax { Declaration.Type: ArrayTypeSyntax } })
+            if (root is null)
             {
                 return;
             }
 
             var document = context.Document;
             var diagnostics = context.Diagnostics;
+            foreach (var diagnostic in diagnostics)
+            {
+                if (root.FindNode(diagnostic.Location.SourceSpan) is not VariableDeclaratorSyntax variableDeclaratorSyntax ||
+                    variableDeclaratorSyntax.Parent?.Parent is not FieldDeclarationSyntax fieldDeclaration ||
+                    fieldDeclaration.Declaration.Type is not ArrayTypeSyntax ||
+                    fieldDeclaration.ContainsDirectives ||
+                    fieldDeclaration.AttributeLists.Any(attributeList => attributeList.Target is not null) ||
+                    diagnostic.AdditionalLocations.Any(location => location.SourceTree != root.SyntaxTree))
+                {
+                    return;
+                }
+
+                if ((await GetAsSpanReplacementsAsync(root, document, diagnostic, variableDeclaratorSyntax, context.CancellationToken).ConfigureAwait(false)).IsDefault)
+                {
+                    return;
+                }
+            }
+
             var codeAction = CodeAction.Create(
                 MicrosoftNetCoreAnalyzersResources.PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsCodeFixTitle,
-                cancellationToken => FixAllInDocumentAsync(document, diagnostics, cancellationToken),
+                cancellationToken => SyntaxEditorFixAllProvider.ApplyFixesAsync(
+                    document,
+                    diagnostics,
+                    new FixState(),
+                    ApplyFixAsync,
+                    GetFixedDocument,
+                    cancellationToken),
                 nameof(MicrosoftNetCoreAnalyzersResources.PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsCodeFixTitle));
             context.RegisterCodeFix(codeAction, diagnostics);
         }
 
-        //  This mirrors 'SyntaxEditorFixAllProvider.ApplyFixesAsync' rather than calling it, because that
-        //  overload has no 'getFixedDocument' hook and the field declarations cannot be rewritten until
-        //  every diagnostic has been seen.
-        private static async Task<Document> FixAllInDocumentAsync(Document document, ImmutableArray<Diagnostic> diagnostics, CancellationToken cancellationToken)
+        private static async Task ApplyFixAsync(
+            Document document,
+            Diagnostic diagnostic,
+            SyntaxEditor editor,
+            FixState state,
+            CancellationToken cancellationToken)
         {
-            var root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var editor = new SyntaxEditor(root, document.Project.Solution.Workspace.Services);
-            var state = new FixState();
-
-            foreach (var diagnostic in diagnostics.Distinct().OrderBy(diagnostic => diagnostic.Location.SourceSpan.Start))
-            {
-                await ApplyFixAsync(document, diagnostic, editor, state, cancellationToken).ConfigureAwait(false);
-            }
-
-            return GetFixedDocument(document, editor, state);
-        }
-
-        private static async Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, FixState state, CancellationToken cancellationToken)
-        {
-            if (!state.Initialized)
-            {
-                state.Initialized = true;
-                state.CancellationToken = cancellationToken;
-                state.NewLine = GetNewLine(editor.OriginalRoot);
-                state.Options = await document.GetOptionsAsync(cancellationToken).ConfigureAwait(false);
-
-                var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-                if (model is not null &&
-                    model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1, out var readOnlySpanType))
-                {
-                    state.ReadOnlySpanType = readOnlySpanType;
-                }
-            }
-
-            if (state.ReadOnlySpanType is null)
-            {
-                return;
-            }
-
-            //  Rewrite this field's 'AsSpan' call sites. Those edits touch nodes that are independent of
-            //  the declaration rewrites, so their order relative to them does not matter.
-            await FixAsSpanInvocationsAsync(editor, document, diagnostic, cancellationToken).ConfigureAwait(false);
-
-            if (editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan) is not VariableDeclaratorSyntax variableDeclaratorSyntax ||
+            if (diagnostic.AdditionalLocations.Any(location => location.SourceTree != editor.OriginalRoot.SyntaxTree) ||
+                editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan) is not VariableDeclaratorSyntax variableDeclaratorSyntax ||
                 variableDeclaratorSyntax.Parent?.Parent is not FieldDeclarationSyntax fieldDeclarationSyntax ||
-                fieldDeclarationSyntax.Declaration.Type is not ArrayTypeSyntax)
+                fieldDeclarationSyntax.Declaration.Type is not ArrayTypeSyntax ||
+                fieldDeclarationSyntax.ContainsDirectives ||
+                fieldDeclarationSyntax.AttributeLists.Any(attributeList => attributeList.Target is not null))
             {
                 return;
+            }
+
+            var asSpanReplacements = await GetAsSpanReplacementsAsync(
+                editor.OriginalRoot,
+                document,
+                diagnostic,
+                variableDeclaratorSyntax,
+                cancellationToken).ConfigureAwait(false);
+            if (asSpanReplacements.IsDefault)
+            {
+                return;
+            }
+
+            // Rewrite this field's 'AsSpan' call sites. Validate all of them before changing any so a
+            // stale diagnostic cannot leave either the call sites or the declaration partially fixed.
+            foreach (var (original, replacement) in asSpanReplacements)
+            {
+                editor.ReplaceNode(original, replacement);
             }
 
             state.GetDeclarators(fieldDeclarationSyntax).Add(variableDeclaratorSyntax);
@@ -147,216 +147,372 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         private static Document GetFixedDocument(Document document, SyntaxEditor editor, FixState state)
         {
-            if (state.ReadOnlySpanType is null)
-            {
-                return document;
-            }
-
+            string newLine = GetNewLine(editor.OriginalRoot.SyntaxTree.GetText());
             foreach (var fieldDeclarationSyntax in state.OrderedFields)
             {
-                FixFieldDeclaration(editor, state.ReadOnlySpanType, fieldDeclarationSyntax, state.GetDeclarators(fieldDeclarationSyntax), state.NewLine);
+                FixFieldDeclaration(editor, fieldDeclarationSyntax, state.GetDeclarators(fieldDeclarationSyntax), newLine);
             }
 
-            var options = state.Options?.WithChangedOption(FormattingOptions.NewLine, LanguageNames.CSharp, state.NewLine);
-            var formattedRoot = Formatter.Format(
-                editor.GetChangedRoot(),
-                Formatter.Annotation,
-                document.Project.Solution.Workspace,
-                options,
-                state.CancellationToken);
-            return document.WithSyntaxRoot(formattedRoot);
+            return document.WithSyntaxRoot(editor.GetChangedRoot());
         }
 
         private static void FixFieldDeclaration(
             SyntaxEditor editor,
-            INamedTypeSymbol readOnlySpanType,
             FieldDeclarationSyntax fieldDeclarationSyntax,
             List<VariableDeclaratorSyntax> diagnosedDeclarators,
             string newLine)
         {
             var arrayTypeSyntax = (ArrayTypeSyntax)fieldDeclarationSyntax.Declaration.Type;
-            var rosNameSyntax = SyntaxFactory.GenericName(
-                SyntaxFactory.Identifier(readOnlySpanType.Name),
-                SyntaxFactory.TypeArgumentList(SyntaxFactory.SingletonSeparatedList(arrayTypeSyntax.ElementType)));
-            var modifiersWithoutReadOnlyKeyword = SyntaxFactory.TokenList(fieldDeclarationSyntax.Modifiers.Where(x => !x.IsKind(SyntaxKind.ReadOnlyKeyword)));
+            var rosNameSyntax = SyntaxFactory.QualifiedName(
+                SyntaxFactory.AliasQualifiedName(
+                    SyntaxFactory.IdentifierName(SyntaxFactory.Token(SyntaxKind.GlobalKeyword)),
+                    SyntaxFactory.IdentifierName(nameof(System))),
+                SyntaxFactory.GenericName(
+                    SyntaxFactory.Identifier(nameof(ReadOnlySpan<byte>)),
+                    SyntaxFactory.TypeArgumentList(SyntaxFactory.SingletonSeparatedList(arrayTypeSyntax.ElementType))))
+                .WithAdditionalAnnotations(Simplifier.Annotation);
+            var modifiersWithoutReadOnlyKeyword = fieldDeclarationSyntax.Modifiers.Remove(
+                fieldDeclarationSyntax.Modifiers.First(modifier => modifier.IsKind(SyntaxKind.ReadOnlyKeyword)));
 
             var declaration = fieldDeclarationSyntax.Declaration;
 
-            //  Remove the diagnosed declarators by descending index rather than by node reference:
-            //  'SeparatedSyntaxList.Remove' re-creates the surviving nodes in the returned list, so
-            //  a second 'Remove' called with an original node reference would no longer find it and
-            //  would silently leave that declarator in place.
-            var indicesToRemove = diagnosedDeclarators
-                .Select(declaration.Variables.IndexOf)
-                .OrderByDescending(index => index)
-                .ToArray();
-            var remainingVariables = declaration.Variables;
-            foreach (var index in indicesToRemove)
-            {
-                remainingVariables = remainingVariables.RemoveAt(index);
-            }
-
-            //  Emit the properties in reverse declaration order: each is inserted after the field
-            //  declaration, so reversing lines them back up in source order beneath it.
+            // Match the result of applying the individual code action repeatedly: each converted
+            // declarator is inserted immediately after the surviving declaration.
             var propertiesInInsertionOrder = diagnosedDeclarators
                 .OrderByDescending(declaration.Variables.IndexOf)
                 .ToArray();
+            var diagnosedIndices = propertiesInInsertionOrder
+                .Select(declaration.Variables.IndexOf)
+                .OrderBy(index => index)
+                .ToArray();
+            var remainingVariables = declaration.Variables;
+            for (int i = diagnosedIndices.Length - 1; i >= 0; i--)
+            {
+                remainingVariables = remainingVariables.RemoveAt(diagnosedIndices[i]);
+            }
 
             if (remainingVariables.Count > 0)
             {
                 //  At least one field in the declaration is left as an array: keep the declaration
                 //  with the remaining variables and insert the new properties after it.
                 var insertedProperties = propertiesInInsertionOrder
-                    .Select(declarator => CreateInsertedProperty(rosNameSyntax, modifiersWithoutReadOnlyKeyword, declarator, fieldDeclarationSyntax.AttributeLists, newLine))
-                    .ToArray();
+                    .Select(declarator => CreateInsertedProperty(arrayTypeSyntax, rosNameSyntax, modifiersWithoutReadOnlyKeyword, declarator, declaration, fieldDeclarationSyntax.AttributeLists, newLine));
                 editor.InsertAfter(fieldDeclarationSyntax, insertedProperties);
-                editor.ReplaceNode(declaration, declaration.WithVariables(remainingVariables));
+                editor.ReplaceNode(
+                    fieldDeclarationSyntax,
+                    (currentField, _) =>
+                    {
+                        var field = (FieldDeclarationSyntax)currentField;
+                        var currentVariables = field.Declaration.Variables;
+                        SyntaxTriviaList preservedLeadingTrivia = default;
+                        for (int i = diagnosedIndices.Length - 1; i >= 0; i--)
+                        {
+                            int diagnosedIndex = diagnosedIndices[i];
+                            if (diagnosedIndex < currentVariables.Count - 1)
+                            {
+                                var nextVariable = currentVariables[diagnosedIndex + 1];
+                                var separator = currentVariables.GetSeparator(diagnosedIndex);
+                                var nextVariableLeadingTrivia = separator.TrailingTrivia.AddRange(nextVariable.GetLeadingTrivia());
+                                nextVariable = nextVariable.WithLeadingTrivia(default(SyntaxTriviaList));
+                                currentVariables = currentVariables.Replace(currentVariables[diagnosedIndex + 1], nextVariable);
+
+                                if (diagnosedIndex == 0)
+                                {
+                                    if (nextVariableLeadingTrivia.Any(trivia =>
+                                        !trivia.IsKind(SyntaxKind.WhitespaceTrivia) &&
+                                        !trivia.IsKind(SyntaxKind.EndOfLineTrivia)))
+                                    {
+                                        preservedLeadingTrivia = preservedLeadingTrivia.AddRange(nextVariableLeadingTrivia);
+                                    }
+                                }
+                                else
+                                {
+                                    nextVariable = nextVariable.WithLeadingTrivia(nextVariableLeadingTrivia);
+                                    currentVariables = currentVariables.Replace(currentVariables[diagnosedIndex + 1], nextVariable);
+                                }
+                            }
+
+                            if (diagnosedIndex > 0 && diagnosedIndex < currentVariables.Count - 1)
+                            {
+                                var previousSeparator = currentVariables.GetSeparator(diagnosedIndex - 1);
+                                currentVariables = currentVariables.ReplaceSeparator(
+                                    previousSeparator,
+                                    previousSeparator.WithTrailingTrivia(default(SyntaxTriviaList)));
+                            }
+
+                            currentVariables = currentVariables.RemoveAt(diagnosedIndex);
+                        }
+
+                        return field
+                            .WithDeclaration(field.Declaration.WithVariables(currentVariables))
+                            .WithLeadingTrivia(field.GetLeadingTrivia().AddRange(preservedLeadingTrivia))
+                            .WithAdditionalAnnotations(Formatter.Annotation);
+                    });
             }
             else
             {
                 //  Every field in the declaration is being converted: replace the declaration with
                 //  the first property (carrying the declaration's trivia) and insert the rest after.
-                var first = CreateReplacementProperty(rosNameSyntax, modifiersWithoutReadOnlyKeyword, propertiesInInsertionOrder[0], fieldDeclarationSyntax);
+                var first = CreateReplacementProperty(arrayTypeSyntax, rosNameSyntax, modifiersWithoutReadOnlyKeyword, propertiesInInsertionOrder[0], fieldDeclarationSyntax);
                 var rest = propertiesInInsertionOrder
                     .Skip(1)
-                    .Select(declarator => CreateInsertedProperty(rosNameSyntax, modifiersWithoutReadOnlyKeyword, declarator, fieldDeclarationSyntax.AttributeLists, newLine))
-                    .ToArray();
+                    .Select(declarator => CreateInsertedProperty(arrayTypeSyntax, rosNameSyntax, modifiersWithoutReadOnlyKeyword, declarator, declaration, fieldDeclarationSyntax.AttributeLists, newLine));
                 editor.InsertAfter(fieldDeclarationSyntax, rest);
                 editor.ReplaceNode(fieldDeclarationSyntax, first);
             }
         }
 
         private static PropertyDeclarationSyntax CreateInsertedProperty(
-            GenericNameSyntax rosNameSyntax,
+            ArrayTypeSyntax arrayTypeSyntax,
+            NameSyntax rosNameSyntax,
             SyntaxTokenList modifiers,
             VariableDeclaratorSyntax variableDeclaratorSyntax,
+            VariableDeclarationSyntax variableDeclarationSyntax,
             SyntaxList<AttributeListSyntax> attributeLists,
             string newLine)
         {
-            return SyntaxFactory.PropertyDeclaration(rosNameSyntax, variableDeclaratorSyntax.Identifier)
-                .WithExpressionBody(CreateArrowExpressionClause(rosNameSyntax, variableDeclaratorSyntax))
-                .WithAttributeLists(attributeLists)
-                .WithModifiers(modifiers)
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken).WithTrailingTrivia(SyntaxFactory.EndOfLine(newLine)))
-                .WithoutLeadingTrivia()
+            return CreateProperty(
+                arrayTypeSyntax,
+                rosNameSyntax,
+                modifiers,
+                variableDeclaratorSyntax,
+                attributeLists,
+                SyntaxFactory.Token(SyntaxKind.SemicolonToken).WithTrailingTrivia(SyntaxFactory.EndOfLine(newLine)))
+                .WithIdentifier(variableDeclaratorSyntax.Identifier.WithLeadingTrivia(default(SyntaxTriviaList)))
+                .WithLeadingTrivia(GetDeclaratorLeadingTrivia(variableDeclarationSyntax, variableDeclaratorSyntax))
                 .WithAdditionalAnnotations(Formatter.Annotation);
         }
 
         private static PropertyDeclarationSyntax CreateReplacementProperty(
-            GenericNameSyntax rosNameSyntax,
+            ArrayTypeSyntax arrayTypeSyntax,
+            NameSyntax rosNameSyntax,
             SyntaxTokenList modifiers,
             VariableDeclaratorSyntax variableDeclaratorSyntax,
             FieldDeclarationSyntax fieldDeclarationSyntax)
         {
-            return SyntaxFactory.PropertyDeclaration(rosNameSyntax, variableDeclaratorSyntax.Identifier)
-                .WithExpressionBody(CreateArrowExpressionClause(rosNameSyntax, variableDeclaratorSyntax))
-                .WithAttributeLists(fieldDeclarationSyntax.AttributeLists)
-                .WithModifiers(modifiers)
-                .WithSemicolonToken(fieldDeclarationSyntax.SemicolonToken)
-                .WithTriviaFrom(fieldDeclarationSyntax);
+            var property = CreateProperty(
+                arrayTypeSyntax,
+                rosNameSyntax,
+                modifiers,
+                variableDeclaratorSyntax,
+                fieldDeclarationSyntax.AttributeLists,
+                fieldDeclarationSyntax.SemicolonToken)
+                .WithIdentifier(variableDeclaratorSyntax.Identifier.WithLeadingTrivia(default(SyntaxTriviaList)))
+                .WithLeadingTrivia(
+                    fieldDeclarationSyntax.GetLeadingTrivia().AddRange(
+                        GetDeclaratorLeadingTrivia(fieldDeclarationSyntax.Declaration, variableDeclaratorSyntax)));
+
+            return fieldDeclarationSyntax.Declaration.Variables.IndexOf(variableDeclaratorSyntax) == 0
+                ? property
+                : property.WithAdditionalAnnotations(Formatter.Annotation);
         }
 
-        private static ArrowExpressionClauseSyntax CreateArrowExpressionClause(GenericNameSyntax rosNameSyntax, VariableDeclaratorSyntax variableDeclaratorSyntax)
+        private static SyntaxTriviaList GetDeclaratorLeadingTrivia(
+            VariableDeclarationSyntax variableDeclarationSyntax,
+            VariableDeclaratorSyntax variableDeclaratorSyntax)
         {
-            return variableDeclaratorSyntax.Initializer is not null ?
-                SyntaxFactory.ArrowExpressionClause(
-                    SyntaxFactory.Token(SyntaxKind.EqualsGreaterThanToken).WithTriviaFrom(variableDeclaratorSyntax.Initializer.EqualsToken),
-                    variableDeclaratorSyntax.Initializer.Value) :
-                SyntaxFactory.ArrowExpressionClause(
-                    SyntaxFactory.Token(SyntaxKind.EqualsGreaterThanToken),
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        rosNameSyntax,
-                        SyntaxFactory.IdentifierName(nameof(ReadOnlySpan<byte>.Empty))));
-        }
-
-        //  Update calls to 'AsSpan'
-        private static async Task FixAsSpanInvocationsAsync(SyntaxEditor editor, Document document, Diagnostic diagnostic, CancellationToken cancellationToken)
-        {
-            var savedOperations = await GetFieldReferenceOperationsRequiringUpdateAsync(document, diagnostic, cancellationToken).ConfigureAwait(false);
-            foreach (var fieldReference in savedOperations)
+            int variableIndex = variableDeclarationSyntax.Variables.IndexOf(variableDeclaratorSyntax);
+            if (variableIndex == 0)
             {
-                //  Walk up to the AsSpan invocation operation. The analyzer only saves field references
-                //  that are the array argument of an 'AsSpan' call, so this shape is expected; skip this
-                //  reference rather than throwing if a future analyzer change ever saves one that is not.
-                if (fieldReference.Parent is not IArgumentOperation { Parent: IInvocationOperation invocation })
+                return default;
+            }
+
+            var separator = variableDeclarationSyntax.Variables.GetSeparator(variableIndex - 1);
+            return separator.TrailingTrivia
+                .AddRange(variableDeclaratorSyntax.GetLeadingTrivia());
+        }
+
+        private static PropertyDeclarationSyntax CreateProperty(
+            ArrayTypeSyntax arrayTypeSyntax,
+            NameSyntax rosNameSyntax,
+            SyntaxTokenList modifiers,
+            VariableDeclaratorSyntax variableDeclaratorSyntax,
+            SyntaxList<AttributeListSyntax> attributeLists,
+            SyntaxToken semicolonToken)
+        {
+            return SyntaxFactory.PropertyDeclaration(
+                attributeLists,
+                modifiers,
+                rosNameSyntax,
+                explicitInterfaceSpecifier: null,
+                variableDeclaratorSyntax.Identifier,
+                accessorList: null,
+                CreateArrowExpressionClause(arrayTypeSyntax, variableDeclaratorSyntax),
+                initializer: null,
+                semicolonToken);
+        }
+
+        private static ArrowExpressionClauseSyntax CreateArrowExpressionClause(
+            ArrayTypeSyntax arrayTypeSyntax,
+            VariableDeclaratorSyntax variableDeclaratorSyntax)
+        {
+            if (variableDeclaratorSyntax.Initializer is not EqualsValueClauseSyntax initializer)
+            {
+                throw new InvalidOperationException();
+            }
+
+            ExpressionSyntax value = initializer.Value is InitializerExpressionSyntax arrayInitializer
+                ? SyntaxFactory.ArrayCreationExpression(
+                    arrayTypeSyntax.WithoutTrivia().WithTrailingTrivia(SyntaxFactory.Space),
+                    arrayInitializer)
+                : initializer.Value;
+            return SyntaxFactory.ArrowExpressionClause(
+                SyntaxFactory.Token(SyntaxKind.EqualsGreaterThanToken).WithTriviaFrom(initializer.EqualsToken),
+                value);
+        }
+
+        private static async Task<ImmutableArray<(SyntaxNode Original, SyntaxNode Replacement)>> GetAsSpanReplacementsAsync(
+            SyntaxNode root,
+            Document document,
+            Diagnostic diagnostic,
+            VariableDeclaratorSyntax variableDeclaratorSyntax,
+            CancellationToken cancellationToken)
+        {
+            var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
+            if (model is null ||
+                model.GetDeclaredSymbol(variableDeclaratorSyntax, cancellationToken) is not IFieldSymbol expectedField ||
+                variableDeclaratorSyntax.Initializer?.Value is not ExpressionSyntax initializerValue ||
+                model.GetOperation(initializerValue, cancellationToken) is not IOperation initializerOperation ||
+                !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemAttributeUsageAttribute, out var attributeUsageAttributeType) ||
+                !PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.IsValidCandidate(expectedField, initializerOperation, attributeUsageAttributeType) ||
+                !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemMemoryExtensions, out var memoryExtensionsType) ||
+                !model.Compilation.TryGetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemReadOnlySpan1, out var readOnlySpanType))
+            {
+                return default;
+            }
+
+            var indexType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemIndex);
+            var rangeType = model.Compilation.GetOrCreateTypeByMetadataName(WellKnownTypeNames.SystemRange);
+            var replacements = ImmutableArray.CreateBuilder<(SyntaxNode Original, SyntaxNode Replacement)>(diagnostic.AdditionalLocations.Count);
+            var seenLocations = new HashSet<(SyntaxTree? SourceTree, TextSpan SourceSpan)>();
+            foreach (var location in diagnostic.AdditionalLocations)
+            {
+                if (!seenLocations.Add((location.SourceTree, location.SourceSpan)))
                 {
                     continue;
                 }
 
-                //  If we called 'AsSpan(int)' or 'AsSpan(int, int)', replace with call to appropriate Slice overload.
-                //  Otherwise simply replace the 'AsSpan()' call with the field reference itself.
-                if (invocation.TargetMethod.Parameters.Length > 1)
+                if (location.SourceTree != root.SyntaxTree ||
+                    model.GetOperation(root.FindNode(location.SourceSpan, getInnermostNodeForTie: true), cancellationToken) is not IFieldReferenceOperation fieldReference)
                 {
-                    var invocationSyntax = (InvocationExpressionSyntax)invocation.Syntax;
-                    var memberAccessSyntax = (MemberAccessExpressionSyntax)invocationSyntax.Expression;
+                    return default;
+                }
 
-                    //  If 'AsSpan' was not called via extension method, then memberAccessSyntax.Expression will be the type name
-                    //  expression 'MemoryExtensions'. We need to replace it with the array field reference and remove the
-                    //  array argument from the argument list. The array argument is located by its own syntax rather than
-                    //  by position, so a field passed as a named or reordered argument is handled correctly.
-                    if (invocationSyntax.ArgumentList.Arguments.Count == invocation.Arguments.Length &&
-                        fieldReference.Syntax.FirstAncestorOrSelf<ArgumentSyntax>() is ArgumentSyntax arrayArgumentSyntax)
+                IOperation sourceOperation = fieldReference;
+                while (sourceOperation.Parent is IArrayElementReferenceOperation arrayElement &&
+                    ReferenceEquals(arrayElement.ArrayReference, sourceOperation))
+                {
+                    sourceOperation = arrayElement;
+                }
+
+                if (sourceOperation.Parent is not IArgumentOperation { Parent: IInvocationOperation invocation } sourceArgument ||
+                    sourceOperation.Syntax is not ExpressionSyntax sourceExpression ||
+                    !SymbolEqualityComparer.Default.Equals(fieldReference.Field.OriginalDefinition, expectedField.OriginalDefinition) ||
+                    invocation.TargetMethod.Name != nameof(MemoryExtensions.AsSpan) ||
+                    !SymbolEqualityComparer.Default.Equals(invocation.TargetMethod.OriginalDefinition.ContainingType, memoryExtensionsType) ||
+                    invocation.Parent is not IConversionOperation { Type: { } conversionType } ||
+                    !SymbolEqualityComparer.Default.Equals(conversionType.OriginalDefinition, readOnlySpanType) ||
+                    invocation.Syntax is not InvocationExpressionSyntax invocationSyntax ||
+                    invocationSyntax.ContainsDirectives)
+                {
+                    return default;
+                }
+
+                // AsSpan() becomes the property reference itself.
+                if (invocation.TargetMethod.Parameters.Length == 1)
+                {
+                    replacements.Add((invocationSyntax, sourceExpression.WithTriviaFrom(invocationSyntax)));
+                    continue;
+                }
+
+                if (invocation.Arguments.Length == 2)
+                {
+                    var slicingArgument = ReferenceEquals(invocation.Arguments[0], sourceArgument)
+                        ? invocation.Arguments[1]
+                        : invocation.Arguments[0];
+                    if (slicingArgument.Parameter is IParameterSymbol slicingParameter &&
+                        slicingArgument.Value.Syntax is ExpressionSyntax slicingExpression)
                     {
-                        var newArgumentList = invocationSyntax.ArgumentList.WithArguments(invocationSyntax.ArgumentList.Arguments.Remove(arrayArgumentSyntax));
-                        editor.ReplaceNode(invocationSyntax.ArgumentList, newArgumentList);
-                        var newExpressionSyntax = fieldReference.Syntax.WithTriviaFrom(memberAccessSyntax.Expression);
-                        editor.ReplaceNode(memberAccessSyntax.Expression, newExpressionSyntax);
+                        if ((SymbolEqualityComparer.Default.Equals(slicingParameter.Type, indexType) ||
+                            SymbolEqualityComparer.Default.Equals(slicingParameter.Type, rangeType)) &&
+                            root.SyntaxTree.Options is CSharpParseOptions { LanguageVersion: < LanguageVersion.CSharp8 })
+                        {
+                            return default;
+                        }
+
+                        ExpressionSyntax? rangeExpression = null;
+                        if (SymbolEqualityComparer.Default.Equals(slicingParameter.Type, indexType))
+                        {
+                            rangeExpression = SyntaxFactory.RangeExpression(slicingExpression.Parenthesize(), rightOperand: null);
+                        }
+                        else if (SymbolEqualityComparer.Default.Equals(slicingParameter.Type, rangeType))
+                        {
+                            rangeExpression = slicingExpression;
+                        }
+
+                        if (rangeExpression is not null)
+                        {
+                            var elementAccess = SyntaxFactory.ElementAccessExpression(
+                                sourceExpression.WithoutTrivia(),
+                                SyntaxFactory.BracketedArgumentList(
+                                    SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(rangeExpression))))
+                                .WithTriviaFrom(invocationSyntax);
+                            replacements.Add((invocationSyntax, elementAccess));
+                            continue;
+                        }
+                    }
+                }
+
+                InvocationExpressionSyntax replacement;
+                if (invocationSyntax.ArgumentList.Arguments.Count == invocation.Arguments.Length)
+                {
+                    // A static call becomes a Slice call on the property. Locate the array argument by syntax
+                    // so named and reordered arguments are handled correctly.
+                    if (sourceArgument.Syntax is not ArgumentSyntax arrayArgumentSyntax)
+                    {
+                        return default;
                     }
 
-                    //  Rename 'AsSpan' to 'Slice'. Any 'start'/'length' arguments the caller wrote are
-                    //  carried over verbatim, including name colons for named arguments. This is only
-                    //  valid because 'MemoryExtensions.AsSpan(T[], int start, int length)' and
-                    //  'ReadOnlySpan<T>.Slice(int start, int length)' share those parameter names; the
-                    //  carried-over named arguments would not bind otherwise.
-                    var sliceMemberNameSyntax = SyntaxFactory.IdentifierName(nameof(ReadOnlySpan<byte>.Slice)).WithTriviaFrom(memberAccessSyntax.Name);
-                    editor.ReplaceNode(memberAccessSyntax.Name, sliceMemberNameSyntax);
+                    int arrayArgumentIndex = invocationSyntax.ArgumentList.Arguments.IndexOf(arrayArgumentSyntax);
+                    if (arrayArgumentIndex < 0)
+                    {
+                        return default;
+                    }
+
+                    var sliceExpression = SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        sourceExpression.WithoutTrivia(),
+                        SyntaxFactory.IdentifierName(nameof(ReadOnlySpan<byte>.Slice)))
+                        .WithTriviaFrom(invocationSyntax.Expression);
+                    replacement = invocationSyntax
+                        .WithExpression(sliceExpression)
+                        .WithArgumentList(invocationSyntax.ArgumentList.WithArguments(invocationSyntax.ArgumentList.Arguments.RemoveAt(arrayArgumentIndex)));
+                }
+                else if (invocationSyntax.Expression is MemberAccessExpressionSyntax memberAccessSyntax)
+                {
+                    // Any 'start'/'length' arguments are carried over verbatim, including name colons.
+                    // MemoryExtensions.AsSpan and ReadOnlySpan<T>.Slice intentionally share those names.
+                    replacement = invocationSyntax.WithExpression(
+                        memberAccessSyntax.WithName(
+                            SyntaxFactory.IdentifierName(nameof(ReadOnlySpan<byte>.Slice)).WithTriviaFrom(memberAccessSyntax.Name)));
                 }
                 else
                 {
-                    editor.ReplaceNode(invocation.Syntax, fieldReference.Syntax.WithTriviaFrom(invocation.Syntax));
-                }
-            }
-        }
-
-        private static async Task<ImmutableArray<IOperation>> GetFieldReferenceOperationsRequiringUpdateAsync(Document document, Diagnostic diagnostic, CancellationToken cancellationToken)
-        {
-            var savedSpans = PreferReadOnlySpanPropertiesOverReadOnlyArrayFields.SavedSpanLocation.Deserialize(
-                diagnostic.Properties[PreferReadOnlySpanPropertiesOverReadOnlyArrayFields.FixerDataPropertyName]!);
-            var documentLookup = document.Project.Documents.ToImmutableDictionary(x => x.FilePath!);
-            var builder = ImmutableArray.CreateBuilder<IOperation>(savedSpans.Length);
-
-            for (int i = 0; i < savedSpans.Length; ++i)
-            {
-                var referenceDocument = documentLookup[savedSpans[i].SourceFilePath];
-                var root = await referenceDocument.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-                var model = await referenceDocument.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-                if (root is null || model is null)
-                {
-                    continue;
+                    return default;
                 }
 
-                //  A diagnostic can be stale relative to the document the fixer runs against, so the
-                //  saved span may have drifted onto a node with no operation. Skip it rather than
-                //  dereferencing a null operation and throwing in the IDE.
-                var node = root.FindNode(savedSpans[i].Span, getInnermostNodeForTie: true);
-                if (model.GetOperation(node, cancellationToken) is IOperation operation)
-                {
-                    builder.Add(operation);
-                }
+                replacements.Add((invocationSyntax, replacement));
             }
 
-            return builder.ToImmutable();
+            return replacements.ToImmutable();
         }
 
-        private static string GetNewLine(SyntaxNode root)
+        private static string GetNewLine(SourceText sourceText)
         {
-            foreach (var trivia in root.DescendantTrivia())
+            if (sourceText.Lines.Count > 1)
             {
-                if (trivia.IsKind(SyntaxKind.EndOfLineTrivia))
-                {
-                    return trivia.ToString();
-                }
+                TextLine firstLine = sourceText.Lines[0];
+                return sourceText.ToString(TextSpan.FromBounds(firstLine.End, firstLine.EndIncludingLineBreak));
             }
 
             return Environment.NewLine;
