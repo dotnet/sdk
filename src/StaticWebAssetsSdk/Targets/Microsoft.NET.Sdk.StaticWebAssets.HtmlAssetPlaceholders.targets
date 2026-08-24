@@ -137,12 +137,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="FilteredEndpoints" ItemName="_HtmlFileEndpointsToRemove" />
     </FilterStaticWebAssetEndpoints>
     <ItemGroup>
-      <_HtmlStaticWebAssetsForPublish Include="@(_HtmlFilesToRemove)">
+      <StaticWebAsset Update="@(_HtmlFilesToRemove)">
         <AssetKind>Publish</AssetKind>
-      </_HtmlStaticWebAssetsForPublish>
-      <StaticWebAsset Remove="@(_HtmlFilesToRemove)" />
+        <HtmlAssetPlaceholderSource>true</HtmlAssetPlaceholderSource>
+      </StaticWebAsset>
       <StaticWebAsset Include="@(_UpdatedHtmlStaticWebAssets)" />
-      <StaticWebAsset Include="@(_HtmlStaticWebAssetsForPublish)" />
       <StaticWebAssetEndpoint Remove="@(_HtmlFileEndpointsToRemove)" />
       <StaticWebAssetEndpoint Include="@(_UpdatedHtmlStaticWebAssetsEndpoint)" />
     </ItemGroup>
