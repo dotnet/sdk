@@ -44,8 +44,9 @@ namespace Microsoft.NET.Build.Tests
         {
             var knownFrameworkReferences = GetItemsByTargetFramework("KnownFrameworkReference");
 
-            //  netcoreapp3.0 is the oldest target framework in the catalog, and the SDK being built is the newest.
-            TargetFrameworks.Should().Contain(new[] { "netcoreapp3.0", "netcoreapp3.1", "net5.0", "net6.0", "net7.0", "net8.0", "net9.0" });
+            //  Every shipped target framework should be in the catalog. The target framework of the SDK being
+            //  built isn't listed here so that this test doesn't need to be updated for each new release.
+            TargetFrameworks.Should().Contain(new[] { "netcoreapp3.0", "netcoreapp3.1", "net5.0", "net6.0", "net7.0", "net8.0", "net9.0", "net10.0" });
 
             foreach (var targetFramework in TargetFrameworks)
             {
