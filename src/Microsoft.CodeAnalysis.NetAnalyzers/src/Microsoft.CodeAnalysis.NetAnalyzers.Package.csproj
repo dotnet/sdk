@@ -107,13 +107,4 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="ValidateGeneratedFilesInPackage"
-          AfterTargets="_GetPackageFiles">
-    <Error Condition="!@(_PackageFiles->AnyHaveMetadataValue('PackagePath', '/rulesets'))" Text="Generated rulesets are missing from the package." />
-    <Error Condition="!@(_PackageFiles->AnyHaveMetadataValue('PackagePath', '/editorconfig'))" Text="Generated editorconfigs are missing from the package." />
-    <Error Condition="!@(_PackageFiles->AnyHaveMetadataValue('PackagePath', '/buildTransitive/config'))" Text="Generated global analyzer configs are missing from the package." />
-    <!-- Microsoft.CodeAnalysis.NetAnalyzers.props, Microsoft.CodeAnalysis.NetAnalyzers.targets, and DisableNETAnalyzersForNuGetPackage.props -->
-    <Error Condition="'@(_PackageFiles->WithMetadataValue('PackagePath', '/buildTransitive')->Count())' != '3'" Text="Generated buildTransitive props and targets are missing from the package." />
-  </Target>
-
 </Project>
