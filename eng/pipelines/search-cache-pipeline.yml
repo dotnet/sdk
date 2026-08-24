@@ -356,31 +356,31 @@ extends:
                   [Convert]::ToBase64String($bytes).TrimEnd('=').Replace('+', '-').Replace('/', '_')
                 }
 
-                try {
+                function Get-AkaMsAccessToken($certificate, $privateKey, $clientId, $tenantId) {
                   # Build and sign a client-assertion JWT (RS256) with the certificate's private key.
                   # Subject Name + Issuer (SNI) auth: include x5t (sha1 thumbprint) and x5c (the cert)
                   # in the header so AAD accepts the first-party app's certificate by subject/issuer.
                   $scope         = 'https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod/.default'
-                  $tokenEndpoint = "https://login.microsoftonline.com/$authorityTenant/oauth2/v2.0/token"
+                  $tokenEndpoint = "https://login.microsoftonline.com/$tenantId/oauth2/v2.0/token"
                   $now = [DateTimeOffset]::UtcNow
-                  $thumbprint = [System.Security.Cryptography.SHA1]::HashData($cert.RawData)
+                  $thumbprint = [System.Security.Cryptography.SHA1]::HashData($certificate.RawData)
                   $header = [ordered]@{
                     alg = 'RS256'
                     typ = 'JWT'
                     x5t = (ConvertTo-Base64Url $thumbprint)
-                    x5c = @([Convert]::ToBase64String($cert.RawData))
+                    x5c = @([Convert]::ToBase64String($certificate.RawData))
                   } | ConvertTo-Json -Compress
                   $payload = [ordered]@{
                     aud = $tokenEndpoint
-                    iss = $appId
-                    sub = $appId
+                    iss = $clientId
+                    sub = $clientId
                     jti = [Guid]::NewGuid().ToString()
                     nbf = $now.ToUnixTimeSeconds()
                     exp = $now.AddMinutes(10).ToUnixTimeSeconds()
                   } | ConvertTo-Json -Compress
                   $unsigned = (ConvertTo-Base64Url ([Text.Encoding]::UTF8.GetBytes($header))) + '.' +
                               (ConvertTo-Base64Url ([Text.Encoding]::UTF8.GetBytes($payload)))
-                  $signature = $rsa.SignData(
+                  $signature = $privateKey.SignData(
                     [Text.Encoding]::ASCII.GetBytes($unsigned),
                     [System.Security.Cryptography.HashAlgorithmName]::SHA256,
                     [System.Security.Cryptography.RSASignaturePadding]::Pkcs1)
@@ -388,47 +388,36 @@ extends:
 
                   $tokenResponse = Invoke-RestMethod -Method Post -Uri $tokenEndpoint `
                     -ContentType 'application/x-www-form-urlencoded' -Body @{
-                      client_id             = $appId
+                      client_id             = $clientId
                       scope                 = $scope
                       grant_type            = 'client_credentials'
                       client_assertion_type = 'urn:ietf:params:oauth:client-assertion-type:jwt-bearer'
                       client_assertion      = $assertion
                     }
-                  $token = $tokenResponse.access_token
-                  if ([string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire the redirection API token.'; exit 1 }
-                  Write-Host "##vso[task.setsecret]$token"
+                  $tokenResponse.access_token
+                }
 
+                function New-AkaMsLink($short, $target, $description, $owners, $groupOwner, [bool] $creating) {
                   $lastModifiedBy = $owners.Split(';')[0].Trim()
-                  function New-Link($short, $target, $description, [bool] $creating) {
-                    $link = @{
-                      shortUrl       = $short
-                      targetUrl      = $target
-                      owners         = $owners
-                      groupOwner     = $groupOwner
-                      lastModifiedBy = $lastModifiedBy
-                      description    = $description
-                      isAllowParam   = $true
-                    }
-                    if ($creating) {
-                      $link.createdBy = $lastModifiedBy
-                      $link.isVanity = $true
-                    }
-                    $link
+                  $link = @{
+                    shortUrl       = $short
+                    targetUrl      = $target
+                    owners         = $owners
+                    groupOwner     = $groupOwner
+                    lastModifiedBy = $lastModifiedBy
+                    description    = $description
+                    isAllowParam   = $true
                   }
+                  if ($creating) {
+                    $link.createdBy = $lastModifiedBy
+                    $link.isVanity = $true
+                  }
+                  $link
+                }
 
-                  $links = @(
-                    @{
-                      shortUrl = $shortUrl
-                      targetUrl = $searchCacheUrl
-                      description = 'dotnet templating search cache (published via ESRP)'
-                    },
-                    @{
-                      shortUrl = $nonShortUrl
-                      targetUrl = $nonTemplatePacksUrl
-                      description = 'dotnet templating non-template packs (published via ESRP)'
-                    }
-                  )
-
+                # The endpoint, link model, ownership fields, and create/update flow mirror Arcade's
+                # src/Microsoft.DotNet.Deployment.Tasks.Links/src/AkaMSLinksManager.cs.
+                function Set-AkaMsLinks($token, $tenant, $owners, $groupOwner, $links) {
                   $baseUri = "https://redirectionapi-ame.trafficmanager.net/api/aka/1/$tenant"
                   $headers = @{ Authorization = "Bearer $token" }
                   $linksToCreate = [Collections.Generic.List[object]]::new()
@@ -437,9 +426,9 @@ extends:
                     $check = Invoke-WebRequest -Method Get -Uri "$baseUri/$($link.shortUrl)" `
                       -Headers $headers -SkipHttpErrorCheck
                     if ($check.StatusCode -eq 200) {
-                      $linksToUpdate.Add((New-Link $link.shortUrl $link.targetUrl $link.description $false))
+                      $linksToUpdate.Add((New-AkaMsLink $link.shortUrl $link.targetUrl $link.description $owners $groupOwner $false))
                     } elseif ($check.StatusCode -eq 404) {
-                      $linksToCreate.Add((New-Link $link.shortUrl $link.targetUrl $link.description $true))
+                      $linksToCreate.Add((New-AkaMsLink $link.shortUrl $link.targetUrl $link.description $owners $groupOwner $true))
                     } else {
                       Write-Error "Failed to check aka.ms/$($link.shortUrl). Status: $($check.StatusCode). Response: $($check.Content)"
                       exit 1
@@ -463,6 +452,26 @@ extends:
                       -Headers $headers -ContentType 'application/json' -Body $body
                     Write-Host "Redirection API status: $($resp.StatusCode)"
                   }
+                }
+
+                try {
+                  $token = Get-AkaMsAccessToken $cert $rsa $appId $authorityTenant
+                  if ([string]::IsNullOrWhiteSpace($token)) { Write-Error 'Failed to acquire the redirection API token.'; exit 1 }
+                  Write-Host "##vso[task.setsecret]$token"
+
+                  $links = @(
+                    @{
+                      shortUrl = $shortUrl
+                      targetUrl = $searchCacheUrl
+                      description = 'dotnet templating search cache (published via ESRP)'
+                    },
+                    @{
+                      shortUrl = $nonShortUrl
+                      targetUrl = $nonTemplatePacksUrl
+                      description = 'dotnet templating non-template packs (published via ESRP)'
+                    }
+                  )
+                  Set-AkaMsLinks $token $tenant $owners $groupOwner $links
                 }
                 finally {
                   Remove-Item -Force -ErrorAction SilentlyContinue $b64Path
