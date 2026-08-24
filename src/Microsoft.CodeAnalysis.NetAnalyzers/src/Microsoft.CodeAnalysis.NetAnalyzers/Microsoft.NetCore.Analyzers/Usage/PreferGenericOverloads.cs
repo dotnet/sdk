@@ -162,9 +162,13 @@ namespace Microsoft.NetCore.Analyzers.Usage
                     return false;
                 }
 
+                // Normalize named and optional arguments before splitting them so the remaining arguments
+                // stay aligned with the corresponding parameters on a candidate generic overload.
                 var argumentsInParameterOrder = invocation.Arguments.GetArgumentsInParameterOrder();
                 var typeOfArguments = argumentsInParameterOrder.WhereAsArray(
                     a => a.Value is ITypeOfOperation &&
+                        // A constructed generic parameter can become System.Type, but a typeof value passed
+                        // to that parameter is still ordinary data. Only a declared System.Type parameter is a selector.
                         SymbolEqualityComparer.Default.Equals(a.Parameter?.OriginalDefinition.Type, systemType));
 
                 // Bail out if there is no argument using the typeof operator.
@@ -231,6 +235,7 @@ namespace Microsoft.NetCore.Analyzers.Usage
 
             public bool HasCompatibleParameterCount(IMethodSymbol method)
             {
+                // Expanded params arguments can outnumber the candidate's declared parameters.
                 return method.Parameters.Length == OtherArguments.Length ||
                     method.Parameters.Length > 0 &&
                     method.Parameters[method.Parameters.Length - 1].IsParams &&
@@ -247,6 +252,8 @@ namespace Microsoft.NetCore.Analyzers.Usage
                     var parameter = method.Parameters[i < method.Parameters.Length ? i : method.Parameters.Length - 1];
                     var argumentType = OtherArguments[i].Value.WalkDownConversion().Type;
                     var parameterType = parameter.Type;
+                    // Preserve both forms of a params argument: an explicit array binds to the array parameter,
+                    // while each expanded argument must be compatible with its element type.
                     if (parameter.IsParams &&
                         parameterType is IArrayTypeSymbol arrayType &&
                         !argumentType.IsAssignableTo(parameterType, compilation))

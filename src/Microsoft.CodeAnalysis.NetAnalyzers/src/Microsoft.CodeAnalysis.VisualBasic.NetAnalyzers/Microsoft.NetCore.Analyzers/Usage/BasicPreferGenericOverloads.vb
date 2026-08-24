@@ -30,6 +30,8 @@ Namespace Microsoft.NetCore.VisualBasic.Analyzers.Usage
 
             Dim invocationSyntax = CType(invocationContext.Syntax, InvocationExpressionSyntax)
             Dim typeArgumentSyntax = invocationContext.TypeArguments.Select(Function(t) SyntaxFactory.ParseTypeName(t.ToDisplayString()))
+            ' Filter the source argument list rather than the normalized operations so every expanded ParamArray
+            ' argument remains in the replacement invocation.
             Dim otherArgumentsSyntax = invocationSyntax.ArgumentList.Arguments _
                 .Where(Function(a) Not invocationContext.IsTypeOfArgumentSyntax(a))
             Dim methodNameSyntax =

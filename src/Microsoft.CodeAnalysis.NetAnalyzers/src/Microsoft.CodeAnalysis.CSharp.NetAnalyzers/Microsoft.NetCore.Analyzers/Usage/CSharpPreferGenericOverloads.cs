@@ -33,6 +33,8 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Usage
             }
 
             var typeArgumentsSyntax = invocationContext.TypeArguments.Select(t => SyntaxFactory.ParseTypeName(t.ToDisplayString()));
+            // Filter the source argument list rather than the normalized operations so every expanded params
+            // argument remains in the replacement invocation.
             var otherArgumentsSyntax = invocationSyntax.ArgumentList.Arguments
                 .Where(a => !invocationContext.IsTypeOfArgumentSyntax(a));
             var methodNameSyntax =
