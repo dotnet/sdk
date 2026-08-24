@@ -350,12 +350,13 @@ internal sealed class ArtifactPostProcessingManager
         ArtifactPostProcessingJob job,
         IReadOnlyList<ArtifactPostProcessingArtifact> processedArtifacts)
     {
+        HashSet<string>? jobInputPaths = null;
         foreach (ArtifactPostProcessingArtifact processedArtifact in processedArtifacts)
         {
             HashSet<string> consumedPaths;
             if (processedArtifact.InputArtifactPaths is not null)
             {
-                var jobInputPaths = new HashSet<string>(
+                jobInputPaths ??= new HashSet<string>(
                     job.Groups.SelectMany(group => group.Artifacts).Select(artifact => artifact.Path),
                     FileUtilities.PathComparer);
                 consumedPaths = new HashSet<string>(
