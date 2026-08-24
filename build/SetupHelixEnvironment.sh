@@ -29,12 +29,19 @@ export DOTNET_SDK_TEST_TEMPLATE_SAMPLES_DIR=$TestExecutionDirectory/TemplateSamp
 dotnet new --debug:ephemeral-hive
 
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget add source $DOTNET_ROOT/.nuget --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget add source $TestExecutionDirectory/Testpackages --configfile $TestExecutionDirectory/NuGet.config
 #Remove feeds not needed for tests
 dotnet nuget remove source dotnet6-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet6-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet7-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet8-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet8-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet9-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet9-internal-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet10-transport --configfile $TestExecutionDirectory/NuGet.config
+dotnet nuget remove source dotnet10-internal-transport --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source richnav --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source vs-impl --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-libraries-transport --configfile $TestExecutionDirectory/NuGet.config
@@ -42,3 +49,12 @@ dotnet nuget remove source dotnet-tools-transport --configfile $TestExecutionDir
 dotnet nuget remove source dotnet-libraries --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget remove source dotnet-eng --configfile $TestExecutionDirectory/NuGet.config
 dotnet nuget list source --configfile $TestExecutionDirectory/NuGet.config
+
+# Install Node.js if version is specified (needed for TypeScript compilation tests)
+if [ -n "$DOTNET_SDK_TEST_NODE_VERSION" ]; then
+    chmod +x $HELIX_CORRELATION_PAYLOAD/t/installnode.sh
+    $HELIX_CORRELATION_PAYLOAD/t/installnode.sh "$DOTNET_SDK_TEST_NODE_VERSION" "${DOTNET_SDK_TEST_NODE_ARCH:-x64}"
+    if [ -d "$HELIX_CORRELATION_PAYLOAD/t/node/bin" ]; then
+        export PATH=$HELIX_CORRELATION_PAYLOAD/t/node/bin:$PATH
+    fi
+fi

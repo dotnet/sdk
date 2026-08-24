@@ -8,16 +8,16 @@ using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines;
 using Microsoft.CodeQuality.VisualBasic.Analyzers.QualityGuidelines;
 using Test.Utilities;
-using Xunit;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
     using VerifyCS = CSharpCodeFixVerifier<MarkMembersAsStaticAnalyzer, CSharpMarkMembersAsStaticFixer>;
     using VerifyVB = VisualBasicCodeFixVerifier<MarkMembersAsStaticAnalyzer, BasicMarkMembersAsStaticFixer>;
 
+    [TestClass]
     public class MarkMembersAsStaticTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleMembersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -71,7 +71,7 @@ public class MembersTests
                 VerifyCS.Diagnostic().WithLocation(7).WithArguments("CustomEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleMembersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -137,7 +137,7 @@ End Class
                 VerifyVB.Diagnostic().WithLocation(7).WithArguments("CustomEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethodsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -211,7 +211,7 @@ internal class MembersTests
                 VerifyCS.Diagnostic().WithLocation(6).WithArguments("CustomEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleMembers_Internal_DiagnosticsOnlyForInvokedMethodsAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -297,7 +297,7 @@ End Class
                 VerifyVB.Diagnostic().WithLocation(6).WithArguments("CustomEvent"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpSimpleMembers_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -351,7 +351,7 @@ public class Generic<T>
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicSimpleMembers_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -417,7 +417,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpOverrides_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -441,7 +441,7 @@ public class SpecialCasesTest2 : SpecialCasesTest1, ISpecialCasesTest
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicOverrides_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -469,7 +469,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CSharpNoDiagnostic_ComVisibleAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -490,7 +490,7 @@ public class ComVisibleClass
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicNoDiagnostic_ComVisibleAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -511,22 +511,22 @@ End Class
 ");
         }
 
-        [Theory]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestInitialize", true, false, false)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod", true, false, false)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.DataTestMethod", true, false, false)]
-        [InlineData("Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanup", true, false, false)]
-        [InlineData("Xunit.Fact", false, false, true)]
-        [InlineData("Xunit.Theory", false, false, true)]
-        [InlineData("CustomxUnit.WpfFact", false, false, true)]
-        [InlineData("NUnit.Framework.OneTimeSetUp", false, true, false)]
-        [InlineData("NUnit.Framework.OneTimeTearDown", false, true, false)]
-        [InlineData("NUnit.Framework.SetUp", false, true, false)]
-        [InlineData("NUnit.Framework.TearDown", false, true, false)]
-        [InlineData("NUnit.Framework.Test", false, true, false)]
-        [InlineData("NUnit.Framework.TestCase(\"asdf\")", false, true, false)]
-        [InlineData("NUnit.Framework.TestCaseSource(\"asdf\")", false, true, false)]
-        [InlineData("NUnit.Framework.Theory", false, true, false)]
+        [TestMethod]
+        [DataRow("Microsoft.VisualStudio.TestTools.UnitTesting.TestInitialize", true, false, false)]
+        [DataRow("Microsoft.VisualStudio.TestTools.UnitTesting.TestMethod", true, false, false)]
+        [DataRow("Microsoft.VisualStudio.TestTools.UnitTesting.DataTestMethod", true, false, false)]
+        [DataRow("Microsoft.VisualStudio.TestTools.UnitTesting.TestCleanup", true, false, false)]
+        [DataRow("Xunit.Fact", false, false, true)]
+        [DataRow("Xunit.Theory", false, false, true)]
+        [DataRow("CustomxUnit.WpfFact", false, false, true)]
+        [DataRow("NUnit.Framework.OneTimeSetUp", false, true, false)]
+        [DataRow("NUnit.Framework.OneTimeTearDown", false, true, false)]
+        [DataRow("NUnit.Framework.SetUp", false, true, false)]
+        [DataRow("NUnit.Framework.TearDown", false, true, false)]
+        [DataRow("NUnit.Framework.Test", false, true, false)]
+        [DataRow("NUnit.Framework.TestCase(\"asdf\")", false, true, false)]
+        [DataRow("NUnit.Framework.TestCaseSource(\"asdf\")", false, true, false)]
+        [DataRow("NUnit.Framework.Theory", false, true, false)]
         public async Task NoDiagnostic_TestAttributesAsync(string testAttributeData, bool isMSTest, bool isNUnit, bool isxunit)
         {
             var referenceAssemblies = (isMSTest, isNUnit, isxunit) switch
@@ -566,7 +566,7 @@ namespace CustomxUnit
 }",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -597,10 +597,10 @@ End Namespace
 ",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4995, "https://github.com/dotnet/roslyn-analyzers/issues/4995")]
         [WorkItem(5110, "https://github.com/dotnet/roslyn-analyzers/issues/5110")]
         public async Task AttributeImplementingNUnitITestBuilder_NoDiagnosticAsync()
@@ -640,7 +640,7 @@ namespace CustomNUnit
 }",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -675,10 +675,10 @@ End Namespace
 ",
                     },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
+        [TestMethod, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
         public async Task PrivateMethodOnlyCalledByASkippedMethod_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -709,10 +709,10 @@ public class Program
                         VerifyCS.Diagnostic().WithLocation(0).WithArguments("N"),
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
+        [TestMethod, WorkItem(3019, "https://github.com/dotnet/roslyn-analyzers/issues/3019")]
         public async Task PrivateMethodOnlyReferencedByASkippedMethod_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -739,10 +739,10 @@ public class Program
 }",
                     }
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
+        [TestMethod, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
         public async Task CSharp_InstanceReferenceInObjectInitializer_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -762,7 +762,7 @@ public class B
             VerifyCS.Diagnostic().WithLocation(0).WithArguments("M"));
         }
 
-        [Fact, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
+        [TestMethod, WorkItem(1865, "https://github.com/dotnet/roslyn-analyzers/issues/1865")]
         public async Task Basic_InstanceReferenceInObjectInitializer_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -780,7 +780,7 @@ End Class
             VerifyVB.Diagnostic().WithLocation(0).WithArguments("M"));
         }
 
-        [Fact, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
+        [TestMethod, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
         public async Task CSharpPropertySingleAccessorAccessingInstance_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -810,7 +810,7 @@ public class MyClass
 }");
         }
 
-        [Fact, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
+        [TestMethod, WorkItem(1933, "https://github.com/dotnet/roslyn-analyzers/issues/1933")]
         public async Task CSharpEventWithSingleAccessorAccessingInstance_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -849,7 +849,7 @@ public class MyClass
 }");
         }
 
-        [Fact, WorkItem(2414, "https://github.com/dotnet/roslyn-analyzers/issues/2414")]
+        [TestMethod, WorkItem(2414, "https://github.com/dotnet/roslyn-analyzers/issues/2414")]
         public async Task CSharp_ErrorCase_MethodWithThrowNotInCatchAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -864,7 +864,7 @@ class C
 }");
         }
 
-        [Fact, WorkItem(2785, "https://github.com/dotnet/roslyn-analyzers/issues/2785")]
+        [TestMethod, WorkItem(2785, "https://github.com/dotnet/roslyn-analyzers/issues/2785")]
         public async Task CSharp_CustomTestMethodAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -900,13 +900,13 @@ namespace SomeNamespace
 }");
         }
 
-        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
-        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
-        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
-        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
-        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
-        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
-        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        [TestMethod, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [DataRow("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [DataRow("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [DataRow("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [DataRow("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [DataRow("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [DataRow("dotnet_code_quality.api_surface = private, internal")]
         public async Task WebSpecificControllerMethods_NoDiagnosticAsync(string editorConfigText)
         {
             var csSource = @"
@@ -943,7 +943,7 @@ public class C : System.Web.HttpApplication
                     Sources = { csSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             var vbSource = @"
 Imports System
@@ -997,10 +997,10 @@ End Class
                     Sources = { vbSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MethodsWithOptionalParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1036,7 +1036,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
+        [TestMethod, WorkItem(3857, "https://github.com/dotnet/roslyn-analyzers/issues/3857")]
         public async Task CA1822_ObsoleteAttribute_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -1111,7 +1111,7 @@ public class C3
         public event EventHandler<EventArgs> E1 { add {} remove {} }
     }
 }",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             await VerifyVB.VerifyAnalyzerAsync(@"
 Imports System
@@ -1222,13 +1222,13 @@ End Class
 ");
         }
 
-        [Theory, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
-        [InlineData("build_property.UsingMicrosoftNETSdkWeb = true")]
-        [InlineData("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
-        [InlineData("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
-        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
-        [InlineData("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
-        [InlineData("dotnet_code_quality.api_surface = private, internal")]
+        [TestMethod, WorkItem(3835, "https://github.com/dotnet/roslyn-analyzers/issues/3835")]
+        [DataRow("build_property.UsingMicrosoftNETSdkWeb = true")]
+        [DataRow("build_property.ProjectTypeGuids = {349C5851-65DF-11DA-9384-00065B846F21}")]
+        [DataRow("build_property.ProjectTypeGuids = {e24c65dc-7377-472B-9ABA-BC803B73C61A}")]
+        [DataRow("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [DataRow("build_property.ProjectTypeGuids = {349c5851-65df-11da-9384-00065b846f21} ; {fae04ec0-301f-11d3-bf4b-00c04f79efbc}")]
+        [DataRow("dotnet_code_quality.api_surface = private, internal")]
         public async Task TestWebProjectAsync(string editorConfigText)
         {
             var csSource = @"
@@ -1246,7 +1246,7 @@ public class Test
                     Sources = { csSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
 
             var vbSource = @"
 Public Class Test
@@ -1273,10 +1273,10 @@ End Class";
                     Sources = { vbSource },
                     AnalyzerConfigFiles = { ("/.editorconfig", $"[*]\r\n{editorConfigText}") },
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        [TestMethod, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
         public async Task FullProperties_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1305,7 +1305,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        [TestMethod, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
         public async Task AutoProperties_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1339,7 +1339,7 @@ public class C1
 }");
         }
 
-        [Fact, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
+        [TestMethod, WorkItem(2834, "https://github.com/dotnet/roslyn-analyzers/issues/2834")]
         public async Task Properties_StaticField_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1365,7 +1365,7 @@ public class C1
 }");
         }
 
-        [Fact, WorkItem(4304, "https://github.com/dotnet/roslyn-analyzers/pull/4304")]
+        [TestMethod, WorkItem(4304, "https://github.com/dotnet/roslyn-analyzers/pull/4304")]
         public async Task SkippableFactAttributeAsync()
         {
             await new VerifyCS.Test
@@ -1381,10 +1381,10 @@ public class C
     [SkippableFact]
     public void M() {}
 }",
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        [TestMethod, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
         public async Task AwaiterPattern_INotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1403,7 +1403,7 @@ public class DummyAwaiter : INotifyCompletion
 }");
         }
 
-        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        [TestMethod, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
         public async Task AwaiterPattern_ICriticalNotifyCompletion_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1423,7 +1423,7 @@ public class DummyAwaiter : ICriticalNotifyCompletion
 }");
         }
 
-        [Fact, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
+        [TestMethod, WorkItem(4623, "https://github.com/dotnet/roslyn-analyzers/issues/4623")]
         public async Task AwaitablePattern_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1447,7 +1447,7 @@ public class DummyAwaiter : INotifyCompletion
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InstanceMemberUsedInXml_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -1463,7 +1463,7 @@ Public Class C
 End Class");
         }
 
-        [Fact, WorkItem(6540, "https://github.com/dotnet/roslyn-analyzers/issues/6540")]
+        [TestMethod, WorkItem(6540, "https://github.com/dotnet/roslyn-analyzers/issues/6540")]
         public Task RecursiveMethod_DiagnosticAsync()
         {
             return new VerifyCS.Test
@@ -1499,10 +1499,10 @@ public class Test
     }
 }",
                 LanguageVersion = LanguageVersion.CSharp8
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
+        [TestMethod, WorkItem(6573, "https://github.com/dotnet/roslyn-analyzers/issues/6573")]
         public Task PrimaryConstructor()
         {
             return new VerifyCS.Test
@@ -1529,10 +1529,10 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.Preview
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
+        [TestMethod, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
         public Task ExtensionMembers_Instance()
         {
             return new VerifyCS.Test
@@ -1548,10 +1548,10 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.Preview,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
+        [TestMethod, WorkItem(78858, "https://github.com/dotnet/roslyn/issues/78858")]
         public Task ExtensionMembers_Static()
         {
             return new VerifyCS.Test
@@ -1577,7 +1577,7 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.Preview,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         [Fact, WorkItem(51644, "https://github.com/dotnet/sdk/issues/51644")]

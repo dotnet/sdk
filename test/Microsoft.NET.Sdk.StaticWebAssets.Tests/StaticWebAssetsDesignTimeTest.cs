@@ -3,15 +3,22 @@
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBaselineTest(log)
+[TestClass]
+public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
 {
 #if DEBUG
     public const string Configuration = "Debug";
@@ -19,7 +26,32 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
     public const string Configuration = "Release";
 #endif
 
-    [Fact]
+    [TestMethod]
+    public void ResolveWebAssemblyProjectReferences_ReturnsReferencedWebAssemblyProject()
+    {
+        var testAsset = CreateAspNetSdkTestAsset("BlazorHosted");
+        var msbuild = new MSBuildCommand(
+            testAsset,
+            "ResolveWebAssemblyProjectReferences",
+            "blazorhosted");
+        msbuild.WithWorkingDirectory(testAsset.TestRoot);
+
+        var result = msbuild.Execute("-getItem:WebAssemblyProjectReference", "-nologo");
+        result.Should().Pass();
+
+        using var output = JsonDocument.Parse(result.StdOut);
+        var projectReferences = output.RootElement
+            .GetProperty("Items")
+            .GetProperty("WebAssemblyProjectReference")
+            .EnumerateArray()
+            .Select(item => item.GetProperty("Identity").GetString())
+            .ToArray();
+
+        projectReferences.Should().ContainSingle().Which.Should().Be(
+            Path.GetFullPath(Path.Combine(testAsset.TestRoot, "blazorwasm", "blazorwasm.csproj")));
+    }
+
+    [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_ReportsAddedFiles()
     {
         // Arrange
@@ -55,7 +87,7 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
     }
 
-    [Fact]
+    [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_ReportsRemovedFiles_Once()
     {
         // Arrange
@@ -90,7 +122,7 @@ public class StaticWebAssetsDesignTimeTest(ITestOutputHelper log) : AspNetSdkBas
         Path.GetFileName(outputFiles[0]).Should().Be("staticwebassets.build.json");
     }
 
-    [Fact]
+    [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_IncludesReferencedProjectsManifests()
     {
         // Arrange

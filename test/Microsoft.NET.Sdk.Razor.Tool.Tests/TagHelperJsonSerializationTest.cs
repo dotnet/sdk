@@ -19,9 +19,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
     /// can be correctly deserialized by GenerateCommand. The tests use predefined JSON
     /// strings that represent various TagHelperDescriptor configurations.
     /// </remarks>
+    [TestClass]
     public class TagHelperJsonSerializationTest
     {
-        [Fact]
+        [TestMethod]
         public void RoundTrip_SimpleTagHelper_PreservesData()
         {
             // Arrange - JSON representing a simple tag helper
@@ -48,16 +49,16 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
-            Assert.Equal("TestTagHelper", roundTripped[0].Name);
-            Assert.Equal("TestAssembly", roundTripped[0].AssemblyName);
-            Assert.Equal("Test Tag Helper", roundTripped[0].DisplayName);
-            Assert.Equal("TestNamespace.TestTagHelper", roundTripped[0].TypeName);
-            Assert.Single(roundTripped[0].TagMatchingRules);
-            Assert.Equal("test-tag", roundTripped[0].TagMatchingRules[0].TagName);
+            Assert.ContainsSingle(roundTripped);
+            Assert.AreEqual("TestTagHelper", roundTripped[0].Name);
+            Assert.AreEqual("TestAssembly", roundTripped[0].AssemblyName);
+            Assert.AreEqual("Test Tag Helper", roundTripped[0].DisplayName);
+            Assert.AreEqual("TestNamespace.TestTagHelper", roundTripped[0].TypeName);
+            Assert.ContainsSingle(roundTripped[0].TagMatchingRules);
+            Assert.AreEqual("test-tag", roundTripped[0].TagMatchingRules[0].TagName);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithBoundAttributes_PreservesData()
         {
             // Arrange
@@ -99,22 +100,22 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var result = roundTripped[0];
 
-            Assert.Equal("BoundTagHelper", result.Name);
-            Assert.Equal(2, result.BoundAttributes.Length);
+            Assert.AreEqual("BoundTagHelper", result.Name);
+            Assert.HasCount(2, result.BoundAttributes);
 
-            Assert.Equal("value", result.BoundAttributes[0].Name);
-            Assert.Equal("Value", result.BoundAttributes[0].PropertyName);
-            Assert.Equal("System.String", result.BoundAttributes[0].TypeName);
+            Assert.AreEqual("value", result.BoundAttributes[0].Name);
+            Assert.AreEqual("Value", result.BoundAttributes[0].PropertyName);
+            Assert.AreEqual("System.String", result.BoundAttributes[0].TypeName);
 
-            Assert.Equal("count", result.BoundAttributes[1].Name);
-            Assert.Equal("Count", result.BoundAttributes[1].PropertyName);
-            Assert.Equal("System.Int32", result.BoundAttributes[1].TypeName);
+            Assert.AreEqual("count", result.BoundAttributes[1].Name);
+            Assert.AreEqual("Count", result.BoundAttributes[1].PropertyName);
+            Assert.AreEqual("System.Int32", result.BoundAttributes[1].TypeName);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithTagMatchingRules_PreservesData()
         {
             // Arrange
@@ -148,22 +149,22 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var result = roundTripped[0];
 
-            Assert.Equal(2, result.TagMatchingRules.Length);
+            Assert.HasCount(2, result.TagMatchingRules);
 
-            Assert.Equal("my-tag", result.TagMatchingRules[0].TagName);
-            Assert.Equal("parent-tag", result.TagMatchingRules[0].ParentTag);
-            Assert.Equal(TagStructure.WithoutEndTag, result.TagMatchingRules[0].TagStructure);
-            Assert.False(result.TagMatchingRules[0].CaseSensitive);
+            Assert.AreEqual("my-tag", result.TagMatchingRules[0].TagName);
+            Assert.AreEqual("parent-tag", result.TagMatchingRules[0].ParentTag);
+            Assert.AreEqual(TagStructure.WithoutEndTag, result.TagMatchingRules[0].TagStructure);
+            Assert.IsFalse(result.TagMatchingRules[0].CaseSensitive);
 
-            Assert.Equal("alternate-tag", result.TagMatchingRules[1].TagName);
-            Assert.Null(result.TagMatchingRules[1].ParentTag);
-            Assert.Equal(TagStructure.NormalOrSelfClosing, result.TagMatchingRules[1].TagStructure);
+            Assert.AreEqual("alternate-tag", result.TagMatchingRules[1].TagName);
+            Assert.IsNull(result.TagMatchingRules[1].ParentTag);
+            Assert.AreEqual(TagStructure.NormalOrSelfClosing, result.TagMatchingRules[1].TagStructure);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithRequiredAttributes_PreservesData()
         {
             // Arrange
@@ -198,20 +199,20 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var result = roundTripped[0];
 
-            Assert.Single(result.TagMatchingRules);
-            Assert.Single(result.TagMatchingRules[0].Attributes);
+            Assert.ContainsSingle(result.TagMatchingRules);
+            Assert.ContainsSingle(result.TagMatchingRules[0].Attributes);
 
             var attr = result.TagMatchingRules[0].Attributes[0];
-            Assert.Equal("required-attr", attr.Name);
-            Assert.Equal(RequiredAttributeNameComparison.FullMatch, attr.NameComparison);
-            Assert.Equal("expected-value", attr.Value);
-            Assert.Equal(RequiredAttributeValueComparison.FullMatch, attr.ValueComparison);
+            Assert.AreEqual("required-attr", attr.Name);
+            Assert.AreEqual(RequiredAttributeNameComparison.FullMatch, attr.NameComparison);
+            Assert.AreEqual("expected-value", attr.Value);
+            Assert.AreEqual(RequiredAttributeValueComparison.FullMatch, attr.ValueComparison);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithAllowedChildTags_PreservesData()
         {
             // Arrange
@@ -249,17 +250,17 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var result = roundTripped[0];
 
-            Assert.Equal(2, result.AllowedChildTags.Length);
-            Assert.Equal("child-one", result.AllowedChildTags[0].Name);
-            Assert.Equal("Child One", result.AllowedChildTags[0].DisplayName);
-            Assert.Equal("child-two", result.AllowedChildTags[1].Name);
-            Assert.Equal("Child Two", result.AllowedChildTags[1].DisplayName);
+            Assert.HasCount(2, result.AllowedChildTags);
+            Assert.AreEqual("child-one", result.AllowedChildTags[0].Name);
+            Assert.AreEqual("Child One", result.AllowedChildTags[0].DisplayName);
+            Assert.AreEqual("child-two", result.AllowedChildTags[1].Name);
+            Assert.AreEqual("Child Two", result.AllowedChildTags[1].DisplayName);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_ComponentTagHelper_PreservesMetadata()
         {
             // Arrange
@@ -289,15 +290,15 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var result = roundTripped[0];
 
-            Assert.Equal(TagHelperKind.Component, result.Kind);
-            Assert.Equal(RuntimeKind.IComponent, result.RuntimeKind);
-            Assert.Equal("MyComponent", result.Name);
+            Assert.AreEqual(TagHelperKind.Component, result.Kind);
+            Assert.AreEqual(RuntimeKind.IComponent, result.RuntimeKind);
+            Assert.AreEqual("MyComponent", result.Name);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_MultipleTagHelpers_PreservesAll()
         {
             // Arrange
@@ -333,14 +334,14 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Equal(3, roundTripped.Count);
-            Assert.Equal("FirstTagHelper", roundTripped[0].Name);
-            Assert.Equal("SecondTagHelper", roundTripped[1].Name);
-            Assert.Equal("ThirdTagHelper", roundTripped[2].Name);
-            Assert.Equal("OtherAssembly", roundTripped[2].AssemblyName);
+            Assert.HasCount(3, roundTripped);
+            Assert.AreEqual("FirstTagHelper", roundTripped[0].Name);
+            Assert.AreEqual("SecondTagHelper", roundTripped[1].Name);
+            Assert.AreEqual("ThirdTagHelper", roundTripped[2].Name);
+            Assert.AreEqual("OtherAssembly", roundTripped[2].AssemblyName);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_EmptyTagHelperList_PreservesEmpty()
         {
             // Arrange
@@ -352,10 +353,10 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Empty(roundTripped);
+            Assert.IsEmpty(roundTripped);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithDocumentation_PreservesDocumentation()
         {
             // Arrange - Documentation as a string
@@ -378,11 +379,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
-            Assert.Equal("This is a documented tag helper.", roundTripped[0].Documentation);
+            Assert.ContainsSingle(roundTripped);
+            Assert.AreEqual("This is a documented tag helper.", roundTripped[0].Documentation);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithDocumentationDescriptor_PreservesDocumentation()
         {
             // Arrange - Documentation as a DocumentationDescriptor with Id and Args
@@ -408,12 +409,12 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             // Documentation should be preserved (the exact format depends on the DocumentationDescriptor)
-            Assert.NotNull(roundTripped[0].Documentation);
+            Assert.IsNotNull(roundTripped[0].Documentation);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithBoundAttributeParameters_PreservesParameters()
         {
             // Arrange
@@ -458,21 +459,21 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var result = roundTripped[0];
 
-            Assert.Single(result.BoundAttributes);
+            Assert.ContainsSingle(result.BoundAttributes);
             var attr = result.BoundAttributes[0];
 
-            Assert.Equal(2, attr.Parameters.Length);
-            Assert.Equal("format", attr.Parameters[0].Name);
-            Assert.Equal("Format", attr.Parameters[0].PropertyName);
-            Assert.Equal("System.String", attr.Parameters[0].TypeName);
-            Assert.Equal("culture", attr.Parameters[1].Name);
-            Assert.Equal("Culture", attr.Parameters[1].PropertyName);
+            Assert.HasCount(2, attr.Parameters);
+            Assert.AreEqual("format", attr.Parameters[0].Name);
+            Assert.AreEqual("Format", attr.Parameters[0].PropertyName);
+            Assert.AreEqual("System.String", attr.Parameters[0].TypeName);
+            Assert.AreEqual("culture", attr.Parameters[1].Name);
+            Assert.AreEqual("Culture", attr.Parameters[1].PropertyName);
         }
 
-        [Fact]
+        [TestMethod]
         public void Serialize_ProducesValidJson()
         {
             // Arrange
@@ -493,30 +494,30 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var serialized = Serialize(deserialized);
 
             // Assert - should be valid JSON
-            Assert.NotNull(serialized);
+            Assert.IsNotNull(serialized);
             Assert.StartsWith("[", serialized);
             Assert.EndsWith("]", serialized);
 
             // Should parse without error
             using var document = JsonDocument.Parse(serialized);
-            Assert.Equal(JsonValueKind.Array, document.RootElement.ValueKind);
-            Assert.Equal(1, document.RootElement.GetArrayLength());
+            Assert.AreEqual(JsonValueKind.Array, document.RootElement.ValueKind);
+            Assert.AreEqual(1, document.RootElement.GetArrayLength());
         }
 
-        [Fact]
+        [TestMethod]
         public void Deserialize_InvalidJson_Throws()
         {
             // Arrange
             var invalidJson = "{ not valid json";
 
             // Act & Assert
-            Assert.Throws<JsonException>(() =>
+            Assert.ThrowsExactly<JsonException>(() =>
             {
                 Deserialize(invalidJson);
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void Deserialize_EmptyArray_ReturnsEmptyCollection()
         {
             // Arrange
@@ -526,11 +527,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var result = Deserialize(json);
 
             // Assert
-            Assert.NotNull(result);
-            Assert.Empty(result);
+            Assert.IsNotNull(result);
+            Assert.IsEmpty(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperFlags_PreservesFlags()
         {
             // Arrange - CaseSensitive flag (value 1)
@@ -552,11 +553,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
-            Assert.True(roundTripped[0].CaseSensitive);
+            Assert.ContainsSingle(roundTripped);
+            Assert.IsTrue(roundTripped[0].CaseSensitive);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithIndexerAttribute_PreservesIndexer()
         {
             // Arrange
@@ -589,13 +590,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var attr = roundTripped[0].BoundAttributes[0];
-            Assert.Equal("item-", attr.IndexerNamePrefix);
-            Assert.Equal("System.Object", attr.IndexerTypeName);
+            Assert.AreEqual("item-", attr.IndexerNamePrefix);
+            Assert.AreEqual("System.Object", attr.IndexerTypeName);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithTypeNameObject_PreservesTypeInfo()
         {
             // Arrange - TypeName as an object with FullName, Namespace, and Name
@@ -621,13 +622,13 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
-            Assert.Equal("TestNamespace.Nested.TypedTagHelper", roundTripped[0].TypeName);
-            Assert.Equal("TestNamespace.Nested", roundTripped[0].TypeNamespace);
-            Assert.Equal("TypedTagHelper", roundTripped[0].TypeNameIdentifier);
+            Assert.ContainsSingle(roundTripped);
+            Assert.AreEqual("TestNamespace.Nested.TypedTagHelper", roundTripped[0].TypeName);
+            Assert.AreEqual("TestNamespace.Nested", roundTripped[0].TypeNamespace);
+            Assert.AreEqual("TypedTagHelper", roundTripped[0].TypeNameIdentifier);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_TagHelperWithTagOutputHint_PreservesHint()
         {
             // Arrange
@@ -650,11 +651,11 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
-            Assert.Equal("div", roundTripped[0].TagOutputHint);
+            Assert.ContainsSingle(roundTripped);
+            Assert.AreEqual("div", roundTripped[0].TagOutputHint);
         }
 
-        [Fact]
+        [TestMethod]
         public void RoundTrip_ComplexTagHelper_PreservesAllData()
         {
             // Arrange - A complex tag helper with multiple features
@@ -714,28 +715,28 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             var roundTripped = Deserialize(reserialized);
 
             // Assert
-            Assert.Single(roundTripped);
+            Assert.ContainsSingle(roundTripped);
             var result = roundTripped[0];
 
-            Assert.Equal("ComplexComponent", result.Name);
-            Assert.Equal("ComplexAssembly", result.AssemblyName);
-            Assert.Equal("Complex Component", result.DisplayName);
-            Assert.Equal("ComplexNamespace.ComplexComponent", result.TypeName);
-            Assert.Equal("ComplexNamespace", result.TypeNamespace);
-            Assert.Equal("A complex component with many features.", result.Documentation);
-            Assert.Equal("section", result.TagOutputHint);
-            Assert.True(result.CaseSensitive);
+            Assert.AreEqual("ComplexComponent", result.Name);
+            Assert.AreEqual("ComplexAssembly", result.AssemblyName);
+            Assert.AreEqual("Complex Component", result.DisplayName);
+            Assert.AreEqual("ComplexNamespace.ComplexComponent", result.TypeName);
+            Assert.AreEqual("ComplexNamespace", result.TypeNamespace);
+            Assert.AreEqual("A complex component with many features.", result.Documentation);
+            Assert.AreEqual("section", result.TagOutputHint);
+            Assert.IsTrue(result.CaseSensitive);
 
-            Assert.Single(result.TagMatchingRules);
-            Assert.Equal("ComplexComponent", result.TagMatchingRules[0].TagName);
-            Assert.Equal("div", result.TagMatchingRules[0].ParentTag);
-            Assert.Equal(TagStructure.NormalOrSelfClosing, result.TagMatchingRules[0].TagStructure);
+            Assert.ContainsSingle(result.TagMatchingRules);
+            Assert.AreEqual("ComplexComponent", result.TagMatchingRules[0].TagName);
+            Assert.AreEqual("div", result.TagMatchingRules[0].ParentTag);
+            Assert.AreEqual(TagStructure.NormalOrSelfClosing, result.TagMatchingRules[0].TagStructure);
 
-            Assert.Single(result.BoundAttributes);
-            Assert.Equal("title", result.BoundAttributes[0].Name);
+            Assert.ContainsSingle(result.BoundAttributes);
+            Assert.AreEqual("title", result.BoundAttributes[0].Name);
 
-            Assert.Single(result.AllowedChildTags);
-            Assert.Equal("content", result.AllowedChildTags[0].Name);
+            Assert.ContainsSingle(result.AllowedChildTags);
+            Assert.AreEqual("content", result.AllowedChildTags[0].Name);
         }
 
         #region Helper Methods

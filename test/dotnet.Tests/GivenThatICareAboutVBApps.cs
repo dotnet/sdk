@@ -3,14 +3,15 @@
 
 namespace Microsoft.DotNet.Tests
 {
+    [TestClass]
     public class GivenThatICareAboutVBApps : SdkTest
     {
-        public GivenThatICareAboutVBApps(ITestOutputHelper log) : base(log)
+        public GivenThatICareAboutVBApps()
         {
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ICanBuildVBApps()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("VBTestApp")
@@ -21,7 +22,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ICanRunVBApps()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("VBTestApp")
@@ -33,7 +34,7 @@ namespace Microsoft.DotNet.Tests
                 .Should().Pass();
         }
 
-        [Fact]
+        [TestMethod]
         public void ICanPublicAndRunVBApps()
         {
             var testInstance = TestAssetsManager.CopyTestAsset("VBTestApp")

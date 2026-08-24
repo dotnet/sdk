@@ -10,6 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
+    <!-- Shared with the SDK MSBuild build tasks; kept in src\Common to avoid duplication (https://github.com/dotnet/sdk/issues/51487). -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\..\Common\MSBuildUtilities.cs" Link="MSBuildUtilities.cs" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)FileBasedProgramsResources.resx" GenerateSource="true" Namespace="Microsoft.DotNet.FileBasedPrograms">
       <SubType>Designer</SubType>
     </EmbeddedResource>

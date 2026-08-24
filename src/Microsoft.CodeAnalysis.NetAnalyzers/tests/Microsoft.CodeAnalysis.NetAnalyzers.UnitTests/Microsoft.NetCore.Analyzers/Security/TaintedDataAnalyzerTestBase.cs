@@ -7,11 +7,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.TaintedDataAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.TaintedDataAnalysis)]
     public abstract class TaintedDataAnalyzerTestBase<TCSharpAnalyzer, TVisualBasicAnalyzer>
         where TCSharpAnalyzer : DiagnosticAnalyzer, new()
         where TVisualBasicAnalyzer : DiagnosticAnalyzer, new()
@@ -51,7 +50,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             }
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
         protected async Task VerifyCSharpWithDependenciesAsync(string source, (string additionalFile, string fileContent) file, params DiagnosticResult[] expected)
@@ -74,7 +73,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             test.TestState.AnalyzerConfigFiles.Add(file);
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
         protected DiagnosticResult GetBasicResultAt(int sinkLine, int sinkColumn, int sourceLine, int sourceColumn, string sink, string sinkContainingMethod, string source, string sourceContainingMethod)
@@ -106,7 +105,7 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
             }
 
             test.TestState.ExpectedDiagnostics.AddRange(expected);
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

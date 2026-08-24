@@ -9,13 +9,14 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
+[TestClass]
 public class RunTelemetryTests : SdkTest
 {
-    public RunTelemetryTests(ITestOutputHelper log) : base(log)
+    public RunTelemetryTests()
     {
     }
 
-    [Fact]
+    [TestMethod]
     public void GetFileBasedIdentifier_ReturnsDifferentHashesForDifferentPaths()
     {
         // Arrange
@@ -32,7 +33,7 @@ public class RunTelemetryTests : SdkTest
         hash2.Should().HaveLength(64);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetProjectBasedIdentifier_ReturnsSameHashForSamePath()
     {
         // Arrange
@@ -47,7 +48,7 @@ public class RunTelemetryTests : SdkTest
         hash1.Should().HaveLength(64);
     }
 
-    [Fact]
+    [TestMethod]
     public void GetProjectBasedIdentifier_UsesRelativePathWhenRepoRootProvided()
     {
         // Arrange
@@ -63,7 +64,7 @@ public class RunTelemetryTests : SdkTest
         hashWithRepo.Should().Be(hashOfRelative);
     }
 
-    [Fact]
+    [TestMethod]
     public void CountSdks_FileBasedApp_CountsDirectives()
     {
         // Arrange
@@ -79,7 +80,7 @@ public class RunTelemetryTests : SdkTest
         count.Should().Be(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void CountSdks_FileBasedApp_NoDirectives_ReturnsDefaultOne()
     {
         // Arrange
@@ -92,7 +93,7 @@ public class RunTelemetryTests : SdkTest
         count.Should().Be(1); // Default Microsoft.NET.Sdk
     }
 
-    [Fact]
+    [TestMethod]
     public void CountPackageReferences_FileBasedApp_CountsDirectives()
     {
         // Arrange
@@ -108,7 +109,7 @@ public class RunTelemetryTests : SdkTest
         count.Should().Be(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void CountProjectReferences_FileBasedApp_CountsDirectives()
     {
         // Arrange
@@ -124,7 +125,7 @@ public class RunTelemetryTests : SdkTest
         count.Should().Be(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void CountAdditionalProperties_CountsPropertyDirectives()
     {
         // Arrange
@@ -140,7 +141,7 @@ public class RunTelemetryTests : SdkTest
         count.Should().Be(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackRunEvent_FileBasedApp_SendsCorrectTelemetry()
     {
         // Arrange
@@ -187,7 +188,7 @@ public class RunTelemetryTests : SdkTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackRunEvent_ProjectBasedApp_SendsCorrectTelemetry()
     {
         // Arrange
@@ -230,7 +231,7 @@ public class RunTelemetryTests : SdkTest
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void TrackRunEvent_WithDefaultLaunchProfile_MarksTelemetryCorrectly()
     {
         // Arrange

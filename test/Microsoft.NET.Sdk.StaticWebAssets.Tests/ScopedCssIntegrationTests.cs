@@ -1,18 +1,24 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
 {
-    public class ScopedCssIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(ScopedCssIntegrationTest))
+    [TestClass]
+    public class ScopedCssIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => nameof(ScopedCssIntegrationTest);
+        [TestMethod]
         public void Build_NoOps_WhenScopedCssIsDisabled()
         {
             var testAsset = "RazorComponentApp";
@@ -29,7 +35,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "FetchData.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_NoOps_ForMvcApp_WhenScopedCssIsDisabled()
         {
             var testAsset = "RazorSimpleMvc";
@@ -46,7 +52,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Views", "Home", "About.cshtml.rz.scp.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void CanDisableDefaultDiscoveryConvention()
         {
             var testAsset = "RazorComponentApp";
@@ -63,7 +69,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "FetchData.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void CanOverrideScopeIdentifiers()
         {
             var testAsset = "RazorComponentApp";
@@ -98,7 +105,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "Index.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_GeneratesTransformedFilesAndBundle_ForComponentsWithScopedCss()
         {
             var testAsset = "RazorComponentApp";
@@ -116,7 +123,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Components", "Pages", "FetchData.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_GeneratesTransformedFilesAndBundle_ForViewsWithScopedCss()
         {
             var testAsset = "RazorSimpleMvc";
@@ -134,7 +141,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "Views", "Home", "About.cshtml.rz.scp.css")).Should().Exist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_ScopedCssFiles_ContainsUniqueScopesPerFile()
         {
             var testAsset = "RazorComponentApp";
@@ -153,17 +160,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var indexContent = File.ReadAllText(generatedIndex);
 
             var counterScopeMatch = Regex.Match(counterContent, ".*button\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(counterScopeMatch.Success, "Couldn't find a scope id in the generated Counter scoped css file.");
+            Assert.IsTrue(counterScopeMatch.Success, "Couldn't find a scope id in the generated Counter scoped css file.");
             var counterScopeId = counterScopeMatch.Groups[1].Captures[0].Value;
 
             var indexScopeMatch = Regex.Match(indexContent, ".*h1\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
+            Assert.IsTrue(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
             var indexScopeId = indexScopeMatch.Groups[1].Captures[0].Value;
 
-            Assert.NotEqual(counterScopeId, indexScopeId);
+            Assert.AreNotEqual(counterScopeId, indexScopeId);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_ScopedCssViews_ContainsUniqueScopesPerView()
         {
             var testAsset = "RazorSimpleMvc";
@@ -185,23 +192,23 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var contactContent = File.ReadAllText(generatedContact);
 
             var indexScopeMatch = Regex.Match(indexContent, ".*p\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
+            Assert.IsTrue(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
             var indexScopeId = indexScopeMatch.Groups[1].Captures[0].Value;
 
             var aboutScopeMatch = Regex.Match(aboutContent, ".*h2\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(aboutScopeMatch.Success, "Couldn't find a scope id in the generated About scoped css file.");
+            Assert.IsTrue(aboutScopeMatch.Success, "Couldn't find a scope id in the generated About scoped css file.");
             var aboutScopeId = aboutScopeMatch.Groups[1].Captures[0].Value;
 
             var contactScopeMatch = Regex.Match(contactContent, ".*a\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(contactScopeMatch.Success, "Couldn't find a scope id in the generated Contact scoped css file.");
+            Assert.IsTrue(contactScopeMatch.Success, "Couldn't find a scope id in the generated Contact scoped css file.");
             var contactScopeId = contactScopeMatch.Groups[1].Captures[0].Value;
 
-            Assert.NotEqual(indexScopeId, aboutScopeId);
-            Assert.NotEqual(indexScopeId, contactScopeId);
-            Assert.NotEqual(aboutScopeId, contactScopeId);
+            Assert.AreNotEqual(indexScopeId, aboutScopeId);
+            Assert.AreNotEqual(indexScopeId, contactScopeId);
+            Assert.AreNotEqual(aboutScopeId, contactScopeId);
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_WorksWhenViewsAndComponentsArePartOfTheSameProject_ContainsUniqueScopesPerFile()
         {
             var testAsset = "RazorMvcWithComponents";
@@ -222,17 +229,17 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var counterContent = File.ReadAllText(generatedCounter);
 
             var indexScopeMatch = Regex.Match(indexContent, ".*p\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
+            Assert.IsTrue(indexScopeMatch.Success, "Couldn't find a scope id in the generated Index scoped css file.");
             var indexScopeId = indexScopeMatch.Groups[1].Captures[0].Value;
 
             var counterScopeMatch = Regex.Match(counterContent, ".*div\\[(.*)\\].*", RegexOptions.Multiline | RegexOptions.IgnoreCase);
-            Assert.True(counterScopeMatch.Success, "Couldn't find a scope id in the generated Counter scoped css file.");
+            Assert.IsTrue(counterScopeMatch.Success, "Couldn't find a scope id in the generated Counter scoped css file.");
             var counterScopeId = counterScopeMatch.Groups[1].Captures[0].Value;
 
-            Assert.NotEqual(indexScopeId, counterScopeId);
+            Assert.AreNotEqual(indexScopeId, counterScopeId);
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_PublishesScopedCssBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
@@ -248,7 +255,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_NoBuild_PublishesBundleToTheRightLocation()
         {
             var testAsset = "RazorComponentApp";
@@ -268,7 +275,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_DoesNotPublishAnyFile_WhenThereAreNoScopedCssFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -285,7 +292,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "_content", "ComponentApp", "_framework", "scoped.styles.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Publish_Publishes_IndividualScopedCssFiles_WhenNoBundlingIsEnabled()
         {
             var testAsset = "RazorComponentApp";
@@ -302,7 +309,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(publishOutputPath, "wwwroot", "Components", "Pages", "Counter.razor.rz.scp.css")).Should().Exist();
         }
 
-        [CoreMSBuildOnlyFact]
+        [TestMethod]
+        [CoreMSBuildOnly]
         public void Build_RemovingScopedCssAndBuilding_UpdatesGeneratedCodeAndBundle()
         {
             var testAsset = "RazorComponentApp";
@@ -335,11 +343,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var newComponentThumbprint = FileThumbPrint.Create(generatedCounter);
             var newBundleThumbprint = FileThumbPrint.Create(generatedBundle);
 
-            Assert.NotEqual(componentThumbprint, newComponentThumbprint);
-            Assert.NotEqual(bundleThumbprint, newBundleThumbprint);
+            Assert.AreNotEqual(componentThumbprint, newComponentThumbprint);
+            Assert.AreNotEqual(bundleThumbprint, newBundleThumbprint);
         }
 
-        [Fact]
+        [TestMethod]
         public void Does_Nothing_WhenThereAreNoScopedCssFiles()
         {
             var testAsset = "RazorComponentApp";
@@ -358,7 +366,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             new FileInfo(Path.Combine(intermediateOutputPath, "scopedcss", "_framework", "scoped.styles.css")).Should().NotExist();
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_ScopedCssTransformation_AndBundling_IsIncremental()
         {
             // Arrange
@@ -390,13 +398,13 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
                 foreach (var file in files)
                 {
                     var thumbprint = FileThumbPrint.Create(file);
-                    Assert.Equal(thumbprintLookup[file], thumbprint);
+                    Assert.AreEqual(thumbprintLookup[file], thumbprint);
                 }
             }
         }
 
         // Regression test for https://github.com/dotnet/sdk/issues/50646
-        [Fact]
+        [TestMethod]
         public void Build_RegeneratesScopedCss_WhenCssScopeMetadataChanges()
         {
             // Arrange
@@ -442,8 +450,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var newScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
             var newBundleThumbprint = FileThumbPrint.Create(bundleFile);
 
-            Assert.NotEqual(initialScopedCssThumbprint, newScopedCssThumbprint);
-            Assert.NotEqual(initialBundleThumbprint, newBundleThumbprint);
+            Assert.AreNotEqual(initialScopedCssThumbprint, newScopedCssThumbprint);
+            Assert.AreNotEqual(initialBundleThumbprint, newBundleThumbprint);
 
             // Verify the new content uses the custom scope
             var newContent = File.ReadAllText(scopedCssFile);
@@ -470,8 +478,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var updatedScopedCssThumbprint = FileThumbPrint.Create(scopedCssFile);
             var updatedBundleThumbprint = FileThumbPrint.Create(bundleFile);
 
-            Assert.NotEqual(newScopedCssThumbprint, updatedScopedCssThumbprint);
-            Assert.NotEqual(newBundleThumbprint, updatedBundleThumbprint);
+            Assert.AreNotEqual(newScopedCssThumbprint, updatedScopedCssThumbprint);
+            Assert.AreNotEqual(newBundleThumbprint, updatedBundleThumbprint);
 
             // Verify the content uses the updated scope
             var updatedContent = File.ReadAllText(scopedCssFile);
@@ -485,12 +493,12 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             build = CreateBuildCommand(projectDirectory);
             ExecuteCommand(build).Should().Pass();
 
-            Assert.Equal(finalScopedCssThumbprint, FileThumbPrint.Create(scopedCssFile));
-            Assert.Equal(finalBundleThumbprint, FileThumbPrint.Create(bundleFile));
+            Assert.AreEqual(finalScopedCssThumbprint, FileThumbPrint.Create(scopedCssFile));
+            Assert.AreEqual(finalBundleThumbprint, FileThumbPrint.Create(bundleFile));
         }
 
         // This test verifies if the targets that VS calls to update scoped css works to update these files
-        [Fact]
+        [TestMethod]
         public void RegeneratingScopedCss_ForProject()
         {
             // Arrange
@@ -536,10 +544,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
     }
 
-    public class ScopedCssCompatibilityIntegrationTest(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(ScopedCssCompatibilityIntegrationTest), ".nuget"))
+    [TestClass]
+    public class ScopedCssCompatibilityIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => Path.Combine(nameof(ScopedCssCompatibilityIntegrationTest), ".nuget");
+        [TestMethod]
         public void ScopedCss_IsBackwardsCompatible_WithPreviousVersions()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -587,7 +596,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             appBundle.Should().Match(""".*_content/RazorPackageLibraryDirectDependency/RazorPackageLibraryDirectDependency\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
 
-        [Fact]
+        [TestMethod]
         public void ScopedCss_PublishIsBackwardsCompatible_WithPreviousVersions()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -635,10 +644,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
     }
 
-    public class ScopedCssPackageReferences(ITestOutputHelper log)
-        : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, Path.Combine(nameof(ScopedCssPackageReferences), ".nuget"))
+    [TestClass]
+    public class ScopedCssPackageReferences : IsolatedNuGetPackageFolderAspNetSdkBaselineTest
     {
-        [Fact]
+        protected override string RestoreNugetPackagePath => Path.Combine(nameof(ScopedCssPackageReferences), ".nuget");
+        [TestMethod]
         public void BuildProjectWithReferences_CorrectlyBundlesScopedCssFiles()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -676,7 +686,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
         }
 
         // Regression test for https://github.com/dotnet/aspnetcore/issues/37592
-        [Fact]
+        [TestMethod]
         public void RegeneratingScopedCss_ForProjectWithReferences()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";
@@ -713,7 +723,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             text.Should().MatchRegex(""".*@import '_content/ClassLibrary/ClassLibrary\.[a-zA-Z0-9]+\.bundle\.scp\.css.*""");
         }
 
-        [Fact]
+        [TestMethod]
         public void Build_GeneratesUrlEncodedLinkHeaderForNonAsciiProjectName()
         {
             var testAsset = "RazorAppWithPackageAndP2PReference";

@@ -1,21 +1,21 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer,
-    Microsoft.NetCore.CSharp.Analyzers.Tasks.CSharpDoNotCreateTasksWithoutPassingATaskSchedulerFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Tasks.DoNotCreateTasksWithoutPassingATaskSchedulerAnalyzer,
-    Microsoft.NetCore.VisualBasic.Analyzers.Tasks.BasicDoNotCreateTasksWithoutPassingATaskSchedulerFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
+    [TestClass]
     public class DoNotCreateTasksWithoutPassingATaskSchedulerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +92,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticCasesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

@@ -9,11 +9,17 @@
   "symbols/Framework/choices/net11.0/description": "Cíl net11.0",
   "symbols/EnablePack/description": "Určuje, jestli se má pro projekt povolit balení (přes „dotnet pack“).",
   "symbols/EnablePack/displayName": "Povolit balíček",
+  "symbols/TestRunner/description": "Select the runner/platform.",
+  "symbols/TestRunner/displayName": "Test runner",
+  "symbols/TestRunner/choices/Microsoft.Testing.Platform/description": "Use Microsoft.Testing.Platform. See https://aka.ms/mtp-overview for more information.",
+  "symbols/TestRunner/choices/VSTest/description": "Use VSTest platform",
   "symbols/skipRestore/description": "Je-li zadáno, přeskočí automatické obnovení projektu při vytvoření.",
   "symbols/skipRestore/displayName": "Přeskočit obnovení",
   "symbols/langVersion/description": "Nastaví vlastnost LangVersion ve vytvořeném souboru projektu.",
   "symbols/langVersion/displayName": "Verze jazyka",
   "postActions/restoreNugetPackages/description": "Obnoví balíčky NuGet vyžadované tímto projektem.",
   "postActions/restoreNugetPackages/manualInstructions/default/text": "Spustit dotnet restore",
+  "postActions/addJsonProperty/description": "Create or update 'global.json' file required by Microsoft.Testing.Platform.",
+  "postActions/addJsonProperty/manualInstructions/default/text": "Manually update or create 'global.json' file setting the test runner to Microsoft.Testing.Platform",
   "postActions/openInEditor/description": "Otevře UnitTest1.vb v editoru."
 }

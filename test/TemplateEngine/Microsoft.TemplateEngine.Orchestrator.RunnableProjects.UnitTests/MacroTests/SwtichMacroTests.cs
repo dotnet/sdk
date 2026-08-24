@@ -10,16 +10,26 @@ using Microsoft.TemplateEngine.Utils;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
-    public class SwtichMacroTests : IClassFixture<EnvironmentSettingsHelper>
+    [TestClass]
+    public class SwtichMacroTests
     {
+        private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
+
+        [ClassInitialize]
+        public static void ClassInitialize(TestContext _)
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
+
+        [ClassCleanup]
+        public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
+
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
 
-        public SwtichMacroTests(EnvironmentSettingsHelper environmentSettingsHelper)
+        public SwtichMacroTests()
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
         }
 
-        [Fact(DisplayName = nameof(TestSwitchConfig))]
+        [TestMethod]
         public void TestSwitchConfig()
         {
             string variableName = "mySwitchVar";
@@ -41,10 +51,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             string resultValue = (string)variables[variableName];
-            Assert.Equal(resultValue, expectedValue);
+            Assert.AreEqual(expectedValue, resultValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void GeneratedSymbolTest()
         {
             string variableName = "mySwitchVar";
@@ -85,13 +95,13 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, symbol);
 
             string resultValue = (string)variables[variableName];
-            Assert.Equal(resultValue, expectedValue);
+            Assert.AreEqual(expectedValue, resultValue);
         }
 
-        [Theory]
-        [InlineData("A", "condition")]
-        [InlineData("B", "default")]
-        [InlineData(null, "default")]
+        [TestMethod]
+        [DataRow("A", "condition")]
+        [DataRow("B", "default")]
+        [DataRow(null, "default")]
         public void DependantConditionTest(string? varValue, string expectedResult)
         {
             string variableName = "mySwitchVar";
@@ -114,10 +124,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             macro.Evaluate(_engineEnvironmentSettings, variables, macroConfig);
 
             string resultValue = (string)variables[variableName];
-            Assert.Equal(expectedResult, resultValue);
+            Assert.AreEqual(expectedResult, resultValue);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingCases()
         {
             SwitchMacro macro = new();
@@ -125,11 +135,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             Dictionary<string, string> jsonParameters = new(StringComparer.OrdinalIgnoreCase);
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "switch", jsonParameters)));
-            Assert.Equal("Generated symbol 'test' of type 'switch' should have 'cases' property defined.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "switch", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test' of type 'switch' should have 'cases' property defined.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigurationTest_MissingSymbolValue()
         {
             SwitchMacro macro = new();
@@ -149,11 +159,11 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
             };
 
             VariableCollection variables = new();
-            TemplateAuthoringException ex = Assert.Throws<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "switch", jsonParameters)));
-            Assert.Equal("Generated symbol 'test': array 'cases' should contain JSON objects with property 'value'.", ex.Message);
+            TemplateAuthoringException ex = Assert.ThrowsExactly<TemplateAuthoringException>(() => macro.Evaluate(_engineEnvironmentSettings, variables, new GeneratedSymbol("test", "switch", jsonParameters)));
+            Assert.AreEqual("Generated symbol 'test': array 'cases' should contain JSON objects with property 'value'.", ex.Message);
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultConfigurationTest()
         {
             SwitchMacro macro = new();
@@ -175,7 +185,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Macro
 
             SwitchMacroConfig config = new(macro, new GeneratedSymbol("test", "switch", jsonParameters));
 
-            Assert.Equal(EvaluatorSelector.SelectStringEvaluator(EvaluatorType.CPP2), config.Evaluator);
+            Assert.AreEqual(EvaluatorSelector.SelectStringEvaluator(EvaluatorType.CPP2), config.Evaluator);
         }
     }
 }

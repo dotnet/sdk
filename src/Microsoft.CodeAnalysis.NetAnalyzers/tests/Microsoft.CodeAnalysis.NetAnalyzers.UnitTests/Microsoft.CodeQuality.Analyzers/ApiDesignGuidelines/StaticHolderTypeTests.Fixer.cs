@@ -2,16 +2,16 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.StaticHolderTypesAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpStaticHolderTypesFixer>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class StaticHolderTypeFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1052FixesNonStaticClassWithOnlyStaticDeclaredMembersCSharpAsync()
         {
             const string Code = @"
@@ -31,7 +31,7 @@ public static class C
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1052FixesNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
@@ -52,7 +52,7 @@ public static class C
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1052FixesNonStaticClassWithProtectedDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
@@ -73,7 +73,7 @@ public static class C
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1052FixesNonStaticClassWithPrivateDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
@@ -94,7 +94,7 @@ public static class C
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1052FixesNestedPublicNonStaticClassWithPublicDefaultConstructorAndStaticMethodCSharpAsync()
         {
             const string Code = @"
@@ -125,7 +125,7 @@ public class C
             await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1052FixesNestedPublicClassInOtherwiseEmptyNonStaticClassCSharpAsync()
         {
             const string Code = @"
@@ -142,6 +142,36 @@ public static class C
 {
     public class CInner
     {
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(Code, FixedCode);
+        }
+
+        [TestMethod]
+        public async Task CA1052FixesNestedStaticHolderTypesInOnePassCSharpAsync()
+        {
+            const string Code = @"
+public class [|C|]
+{
+    public static void SomeMethod() { }
+
+    public class [|D|]
+    {
+        public static void SomeOtherMethod() { }
+    }
+}
+";
+
+            const string FixedCode = @"
+public static class C
+{
+    public static void SomeMethod() { }
+
+    public static class D
+    {
+        public static void SomeOtherMethod() { }
     }
 }
 ";

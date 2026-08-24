@@ -3,13 +3,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseAccountSAS,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseAccountSASTests
     {
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
@@ -60,10 +60,10 @@ namespace NormalNamespace
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -81,7 +81,7 @@ class TestClass
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalMethodOfCloudStorageAccountNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -98,7 +98,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountOfNormalNamespaceNoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

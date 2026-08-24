@@ -1,8 +1,13 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using System.Diagnostics.Metrics;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
 using Microsoft.Build.Framework;
@@ -13,6 +18,7 @@ using NuGet.Packaging.Core;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
+[TestClass]
 public class ResolveCompressedAssetsTest
 {
     private readonly List<string> _errorMessages;
@@ -35,7 +41,7 @@ public class ResolveCompressedAssetsTest
             .Callback<BuildErrorEventArgs>(args => _errorMessages.Add(args.Message));
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesExplicitlyProvidedAssets()
     {
         // Arrange
@@ -63,7 +69,7 @@ public class ResolveCompressedAssetsTest
         task.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
     }
 
-    [Fact]
+    [TestMethod]
     public void InfersPreCompressedAssetsCorrectly()
     {
 
@@ -131,7 +137,7 @@ public class ResolveCompressedAssetsTest
         task.AssetsToCompress.TakeWhile(a => a != null).Should().HaveCount(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesAssetsMatchingIncludePattern()
     {
         // Arrange
@@ -156,7 +162,7 @@ public class ResolveCompressedAssetsTest
         task.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
     }
 
-    [Fact]
+    [TestMethod]
     public void ResolvesAssets_WithFingerprint_MatchingIncludePattern()
     {
         // Arrange
@@ -194,7 +200,7 @@ public class ResolveCompressedAssetsTest
         relativePath.Should().EndWith("#[.{fingerprint=v1}]");
     }
 
-    [Fact]
+    [TestMethod]
     public void ExcludesAssetsMatchingExcludePattern()
     {
         // Arrange
@@ -218,7 +224,7 @@ public class ResolveCompressedAssetsTest
         task.AssetsToCompress.Should().HaveCount(0);
     }
 
-    [Fact]
+    [TestMethod]
     public void DeduplicatesAssetsResolvedBothExplicitlyAndFromPattern()
     {
         // Arrange
@@ -247,9 +253,9 @@ public class ResolveCompressedAssetsTest
         buildTask.AssetsToCompress[1].ItemSpec.Should().EndWith(".br");
     }
 
-    [Theory]
-    [InlineData("gzip", ".gz", "brotli", ".br")]
-    [InlineData("brotli", ".br", "gzip", ".gz")]
+    [TestMethod]
+    [DataRow("gzip", ".gz", "brotli", ".br")]
+    [DataRow("brotli", ".br", "gzip", ".gz")]
     public void IgnoresAssetsCompressedInPreviousTaskRun(
         string phase1Format, string phase1Ext, string _, string phase2Ext)
     {
@@ -295,7 +301,7 @@ public class ResolveCompressedAssetsTest
         task2.AssetsToCompress[0].ItemSpec.Should().EndWith(phase2Ext);
     }
 
-    [Fact]
+    [TestMethod]
     public void ProducesDistinctIdentities_ForGroupVariantsWithIdenticalContent()
     {
         // Arrange — two assets that differ only in AssetGroups but have the same

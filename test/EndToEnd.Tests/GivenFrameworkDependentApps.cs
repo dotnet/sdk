@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
@@ -9,10 +9,11 @@ using NuGet.Versioning;
 
 namespace EndToEnd.Tests
 {
-    public class GivenFrameworkDependentApps(ITestOutputHelper log) : SdkTest(log)
+    [TestClass]
+    public class GivenFrameworkDependentApps : SdkTest
     {
-        [Theory]
-        [ClassData(typeof(SupportedNetCoreAppVersions))]
+        [TestMethod]
+        [DynamicData(nameof(SupportedNetCoreAppVersions.TestData), typeof(SupportedNetCoreAppVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfNetCore(string minorVersion)
         {
             if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0" || minorVersion == "11.0")
@@ -23,8 +24,8 @@ namespace EndToEnd.Tests
             ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.NETCorePackageName, minorVersion);
         }
 
-        [Theory]
-        [ClassData(typeof(SupportedAspNetCoreVersions))]
+        [TestMethod]
+        [DynamicData(nameof(SupportedAspNetCoreVersions.TestData), typeof(SupportedAspNetCoreVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreApp(string minorVersion)
         {
             if (minorVersion == "3.0" || minorVersion == "3.1" || minorVersion == "5.0" || minorVersion == "6.0" || minorVersion == "7.0" || minorVersion == "8.0" || minorVersion == "9.0" || minorVersion == "10.0" || minorVersion == "11.0")
@@ -35,8 +36,8 @@ namespace EndToEnd.Tests
             ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAppPackageName, minorVersion);
         }
 
-        [Theory]
-        [ClassData(typeof(SupportedAspNetCoreAllVersions))]
+        [TestMethod]
+        [DynamicData(nameof(SupportedAspNetCoreAllVersions.TestData), typeof(SupportedAspNetCoreAllVersions))]
         public void ItDoesNotRollForwardToTheLatestVersionOfAspNetCoreAll(string minorVersion) => ItDoesNotRollForwardToTheLatestVersion(TestProjectCreator.AspNetCoreAllPackageName, minorVersion);
 
         internal void ItDoesNotRollForwardToTheLatestVersion(string packageName, string minorVersion)

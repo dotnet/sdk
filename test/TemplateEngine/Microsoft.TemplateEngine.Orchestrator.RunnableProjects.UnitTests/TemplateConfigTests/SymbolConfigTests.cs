@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ValueForms;
 
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
+    [TestClass]
     public class SymbolConfigTests
     {
         private static JsonObject ArrayConfigForSymbolWithFormsButNotIdentity
@@ -534,348 +535,348 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
         }
 
         // Test that when a config doesn't include a name parameter, one gets added - with the proper value forms.
-        [Fact(DisplayName = nameof(NameSymbolGetsAddedWithDefaultValueForms))]
+        [TestMethod]
         public void NameSymbolGetsAddedWithDefaultValueForms()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(nameSymbol);
+            Assert.IsNotNull(nameSymbol);
             IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
 
-            Assert.Equal(5, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
-            Assert.Equal(DefaultSafeNameValueFormFactory.FormIdentifier, configuredValueFormNames[1]);
-            Assert.Equal(DefaultLowerSafeNameValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
-            Assert.Equal(DefaultSafeNamespaceValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
-            Assert.Equal(DefaultLowerSafeNamespaceValueFormFactory.FormIdentifier, configuredValueFormNames[4]);
+            Assert.HasCount(5, configuredValueFormNames);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.AreEqual(DefaultSafeNameValueFormFactory.FormIdentifier, configuredValueFormNames[1]);
+            Assert.AreEqual(DefaultLowerSafeNameValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
+            Assert.AreEqual(DefaultSafeNamespaceValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
+            Assert.AreEqual(DefaultLowerSafeNamespaceValueFormFactory.FormIdentifier, configuredValueFormNames[4]);
         }
 
         // Test that when a symbol doesn't explicitly include the "identity" value form, it gets added as the first form.
-        [Fact(DisplayName = nameof(ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst))]
+        [TestMethod]
         public void ParameterSymbolWithoutIdentityValueFormGetsIdentityAddedAsFirst()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithFormsButNotIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
-            Assert.Single(paramSymbol!.Forms.GlobalForms.ToList(), x => string.Equals(x, IdentityValueFormFactory.FormIdentifier, StringComparison.OrdinalIgnoreCase));
-            Assert.Equal(0, paramSymbol.Forms.GlobalForms.ToList().IndexOf(IdentityValueFormFactory.FormIdentifier));
+            Assert.IsNotNull(paramSymbol);
+            Assert.ContainsSingle(paramSymbol!.Forms.GlobalForms.ToList().Where(x => string.Equals(x, IdentityValueFormFactory.FormIdentifier, StringComparison.OrdinalIgnoreCase)));
+            Assert.AreEqual(0, paramSymbol.Forms.GlobalForms.ToList().IndexOf(IdentityValueFormFactory.FormIdentifier));
         }
 
         // Tests that a name symbol with explicitly defined value forms but no identity form
         // gets the identity form added as the first form.
-        [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst))]
+        [TestMethod]
         public void ArrayConfigNameSymbolWithoutIdentityFormGetsIdentityFormAddedAsFirst()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsButNotIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(nameSymbol);
+            Assert.IsNotNull(nameSymbol);
             IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
-            Assert.Equal("foo", configuredValueFormNames[1]);
-            Assert.Equal("bar", configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.AreEqual("foo", configuredValueFormNames[1]);
+            Assert.AreEqual("bar", configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ArrayConfigNameSymbolWithIdentityFormRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigWithNameSymbolAndValueFormsWithIdentity);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(nameSymbol);
+            Assert.IsNotNull(nameSymbol);
             IList<string> configuredValueFormNames = nameSymbol!.Forms.GlobalForms.ToList();
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual("baz", configuredValueFormNames[2]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityFalse);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(nameSymbol);
+            Assert.IsNotNull(nameSymbol);
             var configuredValueFormNames = nameSymbol!.Forms.GlobalForms;
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigNameSymbolWithIdentityFormAndAddIdentityTrue);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(nameSymbol);
+            Assert.IsNotNull(nameSymbol);
             var configuredValueFormNames = nameSymbol!.Forms.GlobalForms;
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue))]
+        [TestMethod]
         public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityTrue);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
-            Assert.Equal("foo", configuredValueFormNames[1]);
-            Assert.Equal("bar", configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.AreEqual("foo", configuredValueFormNames[1]);
+            Assert.AreEqual("bar", configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse))]
+        [TestMethod]
         public void NameSymbolObjectValueFormDefinitionRespectsAddIdentityFalse()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigWithObjectValueFormDefinitionAddIdentityFalse);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Equal(3, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal("baz", configuredValueFormNames[2]);
+            Assert.HasCount(3, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual("baz", configuredValueFormNames[2]);
         }
 
-        [Fact(DisplayName = nameof(NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
+        [TestMethod]
         public void NameSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
-            Assert.Equal("foo", configuredValueFormNames[1]);
-            Assert.Equal("bar", configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.AreEqual("foo", configuredValueFormNames[1]);
+            Assert.AreEqual("bar", configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
+        [TestMethod]
         public void NameSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(NameConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "name");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual("baz", configuredValueFormNames[2]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ParameterSymbolWithNoValueFormsGetsIdentityFormAdded))]
+        [TestMethod]
         public void ParameterSymbolWithNoValueFormsGetsIdentityFormAdded()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigForSymbolWithoutValueForms);
 
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Single(configuredValueFormNames);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.ContainsSingle(configuredValueFormNames);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
         }
 
         // Test that when a symbol explicitly includes the "identity" value form, the value forms for the symbol remain unmodified.
-        [Fact(DisplayName = nameof(ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified))]
+        [TestMethod]
         public void ParameterSymbolWithArrayIdentityValueFormRetainsFormsUnmodified()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ArrayConfigForSymbolWithValueFormsIncludingIdentity);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual("baz", configuredValueFormNames[2]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityTrue))]
+        [TestMethod]
         public void ObjectValueFormDefinitionRespectsAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityTrue);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
-            Assert.Equal("foo", configuredValueFormNames[1]);
-            Assert.Equal("bar", configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.AreEqual("foo", configuredValueFormNames[1]);
+            Assert.AreEqual("bar", configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ObjectValueFormDefinitionRespectsAddIdentityFalse))]
+        [TestMethod]
         public void ObjectValueFormDefinitionRespectsAddIdentityFalse()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ConfigWithObjectValueFormDefinitionAddIdentityFalse);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             IList<string> configuredValueFormNames = paramSymbol!.Forms.GlobalForms.ToList();
 
-            Assert.Equal(3, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal("baz", configuredValueFormNames[2]);
+            Assert.HasCount(3, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual("baz", configuredValueFormNames[2]);
         }
 
-        [Fact(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalseRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityFalse);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(nameSymbol);
+            Assert.IsNotNull(nameSymbol);
             var configuredValueFormNames = nameSymbol!.Forms.GlobalForms;
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly))]
+        [TestMethod]
         public void ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrueRetainsConfiguredFormsExactly()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ObjectConfigParameterSymbolWithIdentityFormAndAddIdentityTrue);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? nameSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(nameSymbol);
+            Assert.IsNotNull(nameSymbol);
             var configuredValueFormNames = nameSymbol!.Forms.GlobalForms;
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms))]
+        [TestMethod]
         public void ParameterSymbolObjectValueFormWithIdentityWithoutAddIdentityRetainsConfiguredForms()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ParameterConfigObjectValueFormWithIdentityAndAddIdentityUnspecified);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal("foo", configuredValueFormNames[0]);
-            Assert.Equal("bar", configuredValueFormNames[1]);
-            Assert.Equal("baz", configuredValueFormNames[2]);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual("foo", configuredValueFormNames[0]);
+            Assert.AreEqual("bar", configuredValueFormNames[1]);
+            Assert.AreEqual("baz", configuredValueFormNames[2]);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[3]);
         }
 
-        [Fact(DisplayName = nameof(ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue))]
+        [TestMethod]
         public void ParameterSymbolObjectValueFormDefinitionInfersAddIdentityTrue()
         {
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(ParameterConfigObjectValueFormWithoutIdentityAndAddIdentityUnspecified);
             BaseSymbol symbolInfo = configModel.Symbols.Single(s => s.Name == "testSymbol");
-            Assert.True(symbolInfo is ParameterSymbol);
+            Assert.IsTrue(symbolInfo is ParameterSymbol);
 
             ParameterSymbol? paramSymbol = symbolInfo as ParameterSymbol;
-            Assert.NotNull(paramSymbol);
+            Assert.IsNotNull(paramSymbol);
             var configuredValueFormNames = paramSymbol!.Forms.GlobalForms;
 
-            Assert.Equal(4, configuredValueFormNames.Count);
-            Assert.Equal(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
-            Assert.Equal("foo", configuredValueFormNames[1]);
-            Assert.Equal("bar", configuredValueFormNames[2]);
-            Assert.Equal("baz", configuredValueFormNames[3]);
+            Assert.HasCount(4, configuredValueFormNames);
+            Assert.AreEqual(IdentityValueFormFactory.FormIdentifier, configuredValueFormNames[0]);
+            Assert.AreEqual("foo", configuredValueFormNames[1]);
+            Assert.AreEqual("bar", configuredValueFormNames[2]);
+            Assert.AreEqual("baz", configuredValueFormNames[3]);
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultSymbolsaAreSetup()
         {
             TemplateConfigModel configModel = new TemplateConfigModel("test");
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            Assert.Single(configModel.Symbols, s => s.Name == "name");
+            Assert.ContainsSingle(configModel.Symbols.Where(s => s.Name == "name"));
             if (isWindows)
             {
-                Assert.Equal(2, configModel.Symbols.Count());
-                Assert.Single(configModel.Symbols, s => s.Name == "OS");
+                Assert.HasCount(2, configModel.Symbols);
+                Assert.ContainsSingle(configModel.Symbols.Where(s => s.Name == "OS"));
             }
             else
             {
-                Assert.Single(configModel.Symbols);
+                Assert.ContainsSingle(configModel.Symbols);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultSymbolsaAreSetup_OnReadingFromJson()
         {
             var templateConfig = new
@@ -892,20 +893,20 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
             };
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
             bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-            Assert.Single(configModel.Symbols, s => s.Name == "name");
-            Assert.Single(configModel.Symbols, s => s.Name == "other");
+            Assert.ContainsSingle(configModel.Symbols.Where(s => s.Name == "name"));
+            Assert.ContainsSingle(configModel.Symbols.Where(s => s.Name == "other"));
             if (isWindows)
             {
-                Assert.Equal(3, configModel.Symbols.Count());
-                Assert.Single(configModel.Symbols, s => s.Name == "OS");
+                Assert.HasCount(3, configModel.Symbols);
+                Assert.ContainsSingle(configModel.Symbols.Where(s => s.Name == "OS"));
             }
             else
             {
-                Assert.Equal(2, configModel.Symbols.Count());
+                Assert.HasCount(2, configModel.Symbols);
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultSymbolsaAreSetup_ImplicitBindWillNotOverwrite()
         {
             var templateConfig = new
@@ -921,10 +922,10 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Templ
                 }
             };
             TemplateConfigModel configModel = TemplateConfigModel.FromJObject(JsonNode.Parse(JsonSerializer.Serialize(templateConfig))!.AsObject());
-            Assert.Equal(2, configModel.Symbols.Count());
-            Assert.Single(configModel.Symbols, s => s.Name == "name");
-            Assert.Single(configModel.Symbols, s => s.Name == "OS");
-            Assert.Equal("smth", (configModel.Symbols.Single(s => s.Name == "OS") as BindSymbol)?.Binding);
+            Assert.HasCount(2, configModel.Symbols);
+            Assert.ContainsSingle(configModel.Symbols.Where(s => s.Name == "name"));
+            Assert.ContainsSingle(configModel.Symbols.Where(s => s.Name == "OS"));
+            Assert.AreEqual("smth", (configModel.Symbols.Single(s => s.Name == "OS") as BindSymbol)?.Binding);
         }
     }
 }

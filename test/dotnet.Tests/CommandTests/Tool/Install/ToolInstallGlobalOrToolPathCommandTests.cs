@@ -24,6 +24,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolInstallGlobalOrToolPathCommandTests: SdkTest
     {
         private readonly PackageId _packageId;
@@ -48,7 +49,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private const string ToolCommandName = "SimulatorCommand";
         private readonly string UnlistedPackageId = "elemental.sysinfotool";
 
-        public ToolInstallGlobalOrToolPathCommandTests(ITestOutputHelper log): base(log)
+        public ToolInstallGlobalOrToolPathCommandTests()
         {
             _packageId = new PackageId(PackageId);
             _reporter = new BufferedReporter();
@@ -85,7 +86,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _parseResult = Parser.Parse($"dotnet tool install -g {PackageId}");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingRestoreActionConfigOptions()
         {
             var parseResult = Parser.Parse($"dotnet tool install -g {PackageId} --ignore-failed-sources");
@@ -93,7 +94,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolInstallCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_temporaryDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
@@ -109,7 +110,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenDuplicateSourceIsPassedIgnore()
         {
             var duplicateSource = "https://pkgs.dev.azure.com/dnceng/public/_packaging/dotnet9/nuget/v3/index.json";
@@ -132,7 +133,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Should().Be("example_source");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPackageIdItShouldCreateValidShim()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -152,7 +153,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunFromToolInstallRedirectCommandWithPackageIdItShouldCreateValidShim()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -171,7 +172,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithSourceItShouldFindOnlyTheProvidedSource()
         {
             const string sourcePath1 = "https://sourceOne.com";
@@ -187,11 +188,11 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter);
 
             // Should not find the package because it is in the wrong feed
-            var ex = Assert.Throws<NuGetPackageNotFoundException>(() => toolInstallGlobalOrToolPathCommand.Execute());
+            var ex = Assert.ThrowsExactly<NuGetPackageNotFoundException>(() => toolInstallGlobalOrToolPathCommand.Execute());
             ex.Message.Should().Contain(PackageId);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPackageIdWithSourceItShouldCreateValidShim()
         {
             const string sourcePath = "https://mysource.com";
@@ -215,7 +216,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Exists(deserializedFakeShim.ExecutablePath).Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPackageIdItShouldShowPathInstruction()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -230,7 +231,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPackageIdPackageFormatIsNotFullySupportedItShouldShowPathInstruction()
         {
             _toolPackageDownloader.AddMockPackage(new MockFeedPackage()
@@ -254,7 +255,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Skip(1).First().Should().Be(EnvironmentPathInstructionMock.MockInstructionText);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenFailedPackageInstallWhenRunWithPackageIdItShouldFail()
         {
             const string ErrorMessage = "Simulated error";
@@ -276,7 +277,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenCreateShimItShouldHaveNoBrokenFolderOnDisk()
         {
             _fileSystem.File.CreateEmptyFile(ExpectedCommandPath()); // Create conflict shim
@@ -298,7 +299,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenInCorrectToolConfigurationWhenRunWithPackageIdItShouldFail()
         {
 
@@ -322,7 +323,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 );
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPackageIdItShouldShowSuccessMessage()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -344,7 +345,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPackageIdWithQuietItShouldShowNoSuccessMessage()
         {
             var parseResultQuiet = Parser.Parse($"dotnet tool install -g {PackageId} --verbosity quiet");
@@ -367,7 +368,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithInvalidVersionItShouldThrow()
         {
             const string invalidVersion = "!NotValidVersion!";
@@ -389,7 +390,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     invalidVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithExactVersionItShouldSucceed()
         {
             ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
@@ -413,7 +414,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInstallTheSpecificSameVersionTwiceItShouldNoop()
         {
             ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}");
@@ -442,7 +443,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().Equal(string.Format(CliCommandStrings.ToolAlreadyInstalled, PackageId, PackageVersion).Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInstallWithHigherVersionItShouldUpdate()
         {
             AddHigherToolPackageVersionToFeed();
@@ -489,7 +490,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     HigherPackageVersion).Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInstallWithLowerVersionWithAllowDowngradeOptionItShouldDowngrade()
         {
             AddLowerToolPackageVersionToFeed();
@@ -536,7 +537,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     LowerPackageVersion).Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInstallWithLowerVersionItShouldFail()
         {
             AddLowerToolPackageVersionToFeed();
@@ -575,7 +576,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             a.Should().Throw<GracefulException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithValidVersionRangeItShouldSucceed()
         {
             ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --version [1.0,2.0]");
@@ -599,9 +600,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Theory]
-        [InlineData("0.5.0")]
-        [InlineData("[0.5.0]")]
+        [TestMethod]
+        [DataRow("0.5.0")]
+        [DataRow("[0.5.0]")]
         public void WhenRunWithValidVersionItShouldInterpretAsNuGetExactVersion(string version)
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
@@ -638,7 +639,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolUninstallCommand.Execute().Should().Be(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithoutValidVersionUnlistedToolItShouldThrow()
         {
             const string nugetSourcePath = "https://api.nuget.org/v3/index.json";
@@ -650,7 +651,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolInstallGlobalOrToolPathCommand.Execute().Should().Fail();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPrereleaseItShouldSucceed()
         {
             AddPreviewToolPackageVersionToFeed();
@@ -676,7 +677,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     "2.0.1-preview1").Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPrereleaseAndPackageVersionItShouldThrow()
         {
             AddPreviewToolPackageVersionToFeed();
@@ -747,7 +748,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             });
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithoutAMatchingRangeItShouldFail()
         {
             ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --version [5.0,10.0]");
@@ -774,7 +775,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.Directory.Exists(Path.Combine(_pathToPlacePackages, PackageId)).Should().BeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithValidVersionWildcardItShouldSucceed()
         {
             ParseResult result = Parser.Parse($"dotnet tool install -g {PackageId} --version 1.0.*");
@@ -798,7 +799,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     PackageVersion).Green());
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithPackageIdAndBinPathItShouldNoteHaveEnvironmentPathInstruction()
         {
             var result = Parser.Parse($"dotnet tool install --tool-path /tmp/folder {PackageId}");
@@ -815,7 +816,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().NotContain(l => l.Contains(EnvironmentPathInstructionMock.MockInstructionText));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenInstallItDoesNotSkipNuGetPackageVerfication()
         {
             var toolInstallGlobalOrToolPathCommand = new ToolInstallGlobalOrToolPathCommand(
@@ -829,7 +830,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _reporter.Lines.Should().NotContain(l => l.Contains(CliStrings.NuGetPackageSignatureVerificationSkipped));
         }
 
-        [Fact]
+        [TestMethod]
         public void AndPackagedShimIsProvidedWhenRunWithPackageIdItCreateShimUsingPackagedShim()
         {
 
@@ -863,7 +864,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.ReadAllText(ExpectedCommandPath()).Should().Be(tokenToIdentifyPackagedShim);
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithArchOptionItErrorsOnInvalidRids()
         {
             _reporter.Clear();
@@ -875,11 +876,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            var exceptionThrown = Assert.Throws<AggregateException>(() => toolInstallGlobalOrToolPathCommand.Execute());
+            var exceptionThrown = Assert.ThrowsExactly<AggregateException>(() => toolInstallGlobalOrToolPathCommand.Execute());
             exceptionThrown.Message.Should().Contain("-invalid is invalid");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void WhenRunWithArchOptionItDownloadsAppHostTemplate()
         {
             var nugetPackageDownloader = new MockNuGetPackageDownloader();
@@ -898,7 +900,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             nugetPackageDownloader.DownloadCallParams.First().Item1.Should().Be(new PackageId("microsoft.netcore.app.host.win-arm64"));
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithHttpSourceViaAddSourceItShouldShowNU1302Error()
         {
             var testDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -914,7 +916,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             result.StdErr.Should().Contain("allowInsecureConnections");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithHttpSourceInNuGetConfigItShouldShowNU1302Error()
         {
             var testDir = TestAssetsManager.CreateTestDirectory().Path;
@@ -941,7 +943,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             result.StdErr.Should().Contain("allowInsecureConnections");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenRunWithHttpSourceAndAllowInsecureConnectionsItShouldSucceed()
         {
             var testDir = TestAssetsManager.CreateTestDirectory().Path;

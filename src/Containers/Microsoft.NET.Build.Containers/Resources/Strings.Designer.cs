@@ -493,20 +493,20 @@ namespace Microsoft.NET.Build.Containers.Resources {
         }
 
         /// <summary>
-        ///   Looks up a localized string similar to Image index creation for Podman is not supported..
-        /// </summary>
-        internal static string ImageIndex_PodmanNotSupported {
-            get {
-                return ResourceManager.GetString("ImageIndex_PodmanNotSupported", resourceCulture);
-            }
-        }
-
-        /// <summary>
         ///   Looks up a localized string similar to CONTAINER1020: Failed to load image because containerd image store is not enabled for Docker. Tip: You can enable it by checking 'Use containerd for pulling and storing images' in Docker Desktop settings..
         /// </summary>
         internal static string ImageLoadFailed_ContainerdStoreDisabled {
             get {
                 return ResourceManager.GetString("ImageLoadFailed_ContainerdStoreDisabled", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to CONTAINER1021: Multi-architecture images cannot be loaded into WSLC. Publish a single-platform image or publish the multi-architecture image to a registry..
+        /// </summary>
+        internal static string ImageLoadFailed_WslcMultiArchUnsupported {
+            get {
+                return ResourceManager.GetString("ImageLoadFailed_WslcMultiArchUnsupported", resourceCulture);
             }
         }
 
@@ -759,6 +759,15 @@ namespace Microsoft.NET.Build.Containers.Resources {
         internal static string Registry_ManifestUploaded {
             get {
                 return ResourceManager.GetString("Registry_ManifestUploaded", resourceCulture);
+            }
+        }
+
+        /// <summary>
+        ///   Looks up a localized string similar to Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads..
+        /// </summary>
+        internal static string Registry_ManifestExists {
+            get {
+                return ResourceManager.GetString("Registry_ManifestExists", resourceCulture);
             }
         }
 

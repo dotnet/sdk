@@ -6,6 +6,7 @@ using Microsoft.Build.Utilities;
 
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
+    [TestClass]
     public class GivenThatWeWantToGenerateSupportedTargetFrameworkAlias
     {
         private static List<(string targetFrameworkMoniker, string displayName)> MockSupportedTargetFramework = new()
@@ -20,7 +21,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 ( ".NETFramework,Version=v4.8", ".NET Framework 4.8"),
             };
 
-        [Fact]
+        [TestMethod]
         public void It_generates_supported_net_standard_target_framework_alias_items()
         {
             var targetFrameworkMoniker = ".NETStandard,Version=v2.1";
@@ -31,7 +32,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Fact]
+        [TestMethod]
         public void It_generates_supported_net_framework_target_framework_alias_items()
         {
             var targetFrameworkMoniker = ".NETFramework,Version=v4.8.1";
@@ -42,10 +43,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Theory]
-        [InlineData(".NETCoreApp,Version=v3.1")]
-        [InlineData(".NETCoreApp,Version=v5.0")]
-        [InlineData(".NETCoreApp,Version=v6.0")]
+        [TestMethod]
+        [DataRow(".NETCoreApp,Version=v3.1")]
+        [DataRow(".NETCoreApp,Version=v5.0")]
+        [DataRow(".NETCoreApp,Version=v6.0")]
         public void It_generates_supported_net_core_target_framework_alias_items(string targetFrameworkMoniker)
         {
             RunTask(targetFrameworkMoniker, targetPlatformMoniker: string.Empty, UseWpf: false, UseWindowsForms: false, expectedResult: new List<(string, string)>
@@ -57,10 +58,10 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Theory]
-        [InlineData(".NETCoreApp,Version=v5.0", "Windows,Version=7.0")]
-        [InlineData(".netcoreapp,version=v5.0", "windows,version=7.0")]
-        [InlineData(".NETCoreApp,Version=v6.0", "Windows,Version=7.0")]
+        [TestMethod]
+        [DataRow(".NETCoreApp,Version=v5.0", "Windows,Version=7.0")]
+        [DataRow(".netcoreapp,version=v5.0", "windows,version=7.0")]
+        [DataRow(".NETCoreApp,Version=v6.0", "Windows,Version=7.0")]
         public void It_generates_supported_target_framework_alias_items_when_targeting_windows(string targetFrameworkMoniker, string targetPlatformMoniker)
         {
             RunTask(targetFrameworkMoniker, targetPlatformMoniker, UseWpf: false, UseWindowsForms: false, expectedResult: new List<(string, string)>
@@ -72,13 +73,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
                 });
         }
 
-        [Theory]
-        [InlineData(".NETCoreApp,Version=v5.0", "", true, false)]
-        [InlineData(".NETCoreApp,Version=v5.0", "", false, true)]
-        [InlineData(".NETCoreApp,Version=v5.0", "Windows,Version=7.0", true, false)]
-        [InlineData(".NETCoreApp,Version=v5.0", "Windows,Version=7.0", false, true)]
-        [InlineData(".NETCoreApp,Version=v3.1", "", true, false)]
-        [InlineData(".NETCoreApp,Version=v3.1", "", false, true)]
+        [TestMethod]
+        [DataRow(".NETCoreApp,Version=v5.0", "", true, false)]
+        [DataRow(".NETCoreApp,Version=v5.0", "", false, true)]
+        [DataRow(".NETCoreApp,Version=v5.0", "Windows,Version=7.0", true, false)]
+        [DataRow(".NETCoreApp,Version=v5.0", "Windows,Version=7.0", false, true)]
+        [DataRow(".NETCoreApp,Version=v3.1", "", true, false)]
+        [DataRow(".NETCoreApp,Version=v3.1", "", false, true)]
         public void It_generates_supported_target_framework_alias_items_when_using_wpf_or_winforms(string targetFrameworkMoniker, string targetPlatformMoniker, bool UseWpf, bool UseWindowsForms)
         {
             RunTask(targetFrameworkMoniker, targetPlatformMoniker, UseWpf, UseWindowsForms, expectedResult: new List<(string, string)>

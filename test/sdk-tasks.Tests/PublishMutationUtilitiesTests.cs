@@ -5,7 +5,8 @@ using Microsoft.DotNet.Build.Tasks;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
-public class PublishMutationUtilitiesTests(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public class PublishMutationUtilitiesTests : SdkTest
 {
     private const string SampleDepsJson = """
         {
@@ -26,7 +27,7 @@ public class PublishMutationUtilitiesTests(ITestOutputHelper log) : SdkTest(log)
         }
         """;
 
-    [Fact]
+    [TestMethod]
     public void ItRenamesEntryPointLibrary()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;
@@ -40,7 +41,7 @@ public class PublishMutationUtilitiesTests(ITestOutputHelper log) : SdkTest(log)
         result.Should().NotContain("OldApp/1.0.0");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItRemovesEntryPointLibraryWhenNewNameIsNull()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;
@@ -54,7 +55,7 @@ public class PublishMutationUtilitiesTests(ITestOutputHelper log) : SdkTest(log)
         result.Should().NotContain("NewApp");
     }
 
-    [Fact]
+    [TestMethod]
     public void ItPreservesVersionInRenamedLibrary()
     {
       var dir = TestAssetsManager.CreateTestDirectory().Path;

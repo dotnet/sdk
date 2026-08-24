@@ -10,7 +10,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 using System.Xml;
 using Microsoft.CodeAnalysis;
@@ -39,7 +38,7 @@ internal static class FileLevelDirectiveHelpers
     public static ImmutableArray<CSharpDirective> FindDirectives(SourceFile sourceFile, bool reportAllErrors, ErrorReporter errorReporter, bool checkDuplicates = true)
     {
         var builder = ImmutableArray.CreateBuilder<CSharpDirective>();
-        var tokenizer = CreateTokenizer(sourceFile.Text);
+        using var tokenizer = CreateTokenizer(sourceFile.Text);
 
         var result = tokenizer.ParseLeadingTrivia();
         var triviaList = result.Token.LeadingTrivia;
@@ -159,7 +158,7 @@ internal static class FileLevelDirectiveHelpers
                 {
                     if (checkDuplicates)
                     {
-                        deduplicator.CheckDirective(directive, errorReporter);
+                        deduplicator.CheckDirective(directive, errorReporter, shouldKeep: out _);
                     }
 
                     builder?.Add(directive);
@@ -425,7 +424,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
             try
             {
-                propertyName = XmlConvert.VerifyName(propertyName);
+                propertyName = XmlConvert.VerifyNCName(propertyName);
             }
             catch (XmlException ex)
             {
@@ -692,7 +691,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     {
         public const string MappingPropertyName = "FileBasedProgramsItemMapping";
 
-        public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content";
+        public static string DefaultMappingString => ".cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference";
 
         public static ImmutableArray<(string Extension, string ItemType)> DefaultMapping
         {
@@ -706,6 +705,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                         (".resx", "EmbeddedResource"),
                         (".json", "None"),
                         (".razor", "Content"),
+                        (".dll", "Reference"),
                     ];
                 }
 
@@ -833,7 +833,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
             SourceFile sourceFile,
             ErrorReporter errorReporter)
         {
-            var pairs = value.Split(';');
+            var pairs = value.Split([';'], StringSplitOptions.RemoveEmptyEntries);
 
             var builder = ImmutableArray.CreateBuilder<(string Extension, string ItemType)>(pairs.Length);
 
@@ -875,23 +875,24 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
 
 /// <summary>
 /// Detects duplicate directives (by type and case-insensitive name)
-/// and reports errors via the provided <see cref="ErrorReporter"/>.
+/// and reports errors via the provided <see cref="ErrorReporter"/> when their values differ.
 /// </summary>
 /// <remarks>
-/// <c>#:project</c> and <c>#:ref</c> duplicates are allowed (MSBuild can handle multiple <c>ProjectReference</c>s).
+/// <c>#:project</c>, <c>#:ref</c>, <c>#:include</c>, and <c>#:exclude</c> duplicates are allowed (MSBuild can handle them).
 /// </remarks>
 internal struct DirectiveDeduplicator
 {
     private Dictionary<CSharpDirective.Named, CSharpDirective.Named>? _seen;
 
     /// <summary>
-    /// Checks <paramref name="directive"/> for duplication and reports an error if it was already seen.
+    /// Checks <paramref name="directive"/> for duplication and reports an error if a different unevaluated value was already seen.
     /// </summary>
-    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError)
+    /// <param name="shouldKeep"><see langword="false"/> if a duplicate directive was already seen and this directive should be skipped.</param>
+    public void CheckDirective(CSharpDirective.Named directive, ErrorReporter reportError, out bool shouldKeep)
     {
-        // Duplicate #:project and #:ref directives are allowed (MSBuild can handle that).
-        if (directive is CSharpDirective.Project or CSharpDirective.Ref)
+        if (directive is CSharpDirective.Project or CSharpDirective.Ref or CSharpDirective.IncludeOrExclude)
         {
+            shouldKeep = true;
             return;
         }
 
@@ -899,14 +900,43 @@ internal struct DirectiveDeduplicator
 
         if (_seen.TryGetValue(directive, out var existingDirective))
         {
+            if (HasSameValue(existingDirective, directive))
+            {
+                shouldKeep = false;
+                return;
+            }
+
             var typeAndName = $"#:{existingDirective.KindToString()} {existingDirective.Name}";
             reportError(directive.Info.SourceFile.Text, directive.Info.SourceFile.Path, directive.Info.Span,
                 string.Format(FileBasedProgramsResources.DuplicateDirective, typeAndName));
+
+            shouldKeep = false;
+            return;
         }
         else
         {
             _seen.Add(directive, directive);
         }
+
+        shouldKeep = true;
+    }
+
+    private static bool HasSameValue(CSharpDirective.Named existingDirective, CSharpDirective.Named directive)
+    {
+        Debug.Assert(NamedDirectiveComparer.Instance.Equals(existingDirective, directive));
+        Debug.Assert(existingDirective is CSharpDirective.Sdk or CSharpDirective.Property or CSharpDirective.Package);
+        Debug.Assert(directive is CSharpDirective.Sdk or CSharpDirective.Property or CSharpDirective.Package);
+
+        return (existingDirective, directive) switch
+        {
+            (CSharpDirective.Sdk existing, CSharpDirective.Sdk current) =>
+                string.Equals(existing.Version, current.Version, StringComparison.Ordinal),
+            (CSharpDirective.Property existing, CSharpDirective.Property current) =>
+                string.Equals(existing.Value, current.Value, StringComparison.Ordinal),
+            (CSharpDirective.Package existing, CSharpDirective.Package current) =>
+                string.Equals(existing.Version, current.Version, StringComparison.Ordinal),
+            _ => false,
+        };
     }
 }
 
@@ -953,7 +983,9 @@ internal sealed class SimpleDiagnostic
     {
         public required string Path { get; init; }
         public required LinePositionSpan Span { get; init; }
-        [JsonIgnore]
+#if FILE_BASED_PROGRAMS_SYSTEM_TEXT_JSON // only run-api needs this, see remarks
+        [System.Text.Json.Serialization.JsonIgnore]
+#endif
         public TextSpan TextSpan { get; init; }
     }
 }

@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.UseStartsWithInsteadOfIndexOfComparisonWithZero,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpUseStartsWithInsteadOfIndexOfComparisonWithZeroCodeFix>;
@@ -14,6 +13,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class UseStartsWithInsteadOfIndexOfComparisonWithZeroTests
     {
         private static async Task VerifyCodeFixVBAsync(string source, string fixedSource, ReferenceAssemblies referenceAssemblies)
@@ -23,7 +23,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 TestCode = source,
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
         private static async Task VerifyCodeFixCSAsync(string source, string fixedSource, ReferenceAssemblies referenceAssemblies)
@@ -34,10 +34,10 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
                 FixedCode = fixedSource,
                 ReferenceAssemblies = referenceAssemblies,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GreaterThanZero_CSharp_NoDiagnostic()
         {
             var testCode = """
@@ -54,7 +54,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task GreaterThanZero_VB_Diagnostic()
         {
             var testCode = """
@@ -69,7 +69,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, testCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SimpleScenario_CSharp_Diagnostic()
         {
             var testCode = """
@@ -96,7 +96,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SimpleScenario_VB_Diagnostic()
         {
             var testCode = """
@@ -119,7 +119,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ZeroOnLeft_CSharp_Diagnostic()
         {
             var testCode = """
@@ -146,7 +146,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ZeroOnLeft_VB_Diagnostic()
         {
             var testCode = """
@@ -169,7 +169,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Negated_CSharp_Diagnostic()
         {
             var testCode = """
@@ -196,7 +196,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Negated_VB_Diagnostic()
         {
             var testCode = """
@@ -219,7 +219,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InArgument_CSharp_Diagnostic()
         {
             var testCode = """
@@ -246,7 +246,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InArgument_VB_Diagnostic()
         {
             var testCode = """
@@ -269,7 +269,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixAll_CSharp_Diagnostic()
         {
             var testCode = """
@@ -298,7 +298,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixAll_VB_Diagnostic()
         {
             var testCode = """
@@ -323,7 +323,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixAllNested_CSharp_Diagnostic()
         {
             var testCode = """
@@ -350,7 +350,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task FixAllNested_VB_Diagnostic()
         {
             var testCode = """
@@ -373,7 +373,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringStringComparison_CSharp_Diagnostic()
         {
             var testCode = """
@@ -400,7 +400,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringStringComparison_VB_Diagnostic()
         {
             var testCode = """
@@ -423,7 +423,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Char_CSharp_Diagnostic()
         {
             var testCode = """
@@ -460,7 +460,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode21, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Char_VB_Diagnostic()
         {
             var testCode = """
@@ -491,7 +491,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode21, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Char_Negation_CSharp_Diagnostic()
         {
             var testCode = """
@@ -528,7 +528,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode21, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Char_Negation_VB_Diagnostic()
         {
             var testCode = """
@@ -559,7 +559,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode21, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_HardCodedChar_CSharp_Diagnostic()
         {
             var testCode = """
@@ -589,7 +589,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_HardCodedChar_VB_Diagnostic()
         {
             var testCode = """
@@ -611,7 +611,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_Expression_CSharp_Diagnostic()
         {
             var testCode = """
@@ -641,7 +641,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_Expression_VB_Diagnostic()
         {
             var testCode = """
@@ -663,7 +663,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_HardCodedChar_OutOfOrder_CSharp_Diagnostic()
         {
             var testCode = """
@@ -693,7 +693,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_HardCodedChar_OutOfOrder_VB_Diagnostic()
         {
             var testCode = """
@@ -707,7 +707,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var fixedCode = """
                 Class C
                     Sub M(a As String)
-                        Dim unused = a.StartsWith(value:="a", comparisonType:=System.StringComparison.Ordinal)
+                        Dim unused = a.StartsWith(comparisonType:=System.StringComparison.Ordinal, value:="a")
                     End Sub
                 End Class
                 """;
@@ -715,7 +715,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_Expression_OutOfOrder_CSharp_Diagnostic()
         {
             var testCode = """
@@ -745,7 +745,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CharStringComparison_Expression_OutOfOrder_VB_Diagnostic()
         {
             var testCode = """
@@ -759,7 +759,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var fixedCode = """
                 Class C
                     Sub M(a As String, exp As Char)
-                        Dim unused = a.StartsWith(value:=exp.ToString(), comparisonType:=System.StringComparison.Ordinal)
+                        Dim unused = a.StartsWith(comparisonType:=System.StringComparison.Ordinal, value:=exp.ToString())
                     End Sub
                 End Class
                 """;
@@ -767,7 +767,7 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutOfOrderNamedArguments_CSharp_Diagnostic()
         {
             var testCode = """
@@ -794,15 +794,9 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutOfOrderNamedArguments_VB_Diagnostic()
         {
-            // IInvocationOperation.Arguments appears to behave differently in C# vs VB.
-            // In C#, the order of arguments are preserved, as they appear in source.
-            // In VB, the order of arguments is the same as parameters order.
-            // If we wanted to make VB behavior similar to OutOfOrderNamedArguments_CSharp_Diagnostic, we will need
-            // to go back to syntax. This scenario doesn't seem important/common, so might be good for now until
-            // we hear any user feedback.
             var testCode = """
                 Class C
                     Sub M(a As String)
@@ -814,13 +808,61 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
             var fixedCode = """
                 Class C
                     Sub M(a As String)
-                        Dim unused = a.StartsWith(value:="abc", comparisonType:=System.StringComparison.Ordinal)
+                        Dim unused = a.StartsWith(comparisonType:=System.StringComparison.Ordinal, value:="abc")
                     End Sub
                 End Class
                 """;
 
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard20);
             await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard21);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_CSharp_FixAllRewritesBoth()
+        {
+            var testCode = """
+                class C
+                {
+                    void M(string a, string b)
+                    {
+                        _ = [|([|a.IndexOf("x") == 0|] ? a : b).IndexOf("y") == 0|];
+                    }
+                }
+                """;
+
+            var fixedCode = """
+                class C
+                {
+                    void M(string a, string b)
+                    {
+                        _ = (a.StartsWith("x") ? a : b).StartsWith("y");
+                    }
+                }
+                """;
+
+            await VerifyCodeFixCSAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard20);
+        }
+
+        [TestMethod]
+        public async Task NestedComparison_VB_FixAllRewritesBoth()
+        {
+            var testCode = """
+                Class C
+                    Sub M(a As String, b As String)
+                        Dim unused = [|If([|a.IndexOf("x") = 0|], a, b).IndexOf("y") = 0|]
+                    End Sub
+                End Class
+                """;
+
+            var fixedCode = """
+                Class C
+                    Sub M(a As String, b As String)
+                        Dim unused = If(a.StartsWith("x"), a, b).StartsWith("y")
+                    End Sub
+                End Class
+                """;
+
+            await VerifyCodeFixVBAsync(testCode, fixedCode, ReferenceAssemblies.NetStandard.NetStandard20);
         }
     }
 }

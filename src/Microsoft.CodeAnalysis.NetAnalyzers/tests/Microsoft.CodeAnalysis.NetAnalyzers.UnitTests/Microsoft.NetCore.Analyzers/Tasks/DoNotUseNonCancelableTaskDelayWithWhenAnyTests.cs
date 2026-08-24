@@ -1,4 +1,4 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
@@ -10,9 +10,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
 {
+    [TestClass]
     public class DoNotUseNonCancelableTaskDelayWithWhenAnyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_TaskDelayWithCancellationToken_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -37,7 +38,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_TaskDelayWithCancellationToken_VB()
         {
             await VerifyVB.VerifyAnalyzerAsync("""
@@ -62,7 +63,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_WhenAnyWithoutTaskDelay_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -85,7 +86,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_TaskDelayWithoutCancellationToken_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -109,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_TaskDelayWithoutCancellationToken_VB()
         {
             await VerifyVB.VerifyAnalyzerAsync("""
@@ -133,7 +134,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_MultipleTaskDelays_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -157,7 +158,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_MixedTaskDelays_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -182,7 +183,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_NestedInvocation_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -203,7 +204,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NotSystemTask_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -236,7 +237,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_GenericTask_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -257,7 +258,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_SingleTaskDelay_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -274,7 +275,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_ExplicitArray_CSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync("""
@@ -295,7 +296,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Diagnostic_CollectionExpression_CSharp()
         {
             await new VerifyCS.Test
@@ -317,10 +318,10 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         Task CreateTask() => Task.CompletedTask;
                     }
                     """,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_EmptyCollectionExpression_CSharp()
         {
             await new VerifyCS.Test
@@ -337,10 +338,10 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         }
                     }
                     """,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_CollectionExpression_SingleTask_CSharp()
         {
             await new VerifyCS.Test
@@ -357,7 +358,7 @@ namespace Microsoft.NetCore.Analyzers.Tasks.UnitTests
                         }
                     }
                     """,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

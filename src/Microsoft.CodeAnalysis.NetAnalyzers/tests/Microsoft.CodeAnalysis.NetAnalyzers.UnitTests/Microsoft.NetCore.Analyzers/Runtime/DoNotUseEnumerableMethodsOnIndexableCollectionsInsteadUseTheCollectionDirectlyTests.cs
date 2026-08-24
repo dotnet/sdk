@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyFixer>;
@@ -14,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotUseEnumerableMethodsOnIndexableCollectionsInsteadUseTheCollectionDirectlyTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CSharpCasesAsync()
         {
             var code = @"
@@ -157,10 +157,10 @@ class C
                     Sources = { fixedCode },
                     MarkupHandling = MarkupMode.Allow,
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task BasicCasesAsync()
         {
             var code = @"
@@ -332,15 +332,15 @@ End Class
                     Sources = { fixedCode },
                     MarkupHandling = MarkupMode.Allow,
                 }
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(1817, "https://github.com/dotnet/roslyn-analyzers/issues/1817")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA1826.exclude_ordefault_methods = true")]
-        [InlineData("dotnet_code_quality.exclude_ordefault_methods = true")]
-        [InlineData("dotnet_code_quality.CA1826.exclude_ordefault_methods = false")]
-        [InlineData("dotnet_code_quality.exclude_ordefault_methods = false")]
+        [TestMethod, WorkItem(1817, "https://github.com/dotnet/roslyn-analyzers/issues/1817")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA1826.exclude_ordefault_methods = true")]
+        [DataRow("dotnet_code_quality.exclude_ordefault_methods = true")]
+        [DataRow("dotnet_code_quality.CA1826.exclude_ordefault_methods = false")]
+        [DataRow("dotnet_code_quality.exclude_ordefault_methods = false")]
         public async Task CA1826_EditorConfig_ExcludeOrDefaultMethodsAsync(string editorConfigText)
         {
             string csharpFirstOrDefaultAndLastOrDefault;
@@ -408,7 +408,7 @@ public class C
                 }
             };
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             string vbFirstOrDefaultAndLastOrDefault;
             if (!editorConfigText.EndsWith("true", System.StringComparison.Ordinal))
@@ -475,10 +475,10 @@ End Class";
                 },
             };
 
-            await vbTest.RunAsync(TestContext.Current.CancellationToken);
+            await vbTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_EnumerableFirstExtensionCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -530,7 +530,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_Basic_EnumerableFirstExtensionCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -578,7 +578,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_EnumerableLastExtensionCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -630,7 +630,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_Basic_EnumerableLastExtensionCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -678,7 +678,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_EnumerableCountExtensionCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -730,7 +730,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_EnumerableFirstStaticCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -782,7 +782,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_Basic_EnumerableFirstStaticCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -830,7 +830,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_EnumerableLastStaticCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -882,7 +882,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_Basic_EnumerableLastStaticCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -930,7 +930,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_EnumerableCountStaticCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -982,7 +982,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_Basic_EnumerableCountStaticCallAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -1030,7 +1030,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_ChainCallAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(@"
@@ -1095,7 +1095,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
+        [TestMethod, WorkItem(1932, "https://github.com/dotnet/roslyn-analyzers/issues/1932")]
         public async Task CA1826_CSharp_InvalidStatementAsync()
         {
             //this unit test documents a problematic edge case
@@ -1139,7 +1139,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(5795, "https://github.com/dotnet/roslyn-analyzers/issues/5795")]
+        [TestMethod, WorkItem(5795, "https://github.com/dotnet/roslyn-analyzers/issues/5795")]
         public async Task CA1826_CSharp_NullForgivingOperator()
         {
             var source = @"
@@ -1181,7 +1181,7 @@ public class Test
                 TestCode = source,
                 FixedCode = fixedSource,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp8,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

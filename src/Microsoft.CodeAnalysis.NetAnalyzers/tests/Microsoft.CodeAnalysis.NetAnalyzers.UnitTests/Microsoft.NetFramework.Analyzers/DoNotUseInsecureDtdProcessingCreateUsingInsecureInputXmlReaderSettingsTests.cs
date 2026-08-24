@@ -3,13 +3,13 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
+    [TestClass]
     public partial class DoNotUseInsecureDtdProcessingAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsDefaultAsFieldShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -48,7 +48,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsFieldSetDtdProcessingToParseWithNoCreateShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -85,7 +85,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsFieldDefaultAndDtdProcessingToIgnoreShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -126,7 +126,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputSetDtdProcessingToParseShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -160,7 +160,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputInGetShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -200,7 +200,7 @@ Public Class TestClass
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputInTryShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -245,7 +245,7 @@ Class TestClass6a
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputInCatchShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -288,7 +288,7 @@ Class TestClass6a
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputInFinallyShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -332,7 +332,7 @@ Class TestClass6a
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputInAsyncAwaitShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -381,7 +381,7 @@ End Function)
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputInDelegateShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -420,7 +420,7 @@ End Sub
 End Class");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputSetDtdProcessingToProhibitShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -457,7 +457,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlReaderSettingsAsInputSetPropertiesToSecureValuesShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -498,7 +498,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RealCodeSnippetFromCustomerPre452ShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -596,7 +596,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task RealCodeSnippetFromCustomerPost452ShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
