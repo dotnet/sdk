@@ -670,14 +670,27 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return true;
             }
 
-            // A call site without a minimum supported version for the platform cannot prove the branch unreachable,
-            // so 'SupportedFirst' being null must not exclude the platform.
+            // Excludes a platform from a negated guard branch when that branch cannot be reached at the call site.
+            //
+            // This is only sound when *every* call site attribute is an allow list, because an allow list is the only
+            // form that restricts the call site to the listed platforms. Consider these two call sites, both guarded
+            // by 'if (!IsMacOS15)', which leaves the branch reachable on macOS versions below 15.0:
+            //
+            //   [SupportedOSPlatform("macos15.0")]                                  <- allow list
+            //     Reachable on macOS 15.0+ and nothing else, so the branch is unreachable and macOS can be excluded.
+            //
+            //   [UnsupportedOSPlatform("macos12.0"), SupportedOSPlatform("macos15.0")] <- deny list ('AddAttribute'
+            //     records UnsupportedFirst = 12.0 and SupportedFirst = 15.0, and 'DenyList' classifies it as such)
+            //     Reachable on macOS 15.0+ *and on every other platform*, so the branch is still reachable on, say,
+            //     Linux. Excluding macOS here would drop a macOS-only API's requirement and hide a real CA1416.
+            //
+            // 'AllowList' already implies a non-null 'SupportedFirst', so no separate null check is needed.
             static bool IsPlatformExcludedByCallsite(
                 PlatformMethodValue value,
                 SmallDictionary<string, Versions>? callsiteAttributes)
                 => callsiteAttributes != null &&
+                    callsiteAttributes.Values.All(AllowList) &&
                     callsiteAttributes.TryGetValue(value.PlatformName, out Versions? attributes) &&
-                    attributes.SupportedFirst != null &&
                     attributes.SupportedFirst.IsGreaterThanOrEqualTo(value.Version);
 
             static bool IsPlatformSupportWasSuppresed(PlatformMethodValue parentValue, SmallDictionary<string, Versions> attributes, SmallDictionary<string, Versions> originalAttributes)
@@ -685,6 +698,17 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                     originalAttributes.TryGetValue(parentValue.PlatformName, out Versions? version) &&
                     parentValue.Version.IsGreaterThanOrEqualTo(version.SupportedFirst);
 
+            // Detects a supported guard that the call site's own support already satisfies, so that the guarded flow is
+            // preserved instead of being re-applied as a call site attribute.
+            //
+            // For example, with '[SupportedOSPlatform("macos11.0"), SupportedOSPlatform("tvos13.0")]' on the API and a
+            // guard declaring '[SupportedOSPlatformGuard("macos11.0"), SupportedOSPlatformGuard("tvos13.0")]', a call
+            // site supporting macOS 12.0 already covers the macOS half of the guard. Only tvOS still needs guarding,
+            // so macOS must not be re-applied as a call site attribute (see https://github.com/dotnet/roslyn-analyzers/issues/7665).
+            //
+            // Unlike 'IsPlatformExcludedByCallsite' this does not require an allow-list call site: it never removes a
+            // platform requirement, it only avoids narrowing the call site further. A null 'SupportedFirst' on either
+            // side means there is no minimum version to compare, so the guard is not considered covered.
             static bool IsPlatformSupportSuppressedByCallsite(
                 PlatformMethodValue value,
                 SmallDictionary<string, Versions> attributes,
