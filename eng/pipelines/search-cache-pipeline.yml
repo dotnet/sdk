@@ -34,17 +34,22 @@ variables:
 # The dnceng-owned certificate and owner values stay as pipeline Variables.
 - name: AkaMsTenantId                 # aka.ms redirection tenant in the /api/aka/1/{tenant} path (NOT an AAD GUID)
   value: ncd
+  readonly: true
 - name: AkaMsAuthorityTenantId        # corp AAD tenant the app authenticates against (arcade hardcodes this too)
   value: 72f988bf-86f1-41af-91ab-2d7cd011db47
+  readonly: true
 # The pipeline publishes to the -vs links. The original, non-suffixed links remain for backward
 # compatibility and redirect to these links. Those originals were created through the aka.ms web UI
 # under a different tenant scope, so the API identity used by this pipeline cannot update them.
 - name: AkaMsShortUrl                  # no 'aka.ms/' prefix
   value: dotnet/templating/searchcacheurl-vs
+  readonly: true
 - name: AkaMsNonTemplatePacksShortUrl  # no 'aka.ms/' prefix
   value: dotnet/templating/nontemplatepacksurl-vs
+  readonly: true
 - name: AkaMsLinkGroupOwner           # existing group owner of both dotnet/templating links
   value: dotnetdevexcli
+  readonly: true
 
 resources:
   repositories:
