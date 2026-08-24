@@ -121,8 +121,8 @@ the dual-path dispatch logic.
 bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
-can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
-subcommands, the narrow file-based run path, and build-free
+can run entirely in AOT (`--version`, `--info`, dynamic shell completion, the
+AOT-capable `sln` subcommands, the narrow file-based run path, and build-free
 `test --test-modules` invocations described below) execute immediately and return.
 Other built-in command shapes are wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
@@ -268,7 +268,7 @@ In the shared files:
   isolated to small inline `#if CLI_AOT` regions: the managed build wires the
   real command handlers, while the AOT build attaches a managed-fallback handler
   to every command (overriding it with real implementations where AOT can run
-  the command, e.g. `sln` and the narrow cached `run` action). The help writer (`DotnetHelpBuilder`) has no
+  the command, e.g. dynamic `complete`, `sln`, and the narrow cached `run` action). The help writer (`DotnetHelpBuilder`) has no
   conditional compilation: help for the external-tool commands
   (msbuild/nuget/vstest/format/fsi) renders from AOT because those forwarding
   apps use AOT-friendly out-of-process codepaths under `#if CLI_AOT`.
