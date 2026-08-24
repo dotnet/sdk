@@ -1580,7 +1580,7 @@ public class Test
             }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(51644, "https://github.com/dotnet/sdk/issues/51644")]
+        [TestMethod, WorkItem(51644, "https://github.com/dotnet/sdk/issues/51644")]
         public Task UserDefinedInstanceOperators_NoDiagnostic()
         {
             return new VerifyCS.Test
@@ -1596,10 +1596,10 @@ public class Test
                     }
                     """,
                 LanguageVersion = LanguageVersion.CSharp14,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task UserDefinedImplicitConversionOperator_NoDiagnostic()
         {
             return VerifyCS.VerifyAnalyzerAsync("""
@@ -1610,7 +1610,7 @@ public class Test
                 """);
         }
 
-        [Fact]
+        [TestMethod]
         public Task UserDefinedExplicitConversionOperator_NoDiagnostic()
         {
             return VerifyCS.VerifyAnalyzerAsync("""
