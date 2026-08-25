@@ -39,21 +39,29 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         /// </remarks>
         private sealed class FixState
         {
-            private readonly Dictionary<FieldDeclarationSyntax, List<VariableDeclaratorSyntax>> _declaratorsByField = new();
+            private readonly Dictionary<
+                FieldDeclarationSyntax,
+                (ArrayTypeSyntax ArrayType, List<VariableDeclaratorSyntax> Declarators)> _fixesByField = new();
 
             public List<FieldDeclarationSyntax> OrderedFields { get; } = new();
 
-            public List<VariableDeclaratorSyntax> GetDeclarators(FieldDeclarationSyntax fieldDeclaration)
+            public List<VariableDeclaratorSyntax> GetOrAddDeclarators(
+                FieldDeclarationSyntax fieldDeclaration,
+                ArrayTypeSyntax arrayType)
             {
-                if (!_declaratorsByField.TryGetValue(fieldDeclaration, out var declarators))
+                if (!_fixesByField.TryGetValue(fieldDeclaration, out var fix))
                 {
-                    declarators = new List<VariableDeclaratorSyntax>();
-                    _declaratorsByField.Add(fieldDeclaration, declarators);
+                    fix = (arrayType, new List<VariableDeclaratorSyntax>());
+                    _fixesByField.Add(fieldDeclaration, fix);
                     OrderedFields.Add(fieldDeclaration);
                 }
 
-                return declarators;
+                return fix.Declarators;
             }
+
+            public (ArrayTypeSyntax ArrayType, List<VariableDeclaratorSyntax> Declarators) GetFix(
+                FieldDeclarationSyntax fieldDeclaration)
+                => _fixesByField[fieldDeclaration];
         }
 
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
@@ -80,7 +88,6 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             {
                 if (root.FindNode(diagnostic.Location.SourceSpan) is not VariableDeclaratorSyntax variableDeclaratorSyntax ||
                     variableDeclaratorSyntax.Parent?.Parent is not FieldDeclarationSyntax fieldDeclaration ||
-                    fieldDeclaration.Declaration.Type is not ArrayTypeSyntax ||
                     fieldDeclaration.ContainsDirectives ||
                     fieldDeclaration.AttributeLists.Any(attributeList => attributeList.Target is not null) ||
                     diagnostic.AdditionalLocations.Any(location => location.SourceTree != root.SyntaxTree))
@@ -88,7 +95,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     return;
                 }
 
-                if ((await GetAsSpanReplacementsAsync(root, document, diagnostic, variableDeclaratorSyntax, context.CancellationToken).ConfigureAwait(false)).IsDefault)
+                var fixInfo = await GetFixInfoAsync(
+                    root,
+                    document,
+                    diagnostic,
+                    variableDeclaratorSyntax,
+                    context.CancellationToken).ConfigureAwait(false);
+                if (fixInfo.ArrayType is null)
                 {
                     return;
                 }
@@ -117,32 +130,31 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             if (diagnostic.AdditionalLocations.Any(location => location.SourceTree != editor.OriginalRoot.SyntaxTree) ||
                 editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan) is not VariableDeclaratorSyntax variableDeclaratorSyntax ||
                 variableDeclaratorSyntax.Parent?.Parent is not FieldDeclarationSyntax fieldDeclarationSyntax ||
-                fieldDeclarationSyntax.Declaration.Type is not ArrayTypeSyntax ||
                 fieldDeclarationSyntax.ContainsDirectives ||
                 fieldDeclarationSyntax.AttributeLists.Any(attributeList => attributeList.Target is not null))
             {
                 return;
             }
 
-            var asSpanReplacements = await GetAsSpanReplacementsAsync(
+            var fixInfo = await GetFixInfoAsync(
                 editor.OriginalRoot,
                 document,
                 diagnostic,
                 variableDeclaratorSyntax,
                 cancellationToken).ConfigureAwait(false);
-            if (asSpanReplacements.IsDefault)
+            if (fixInfo.ArrayType is null)
             {
                 return;
             }
 
             // Rewrite this field's 'AsSpan' call sites. Validate all of them before changing any so a
             // stale diagnostic cannot leave either the call sites or the declaration partially fixed.
-            foreach (var (original, replacement) in asSpanReplacements)
+            foreach (var (original, replacement) in fixInfo.AsSpanReplacements)
             {
                 editor.ReplaceNode(original, replacement);
             }
 
-            state.GetDeclarators(fieldDeclarationSyntax).Add(variableDeclaratorSyntax);
+            state.GetOrAddDeclarators(fieldDeclarationSyntax, fixInfo.ArrayType).Add(variableDeclaratorSyntax);
         }
 
         private static Document GetFixedDocument(Document document, SyntaxEditor editor, FixState state)
@@ -150,7 +162,13 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
             string newLine = GetNewLine(editor.OriginalRoot.SyntaxTree.GetText());
             foreach (var fieldDeclarationSyntax in state.OrderedFields)
             {
-                FixFieldDeclaration(editor, fieldDeclarationSyntax, state.GetDeclarators(fieldDeclarationSyntax), newLine);
+                var (arrayType, declarators) = state.GetFix(fieldDeclarationSyntax);
+                FixFieldDeclaration(
+                    editor,
+                    fieldDeclarationSyntax,
+                    arrayType,
+                    declarators,
+                    newLine);
             }
 
             return document.WithSyntaxRoot(editor.GetChangedRoot());
@@ -159,10 +177,10 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         private static void FixFieldDeclaration(
             SyntaxEditor editor,
             FieldDeclarationSyntax fieldDeclarationSyntax,
+            ArrayTypeSyntax arrayTypeSyntax,
             List<VariableDeclaratorSyntax> diagnosedDeclarators,
             string newLine)
         {
-            var arrayTypeSyntax = (ArrayTypeSyntax)fieldDeclarationSyntax.Declaration.Type;
             var rosNameSyntax = SyntaxFactory.QualifiedName(
                 SyntaxFactory.AliasQualifiedName(
                     SyntaxFactory.IdentifierName(SyntaxFactory.Token(SyntaxKind.GlobalKeyword)),
@@ -361,7 +379,9 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 value);
         }
 
-        private static async Task<ImmutableArray<(SyntaxNode Original, SyntaxNode Replacement)>> GetAsSpanReplacementsAsync(
+        private static async Task<(
+            ArrayTypeSyntax? ArrayType,
+            ImmutableArray<(SyntaxNode Original, SyntaxNode Replacement)> AsSpanReplacements)> GetFixInfoAsync(
             SyntaxNode root,
             Document document,
             Diagnostic diagnostic,
@@ -370,6 +390,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         {
             var model = await document.GetSemanticModelAsync(cancellationToken).ConfigureAwait(false);
             if (model is null ||
+                variableDeclaratorSyntax.Parent is not VariableDeclarationSyntax variableDeclaration ||
                 model.GetDeclaredSymbol(variableDeclaratorSyntax, cancellationToken) is not IFieldSymbol expectedField ||
                 variableDeclaratorSyntax.Initializer?.Value is not ExpressionSyntax initializerValue ||
                 model.GetOperation(initializerValue, cancellationToken) is not IOperation initializerOperation ||
@@ -383,6 +404,15 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                     PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer.SupportsMultiBytePrimitiveTypes(
                         model.Compilation,
                         readOnlySpanType)))
+            {
+                return default;
+            }
+
+            ArrayTypeSyntax? arrayTypeSyntax = GetArrayTypeSyntax(
+                variableDeclaration.Type,
+                expectedField.Type,
+                SyntaxGenerator.GetGenerator(document));
+            if (arrayTypeSyntax is null)
             {
                 return default;
             }
@@ -510,7 +540,36 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 replacements.Add((invocationSyntax, replacement));
             }
 
-            return replacements.ToImmutable();
+            return (arrayTypeSyntax, replacements.ToImmutable());
+        }
+
+        private static ArrayTypeSyntax? GetArrayTypeSyntax(
+            TypeSyntax declarationType,
+            ITypeSymbol fieldType,
+            SyntaxGenerator generator)
+        {
+            if (declarationType is ArrayTypeSyntax arrayType)
+            {
+                return arrayType;
+            }
+
+            if (declarationType is NullableTypeSyntax { ElementType: ArrayTypeSyntax nullableArrayType })
+            {
+                return nullableArrayType.WithTriviaFrom(declarationType);
+            }
+
+            if (fieldType is not IArrayTypeSymbol { Rank: 1 } arrayTypeSymbol)
+            {
+                return null;
+            }
+
+            return SyntaxFactory.ArrayType(
+                (TypeSyntax)generator.TypeExpression(arrayTypeSymbol.ElementType),
+                SyntaxFactory.SingletonList(
+                    SyntaxFactory.ArrayRankSpecifier(
+                        SyntaxFactory.SingletonSeparatedList<ExpressionSyntax>(
+                            SyntaxFactory.OmittedArraySizeExpression()))))
+                .WithTriviaFrom(declarationType);
         }
 
         private static string GetNewLine(SourceText sourceText)

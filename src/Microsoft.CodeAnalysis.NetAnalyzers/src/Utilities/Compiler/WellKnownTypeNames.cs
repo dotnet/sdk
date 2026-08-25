@@ -333,8 +333,8 @@ namespace Analyzer.Utilities
         public const string SystemRuntimeCompilerServicesMethodImplOptions = "System.Runtime.CompilerServices.MethodImplOptions";
         public const string SystemRuntimeCompilerServicesModuleInitializerAttribute = "System.Runtime.CompilerServices.ModuleInitializerAttribute";
         public const string SystemRuntimeCompilerServicesRestrictedInternalsVisibleToAttribute = "System.Runtime.CompilerServices.RestrictedInternalsVisibleToAttribute";
-        public const string SystemRuntimeCompilerServicesRuntimeHelpers = "System.Runtime.CompilerServices.RuntimeHelpers";
         public const string SystemRuntimeCompilerServicesRuntimeFeature = "System.Runtime.CompilerServices.RuntimeFeature";
+        public const string SystemRuntimeCompilerServicesRuntimeHelpers = "System.Runtime.CompilerServices.RuntimeHelpers";
         public const string SystemRuntimeCompilerServicesTaskAwaiter = "System.Runtime.CompilerServices.TaskAwaiter";
         public const string SystemRuntimeCompilerServicesTypeForwardedToAttribute = "System.Runtime.CompilerServices.TypeForwardedToAttribute";
         public const string SystemRuntimeCompilerServicesValueTaskAwaiter = "System.Runtime.CompilerServices.ValueTaskAwaiter";

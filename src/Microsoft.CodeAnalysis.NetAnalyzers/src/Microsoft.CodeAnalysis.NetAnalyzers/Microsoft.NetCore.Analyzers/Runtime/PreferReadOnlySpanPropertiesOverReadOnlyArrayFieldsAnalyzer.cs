@@ -18,12 +18,7 @@ using static Microsoft.NetCore.Analyzers.MicrosoftNetCoreAnalyzersResources;
 
 namespace Microsoft.NetCore.Analyzers.Runtime
 {
-    // The optimization this rule recommends is specific to the C# compiler's lowering of
-    // constant ReadOnlySpan<T> properties; Visual Basic has no equivalent optimization.
-#pragma warning disable RS1004 // Recommend adding language support to diagnostic analyzer
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
-#pragma warning restore RS1004 // Recommend adding language support to diagnostic analyzer
-    public sealed class PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer : DiagnosticAnalyzer
+    public abstract class PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer : DiagnosticAnalyzer
     {
         internal const string RuleId = "CA1878";
 
@@ -40,6 +35,8 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
         public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(Rule);
 
+        protected abstract bool IsApplicableToLanguageVersion(ParseOptions options);
+
         public override void Initialize(AnalysisContext context)
         {
             // References in generated partial declarations must still disqualify fields declared in user code.
@@ -48,17 +45,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             context.RegisterCompilationStartAction(OnCompilationStart);
         }
 
-        private static void OnCompilationStart(CompilationStartAnalysisContext context)
+        private void OnCompilationStart(CompilationStartAnalysisContext context)
         {
-            // Bail if we're missing required symbols.
-            if (!RequiredSymbols.TryGetRequiredSymbols(context.Compilation, out RequiredSymbols? symbols))
+            if (!context.Compilation.SyntaxTrees.All(tree => IsApplicableToLanguageVersion(tree.Options)) ||
+                !RequiredSymbols.TryGetRequiredSymbols(context.Compilation, out RequiredSymbols? symbols))
             {
                 return;
             }
 
             var cache = new Cache();
             var fieldReferenceVisitor = new FieldReferenceVisitor(symbols, cache);
-            context.RegisterOperationAction(AnalyzeOperation, OperationKind.FieldInitializer, OperationKind.FieldReference);
+            context.RegisterOperationAction(
+                AnalyzeOperation,
+                OperationKind.FieldInitializer,
+                OperationKind.FieldReference);
             context.RegisterSymbolStartAction(OnSymbolStart, SymbolKind.NamedType);
             context.RegisterCompilationEndAction(_ => cache.Dispose());
 
@@ -138,7 +138,6 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                                 cache.EliminateCandidate(fieldReference.Field);
                             }
                         }
-
                         break;
                 }
             }
@@ -221,22 +220,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 symbols.SupportsMultiBytePrimitiveTypes);
 
         private static bool IsSupportedArrayElementType(ITypeSymbol elementType, bool supportsMultiBytePrimitiveTypes)
-            => elementType.SpecialType switch
-            {
-                SpecialType.System_Boolean or
-                SpecialType.System_Byte or
-                SpecialType.System_SByte => true,
-                SpecialType.System_Int16 or
-                SpecialType.System_UInt16 or
-                SpecialType.System_Char or
-                SpecialType.System_Int32 or
-                SpecialType.System_UInt32 or
-                SpecialType.System_Single or
-                SpecialType.System_Int64 or
-                SpecialType.System_UInt64 or
-                SpecialType.System_Double => supportsMultiBytePrimitiveTypes,
-                _ => false,
-            };
+            => elementType.IsPrimitiveType() &&
+                elementType.SpecialType != SpecialType.System_String &&
+                (supportsMultiBytePrimitiveTypes ||
+                elementType.SpecialType is
+                    SpecialType.System_Boolean or
+                    SpecialType.System_Byte or
+                    SpecialType.System_SByte);
 
         private static bool IsPotentialField(IFieldSymbol field, bool supportsMultiBytePrimitiveTypes)
             => field.IsStatic &&
@@ -374,7 +364,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime
 
             public override Unit VisitConversion(IConversionOperation operation, VisitContext argument)
             {
-                if (operation.Type is null || !operation.Type.OriginalDefinition.Equals(_symbols.ReadOnlySpanType, SymbolEqualityComparer.Default))
+                if (operation.Parent is IForEachLoopOperation { Collection: var collection } &&
+                    ReferenceEquals(operation, collection) &&
+                    operation.IsImplicit &&
+                    CanUseReadOnlySpanInForEach(argument))
+                {
+                    return default;
+                }
+
+                if (operation.Type is null ||
+                    !operation.Type.OriginalDefinition.Equals(_symbols.ReadOnlySpanType, SymbolEqualityComparer.Default))
                 {
                     _cache.EliminateCandidate(argument.Field);
                 }
@@ -387,12 +386,43 @@ namespace Microsoft.NetCore.Analyzers.Runtime
                 return default;
             }
 
+            public override Unit VisitForEachLoop(IForEachLoopOperation operation, VisitContext argument)
+            {
+                if (!ReferenceEquals(operation.Collection, argument.FieldReference) ||
+                    !CanUseReadOnlySpanInForEach(argument))
+                {
+                    _cache.EliminateCandidate(argument.Field);
+                }
+
+                return default;
+            }
+
             public override Unit DefaultVisit(IOperation operation, VisitContext argument)
             {
                 // A whole array can only become a ReadOnlySpan<T> in the explicitly handled contexts above.
                 // Conservatively reject new operation shapes so the fixer cannot produce uncompilable code.
                 _cache.EliminateCandidate(argument.Field);
                 return default;
+            }
+
+            private bool CanUseReadOnlySpanInForEach(VisitContext argument)
+            {
+                if (argument.ContainingSymbol is not IMethodSymbol { IsAsync: false } ||
+                    argument.FieldReference.IsWithinLambdaOrLocalFunction(out _))
+                {
+                    return false;
+                }
+
+                IOperation root = argument.FieldReference;
+                while (root.Parent is IOperation parent)
+                {
+                    root = parent;
+                }
+
+                return !root.HasAnyOperationDescendant(
+                    operation =>
+                        operation.Kind is OperationKind.YieldBreak or OperationKind.YieldReturn &&
+                        !operation.IsWithinLambdaOrLocalFunction(out _));
             }
         }
 

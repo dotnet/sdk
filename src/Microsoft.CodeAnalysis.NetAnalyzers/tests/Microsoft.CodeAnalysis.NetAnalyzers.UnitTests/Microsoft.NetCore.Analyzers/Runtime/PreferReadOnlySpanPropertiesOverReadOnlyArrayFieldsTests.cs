@@ -10,7 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
-    Microsoft.NetCore.Analyzers.Runtime.PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer,
+    Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpPreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsFixer>;
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
@@ -115,6 +115,259 @@ public class C
                     }
                     """,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net60,
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task BeforeCSharp7_2_NoDiagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = LanguageVersion.CSharp7_1,
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task CSharp7_2_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = LanguageVersion.CSharp7_2,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") },
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task ForEachCollection_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[] {|#0:a|} = new byte[] { 1, 2, 3 };
+
+                        public static int Sum()
+                        {
+                            int sum = 0;
+                            foreach (byte value in a)
+                            {
+                                sum += value;
+                            }
+
+                            return sum;
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    public class C
+                    {
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+
+                        public static int Sum()
+                        {
+                            int sum = 0;
+                            foreach (byte value in a)
+                            {
+                                sum += value;
+                            }
+
+                            return sum;
+                        }
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") },
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task ForEachBodyWritesElement_NoDiagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+
+                        public static void M()
+                        {
+                            foreach (byte value in a)
+                            {
+                                a[0] = value;
+                            }
+                        }
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        [DataRow("""
+            public static async Task M()
+            {
+                foreach (byte value in a)
+                {
+                    await Task.Yield();
+                }
+            }
+            """)]
+        [DataRow("""
+            public static IEnumerable<byte> M()
+            {
+                foreach (byte value in a)
+                {
+                    yield return value;
+                }
+            }
+            """)]
+        [DataRow("""
+            public static Action M() => () =>
+            {
+                foreach (byte value in a)
+                {
+                }
+            };
+            """)]
+        [DataRow("""
+            public static void M()
+            {
+                Local();
+
+                void Local()
+                {
+                    foreach (byte value in a)
+                    {
+                    }
+                }
+            }
+            """)]
+        [DataRow("""
+            public static void M()
+            {
+                foreach (byte value in (IEnumerable<byte>)a)
+                {
+                }
+            }
+            """)]
+        [DataRow("""
+            public static void M()
+            {
+                foreach (byte value in a as byte[])
+                {
+                }
+            }
+            """)]
+        public Task UnsupportedForEachUsage_NoDiagnostic_CS(string usage)
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = $$"""
+                    using System;
+                    using System.Collections.Generic;
+                    using System.Threading.Tasks;
+                    public class C
+                    {
+                        private static readonly byte[] a = new byte[] { 1, 2, 3 };
+
+                    {{usage}}
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task NullableArrayDeclaration_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    #nullable enable
+                    using System;
+                    public class C
+                    {
+                        private static readonly byte[]? {|#0:a|} = { 1, 2, 3 };
+                    }
+                    """,
+                FixedCode = """
+                    #nullable enable
+                    using System;
+                    public class C
+                    {
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = LanguageVersion.CSharp10,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") },
+            };
+
+            return test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public Task AliasedArrayDeclaration_Diagnostic_CS()
+        {
+            var test = new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using MyArray = byte[];
+                    public class C
+                    {
+                        private static readonly MyArray {|#0:a|} = { 1, 2, 3 };
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    using MyArray = byte[];
+                    public class C
+                    {
+                        private static ReadOnlySpan<byte> a => new byte[] { 1, 2, 3 };
+                    }
+                    """,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
+                LanguageVersion = LanguageVersion.CSharp12,
+                ExpectedDiagnostics = { VerifyCS.Diagnostic(Rule).WithLocation(0).WithArguments("byte") },
             };
 
             return test.RunAsync(CancellationToken.None);
