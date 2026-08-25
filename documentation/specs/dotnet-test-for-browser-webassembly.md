@@ -31,8 +31,8 @@ The following constraints are established:
 
 The proposed first implementation uses Playwright and supports headless
 Chrome and Edge. Playwright is a browser-control layer; it does not replace
-the MTP result protocol, graceful managed cancellation, or browser virtual
-filesystem (VFS) artifact export.
+the MTP result protocol, graceful managed cancellation, or the managed bridge
+needed to export browser artifacts.
 
 WASI is a separate host model and is out of scope. The current SDK happens to
 select HTTP for `wasi-*` runtime identifiers, but this design does not define
@@ -49,7 +49,8 @@ WASI build, launch, or result behavior.
    results to the SDK over the existing authenticated HTTP transport.
 5. Detect managed runtime failures through Playwright even when MTP can no
    longer report.
-6. Export physical TRX files and attachments from the browser VFS.
+6. Upload physical TRX files and attachments directly where possible, with a
+   browser VFS compatibility path for file-only producers.
 7. Cancel cooperatively when possible and force-close the browser when the
    single WebAssembly thread cannot respond.
 8. Clean up every process, profile, endpoint, response file, and partial
@@ -170,6 +171,13 @@ work, but it does not automatically make host-side Playwright APIs callable
 from tests running inside WebAssembly. A future UI layer must define whether
 tests run on the host, inside the browser, or across an explicit bridge.
 
+It is not a thin wrapper around this unit-test host. Host-side Playwright UI
+tests and in-browser MTP tests are different test applications with different
+lifetime and result models. A future Blazor integration can take inspiration
+from [bUnit](https://github.com/bUnit-dev/bUnit) for component fixture,
+rendering, query, and assertion ergonomics, while still accounting for the
+real browser renderer and JavaScript interop used here.
+
 ## Proposed project shape
 
 An illustrative Phase 1 project is:
@@ -240,20 +248,31 @@ Proposed defaults:
   rejected. Values are redacted when they contain known secrets.
 
 All arguments after `--` remain MTP/test-application arguments.
+Test names, regular expressions, globs, categories, attributes, and other
+framework filters use the same MTP/framework options as non-browser runs; the
+browser launcher neither defines nor translates a separate filter language.
 
 ## Browser support and Playwright
 
 ### Initial support
 
 Phase 1 supports installed stable Chrome and Edge channels on Windows, macOS,
-and Linux. The launcher validates the browser family and a tested minimum
-version before launch and reports an actionable error for unsupported
-executables.
+and Linux. At each .NET feature release, the SDK pins a Playwright version and
+validates the current Chrome/Edge Stable or Extended Stable baseline and newer
+supported channels. The baseline is refreshed for each .NET feature release;
+servicing updates may refresh Playwright when required for evergreen-browser
+compatibility. The launcher reports the detected versions and an actionable
+error for unsupported executables.
 
 Firefox is deferred because Playwright requires its patched Firefox build and
 does not support the branded installed Firefox. Playwright WebKit is also
 deferred and must not be described as Safari. Node, V8, and other JavaScript
 engines are separate host kinds, not browser choices.
+
+Playwright does not provide the console-forwarding behavior required by the
+existing Firefox WebAssembly harness. Supporting Firefox therefore also needs
+the xharness-style browser-side console bridge; it is not enabled merely by
+selecting Playwright Firefox.
 
 ### What Playwright provides
 
@@ -265,8 +284,8 @@ driver for:
 - isolated non-persistent contexts;
 - navigation and page lifetime;
 - page-scoped bootstrap/completion bindings;
-- browser console, page error, unhandled rejection, crash, and disconnect
-  events;
+- Chrome/Edge browser console, page error, unhandled rejection, crash, and
+  disconnect events;
 - screenshots and traces for launcher failures;
 - deterministic context and browser closure.
 
@@ -382,6 +401,11 @@ origin without parsing localized human output. Options include:
 - an SDK-selected loopback port forwarded through project-owned launch
   arguments.
 
+Dynamic port selection uses a bounded bind/start/probe retry loop. Discovering
+a free port and later starting the child is inherently racy when several test
+modules or processes share a host; one failed bind must not fail the entire
+run without retrying on a new port.
+
 The launcher registers the byte-identical origin with the SDK gateway before
 navigating. `127.0.0.1` and `localhost` are not interchangeable for origin
 checks.
@@ -390,6 +414,16 @@ Framework hosts remain responsible for their production configuration.
 Test launch must disable redirects, telemetry exporters, inherited URL
 settings, or other behavior that changes the selected origin or creates
 unrelated traffic.
+
+The generated Phase 1 server uses loopback HTTP and avoids certificate
+provisioning. A framework host that requires HTTPS must provide a certificate
+trusted by the selected browser or require an explicit test-only
+ignore-certificate-errors option. Playwright's standard bypass is
+context-wide, not origin-scoped; narrower Chromium handling requires an
+SPKI-pinned browser argument or installing/trusting the certificate in the
+isolated profile. The launcher must not silently use a context-wide bypass,
+because that would hide certificate behavior that a test may intend to
+exercise.
 
 ## Secure bootstrap and CSP
 
@@ -413,11 +447,14 @@ send it. The SDK redacts the token from captured stdout/stderr, browser
 console, page errors, traces, and inbound protocol strings before rendering or
 persisting them.
 
-MTP HTTP requests are still subject to the page's CSP `connect-src` policy.
-The generated Phase 1 page explicitly permits its exact SDK endpoint. A future
-framework integration must not silently bypass an application's CSP: it
-either composes an explicit test policy or fails with a targeted diagnostic.
-Playwright injection alone does not solve `connect-src`.
+MTP HTTP requests are still subject to CORS, Private Network Access (where
+applicable), and the page's CSP `connect-src` policy. The SDK endpoint handles
+the browser's unauthenticated, origin-pinned CORS/PNA `OPTIONS` preflight; the
+subsequent protocol requests carry authentication. The generated Phase 1 page
+explicitly permits its exact SDK endpoint. A future framework integration must
+not silently bypass an application's CSP: it either composes an explicit test
+policy or fails with a targeted diagnostic. Playwright injection alone does
+not solve CORS or `connect-src`.
 
 The SDK HTTP gateway needs an authenticated pre-navigation origin-registration
 operation. It succeeds only before the first protocol frame. Legacy direct
@@ -461,6 +498,43 @@ Failure classes remain distinct:
 - **Browser failure:** Playwright reports crash/disconnect and preserves the
   bounded console/error tail and optional trace/screenshot.
 
+### Failure diagnostics
+
+Every startup phase and timeout produces a failure envelope even when managed
+code cannot respond. It includes, when available:
+
+- the phase and elapsed time;
+- project server, Playwright driver, and browser exit codes or operating-system
+  termination signals;
+- the last active test names reported by MTP
+  `TestInProgressMessages`;
+- bounded project-server stdout/stderr;
+- bounded browser console, page errors, unhandled promise rejections, failed
+  requests, and the final URL;
+- browser/driver disconnect and crash information;
+- the selected browser family/version and relevant launch arguments, with
+  secrets redacted;
+- optional Playwright trace and screenshot paths.
+
+MTP emits and awaits a per-test-start breadcrumb before invoking each test
+body. The SDK records it immediately, so a synchronous hang or abrupt crash
+can identify the last started test without waiting for the next periodic
+progress update. `TestInProgressMessages` can carry this signal, but its
+producer must publish at the test boundary rather than rely only on periodic
+sampling.
+
+This evidence distinguishes common infrastructure classes such as resource
+exhaustion, shared-memory/inode limits, server-port failures, DNS/network
+timeouts, certificate failures, missing or mismatched browser/driver versions,
+GPU/container failures, process signals, runtime aborts, and WebAssembly
+memory corruption. Diagnostics must not infer a specific cause from an
+ambiguous symptom alone; for example, `Failed to fetch` is not sufficient
+evidence to report out-of-memory.
+
+The launcher has short phase-specific startup/control timeouts in addition to
+the user-visible test timeout. It must never wait for the full test timeout
+after the server, driver, browser, or page has already failed.
+
 ## Live MTP results
 
 The browser MTP application connects directly to the SDK's existing
@@ -471,6 +545,8 @@ The existing HTTP protocol continues to carry handshake, help, discovery,
 per-test results and output, session events, artifact metadata, and display
 messages. Replacing this already-merged primary channel with WebSocket would
 add compatibility and security work without enabling a current requirement.
+Results stream as MTP publishes test-node updates during execution; the SDK
+does not wait for the complete run before displaying them.
 
 All browser-side MTP code remains valid on single-threaded WebAssembly:
 
@@ -479,19 +555,28 @@ All browser-side MTP code remains valid on single-threaded WebAssembly:
 - one primary protocol request in flight;
 - bounded frames and artifact chunks.
 
+The test framework and adapter must remain cooperative with the browser event
+loop. They await asynchronous test methods and insert an asynchronous yield
+between test cases. Authors should prefer asynchronous APIs for browser tests.
+The framework cannot transform a synchronous test method into an asynchronous
+one: a synchronous method that never yields can still block the runtime,
+networking, progress messages, and graceful cancellation until Playwright
+forces the page closed.
+
 ## Artifact export
 
-MTP writes TRX and attachments through managed `System.IO` APIs into the
-browser VFS. `FileArtifactMessages` reports paths in that VFS, which the host
-SDK cannot open and which disappear when the page closes.
+Writing every artifact to the browser VFS first is not a requirement. The
+preferred design gives MTP extensions a host-provided artifact sink that
+uploads bytes directly to a separate authenticated SDK artifact endpoint
+through managed `HttpClient`.
 
-This VFS use is file I/O only. Test assemblies are statically referenced and
-registered at build time; the design does not load or unload assemblies from
-the VFS.
+Artifacts upload as soon as their producer finalizes them. The SDK writes the
+upload to a restrictive temporary file and exposes it as a completed artifact
+only after declared length/hash validation succeeds. Incremental TRX
+serialization during the run would require separate testfx design work because
+the final document contains run-level summary data.
 
-The proposed reusable solution extends `dotnettestcli` with a negotiated,
-chunked artifact-content transfer. MTP reads each artifact with managed file
-APIs and sends:
+Bounded ordered chunk requests are the Phase 2 baseline:
 
 ```text
 FileArtifactTransferStart
@@ -506,8 +591,26 @@ FileArtifactTransferEnd
   TransferId
 ```
 
-The shared serializer adds an explicit length-prefixed byte-array primitive.
-Independent artifact-transfer support is handshake-capability gated.
+Independent artifact-transfer support is handshake-capability gated. A
+chunked protocol adds an explicit length-prefixed byte-array primitive; binary
+content is not converted through UTF-8 strings.
+
+The artifact endpoint has an independent connection and concurrency limit, so
+a large upload does not block the single in-flight live-result request. The
+producer must finish and receive the final artifact acknowledgement before it
+publishes the corresponding final session completion and before the page
+closes.
+
+A single streaming request body is only a future optimization where the
+browser handler and host endpoint support it. Browser response streaming does
+not imply request streaming; the current loopback HTTP/1.1 gateway cannot be
+treated as supporting streamed request bodies.
+
+Existing file-only extensions remain compatible: they write through managed
+`System.IO` into the browser VFS, then MTP opens the file with managed APIs and
+uploads it through the same sink before the page closes. This VFS use is file
+I/O only. Test assemblies are statically referenced and registered at build
+time; the design does not load or unload assemblies from the VFS.
 
 The SDK:
 
@@ -525,10 +628,13 @@ The SDK:
 
 This design needs a dedicated threat model and security review.
 
-Playwright could implement a browser-specific VFS extraction bridge, but it
-cannot read the managed VFS without additional managed/JavaScript code. A
-protocol feature is preferable because it also works for other sandboxed MTP
-hosts and preserves test/session artifact metadata.
+Playwright evaluation could invoke a browser-specific export function, but it
+cannot read the managed VFS without additional managed/JavaScript code and is
+unavailable after a fatal page/runtime failure. A managed artifact sink is
+preferred because it works for other sandboxed MTP hosts, streams during the
+run, and preserves test/session artifact metadata. Playwright remains a
+possible diagnostic or compatibility fallback rather than the primary artifact
+channel.
 
 Until transfer support ships, live results work but the SDK must not claim
 that a browser VFS path is a persisted host artifact.
@@ -536,36 +642,40 @@ that a browser VFS path is a persisted host artifact.
 ## Cancellation and timeouts
 
 The primary HTTP channel is host-initiated request/reply and cannot push
-SDK-originated cancellation while the browser is idle.
+SDK-originated cancellation while the browser is idle. Since Playwright is a
+required launcher dependency, the proposed reverse path uses Playwright rather
+than adding a browser WebSocket:
 
-The proposed reverse-control transport is a separate authenticated WebSocket,
-using the existing `WaitForServerControlRequest` and
-`ServerControlMessage(CancelSession)` semantics where possible. This follows
-the browser/mobile hot-reload precedent and avoids inventing HTTP polling.
+1. The parent SDK command sends a control message to its desktop launcher over
+   local IPC.
+2. The launcher uses page-scoped Playwright evaluation to call an injected
+   JavaScript cancellation function.
+3. JavaScript invokes a versioned managed MTP cancellation hook while the
+   runtime is alive and yielding.
 
-The browser initiates the WebSocket connection. Because browser WebSockets
-cannot set an arbitrary Authorization header, authentication needs a separate
-design, such as the public-key/encrypted-subprotocol pattern used by hot
-reload. Control support is independently negotiated in the handshake.
-
-The primary result channel remains HTTP. A managed `ClientWebSocket` is a
-candidate implementation for reverse control only; it does not make blocked
-or crashed managed code responsive.
+This removes a second browser transport and its authentication/CORS/CSP
+surface. It also lets the launcher detect an absent/crashed runtime and move
+directly to forced cleanup.
 
 Cancellation behavior:
 
 1. The first Ctrl+C, `--timeout`, or run-policy limit sends cooperative
-   cancellation over the control channel.
+   cancellation through the launcher.
 2. MTP cancels the session and flushes results/artifacts when its event loop can
    run.
-3. The launcher uses a shorter internal deadline than the SDK process-kill
-   grace period.
-4. If the page cannot finish, Playwright closes the context/browser.
-5. A second Ctrl+C force-kills the owned process group.
+3. Playwright evaluation uses a short command timeout, well below the test and
+   SDK process-kill deadlines.
+4. If evaluation fails, times out, or the page cannot finish, the launcher
+   applies a bounded Playwright page/context close deadline.
+5. If close does not complete, the launcher unconditionally kills its owned
+   browser/driver process group or job object.
+6. A second Ctrl+C skips directly to the force-kill step.
 
 Cooperative cancellation is best effort. A synchronous infinite loop or fatal
 runtime crash cannot produce a graceful MTP summary regardless of whether the
-transport is HTTP, WebSocket, or a Playwright binding.
+signal uses Playwright, HTTP, or WebSocket. Playwright remains valuable because
+it reports crash/disconnect events and enforces an external timeout; a hang is
+identified by deadline expiry rather than an immediate browser event.
 
 ## Host and browser path handling
 
@@ -574,11 +684,15 @@ Host paths passed today through `--results-directory`, `--config-file`, and
 
 For Phase 1:
 
-- Results use a generated VFS root mapped back through artifact transfer.
-- `--config-file` fails before launch until MTP has an in-memory configuration
-  contract.
-- `--diagnostic-output-directory` fails before launch until diagnostic files
-  are transferable artifacts.
+- Results use the direct managed artifact sink where supported. File-only
+  extensions use a generated VFS root and upload before shutdown.
+- For `--config-file`, the SDK reads and validates the host file before launch,
+  then serves its content from a per-run authenticated read-only endpoint.
+  Browser MTP receives the endpoint through the protected bootstrap and loads
+  it with managed `HttpClient`; the browser never receives the host path.
+- Diagnostic files use the artifact sink. Until a diagnostic producer supports
+  that sink, `--diagnostic-output-directory` fails before launch with an
+  actionable unsupported-option diagnostic.
 - User arguments after `--` are not path-translated.
 - Browser-originated paths are never printed as persisted host paths.
 
@@ -586,8 +700,8 @@ For Phase 1:
 
 Each test application receives a unique MTP endpoint/token, application
 origin, Playwright context, temporary profile, execution ID, and artifact
-namespace. The future reverse-control channel receives independent
-credentials.
+namespace. The desktop SDK-to-launcher control channel is per-run and
+restricted to the launching user/process boundary.
 
 `--max-parallel-test-modules` governs concurrency. The default may need to be
 lower than ordinary process tests because browsers are expensive; this remains
@@ -641,6 +755,11 @@ session", preserving a future option to reuse the outer browser process.
 **microsoft/testfx**
 
 - Keep browser MTP compatible with the existing HTTP transport.
+- Publish and await a per-test-start progress breadcrumb before invoking the
+  test body.
+- Await asynchronous tests and cooperatively yield between test cases.
+- Add an authenticated remote configuration input for the SDK-provided
+  `--config-file` endpoint.
 - Document generated-host requirements and completion ordering.
 
 Exit criteria:
@@ -649,12 +768,18 @@ Exit criteria:
   on installed Chrome and Edge across Windows, macOS, and Linux.
 - Managed failure, page crash, and synchronous timeout produce distinct
   diagnostics.
+- Crash/timeout diagnostics identify the last test that began execution.
 - No credential appears in URLs, process listings, console output, or logs.
 - No browser is downloaded during `dotnet test`.
 
 ### Phase 2: artifact export
 
-- Add managed VFS reads and negotiated chunked artifact transfer in testfx.
+- Add a managed direct-upload artifact sink in testfx using negotiated bounded
+  chunks.
+- Evaluate a single streaming request only as an optional future optimization
+  on browser/TFM and gateway combinations that support request streaming.
+- Keep managed VFS reads as the compatibility path for existing file-only
+  artifact producers.
 - Materialize and validate browser artifacts in the SDK.
 - Complete security review and threat-model tests.
 
@@ -666,10 +791,11 @@ Exit criteria:
 
 ### Phase 3: graceful reverse control
 
-- Define an authenticated browser-initiated WebSocket control contract.
-- Reuse MTP control semantics and independently negotiate support.
+- Define per-run SDK-to-launcher local control and a versioned JavaScript/MTP
+  cancellation hook invoked through Playwright evaluation.
 - Wire Ctrl+C and test-run policy cancellation.
-- Retain Playwright deadlines and process-tree force cleanup.
+- Configure a short Playwright command timeout before forced page closure.
+- Retain process-tree force cleanup for blocked or crashed runtimes.
 
 ### Phase 4: Blazor component integration
 
@@ -694,11 +820,18 @@ Exit criteria:
 - Chrome/Edge discovery, minimum-version validation, browser arguments, and
   unsupported executable diagnostics.
 - Source-build/offline launcher activation without browser downloads.
-- Response-file permissions, redaction, origin/CSP enforcement, and cleanup.
+- Response-file permissions, redaction, origin/CORS/PNA/CSP enforcement, and
+  cleanup.
 - Browser console, page error, crash, disconnect, and synchronous timeout.
-- HTTP result ordering and WebSocket control authentication/cancellation.
-- Managed VFS reads, binary serialization, quotas, path canonicalization,
-  traversal/symlink defenses, partial-file cleanup, and correlation.
+- HTTP live-result ordering and Playwright-evaluated cancellation.
+- Per-test-start crash breadcrumbs and cooperative yields between tests.
+- Authenticated remote config loading, direct artifact upload, bounded chunks,
+  managed VFS compatibility, binary serialization, quotas, path
+  canonicalization, traversal/symlink defenses, partial-file cleanup, and
+  correlation.
+- Parallel port-bind retries and HTTP/HTTPS certificate behavior.
+- Evidence-based diagnostics for resource, network, server, browser/driver,
+  process-signal, and runtime failures.
 - Parallel projects, multi-targeting, and process-tree cleanup.
 - `--no-build`.
 
@@ -719,11 +852,14 @@ Exit criteria:
 3. What is the stable generic server-readiness contract?
 4. Is `WasmEnableTestHost` the right opt-in name, and when is it inferred?
 5. Should browser CLI reuse `--device` or use `--browser`/`--list-browsers`?
-6. What minimum Chrome/Edge versions and servicing policy are supportable?
+6. Which Stable/Extended Stable Chrome/Edge baseline and Playwright servicing
+   cadence are supportable?
 7. Which browser arguments must be rejected to preserve isolation?
-8. Should artifact bytes use the MTP protocol or a browser-specific bridge?
-9. What artifact quotas are appropriate?
-10. What authentication should the reverse-control WebSocket use?
+8. What testfx artifact-sink API supports direct upload while preserving
+   existing file-only extensions, and can TRX be serialized incrementally?
+9. Can MTP configuration loading become asynchronous and accept an
+   authenticated remote input without changing existing process hosts?
+10. What artifact quotas are appropriate?
 11. What default browser-module concurrency is safe?
 12. Which target-framework bands must SDK N support?
 
@@ -742,8 +878,14 @@ Blazor and other frameworks.
 ### Replace the primary MTP HTTP transport with WebSocket
 
 Rejected for the current design because authenticated HTTP request/reply is
-already implemented and sufficient for host-initiated live results. WebSocket
-is considered only for reverse control.
+already implemented and sufficient for host-initiated live results.
+
+### Add a browser WebSocket only for reverse control
+
+Rejected while Playwright is required. SDK-to-launcher local control plus
+Playwright evaluation avoids another browser transport and remains able to
+detect a dead page. It still cannot make a synchronous blocked runtime
+cooperate, so force-close remains necessary.
 
 ### Treat Playwright as a replacement for MTP
 
