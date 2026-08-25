@@ -11,7 +11,9 @@ internal sealed record ArtifactPostProcessingApplication(
     string? TargetFramework,
     string? Architecture,
     IReadOnlySet<string> SupportedKinds,
-    IReadOnlySet<string> SupportedExtensions);
+    IReadOnlySet<string> SupportedExtensions,
+    IReadOnlySet<string> SupportedTruncatedRunKinds,
+    IReadOnlySet<string> SupportedTruncatedRunExtensions);
 
 internal sealed record ArtifactPostProcessingArtifact(
     string Path,
@@ -41,8 +43,10 @@ internal static class ArtifactPostProcessingPlanner
 
     public static ArtifactPostProcessingPlan Plan(
         IReadOnlyList<ArtifactPostProcessingApplication> applications,
-        IReadOnlyList<ArtifactPostProcessingArtifact> artifacts)
+        IReadOnlyList<ArtifactPostProcessingArtifact> artifacts,
+        TestRunCancellationReason cancellationReason = TestRunCancellationReason.None)
     {
+        bool isTruncated = cancellationReason != TestRunCancellationReason.None;
         ArtifactPostProcessingArtifact[] distinctArtifacts =
             [.. artifacts.DistinctBy(artifact => artifact.Path, FileUtilities.PathComparer)];
         List<ArtifactPostProcessingGroup> groups = [];
@@ -110,9 +114,7 @@ internal static class ArtifactPostProcessingPlanner
             ArtifactPostProcessingApplication[] candidates =
             [
                 .. applications.Where(application =>
-                    (isKind
-                        ? application.SupportedKinds.Contains(key)
-                        : application.SupportedExtensions.Contains(key))
+                    GetCapabilities(application, isKind, isTruncated).Contains(key)
                     && IsArchitectureCompatible(key, isKind, application, inputs))
             ];
 
@@ -122,6 +124,18 @@ internal static class ArtifactPostProcessingPlanner
             }
         }
     }
+
+    private static IReadOnlySet<string> GetCapabilities(
+        ArtifactPostProcessingApplication application,
+        bool isKind,
+        bool isTruncated)
+        => (isTruncated, isKind) switch
+        {
+            (true, true) => application.SupportedTruncatedRunKinds,
+            (true, false) => application.SupportedTruncatedRunExtensions,
+            (false, true) => application.SupportedKinds,
+            (false, false) => application.SupportedExtensions,
+        };
 
     private static bool CanCombineKindAndExtensionGroups(
         ArtifactPostProcessingGroup first,

@@ -168,7 +168,9 @@ public class TestApplicationHandlerTests : IDisposable
         var handshake = BuildHandshake(
             executionMode: HandshakeMessageExecutionModes.Run,
             supportedPostProcessorKinds: "microsoft.testing.trx;example.junit",
-            supportedPostProcessorExtensions: ".trx;.xml");
+            supportedPostProcessorExtensions: ".trx;.xml",
+            supportedTruncatedRunPostProcessorKinds: "example.junit",
+            supportedTruncatedRunPostProcessorExtensions: ".xml");
 
         bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
 
@@ -176,6 +178,8 @@ public class TestApplicationHandlerTests : IDisposable
         ArtifactPostProcessingApplication application = manager.SnapshotApplications().Should().ContainSingle().Subject;
         application.SupportedKinds.Should().BeEquivalentTo("microsoft.testing.trx", "example.junit");
         application.SupportedExtensions.Should().BeEquivalentTo(".trx", ".xml");
+        application.SupportedTruncatedRunKinds.Should().BeEquivalentTo("example.junit");
+        application.SupportedTruncatedRunExtensions.Should().BeEquivalentTo(".xml");
     }
 
     [TestMethod]
@@ -574,7 +578,9 @@ public class TestApplicationHandlerTests : IDisposable
         bool includeInstanceId = true,
         int? attemptNumber = null,
         string? supportedPostProcessorKinds = null,
-        string? supportedPostProcessorExtensions = null)
+        string? supportedPostProcessorExtensions = null,
+        string? supportedTruncatedRunPostProcessorKinds = null,
+        string? supportedTruncatedRunPostProcessorExtensions = null)
     {
         var properties = new Dictionary<byte, string>
         {
@@ -611,6 +617,18 @@ public class TestApplicationHandlerTests : IDisposable
         if (supportedPostProcessorExtensions is not null)
         {
             properties[HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy] = supportedPostProcessorExtensions;
+        }
+
+        if (supportedTruncatedRunPostProcessorKinds is not null)
+        {
+            properties[HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds] =
+                supportedTruncatedRunPostProcessorKinds;
+        }
+
+        if (supportedTruncatedRunPostProcessorExtensions is not null)
+        {
+            properties[HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy] =
+                supportedTruncatedRunPostProcessorExtensions;
         }
 
         return new HandshakeMessage(properties);
