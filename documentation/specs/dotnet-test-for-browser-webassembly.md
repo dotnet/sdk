@@ -13,15 +13,11 @@ owning teams agree on them.
 
 The testing foundation belongs to the general
 `Microsoft.NET.Sdk.WebAssembly` SDK and is limited to the `browser-wasm`
-runtime identifier. Blazor, Uno, Avalonia, and other browser UI frameworks can
-build thin integrations on that common layer.
+runtime identifier. UI-framework integration is out of scope and discussed
+only in an appendix.
 
 The following constraints are established:
 
-- The Blazor Gateway is a production component, comparable to YARP. It remains
-  unaware of MTP, browser automation, test completion, and artifact collection.
-  See the
-  [Blazor team feedback](https://github.com/dotnet/sdk/issues/54091#issuecomment-5395458076).
 - Browser-hosted Microsoft.Testing.Platform (MTP) uses the existing
   authenticated HTTP `dotnettestcli` transport for live test messages.
 - Per-run credentials do not belong in URLs, ordinary process arguments,
@@ -56,14 +52,9 @@ WASI build, launch, or result behavior.
 8. Clean up every process, profile, endpoint, response file, and partial
    artifact created for the run.
 
-Phase 1 targets non-Blazor `Microsoft.NET.Sdk.WebAssembly` test applications.
+Phase 1 targets `Microsoft.NET.Sdk.WebAssembly` test applications.
 They cover business logic, networking, runtime JavaScript interop, and other
 tests that need the real browser runtime but not a UI framework.
-
-Blazor component testing is a later layer. A Blazor application has a
-long-lived startup sequence and renderer, so it cannot use the same
-`Program.Main` completion model without an explicit renderer-ready and
-completion contract.
 
 ## Existing foundation
 
@@ -79,17 +70,11 @@ completion contract.
   endpoint and token through an owner-only response file.
   See [dotnet/sdk#55672](https://github.com/dotnet/sdk/pull/55672) and
   [`TestApplication.cs`](../../src/Cli/dotnet/Commands/Test/MTP/TestApplication.cs).
-- `Microsoft.NET.Sdk.BlazorWebAssembly` imports
-  `Microsoft.NET.Sdk.WebAssembly`; the general layer is therefore available to
-  Blazor without making other frameworks depend on Blazor.
 - `dotnet watch` hot reload already ships SDK-owned managed and JavaScript
   assets into browser WebAssembly applications. Its fixed per-TFM agent is
   prior art for the versioning boundary in this proposal. See
   [`TargetFrameworks.props`](../../src/WasmSdk/Sdk/TargetFrameworks.props) and
   [`Sdk.targets`](../../src/WasmSdk/Sdk/Sdk.targets).
-- The current Blazor probe demonstrates MTP inside a rendered component but
-  also documents the missing host lifecycle.
-  See [`BlazorWasmTestApp`](../../test/TestAssets/TestProjects/BlazorWasmTestApp/).
 
 ## Goals
 
@@ -105,15 +90,13 @@ completion contract.
 - Preserve useful failure diagnostics if the managed runtime crashes or stops
   yielding.
 - Keep contracts versioned across SDK, runtime, and testfx release bands.
-- Allow future UI-framework integrations without changing the common MTP
-  transport.
 
 ## Non-goals
 
 - WASI.
 - VSTest; this design applies to MTP mode.
-- Blazor component or application UI testing in Phase 1.
-- Host-side Playwright UI/E2E test authoring in Phase 1.
+- UI-framework component/application testing and host-side Playwright UI/E2E
+  authoring.
 - Installing browsers or operating-system dependencies during `dotnet test`.
 - Remote browsers, mobile-device emulation, or multiple tabs in Phase 1.
 - Branded Safari. Playwright provides a patched WebKit build, not Safari.
@@ -141,42 +124,6 @@ The JavaScript supervisor starts the runtime and MTP main assembly, reports
 the managed exit code to Playwright, and remains responsible for JavaScript
 errors, runtime aborts, and launcher deadlines. It never assumes managed code
 can report after the runtime exits.
-
-### Later phase: Blazor component tests
-
-The standard Blazor application and renderer start normally. A thin
-Blazor-owned integration begins MTP only after the renderer is ready and
-reports completion before the launcher closes the page.
-
-This enables component rendering and Blazor-specific JavaScript interop. It is
-more complex than the Phase 1 host because Blazor's `Program.Main` normally
-awaits the application lifetime and does not return when tests finish.
-
-The production Blazor Gateway remains unchanged. If it is the
-project-provided server, the SDK launcher starts it as a child process using
-the existing `RunCommand` and `RunArguments`.
-
-### Relationship to Playwright UI tests
-
-Browser-hosted MTP tests and Playwright UI tests have different execution
-models:
-
-- In this design, test code runs inside WebAssembly. Playwright is the external
-  launcher and supervisor.
-- In a traditional UI/E2E project, Playwright test code runs on the host and
-  drives an application page.
-
-Using Playwright here creates reusable browser infrastructure for future UI
-work, but it does not automatically make host-side Playwright APIs callable
-from tests running inside WebAssembly. A future UI layer must define whether
-tests run on the host, inside the browser, or across an explicit bridge.
-
-It is not a thin wrapper around this unit-test host. Host-side Playwright UI
-tests and in-browser MTP tests are different test applications with different
-lifetime and result models. A future Blazor integration can take inspiration
-from [bUnit](https://github.com/bUnit-dev/bUnit) for component fixture,
-rendering, query, and assertion ergonomics, while still accounting for the
-real browser renderer and JavaScript interop used here.
 
 ## Proposed project shape
 
@@ -325,12 +272,9 @@ Before shipping, the owning teams must prove:
 
 | Concern | Proposed owner |
 | --- | --- |
-| Browser-WASM testing targets, generated page/supervisor assets, project evaluation, browser CLI, Playwright launcher, HTTP gateway, result presentation, output paths, and cancellation policy | `dotnet/sdk` (`WasmSdk` and CLI) |
+| Browser-WASM testing targets, generated page/supervisor assets, SDK test server, project evaluation, browser CLI, Playwright launcher, HTTP gateway, result presentation, output paths, and cancellation policy | `dotnet/sdk` (`WasmSdk` and CLI) |
 | Browser MTP client, test-result protocol, artifact-content protocol, and managed cancellation client | `microsoft/testfx` |
-| WasmAppHost and documented browser runtime/JavaScript APIs | `dotnet/runtime` |
-| Blazor renderer-ready/completion integration and template | `dotnet/aspnetcore` |
-| Production Blazor Gateway | `dotnet/aspnetcore`, unchanged |
-| Uno/Avalonia/other framework-specific renderer integration | Framework owner |
+| Documented browser runtime/JavaScript APIs | `dotnet/runtime` |
 
 ## Versioning across SDK and runtime
 
@@ -363,9 +307,9 @@ an SDK probe of private JavaScript state.
 
 ## Generic SDK launch contract
 
-Projects describe their test host through values produced by
-`ComputeRunArguments`. Existing `RunCommand`, `RunArguments`, and
-`RunWorkingDirectory` remain the project server-launch contract.
+The WebAssembly targets describe the browser test bundle through evaluated
+MSBuild properties. Phase 1 does not launch the project's `RunCommand` or a
+framework dev server.
 
 Proposed additional values:
 
@@ -373,11 +317,12 @@ Proposed additional values:
 | --- | --- |
 | `DotnetTestTransport` | `pipe` or `http`; explicit value takes precedence over RID inference. |
 | `DotnetTestHostKind` | `process`, `browser`, or `device`. |
-| `DotnetTestApplicationUrl` | Optional exact browser origin when known before launch. |
+| `DotnetTestWebRoot` | Absolute AppBundle/static root produced by the build. |
+| `DotnetTestHostPage` | Relative page route, defaulting to `index.html`. |
 
 For `browser`, the SDK starts its Playwright launcher instead of starting
-`RunCommand` directly. The launcher receives an owner-only configuration file
-containing the server command/arguments, selected browser, browser arguments,
+`RunCommand`. The launcher receives an owner-only configuration file
+containing the validated web root/page, selected browser, browser arguments,
 deadline, and HTTP bootstrap response-file path.
 
 MTP arguments remain after a `--` sentinel. The launcher expands only the
@@ -390,40 +335,36 @@ arbitrary test modules from host paths.
 
 ## Server readiness
 
-The project-provided server may be WasmAppHost, the Blazor Gateway, or a
-framework-specific host. The launcher must not inspect the command name.
+The SDK Playwright launcher also owns a test-only HTTP server for the generated
+page and built AppBundle. It does not start a runtime or framework dev server
+in Phase 1.
 
-The final readiness contract remains open. It must provide the exact browser
-origin without parsing localized human output. Options include:
+The server:
 
-- a project-provided `DotnetTestApplicationUrl`;
-- a protected endpoint/port file written by the child server;
-- an SDK-selected loopback port forwarded through project-owned launch
-  arguments.
+- binds loopback only;
+- validates and canonicalizes `DotnetTestWebRoot` before serving it;
+- rejects traversal, symlink/reparse-point escapes, directory listings, and
+  files outside the declared bundle;
+- serves the required WebAssembly MIME types and disables stale caching;
+- applies build-provided COOP/COEP headers when threaded WebAssembly requires
+  cross-origin isolation;
+- hosts only the test endpoints explicitly defined by this design.
 
-Dynamic port selection uses a bounded bind/start/probe retry loop. Discovering
-a free port and later starting the child is inherently racy when several test
-modules or processes share a host; one failed bind must not fail the entire
-run without retrying on a new port.
+The SDK test server binds loopback port zero directly, reads the actual bound
+origin from its listener, validates the configured web root/page, and only
+then registers the origin and navigates. If the selected server implementation
+cannot bind port zero, it retries its own bind operation with bounded attempts;
+it must not probe a free port, release it, and later start another process on
+that port.
 
 The launcher registers the byte-identical origin with the SDK gateway before
 navigating. `127.0.0.1` and `localhost` are not interchangeable for origin
 checks.
 
-Framework hosts remain responsible for their production configuration.
-Test launch must disable redirects, telemetry exporters, inherited URL
-settings, or other behavior that changes the selected origin or creates
-unrelated traffic.
-
 The generated Phase 1 server uses loopback HTTP and avoids certificate
-provisioning. A framework host that requires HTTPS must provide a certificate
-trusted by the selected browser or require an explicit test-only
-ignore-certificate-errors option. Playwright's standard bypass is
-context-wide, not origin-scoped; narrower Chromium handling requires an
-SPKI-pinned browser argument or installing/trusting the certificate in the
-isolated profile. The launcher must not silently use a context-wide bypass,
-because that would hide certificate behavior that a test may intend to
-exercise.
+provisioning. HTTPS and application certificate testing belong to a separate
+host/UI scenario; the Phase 1 launcher must not silently use Playwright's
+context-wide certificate bypass.
 
 ## Secure bootstrap and CSP
 
@@ -482,10 +423,6 @@ messages and artifact transfers before managed exit, while the JavaScript
 supervisor remains able to report the final exit code. No managed callback is
 required after runtime exit.
 
-For a later Blazor integration, `Program.Main` does not return. The
-renderer-aware MTP component reports completion through the binding, while
-Playwright remains the out-of-process deadline and crash supervisor.
-
 Failure classes remain distinct:
 
 - **Test failure:** MTP completes and returns a test exit code.
@@ -504,11 +441,11 @@ Every startup phase and timeout produces a failure envelope even when managed
 code cannot respond. It includes, when available:
 
 - the phase and elapsed time;
-- project server, Playwright driver, and browser exit codes or operating-system
-  termination signals;
+- SDK test-server bind/start/probe errors and Playwright driver/browser exit
+  codes or operating-system termination signals;
 - the last active test names reported by MTP
   `TestInProgressMessages`;
-- bounded project-server stdout/stderr;
+- bounded SDK test-server diagnostics;
 - bounded browser console, page errors, unhandled promise rejections, failed
   requests, and the final URL;
 - browser/driver disconnect and crash information;
@@ -538,7 +475,7 @@ after the server, driver, browser, or page has already failed.
 ## Live MTP results
 
 The browser MTP application connects directly to the SDK's existing
-`HttpTestHostGateway`. Playwright and the project server do not proxy or
+`HttpTestHostGateway`. Playwright and the SDK test server do not proxy or
 interpret MTP results.
 
 The existing HTTP protocol continues to carry handshake, help, discovery,
@@ -707,10 +644,11 @@ restricted to the launching user/process boundary.
 lower than ordinary process tests because browsers are expensive; this remains
 an open performance decision.
 
-The launcher owns Playwright, browser, and project-server cleanup. The parent
-SDK command owns MTP listeners and response files. Owned processes remain in a
-process group/job object so the SDK can force-clean them. A later invocation
-may delete only stale profiles carrying the launcher's ownership marker.
+The launcher owns the SDK test-server listener plus Playwright/browser cleanup.
+The parent SDK command owns MTP listeners and response files. Owned processes
+remain in a process group/job object so the SDK can force-clean them. A later
+invocation may delete only stale profiles carrying the launcher's ownership
+marker.
 
 ## `dotnet watch` and repeated runs
 
@@ -746,9 +684,11 @@ session", preserving a future option to reuse the outer browser process.
 
 - Add common testing targets to `WasmSdk`, conditioned on `browser-wasm`.
 - Generate and version the test page and JavaScript supervisor.
+- Add the SDK-owned loopback HTTP test server for the built AppBundle and
+  test-only endpoints.
 - Add the Playwright launcher, Chrome/Edge discovery, browser arguments,
   console/error/crash capture, process ownership, and cleanup.
-- Add the generic launch/readiness contract and protected bootstrap.
+- Add the bundle-location contract and protected bootstrap.
 - Keep the existing MTP HTTP primary transport.
 - Validate source-build, offline, servicing, and browser-version requirements.
 
@@ -797,19 +737,11 @@ Exit criteria:
 - Configure a short Playwright command timeout before forced page closure.
 - Retain process-tree force cleanup for blocked or crashed runtimes.
 
-### Phase 4: Blazor component integration
-
-- Define a renderer-ready/completion hook.
-- Add a thin Blazor wrapper/template over the common WasmSdk targets.
-- Start the production Gateway only through its existing process contract.
-- Validate component rendering and Blazor JavaScript interop tests.
-
-### Phase 5: broader hosts and browsers
+### Phase 4: broader hosts and browsers
 
 - Evaluate Playwright Firefox and WebKit builds.
 - Evaluate Node/V8 as separate host kinds.
 - Consider browser-process reuse and `dotnet watch test`.
-- Let other UI frameworks add renderer-specific wrappers.
 
 ## Test plan
 
@@ -843,13 +775,12 @@ Exit criteria:
 - TRX and attachment export.
 - Ctrl+C and policy cancellation.
 - Fatal managed runtime crash and non-yielding test timeout.
-- Later Blazor renderer/component scenarios.
 
 ## Open questions
 
 1. Should the Playwright launcher ship in `dotnet/sdk` or a testfx-owned tool?
 2. What package/source-build model makes Playwright acceptable in the SDK?
-3. What is the stable generic server-readiness contract?
+3. Which server implementation/package should the SDK-owned test server use?
 4. Is `WasmEnableTestHost` the right opt-in name, and when is it inferred?
 5. Should browser CLI reuse `--device` or use `--browser`/`--list-browsers`?
 6. Which Stable/Extended Stable Chrome/Edge baseline and Playwright servicing
@@ -864,16 +795,6 @@ Exit criteria:
 12. Which target-framework bands must SDK N support?
 
 ## Rejected alternatives
-
-### Make the Blazor Gateway a test runner
-
-Rejected because the Gateway is a production component and should not contain
-test infrastructure.
-
-### Put browser testing only in the Blazor SDK
-
-Rejected because browser WebAssembly is the common runtime layer used by
-Blazor and other frameworks.
 
 ### Replace the primary MTP HTTP transport with WebSocket
 
@@ -906,3 +827,30 @@ unload is unavailable for the intended repeat/isolation model.
 
 Rejected because it creates traversal, overwrite, and privilege-boundary
 risks. The SDK chooses and validates every host destination.
+
+## Appendix: out-of-scope UI-framework considerations
+
+UI and component testing are intentionally outside the implementation plan
+above. They are different test applications, not wrappers around the
+in-browser MTP unit-test host:
+
+- Host-side Playwright UI/E2E tests run beside the browser and drive clicks,
+  screenshots, and application behavior.
+- Browser-hosted MTP tests run managed test methods inside the page.
+- Component-focused tools such as
+  [bUnit](https://github.com/bUnit-dev/bUnit) may inform future fixture,
+  rendering, query, and assertion ergonomics, but do not define the real
+  browser lifetime or interop model.
+
+`Microsoft.NET.Sdk.BlazorWebAssembly` and other UI frameworks build on the
+general WebAssembly SDK, so they can adopt the common foundation later. A
+future Blazor-specific proposal may cover only browser-side tests that require
+the Blazor renderer or Blazor JavaScript interop. It would need a
+renderer-ready/completion hook because a Blazor application's
+`Program.Main` normally runs for the application lifetime.
+
+The production Blazor Gateway remains unchanged and must not acquire test
+endpoints or browser automation. Existing work on unifying the general WASM
+dev server with the Gateway is tracked separately in
+[dotnet/runtime#122144](https://github.com/dotnet/runtime/issues/122144) and
+[dotnet/aspnetcore#67814](https://github.com/dotnet/aspnetcore/issues/67814).
