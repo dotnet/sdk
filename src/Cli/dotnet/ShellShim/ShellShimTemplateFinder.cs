@@ -42,7 +42,7 @@ internal class ShellShimTemplateFinder(
         }
         else
         {
-            rid = CommonOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(null, archOption);
+            rid = TargetPlatformOptions.ResolveRidShorthandOptionsToRuntimeIdentifier(os: null, archOption);
         }
 
         if (!validRids.Contains(rid))

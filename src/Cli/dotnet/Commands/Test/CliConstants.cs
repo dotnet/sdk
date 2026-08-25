@@ -13,9 +13,6 @@ internal static class CliConstants
 
     public const string SemiColon = ";";
 
-    public const string VSTest = "VSTest";
-    public const string MicrosoftTestingPlatform = "Microsoft.Testing.Platform";
-
     public static readonly string[] SolutionExtensions = [".sln", ".slnx", ".slnf"];
 
     public const string ProjectExtensionPattern = "*.*proj";
@@ -26,8 +23,6 @@ internal static class CliConstants
     public const string BinLogFileName = "msbuild.binlog";
 
     public const string DLLExtension = ".dll";
-
-    public const string MTPTarget = "_MTPBuild";
 
     public const string TestTraceLoggingEnvVar = "DOTNET_CLI_TEST_TRACEFILE";
 }

@@ -144,7 +144,7 @@
       </trans-unit>
       <trans-unit id="WorkloadSetHasMissingManifests">
         <source>Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</source>
-        <target state="new">Workload set version {0} has missing manifests likely removed by package management. Run "dotnet workload repair" to fix this.</target>
+        <target state="translated">工作负载集版本 {0} 缺少清单，这些清单可能已被包管理移除。请运行 "dotnet workload repair" 进行修复。</target>
         <note>{Locked="dotnet workload repair"}</note>
       </trans-unit>
       <trans-unit id="WorkloadVersionFromGlobalJsonNotFound">

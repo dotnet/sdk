@@ -8,7 +8,7 @@ using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
 
-namespace Microsoft.DotNet.Cli.Commands.Tool.Common;
+namespace Microsoft.DotNet.Cli.Commands.Tool;
 
 internal static class ToolManifestFinderExtensions
 {

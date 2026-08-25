@@ -182,12 +182,17 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
-    "--nologo": {
+    "--no-logo": {
       "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
+      "aliases": [
+         "--nologo",
+         "-nologo",
+         "/nologo"
+      ],
       "valueType": "System.Boolean",
       "hasDefaultValue": true,
-      "defaultValue": false,
+      "defaultValue": true,
       "arity": {
         "minimum": 0,
         "maximum": 0
@@ -353,6 +358,18 @@ public class CliSchemaTests : SdkTest
         }
       },
       "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        },
         "--framework": {
           "description": "Add the reference only when targeting a specific framework.",
           "hidden": false,
@@ -386,7 +403,21 @@ public class CliSchemaTests : SdkTest
     },
     "list": {
       "description": "List all project-to-project references of the project.",
-      "hidden": false
+      "hidden": false,
+      "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        }
+      }
     },
     "remove": {
       "description": "Remove a project-to-project reference from the project.",
@@ -404,6 +435,18 @@ public class CliSchemaTests : SdkTest
         }
       },
       "options": {
+        "--file": {
+          "description": "The file-based app to operate on.",
+          "hidden": false,
+          "valueType": "System.String",
+          "hasDefaultValue": false,
+          "arity": {
+            "minimum": 1,
+            "maximum": 1
+          },
+          "required": false,
+          "recursive": true
+        },
         "--framework": {
           "description": "Remove the reference only when targeting a specific framework.",
           "hidden": false,
@@ -763,18 +806,6 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
-    "--debug": {
-      "hidden": false,
-      "valueType": "System.Boolean",
-      "hasDefaultValue": true,
-      "defaultValue": false,
-      "arity": {
-        "minimum": 0,
-        "maximum": 0
-      },
-      "required": false,
-      "recursive": false
-    },
     "--disable-build-servers": {
       "description": "Force the command to ignore any persistent build servers.",
       "hidden": false,
@@ -964,6 +995,24 @@ public class CliSchemaTests : SdkTest
       "required": false,
       "recursive": false
     },
+    "--no-logo": {
+      "description": "Do not display the startup banner or the copyright message.",
+      "hidden": false,
+      "aliases": [
+        "--nologo",
+        "-nologo",
+        "/nologo"
+      ],
+      "valueType": "System.Boolean",
+      "hasDefaultValue": true,
+      "defaultValue": true,
+      "arity": {
+        "minimum": 0,
+        "maximum": 0
+      },
+      "required": false,
+      "recursive": false
+    },
     "--no-restore": {
       "description": "Do not restore the project before building.",
       "hidden": false,
@@ -979,19 +1028,6 @@ public class CliSchemaTests : SdkTest
     },
     "--no-self-contained": {
       "description": "Publish your application as a framework dependent application. A compatible .NET runtime must be installed on the target machine to run your application.",
-      "hidden": false,
-      "valueType": "System.Boolean",
-      "hasDefaultValue": true,
-      "defaultValue": false,
-      "arity": {
-        "minimum": 0,
-        "maximum": 0
-      },
-      "required": false,
-      "recursive": false
-    },
-    "--nologo": {
-      "description": "Do not display the startup banner or the copyright message.",
       "hidden": false,
       "valueType": "System.Boolean",
       "hasDefaultValue": true,

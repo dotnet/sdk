@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Build.Framework;
-using Microsoft.NET.Sdk.Publish.Tasks.MsDeploy;
+using Microsoft.NET.Sdk.Common;
 using Microsoft.NET.Sdk.Publish.Tasks.Properties;
 
 namespace Microsoft.NET.Sdk.Publish.Tasks.OneDeploy;
@@ -161,9 +161,19 @@ public partial class OneDeploy : Task
 
     private bool GetCredentialsFromTask(out string user, out string password)
     {
-        VSHostObject hostObj = new(HostObject as IEnumerable<ITaskItem>);
+        VSHostObject hostObj = new(HostObject, Log);
+        if (hostObj.TryGetCredentials() is (string u, string p))
+        {
+            user = u;
+            password = p;
 
-        return hostObj.ExtractCredentials(out user, out password);
+            return true;
+        }
+
+        user = string.Empty;
+        password = string.Empty;
+
+        return false;
     }
 
     private Task<IHttpResponse?> DeployAsync(

@@ -19,7 +19,7 @@ namespace Microsoft.NET.TestFramework
 
         public static TestDirectory Create(string path)
         {
-            return new TestDirectory(path, TestContext.Current.SdkVersion);
+            return new TestDirectory(path, SdkTestContext.Current.SdkVersion);
         }
 
         public string Path { get; private set; }
@@ -50,7 +50,7 @@ namespace Microsoft.NET.TestFramework
 
             Directory.CreateDirectory(path);
 
-            TestContext.WriteGlobalJson(path, sdkVersion);
+            SdkTestContext.WriteGlobalJson(path, sdkVersion);
         }
     }
 }

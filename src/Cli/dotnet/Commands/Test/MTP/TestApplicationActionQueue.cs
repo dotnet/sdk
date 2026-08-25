@@ -78,7 +78,7 @@ internal class TestApplicationActionQueue
                 {
                     result = ExitCode.GenericFailure;
                 }
-                
+
                 lock (_lock)
                 {
                     if (_aggregateExitCode is null)

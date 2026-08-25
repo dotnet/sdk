@@ -8,6 +8,7 @@ using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Configurer;
+using Microsoft.DotNet.InternalAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
 
@@ -36,7 +37,7 @@ public static class SudoEnvironmentDirectoryOverride
     {
         if (!OperatingSystem.IsWindows() && IsRunningUnderSudo() && IsRunningWorkloadCommand(parseResult))
         {
-            string sudoHome = PathUtilities.CreateTempSubdirectory();
+            string sudoHome = TemporaryDirectory.CreateSubdirectory();
             var homeBeforeOverride = Environment.GetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName);
             Environment.SetEnvironmentVariable(CliFolderPathCalculator.DotnetHomeVariableName, sudoHome);
 
@@ -94,5 +95,5 @@ public static class SudoEnvironmentDirectoryOverride
     }
 
     private static bool IsRunningWorkloadCommand(ParseResult parseResult) =>
-        parseResult.RootSubCommandResult() == (WorkloadCommandParser.GetCommand().Name);
+        parseResult.RootSubCommandResult() == WorkloadCommandDefinition.Name;
 }

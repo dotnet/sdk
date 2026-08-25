@@ -232,7 +232,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         private void RecordPackages(string projectDirectory)
         {
             string packagesJsonPath = Path.Combine(
-                TestContext.Current.TestPackages ?? throw new InvalidOperationException("TestPackages should never be null."),
+                SdkTestContext.Current.TestPackages ?? throw new InvalidOperationException("TestPackages should never be null."),
                 "cgmanifest.json");
 
             // Get all project files with a single directory search, then filter to specific types

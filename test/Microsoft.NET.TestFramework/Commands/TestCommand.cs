@@ -31,6 +31,8 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public bool RedirectStandardInput { get; set; }
 
+        public bool DisableOutputAndErrorRedirection { get; set; }
+
         //  These only work via Execute(), not when using GetProcessStartInfo()
         public Action<string>? CommandOutputHandler { get; set; }
         public Action<Process>? ProcessStartedHandler { get; set; }
@@ -53,6 +55,12 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithWorkingDirectory(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
+            return this;
+        }
+
+        public TestCommand WithDisableOutputAndErrorRedirection()
+        {
+            DisableOutputAndErrorRedirection = true;
             return this;
         }
 
@@ -126,6 +134,7 @@ namespace Microsoft.NET.TestFramework.Commands
             }
 
             commandSpec.RedirectStandardInput = RedirectStandardInput;
+            commandSpec.DisableOutputAndErrorRedirection = DisableOutputAndErrorRedirection;
 
             return commandSpec;
         }
@@ -166,18 +175,23 @@ namespace Microsoft.NET.TestFramework.Commands
             var spec = CreateCommandSpec(args);
 
             var command = spec
-                .ToCommand(_doNotEscapeArguments)
-                .CaptureStdOut()
-                .CaptureStdErr();
+                .ToCommand(_doNotEscapeArguments);
 
-            if (CommandOutputHandler != null)
+            if (!spec.DisableOutputAndErrorRedirection)
             {
-                command.OnOutputLine(CommandOutputHandler);
-            }
+                command
+                    .CaptureStdOut()
+                    .CaptureStdErr();
 
-            if (StandardOutputEncoding is not null)
-            {
-                command.StandardOutputEncoding(StandardOutputEncoding);
+                if (CommandOutputHandler != null)
+                {
+                    command.OnOutputLine(CommandOutputHandler);
+                }
+
+                if (StandardOutputEncoding is not null)
+                {
+                    command.StandardOutputEncoding(StandardOutputEncoding);
+                }
             }
 
             string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
@@ -186,7 +200,7 @@ namespace Microsoft.NET.TestFramework.Commands
             var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
 
             Log.WriteLine($"Executing '{display}':");
-            var result = ((Command)command).Execute(ProcessStartedHandler);
+            var result = command.Execute(ProcessStartedHandler);
 
             // By default, cap how much of the (potentially enormous) command output is echoed to the test
             // log so a single very verbose command (e.g. `dotnet test -v diag`) can't flush hundreds of

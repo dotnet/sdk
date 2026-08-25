@@ -14,7 +14,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         /// <summary>
         /// Gets a path to the folder with dotnet new test assets.
         /// </summary>
-        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(TestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new"));
+        public static string DotnetNewTestAssets { get; } = VerifyExists(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "TestPackages", "dotnet-new"));
 
         /// <summary>
         /// Gets a path to the folder with dotnet new test NuGet template packages.
@@ -197,7 +197,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         private static string? GetRepoRoot()
         {
-            string repoRoot = Path.GetFullPath(Path.Combine(TestContext.Current.TestAssetsDirectory, "..", ".."));
+            string repoRoot = Path.GetFullPath(Path.Combine(SdkTestContext.Current.TestAssetsDirectory, "..", ".."));
             if (!Directory.Exists(repoRoot) || !File.Exists(Path.Combine(repoRoot, "sdk.slnx")))
             {
                 // Running in Helix or another environment where the full repo isn't available.
