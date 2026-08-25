@@ -129,11 +129,18 @@ internal sealed class HotReloadClients(
         return [.. results.SelectMany(r => r).Distinct(StringComparer.Ordinal).OrderBy(c => c)];
     }
 
+    /// <summary>
+    /// Applies managed code updates to all clients.
+    /// </summary>
+    /// <param name="updates">Updates for each client. Must be of the same length as <see cref="Clients"/>.</param>
+    /// <param name="applyOperationCancellationToken">Cancellation token for the apply operation that starts but not necessarily completes when this method returns.</param>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
-    public async Task<Task> ApplyManagedCodeUpdatesAsync(ImmutableArray<HotReloadManagedCodeUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
+    /// <returns></returns>
+    public async Task<Task> ApplyManagedCodeUpdatesAsync(ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
         // shouldn't be called if there are no clients
         Debug.Assert(IsManagedAgentSupported);
+        Debug.Assert(updates.Length == clients.Length);
 
         // Apply to all processes.
         // The module the change is for does not need to be loaded to any of the processes, yet we still consider it successful if the application does not fail.
@@ -141,7 +148,8 @@ internal sealed class HotReloadClients(
         // An error is only reported if the delta application fails, which would be a bug either in the runtime (applying valid delta incorrectly),
         // the compiler (producing wrong delta), or rude edit detection (the change shouldn't have been allowed).
 
-        var applyTasks = await Task.WhenAll(clients.Select(c => c.ApplyManagedCodeUpdatesAsync(updates, applyOperationCancellationToken, cancellationToken)));
+        var applyTasks = await Task.WhenAll(
+            clients.Zip(updates, (client, clientUpdates) => client.ApplyManagedCodeUpdatesAsync(clientUpdates, applyOperationCancellationToken, cancellationToken)));
 
         return CompleteApplyOperationAsync();
 
