@@ -68,13 +68,16 @@ public class InstallPathResolverTests
     public void Resolve_IgnoresGlobalJsonPath_WhenRequested()
     {
         var globalJsonInfo = CreateGlobalJsonInfo(GlobalJsonPath);
+        var installManager = new DotnetEnvironmentManager();
+        var resolver = new InstallPathResolver(installManager);
+        string expectedInstallPath = installManager.GetDefaultDotnetInstallPath();
 
-        var result = _resolver.Resolve(
+        var result = resolver.Resolve(
             explicitInstallPath: null,
             globalJsonInfo: globalJsonInfo,
             useGlobalJsonSdkPaths: false);
 
-        result.ResolvedInstallPath.Should().Be(new DotnetEnvironmentManager().GetDefaultDotnetInstallPath());
+        result.ResolvedInstallPath.Should().Be(expectedInstallPath);
         result.PathSource.Should().Be(PathSource.Default);
         result.InstallPathFromGlobalJson.Should().BeNull();
     }
