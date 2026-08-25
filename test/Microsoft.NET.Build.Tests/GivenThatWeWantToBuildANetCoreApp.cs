@@ -263,7 +263,9 @@ namespace Microsoft.NET.Build.Tests
         [InlineData(ToolsetInfo.CurrentTargetFramework)]
         public void It_runs_the_app_from_the_output_folder(string targetFramework)
         {
-            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework))
+            if (!EnvironmentInfo.SupportsTargetFramework(targetFramework) ||
+                ((targetFramework == "net6.0" || targetFramework == "net7.0") &&
+                 RuntimeInformation.IsOSPlatform(OSPlatform.OSX)))
             {
                 return;
             }

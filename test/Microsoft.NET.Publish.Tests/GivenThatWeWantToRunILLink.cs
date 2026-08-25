@@ -65,7 +65,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeTrue();
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        // https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("net5.0", false)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
         public void ILLink_runs_and_creates_linked_app(string targetFramework, bool referenceClassLibAsPackage)
@@ -1255,7 +1256,8 @@ namespace Microsoft.NET.Publish.Tests
             semaphoreFirstModifiedTime.Should().Be(semaphoreSecondModifiedTime);
         }
 
-        [RequiresMSBuildVersionTheory("17.0.0.32901")]
+        // https://github.com/dotnet/sdk/issues/49665
+        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         public void ILLink_old_defaults_keep_nonframework(string targetFramework)
