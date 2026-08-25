@@ -23,7 +23,7 @@ internal enum DotnetAccessMode
     /// <summary>Add dotnetup-managed dotnet to a shell profile file.</summary>
     Shell = 2,
 
-    /// <summary>Shell profile plus user-level env-var PATH/DOTNET_ROOT (so cmd.exe and GUI apps see the user dotnet too).</summary>
+    /// <summary>Shell profile plus system PATH and user-level DOTNET_ROOT (so cmd.exe and GUI apps see the user dotnet too).</summary>
     Everywhere = 3,
 }
 
