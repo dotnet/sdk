@@ -27,7 +27,6 @@
   <ItemGroup>
     <InternalsVisibleTo Include="dotnetup" />
     <InternalsVisibleTo Include="dotnetup.Tests" />
-    <AssemblyMetadata Include="DotnetupPreReleaseVersionLabel" Value="$(DotnetupPreReleaseVersionLabel)" />
   </ItemGroup>
 
   <ItemGroup>
