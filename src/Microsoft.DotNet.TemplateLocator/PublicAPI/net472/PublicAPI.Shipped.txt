@@ -1,0 +1,9 @@
+#nullable enable
+Microsoft.DotNet.TemplateLocator.IOptionalSdkTemplatePackageInfo
+Microsoft.DotNet.TemplateLocator.IOptionalSdkTemplatePackageInfo.Path.get -> string!
+Microsoft.DotNet.TemplateLocator.IOptionalSdkTemplatePackageInfo.TemplatePackageId.get -> string!
+Microsoft.DotNet.TemplateLocator.IOptionalSdkTemplatePackageInfo.TemplateVersion.get -> string!
+Microsoft.DotNet.TemplateLocator.TemplateLocator
+Microsoft.DotNet.TemplateLocator.TemplateLocator.GetDotnetSdkTemplatePackages(string? sdkVersion, string? dotnetRootPath, string? userProfileDir) -> System.Collections.Generic.IReadOnlyCollection<Microsoft.DotNet.TemplateLocator.IOptionalSdkTemplatePackageInfo!>!
+Microsoft.DotNet.TemplateLocator.TemplateLocator.TemplateLocator() -> void
+Microsoft.DotNet.TemplateLocator.TemplateLocator.TryGetDotnetSdkVersionUsedInVs(string! vsVersion, out string? sdkVersion) -> bool
