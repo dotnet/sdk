@@ -12,7 +12,7 @@ internal sealed class TestBrowserRefreshServer()
 {
     public List<string> SentMessages { get; } = [];
 
-    protected override ValueTask<TResult?> SendAndReceiveAsync<TRequest, TResult>(
+    internal override ValueTask<TResult?> SendAndReceiveAsync<TRequest, TResult>(
         Func<string?, TRequest>? request,
         ResponseFunc<TResult>? response,
         CancellationToken cancellationToken)
