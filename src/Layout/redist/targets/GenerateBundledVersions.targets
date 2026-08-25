@@ -529,6 +529,7 @@
         @(Net90NativeAOTRuntimePackRids);
         linux-riscv64;
         linux-musl-riscv64;
+        android-arm;
         android-arm64;
         android-x64;
         " />

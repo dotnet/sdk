@@ -15,7 +15,7 @@ Copyright (c) .NET Foundation. All rights reserved.
        If the .props file is not imported here, it will be imported from Microsoft.NET.DefaultOutputPaths.targets, so that artifacts output
        properties can be set directly in the project file too (only in that case they won't affect the intermediate output). -->
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.DefaultArtifactsPath.props"
-          Condition="'$(UseArtifactsOutput)' == 'true' Or '$(ArtifactsPath)' != ''"/>
+          Condition="'$(UseArtifactsOutput)' == 'true' Or '$(ArtifactsPath)' != '' Or '$(FileBasedAppArtifactsPath)' != ''"/>
 
   <PropertyGroup Condition="'$(UseArtifactsOutput)' == 'true'">
     <UseArtifactsIntermediateOutput Condition="'$(UseArtifactsIntermediateOutput)' == ''">true</UseArtifactsIntermediateOutput>

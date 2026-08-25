@@ -94,7 +94,7 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
     }
 
     [TestMethod]
-    public void RunCutShortByMaximumFailedTests_KeepsOneReportPerTestApplication()
+    public void RunCutShortByMaximumFailedTests_DoesNotRunIneligibleTrxProcessor()
     {
         TestAsset testInstance = TestAssetsManager
             .CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
@@ -115,15 +115,15 @@ public class GivenDotnetTestBuildsAndRunsArtifactPostProcessingMTP : SdkTest
             : [];
         trxReports.Should().NotContain(
             path => Path.GetFileName(path).StartsWith("merged-", StringComparison.Ordinal),
-            "a run truncated by --maximum-failed-tests skips post-processing so the truncation is not hidden behind one merged report");
+            "the TRX processor does not opt into policy-truncated runs");
 
         // The progress line is printed as soon as post-processing has anything planned, so its absence
-        // shows the merge was skipped rather than merely finding nothing to do. (For the same
-        // timing reason as above this cannot prove a plan would have existed, so it is a guard against
-        // the skip regressing, not a proof that a merge was averted.)
+        // shows no eligible group was planned. (For the same timing reason as above this cannot prove
+        // that two reports existed, so it is a guard against ineligible TRX processing rather than a
+        // proof that a merge was averted.)
         result.StdOut.Should().NotContain(
             CliCommandStrings.ArtifactPostProcessingStarted,
-            "a truncated run must not even start post-processing");
+            "a processor that did not opt in must not run for a truncated test run");
     }
 
     [TestMethod]

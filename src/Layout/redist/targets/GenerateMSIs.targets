@@ -197,7 +197,6 @@
     <Fragment>
         <PackageGroup Id="PG_WorkloadManifests">
             @(_Manifests->'<MsiPackage SourceFile="%(MsiPath)">
-                <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
             </MsiPackage>', '
             ')
         </PackageGroup>
@@ -271,7 +270,6 @@
     <Fragment>
         <PackageGroup Id="PG_DotNet">
             @(_DotNetMsiPackages->'<MsiPackage SourceFile="%(FullPath)">
-                <MsiProperty Name="DOTNETHOME" Value="[DOTNETHOME]" />
             </MsiPackage>', '
             ')
         </PackageGroup>
