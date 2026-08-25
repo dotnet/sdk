@@ -241,7 +241,8 @@ public static class Parser
         // Project, solution, file-based, VSTest, and unsupported option shapes retain managed fallback.
         AotTestCommand.ConfigureCommand(rootCommand.TestCommand);
 
-        // Dynamic shell completion only walks the shared command tree and writes candidate labels.
+        // Root command and option labels come from the shared command tree. Once the completion
+        // input selects a command, defer so managed parser configuration supplies its providers.
         CompleteCommandParser.ConfigureCommand(rootCommand.CompleteCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
