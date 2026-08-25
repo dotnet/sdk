@@ -228,7 +228,8 @@ public static class Parser
         // reuse a synthetic CSC cache or a validated cached run contract. Other shapes fall back.
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
 
-        // Dynamic shell completion only walks the shared command tree and writes candidate labels.
+        // Root command and option labels come from the shared command tree. Once the completion
+        // input selects a command, defer so managed parser configuration supplies its providers.
         CompleteCommandParser.ConfigureCommand(rootCommand.CompleteCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);

@@ -199,9 +199,9 @@ and binary-size delta.
   built executable for a focused managed iteration or use `run-aot-tests.ps1` for native execution.
 - **Existing tests may assert exclusions.** Search before enabling a command; an intentional
   `DoesNotContain` can need a carefully justified inversion.
-- **Dynamic completion can cross the eligibility boundary.** Keep command-tree completion free of
-  managed-only project evaluation. Providers that require unavailable project state must remain AOT-safe
-  or conservatively return definition-backed results.
+- **Completion eligibility is cursor-context-sensitive.** Root command and option labels can come from
+  shared definitions. Once the input selects a command, fall back before producing output so managed
+  parser configuration owns template, project, package, and other command-specific providers.
 - **A Roslyn pragma is not native-publish evidence.** ILC can report the same trim/AOT warning during
   publish. Use **dotnet-aot-compat**, keep suppression scope narrow, and reference an existing tracking
   issue for temporary dependency warnings. Ask the user before creating a new issue.
