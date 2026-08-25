@@ -77,6 +77,7 @@ public class InstallPathResolverTests
             globalJsonInfo: globalJsonInfo,
             useGlobalJsonSdkPaths: false);
 
+        result.Should().NotBeNull();
         result.ResolvedInstallPath.Should().Be(expectedInstallPath);
         result.PathSource.Should().Be(PathSource.Default);
         result.InstallPathFromGlobalJson.Should().BeNull();
