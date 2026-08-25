@@ -6,7 +6,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// <summary>
     /// Describes different workload installation types.
     /// </summary>
-    public enum InstallType
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    enum InstallType
     {
         /// <summary>
         /// Workloads are installed as NuGet packages
@@ -18,7 +23,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         Msi = 1
     }
 
-    public static class WorkloadInstallType
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    static class WorkloadInstallType
     {
         /// <summary>
         /// Determines the <see cref="InstallType"/> associated with a specific SDK version.

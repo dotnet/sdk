@@ -7,7 +7,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// Wraps a workload definition id string to help ensure consistency of behavior/semantics.
     /// Comparisons are case insensitive but ToString() will return the original string for display purposes.
     /// </summary>
-    public readonly struct WorkloadId : IComparable<WorkloadId>, IEquatable<WorkloadId>
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    readonly struct WorkloadId : IComparable<WorkloadId>, IEquatable<WorkloadId>
     {
         private readonly string _id;
 

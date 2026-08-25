@@ -9,7 +9,12 @@ namespace Microsoft.DotNet.DotNetSdkResolver
 
     //  Thread safety note:
     //  This class is used by the MSBuild SDK resolvers, which can be called on multiple threads.
-    public class NETCoreSdkResolver
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class NETCoreSdkResolver
     {
         private readonly Func<string, string?> _getEnvironmentVariable;
         private readonly VSSettings _vsSettings;

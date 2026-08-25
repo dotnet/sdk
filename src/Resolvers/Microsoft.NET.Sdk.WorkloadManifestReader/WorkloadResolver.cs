@@ -12,7 +12,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// This very specifically exposes only the functionality needed right now by the MSBuild workload resolver
     /// and by the template engine. More general APIs will be added later.
     /// </remarks>
-    public class WorkloadResolver : IWorkloadResolver
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class WorkloadResolver : IWorkloadResolver
     {
         private readonly Dictionary<string, (WorkloadManifest manifest, WorkloadManifestInfo info)> _manifests = new(StringComparer.OrdinalIgnoreCase);
         private readonly Dictionary<WorkloadId, (WorkloadDefinition workload, WorkloadManifest manifest)> _workloads = new();

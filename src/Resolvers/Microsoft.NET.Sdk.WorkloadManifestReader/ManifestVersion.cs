@@ -6,7 +6,12 @@ using Strings = Microsoft.NET.Sdk.Localization.Strings;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class ManifestVersion : IEquatable<ManifestVersion>, IComparable<ManifestVersion>
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class ManifestVersion : IEquatable<ManifestVersion>, IComparable<ManifestVersion>
     {
         private FXVersion? _version;
 

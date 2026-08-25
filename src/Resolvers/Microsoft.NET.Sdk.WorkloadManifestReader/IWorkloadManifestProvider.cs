@@ -6,7 +6,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// <summary>
     /// Specifies how the manifest provider should handle corrupt or missing workload manifests.
     /// </summary>
-    public enum ManifestCorruptionFailureMode
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    enum ManifestCorruptionFailureMode
     {
         /// <summary>
         /// Attempt to repair using the CorruptionRepairer if available, otherwise throw.
@@ -31,7 +36,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// This abstracts out the process of locating and loading a set of manifests to be loaded into a
     /// workload manifest resolver and resolved into a single coherent model.
     /// </summary>
-    public interface IWorkloadManifestProvider
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    interface IWorkloadManifestProvider
     {
         void RefreshWorkloadManifests();
         IEnumerable<ReadableWorkloadManifest> GetManifests();
@@ -45,7 +55,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public readonly record struct WorkloadVersionInfo(string Version, bool IsInstalled = true, bool WorkloadSetsEnabledWithoutWorkloadSet = false, string? GlobalJsonPath = null, bool? GlobalJsonSpecifiesWorkloadSets = null);
     }
 
-    public record WorkloadVersion
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    record WorkloadVersion
     {
         public enum Type
         {

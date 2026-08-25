@@ -7,7 +7,12 @@ using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public partial class SdkDirectoryWorkloadManifestProvider
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    partial class SdkDirectoryWorkloadManifestProvider
     {
         static class JsonReader
         {

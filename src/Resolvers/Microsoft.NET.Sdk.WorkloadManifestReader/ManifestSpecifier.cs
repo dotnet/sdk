@@ -3,7 +3,12 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public record class ManifestSpecifier(ManifestId Id, ManifestVersion Version, SdkFeatureBand FeatureBand)
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    record class ManifestSpecifier(ManifestId Id, ManifestVersion Version, SdkFeatureBand FeatureBand)
     {
         public override string ToString() => $"{Id}: {Version}/{FeatureBand}";
     }
@@ -13,6 +18,11 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 #if !NET
 namespace System.Runtime.CompilerServices
 {
-    public class IsExternalInit { }
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class IsExternalInit { }
 }
 #endif
