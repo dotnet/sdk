@@ -24,6 +24,9 @@ The following constraints are established:
   static assets, launch profiles, or logs.
 - The browser must be supervised from outside the WebAssembly runtime so
   crashes and synchronous hangs can still be detected and force-terminated.
+- Browser-WASM server unification, or extraction of one shared host component,
+  is a prerequisite. `dotnet test` must not add another static-file/dev server
+  beside the existing runtime and framework hosts.
 
 The proposed first implementation uses Playwright and supports headless
 Chrome and Edge. Playwright is a browser-control layer; it does not replace
@@ -39,8 +42,9 @@ WASI build, launch, or result behavior.
 `dotnet test` should be able to:
 
 1. Build a `browser-wasm` MTP test application.
-2. Generate and serve a versioned test page and JavaScript supervisor.
-3. Launch an isolated browser through Playwright.
+2. Generate the test page and JavaScript supervisor as Static Web Assets served
+   by the shared browser-WASM host.
+3. Start that host and launch an isolated browser through Playwright.
 4. Run MTP inside the browser and stream discovery, output, and per-test
    results to the SDK over the existing authenticated HTTP transport.
 5. Detect managed runtime failures through Playwright even when MTP can no
@@ -75,6 +79,11 @@ tests that need the real browser runtime but not a UI framework.
   prior art for the versioning boundary in this proposal. See
   [`TargetFrameworks.props`](../../src/WasmSdk/Sdk/TargetFrameworks.props) and
   [`Sdk.targets`](../../src/WasmSdk/Sdk/Sdk.targets).
+- Runtime and ASP.NET are tracking unification of the general WASM dev server
+  and Blazor Gateway. This proposal depends on that work producing one reusable
+  host implementation or host contract.
+  See [dotnet/runtime#122144](https://github.com/dotnet/runtime/issues/122144)
+  and [dotnet/aspnetcore#67814](https://github.com/dotnet/aspnetcore/issues/67814).
 
 ## Goals
 
@@ -272,7 +281,8 @@ Before shipping, the owning teams must prove:
 
 | Concern | Proposed owner |
 | --- | --- |
-| Browser-WASM testing targets, generated page/supervisor assets, SDK test server, project evaluation, browser CLI, Playwright launcher, HTTP gateway, result presentation, output paths, and cancellation policy | `dotnet/sdk` (`WasmSdk` and CLI) |
+| Browser-WASM testing targets, generated page/supervisor assets, project evaluation, browser CLI, Playwright launcher, HTTP gateway, result presentation, output paths, and cancellation policy | `dotnet/sdk` (`WasmSdk` and CLI) |
+| Shared browser-WASM host implementation and static-web-assets serving behavior | Runtime/ASP.NET server-unification work |
 | Browser MTP client, test-result protocol, artifact-content protocol, and managed cancellation client | `microsoft/testfx` |
 | Documented browser runtime/JavaScript APIs | `dotnet/runtime` |
 
@@ -307,9 +317,16 @@ an SDK probe of private JavaScript state.
 
 ## Generic SDK launch contract
 
-The WebAssembly targets describe the browser test bundle through evaluated
-MSBuild properties. Phase 1 does not launch the project's `RunCommand` or a
-framework dev server.
+The WebAssembly targets describe the browser test host through evaluated
+MSBuild properties. `RunCommand`, `RunArguments`, and `RunWorkingDirectory`
+identify the shared browser-WASM host process; the SDK does not implement or
+identify a server by executable name.
+
+Those values must be set by WasmSdk/framework targets that also advertise a
+supported `DotnetTestHostContractVersion`. User `RunCommand`, `StartAction`,
+launch-profile URL/environment, and command-line overrides do not become the
+test host implicitly; they are ignored or produce an actionable conflict
+diagnostic.
 
 Proposed additional values:
 
@@ -317,13 +334,19 @@ Proposed additional values:
 | --- | --- |
 | `DotnetTestTransport` | `pipe` or `http`; explicit value takes precedence over RID inference. |
 | `DotnetTestHostKind` | `process`, `browser`, or `device`. |
-| `DotnetTestWebRoot` | Absolute AppBundle/static root produced by the build. |
-| `DotnetTestHostPage` | Relative page route, defaulting to `index.html`. |
+| `DotnetTestHostContractVersion` | Shared host launch/readiness contract understood by the project. |
 
-For `browser`, the SDK starts its Playwright launcher instead of starting
-`RunCommand`. The launcher receives an owner-only configuration file
-containing the validated web root/page, selected browser, browser arguments,
-deadline, and HTTP bootstrap response-file path.
+For `browser`, the SDK starts its Playwright launcher, which starts the
+project-declared shared host using `RunCommand` and `RunArguments`. The
+launcher receives an owner-only configuration file containing that command,
+the selected browser and arguments, deadline, HTTP bootstrap response-file
+path, and an owner-only launch-info-file path.
+
+The generated test page and JavaScript supervisor are Static Web Assets. They
+flow through the normal endpoint manifest so the shared host owns import maps,
+fingerprinting/integrity, MIME types, compression variants, SPA fallback, and
+other serving behavior. COOP/COEP requirements are also represented in
+build-generated endpoint metadata rather than duplicated in host middleware.
 
 MTP arguments remain after a `--` sentinel. The launcher expands only the
 bootstrap file named in its protected configuration; arbitrary user `@`
@@ -335,36 +358,80 @@ arbitrary test modules from host paths.
 
 ## Server readiness
 
-The SDK Playwright launcher also owns a test-only HTTP server for the generated
-page and built AppBundle. It does not start a runtime or framework dev server
-in Phase 1.
+The shared host contract is a prerequisite for Phase 1. It must cover both
+general and framework browser-WASM applications without adding test
+infrastructure to the production Gateway.
 
-The server:
+The SDK passes the host:
 
-- binds loopback only;
-- validates and canonicalizes `DotnetTestWebRoot` before serving it;
-- rejects traversal, symlink/reparse-point escapes, directory listings, and
-  files outside the declared bundle;
-- serves the required WebAssembly MIME types and disables stale caching;
-- applies build-provided COOP/COEP headers when threaded WebAssembly requires
-  cross-origin isolation;
-- hosts only the test endpoints explicitly defined by this design.
+```text
+--urls http://127.0.0.1:0
+--dotnet-launch-info-file <owner-only path>
+```
 
-The SDK test server binds loopback port zero directly, reads the actual bound
-origin from its listener, validates the configured web root/page, and only
-then registers the origin and navigates. If the selected server implementation
-cannot bind port zero, it retries its own bind operation with bounded attempts;
-it must not probe a free port, release it, and later start another process on
-that port.
+On `ApplicationStarted`, the host atomically writes a versioned JSON document:
+
+```json
+{
+  "contractVersion": 1,
+  "pid": 1234,
+  "urls": ["http://127.0.0.1:54321"],
+  "basePath": "/",
+  "testPath": "/_dotnet-test/",
+  "capabilities": [
+    "static-assets-endpoints",
+    "spa-fallback",
+    "coop-coep"
+  ]
+}
+```
+
+`testPath` is a build-emitted reserved Static Web Assets endpoint for the
+generated test page. It must not be satisfied by SPA fallback; otherwise an
+incorrect route could return an unrelated application page with HTTP 200 and
+degrade into an opaque bootstrap timeout.
+
+The host binds loopback port zero directly and publishes the actual address; it
+must not probe a free port, release it, and bind later. The launcher waits for
+the atomic launch-info file and, when advertised, a health endpoint. It never
+scrapes localized console output for readiness.
+
+The launcher creates the launch-info directory with owner-only permissions and
+requires the output file not to exist. It rejects symlinks/reparse points,
+non-loopback URLs, unexpected base/test paths, duplicate writes, and a PID that
+does not match the child it launched before registering any origin.
+
+The host contract uses `major.minor` versioning:
+
+- the project property declares the minimum contract it expects to launch;
+- the launch-info document declares the contract actually implemented by the
+  child;
+- the SDK accepts the supported major version and ignores unknown optional
+  capabilities/minor additions;
+- a missing required capability, lower version, or unknown major version fails
+  with an actionable host/SDK compatibility diagnostic;
+- failure to create the launch-info file within the startup deadline reports
+  the expected contract plus bounded host stdout/stderr.
+
+Browser testing is available only for target-framework/host bands that ship a
+compatible shared host. SDK N does not promise to retrofit the feature onto
+every older supported TFM whose host predates this contract.
 
 The launcher registers the byte-identical origin with the SDK gateway before
 navigating. `127.0.0.1` and `localhost` are not interchangeable for origin
 checks.
 
-The generated Phase 1 server uses loopback HTTP and avoids certificate
-provisioning. HTTPS and application certificate testing belong to a separate
-host/UI scenario; the Phase 1 launcher must not silently use Playwright's
-context-wide certificate bypass.
+The shared host serves the normal Static Web Assets endpoints manifest rather
+than reimplementing MIME tables, import maps, fallback routes, or compression.
+Phase 1 uses loopback HTTP and avoids certificate provisioning. HTTPS and
+application certificate testing belong to a separate host/UI scenario; the
+launcher must not silently use Playwright's context-wide certificate bypass.
+
+Test-only MTP, config, artifact, origin-registration, and cancellation
+endpoints remain on the SDK's authenticated control plane. They do not become
+production routes in the shared host or Blazor Gateway.
+The SDK control plane serves no application assets: no Static Web Assets
+routes, import maps, MIME handling, SPA fallback, compression, or COOP/COEP.
 
 ## Secure bootstrap and CSP
 
@@ -398,8 +465,8 @@ policy or fails with a targeted diagnostic. Playwright injection alone does
 not solve CORS or `connect-src`.
 
 The SDK HTTP gateway needs an authenticated pre-navigation origin-registration
-operation. It succeeds only before the first protocol frame. Legacy direct
-browser hosts may retain first-preflight origin pinning for compatibility.
+operation. It succeeds only before the first protocol frame and a supported
+shared-host launch.
 
 This bootstrap and all host-file operations require a security review.
 
@@ -441,11 +508,11 @@ Every startup phase and timeout produces a failure envelope even when managed
 code cannot respond. It includes, when available:
 
 - the phase and elapsed time;
-- SDK test-server bind/start/probe errors and Playwright driver/browser exit
+- shared-host bind/start/probe errors and Playwright driver/browser exit
   codes or operating-system termination signals;
 - the last active test names reported by MTP
   `TestInProgressMessages`;
-- bounded SDK test-server diagnostics;
+- bounded shared-host stdout/stderr and launch diagnostics;
 - bounded browser console, page errors, unhandled promise rejections, failed
   requests, and the final URL;
 - browser/driver disconnect and crash information;
@@ -475,7 +542,7 @@ after the server, driver, browser, or page has already failed.
 ## Live MTP results
 
 The browser MTP application connects directly to the SDK's existing
-`HttpTestHostGateway`. Playwright and the SDK test server do not proxy or
+`HttpTestHostGateway`. Playwright and the shared host do not proxy or
 interpret MTP results.
 
 The existing HTTP protocol continues to carry handshake, help, discovery,
@@ -644,11 +711,11 @@ restricted to the launching user/process boundary.
 lower than ordinary process tests because browsers are expensive; this remains
 an open performance decision.
 
-The launcher owns the SDK test-server listener plus Playwright/browser cleanup.
-The parent SDK command owns MTP listeners and response files. Owned processes
-remain in a process group/job object so the SDK can force-clean them. A later
-invocation may delete only stale profiles carrying the launcher's ownership
-marker.
+The launcher owns the shared-host child process plus Playwright/browser
+cleanup. The parent SDK command owns MTP listeners and response files. Owned
+processes remain in a process group/job object so the SDK can force-clean them.
+A later invocation may delete only stale profiles carrying the launcher's
+ownership marker.
 
 ## `dotnet watch` and repeated runs
 
@@ -664,6 +731,9 @@ session", preserving a future option to reuse the outer browser process.
 ## Compatibility and fallback
 
 - Existing non-browser projects remain unchanged.
+- Browser launch is enabled only when the project advertises a supported
+  `DotnetTestHostContractVersion`; older dev hosts fail with an actionable
+  prerequisite diagnostic rather than falling back to an SDK static server.
 - Explicit `DotnetTestTransport` takes precedence over current
   `browser-*`/`wasi-*` RID inference. WASI remains outside this design.
 - Older MTP versions fail through existing transport/handshake diagnostics.
@@ -678,14 +748,46 @@ session", preserving a future option to reuse the outer browser process.
 
 ## Implementation plan
 
+### Phase 0: shared browser-WASM host prerequisite
+
+**runtime/ASP.NET hosting**
+
+- Unify the existing browser-WASM dev hosts or extract one shared host
+  implementation used by general and framework projects.
+- Serve the Static Web Assets endpoints manifest, including import maps,
+  fingerprint/integrity metadata, MIME types, compression variants, SPA
+  fallback, and build-provided COOP/COEP headers.
+- Bind loopback port zero and atomically publish the versioned launch-info
+  document.
+- Keep test-only MTP/config/artifact/control endpoints out of the production
+  host.
+
+**dotnet/sdk**
+
+- Generate the test page/supervisor as Static Web Assets consumed by the shared
+  host.
+- Emit required COOP/COEP endpoint metadata at build time, gated by the
+  WebAssembly threading/cross-origin-isolation properties.
+- Define the launcher-side contract and compatibility tests without
+  implementing another static-file server.
+
+Exit criteria:
+
+- General and framework `browser-wasm` projects use the same host
+  implementation/contract.
+- The SDK can obtain a machine-readable origin without scraping stdout.
+- No test-only route is added to the production Blazor Gateway.
+- The shared host is available from the product layout/package in offline and
+  source-build scenarios without downloading another server at test time.
+- Supported SDK/TFM/host combinations have an explicit compatibility matrix.
+
 ### Phase 1: general browser-WASM unit tests
 
 **dotnet/sdk**
 
 - Add common testing targets to `WasmSdk`, conditioned on `browser-wasm`.
 - Generate and version the test page and JavaScript supervisor.
-- Add the SDK-owned loopback HTTP test server for the built AppBundle and
-  test-only endpoints.
+- Consume the unified shared host and versioned launch-info/readiness contract.
 - Add the Playwright launcher, Chrome/Edge discovery, browser arguments,
   console/error/crash capture, process ownership, and cleanup.
 - Add the bundle-location contract and protected bootstrap.
@@ -780,7 +882,8 @@ Exit criteria:
 
 1. Should the Playwright launcher ship in `dotnet/sdk` or a testfx-owned tool?
 2. What package/source-build model makes Playwright acceptable in the SDK?
-3. Which server implementation/package should the SDK-owned test server use?
+3. Which repository/package owns the unified host, and what exact
+   launch-info/capability contract can SDK and framework versions support?
 4. Is `WasmEnableTestHost` the right opt-in name, and when is it inferred?
 5. Should browser CLI reuse `--device` or use `--browser`/`--list-browsers`?
 6. Which Stable/Extended Stable Chrome/Edge baseline and Playwright servicing
@@ -850,7 +953,7 @@ renderer-ready/completion hook because a Blazor application's
 `Program.Main` normally runs for the application lifetime.
 
 The production Blazor Gateway remains unchanged and must not acquire test
-endpoints or browser automation. Existing work on unifying the general WASM
-dev server with the Gateway is tracked separately in
+endpoints or browser automation. Phase 0 depends on the existing work to unify
+the general WASM dev server with the Gateway in
 [dotnet/runtime#122144](https://github.com/dotnet/runtime/issues/122144) and
 [dotnet/aspnetcore#67814](https://github.com/dotnet/aspnetcore/issues/67814).
