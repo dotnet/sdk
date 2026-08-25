@@ -36,9 +36,9 @@ Arguments:
   <PROJECT_PATH>  The paths to the projects to add to the solution.
 
 Options:
-  --in-root                                Place project in root of the solution, rather than creating a solution folder. [default: False]
+  --in-root                                Place project in root of the solution, rather than creating a solution folder.
   -s, --solution-folder <solution-folder>  The destination solution folder path to add the projects to.
-  --include-references                     Recursively add projects' ReferencedProjects to solution [default: True]
+  --include-references                     Recursively add projects' ReferencedProjects to solution
   -?, -h, --help                           Show command line help";
 
         public GivenDotnetSlnAdd()

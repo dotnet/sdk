@@ -63,6 +63,22 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        public void When_help_is_formatted_Then_flags_do_not_display_boolean_defaults()
+        {
+            var flag = new System.CommandLine.Option<bool>("--flag")
+            {
+                Arity = System.CommandLine.ArgumentArity.Zero
+            };
+            var booleanArgument = new System.CommandLine.Option<bool>("--boolean")
+            {
+                Arity = System.CommandLine.ArgumentArity.ZeroOrOne
+            };
+
+            global::Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetArgumentDefaultValue(flag).Should().BeEmpty();
+            global::Microsoft.DotNet.Cli.Help.HelpBuilder.Default.GetArgumentDefaultValue(booleanArgument).Should().Be("False");
+        }
+
+        [TestMethod]
         [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         [DataRow("/p")]
         [DataRow("/property")]
