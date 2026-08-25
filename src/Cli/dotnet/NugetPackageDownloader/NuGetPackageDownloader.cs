@@ -351,6 +351,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 {
                     string fullPath = Path.GetFullPath(Path.Combine(targetFolder.Value, fileAndPermission.Path));
 
+                    // Because packages are assumed fully trusted, this check exists to prevent improperly authored packages
+                    // from accidentally modifying files they may not have intended to modify. It is not intended to police
+                    // the set of capabilities available to the package.
                     if (!fullPath.StartsWith(Path.GetFullPath(targetFolder.Value) + Path.DirectorySeparatorChar))
                     {
                         throw new GracefulException(string.Format(CliStrings.ResolvedPathEscapesTargetDirectory, fullPath, targetFolder.Value));
