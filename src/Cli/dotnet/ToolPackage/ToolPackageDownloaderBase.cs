@@ -278,17 +278,20 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         // Use a named mutex to serialize concurrent installations of the same tool package
         string mutexName = GetToolInstallMutexName(packageId, packageVersion);
         using var mutex = new Mutex(false, mutexName);
+        bool mutexAcquired = false;
 
         try
         {
             // First try a quick check to see if the mutex is immediately available
-            if (!mutex.WaitOne(TimeSpan.FromMilliseconds(50)))
+            mutexAcquired = mutex.WaitOne(TimeSpan.FromMilliseconds(50));
+            if (!mutexAcquired)
             {
                 // Mutex is held by another process - inform the user
                 Reporter.Error.WriteLine(string.Format(CliStrings.ToolInstallationWaiting, packageId, packageVersion));
 
                 // Now wait for the longer duration
-                if (!mutex.WaitOne(TimeSpan.FromMinutes(5)))
+                mutexAcquired = mutex.WaitOne(TimeSpan.FromMinutes(5));
+                if (!mutexAcquired)
                 {
                     throw new ToolPackageException(string.Format(CliStrings.ToolInstallationTimeout, packageId, packageVersion));
                 }
@@ -314,7 +317,10 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
         finally
         {
-            mutex.ReleaseMutex();
+            if (mutexAcquired)
+            {
+                mutex.ReleaseMutex();
+            }
         }
     }
 
