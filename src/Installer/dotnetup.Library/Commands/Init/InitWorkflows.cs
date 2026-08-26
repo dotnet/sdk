@@ -161,6 +161,8 @@ internal class InitWorkflows
             installFailure = ExceptionDispatchInfo.Capture(ex);
         }
 
+        DisplayEnvironmentSetupProgress(SpectreAnsiConsole.Console);
+
         // Save config and apply configuration(s) regardless of partial install failure, so the
         // user's choice persists and the successful installs are usable (PATH / shell profile).
         const bool dotnetupOnPath = true;
@@ -235,7 +237,6 @@ internal class InitWorkflows
             effectiveRequests, toMigrate, command, installRoot, manifestPath,
             runner: requests =>
             {
-                SpectreAnsiConsole.MarkupLine("Setting up your environment.");
                 if (requests.Count > 0)
                 {
                     DisplayInstallLocation(requests[0]);
@@ -254,7 +255,6 @@ internal class InitWorkflows
         bool noProgress,
         CommandBase command)
     {
-        SpectreAnsiConsole.MarkupLine("Setting up your environment.");
         if (requests.Count > 0)
         {
             DisplayInstallLocation(requests[0]);
@@ -266,6 +266,9 @@ internal class InitWorkflows
 
         InstallExecutor.ExecuteInstallsAndThrowOnFailure(requests, noProgress, command);
     }
+
+    internal static void DisplayEnvironmentSetupProgress(IAnsiConsole console)
+        => console.MarkupLine("Setting up your environment.");
 
     private static DotnetAccessMode GetInitAccessMode(bool interactive, IEnvShellProvider? shellProvider = null)
     {
