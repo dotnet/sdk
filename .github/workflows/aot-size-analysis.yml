@@ -13,7 +13,6 @@
 # Prerequisites:
 # - The PR pipeline must publish _AotSizeAnalysis artifacts (dotnet-aot.mstat, dotnet-aot.scan.dgml)
 # - The sizoscope-cli dotnet tool must be available on the feeds configured by the nuget.config in this repo
-# - The AZURE_DEVOPS_EXT_PAT Actions secret must grant read access to builds and artifacts in dnceng-public
 #
 name: NativeAOT Size Analysis
 
@@ -186,7 +185,6 @@ jobs:
       ACTIONS_ID_TOKEN_REQUEST_URL: ""
       ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
       ACTIONS_RUNTIME_TOKEN: ""
-      AZURE_DEVOPS_EXT_PAT: ""
       # Workflow-specific env vars
       PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
       PR_HEAD_SHA: ${{ needs.authorize.outputs.head_sha }}
@@ -195,22 +193,30 @@ jobs:
       has_report: ${{ steps.report.outputs.has_report }}
 
     steps:
-      - name: Configure Azure DevOps CLI
-        run: az devops configure --defaults organization="https://dev.azure.com/${AZDO_ORG}" project="${AZDO_PROJECT}"
-
       - name: Find PR and baseline builds
         id: builds
-        env:
-          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: |
           set -euo pipefail
 
+          AZDO_API="https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_apis"
+
+          get_latest_build_id() {
+            local branch="$1"
+
+            curl --fail --silent --show-error --location --retry 3 --max-time 60 --get \
+              "${AZDO_API}/build/builds" \
+              --data-urlencode "definitions=${AZDO_PIPELINE_ID}" \
+              --data-urlencode "branchName=${branch}" \
+              --data-urlencode "statusFilter=completed" \
+              --data-urlencode "resultFilter=succeeded" \
+              --data-urlencode "queryOrder=queueTimeDescending" \
+              --data-urlencode '$top=1' \
+              --data-urlencode "api-version=7.1" |
+              jq -r '.value[0].id // empty'
+          }
+
           # Find the PR build by its merge branch (server-side filter)
-          PR_BUILD_ID=$(az pipelines runs list \
-            --pipeline-ids "$AZDO_PIPELINE_ID" \
-            --branch "refs/pull/${PR_NUMBER}/merge" \
-            --status completed --result succeeded \
-            --top 1 --query "[0].id" -o tsv)
+          PR_BUILD_ID=$(get_latest_build_id "refs/pull/${PR_NUMBER}/merge")
 
           if [ -z "$PR_BUILD_ID" ]; then
             echo "::warning::No completed build found for PR commit ${PR_HEAD_SHA}. Ensure the AzDO pipeline has finished."
@@ -220,11 +226,7 @@ jobs:
           echo "PR build ID: $PR_BUILD_ID"
 
           # Find the most recent baseline build on the base branch
-          BASE_BUILD_ID=$(az pipelines runs list \
-            --pipeline-ids "$AZDO_PIPELINE_ID" \
-            --branch "refs/heads/${BASE_BRANCH}" \
-            --status completed --result succeeded \
-            --top 1 --query "[0].id" -o tsv)
+          BASE_BUILD_ID=$(get_latest_build_id "refs/heads/${BASE_BRANCH}")
 
           if [ -z "$BASE_BUILD_ID" ]; then
             echo "::warning::No completed baseline build found on ${BASE_BRANCH}."
@@ -241,27 +243,66 @@ jobs:
         if: steps.builds.outputs.found == 'true'
         id: download
         env:
-          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
           PR_BUILD_ID: ${{ steps.builds.outputs.pr_build_id }}
           BASE_BUILD_ID: ${{ steps.builds.outputs.base_build_id }}
         run: |
           set -euo pipefail
 
-          # List artifacts from PR build that match _AotSizeAnalysis
-          ARTIFACT_NAMES=$(az pipelines runs artifact list \
-            --run-id "$PR_BUILD_ID" \
-            --query "[?ends_with(name, '_AotSizeAnalysis')].name" -o tsv)
+          AZDO_API="https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_apis"
+          PR_ARTIFACTS_FILE="${RUNNER_TEMP}/pr-artifacts.json"
+          BASE_ARTIFACTS_FILE="${RUNNER_TEMP}/base-artifacts.json"
 
-          if [ -z "$ARTIFACT_NAMES" ]; then
+          curl --fail --silent --show-error --location --retry 3 --max-time 60 \
+            "${AZDO_API}/build/builds/${PR_BUILD_ID}/artifacts?api-version=7.1" \
+            --output "$PR_ARTIFACTS_FILE"
+          curl --fail --silent --show-error --location --retry 3 --max-time 60 \
+            "${AZDO_API}/build/builds/${BASE_BUILD_ID}/artifacts?api-version=7.1" \
+            --output "$BASE_ARTIFACTS_FILE"
+
+          # List artifacts from PR build that match _AotSizeAnalysis
+          mapfile -t ARTIFACT_NAMES < <(
+            jq -r '.value[] | select(.name | endswith("_AotSizeAnalysis")) | .name' "$PR_ARTIFACTS_FILE"
+          )
+
+          if [ "${#ARTIFACT_NAMES[@]}" -eq 0 ]; then
             echo "::warning::No _AotSizeAnalysis artifacts found in PR build ${PR_BUILD_ID}."
             echo "has_artifacts=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
 
-          echo "Found artifacts: ${ARTIFACT_NAMES}"
+          echo "Found artifacts: ${ARTIFACT_NAMES[*]}"
           PLATFORMS=""
 
-          for ARTIFACT_NAME in $ARTIFACT_NAMES; do
+          download_artifact() {
+            local artifacts_file="$1"
+            local artifact_name="$2"
+            local destination="$3"
+            local download_url
+            local archive
+
+            download_url=$(jq -r --arg name "$artifact_name" \
+              '[.value[] | select(.name == $name) | .resource.downloadUrl][0] // empty' \
+              "$artifacts_file")
+            if [ -z "$download_url" ]; then
+              return 1
+            fi
+
+            archive=$(mktemp "${RUNNER_TEMP}/aot-size-artifact.XXXXXX.zip")
+            if ! curl --fail --silent --show-error --location --retry 3 --max-time 300 \
+                "$download_url" --output "$archive"; then
+              rm -f "$archive"
+              return 1
+            fi
+
+            if ! unzip -q "$archive" -d "$destination"; then
+              rm -f "$archive"
+              return 1
+            fi
+
+            rm -f "$archive"
+          }
+
+          for ARTIFACT_NAME in "${ARTIFACT_NAMES[@]}"; do
             PLATFORM="${ARTIFACT_NAME%_AotSizeAnalysis}"
             echo "::group::Downloading ${PLATFORM}"
 
@@ -270,20 +311,14 @@ jobs:
             mkdir -p "$PR_DIR" "$BASE_DIR"
 
             # Download PR artifact
-            if ! az pipelines runs artifact download \
-                --run-id "$PR_BUILD_ID" \
-                --artifact-name "$ARTIFACT_NAME" \
-                --path "$PR_DIR"; then
+            if ! download_artifact "$PR_ARTIFACTS_FILE" "$ARTIFACT_NAME" "$PR_DIR"; then
               echo "::warning::Failed to download ${ARTIFACT_NAME} from PR build, skipping."
               echo "::endgroup::"
               continue
             fi
 
             # Download baseline artifact (same name)
-            if ! az pipelines runs artifact download \
-                --run-id "$BASE_BUILD_ID" \
-                --artifact-name "$ARTIFACT_NAME" \
-                --path "$BASE_DIR"; then
+            if ! download_artifact "$BASE_ARTIFACTS_FILE" "$ARTIFACT_NAME" "$BASE_DIR"; then
               echo "Baseline build does not have artifact ${ARTIFACT_NAME}, skipping."
               echo "::endgroup::"
               continue
