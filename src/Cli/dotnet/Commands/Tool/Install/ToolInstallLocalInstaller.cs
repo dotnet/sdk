@@ -16,7 +16,8 @@ internal sealed class ToolInstallLocalInstaller(
     VerbosityOptions verbosity,
     IToolPackageDownloader? toolPackageDownloader = null,
     string? runtimeJsonPathForTests = null,
-    RestoreActionConfig? restoreActionConfig = null)
+    RestoreActionConfig? restoreActionConfig = null,
+    CancellationToken cancellationToken = default)
 {
     public readonly string TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
 
@@ -57,7 +58,8 @@ internal sealed class ToolInstallLocalInstaller(
                     verbosity: verbosity,
                     versionRange,
                     TargetFrameworkToInstall,
-                    restoreActionConfig: restoreActionConfig
+                    restoreActionConfig: restoreActionConfig,
+                    cancellationToken: cancellationToken
                     );
 
             return toolDownloadedPackage;

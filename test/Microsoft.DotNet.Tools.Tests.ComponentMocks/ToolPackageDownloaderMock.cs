@@ -103,7 +103,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
             bool verifySignatures = false,
-            RestoreActionConfig? restoreActionConfig = null
+            RestoreActionConfig? restoreActionConfig = null,
+            CancellationToken cancellationToken = default
             )
         {
             string? rollbackDirectory = null;

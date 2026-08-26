@@ -31,12 +31,18 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
     private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
     private readonly RestoreActionConfig _restoreActionConfig;
+    private readonly CancellationToken _cancellationToken;
 
     private readonly ToolManifestFinder _toolManifestFinder;
 
-    public ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolManifestFinder = null, string? currentWorkingDirectory = null)
+    public ToolExecuteCommand(
+        ParseResult result,
+        ToolManifestFinder? toolManifestFinder = null,
+        string? currentWorkingDirectory = null,
+        CancellationToken cancellationToken = default)
         : base(result)
     {
+        _cancellationToken = cancellationToken;
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
         _forwardArguments = result.GetValue(Definition.CommandArgument) ?? [];
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
@@ -78,7 +84,8 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     _verbosity,
                     _restoreActionConfig,
                     localToolsResolverCache,
-                    new FileSystemWrapper());
+                    new FileSystemWrapper(),
+                    _cancellationToken);
 
                 var restoreResult = toolPackageRestorer.InstallPackage(toolManifestPackage, _configFile == null ? null : new FilePath(_configFile));
 
@@ -133,7 +140,8 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 verbosity: _verbosity,
                 versionRange: new VersionRange(bestVersion, true, bestVersion, true),
                 isGlobalToolRollForward: false,
-                restoreActionConfig: _restoreActionConfig);
+                restoreActionConfig: _restoreActionConfig,
+                cancellationToken: _cancellationToken);
         }
 
         using var toolExecuteActivity = Activities.Source.StartActivity("execute-tool");

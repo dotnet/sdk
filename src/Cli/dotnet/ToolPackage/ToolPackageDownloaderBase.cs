@@ -102,7 +102,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool isGlobalTool = false,
         bool isGlobalToolRollForward = false,
         bool verifySignatures = true,
-        RestoreActionConfig? restoreActionConfig = null)
+        RestoreActionConfig? restoreActionConfig = null,
+        CancellationToken cancellationToken = default)
     {
         if (versionRange == null)
         {
@@ -135,7 +136,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 givenSpecificVersion,
                 targetFramework,
                 isGlobalToolRollForward,
-                verbosity: verbosity);
+                verbosity,
+                cancellationToken);
         }
         else
         {
@@ -146,7 +148,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 packageVersion,
                 givenSpecificVersion,
                 targetFramework,
-                verbosity: verbosity);
+                verbosity,
+                cancellationToken);
         }
     }
 
@@ -158,7 +161,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool givenSpecificVersion,
         string? targetFramework,
         bool isGlobalToolRollForward,
-        VerbosityOptions verbosity)
+        VerbosityOptions verbosity,
+        CancellationToken cancellationToken)
     {
         // Check if package already exists in global tools location
         var nugetPackageRootDirectory = new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion);
@@ -186,7 +190,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     givenSpecificVersion,
                     assetFileDirectory: _globalToolStageDir,
                     targetFramework,
-                    verbosity);
+                    verbosity,
+                    cancellationToken);
 
                 var toolStoreTargetDirectory = _toolPackageStore.GetPackageDirectory(packageId, packageVersion);
 
@@ -241,7 +246,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         NuGetVersion packageVersion,
         bool givenSpecificVersion,
         string? targetFramework,
-        VerbosityOptions verbosity)
+        VerbosityOptions verbosity,
+        CancellationToken cancellationToken)
     {
         return TransactionalAction.Run<IToolPackage>(
             action: () =>
@@ -256,7 +262,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                     givenSpecificVersion,
                     assetFileDirectory: _localToolAssetDir,
                     targetFramework,
-                    verbosity);
+                    verbosity,
+                    cancellationToken);
 
                 var toolPackageInstance = new ToolPackageInstance(id: packageId,
                     version: packageVersion,
@@ -278,7 +285,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
         string? targetFramework,
-        VerbosityOptions verbosity)
+        VerbosityOptions verbosity,
+        CancellationToken cancellationToken)
     {
         // Use a named mutex to serialize concurrent installations of the same tool package
         string mutexName = GetToolInstallMutexName(packageInstallRoot, packageId, packageVersion);
@@ -288,14 +296,16 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         try
         {
             // First try a quick check to see if the mutex is immediately available
-            mutexAcquired = WaitOne(mutex, TimeSpan.FromMilliseconds(50));
+            mutexAcquired = WaitOne(mutex, TimeSpan.FromMilliseconds(50), cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
             if (!mutexAcquired)
             {
                 // Mutex is held by another process - inform the user
                 Reporter.Error.WriteLine(string.Format(CliStrings.ToolInstallationWaiting, packageId, packageVersion));
 
                 // Now wait for the longer duration
-                mutexAcquired = WaitOne(mutex, TimeSpan.FromMinutes(5));
+                mutexAcquired = WaitOne(mutex, TimeSpan.FromMinutes(5), cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
                 if (!mutexAcquired)
                 {
                     throw new ToolPackageException(string.Format(CliStrings.ToolInstallationTimeout, packageId, packageVersion));
@@ -329,11 +339,26 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
-    private static bool WaitOne(Mutex mutex, TimeSpan timeout)
+    private static bool WaitOne(Mutex mutex, TimeSpan timeout, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
+
         try
         {
-            return mutex.WaitOne(timeout);
+            if (!cancellationToken.CanBeCanceled)
+            {
+                return mutex.WaitOne(timeout);
+            }
+
+            int signaledHandle = WaitHandle.WaitAny(
+                [cancellationToken.WaitHandle, mutex],
+                timeout);
+            if (signaledHandle == 0)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            return signaledHandle != WaitHandle.WaitTimeout;
         }
         catch (AbandonedMutexException)
         {

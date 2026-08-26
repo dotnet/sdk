@@ -29,6 +29,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
     private readonly IToolPackageDownloader _toolPackageDownloader;
     private readonly VerbosityOptions _verbosity;
     private readonly RestoreActionConfig _restoreActionConfig;
+    private readonly CancellationToken _cancellationToken;
 
     public ToolRestoreCommand(
         ParseResult result,
@@ -36,9 +37,11 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         IToolManifestFinder toolManifestFinder = null,
         ILocalToolsResolverCache localToolsResolverCache = null,
         IFileSystem fileSystem = null,
-        IReporter reporter = null)
+        IReporter reporter = null,
+        CancellationToken cancellationToken = default)
         : base(result)
     {
+        _cancellationToken = cancellationToken;
         if (toolPackageDownloader == null)
         {
             (IToolPackageStore,
@@ -107,7 +110,8 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
             _verbosity,
             _restoreActionConfig,
             _localToolsResolverCache,
-            _fileSystem);
+            _fileSystem,
+            _cancellationToken);
 
         ToolRestoreResult[] toolRestoreResults =
             [.. packagesFromManifest

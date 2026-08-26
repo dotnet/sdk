@@ -28,7 +28,8 @@ internal sealed class ToolUpdateLocalCommand : CommandBase<ToolUpdateCommandDefi
         IToolManifestFinder toolManifestFinder = null,
         IToolManifestEditor toolManifestEditor = null,
         ILocalToolsResolverCache localToolsResolverCache = null,
-        IReporter reporter = null)
+        IReporter reporter = null,
+        CancellationToken cancellationToken = default)
         : base(parseResult)
     {
         _reporter = reporter ?? Reporter.Output;
@@ -45,7 +46,8 @@ internal sealed class ToolUpdateLocalCommand : CommandBase<ToolUpdateCommandDefi
                 _toolManifestFinder,
                 _toolManifestEditor,
                 _localToolsResolverCache,
-                _reporter));
+                _reporter,
+                cancellationToken: cancellationToken));
     }
 
     public override int Execute()
@@ -55,4 +57,3 @@ internal sealed class ToolUpdateLocalCommand : CommandBase<ToolUpdateCommandDefi
         return 0;
     }
 }
-

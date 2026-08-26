@@ -51,6 +51,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
     private readonly bool _updateAll;
     private readonly string? _currentWorkingDirectory;
     private readonly bool? _verifySignatures;
+    private readonly CancellationToken _cancellationToken;
 
     internal readonly RestoreActionConfig restoreActionConfig;
 
@@ -63,9 +64,11 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         INuGetPackageDownloader? nugetPackageDownloader = null,
         IToolPackageStoreQuery? store = null,
         string? currentWorkingDirectory = null,
-        bool? verifySignatures = null)
+        bool? verifySignatures = null,
+        CancellationToken cancellationToken = default)
         : base(parseResult)
     {
+        _cancellationToken = cancellationToken;
         _verifySignatures = verifySignatures;
         _currentWorkingDirectory = currentWorkingDirectory;
 
@@ -231,7 +234,8 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     isGlobalTool: true,
                     isGlobalToolRollForward: _allowRollForward,
                     verifySignatures: _verifySignatures ?? true,
-                    restoreActionConfig: restoreActionConfig);
+                    restoreActionConfig: restoreActionConfig,
+                    cancellationToken: _cancellationToken);
 
                 EnsureVersionIsHigher(oldPackage, newInstalledPackage, _allowPackageDowngrade);
 

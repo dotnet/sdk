@@ -15,12 +15,15 @@ internal sealed class ToolInstallCommand : CommandBase<ToolInstallCommandDefinit
     private readonly bool _global;
     private readonly string _toolPath;
     private readonly string _framework;
+    private readonly CancellationToken _cancellationToken;
 
     public ToolInstallCommand(
         ParseResult parseResult,
         ToolInstallGlobalOrToolPathCommand toolInstallGlobalOrToolPathCommand = null,
-        ToolInstallLocalCommand toolInstallLocalCommand = null) : base(parseResult)
+        ToolInstallLocalCommand toolInstallLocalCommand = null,
+        CancellationToken cancellationToken = default) : base(parseResult)
     {
+        _cancellationToken = cancellationToken;
         _toolInstallLocalCommand = toolInstallLocalCommand;
         _toolInstallGlobalOrToolPathCommand = toolInstallGlobalOrToolPathCommand;
         _global = parseResult.GetValue(Definition.LocationOptions.GlobalOption);
@@ -40,7 +43,7 @@ internal sealed class ToolInstallCommand : CommandBase<ToolInstallCommandDefinit
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
-            return (_toolInstallGlobalOrToolPathCommand ?? new ToolInstallGlobalOrToolPathCommand(_parseResult)).Execute();
+            return (_toolInstallGlobalOrToolPathCommand ?? new ToolInstallGlobalOrToolPathCommand(_parseResult, cancellationToken: _cancellationToken)).Execute();
         }
         else
         {
@@ -51,7 +54,7 @@ internal sealed class ToolInstallCommand : CommandBase<ToolInstallCommandDefinit
                         CliCommandStrings.LocalOptionDoesNotSupportFrameworkOption));
             }
 
-            return (_toolInstallLocalCommand ?? new ToolInstallLocalCommand(_parseResult)).Execute();
+            return (_toolInstallLocalCommand ?? new ToolInstallLocalCommand(_parseResult, cancellationToken: _cancellationToken)).Execute();
         }
     }
 }

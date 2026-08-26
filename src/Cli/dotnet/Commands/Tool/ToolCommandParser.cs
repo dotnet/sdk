@@ -39,14 +39,18 @@ internal static class ToolCommandParser
         command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
 #else
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
-        command.InstallCommand.SetAction(parseResult => new ToolInstallCommand(parseResult).Execute());
+        command.InstallCommand.SetAction((parseResult, cancellationToken) =>
+            Task.FromResult(new ToolInstallCommand(parseResult, cancellationToken: cancellationToken).Execute()));
         command.UninstallCommand.SetAction(parseResult => new ToolUninstallCommand(parseResult).Execute());
-        command.UpdateCommand.SetAction(parseResult => new ToolUpdateCommand(parseResult).Execute());
+        command.UpdateCommand.SetAction((parseResult, cancellationToken) =>
+            Task.FromResult(new ToolUpdateCommand(parseResult, cancellationToken: cancellationToken).Execute()));
         command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
         command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
-        command.RestoreCommand.SetAction(parseResult => new ToolRestoreCommand(parseResult).Execute());
-        command.ExecuteCommand.SetAction(parseResult => new ToolExecuteCommand(parseResult).Execute());
+        command.RestoreCommand.SetAction((parseResult, cancellationToken) =>
+            Task.FromResult(new ToolRestoreCommand(parseResult, cancellationToken: cancellationToken).Execute()));
+        command.ExecuteCommand.SetAction((parseResult, cancellationToken) =>
+            Task.FromResult(new ToolExecuteCommand(parseResult, cancellationToken: cancellationToken).Execute()));
 #endif
     }
 }

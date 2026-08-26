@@ -28,7 +28,8 @@ internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdate
         CreateToolPackageStoresAndDownloaderAndUninstaller createToolPackageStoreDownloaderUninstaller = null,
         CreateShellShimRepository createShellShimRepository = null,
         IReporter reporter = null,
-        IToolPackageStoreQuery _store = null)
+        IToolPackageStoreQuery _store = null,
+        CancellationToken cancellationToken = default)
         : base(parseResult)
     {
         _createToolPackageStoreDownloaderUninstaller = createToolPackageStoreDownloaderUninstaller ??
@@ -42,7 +43,8 @@ internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdate
             _createToolPackageStoreDownloaderUninstaller,
             _createShellShimRepository,
             reporter: reporter,
-            store: _store);
+            store: _store,
+            cancellationToken: cancellationToken);
     }
 
     public override int Execute()

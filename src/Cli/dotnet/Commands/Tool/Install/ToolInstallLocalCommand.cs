@@ -39,7 +39,8 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         IToolManifestEditor? toolManifestEditor = null,
         ILocalToolsResolverCache? localToolsResolverCache = null,
         IReporter? reporter = null,
-        string? runtimeJsonPathForTests = null)
+        string? runtimeJsonPathForTests = null,
+        CancellationToken cancellationToken = default)
         : base(parseResult)
     {
         if (Definition is ToolUpdateCommandDefinition updateDef)
@@ -72,7 +73,8 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
             verbosity: parseResult.GetValue(Definition.VerbosityOption),
             toolPackageDownloader,
             runtimeJsonPathForTests,
-            restoreActionConfig);
+            restoreActionConfig,
+            cancellationToken);
 
         _allowPackageDowngrade = parseResult.GetValue(Definition.AllowPackageDowngradeOption);
     }

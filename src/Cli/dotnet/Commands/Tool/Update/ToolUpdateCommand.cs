@@ -30,7 +30,8 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
         IToolPackageDownloader toolPackageDownloader = null,
         IToolManifestFinder toolManifestFinder = null,
         IToolManifestEditor toolManifestEditor = null,
-        ILocalToolsResolverCache localToolsResolverCache = null)
+        ILocalToolsResolverCache localToolsResolverCache = null,
+        CancellationToken cancellationToken = default)
         : base(result)
     {
         _toolUpdateLocalCommand
@@ -41,7 +42,8 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
                     toolManifestFinder,
                     toolManifestEditor,
                     localToolsResolverCache,
-                    reporter);
+                    reporter,
+                    cancellationToken);
 
         _global = result.GetValue(Definition.LocationOptions.GlobalOption);
         _toolPath = result.GetValue(Definition.LocationOptions.ToolPathOption);
@@ -53,7 +55,8 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
                 createToolPackageStoreDownloaderUninstaller,
                 createShellShimRepository,
                 reporter,
-                ToolPackageFactory.CreateToolPackageStoreQuery(location));
+                ToolPackageFactory.CreateToolPackageStoreQuery(location),
+                cancellationToken);
     }
 
 

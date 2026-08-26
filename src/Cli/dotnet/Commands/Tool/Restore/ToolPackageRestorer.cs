@@ -19,6 +19,7 @@ internal class ToolPackageRestorer
     private readonly string[] _overrideSources;
     private readonly VerbosityOptions _verbosity;
     private readonly RestoreActionConfig _restoreActionConfig;
+    private readonly CancellationToken _cancellationToken;
 
     private readonly ILocalToolsResolverCache _localToolsResolverCache;
     private readonly IFileSystem _fileSystem;
@@ -31,13 +32,15 @@ internal class ToolPackageRestorer
                                VerbosityOptions verbosity,
                                 RestoreActionConfig restoreActionConfig,
                                ILocalToolsResolverCache? localToolsResolverCache = null,
-                               IFileSystem? fileSystem = null)
+                               IFileSystem? fileSystem = null,
+                               CancellationToken cancellationToken = default)
     {
         _toolPackageDownloader = toolPackageDownloader;
         _additionalSources = additionalSources;
         _overrideSources = overrideSources;
         _verbosity = verbosity;
         _restoreActionConfig = restoreActionConfig;
+        _cancellationToken = cancellationToken;
 
         _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
         _fileSystem = fileSystem ?? new FileSystemWrapper();
@@ -71,7 +74,8 @@ internal class ToolPackageRestorer
                     verbosity: _verbosity,
                     ToVersionRangeWithOnlyOneVersion(package.Version),
                     targetFramework,
-                    restoreActionConfig: _restoreActionConfig
+                    restoreActionConfig: _restoreActionConfig,
+                    cancellationToken: _cancellationToken
                     );
 
             if (!ManifestCommandMatchesActualInPackage(package.CommandNames, [toolPackage.Command]))
@@ -185,4 +189,3 @@ internal class ToolPackageRestorer
             includeMaxVersion: true);
     }
 }
-
