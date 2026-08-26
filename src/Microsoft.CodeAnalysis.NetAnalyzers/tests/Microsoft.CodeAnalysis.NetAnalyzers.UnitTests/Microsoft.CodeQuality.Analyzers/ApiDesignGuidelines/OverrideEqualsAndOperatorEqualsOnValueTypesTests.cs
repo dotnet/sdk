@@ -84,6 +84,27 @@ public struct EmptyStruct
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod]
+        public async Task CSharpNoDiagnosticForManualUnionStructAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = """
+                    using System.Runtime.CompilerServices;
+
+                    [Union]
+                    public struct A : IUnion
+                    {
+                        public A(int value) => Value = value;
+                        public A(string value) => Value = value;
+
+                        public object? Value { get; }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.Preview
+            }.RunAsync(CancellationToken.None);
+        }
+
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [TestMethod]
         public async Task CSharpNoDiagnosticForEnumeratorsAsync()
