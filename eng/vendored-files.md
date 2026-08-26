@@ -86,6 +86,18 @@ terminal reporter is one file in this repo
 partial files upstream (`TerminalTestReporter.*.cs`), so its entry lists each
 upstream partial as a separate source. Each source is tracked independently.
 
+> **`sources` is append-only.** The tracking issue marker embeds the source's
+> *index* in the array (`<!-- vendored-sync:id={id}:{source-index} -->`), so
+> inserting or reordering sources re-points existing open issues at the wrong
+> file. Add new sources at the end of the array.
+
+> **Upstream globs don't propagate.** testfx includes the reporter partials with
+> a `*.cs` glob in `TerminalReporterContract.props`, so a new partial appears
+> upstream without any manifest change here. New upstream partials must be
+> appended to this manifest by hand, otherwise later edits to them are invisible
+> to drift detection.
+> ([microsoft/testfx#10390](https://github.com/microsoft/testfx/issues/10390)).
+
 ## How drift is detected
 
 For every `(entry, source)` pair the workflow:

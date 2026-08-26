@@ -8,6 +8,7 @@
   - [Common Properties Collected](#common-properties-collected)
   - [Telemetry Events](#telemetry-events)
     - [Core CLI Events](#core-cli-events)
+    - [Test Events](#test-events)
     - [Template Engine Events](#template-engine-events)
     - [SDK-Collected Build Events](#sdk-collected-build-events)
     - [MSBuild Engine Telemetry](#msbuild-engine-telemetry)
@@ -33,6 +34,11 @@ The .NET SDK telemetry can be disabled using the following environment variable:
   - Values: `false`, `0`, or `no` to allow messages
   - Default: `false` (messages are displayed)
   - Note: This flag does not affect telemetry collection itself
+- **`DOTNET_CLI_TELEMETRY_SESSIONID`**: Seeds the initial telemetry session ID
+  - When set, the CLI uses this value instead of generating a new GUID for the first `TelemetryClient` created in the process
+  - This is useful for correlating multiple `dotnet` invocations that belong to the same CI workflow, job, or higher-level user session
+  - If not set, the CLI generates a new GUID per process as before
+
 
 - **`DOTNET_CLI_TELEMETRY_DISABLE_TRACE_EXPORT`**: Set to `1`, `true`, or `yes` to disable exporting trace
   telemetry to Azure Monitor (both persistence and upload). Metrics/OTLP export and the local disk log are
@@ -125,7 +131,7 @@ Every telemetry event automatically includes these common properties:
 | **Product Type** | Type of .NET product | Product identifier |
 | **Libc Release** | Libc release information | Libc release version |
 | **Libc Version** | Libc version information | Libc version number |
-| **SessionId** | Unique session identifier | GUID |
+| **SessionId** | Unique session identifier | GUID or CI-specific correlation identifier |
 
 ## Telemetry Events
 
@@ -215,6 +221,24 @@ Every telemetry event automatically includes these common properties:
 
 **Description**: Tracks unhandled exceptions for diagnostics
 
+### Test Events
+
+#### `test/artifact-post-processing`
+
+**When fired**: Once per `dotnet test` Microsoft.Testing.Platform run that planned at least one artifact post-processing job. Runs that plan nothing (no mergeable artifacts) emit nothing.
+
+**Properties**:
+
+- `jobs_planned`: Number of elected test-application relaunches planned
+- `jobs_executed`: Number of jobs actually attempted (differs from `jobs_planned` only when the run was cancelled mid-way)
+- `jobs_failed`: Number of jobs that reported a failure
+- `artifact_count`: Total number of input artifacts across all planned groups
+- `kinds`: Semicolon-separated, sorted, distinct artifact kinds that were merged; any kind outside a fixed well-known list is reported as `other`
+- `extensions`: Semicolon-separated, sorted, distinct file extensions from file-extension fallback groups; any extension outside a fixed well-known list is reported as `other`
+- `duration_ms`: Total wall-clock time spent post-processing, in milliseconds
+
+**Description**: Tracks how often artifact post-processing runs and on which shipped formats. No file paths, artifact contents, project names, or user-defined identifiers are collected — that is why unknown kinds and extensions are bucketed as `other`.
+
 ### Template Engine Events
 
 #### `template/new-install`
@@ -249,6 +273,41 @@ Every telemetry event automatically includes these common properties:
 **Description**: Tracks template usage and creation success
 
 ### SDK-Collected Build Events
+
+[`MSBuildLogger`](../../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) collects the
+existing events below. MSBuild loads the logger from the SDK. The logger can run in the
+CLI process, a child MSBuild process, or a persistent MSBuild server.
+
+The logger creates an internal activity for each build. When trace context is available,
+the activity is a child of the invoking CLI trace. Server reuse changes telemetry delivery
+and correlation only. It does not change the listed data points or properties.
+
+The activity remains open through logger shutdown because MSBuild emits the final `build`
+telemetry event after `BuildFinished` (see
+[dotnet/sdk#55749](https://github.com/dotnet/sdk/issues/55749)).
+`TelemetryHostMatrixTests` validates the real OTLP export path for cold and hot MSBuild
+servers, in-process builds, server fallback, and telemetry opt-out. The test installs the
+pinned Aspire CLI version from the repository's configured feeds, runs its dashboard on
+loopback endpoints, and verifies exported events through the dashboard telemetry API.
+
+#### `msbuild/roslyn/compilercache`
+
+**When fired**: When the Roslyn [compiler output cache](https://github.com/dotnet/roslyn/blob/main/docs/compilers/Design/compiler-output-cache-experiment.md)
+is enabled and a compilation runs on the compiler server through the MSBuild `Csc` or `Vbc` task
+
+**Properties**:
+
+- `cachestatus`: Cache lookup result: `hit` or `miss`
+- `storeresult`: Cache store result: `none`, `stored`, `skippedrace`, `skippedexists`, or `failed`
+- `language`: Compiler language: `C#` or `Visual Basic`
+- `keycomputems`: Milliseconds spent computing the deterministic cache key
+- `restorems`: Milliseconds spent attempting to restore a cached result
+- `storems`: Milliseconds spent storing the result; omitted when no store was attempted
+- `compilems`: Milliseconds spent compiling and emitting on a cache miss; omitted on a cache hit or when compilation failed
+
+**Description**: Tracks the effectiveness and performance of the experimental Roslyn compiler output cache
+
+---
 
 #### `msbuild/targetframeworkeval`
 

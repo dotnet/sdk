@@ -5,12 +5,15 @@ Usage:
   dotnet test [options] [platform options] [extension options]
 
 Options:
-  --project <PROJECT_OR_SOLUTION_PATH>            Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.
+  --project <PROJECT_OR_SOLUTION_PATH>            Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.
   --solution <SOLUTION_PATH>                      Defines the path of the solution file to test. Use path to the solution file, or path to the directory containing the solution file. If not specified, it defaults to the current directory.
   --test-modules <EXPRESSION>                     Run tests for the specified test modules.
   --root-directory <ROOT_PATH>                    The test modules have the specified root directory.
   --results-directory <RESULTS_DIR>               The directory where the test results will be placed.
                                                   The specified directory will be created if it does not exist.
+  --results-directory-layout <LAYOUT>             Specifies how test results are organized within the results directory.
+                                                  'flat' (the default) places the results of every test project directly in the results directory.
+                                                  'per-module' gives every test project its own '<project>/<target-framework>_<runtime>' subdirectory, so reports with the same file name cannot overwrite each other.
   --config-file <CONFIG_FILE>                     Specifies a testconfig.json file.
   --diagnostic-output-directory <DIAGNOSTIC_DIR>  Output directory of the diagnostic logging.
                                                   If not specified the file will be generated inside the default 'TestResults' directory.
@@ -65,16 +68,21 @@ Platform Options:
                                   Note that this is slowing down the test execution.
   --diagnostic-verbosity          Define the level of the verbosity for the --diagnostic.
                                   The available values are 'Trace', 'Debug', 'Information', 'Warning', 'Error', and 'Critical'.
+  --enable-dynamic-extensions     Enable loading test platform extensions declared by '*.testingplatformextensions.json' manifests found next to the test application. Disabled by default.
   --exit-on-process-exit          Exit the test process if dependent process exits. PID must be provided.
   --filter-uid                    Provides a list of test node UIDs to filter by.
   --help                          Show the command line help.
-  --ignore-exit-code              Do not report non successful exit value for specific exit codes
-                                  (e.g. '--ignore-exit-code 8;9' ignore exit code 8 and 9 and will return 0 in these case)
+  --ignore-exit-code              Do not report a non-successful exit value for the specified exit codes.
+                                  For example, '--ignore-exit-code 8;9' ignores exit codes 8 and 9 and returns 0 in those cases.
+                                  For more information about exit codes, see https://learn.microsoft.com/dotnet/core/testing/microsoft-testing-platform-troubleshooting#exit-codes.
   --info                          Display .NET test application information.
   --progress                      Control whether progress is reported to screen.
                                   Valid values are 'auto' (default), 'on' (also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
                                   'auto' shows progress unless the terminal cannot update in place (for example with --no-ansi or in CI).
                                   This option takes precedence over the deprecated --no-progress flag.
+  --show-flaky-tests              Control whether tests that failed at least once but eventually passed after a retry are listed in the run summary.
+                                  Valid values are 'on' (the default, also accepts 'true', 'enable', '1') or 'off' (also accepts 'false', 'disable', '0').
+                                  Passing the option without a value turns it on.
   --show-slowest-tests            Show the specified number of slowest tests (by reported execution duration) in the run summary. Expects a positive integer.
   --show-stderr                   Determines when to show captured error output of a test.
                                   Valid values are 'All', 'Failed', 'None'. Default is 'All' (or 'Failed' when an LLM/AI agent environment is detected).

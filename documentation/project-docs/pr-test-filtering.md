@@ -66,8 +66,8 @@ project(s) (e.g. TemplateEngine tests).
 
 Individual test classes are excluded via `[TestCategory]` attributes and MSTest filter
 expressions. The test project still runs on Helix, but specific classes are skipped.
-This is useful when expensive tests (e.g. ILLink trimming tests) live in a shared test
-assembly alongside cheaper tests. Not yet implemented.
+This is useful when expensive tests live in a shared test assembly alongside cheaper
+tests. Not yet implemented.
 
 ### Method-level filtering (future)
 
@@ -142,11 +142,37 @@ Is this a PR build?
 - **Non-PR builds**: `RunAlways=CI` ensures no scopes are skipped on `main` / release
   branches.
 
+### Use a scope for targeted local tests
+
+Agents and contributors should use the same `TestProjects` mappings for local targeted
+validation rather than maintaining a second area-to-project list. Expand a configured
+scope into concrete project paths with:
+
+```shell
+./.dotnet/dotnet run scripts/EvaluateConditionalTestScopes.cs -- \
+  --repo-root . \
+  --list-test-projects TemplateEngine
+```
+
+The command writes one repo-relative `Targeted test project:` line for each project
+matched by the scope's `TestProjects` globs. Run those projects individually so a
+failure identifies the affected project. The
+[`targeted-test`](../../.github/skills/targeted-test/SKILL.md) agent skill provides the
+runner and fallback mappings for change areas that do not yet have a `ConditionalTestScope`.
+
+If a changed file matches `GlobalTriggerPaths`, do not use an individual conditional
+scope to claim complete coverage: PR validation deliberately runs all tests for those
+shared changes.
+
 ## Adding a new scope
 
 1. Add a `<ConditionalTestScope>` item in `test/ConditionalTests.props`.
-2. That's it — the evaluation script and `UnitTests.proj` are generic and require no
-   per-scope changes.
+2. Reconcile the fallback table in the
+   [`targeted-test`](../../.github/skills/targeted-test/SKILL.md) agent skill. Remove an
+   entry when the new scope now covers that area, or update it if test-project ownership
+   changed. Do not copy configured mappings into the fallback table.
+3. The evaluation script and `UnitTests.proj` are generic and require no per-scope
+   changes.
 
 Example:
 
@@ -174,10 +200,30 @@ also trigger its tests. For example:
   `src/Cli/Microsoft.DotNet.Cli.Definitions/**`.
 - Shared infrastructure or utility projects that multiple features depend on may need to
   appear in multiple scopes' trigger paths.
-- Test assets (e.g. `test/TestAssets/TestPackages/`) that a test suite consumes at
-  runtime should also be included. These are easy to overlook because they are not
-  referenced via `ProjectReference`, but changes to them can cause test failures just
-  the same.
+- Test assets (e.g. `test/TestAssets/TestProjects/`, `test/TestAssets/TestPackages/`)
+  that a test suite consumes at runtime should also be included. These are easy to
+  overlook because they are not referenced via `ProjectReference` — they are looked up
+  by name at test runtime via `TestAssetsManager.CopyTestAsset("AssetName")`. A change
+  to a test asset can silently break tests even when no source file in the scope's
+  `TriggerPaths` has changed.
+
+  **How to find them**: search the test files for string literals passed to
+  `CopyTestAsset`, `GetTestAsset`, or similar helpers. Any asset name found in
+  `test/TestAssets/TestProjects/` or `test/TestAssets/TestPackages/` that is unique to
+  (or primarily used by) this test suite should be added as an explicit trigger path
+  (e.g. `test/TestAssets/TestProjects/MyAsset/**`). For broadly shared assets
+  used across dozens of unrelated test suites (e.g. `HelloWorld`), use judgment
+  — whether to include them is a trade-off between trigger precision and the risk
+  that a shared asset change breaks this suite without activating any other scope
+  that would otherwise catch the regression.
+
+**Runtime behavior vs. compile-time dependencies**: not all dependencies need to be in
+trigger paths. Ask whether a change to that dependency could cause a test to silently
+*pass when it should fail*. If yes, it is a runtime behavior dependency and belongs in
+`TriggerPaths`. If a change would instead cause a *compilation failure* (e.g. a shared
+constants file, a resx, a helper primarily used for test parameterization such as `[DynamicData]`),
+it is a compile-time dependency and does not need to be listed — the build will fail
+loudly before any tests run, making the gap immediately visible.
 
 Use judgment here. If a feature has complex or far-reaching dependencies that make it
 difficult to define a reliable set of trigger paths, it may not be a good candidate for
@@ -207,8 +253,10 @@ too coarse, it can be tuned later — see [Future enhancements](#future-enhancem
 ## Design principles
 
 - **Single source of truth**: `test/ConditionalTests.props` defines everything about a
-  scope — trigger paths, projects, and conditions. Adding or removing a scope is a
-  one-file change.
+  scope — trigger paths, projects, and conditions. The
+  [`targeted-test`](../../.github/skills/targeted-test/SKILL.md) skill reads these mappings
+  directly; its separate fallback table contains only common unscoped areas and must be
+  reconciled when scopes or test-project ownership change.
 - **Safe by default**: when in doubt, tests run. The system only skips tests when it has
   positive evidence that no relevant files changed.
 - **No extra build legs**: filtering happens within the existing build/test pipeline.

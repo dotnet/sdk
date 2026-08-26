@@ -1493,6 +1493,52 @@ struct ManagedValueType
         }
 
         [TestMethod]
+        public async Task MarshalStructureToPtr_NamedArgumentsOutOfOrder_Emits_Diagnostic()
+        {
+            string source = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    public void Test(IntPtr ptr)
+    {
+        {|CA1421:Marshal.StructureToPtr(ptr: ptr, structure: default(ValueType), fDeleteOld: false)|};
+    }
+}
+
+struct ValueType
+{
+    int field;
+}
+";
+            string codeFix = @"
+using System;
+using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
+
+[assembly:DisableRuntimeMarshalling]
+
+class C
+{
+    public unsafe void Test(IntPtr ptr)
+    {
+        *(ValueType*)ptr = default(ValueType);
+    }
+}
+
+struct ValueType
+{
+    int field;
+}
+";
+            await VerifyCSCodeFixAsync(source, codeFix, allowUnsafeBlocks: true);
+        }
+
+        [TestMethod]
         public async Task MarshalPtrToStructure_Emits_Diagnostic()
         {
             string source = @"

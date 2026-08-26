@@ -13,7 +13,8 @@
         group, otherwise the duplicate <Compile>/<EmbeddedResource> items will fail the
         build once both changes merge.
       * Each command contributes its own clearly-labeled group below, referencing only
-        its command-specific sources and dependencies.
+        its command-specific sources and resources. Add package and project dependencies
+        to AotDependencies.props so the product and tests consume the same closure.
 
     NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer because
     ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper and the test
@@ -130,6 +131,24 @@
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
     <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
     <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" Link="Resources\Strings.resx" GenerateSource="true" Namespace="Microsoft.NET.Build.Tasks" />
+  </ItemGroup>
+
+  <!-- File-based run cache and launch contracts shared with the managed CLI. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunCommand.cs" Link="Commands\Run\AotRunCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunInvocation.cs" Link="Commands\Run\AotRunInvocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\BuildLevel.cs" Link="Commands\Run\BuildLevel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppCacheInfo.cs" Link="Commands\Run\FileBasedAppCacheInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppLaunchInfo.cs" Link="Commands\Run\FileBasedAppLaunchInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlan.cs" Link="Commands\Run\FileBasedAppRunPlan.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlanInputs.cs" Link="Commands\Run\FileBasedAppRunPlanInputs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\LaunchProfileReadResult.cs" Link="Commands\Run\LaunchProfileReadResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunDecisionReason.cs" Link="Commands\Run\RunDecisionReason.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunFileBuildCacheEntry.cs" Link="Commands\Run\RunFileBuildCacheEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunFileBuildCacheJsonSerializerContext.cs" Link="Commands\Run\RunFileBuildCacheJsonSerializerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunPlan.cs" Link="Commands\Run\RunPlan.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunProperties.cs" Link="Commands\Run\RunProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunTier.cs" Link="Commands\Run\RunTier.cs" />
   </ItemGroup>
 
   <!--

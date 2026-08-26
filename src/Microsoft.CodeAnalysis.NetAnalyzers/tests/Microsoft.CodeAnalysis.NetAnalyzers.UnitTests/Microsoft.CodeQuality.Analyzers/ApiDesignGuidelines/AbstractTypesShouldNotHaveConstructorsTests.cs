@@ -218,5 +218,61 @@ End Class
 ";
             await VerifyVB.VerifyCodeFixAsync(code, code);
         }
+
+        [TestMethod]
+        public async Task TestCSharpNestedAbstractClasses_FixAllChangesEveryConstructorAsync()
+        {
+            var code = @"
+public abstract class [|C|]
+{
+    public C() { }
+
+    public abstract class [|D|]
+    {
+        public D() { }
+    }
+}
+";
+            var fix = @"
+public abstract class C
+{
+    protected C() { }
+
+    public abstract class D
+    {
+        protected D() { }
+    }
+}
+";
+            await VerifyCS.VerifyCodeFixAsync(code, fix);
+        }
+
+        [TestMethod]
+        public async Task TestBasicNestedAbstractClasses_FixAllChangesEveryConstructorAsync()
+        {
+            var code = @"
+Public MustInherit Class [|C|]
+    Public Sub New()
+    End Sub
+
+    Public MustInherit Class [|D|]
+        Public Sub New()
+        End Sub
+    End Class
+End Class
+";
+            var fix = @"
+Public MustInherit Class C
+    Protected Sub New()
+    End Sub
+
+    Public MustInherit Class D
+        Protected Sub New()
+        End Sub
+    End Class
+End Class
+";
+            await VerifyVB.VerifyCodeFixAsync(code, fix);
+        }
     }
 }

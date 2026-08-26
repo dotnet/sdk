@@ -83,7 +83,7 @@ public class A
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
                 NumberOfIncrementalIterations = 3,
-                NumberOfFixAllIterations = 3,
+                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -124,7 +124,7 @@ public class A
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
                 NumberOfIncrementalIterations = 2,
-                NumberOfFixAllIterations = 2,
+                NumberOfFixAllIterations = 1,
             }.RunAsync(CancellationToken.None);
         }
 
