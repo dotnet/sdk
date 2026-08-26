@@ -209,7 +209,6 @@ jobs:
               --data-urlencode "definitions=${AZDO_PIPELINE_ID}" \
               --data-urlencode "branchName=${branch}" \
               --data-urlencode "statusFilter=completed" \
-              --data-urlencode "resultFilter=succeeded" \
               --data-urlencode "queryOrder=queueTimeDescending" \
               --data-urlencode '$top=1' \
               --data-urlencode "api-version=7.1" |
@@ -223,7 +222,7 @@ jobs:
           PR_BUILD_ID=$(get_latest_build_id "refs/pull/${PR_NUMBER}/merge" "$PR_HEAD_SHA")
 
           if [ -z "$PR_BUILD_ID" ]; then
-            echo "::warning::No completed successful build found for PR commit ${PR_HEAD_SHA}. Ensure the AzDO pipeline has finished."
+            echo "::warning::No completed build found for PR commit ${PR_HEAD_SHA}. Ensure the AzDO pipeline has finished."
             echo "found=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
