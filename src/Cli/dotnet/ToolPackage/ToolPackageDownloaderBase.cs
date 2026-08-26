@@ -164,79 +164,81 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         VerbosityOptions verbosity,
         CancellationToken cancellationToken)
     {
-        // Check if package already exists in global tools location
-        var nugetPackageRootDirectory = new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion);
-        if (IsPackageInstalled(packageId, packageVersion, nugetPackageRootDirectory))
-        {
-            throw new ToolPackageException(
-                string.Format(
-                    CliStrings.ToolPackageConflictPackageId,
-                    packageId,
-                    packageVersion.ToNormalizedString()));
-        }
-
         string rollbackDirectory = _globalToolStageDir.Value;
 
-        return TransactionalAction.Run<IToolPackage>(
-            action: () =>
-            {
-                DownloadTool(
-                    packageDownloadDir: _globalToolStageDir,
-                    packageInstallRoot: _toolPackageStore.Root,
-                    packageId,
-                    packageVersion,
-                    nugetPackageDownloader,
-                    packageSourceLocation,
-                    givenSpecificVersion,
-                    assetFileDirectory: _globalToolStageDir,
-                    targetFramework,
-                    verbosity,
-                    cancellationToken);
-
-                var toolStoreTargetDirectory = _toolPackageStore.GetPackageDirectory(packageId, packageVersion);
-
-                //  Create parent directory in global tool store, for example dotnet\tools\.store\powershell
-                _fileSystem.Directory.CreateDirectory(toolStoreTargetDirectory.GetParentPath().Value);
-
-                var _moveContentActivity = Activities.Source.StartActivity("move-global-tool-content");
-                //  Move tool files from stage to final location
-                FileAccessRetrier.RetryOnMoveAccessFailure(() => _fileSystem.Directory.Move(_globalToolStageDir.Value, toolStoreTargetDirectory.Value));
-                _moveContentActivity?.Dispose();
-
-                rollbackDirectory = toolStoreTargetDirectory.Value;
-
-                var toolPackageInstance = new ToolPackageInstance(id: packageId,
-                    version: packageVersion,
-                    packageDirectory: toolStoreTargetDirectory,
-                    assetsJsonParentDirectory: toolStoreTargetDirectory,
-                    fileSystem: _fileSystem);
-
-                if (isGlobalToolRollForward)
+        return ExecuteWithToolInstallMutex(
+            _toolPackageStore.Root,
+            packageId,
+            packageVersion,
+            cancellationToken,
+            () => TransactionalAction.Run<IToolPackage>(
+                action: () =>
                 {
-                    if (verbosity.IsDetailedOrDiagnostic())
+                    var nugetPackageRootDirectory = new VersionFolderPathResolver(_toolPackageStore.Root.Value).GetInstallPath(packageId.ToString(), packageVersion);
+                    if (IsPackageInstalled(packageId, packageVersion, nugetPackageRootDirectory))
                     {
-                        Reporter.Output.WriteLine($"Configuring package {packageId}@{packageVersion} for runtime roll-forward");
+                        throw new ToolPackageException(
+                            string.Format(
+                                CliStrings.ToolPackageConflictPackageId,
+                                packageId,
+                                packageVersion.ToNormalizedString()));
                     }
-                    UpdateRuntimeConfig(toolPackageInstance);
-                }
 
-                return toolPackageInstance;
-            },
-            rollback: () =>
-            {
-                if (rollbackDirectory != null && _fileSystem.Directory.Exists(rollbackDirectory))
-                {
-                    _fileSystem.Directory.Delete(rollbackDirectory, true);
-                }
+                    DownloadTool(
+                        packageDownloadDir: _globalToolStageDir,
+                        packageId,
+                        packageVersion,
+                        nugetPackageDownloader,
+                        packageSourceLocation,
+                        givenSpecificVersion,
+                        assetFileDirectory: _globalToolStageDir,
+                        targetFramework,
+                        verbosity);
 
-                //  Delete global tool store package ID directory if it's empty (ie no other versions are installed)
-                DirectoryPath packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
-                if (_fileSystem.Directory.Exists(packageRootDirectory.Value) &&
-                    !_fileSystem.Directory.EnumerateFileSystemEntries(packageRootDirectory.Value).Any())
+                    var toolStoreTargetDirectory = _toolPackageStore.GetPackageDirectory(packageId, packageVersion);
+
+                    //  Create parent directory in global tool store, for example dotnet\tools\.store\powershell
+                    _fileSystem.Directory.CreateDirectory(toolStoreTargetDirectory.GetParentPath().Value);
+
+                    var _moveContentActivity = Activities.Source.StartActivity("move-global-tool-content");
+                    //  Move tool files from stage to final location
+                    FileAccessRetrier.RetryOnMoveAccessFailure(() => _fileSystem.Directory.Move(_globalToolStageDir.Value, toolStoreTargetDirectory.Value));
+                    _moveContentActivity?.Dispose();
+
+                    rollbackDirectory = toolStoreTargetDirectory.Value;
+
+                    var toolPackageInstance = new ToolPackageInstance(id: packageId,
+                        version: packageVersion,
+                        packageDirectory: toolStoreTargetDirectory,
+                        assetsJsonParentDirectory: toolStoreTargetDirectory,
+                        fileSystem: _fileSystem);
+
+                    if (isGlobalToolRollForward)
+                    {
+                        if (verbosity.IsDetailedOrDiagnostic())
+                        {
+                            Reporter.Output.WriteLine($"Configuring package {packageId}@{packageVersion} for runtime roll-forward");
+                        }
+                        UpdateRuntimeConfig(toolPackageInstance);
+                    }
+
+                    return toolPackageInstance;
+                },
+                rollback: () =>
                 {
-                    _fileSystem.Directory.Delete(packageRootDirectory.Value, false);
-                }
-            });
+                    if (rollbackDirectory != null && _fileSystem.Directory.Exists(rollbackDirectory))
+                    {
+                        _fileSystem.Directory.Delete(rollbackDirectory, true);
+                    }
+
+                    //  Delete global tool store package ID directory if it's empty (ie no other versions are installed)
+                    DirectoryPath packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
+                    if (_fileSystem.Directory.Exists(packageRootDirectory.Value) &&
+                        !_fileSystem.Directory.EnumerateFileSystemEntries(packageRootDirectory.Value).Any())
+                    {
+                        _fileSystem.Directory.Delete(packageRootDirectory.Value, false);
+                    }
+                }));
     }
 
     protected IToolPackage InstallLocalToolPackageInternal(
@@ -249,35 +251,37 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         VerbosityOptions verbosity,
         CancellationToken cancellationToken)
     {
-        return TransactionalAction.Run<IToolPackage>(
-            action: () =>
-            {
-                DownloadTool(
-                    packageDownloadDir: _localToolDownloadDir,
-                    packageInstallRoot: _localToolDownloadDir,
-                    packageId,
-                    packageVersion,
-                    nugetPackageDownloader,
-                    packageSourceLocation,
-                    givenSpecificVersion,
-                    assetFileDirectory: _localToolAssetDir,
-                    targetFramework,
-                    verbosity,
-                    cancellationToken);
+        return ExecuteWithToolInstallMutex(
+            _localToolDownloadDir,
+            packageId,
+            packageVersion,
+            cancellationToken,
+            () => TransactionalAction.Run<IToolPackage>(
+                action: () =>
+                {
+                    DownloadTool(
+                        packageDownloadDir: _localToolDownloadDir,
+                        packageId,
+                        packageVersion,
+                        nugetPackageDownloader,
+                        packageSourceLocation,
+                        givenSpecificVersion,
+                        assetFileDirectory: _localToolAssetDir,
+                        targetFramework,
+                        verbosity);
 
-                var toolPackageInstance = new ToolPackageInstance(id: packageId,
-                    version: packageVersion,
-                    packageDirectory: _localToolDownloadDir,
-                    assetsJsonParentDirectory: _localToolAssetDir,
-                    fileSystem: _fileSystem);
+                    var toolPackageInstance = new ToolPackageInstance(id: packageId,
+                        version: packageVersion,
+                        packageDirectory: _localToolDownloadDir,
+                        assetsJsonParentDirectory: _localToolAssetDir,
+                        fileSystem: _fileSystem);
 
-                return toolPackageInstance;
-            });
+                    return toolPackageInstance;
+                }));
     }
 
     protected void DownloadTool(
         DirectoryPath packageDownloadDir,
-        DirectoryPath packageInstallRoot,
         PackageId packageId,
         NuGetVersion packageVersion,
         INuGetPackageDownloader nugetPackageDownloader,
@@ -285,10 +289,34 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool givenSpecificVersion,
         DirectoryPath assetFileDirectory,
         string? targetFramework,
-        VerbosityOptions verbosity,
-        CancellationToken cancellationToken)
+        VerbosityOptions verbosity)
     {
-        // Use a named mutex to serialize concurrent installations of the same tool package
+        if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
+        {
+            DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion, verbosity: verbosity);
+        }
+
+        CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+
+        //  Also download RID-specific package if needed
+        if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
+        {
+            if (!IsPackageInstalled(ridSpecificPackage, packageVersion, packageDownloadDir.Value))
+            {
+                DownloadAndExtractPackage(ridSpecificPackage, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true, verbosity: verbosity);
+            }
+
+            CreateAssetFile(ridSpecificPackage, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+        }
+    }
+
+    private static T ExecuteWithToolInstallMutex<T>(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        NuGetVersion packageVersion,
+        CancellationToken cancellationToken,
+        Func<T> action)
+    {
         string mutexName = GetToolInstallMutexName(packageInstallRoot, packageId, packageVersion);
         using var mutex = new Mutex(false, mutexName);
         bool mutexAcquired = false;
@@ -312,23 +340,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 }
             }
 
-            if (!IsPackageInstalled(packageId, packageVersion, packageDownloadDir.Value))
-            {
-                DownloadAndExtractPackage(packageId, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: givenSpecificVersion, verbosity: verbosity);
-            }
-
-            CreateAssetFile(packageId, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.AssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
-
-            //  Also download RID-specific package if needed
-            if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageId ridSpecificPackage)
-            {
-                if (!IsPackageInstalled(ridSpecificPackage, packageVersion, packageDownloadDir.Value))
-                {
-                    DownloadAndExtractPackage(ridSpecificPackage, nugetPackageDownloader, packageDownloadDir.Value, packageVersion, packageSourceLocation, includeUnlisted: true, verbosity: verbosity);
-                }
-
-                CreateAssetFile(ridSpecificPackage, packageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
-            }
+            return action();
         }
         finally
         {
