@@ -336,6 +336,7 @@ namespace Analyzer.Utilities
         public const string SystemRuntimeCompilerServicesRuntimeFeature = "System.Runtime.CompilerServices.RuntimeFeature";
         public const string SystemRuntimeCompilerServicesTaskAwaiter = "System.Runtime.CompilerServices.TaskAwaiter";
         public const string SystemRuntimeCompilerServicesTypeForwardedToAttribute = "System.Runtime.CompilerServices.TypeForwardedToAttribute";
+        public const string SystemRuntimeCompilerServicesUnionAttribute = "System.Runtime.CompilerServices.UnionAttribute";
         public const string SystemRuntimeCompilerServicesValueTaskAwaiter = "System.Runtime.CompilerServices.ValueTaskAwaiter";
         public const string SystemRuntimeExceptionServicesHandleProcessCorruptedStateExceptionsAttribute = "System.Runtime.ExceptionServices.HandleProcessCorruptedStateExceptionsAttribute";
         public const string SystemRuntimeInteropServicesCharSet = "System.Runtime.InteropServices.CharSet";
