@@ -2,7 +2,7 @@
 
 This project contains a simple console application that uses the MSI APIs to install an MSI. You can run the application using the command line below
 
-```Microsoft.Win32.Mist.ManualTest.exe install <PATH_TO_YOUR_MSI>```
+```Microsoft.Win32.Msi.ManualTester.exe install <PATH_TO_YOUR_MSI>```
 
 If the MSI you provide installs per-machine, run the application from an elevated prompt. The test application will not handle elevation. It will report
 an error if you don't have sufficient privileges.

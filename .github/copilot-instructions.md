@@ -63,6 +63,30 @@ from a diagnostic ID. See the canonical
 - Product tests exercise `artifacts/bin/redist/<configuration>/dotnet`; ensure it contains
   the production change before trusting results.
 
+| Switch | Effect |
+| --- | --- |
+| `-c` / `-configuration <Debug\|Release>` | Build configuration (default `Debug`). |
+| `-test` (`-t`) | Run tests after building. |
+| `-pack` | Build installers/packages (otherwise skipped for speed). |
+
+Arguments not directly supported by the script are passed through to MSBuild (e.g.
+`/t:UpdateXlf`, `/bl` for a binlog, `/p:Property=Value`).
+
+Canonical scenarios:
+
+- Build the full redist SDK: `build.cmd` (Windows) or `./build.sh` (Linux/macOS).
+  - The script first restores a repo-local .NET SDK to `.dotnet/dotnet`, then builds the SDK.
+    Invoke that bootstrap SDK directly as `./.dotnet/dotnet <args>` when you need a `dotnet`
+    that resolves against this repo.
+  - The built SDK is output to `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
+  - The first build is slow; subsequent builds are incremental.
+- Run tests through the `run-tests` skill. It selects the appropriate focused, scoped, or
+  full-suite workflow and retains actionable diagnostics for focused runs (see
+  [Testing](#testing)).
+- Release build: `build.cmd -c Release`.
+- Validate changes locally using the SDK you built at
+  `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
+
 See [TESTING_STRATEGY.md](memory/TESTING_STRATEGY.md) and the
 [Developer Guide](../documentation/project-docs/developer-guide.md).
 
@@ -122,11 +146,19 @@ Never hardcode the current TFM in a project. See
 
 - Large changes should always include test changes.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
-- Use `run-tests` for selection and execution; use `incremental-test` for supported
-  `dotnet.Tests` changes.
+- Use the `run-tests` skill for every local test execution. Choose projects from
+  `test/ConditionalTests.props`
+  when the changed paths match a configured scope, or use its fallback mappings for
+  unscoped common areas. Run one project, class, or method with detailed live output and
+  retained TRX/binlog diagnostics.
+- For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
 - Follow [`test/AGENTS.md`](../test/AGENTS.md) and
   [TESTING_STRATEGY.md](memory/TESTING_STRATEGY.md) for test framework, assets,
   parallelism, conditional scopes, snapshots, and Helix guidance.
+- This repo uses conditional test filtering to skip expensive test suites on PRs when
+  relevant source files have not changed. When adding new test projects, consider
+  registering them as a scope in [`test/ConditionalTests.props`](../test/ConditionalTests.props).
+  See [`documentation/project-docs/pr-test-filtering.md`](../documentation/project-docs/pr-test-filtering.md) for details.
 
 ## Investigating PR validation failures
 
