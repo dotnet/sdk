@@ -139,6 +139,8 @@ internal static class FileArtifactMessageFieldsId
     public const ushort TestUid = 4;
     public const ushort TestDisplayName = 5;
     public const ushort SessionUid = 6;
+    public const ushort Kind = 7;
+    public const ushort InputArtifactPaths = 8;
 }
 
 internal static class TestSessionEventFieldsId
@@ -189,6 +191,14 @@ internal static class DisplayMessageFieldsId
     public const ushort Text = 4;
 }
 
-// NOTE: Serializer ids 13 (WaitForServerControlRequest) and 14 (ServerControlMessage) exist upstream
-// in testfx but are intentionally not vendored here yet: they belong to the reverse server-control pipe
-// / server-initiated cancellation feature (protocol 1.4.0), which is out of scope for this contract.
+internal static class WaitForServerControlRequestFieldsId
+{
+    public const int MessagesSerializerId = 13;
+}
+
+internal static class ServerControlMessageFieldsId
+{
+    public const int MessagesSerializerId = 14;
+
+    public const ushort Kind = 1;
+}

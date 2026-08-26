@@ -285,8 +285,8 @@ namespace Microsoft.NET.Build.Tasks
                 var affectedRids = new List<string>();
                 foreach (var lib in dependencyContext.RuntimeLibraries)
                 {
-                    var warnOnRids = lib.RuntimeAssemblyGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer)
-                        .Concat(lib.NativeLibraryGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifer));
+                    var warnOnRids = lib.RuntimeAssemblyGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifier)
+                        .Concat(lib.NativeLibraryGroups.Select(g => g.Runtime).Where(ShouldWarnOnRuntimeIdentifier));
                     if (warnOnRids.Any())
                     {
                         affectedLibs.Add(lib.Name);
@@ -303,7 +303,7 @@ namespace Microsoft.NET.Build.Tasks
             }
         }
 
-        private bool ShouldWarnOnRuntimeIdentifer(string runtimeIdentifier)
+        private bool ShouldWarnOnRuntimeIdentifier(string runtimeIdentifier)
         {
             if (string.IsNullOrEmpty(runtimeIdentifier))
                 return false;

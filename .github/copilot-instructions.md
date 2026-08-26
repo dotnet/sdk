@@ -45,22 +45,44 @@ root-cause analyses, and AI-facing documentation:
   [layout targets](../src/Layout/redist/targets/Directory.Build.targets); in-box project
   and item template sources live in [`template_feed`](../template_feed/).
 
-Do not assume a product change belongs in this repo. The
-[runtime](https://github.com/dotnet/runtime),
-[C# and Visual Basic compilers](https://github.com/dotnet/roslyn),
-[F# compiler](https://github.com/dotnet/fsharp),
-[MSBuild](https://github.com/dotnet/msbuild), [NuGet](https://github.com/NuGet/NuGet.Client), and
-[Visual Studio project system](https://github.com/dotnet/project-system) are owned in
-their linked repositories. The
-[dotnet/dotnet VMR](https://github.com/dotnet/dotnet/blob/main/README.md) brings component
-source together to build the full .NET SDK.
+### Repository boundaries and the VMR
+
+An SDK command or build can expose behavior implemented by another .NET repository. Find
+the component that defines the behavior before making a change; do not add an SDK
+workaround merely because the symptom appears through `dotnet`.
+
+| Repository | Ownership boundary |
+| --- | --- |
+| [`dotnet/runtime`](https://github.com/dotnet/runtime) | CLR and Mono, the base class libraries, the native `dotnet` host/muxer and apphost, runtime and reference packs, and runtime-owned deployment tooling such as NativeAOT and ILLink. SDK publish targets integrate with these artifacts but do not own their implementation. |
+| [`dotnet/roslyn`](https://github.com/dotnet/roslyn) | The C# and Visual Basic compilers, compiler server, compiler APIs, and C#/VB compiler behavior such as language diagnostics and code generation. The SDK supplies inputs and ships Roslyn artifacts; SDK-generated defaults and command wiring remain SDK-owned. |
+| [`dotnet/fsharp`](https://github.com/dotnet/fsharp) | The F# compiler and F#-specific tooling. |
+| [`dotnet/msbuild`](https://github.com/dotnet/msbuild) | The MSBuild engine, evaluation and execution semantics, logging, and core tasks and targets. SDK-specific `Microsoft.NET.*` tasks and targets remain in this repo. |
+| [`NuGet/NuGet.Client`](https://github.com/NuGet/NuGet.Client) | NuGet restore, package resolution, protocols, and related MSBuild tasks. SDK CLI wrappers and SDK-specific integration remain in this repo. |
+| [`dotnet/project-system`](https://github.com/dotnet/project-system) | Visual Studio-specific project-system behavior. |
+| [`dotnet/dotnet`](https://github.com/dotnet/dotnet) | The Virtual Monolithic Repository (VMR): a synchronized mirror of product repositories plus the infrastructure for building and servicing the integrated .NET product. Product source is mirrored under `src/<repo>`; normal component development still belongs in the owning product repository. |
+
+Do not infer ownership from a diagnostic ID or generated code alone. C# and Visual Basic
+compiler diagnostics and compiler-emitted code belong to Roslyn, but analyzers and source
+generators belong to the repository that implements them, such as `dotnet/runtime` for
+runtime-library generators or `dotnet/sdk` for SDK analyzers.
 
 ### Architecture and major components
 
-The managed CLI dispatches commands registered in
-[`Parser.cs`](../src/Cli/dotnet/Parser.cs). Unmatched input goes through external command
-resolution and then file-based app fallback, as implemented by
-[`Program.cs`](../src/Cli/dotnet/Program.cs).
+SDK-owned CLI code has three process entry points of equal importance:
+
+- The managed CLI dispatches commands that
+  [`Parser.cs`](../src/Cli/dotnet/Parser.cs) registers.
+  [`Program.cs`](../src/Cli/dotnet/Program.cs) handles unmatched input through external
+  command resolution and file-based app fallback.
+- The Native AOT CLI starts in
+  [`NativeEntryPoint.cs`](../src/Cli/dotnet-aot/NativeEntryPoint.cs). It handles supported
+  commands directly. Unsupported operations continue in the managed CLI.
+- MSBuild loads [`MSBuildLogger`](../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) from
+  `dotnet.dll` as an `INodeLogger`. The logger can run in the CLI process, a child MSBuild
+  process, or a persistent MSBuild server. Code called through the logger must not assume
+  that a CLI bootstrap initialized process-wide state. Use `BuildStarted` and
+  `BuildFinished` as request boundaries. `Shutdown` completes one logger instance. It does
+  not necessarily end the process.
 
 Major source areas under [`src/`](../src/):
 
@@ -73,6 +95,7 @@ Major source areas under [`src/`](../src/):
 | [`Containers/`](../src/Containers/) | `dotnet publish` container image support. |
 | [`Dotnet.Watch/`](../src/Dotnet.Watch/), [`Dotnet.Format/`](../src/Dotnet.Format/) | `dotnet watch` and `dotnet format` tools. |
 | [`Compatibility/`](../src/Compatibility/) | ApiCompat, GenAPI, API diff, and package validation tooling. |
+| [`Microsoft.CodeAnalysis.NetAnalyzers/`](../src/Microsoft.CodeAnalysis.NetAnalyzers/) | The .NET code analyzers (`CA####` rules and their fixers), migrated from the retired `dotnet/roslyn-analyzers`. |
 | [`TemplateEngine/`](../src/TemplateEngine/) | Template engine libraries and authoring/discovery tools; see the [Template Engine overview](../documentation/TemplateEngine/README.md). |
 | [`Workloads/`](../src/Workloads/), [`Microsoft.DotNet.TemplateLocator/`](../src/Microsoft.DotNet.TemplateLocator/) | Workload manifests and installation, plus workload-provided template pack location. |
 | [`Layout/`](../src/Layout/) | Composes the final `dotnet` layout through [`redist.csproj`](../src/Layout/redist/redist.csproj). |
@@ -129,7 +152,7 @@ Canonical scenarios:
   - The built SDK is output to `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
   - The first build is slow; subsequent builds are incremental.
 - Run tests: prefer targeted runs — a single test project or test (see the
-  [Testing](#testing) section) and the `incremental-test` skill. `build.cmd -test` /
+  [Testing](#testing) section) and the `targeted-test` skill. `build.cmd -test` /
   `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
   avoid running the full suite for routine local or agent work.
 - Release build: `build.cmd -c Release`.
@@ -138,8 +161,10 @@ Canonical scenarios:
   See the [Testing](#testing) section for assembly filtering and more examples.
 - Validate changes locally using the SDK you built at
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
-- For fast inner-loop runs of `dotnet.Tests` without a full rebuild, use the
-  `incremental-test` skill.
+- Use the `targeted-test` skill to select projects from the shared
+  `test/ConditionalTests.props` scopes when available and retain detailed failure output,
+  a TRX, and a binlog. For fast inner-loop runs of `dotnet.Tests` without a full rebuild,
+  use `incremental-test`.
 
 ## Guardrails
 
@@ -159,6 +184,21 @@ manually edit:
   documentation; change the upstream documentation in https://github.com/dotnet/docs instead.
 - **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
 - More broadly, any file marked `linguist-generated=true` in `.gitattributes`.
+
+### Preserve CI telemetry correlation
+
+Set `DOTNET_CLI_TELEMETRY_SESSIONID` in every CI workflow and pipeline entry point. Set
+the variable at the workflow or pipeline scope. Job scope is valid for a single-job
+workflow. Use the applicable value without changes:
+
+- GitHub Actions:
+  `gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}`
+- Azure DevOps:
+  `azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)`
+
+When you change shared CI environment variables, preserve this variable. See
+the [developer guide](../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation)
+for the required YAML and the reason for this variable.
 
 ## External Dependencies
 
@@ -201,18 +241,30 @@ dependency already in use. Add a new dependency only at the narrowest necessary 
 - Do not allow unused `using` directives to be committed.
 - Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
 
+### Target framework properties
+
+Never hardcode a TFM (`net8.0`, `net9.0`, etc.) in a `.csproj` file. Use the appropriate
+property:
+
+| Context | Property | Defined in |
+| --- | --- | --- |
+| Source projects and test projects (.NET) | `$(SdkTargetFramework)` | Root `Directory.Build.props` (equals `$(NetCurrent)` from Arcade) |
+| Multi-targeting with .NET Framework | Match the pattern used by peer projects in the same area. Some areas use Arcade properties (`$(NetFrameworkToolCurrent)`, `$(NetMinimum)`); others hardcode `net472`. |
+| Test asset projects (`test/TestAssets/`) | `$(CurrentTargetFramework)` | Substituted at test runtime by `TestAssetsManager` via `ToolsetInfo.CurrentTargetFramework` |
+
 ## Testing
 
 - Large changes should always include test changes.
-- When creating new test projects in test/TestAssets/TestProjects, always use `$(CurrentTargetFramework)` for the `<TargetFramework>` property instead of hard-coding a specific version like `net8.0`.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
-- To run tests in this repo (after a full build, invoke the repo-local bootstrap SDK directly):
-  - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
-  - To run a built test assembly directly: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll --filter "TestMethodName"`
-  - Examples:
-    - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
-    - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll --filter "ItShowsTheAppropriateMessageToTheUser"`
+- Use the `targeted-test` skill to choose projects from `test/ConditionalTests.props`
+  when the changed paths match a configured scope, or use its fallback mappings for
+  unscoped common areas. Run one project, class, or method with detailed live output and
+  retained TRX/binlog diagnostics.
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
+- This repo uses conditional test filtering to skip expensive test suites on PRs when
+  relevant source files have not changed. When adding new test projects, consider
+  registering them as a scope in [`test/ConditionalTests.props`](../test/ConditionalTests.props).
+  See [`documentation/project-docs/pr-test-filtering.md`](../documentation/project-docs/pr-test-filtering.md) for details.
 
 ## Investigating PR validation failures
 

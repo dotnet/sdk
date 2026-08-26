@@ -10,8 +10,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/ObjectFieldIds.cs",
-          "baseline_ref_sha": "59d0f9b9f8604e7f366b9ab340a5d194adf85544",
-          "baseline_blob_sha": "f964693792a513c07bef616e35d4754b79257edb",
+          "baseline_ref_sha": "466d76410b8daf0077502784a583ac7a9e4d97ad",
+          "baseline_blob_sha": "7fb6c55c6d73599069a75cf28de9c043de5fc775",
           "scope": "entire file; ids must match exactly"
         }
       ]
@@ -19,14 +19,14 @@
     {
       "id": "dotnet-test-wire-contract-constants",
       "local_path": "src/Cli/dotnet/Commands/Test/CliConstants.cs",
-      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, ProtocolConstants). Watch the upstream file for added/changed wire constants.",
+      "notes": "Handshake/session/state string constants for the 'dotnet test' named-pipe protocol. Upstream lives in testfx IPC/Constants.cs; the SDK inlines the same constants into CliConstants.cs (TestStates, SessionEventTypes, HandshakeMessagePropertyNames, HandshakeMessageExecutionModes, HandshakeMessageHostTypes, ProtocolConstants). Watch the upstream file for added/changed wire constants. Reconciled at f935d2d3: the upstream additions since the previous baseline (SupportedPostProcessorKinds/SupportedPostProcessorExtensionsLegacy, the ArtifactPostProcessor host type and the 'tool' execution mode) are already mirrored in CliConstants.cs, so this was a baseline bump only. Intentional divergences: the SDK does not mirror TestStates.InProgress or HandshakeMessagePropertyNames.OrchestratorFeature (it consumes neither), and ProtocolConstants.SupportedVersions deliberately stops at 1.3.0 because the SDK does not implement the 1.4.0 reverse server-control channel.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/ServerMode/DotnetTest/IPC/Constants.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "145ed7b998f5a7dcc1d2388e650d2379227e7df3",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "8e11c4ba1b8472a4d28178f28ef088c0c0948580",
           "scope": "wire constants (TestStates, SessionEventTypes, HandshakeMessage*, ProtocolConstants)"
         }
       ]
@@ -34,14 +34,14 @@
     {
       "id": "dotnet-test-terminal-reporter",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporter.cs",
-      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
+      "notes": "The Microsoft.Testing.Platform terminal UI reporter, hard-forked into 'dotnet test'. testfx has since split TerminalTestReporter into partial files; the SDK keeps a single TerminalTestReporter.cs. Each upstream partial is tracked so any upstream reporter change pings the SDK to reconcile. Upstream includes the whole folder via a glob (TerminalReporterContract.props), so when testfx adds a partial it must be appended here by hand -- see microsoft/testfx#10390. Sources are append-only: the tracking issue marker keys on the source index. Reconciled at f935d2d3 (#55472/#55473): the retry/flaky accounting (TestProgressState.RetriedTests/RetriedExecutions/FlakyTests/GetFlakyTests), the 'flaky: N' and 'retried: N test(s), M extra run(s)' summary lines, the 'Flaky tests:' listing (.FlakyTests.cs), the 'Slowest tests:' listing (.SlowestTests.cs, fed by TestProgressState.RecordTestDuration/GetSlowestTests) and the TerminalTestReporterOptions switches (ShowFlakyTests, SlowestTestsCount, ShowRunSummary) are now ported. The '(+N retried)' suffix on the total line was replaced by the two dedicated lines, matching upstream. INTENTIONALLY NOT PORTED: (1) the coverage summary (TerminalTestReporter.Coverage.cs) -- it renders CoverageScopeSummary/TestCoverageThresholdMessage, which are in-process Microsoft.Testing.Platform message types with no representation in the 'dotnet test' IPC contract, so the orchestrator never receives the data; porting it requires a wire-protocol addition first. (2) In-process retry attribution (RetryAttemptProperty) and TerminalTestReporter.TestCompletedWithoutResult -- upstream's own orchestrator path passes 'retryAttempt: null' because the attempt number of a framework-level [Retry] is not carried over the pipe either; the SDK attributes retries per test-host instance id instead. (3) ShowRunSummary is never set to false by 'dotnet test': it exists so the fork stays shape-compatible, but the SDK keeps one reporter for the whole execution and aggregates every attempt, so its summary already describes the whole run. This is a hard fork: local content intentionally diverges; the signal is 'upstream changed', not 'files differ'.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "992ddffeb9e28fe1526da63444f45dbb319e3871",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "51bf9c46545d06d31f2944c88c20c68f76654acc",
           "scope": "reporter partial"
         },
         {
@@ -80,33 +80,65 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Lifecycle.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "9e356aaa82691ef0b2143a92f13d114747fcd947",
+          "baseline_ref_sha": "dba319b212caae2a325800de8a5570ebe787b06d",
+          "baseline_blob_sha": "f60f6e6844e0ce77e3c16696bfd541e7e5a02c15",
           "scope": "reporter partial"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Messaging.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "5807f3f16ce9304c1b0348b745e06bb7ac6c3839",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "04266b4e32ef754245b45f29838f5482d5817e45",
           "scope": "reporter partial"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Summary.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "b03abc643e27c9c5b956b3aef96c32f469b18300",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "70615451a89acbc84f4ab235bb0957ee4061f6a0",
           "scope": "reporter partial"
         },
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.TestCompletion.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "7824a5b256401a784ccfb64b79a0512aba42f16d",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "ea0de7643f09d8a37239f7cb60218a15d35ace33",
           "scope": "reporter partial"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.Coverage.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "897e98cd2503a44f6d92ac0f7008edc77741c017",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.FlakyTests.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "b61b9512cd73c34ecbd86c45abccaeaa5cc9765c",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.SlowestTests.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "0463662d971dc911a7f8aacaaca68b9d4d3d6f7a",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporter.TestDiscovery.cs",
+          "baseline_ref_sha": "acb5bafaa2528481955c3cdfd36b3a20024a693d",
+          "baseline_blob_sha": "55fb099b665181200701f0153282093b511ce499",
+          "scope": "reporter partial; split out of TerminalTestReporter.Summary.cs"
         }
       ]
     },
@@ -149,8 +181,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "9f8920d5af4a6c33fbbaf2d4d4902ecd3d0429dc",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "6716c8b983c5ea37ed324f2f3ccc69e5695424fa",
           "scope": "entire file"
         }
       ]
@@ -158,15 +190,39 @@
     {
       "id": "dotnet-test-terminal-ansiterminaltestprogressframe",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/AnsiTerminalTestProgressFrame.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Reconciled at f935d2d3 (#55474): the only upstream change since the previous baseline is microsoft/testfx#10093, which split the type into AnsiTerminalTestProgressFrame.{Append,Render,TextLayout}.cs without changing behavior, so nothing was ported and the SDK keeps its single-file fork. The three new partials are tracked below so a future behavioral change in any of them raises drift. The SDK fork also intentionally lacks upstream's frame/RenderedProgressItem pooling (Reset/GetOrAllocateNextSlot/RenderedLinesCount) and the progress-message text-layout helpers, which belong to upstream-only features.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "6a7b784d6b1eae9de031b57de801114548efc976",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "58fd5ab224a93119727cefa638f03c75a3a6a137",
           "scope": "entire file"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Append.cs",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "4cbbe919121d1790f3bc3e713e297d3fb0acc960",
+          "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.Render.cs",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "cb915390fbb283d3d40578a381dc98c7f20a782e",
+          "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
+        },
+        {
+          "repo": "microsoft/testfx",
+          "ref": "main",
+          "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/AnsiTerminalTestProgressFrame.TextLayout.cs",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "628b12b511692c96112e4db8c6f2791403186ed4",
+          "scope": "frame partial; split out of AnsiTerminalTestProgressFrame.cs"
         }
       ]
     },
@@ -224,8 +280,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/ITerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "75c07201db35a17fe286df1175efa87342f0ecdf",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "30ae2cbbe2f02e0b94f4f5bd82627a9c397e4c47",
           "scope": "entire file"
         }
       ]
@@ -284,8 +340,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/SimpleTerminalBase.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "d4d63f11a20f72f676a1378376fea41a9d1aa536",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "786ff445c6a535e5a7bb69b05f91d0722cc5efa6",
           "scope": "entire file"
         }
       ]
@@ -308,14 +364,14 @@
     {
       "id": "dotnet-test-terminal-terminaltestreporteroptions",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TerminalTestReporterOptions.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. ShowFlakyTests and ShowRunSummary are intentionally deferred with reporter reconciliation issues #55472 and #55473.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TerminalTestReporterOptions.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "a496e9600ded4666e298caa27bf6138914a09e87",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "a5c412ae64d9e719299d8ce77ec04b812af45560",
           "scope": "entire file"
         }
       ]
@@ -344,8 +400,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestNodeResultsState.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "b56f233d182ca8b09d798a0d33a25790385440b2",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "00c340ec43694e6727024dd3e6109bee339e44ab",
           "scope": "entire file"
         }
       ]
@@ -368,14 +424,14 @@
     {
       "id": "dotnet-test-terminal-testprogressstate",
       "local_path": "src/Cli/dotnet/Commands/Test/MTP/Terminal/TestProgressState.cs",
-      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx.",
+      "notes": "Terminal reporter support type hard-forked from testfx OutputDevice/Terminal. Source of truth is testfx. Retry/flaky accounting and in-process retry attribution are intentionally deferred with reporter reconciliation issues #55472 and #55473.",
       "sources": [
         {
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressState.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "ec860abdf7a1ae5d242101334f26c23809601e50",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "1199c0ba8609a29f615e05d87c6ee91fc958fda0",
           "scope": "entire file"
         }
       ]
@@ -389,8 +445,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/OutputDevice/Terminal/TestProgressStateAwareTerminal.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "15498557b4e8be651940f93384507c7790379c62",
+          "baseline_ref_sha": "1285203f4cea535b9386e0e8712b4ec078de16f2",
+          "baseline_blob_sha": "9acf46a59f32349a8c784f57ac2742ab7a2c6eaf",
           "scope": "entire file"
         }
       ]
@@ -464,8 +520,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/IConsole.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "93a608d60be5697e956bb40225a8914e6232757d",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "25a54b2def43e298a0f7b6d884c3d3a185b834b3",
           "scope": "entire file"
         }
       ]
@@ -494,8 +550,8 @@
           "repo": "microsoft/testfx",
           "ref": "main",
           "path": "src/Platform/Microsoft.Testing.Platform/Helpers/System/SystemConsole.cs",
-          "baseline_ref_sha": "4a09ad6aa3ab876a5a9dd4bf346f654d037166d9",
-          "baseline_blob_sha": "93a13204eb4b3f10879fd383a8f2679f57d4b5af",
+          "baseline_ref_sha": "f935d2d3f9ce1ab831a361041b0ceaf92ff73363",
+          "baseline_blob_sha": "90a80fb7fb82b53ad361f777283917b0b4047038",
           "scope": "entire file"
         }
       ]

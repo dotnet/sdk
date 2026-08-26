@@ -50,7 +50,6 @@ public class SomeException : Exception
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -87,7 +86,6 @@ public class SomeException : Exception
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -124,7 +122,6 @@ public class SomeException : Exception
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -273,7 +270,6 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -305,7 +301,6 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -337,7 +332,6 @@ End Class
             {
                 TestState = { Sources = { code } },
                 FixedState = { Sources = { fix } },
-                NumberOfFixAllIterations = 2,
             }.RunAsync(CancellationToken.None);
         }
 

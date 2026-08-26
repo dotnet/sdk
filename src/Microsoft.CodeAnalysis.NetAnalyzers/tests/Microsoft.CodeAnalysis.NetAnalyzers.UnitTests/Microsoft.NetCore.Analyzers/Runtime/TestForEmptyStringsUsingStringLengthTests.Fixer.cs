@@ -1109,6 +1109,122 @@ Public Class A
 End Class
 ");
         }
+
+        [TestMethod]
+        public async Task CA1820_NestedComparison_FixAllUsesIsNullOrEmpty_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return [|([|s == """"|]).ToString() == """"|];
+    }
+}
+", @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return string.IsNullOrEmpty((string.IsNullOrEmpty(s)).ToString());
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA1820_NestedComparison_FixAllUsesIsNullOrEmpty_BasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return [|([|s = """"|]).ToString() = """"|]
+    End Function
+End Class
+", @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return String.IsNullOrEmpty((String.IsNullOrEmpty(s)).ToString())
+    End Function
+End Class
+");
+        }
+
+        [TestMethod]
+        public async Task CA1820_NestedComparison_FixAllUsesStringLength_CSharpAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return [|([|s == """"|]).ToString() == """"|];
+    }
+}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+public class A
+{
+    public bool Compare(string s)
+    {
+        return (s.Length == 0).ToString().Length == 0;
+    }
+}
+",
+                    },
+                },
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA1820_NestedComparison_FixAllUsesStringLength_BasicAsync()
+        {
+            await new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return [|([|s = """"|]).ToString() = """"|]
+    End Function
+End Class
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+Public Class A
+    Public Function Compare(s As String) As Boolean
+        Return (s.Length = 0).ToString().Length = 0
+    End Function
+End Class
+",
+                    },
+                },
+                CodeActionIndex = c_StringLengthCodeActionIndex,
+                CodeActionEquivalenceKey = "TestForEmptyStringCorrectlyUsingStringLength",
+            }.RunAsync(CancellationToken.None);
+        }
     }
 }
 

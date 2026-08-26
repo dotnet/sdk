@@ -173,9 +173,10 @@ device selection:
 
 * **`--list-devices`** works the same as with `dotnet run`.
 
-* **`-e` / `--environment`** — `dotnet test` already supports `-e` to
-  pass environment variables to the test process. This existing
-  behavior is unchanged.
+* **`-e` / `--environment`** — environment variables are passed to the test
+  process and, for projects that declare the `RuntimeEnvironmentVariableSupport`
+  capability, to the build, deployment, and `ComputeRunArguments` targets as
+  `@(RuntimeEnvironmentVariable)` items, matching `dotnet run`.
 
 ## New Command-line Switches
 
@@ -219,11 +220,12 @@ A new `--device` switch will:
 
 ## Environment Variables
 
-The `dotnet run` command supports passing environment variables via the
+The `dotnet run` and `dotnet test` commands support passing environment variables via the
 `-e` or `--environment` option:
 
 ```dotnetcli
 dotnet run -e FOO=BAR -e ANOTHER=VALUE
+dotnet test -e FOO=BAR -e ANOTHER=VALUE
 ```
 
 These environment variables are:
@@ -264,7 +266,7 @@ Workloads can consume these items in their MSBuild targets:
 
 ```xml
 <Target Name="DeployToDevice">
-  <!-- Access environment variables from dotnet run -e -->
+  <!-- Access environment variables from dotnet run/test -e -->
   <Message Text="Environment: @(RuntimeEnvironmentVariable->'%(Identity)=%(Value)')" />
 </Target>
 ```
@@ -273,14 +275,18 @@ Workloads can consume these items in their MSBuild targets:
 
 For the **build step**, which uses out-of-process MSBuild via `dotnet build`,
 environment variables are injected by creating a temporary `.props` file.
-The file is created in the project's `$(IntermediateOutputPath)` directory
-(e.g., `obj/Debug/net11.0-android/dotnet-run-env.props`). The path is
-obtained from the project evaluation performed during target framework and
-device selection. If `IntermediateOutputPath` is not available, the file
-falls back to the `obj/` directory.
+The file is created under the selected project intermediate output directory,
+or under the project's `obj/` directory when no intermediate output path is
+available (for example, `obj/dotnet-run-env.props` for `dotnet run` or
+`obj/dotnet-test-env.props` for `dotnet test`).
 
 The file is passed to MSBuild via the `CustomBeforeMicrosoftCommonProps` property,
-ensuring the items are available early in evaluation.
+ensuring the items are available during project evaluation. The CLI creates this
+file only after evaluating a project and confirming that it declares the
+`RuntimeEnvironmentVariableSupport` capability. Build-time injection is not
+performed for solution builds because the capability cannot be evaluated and
+applied independently to each solution child through a single global MSBuild
+property.
 The temporary file is automatically deleted after the build completes.
 
 The generated props file looks like:

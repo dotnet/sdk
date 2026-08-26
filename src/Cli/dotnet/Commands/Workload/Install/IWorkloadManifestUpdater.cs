@@ -27,5 +27,3 @@ internal interface IWorkloadManifestUpdater
 
     void DeleteUpdatableWorkloadsFile();
 }
-
-internal record ManifestUpdateWithWorkloads(ManifestVersionUpdate ManifestUpdate, WorkloadCollection Workloads);
