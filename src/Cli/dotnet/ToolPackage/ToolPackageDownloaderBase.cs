@@ -22,6 +22,8 @@ namespace Microsoft.DotNet.Cli.ToolPackage;
 internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 {
     private static readonly JsonSerializerOptions s_writeIndentedOptions = new() { WriteIndented = true };
+    private readonly TimeSpan _mutexInitialWaitTimeout;
+    private readonly TimeSpan _mutexWaitTimeout;
 
     private readonly IToolPackageStore _toolPackageStore;
 
@@ -46,7 +48,9 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         IToolPackageStore store,
         string? runtimeJsonPathForTests = null,
         string? currentWorkingDirectory = null,
-        IFileSystem? fileSystem = null
+        IFileSystem? fileSystem = null,
+        TimeSpan? mutexInitialWaitTimeout = null,
+        TimeSpan? mutexWaitTimeout = null
     )
     {
         _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store));
@@ -60,6 +64,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
         _localToolAssetDir = new DirectoryPath(_fileSystem.Directory.CreateTemporarySubdirectory());
         _runtimeJsonPath = runtimeJsonPathForTests ?? Path.Combine(AppContext.BaseDirectory!, "PortableRuntimeIdentifierGraph.json");
+        _mutexInitialWaitTimeout = mutexInitialWaitTimeout ?? TimeSpan.FromMilliseconds(50);
+        _mutexWaitTimeout = mutexWaitTimeout ?? TimeSpan.FromMinutes(5);
     }
 
     protected abstract INuGetPackageDownloader CreateNuGetPackageDownloader(
@@ -102,8 +108,30 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool isGlobalTool = false,
         bool isGlobalToolRollForward = false,
         bool verifySignatures = true,
-        RestoreActionConfig? restoreActionConfig = null,
-        CancellationToken cancellationToken = default)
+        RestoreActionConfig? restoreActionConfig = null)
+    {
+        return InstallPackage(
+            packageLocation,
+            packageId,
+            CancellationToken.None,
+            verbosity,
+            versionRange,
+            targetFramework,
+            isGlobalTool,
+            isGlobalToolRollForward,
+            verifySignatures,
+            restoreActionConfig);
+    }
+
+    public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+        CancellationToken cancellationToken,
+        VerbosityOptions verbosity = VerbosityOptions.normal,
+        VersionRange? versionRange = null,
+        string? targetFramework = null,
+        bool isGlobalTool = false,
+        bool isGlobalToolRollForward = false,
+        bool verifySignatures = true,
+        RestoreActionConfig? restoreActionConfig = null)
     {
         if (versionRange == null)
         {
@@ -310,7 +338,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
-    private static T ExecuteWithToolInstallMutex<T>(
+    private T ExecuteWithToolInstallMutex<T>(
         DirectoryPath packageInstallRoot,
         PackageId packageId,
         NuGetVersion packageVersion,
@@ -324,7 +352,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         try
         {
             // First try a quick check to see if the mutex is immediately available
-            mutexAcquired = WaitOne(mutex, TimeSpan.FromMilliseconds(50), cancellationToken);
+            mutexAcquired = WaitOne(mutex, _mutexInitialWaitTimeout, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (!mutexAcquired)
             {
@@ -332,7 +360,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 Reporter.Error.WriteLine(string.Format(CliStrings.ToolInstallationWaiting, packageId, packageVersion));
 
                 // Now wait for the longer duration
-                mutexAcquired = WaitOne(mutex, TimeSpan.FromMinutes(5), cancellationToken);
+                mutexAcquired = WaitOne(mutex, _mutexWaitTimeout, cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!mutexAcquired)
                 {

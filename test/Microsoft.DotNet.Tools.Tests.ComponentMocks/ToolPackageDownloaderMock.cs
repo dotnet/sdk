@@ -103,9 +103,30 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
             bool verifySignatures = false,
-            RestoreActionConfig? restoreActionConfig = null,
-            CancellationToken cancellationToken = default
-            )
+            RestoreActionConfig? restoreActionConfig = null)
+        {
+            return InstallPackage(
+                packageLocation,
+                packageId,
+                CancellationToken.None,
+                verbosity,
+                versionRange,
+                targetFramework,
+                isGlobalTool,
+                isGlobalToolRollForward,
+                verifySignatures,
+                restoreActionConfig);
+        }
+
+        public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+            CancellationToken cancellationToken,
+            VerbosityOptions verbosity,
+            VersionRange? versionRange = null,
+            string? targetFramework = null,
+            bool isGlobalTool = false,
+            bool isGlobalToolRollForward = false,
+            bool verifySignatures = false,
+            RestoreActionConfig? restoreActionConfig = null)
         {
             string? rollbackDirectory = null;
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);

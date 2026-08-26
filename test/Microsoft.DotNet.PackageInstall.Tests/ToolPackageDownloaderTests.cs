@@ -882,7 +882,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 bool useMock,
                 bool includeLocalFeedInNugetConfig,
                 [CallerMemberName] string callingMethod = "",
-                string identiifer = null)
+                string identiifer = null,
+                TimeSpan? mutexInitialWaitTimeout = null,
+                TimeSpan? mutexWaitTimeout = null)
         {
             var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
             var reporter = new BufferedReporter();
@@ -911,7 +913,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 downloader = new ToolPackageDownloaderMock2(storeAndQuery,
                     runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
                     currentWorkingDirectory: root.Value,
-                    fileSystem);
+                    fileSystem,
+                    mutexInitialWaitTimeout,
+                    mutexWaitTimeout);
 
                 uninstaller = new ToolPackageUninstallerMock(fileSystem, storeAndQuery);
             }
@@ -1034,9 +1038,9 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .WithMessage("*.NET 99*");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public async Task GivenConcurrentInstallationsTheyDoNotConflict(bool testMockBehaviorIsInSync)
         {
             var source = GetTestLocalFeedPath();
@@ -1063,38 +1067,169 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 }));
             }
 
-            // Wait for all tasks to complete - some may fail with expected errors
-            try
+            string expectedConflict = string.Format(
+                CliStrings.ToolPackageConflictPackageId,
+                TestPackageId,
+                TestPackageVersion);
+            IToolPackage[] results = await Task.WhenAll(tasks.Select(async task =>
             {
-                await Task.WhenAll(tasks);
-            }
-            catch
-            {
-                // Expected - some tasks may fail
-            }
-
-            // At least one task should succeed
-            var successfulTasks = tasks.Where(t => t.Status == TaskStatus.RanToCompletion).ToList();
-            successfulTasks.Should().NotBeEmpty("at least one installation should succeed");
-
-            // Verify no file system conflict errors occurred (the key issue this fix addresses)
-            var failedTasks = tasks.Where(t => t.Status == TaskStatus.Faulted).ToList();
-            foreach (var failedTask in failedTasks)
-            {
-                var exception = failedTask.Exception?.GetBaseException();
-                // The mutex should prevent IOException with "being used by another process"
-                if (exception is IOException ioEx)
+                try
                 {
-                    ioEx.Message.Should().NotContain("being used by another process",
-                        "the mutex should prevent file concurrency issues");
+                    return await task;
                 }
-            }
+                catch (ToolPackageException exception)
+                {
+                    exception.Message.Should().Be(expectedConflict);
+                    return null;
+                }
+            }));
 
-            // Verify the package was installed correctly by the successful task(s)
-            var package = await successfulTasks.First();
+            IToolPackage package = results.Should().ContainSingle(result => result != null).Subject;
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
             uninstaller.Uninstall(package.PackageDirectory);
+        }
+
+        [TestMethod]
+        public void GivenAContendedMutexTimeoutIsNotMaskedByRelease()
+        {
+            var (store, _, downloader, _, _, _, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false,
+                mutexInitialWaitTimeout: TimeSpan.Zero,
+                mutexWaitTimeout: TimeSpan.FromMilliseconds(50));
+            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(
+                store.Root,
+                TestPackageId,
+                NuGetVersion.Parse(TestPackageVersion));
+
+            WithHeldMutex(mutexName, () =>
+            {
+                Action install = () => InstallGlobalPackage(downloader, CancellationToken.None);
+
+                install.Should().Throw<ToolPackageException>()
+                    .WithMessage(string.Format(
+                        CliStrings.ToolInstallationTimeout,
+                        TestPackageId,
+                        TestPackageVersion));
+            });
+        }
+
+        [TestMethod]
+        public void GivenAContendedMutexCancellationStopsWaiting()
+        {
+            var (store, _, downloader, _, _, _, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false,
+                mutexInitialWaitTimeout: TimeSpan.Zero);
+            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(
+                store.Root,
+                TestPackageId,
+                NuGetVersion.Parse(TestPackageVersion));
+
+            WithHeldMutex(mutexName, () =>
+            {
+                using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
+                Action install = () => InstallGlobalPackage(downloader, cancellationTokenSource.Token);
+
+                install.Should().Throw<OperationCanceledException>();
+            });
+        }
+
+        [TestMethod]
+        public void GivenAnAbandonedMutexInstallationContinues()
+        {
+            var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false);
+            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(
+                store.Root,
+                TestPackageId,
+                NuGetVersion.Parse(TestPackageVersion));
+
+            using var abandonedMutex = new Mutex(false, mutexName);
+            var abandoningThread = new Thread(() => abandonedMutex.WaitOne());
+            abandoningThread.Start();
+            abandoningThread.Join();
+
+            IToolPackage package = InstallGlobalPackage(downloader, CancellationToken.None);
+
+            AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
+            uninstaller.Uninstall(package.PackageDirectory);
+        }
+
+        [TestMethod]
+        public void ToolInstallMutexNameIsBoundedAndScopedToInstallIdentity()
+        {
+            DirectoryPath root = new(TestAssetsManager.CreateTestDirectory().Path);
+            DirectoryPath otherRoot = new(Path.Combine(root.Value, "other"));
+            var version = NuGetVersion.Parse(TestPackageVersion);
+
+            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(root, TestPackageId, version);
+
+            mutexName.Should().HaveLength("dotnet-tool-install-".Length + 64);
+            ToolPackageDownloaderBase.GetToolInstallMutexName(
+                    new DirectoryPath(root.Value + Path.DirectorySeparatorChar),
+                    new PackageId(TestPackageId.ToString().ToUpperInvariant()),
+                    version)
+                .Should().Be(mutexName);
+            ToolPackageDownloaderBase.GetToolInstallMutexName(otherRoot, TestPackageId, version)
+                .Should().NotBe(mutexName);
+            ToolPackageDownloaderBase.GetToolInstallMutexName(root, TestPackageId, NuGetVersion.Parse("1.0.5"))
+                .Should().NotBe(mutexName);
+        }
+
+        private IToolPackage InstallGlobalPackage(
+            IToolPackageDownloader downloader,
+            CancellationToken cancellationToken)
+        {
+            return downloader.InstallPackage(
+                new PackageLocation(additionalFeeds: new[] { GetTestLocalFeedPath() }),
+                packageId: TestPackageId,
+                verbosity: TestVerbosity,
+                versionRange: VersionRange.Parse(TestPackageVersion),
+                targetFramework: _testTargetframework,
+                isGlobalTool: true,
+                verifySignatures: false,
+                cancellationToken: cancellationToken);
+        }
+
+        private static void WithHeldMutex(string mutexName, Action action)
+        {
+            using var mutex = new Mutex(false, mutexName);
+            using var acquired = new ManualResetEventSlim();
+            using var release = new ManualResetEventSlim();
+            Exception holderException = null;
+            var holderThread = new Thread(() =>
+            {
+                try
+                {
+                    mutex.WaitOne();
+                    acquired.Set();
+                    release.Wait();
+                    mutex.ReleaseMutex();
+                }
+                catch (Exception exception)
+                {
+                    holderException = exception;
+                    acquired.Set();
+                }
+            });
+            holderThread.Start();
+            acquired.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
+
+            try
+            {
+                holderException.Should().BeNull();
+                action();
+            }
+            finally
+            {
+                release.Set();
+                holderThread.Join();
+            }
+
+            holderException.Should().BeNull();
         }
     }
 }

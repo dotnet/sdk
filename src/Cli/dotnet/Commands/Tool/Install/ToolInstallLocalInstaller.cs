@@ -55,11 +55,11 @@ internal sealed class ToolInstallLocalInstaller(
                         additionalFeeds: sources,
                         rootConfigDirectory: rootConfigDirectory),
                     packageId,
+                    cancellationToken,
                     verbosity: verbosity,
                     versionRange,
                     TargetFrameworkToInstall,
-                    restoreActionConfig: restoreActionConfig,
-                    cancellationToken: cancellationToken
+                    restoreActionConfig: restoreActionConfig
                     );
 
             return toolDownloadedPackage;
