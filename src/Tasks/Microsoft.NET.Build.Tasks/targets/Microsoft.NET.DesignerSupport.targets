@@ -124,7 +124,8 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
   </Target>
 
-  <Target Name="_GatherDesignerShadowCopyFiles">
+  <Target Name="_GatherDesignerShadowCopyFiles"
+          Condition="'$(TargetFrameworkIdentifier)' == '.NETCoreApp' or '$(UseWinFormsOutOfProcDesigner)' == 'true'">
     <ItemGroup>
       <_DesignerShadowCopy Include="@(ReferenceCopyLocalPaths)" />
 
