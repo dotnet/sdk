@@ -135,9 +135,124 @@ namespace Microsoft.NET.Build.Tests
                 case "net46":
                     depsFile.Should().BeNull();
                     runtimeConfig.Should().BeNull();
-                    otherFiles.Should().BeEquivalentTo(["Newtonsoft.Json.dll", "ReferencedProject.dll", "ReferencedProject.pdb"]);
+                    otherFiles.Should().BeEmpty();
                     break;
             }
+        }
+
+        [TestMethod]
+        public void It_does_not_include_framework_assets_when_multitargeting_framework_and_core()
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // net6.0-windows is windows only scenario
+                return;
+            }
+
+            var projectRef = new TestProject
+            {
+                Name = "ReferencedProject",
+                TargetFrameworks = "net6.0-windows;net46",
+            };
+
+            var project = new TestProject
+            {
+                Name = "MultiTargetDesignerTest",
+                IsExe = true,
+                TargetFrameworks = "net6.0-windows;net46",
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) },
+                ReferencedProjects = { projectRef },
+            };
+
+            var asset = TestAssetsManager.CreateTestProject(project);
+
+            (string DepsFile, string RuntimeConfig, List<string> OtherFiles) QueryOutputGroup(string targetFramework)
+            {
+                var command = new GetValuesCommand(
+                    Log,
+                    Path.Combine(asset.Path, project.Name),
+                    targetFramework,
+                    "DesignerRuntimeImplementationProjectOutputGroupOutput",
+                    GetValuesCommand.ValueType.Item)
+                {
+                    DependsOnTargets = "DesignerRuntimeImplementationProjectOutputGroup",
+                    MetadataNames = { "TargetPath" },
+                };
+
+                command.Execute().Should().Pass();
+
+                string depsFile = null;
+                string runtimeConfig = null;
+                var otherFiles = new List<string>();
+
+                foreach (var item in command.GetValuesWithMetadata())
+                {
+                    var targetPath = item.metadata["TargetPath"];
+                    switch (targetPath)
+                    {
+                        case var _ when targetPath.EndsWith(".designer.deps.json"):
+                            depsFile = item.value;
+                            break;
+                        case var _ when targetPath.EndsWith(".designer.runtimeconfig.json"):
+                            runtimeConfig = item.value;
+                            break;
+                        default:
+                            otherFiles.Add(targetPath);
+                            break;
+                    }
+                }
+
+                return (depsFile, runtimeConfig, otherFiles);
+            }
+
+            var coreResult = QueryOutputGroup("net6.0-windows");
+            coreResult.DepsFile.Should().NotBeNull();
+            coreResult.RuntimeConfig.Should().NotBeNull();
+            coreResult.OtherFiles.Should().BeEquivalentTo(["ReferencedProject.dll", "ReferencedProject.pdb"]);
+
+            var frameworkResult = QueryOutputGroup("net46");
+            frameworkResult.DepsFile.Should().BeNull();
+            frameworkResult.RuntimeConfig.Should().BeNull();
+            frameworkResult.OtherFiles.Should().BeEmpty();
+        }
+
+        [TestMethod]
+        public void It_includes_nuget_assets_for_framework_when_out_of_proc_designer_is_opted_in()
+        {
+            var projectRef = new TestProject
+            {
+                Name = "ReferencedProject",
+                TargetFrameworks = "net46",
+            };
+
+            var project = new TestProject
+            {
+                Name = "OopDesignerFrameworkTest",
+                IsExe = true,
+                TargetFrameworks = "net46",
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) },
+                ReferencedProjects = { projectRef },
+            };
+            project.AdditionalProperties["UseWinFormsOutOfProcDesigner"] = "true";
+
+            var asset = TestAssetsManager.CreateTestProject(project);
+
+            var command = new GetValuesCommand(
+                Log,
+                Path.Combine(asset.Path, project.Name),
+                "net46",
+                "DesignerRuntimeImplementationProjectOutputGroupOutput",
+                GetValuesCommand.ValueType.Item)
+            {
+                DependsOnTargets = "DesignerRuntimeImplementationProjectOutputGroup",
+                MetadataNames = { "TargetPath" },
+            };
+
+            command.Execute().Should().Pass();
+
+            var targetPaths = command.GetValuesWithMetadata().Select(item => item.metadata["TargetPath"]);
+
+            targetPaths.Should().BeEquivalentTo(["Newtonsoft.Json.dll", "ReferencedProject.dll", "ReferencedProject.pdb"]);
         }
 
         private static JToken GetRuntimeOptions(string runtimeConfigFilePath)
