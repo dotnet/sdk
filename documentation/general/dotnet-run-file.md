@@ -194,7 +194,7 @@ and any leading and trailing white space is not considered part of the name and 
 The remainder of a directive (after the kind) is split into whitespace-separated tokens.
 Whitespace inside a value is not allowed unless the value is enclosed in double quotes (`"`).
 A value is written either bare or wrapped entirely in double quotes.
-A quoted value is lexed as a regular C# string literal (the same way `#r`/`#load` directives lex their argument),
+A quoted value is lexed as a regular C# string literal,
 so its escape sequences are decoded, e.g., `#:property Description="Hello World"` sets the value to `Hello World`,
 `#:property Path="a\\b"` sets it to `a\b`, and `#:property Text="a\"b"` sets it to `a"b`.
 Verbatim (`@"..."`) and raw (`"""..."""`) string literals are not supported.

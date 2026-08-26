@@ -418,7 +418,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
     /// </para>
     /// <para>
     /// Each side of the separator is written either bare or wrapped entirely in double quotes (<c>"</c>), which lets it contain whitespace.
-    /// A quoted part is lexed as a regular C# string literal (the same way <c>#r</c>/<c>#load</c> lex their argument),
+    /// A quoted part is lexed as a regular C# string literal,
     /// so escape sequences like <c>\"</c>, <c>\\</c> and <c>\t</c> are decoded; verbatim (<c>@"..."</c>) and raw (<c>"""..."""</c>) literals are not supported.
     /// A quote may therefore open only at the start of a part, and only the separator may follow a closing quote.
     /// So <c>A=B</c>, <c>A="B"</c>, and <c>"A"="B"</c> are allowed, but <c>A=B"C"</c> and <c>A="B"C</c> are errors.
@@ -451,7 +451,7 @@ internal abstract class CSharpDirective(in CSharpDirective.ParseInfo info)
                     return null;
                 }
 
-                // Lex a regular C# string literal (like '#r') so the value can contain whitespace and use escape sequences.
+                // Lex a regular C# string literal so the value can contain whitespace and use escape sequences.
                 // Verbatim (@"...") literals can't start here (the '@' would precede the quote and fail the check above),
                 // and raw ("""...""") literals lex to a different token kind and are rejected below.
                 var token = context.ValueLexer.LexStringLiteral(context.DirectiveTextStart + i);
