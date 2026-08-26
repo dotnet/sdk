@@ -142,7 +142,6 @@ Copyright (c) .NET Foundation. All rights reserved.
            whole StaticWebAsset item list rather than only the referenced items. -->
       <_HtmlPlaceholderSourceAssets Include="@(_HtmlFilesToRemove)">
         <AssetKind>Publish</AssetKind>
-        <HtmlAssetPlaceholderSource>true</HtmlAssetPlaceholderSource>
       </_HtmlPlaceholderSourceAssets>
       <StaticWebAsset Remove="@(_HtmlFilesToRemove)" />
       <StaticWebAsset Include="@(_HtmlPlaceholderSourceAssets)" />
