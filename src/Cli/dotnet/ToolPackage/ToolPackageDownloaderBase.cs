@@ -3,6 +3,8 @@
 
 using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -176,6 +178,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             {
                 DownloadTool(
                     packageDownloadDir: _globalToolStageDir,
+                    packageInstallRoot: _toolPackageStore.Root,
                     packageId,
                     packageVersion,
                     nugetPackageDownloader,
@@ -245,6 +248,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             {
                 DownloadTool(
                     packageDownloadDir: _localToolDownloadDir,
+                    packageInstallRoot: _localToolDownloadDir,
                     packageId,
                     packageVersion,
                     nugetPackageDownloader,
@@ -266,6 +270,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
 
     protected void DownloadTool(
         DirectoryPath packageDownloadDir,
+        DirectoryPath packageInstallRoot,
         PackageId packageId,
         NuGetVersion packageVersion,
         INuGetPackageDownloader nugetPackageDownloader,
@@ -276,7 +281,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         VerbosityOptions verbosity)
     {
         // Use a named mutex to serialize concurrent installations of the same tool package
-        string mutexName = GetToolInstallMutexName(packageId, packageVersion);
+        string mutexName = GetToolInstallMutexName(packageInstallRoot, packageId, packageVersion);
         using var mutex = new Mutex(false, mutexName);
         bool mutexAcquired = false;
 
@@ -336,15 +341,20 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
-    private static string GetToolInstallMutexName(PackageId packageId, NuGetVersion packageVersion)
+    internal static string GetToolInstallMutexName(
+        DirectoryPath packageInstallRoot,
+        PackageId packageId,
+        NuGetVersion packageVersion)
     {
-        // Create a mutex name in the format: tool-install-{packageId}-{packageVersion}
-        // Replace characters that are invalid in mutex names with underscores
-        string safeName = $"tool-install-{packageId}-{packageVersion.ToNormalizedString()}"
-            .Replace('/', '_')
-            .Replace('\\', '_');
+        string normalizedInstallRoot = Path.TrimEndingDirectorySeparator(
+            Path.GetFullPath(packageInstallRoot.Value));
+        if (OperatingSystem.IsWindows())
+        {
+            normalizedInstallRoot = normalizedInstallRoot.ToUpperInvariant();
+        }
 
-        return safeName;
+        string mutexIdentity = $"{normalizedInstallRoot}\n{packageId.ToString().ToLowerInvariant()}\n{packageVersion.ToNormalizedString()}";
+        return $"dotnet-tool-install-{Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(mutexIdentity)))}";
     }
 
     public bool TryGetDownloadedTool(
