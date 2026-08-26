@@ -202,6 +202,7 @@ jobs:
 
           get_latest_build_id() {
             local branch="$1"
+            local source_sha="${2:-}"
 
             curl --fail --silent --show-error --location --retry 3 --max-time 60 --get \
               "${AZDO_API}/build/builds" \
@@ -212,14 +213,17 @@ jobs:
               --data-urlencode "queryOrder=queueTimeDescending" \
               --data-urlencode '$top=1' \
               --data-urlencode "api-version=7.1" |
-              jq -r '.value[0].id // empty'
+              jq -r --arg source_sha "$source_sha" '
+                .value[0]
+                | select($source_sha == "" or .triggerInfo["pr.sourceSha"] == $source_sha)
+                | .id // empty'
           }
 
-          # Find the PR build by its merge branch (server-side filter)
-          PR_BUILD_ID=$(get_latest_build_id "refs/pull/${PR_NUMBER}/merge")
+          # sourceVersion is the synthetic merge commit, so match the PR head through triggerInfo.
+          PR_BUILD_ID=$(get_latest_build_id "refs/pull/${PR_NUMBER}/merge" "$PR_HEAD_SHA")
 
           if [ -z "$PR_BUILD_ID" ]; then
-            echo "::warning::No completed build found for PR commit ${PR_HEAD_SHA}. Ensure the AzDO pipeline has finished."
+            echo "::warning::No completed successful build found for PR commit ${PR_HEAD_SHA}. Ensure the AzDO pipeline has finished."
             echo "found=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
