@@ -263,10 +263,21 @@ Copyright (c) .NET Foundation. All rights reserved.
       <ExpectedPlatformPackages Include="@(PackageReference)" Condition="'%(Identity)' == 'Microsoft.AspNetCore.All'" />
     </ItemGroup>
 
+    <!--
+      When the compiler already produces location-independent output (DeterministicSourcePaths), pass the same
+      PathMap so ResolvePackageAssets normalizes the project-owned paths in its cache-invalidation hash. The
+      assets cache then stays valid when identical sources are restored under a different repo root (for example
+      a cache seeded from another machine/agent). Empty otherwise, so the hash is unchanged for normal builds.
+    -->
+    <PropertyGroup>
+      <_ResolvePackageAssetsPathMap Condition="'$(DeterministicSourcePaths)' == 'true'">$(PathMap)</_ResolvePackageAssetsPathMap>
+    </PropertyGroup>
+
     <ResolvePackageAssets
       ProjectAssetsFile="$(ProjectAssetsFile)"
       ProjectAssetsCacheFile="$(ProjectAssetsCacheFile)"
       ProjectPath="$(MSBuildProjectFullPath)"
+      PathMap="$(_ResolvePackageAssetsPathMap)"
       ProjectLanguage="$(Language)"
       CompilerApiVersion="$(CompilerApiVersion)"
       EmitAssetsLogMessages="$(EmitAssetsLogMessages)"
