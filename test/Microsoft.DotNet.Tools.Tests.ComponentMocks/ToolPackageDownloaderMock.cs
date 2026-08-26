@@ -335,7 +335,21 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             return (NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed"));
         }
 
+        public Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            VerbosityOptions verbosity,
+            VersionRange? versionRange = null,
+            RestoreActionConfig? restoreActionConfig = null,
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            return Task.FromResult(GetNuGetVersion(packageLocation, packageId, verbosity, versionRange, restoreActionConfig));
+        }
+
         public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string? targetFramework, VerbosityOptions verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
+
+        public bool TryGetBestDownloadedTool(PackageId packageId, VersionRange versionRange, string? targetFramework, VerbosityOptions verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
 
         private class TestToolPackage : IToolPackage
         {

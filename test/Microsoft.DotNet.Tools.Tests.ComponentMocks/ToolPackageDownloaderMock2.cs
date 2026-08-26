@@ -5,6 +5,7 @@ using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Versioning;
 
@@ -18,6 +19,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         public const string DefaultTargetFramework = "net6.0";
 
         public Action? DownloadCallback { get; set; }
+
+        public Func<CancellationToken, Task<(NuGetVersion version, PackageSource source)>>? GetNuGetVersionAsyncCallback { get; set; }
 
         public string? MockFeedWithNoPackages { get; set; }
 
@@ -111,6 +114,22 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             };
         }
 
+        public override Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
+            PackageLocation packageLocation,
+            PackageId packageId,
+            Cli.Utils.VerbosityOptions verbosity,
+            VersionRange? versionRange = null,
+            RestoreActionConfig? restoreActionConfig = null,
+            CancellationToken cancellationToken = default)
+            => GetNuGetVersionAsyncCallback?.Invoke(cancellationToken) ??
+               base.GetNuGetVersionAsync(
+                   packageLocation,
+                   packageId,
+                   verbosity,
+                   versionRange,
+                   restoreActionConfig,
+                   cancellationToken);
+
         protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
             NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted = false)
         {
@@ -181,8 +200,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         {
             var versionFolderPathResolver = new VersionFolderPathResolver(packagesRootPath);
             var nupkgDir = versionFolderPathResolver.GetInstallPath(packageId.ToString(), packageVersion);
+            var fakeExecutablePath = Path.Combine(
+                nupkgDir,
+                "tools",
+                DefaultTargetFramework,
+                "any",
+                FakeEntrypointName);
 
-            return _fileSystem.Directory.Exists(nupkgDir);
+            return _fileSystem.Directory.Exists(nupkgDir) &&
+                _fileSystem.File.Exists(fakeExecutablePath);
         }
     }
 }
