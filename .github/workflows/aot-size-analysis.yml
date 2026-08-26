@@ -13,6 +13,7 @@
 # Prerequisites:
 # - The PR pipeline must publish _AotSizeAnalysis artifacts (dotnet-aot.mstat, dotnet-aot.scan.dgml)
 # - The sizoscope-cli dotnet tool must be available on the feeds configured by the nuget.config in this repo
+# - The AZURE_DEVOPS_EXT_PAT Actions secret must grant read access to builds and artifacts in dnceng-public
 #
 name: NativeAOT Size Analysis
 
@@ -185,6 +186,7 @@ jobs:
       ACTIONS_ID_TOKEN_REQUEST_URL: ""
       ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
       ACTIONS_RUNTIME_TOKEN: ""
+      AZURE_DEVOPS_EXT_PAT: ""
       # Workflow-specific env vars
       PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
       PR_HEAD_SHA: ${{ needs.authorize.outputs.head_sha }}
@@ -198,6 +200,8 @@ jobs:
 
       - name: Find PR and baseline builds
         id: builds
+        env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
         run: |
           set -euo pipefail
 
@@ -237,6 +241,7 @@ jobs:
         if: steps.builds.outputs.found == 'true'
         id: download
         env:
+          AZURE_DEVOPS_EXT_PAT: ${{ secrets.AZURE_DEVOPS_EXT_PAT }}
           PR_BUILD_ID: ${{ steps.builds.outputs.pr_build_id }}
           BASE_BUILD_ID: ${{ steps.builds.outputs.base_build_id }}
         run: |
@@ -474,4 +479,3 @@ jobs:
               issue_number: parseInt(process.env.PR_NUMBER, 10),
               body: `❌ NativeAOT size analysis failed. See [workflow run](${process.env.RUN_URL}) for details.`,
             });
-
