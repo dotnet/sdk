@@ -283,14 +283,14 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         try
         {
             // First try a quick check to see if the mutex is immediately available
-            mutexAcquired = mutex.WaitOne(TimeSpan.FromMilliseconds(50));
+            mutexAcquired = WaitOne(mutex, TimeSpan.FromMilliseconds(50));
             if (!mutexAcquired)
             {
                 // Mutex is held by another process - inform the user
                 Reporter.Error.WriteLine(string.Format(CliStrings.ToolInstallationWaiting, packageId, packageVersion));
 
                 // Now wait for the longer duration
-                mutexAcquired = mutex.WaitOne(TimeSpan.FromMinutes(5));
+                mutexAcquired = WaitOne(mutex, TimeSpan.FromMinutes(5));
                 if (!mutexAcquired)
                 {
                     throw new ToolPackageException(string.Format(CliStrings.ToolInstallationTimeout, packageId, packageVersion));
@@ -321,6 +321,18 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             {
                 mutex.ReleaseMutex();
             }
+        }
+    }
+
+    private static bool WaitOne(Mutex mutex, TimeSpan timeout)
+    {
+        try
+        {
+            return mutex.WaitOne(timeout);
+        }
+        catch (AbandonedMutexException)
+        {
+            return true;
         }
     }
 
