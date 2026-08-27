@@ -152,6 +152,19 @@
   </ItemGroup>
 
   <!--
+    Build-free 'dotnet test' support for explicit test modules. Project/solution discovery and build remain
+    managed-only; the linked command implementation shares the MTP orchestration, IPC, terminal,
+    cancellation, results-layout, and artifact post-processing code with the managed CLI.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\AotTestCommand.cs" Link="Commands\Test\AotTestCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\CliConstants.cs" Link="Commands\Test\CliConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\**\*.cs"
+             Exclude="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildHandler.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\SolutionAndProjectUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\ValidationUtility.cs"
+             LinkBase="Commands\Test\MTP" />
+  </ItemGroup>
+
+  <!--
     Workload reporting for the info command: WorkloadInfoHelper.GetWorkloadsVersion() and
     ShowWorkloadsInfo(). Under CLI_AOT, WorkloadInfoHelper builds the installation-record repository
     directly (the registry/file-based record repositories are already in the AOT source set) and does
