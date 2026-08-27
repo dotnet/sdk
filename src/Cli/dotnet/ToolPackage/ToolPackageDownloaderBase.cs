@@ -5,12 +5,12 @@ using System.Diagnostics.CodeAnalysis;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.EnvironmentAbstractions;
-using System.Text.Json;
-using System.Text.Json.Nodes;
 using NuGet.Configuration;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
@@ -108,30 +108,8 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         bool isGlobalTool = false,
         bool isGlobalToolRollForward = false,
         bool verifySignatures = true,
-        RestoreActionConfig? restoreActionConfig = null)
-    {
-        return InstallPackage(
-            packageLocation,
-            packageId,
-            CancellationToken.None,
-            verbosity,
-            versionRange,
-            targetFramework,
-            isGlobalTool,
-            isGlobalToolRollForward,
-            verifySignatures,
-            restoreActionConfig);
-    }
-
-    public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
-        CancellationToken cancellationToken,
-        VerbosityOptions verbosity = VerbosityOptions.normal,
-        VersionRange? versionRange = null,
-        string? targetFramework = null,
-        bool isGlobalTool = false,
-        bool isGlobalToolRollForward = false,
-        bool verifySignatures = true,
-        RestoreActionConfig? restoreActionConfig = null)
+        RestoreActionConfig? restoreActionConfig = null,
+        CancellationToken cancellationToken = default)
     {
         if (versionRange == null)
         {

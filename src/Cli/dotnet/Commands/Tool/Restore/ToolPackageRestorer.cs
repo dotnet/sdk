@@ -69,11 +69,11 @@ internal class ToolPackageRestorer
                         sourceFeedOverrides: _overrideSources,
                         rootConfigDirectory: package.FirstEffectDirectory),
                     package.PackageId,
-                    cancellationToken,
                     verbosity: _verbosity,
-                    ToVersionRangeWithOnlyOneVersion(package.Version),
-                    targetFramework,
-                    restoreActionConfig: _restoreActionConfig
+                    versionRange: ToVersionRangeWithOnlyOneVersion(package.Version),
+                    targetFramework: targetFramework,
+                    restoreActionConfig: _restoreActionConfig,
+                    cancellationToken: cancellationToken
                     );
 
             if (!ManifestCommandMatchesActualInPackage(package.CommandNames, [toolPackage.Command]))

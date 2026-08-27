@@ -19,19 +19,8 @@ internal interface IToolPackageDownloader
         bool isGlobalTool = false,
         bool isGlobalToolRollForward = false,
         bool verifySignatures = true,
-        RestoreActionConfig? restoreActionConfig = null
-    );
-
-    IToolPackage InstallPackage(PackageLocation packageLocation,
-        PackageId packageId,
-        CancellationToken cancellationToken,
-        VerbosityOptions verbosity,
-        VersionRange? versionRange = null,
-        string? targetFramework = null,
-        bool isGlobalTool = false,
-        bool isGlobalToolRollForward = false,
-        bool verifySignatures = true,
-        RestoreActionConfig? restoreActionConfig = null
+        RestoreActionConfig? restoreActionConfig = null,
+        CancellationToken cancellationToken = default
     );
 
     (NuGetVersion version, PackageSource source) GetNuGetVersion(
