@@ -16,6 +16,8 @@ namespace dotnet.Tests.ToolSearchTests;
 [TestClass]
 public class ToolSearchCommandTests
 {
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public void ExecuteReturnsOneWhenNoSourcesAreConfiguredOrEnabled()
     {
@@ -198,12 +200,100 @@ public class ToolSearchCommandTests
         fake.RequestedSourceUrls.Should().Equal(exclusiveSource, additionalSource);
     }
 
+    [TestMethod]
+    public void ExecuteInitializesCredentialsBeforeQueryingSources()
+    {
+        const string source = "https://source.example.test/v3/index.json";
+        bool credentialsInitialized = false;
+        var fake = new FakeNugetToolSearchApiRequest(
+            successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>
+            {
+                [source] = [],
+            },
+            beforeRequest: () => credentialsInitialized.Should().BeTrue());
+
+        int exitCode = RunToolSearch(
+            ["dotnet", "tool", "search", "mytool", "--source", source, "--interactive"],
+            fake,
+            out _,
+            out _,
+            setupCredentialService: interactive =>
+            {
+                interactive.Should().BeTrue();
+                credentialsInitialized = true;
+            });
+
+        exitCode.Should().Be(0);
+    }
+
+    [TestMethod]
+    public void ExecuteUsesNonInteractiveCredentialsByDefault()
+    {
+        const string source = "https://source.example.test/v3/index.json";
+        bool? interactiveValue = null;
+        var fake = new FakeNugetToolSearchApiRequest(
+            successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>
+            {
+                [source] = [],
+            });
+
+        int exitCode = RunToolSearch(
+            ["dotnet", "tool", "search", "mytool", "--source", source],
+            fake,
+            out _,
+            out _,
+            setupCredentialService: interactive => interactiveValue = interactive);
+
+        exitCode.Should().Be(0);
+        interactiveValue.Should().BeFalse();
+    }
+
+    [TestMethod]
+    public async Task ExecuteBoundsConcurrencyAndPrintsResultsInSourceOrder()
+    {
+        string[] sources = Enumerable.Range(1, 6)
+            .Select(index => $"https://source{index}.example.test/v3/index.json")
+            .ToArray();
+        var fake = new BlockingNugetToolSearchApiRequest(expectedFirstBatchSize: 4);
+        BufferedReporter? output = null;
+
+        Task<int> execution = Task.Run(() => RunToolSearch(
+            ["dotnet", "tool", "search", "mytool", .. sources.SelectMany(source => new[] { "--source", source })],
+            fake,
+            out output,
+            out _));
+
+        try
+        {
+            await fake.FirstBatchStarted.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            await Task.Delay(100, TestContext.CancellationToken);
+            fake.StartedRequestCount.Should().Be(4);
+        }
+        finally
+        {
+            fake.ReleaseRequests();
+        }
+
+        (await execution).Should().Be(0);
+        fake.MaximumConcurrentRequests.Should().Be(4);
+
+        List<string> outputLines = output!.Lines.ToList();
+        int previousHeadingIndex = -1;
+        foreach (string source in sources)
+        {
+            int headingIndex = outputLines.FindIndex(line => line.Contains(source, StringComparison.Ordinal));
+            headingIndex.Should().BeGreaterThan(previousHeadingIndex);
+            previousHeadingIndex = headingIndex;
+        }
+    }
+
     private static int RunToolSearch(
         string[] args,
         INugetToolSearchApiRequest nugetToolSearchApiRequest,
         out BufferedReporter output,
         out BufferedReporter error,
-        string? currentWorkingDirectory = null)
+        string? currentWorkingDirectory = null,
+        Action<bool>? setupCredentialService = null)
     {
         BufferedReporter capturedOutput = new();
         BufferedReporter capturedError = new();
@@ -215,7 +305,11 @@ public class ToolSearchCommandTests
         try
         {
             ParseResult parseResult = Parser.Parse(args);
-            var command = new ToolSearchCommand(parseResult, nugetToolSearchApiRequest, currentWorkingDirectory);
+            var command = new ToolSearchCommand(
+                parseResult,
+                nugetToolSearchApiRequest,
+                currentWorkingDirectory,
+                setupCredentialService ?? (_ => { }));
             int exitCode = command.Execute();
             output = capturedOutput;
             error = capturedError;
@@ -242,7 +336,8 @@ public class ToolSearchCommandTests
 
     private sealed class FakeNugetToolSearchApiRequest(
         IReadOnlyDictionary<string, IReadOnlyCollection<SearchResultPackage>>? successResponses = null,
-        IReadOnlyDictionary<string, string>? failureMessages = null) : INugetToolSearchApiRequest
+        IReadOnlyDictionary<string, string>? failureMessages = null,
+        Action? beforeRequest = null) : INugetToolSearchApiRequest
     {
         private readonly IReadOnlyDictionary<string, IReadOnlyCollection<SearchResultPackage>> _successResponses =
             successResponses ?? new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>();
@@ -256,6 +351,7 @@ public class ToolSearchCommandTests
             NugetSearchApiParameter nugetSearchApiParameter,
             PackageSource source)
         {
+            beforeRequest?.Invoke();
             string sourceUrl = source.Source;
             RequestedSourceUrls.Add(sourceUrl);
             RequestedParameters.Add(nugetSearchApiParameter);
@@ -272,6 +368,58 @@ public class ToolSearchCommandTests
 
             throw new InvalidOperationException($"Test setup error: no response configured for source '{sourceUrl}'.");
         }
+    }
+
+    private sealed class BlockingNugetToolSearchApiRequest(int expectedFirstBatchSize) : INugetToolSearchApiRequest
+    {
+        private readonly TaskCompletionSource<bool> _firstBatchStarted = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private readonly TaskCompletionSource<bool> _releaseRequests = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _activeRequests;
+        private int _maximumConcurrentRequests;
+        private int _startedRequestCount;
+
+        public Task FirstBatchStarted => _firstBatchStarted.Task;
+
+        public int MaximumConcurrentRequests => Volatile.Read(ref _maximumConcurrentRequests);
+
+        public int StartedRequestCount => Volatile.Read(ref _startedRequestCount);
+
+        public async Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
+            NugetSearchApiParameter nugetSearchApiParameter,
+            PackageSource source)
+        {
+            int activeRequests = Interlocked.Increment(ref _activeRequests);
+            int observedMaximum = Volatile.Read(ref _maximumConcurrentRequests);
+            while (activeRequests > observedMaximum)
+            {
+                int previousMaximum = Interlocked.CompareExchange(
+                    ref _maximumConcurrentRequests,
+                    activeRequests,
+                    observedMaximum);
+                if (previousMaximum == observedMaximum)
+                {
+                    break;
+                }
+                observedMaximum = previousMaximum;
+            }
+
+            if (Interlocked.Increment(ref _startedRequestCount) == expectedFirstBatchSize)
+            {
+                _firstBatchStarted.SetResult(true);
+            }
+
+            try
+            {
+                await _releaseRequests.Task;
+                return [CreateSearchResultPackage(new Uri(source.Source).Host)];
+            }
+            finally
+            {
+                Interlocked.Decrement(ref _activeRequests);
+            }
+        }
+
+        public void ReleaseRequests() => _releaseRequests.SetResult(true);
     }
 
     private sealed class EmptyPackageSearchResource : PackageSearchResource

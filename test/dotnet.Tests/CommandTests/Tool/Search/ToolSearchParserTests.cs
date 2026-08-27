@@ -115,5 +115,14 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.GetRequiredValue(definition.SourceOption).First().Should().Be(expectedSourceValue);
             result.GetRequiredValue(definition.AddSourceOption).First().Should().Be(expectedAddSourceValue);
         }
+
+        [TestMethod]
+        public void ToolSearchParserCanParseInteractiveOption()
+        {
+            var result = Parser.Parse("dotnet tool search mytool --interactive");
+
+            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
+            result.GetValue(definition.InteractiveOption).Should().BeTrue();
+        }
     }
 }
