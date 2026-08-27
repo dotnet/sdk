@@ -28,7 +28,7 @@ variables:
 # EngKeyVault-backed group (dnceng/internal). Provides the secret $(akams-app-id) -- the onboarded
 # aka.ms client app id used to authenticate to the Redirection API. The pipeline must be granted
 # access to this variable group. Same source dotnet/arcade uses in eng/publishing/v3/publish.yml.
-- group: Publish-Build-Assets
+- group: Arcade-Publishing-Client-Ids
 # Static aka.ms constants (source-of-truth in this repo; not in the Variables UI). These rarely
 # change and are derived from our own code (short URLs) or are well-known fixed values (tenants).
 # The dnceng-owned certificate and owner values stay as pipeline Variables.
@@ -273,18 +273,18 @@ extends:
 
             # Repoint the aka.ms links at the new ESRP URLs. We authenticate to the corp Redirection
             # Management API the same way dotnet/arcade does: as the onboarded aka.ms client app
-            # ($(akams-app-id), from the EngKeyVault-backed Publish-Build-Assets variable group) using
+            # ($(akams-app-id), from the EngKeyVault-backed Arcade-Publishing-Client-Ids variable group) using
             # a client certificate pulled from EngKeyVault. Each link is checked first so missing
             # links can be created with POST while existing links are updated with PUT.
             #
             # Prerequisites (dnceng-owned; the pipeline must be granted access):
-            #   - The 'Publish-Build-Assets' variable group is linked (provides secret $(akams-app-id)).
+            #   - The 'Arcade-Publishing-Client-Ids' variable group is linked (provides secret $(akams-app-id)).
             #   - AkaMsCertServiceConnection can read the cert secret from the key vault.
             #   - The app/cert is allowed to manage the 'dotnet/templating/*' links in the 'ncd' tenant.
             #
             # Pipeline Variables (set in the Variables UI; the rest are static in this YAML's
-            # 'variables:' block or come from the linked Publish-Build-Assets group):
-            #   akams-app-id                     - aka.ms client app id (secret, auto-supplied by the Publish-Build-Assets KV group)
+            # 'variables:' block or come from the linked Arcade-Publishing-Client-Ids group):
+            #   akams-app-id                     - aka.ms client app id (secret, auto-supplied by the Arcade-Publishing-Client-Ids KV group)
             #   AkaMsCertServiceConnection       - AzureRM service connection that can read the key vault (e.g. DotNet-Engineering-Services_KeyVault)
             #   AkaMsCertVaultName               - key vault holding the cert (e.g. EngKeyVault)
             #   AkaMsCertSecretName              - cert secret name (e.g. Redirection-UST-Client-NetCoreDeployment)
