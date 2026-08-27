@@ -33,7 +33,7 @@ public sealed class NewSearchCommandDefinition : Command
     // the same fix already applied to the legacy option in LegacyOptions.CreateAddSourceOption().
     // Repeating `--add-source` multiple times is unaffected and remains supported.
     public readonly Option<string[]> AddSourceOption = SharedOptionsFactory.CreateAddSourceOption().DisableAllowMultipleArgumentsPerToken();
-    public readonly Option<bool> InteractiveOption = SharedOptionsFactory.CreateInteractiveOption();
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
 
     public NewSearchCommandDefinition(NewCommandDefinition parent, bool isLegacy)
         : base(isLegacy ? LegacyName : Name, CommandDefinitionStrings.Command_Search_Description)

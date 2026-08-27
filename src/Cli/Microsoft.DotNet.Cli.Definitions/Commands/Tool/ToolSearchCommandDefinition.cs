@@ -39,11 +39,7 @@ internal sealed class ToolSearchCommandDefinition : Command
 
     public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption(CommandDefinitionStrings.ToolSearchAddSourceOptionDescription);
 
-    public readonly Option<bool> InteractiveOption = new("--interactive")
-    {
-        Description = CommandDefinitionStrings.CommandInteractiveOptionDescription,
-        Arity = ArgumentArity.Zero
-    };
+    public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
 
     public ToolSearchCommandDefinition()
         : base("search", CommandDefinitionStrings.ToolSearchCommandDescription)
