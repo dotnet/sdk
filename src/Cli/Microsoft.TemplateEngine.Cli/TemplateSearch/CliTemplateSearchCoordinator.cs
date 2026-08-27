@@ -12,6 +12,7 @@ using Microsoft.TemplateEngine.Cli.TabularOutput;
 using Microsoft.TemplateEngine.Edge.Settings;
 using Microsoft.TemplateSearch.Common;
 using Microsoft.TemplateSearch.Common.Abstractions;
+using NuGet.Configuration;
 using NuGet.Credentials;
 using static Microsoft.TemplateEngine.Cli.NuGet.NugetApiManager;
 
@@ -154,6 +155,11 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: false);
             }
 
+            PackageSourceMapping? sourceMapping = PackageAvailabilityChecker.GetEffectivePackageSourceMapping(
+                sourceConfiguration.Settings,
+                sourceOverridesSpecified: commandArgs.Sources?.Count > 0,
+                additionalSourcesSpecified: commandArgs.AddSources?.Count > 0);
+
             HashSet<PackageAvailabilityCandidate> candidates = searchResults
                 .Where(r => r.Success)
                 .SelectMany(r => r.SearchHits)
@@ -169,7 +175,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return new PackageAvailabilityResult(candidates, anyFeedSucceeded: true);
             }
 
-            PackageAvailabilityChecker checker = new(sourceConfiguration.PackageSources, sourceConfiguration.Settings);
+            PackageAvailabilityChecker checker = new(sourceConfiguration.PackageSources, sourceMapping);
             PackageAvailabilityResult availability = await checker.GetAvailablePackagesAsync(candidates, cancellationToken).ConfigureAwait(false);
             if (!availability.AnyFeedSucceeded)
             {
@@ -480,5 +486,3 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
         }
     }
 }
-
-

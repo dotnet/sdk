@@ -1,7 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Concurrent;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -35,8 +34,9 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
         internal IReadOnlySet<PackageAvailabilityCandidate> AvailablePackages { get; }
 
         /// <summary>
-        /// <see langword="true"/> when at least one of the selected feeds could be queried successfully (even if it
+        /// <see langword="true"/> when at least one required package query completed successfully (even if it
         /// reported no matching packages at all); <see langword="false"/> when none of the selected feeds were usable.
+        /// When source mapping excludes every candidate, no query is required and the result is also successful.
         /// </summary>
         internal bool AnyFeedSucceeded { get; }
     }
@@ -51,48 +51,63 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
     /// </summary>
     internal sealed class PackageAvailabilityChecker
     {
-        // Bounds the number of concurrent per-candidate feed queries so a large set of catalog matches cannot open
-        // an unbounded number of connections against the selected feeds.
         private const int MaxConcurrentPackageChecks = 4;
-
-        // These are plain (non-localized) diagnostic messages: they are written only to stderr/verbose output to help
-        // diagnose why a particular feed could not be used, and are distinct from the "no NuGet sources configured"
-        // and "invalid --source/--add-source value" cases (both of which reuse existing localized strings at the
-        // call site in the coordinator).
         private const string FeedResourceUnavailableMessage = "Unable to query NuGet source '{0}' for template package availability: the feed does not support package lookups.";
         private const string FeedQueryFailedMessageFormat = "Unable to query NuGet source '{0}' for template package availability: {1}";
 
         private readonly IReadOnlyList<PackageSource> _sources;
-        private readonly ISettings? _settings;
+        private readonly PackageSourceMapping? _sourceMapping;
         private readonly ILogger _logger;
         private readonly Action<string> _reportFeedFailure;
         private readonly Func<PackageSource, SourceRepository> _repositoryFactory;
-        private readonly SourceCacheContext _cacheContext = new()
-        {
-            NoCache = true,
-            DirectDownload = true
-        };
 
         /// <summary>
         /// Initializes a new instance of <see cref="PackageAvailabilityChecker"/>.
         /// </summary>
         /// <param name="sources">The NuGet feeds selected for this invocation.</param>
-        /// <param name="settings">The effective NuGet <see cref="ISettings"/>, used to resolve package source mapping. May be <see langword="null"/> if unavailable, in which case source mapping is not honored.</param>
+        /// <param name="sourceMapping">The effective configured package source mapping, or <see langword="null"/> when mapping is disabled or bypassed by source overrides.</param>
         /// <param name="logger">The NuGet <see cref="ILogger"/> to use for feed queries. Defaults to <see cref="NullLogger.Instance"/>.</param>
-        /// <param name="reportFeedFailure">Callback invoked with a human readable message whenever an individual feed cannot be queried. Defaults to writing to <see cref="Reporter.Error"/>.</param>
+        /// <param name="reportFeedFailure">Callback invoked with a human readable message when an individual feed cannot be queried. Defaults to writing to <see cref="Reporter.Error"/>.</param>
         /// <param name="repositoryFactory">Factory used to create a <see cref="SourceRepository"/> for a given <see cref="PackageSource"/>. Defaults to <see cref="Repository.Factory"/>. Overridable for testing.</param>
         internal PackageAvailabilityChecker(
             IReadOnlyList<PackageSource> sources,
-            ISettings? settings = null,
+            PackageSourceMapping? sourceMapping = null,
             ILogger? logger = null,
             Action<string>? reportFeedFailure = null,
             Func<PackageSource, SourceRepository>? repositoryFactory = null)
         {
             _sources = sources ?? throw new ArgumentNullException(nameof(sources));
-            _settings = settings;
+            _sourceMapping = sourceMapping;
             _logger = logger ?? NullLogger.Instance;
             _reportFeedFailure = reportFeedFailure ?? (message => Reporter.Error.WriteLine(message));
             _repositoryFactory = repositoryFactory ?? ((PackageSource source) => Repository.Factory.GetCoreV3(source));
+        }
+
+        /// <summary>
+        /// Resolves the package source mapping policy used by template search.
+        /// </summary>
+        internal static PackageSourceMapping? GetEffectivePackageSourceMapping(
+            ISettings settings,
+            bool sourceOverridesSpecified,
+            bool additionalSourcesSpecified)
+        {
+            if (sourceOverridesSpecified)
+            {
+                return null;
+            }
+
+            PackageSourceMapping sourceMapping = PackageSourceMapping.GetPackageSourceMapping(settings);
+            if (!sourceMapping.IsEnabled)
+            {
+                return null;
+            }
+
+            if (additionalSourcesSpecified)
+            {
+                throw new GracefulException(LocalizableStrings.CannotUseAddSourceWithSourceMapping);
+            }
+
+            return sourceMapping;
         }
 
         /// <summary>
@@ -107,81 +122,104 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
                 return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: false);
             }
 
-            if (candidates.Count == 0)
+            Dictionary<string, List<ParsedCandidate>> candidatesByPackageId = ParseAndGroupCandidates(candidates);
+            if (candidatesByPackageId.Count == 0)
             {
-                // Nothing to confirm: there is no package to fail to find, so this is a vacuous success rather than
-                // a feed failure. No feed needs to be queried.
                 return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: true);
             }
 
-            List<(PackageSource Source, FindPackageByIdResource Resource)> usableFeeds = new();
+            List<FeedWork> feedWork = CreateFeedWork(candidatesByPackageId);
+            if (feedWork.Count == 0)
+            {
+                // Package source mapping excluded every candidate, so no feed query was required.
+                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: true);
+            }
+
+            using SemaphoreSlim throttle = new(MaxConcurrentPackageChecks, MaxConcurrentPackageChecks);
+            FeedResourceResult[] feedResources = await Task.WhenAll(
+                feedWork.Select(work => ResolveResourceAsync(work, throttle, cancellationToken))).ConfigureAwait(false);
+
+            QueryResult[] queryResults = await Task.WhenAll(
+                feedResources
+                    .Where(result => result.Resource != null)
+                    .SelectMany(result => result.Work.CandidatesByPackageId.Select(package =>
+                        QueryPackageAsync(result.Work.Source, result.Resource!, package.Key, package.Value, throttle, cancellationToken))))
+                .ConfigureAwait(false);
+
+            ReportFeedFailures(feedResources, queryResults);
+
+            HashSet<PackageAvailabilityCandidate> availablePackages = queryResults
+                .Where(result => result.AvailableCandidates != null)
+                .SelectMany(result => result.AvailableCandidates!)
+                .ToHashSet();
+
+            return new PackageAvailabilityResult(
+                availablePackages,
+                anyFeedSucceeded: queryResults.Any(result => result.Succeeded));
+        }
+
+        private static Dictionary<string, List<ParsedCandidate>> ParseAndGroupCandidates(
+            IReadOnlyCollection<PackageAvailabilityCandidate> candidates)
+        {
+            Dictionary<string, List<ParsedCandidate>> candidatesByPackageId = new(StringComparer.OrdinalIgnoreCase);
+            foreach (PackageAvailabilityCandidate candidate in candidates)
+            {
+                if (string.IsNullOrEmpty(candidate.PackageId) ||
+                    !NuGetVersion.TryParse(candidate.PackageVersion, out NuGetVersion? version))
+                {
+                    continue;
+                }
+
+                if (!candidatesByPackageId.TryGetValue(candidate.PackageId, out List<ParsedCandidate>? packageCandidates))
+                {
+                    packageCandidates = [];
+                    candidatesByPackageId.Add(candidate.PackageId, packageCandidates);
+                }
+
+                packageCandidates.Add(new ParsedCandidate(candidate, version));
+            }
+
+            return candidatesByPackageId;
+        }
+
+        private List<FeedWork> CreateFeedWork(Dictionary<string, List<ParsedCandidate>> candidatesByPackageId)
+        {
+            List<FeedWork> work = [];
             foreach (PackageSource source in _sources)
             {
-                FindPackageByIdResource? resource = await TryGetResourceAsync(source, cancellationToken).ConfigureAwait(false);
-                if (resource != null)
+                IReadOnlyDictionary<string, List<ParsedCandidate>> eligibleCandidates = _sourceMapping == null
+                    ? candidatesByPackageId
+                    : candidatesByPackageId
+                        .Where(package => _sourceMapping
+                            .GetConfiguredPackageSources(package.Key)
+                            .Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+                        .ToDictionary(package => package.Key, package => package.Value, StringComparer.OrdinalIgnoreCase);
+
+                if (eligibleCandidates.Count > 0)
                 {
-                    usableFeeds.Add((source, resource));
+                    work.Add(new FeedWork(source, eligibleCandidates));
                 }
             }
 
-            if (usableFeeds.Count == 0)
-            {
-                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: false);
-            }
-
-            PackageSourceMapping? sourceMapping = TryGetPackageSourceMapping();
-
-            ConcurrentDictionary<PackageAvailabilityCandidate, byte> available = new();
-            using SemaphoreSlim throttle = new(MaxConcurrentPackageChecks, MaxConcurrentPackageChecks);
-
-            await Task.WhenAll(candidates.Select(candidate =>
-                CheckCandidateAsync(candidate, usableFeeds, sourceMapping, available, throttle, cancellationToken))).ConfigureAwait(false);
-
-            return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(available.Keys), anyFeedSucceeded: true);
+            return work;
         }
 
-        private async Task CheckCandidateAsync(
-            PackageAvailabilityCandidate candidate,
-            IReadOnlyList<(PackageSource Source, FindPackageByIdResource Resource)> usableFeeds,
-            PackageSourceMapping? sourceMapping,
-            ConcurrentDictionary<PackageAvailabilityCandidate, byte> available,
+        private async Task<FeedResourceResult> ResolveResourceAsync(
+            FeedWork work,
             SemaphoreSlim throttle,
             CancellationToken cancellationToken)
         {
-            if (string.IsNullOrEmpty(candidate.PackageId) || !NuGetVersion.TryParse(candidate.PackageVersion, out NuGetVersion? version))
-            {
-                // Cannot confirm availability without a parseable version: treat as unavailable instead of failing the whole search.
-                return;
-            }
-
-            IReadOnlyList<(PackageSource Source, FindPackageByIdResource Resource)> eligibleFeeds =
-                GetEligibleFeeds(usableFeeds, sourceMapping, candidate.PackageId);
-            if (eligibleFeeds.Count == 0)
-            {
-                return;
-            }
-
             await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                foreach ((PackageSource source, FindPackageByIdResource resource) in eligibleFeeds)
-                {
-                    cancellationToken.ThrowIfCancellationRequested();
-                    try
-                    {
-                        bool exists = await resource.DoesPackageExistAsync(candidate.PackageId, version, _cacheContext, _logger, cancellationToken)
-                            .ConfigureAwait(false);
-                        if (exists)
-                        {
-                            available.TryAdd(candidate, 0);
-                            return;
-                        }
-                    }
-                    catch (Exception ex) when (ex is not OperationCanceledException)
-                    {
-                        ReportFailure(source, ex);
-                    }
-                }
+                SourceRepository repository = _repositoryFactory(work.Source);
+                FindPackageByIdResource? resource =
+                    await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
+                return new FeedResourceResult(work, resource, ResourceUnavailable: resource == null, Exception: null);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                return new FeedResourceResult(work, Resource: null, ResourceUnavailable: false, ex);
             }
             finally
             {
@@ -189,73 +227,85 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             }
         }
 
-        private async Task<FindPackageByIdResource?> TryGetResourceAsync(PackageSource source, CancellationToken cancellationToken)
+        private async Task<QueryResult> QueryPackageAsync(
+            PackageSource source,
+            FindPackageByIdResource resource,
+            string packageId,
+            IReadOnlyList<ParsedCandidate> packageCandidates,
+            SemaphoreSlim throttle,
+            CancellationToken cancellationToken)
         {
+            await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                SourceRepository repository = _repositoryFactory(source);
-                FindPackageByIdResource? resource = await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
-                if (resource == null)
+                using SourceCacheContext cacheContext = new();
+                IEnumerable<NuGetVersion> versions = await resource
+                    .GetAllVersionsAsync(packageId, cacheContext, _logger, cancellationToken)
+                    .ConfigureAwait(false);
+                HashSet<NuGetVersion> availableVersions = new(versions, VersionComparer.VersionRelease);
+                IReadOnlyList<PackageAvailabilityCandidate> availableCandidates = packageCandidates
+                    .Where(candidate => availableVersions.Contains(candidate.Version))
+                    .Select(candidate => candidate.Candidate)
+                    .ToList();
+                return new QueryResult(source, Succeeded: true, availableCandidates, Exception: null);
+            }
+            catch (Exception ex) when (ex is not OperationCanceledException)
+            {
+                return new QueryResult(source, Succeeded: false, AvailableCandidates: null, ex);
+            }
+            finally
+            {
+                throttle.Release();
+            }
+        }
+
+        private void ReportFeedFailures(
+            IReadOnlyList<FeedResourceResult> feedResources,
+            IReadOnlyList<QueryResult> queryResults)
+        {
+            foreach (PackageSource source in _sources)
+            {
+                FeedResourceResult? feedResource = feedResources.FirstOrDefault(result => ReferenceEquals(result.Work.Source, source));
+                if (feedResource == null)
+                {
+                    continue;
+                }
+
+                if (feedResource.ResourceUnavailable)
                 {
                     _reportFeedFailure(string.Format(FeedResourceUnavailableMessage, GetSourceDisplayName(source)));
+                    continue;
                 }
-                return resource;
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                ReportFailure(source, ex);
-                return null;
-            }
-        }
 
-        private void ReportFailure(PackageSource source, Exception ex)
-        {
-            _reportFeedFailure(string.Format(FeedQueryFailedMessageFormat, GetSourceDisplayName(source), ex.Message));
-            Reporter.Verbose.WriteLine(ex.ToString());
-        }
-
-        private PackageSourceMapping? TryGetPackageSourceMapping()
-        {
-            if (_settings == null)
-            {
-                return null;
+                Exception? exception = feedResource.Exception
+                    ?? queryResults.FirstOrDefault(result => ReferenceEquals(result.Source, source) && result.Exception != null)?.Exception;
+                if (exception != null)
+                {
+                    _reportFeedFailure(string.Format(FeedQueryFailedMessageFormat, GetSourceDisplayName(source), exception.Message));
+                    Reporter.Verbose.WriteLine(exception.ToString());
+                }
             }
-
-            try
-            {
-                PackageSourceMapping mapping = PackageSourceMapping.GetPackageSourceMapping(_settings);
-                return mapping.IsEnabled ? mapping : null;
-            }
-            catch (Exception ex) when (ex is not OperationCanceledException)
-            {
-                Reporter.Verbose.WriteLine(ex.ToString());
-                return null;
-            }
-        }
-
-        private static IReadOnlyList<(PackageSource Source, FindPackageByIdResource Resource)> GetEligibleFeeds(
-            IReadOnlyList<(PackageSource Source, FindPackageByIdResource Resource)> usableFeeds,
-            PackageSourceMapping? sourceMapping,
-            string packageId)
-        {
-            if (sourceMapping == null)
-            {
-                return usableFeeds;
-            }
-
-            IReadOnlyList<string> matchedSourceNames = sourceMapping.GetConfiguredPackageSources(packageId);
-            if (matchedSourceNames.Count == 0)
-            {
-                // Package source mapping is enabled but no pattern matches this package id: mirror real NuGet restore
-                // semantics and treat the package as unavailable from any source, rather than falling back to all feeds.
-                return Array.Empty<(PackageSource Source, FindPackageByIdResource Resource)>();
-            }
-
-            HashSet<string> matched = new(matchedSourceNames, StringComparer.OrdinalIgnoreCase);
-            return usableFeeds.Where(feed => matched.Contains(feed.Source.Name)).ToList();
         }
 
         private static string GetSourceDisplayName(PackageSource source) =>
             string.IsNullOrEmpty(source.Name) ? source.Source : source.Name;
+
+        private sealed record ParsedCandidate(PackageAvailabilityCandidate Candidate, NuGetVersion Version);
+
+        private sealed record FeedWork(
+            PackageSource Source,
+            IReadOnlyDictionary<string, List<ParsedCandidate>> CandidatesByPackageId);
+
+        private sealed record FeedResourceResult(
+            FeedWork Work,
+            FindPackageByIdResource? Resource,
+            bool ResourceUnavailable,
+            Exception? Exception);
+
+        private sealed record QueryResult(
+            PackageSource Source,
+            bool Succeeded,
+            IReadOnlyList<PackageAvailabilityCandidate>? AvailableCandidates,
+            Exception? Exception);
     }
 }
