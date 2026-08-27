@@ -19,7 +19,6 @@ internal class ToolPackageRestorer
     private readonly string[] _overrideSources;
     private readonly VerbosityOptions _verbosity;
     private readonly RestoreActionConfig _restoreActionConfig;
-    private readonly CancellationToken _cancellationToken;
 
     private readonly ILocalToolsResolverCache _localToolsResolverCache;
     private readonly IFileSystem _fileSystem;
@@ -30,17 +29,15 @@ internal class ToolPackageRestorer
                                string[] additionalSources,
                                string[] overrideSources,
                                VerbosityOptions verbosity,
-                                RestoreActionConfig restoreActionConfig,
+                               RestoreActionConfig restoreActionConfig,
                                ILocalToolsResolverCache? localToolsResolverCache = null,
-                               IFileSystem? fileSystem = null,
-                               CancellationToken cancellationToken = default)
+                               IFileSystem? fileSystem = null)
     {
         _toolPackageDownloader = toolPackageDownloader;
         _additionalSources = additionalSources;
         _overrideSources = overrideSources;
         _verbosity = verbosity;
         _restoreActionConfig = restoreActionConfig;
-        _cancellationToken = cancellationToken;
 
         _localToolsResolverCache = localToolsResolverCache ?? new LocalToolsResolverCache();
         _fileSystem = fileSystem ?? new FileSystemWrapper();
@@ -48,7 +45,8 @@ internal class ToolPackageRestorer
 
     public ToolRestoreResult InstallPackage(
         ToolManifestPackage package,
-        FilePath? configFile)
+        FilePath? configFile,
+        CancellationToken cancellationToken = default)
     {
         string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
 
@@ -71,7 +69,7 @@ internal class ToolPackageRestorer
                         sourceFeedOverrides: _overrideSources,
                         rootConfigDirectory: package.FirstEffectDirectory),
                     package.PackageId,
-                    _cancellationToken,
+                    cancellationToken,
                     verbosity: _verbosity,
                     ToVersionRangeWithOnlyOneVersion(package.Version),
                     targetFramework,
@@ -143,7 +141,7 @@ internal class ToolPackageRestorer
         {
             // Use wildcard version range to get the latest version
             var latestVersionRange = VersionRange.Parse("*");
-            
+
             var (latestVersion, _) = _toolPackageDownloader.GetNuGetVersion(
                 new PackageLocation(
                     nugetConfig: configFile,

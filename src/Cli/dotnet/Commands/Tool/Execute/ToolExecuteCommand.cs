@@ -31,18 +31,15 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
     private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
     private readonly RestoreActionConfig _restoreActionConfig;
-    private readonly CancellationToken _cancellationToken;
 
     private readonly ToolManifestFinder _toolManifestFinder;
 
     public ToolExecuteCommand(
         ParseResult result,
         ToolManifestFinder? toolManifestFinder = null,
-        string? currentWorkingDirectory = null,
-        CancellationToken cancellationToken = default)
+        string? currentWorkingDirectory = null)
         : base(result)
     {
-        _cancellationToken = cancellationToken;
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
         _forwardArguments = result.GetValue(Definition.CommandArgument) ?? [];
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
@@ -54,7 +51,9 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None);
+
+    public int Execute(CancellationToken cancellationToken)
     {
         var versionRange = VersionRangeUtilities.GetVersionRange(
             _packageToolIdentityArgument.VersionRange?.OriginalString,
@@ -84,10 +83,12 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     _verbosity,
                     _restoreActionConfig,
                     localToolsResolverCache,
-                    new FileSystemWrapper(),
-                    _cancellationToken);
+                    new FileSystemWrapper());
 
-                var restoreResult = toolPackageRestorer.InstallPackage(toolManifestPackage, _configFile == null ? null : new FilePath(_configFile));
+                var restoreResult = toolPackageRestorer.InstallPackage(
+                    toolManifestPackage,
+                    _configFile == null ? null : new FilePath(_configFile),
+                    cancellationToken);
 
                 if (!restoreResult.IsSuccess)
                 {
@@ -141,7 +142,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 versionRange: new VersionRange(bestVersion, true, bestVersion, true),
                 isGlobalToolRollForward: false,
                 restoreActionConfig: _restoreActionConfig,
-                cancellationToken: _cancellationToken);
+                cancellationToken: cancellationToken);
         }
 
         using var toolExecuteActivity = Activities.Source.StartActivity("execute-tool");

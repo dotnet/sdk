@@ -16,15 +16,18 @@ internal sealed class ToolInstallLocalInstaller(
     VerbosityOptions verbosity,
     IToolPackageDownloader? toolPackageDownloader = null,
     string? runtimeJsonPathForTests = null,
-    RestoreActionConfig? restoreActionConfig = null,
-    CancellationToken cancellationToken = default)
+    RestoreActionConfig? restoreActionConfig = null)
 {
     public readonly string TargetFrameworkToInstall = BundledTargetFramework.GetTargetFrameworkMoniker();
 
     private readonly IToolPackageDownloader _toolPackageDownloader = toolPackageDownloader
         ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader(runtimeJsonPathForTests: runtimeJsonPathForTests).downloader;
 
-    public IToolPackage Install(FilePath manifestFile, PackageId packageId, VersionRange? versionRange)
+    public IToolPackage Install(
+        FilePath manifestFile,
+        PackageId packageId,
+        VersionRange? versionRange,
+        CancellationToken cancellationToken = default)
     {
         if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
         {

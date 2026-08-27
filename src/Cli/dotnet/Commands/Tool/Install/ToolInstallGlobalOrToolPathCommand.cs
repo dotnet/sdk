@@ -51,8 +51,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
     private readonly bool _updateAll;
     private readonly string? _currentWorkingDirectory;
     private readonly bool? _verifySignatures;
-    private readonly CancellationToken _cancellationToken;
-
     internal readonly RestoreActionConfig restoreActionConfig;
 
     public ToolInstallGlobalOrToolPathCommand(
@@ -64,11 +62,9 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         INuGetPackageDownloader? nugetPackageDownloader = null,
         IToolPackageStoreQuery? store = null,
         string? currentWorkingDirectory = null,
-        bool? verifySignatures = null,
-        CancellationToken cancellationToken = default)
+        bool? verifySignatures = null)
         : base(parseResult)
     {
-        _cancellationToken = cancellationToken;
         _verifySignatures = verifySignatures;
         _currentWorkingDirectory = currentWorkingDirectory;
 
@@ -142,7 +138,9 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return defaultOption;
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None);
+
+    public int Execute(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {
@@ -154,7 +152,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
             foreach (var toolId in toolIds)
             {
-                ExecuteInstallCommand(new PackageId(toolId.Id.ToString()), versionRange: null);
+                ExecuteInstallCommand(new PackageId(toolId.Id.ToString()), versionRange: null, cancellationToken);
             }
             return 0;
         }
@@ -167,10 +165,10 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange);
+        return ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange, cancellationToken);
     }
 
-    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
+    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange, CancellationToken cancellationToken)
     {
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
@@ -235,7 +233,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     isGlobalToolRollForward: _allowRollForward,
                     verifySignatures: _verifySignatures ?? true,
                     restoreActionConfig: restoreActionConfig,
-                    cancellationToken: _cancellationToken);
+                    cancellationToken: cancellationToken);
 
                 EnsureVersionIsHigher(oldPackage, newInstalledPackage, _allowPackageDowngrade);
 

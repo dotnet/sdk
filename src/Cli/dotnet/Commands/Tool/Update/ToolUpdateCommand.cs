@@ -30,8 +30,7 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
         IToolPackageDownloader toolPackageDownloader = null,
         IToolManifestFinder toolManifestFinder = null,
         IToolManifestEditor toolManifestEditor = null,
-        ILocalToolsResolverCache localToolsResolverCache = null,
-        CancellationToken cancellationToken = default)
+        ILocalToolsResolverCache localToolsResolverCache = null)
         : base(result)
     {
         _toolUpdateLocalCommand
@@ -42,8 +41,7 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
                     toolManifestFinder,
                     toolManifestEditor,
                     localToolsResolverCache,
-                    reporter,
-                    cancellationToken);
+                    reporter);
 
         _global = result.GetValue(Definition.LocationOptions.GlobalOption);
         _toolPath = result.GetValue(Definition.LocationOptions.ToolPathOption);
@@ -55,8 +53,7 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
                 createToolPackageStoreDownloaderUninstaller,
                 createShellShimRepository,
                 reporter,
-                ToolPackageFactory.CreateToolPackageStoreQuery(location),
-                cancellationToken);
+                ToolPackageFactory.CreateToolPackageStoreQuery(location));
     }
 
 
@@ -114,7 +111,9 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
         }
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None);
+
+    public int Execute(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,
@@ -136,11 +135,11 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
 
         if (_global || !string.IsNullOrWhiteSpace(_toolPath))
         {
-            return _toolUpdateGlobalOrToolPathCommand.Execute();
+            return _toolUpdateGlobalOrToolPathCommand.Execute(cancellationToken);
         }
         else
         {
-            return _toolUpdateLocalCommand.Execute();
+            return _toolUpdateLocalCommand.Execute(cancellationToken);
         }
     }
 }
