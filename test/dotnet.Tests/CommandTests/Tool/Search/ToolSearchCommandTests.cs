@@ -19,23 +19,22 @@ public class ToolSearchCommandTests
     public TestContext TestContext { get; set; } = null!;
 
     [TestMethod]
-    public void ExecuteReturnsOneWhenNoSourcesAreConfiguredOrEnabled()
+    public async Task ExecuteReturnsOneWhenNoSourcesAreConfiguredOrEnabled()
     {
         using TemporaryDirectory temp = new();
         string configPath = temp.WriteNuGetConfigWithNoSources();
 
-        int exitCode = RunToolSearch(
+        (int exitCode, _, BufferedReporter error) = await RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", "--configfile", configPath],
             new FakeNugetToolSearchApiRequest(),
-            out _,
-            out BufferedReporter error);
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(1);
         error.Lines.Should().Contain(l => l.Contains("No NuGet package sources are configured or enabled."));
     }
 
     [TestMethod]
-    public void ExecuteQueriesEverySelectedSourceInTheOrderSpecified()
+    public async Task ExecuteQueriesEverySelectedSourceInTheOrderSpecified()
     {
         const string source1 = "https://source1.example.test/v3/index.json";
         const string source2 = "https://source2.example.test/v3/index.json";
@@ -48,18 +47,17 @@ public class ToolSearchCommandTests
             [source3] = [],
         });
 
-        int exitCode = RunToolSearch(
+        (int exitCode, _, _) = await RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", "--source", source1, "--source", source2, "--source", source3],
             fake,
-            out _,
-            out _);
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
         fake.RequestedSourceUrls.Should().Equal(source1, source2, source3);
     }
 
     [TestMethod]
-    public void ExecutePassesTheSelectedSourceUrlAndTheSameSearchParametersToEachSource()
+    public async Task ExecutePassesTheSelectedSourceUrlAndTheSameSearchParametersToEachSource()
     {
         const string source1 = "https://source1.example.test/v3/index.json";
         const string source2 = "https://source2.example.test/v3/index.json";
@@ -70,7 +68,7 @@ public class ToolSearchCommandTests
             [source2] = [],
         });
 
-        int exitCode = RunToolSearch(
+        (int exitCode, _, _) = await RunToolSearchAsync(
             [
                 "dotnet", "tool", "search", "mytool",
                 "--source", source1,
@@ -80,8 +78,7 @@ public class ToolSearchCommandTests
                 "--prerelease"
             ],
             fake,
-            out _,
-            out _);
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
         fake.RequestedSourceUrls.Should().Equal(source1, source2);
@@ -95,7 +92,28 @@ public class ToolSearchCommandTests
     }
 
     [TestMethod]
-    public void ExecuteReturnsZeroAndPrintsOnlySuccessfulSourcesWhenSomeSourcesFail()
+    public async Task ExecutePassesCancellationTokenToEachSource()
+    {
+        const string source1 = "https://source1.example.test/v3/index.json";
+        const string source2 = "https://source2.example.test/v3/index.json";
+        var fake = new FakeNugetToolSearchApiRequest(successResponses: new Dictionary<string, IReadOnlyCollection<SearchResultPackage>>
+        {
+            [source1] = [],
+            [source2] = [],
+        });
+        using CancellationTokenSource cancellation = new();
+
+        (int exitCode, _, _) = await RunToolSearchAsync(
+            ["dotnet", "tool", "search", "mytool", "--source", source1, "--source", source2],
+            fake,
+            cancellationToken: cancellation.Token);
+
+        exitCode.Should().Be(0);
+        fake.RequestedCancellationTokens.Should().OnlyContain(token => token == cancellation.Token);
+    }
+
+    [TestMethod]
+    public async Task ExecuteReturnsZeroAndPrintsOnlySuccessfulSourcesWhenSomeSourcesFail()
     {
         const string goodSource = "https://good.example.test/v3/index.json";
         const string badSource = "https://bad.example.test/v3/index.json";
@@ -110,11 +128,10 @@ public class ToolSearchCommandTests
                 [badSource] = "the feed did not respond",
             });
 
-        int exitCode = RunToolSearch(
+        (int exitCode, BufferedReporter output, BufferedReporter error) = await RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", "--source", goodSource, "--source", badSource],
             fake,
-            out BufferedReporter output,
-            out BufferedReporter error);
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
 
@@ -128,7 +145,7 @@ public class ToolSearchCommandTests
     }
 
     [TestMethod]
-    public void ExecuteContinuesWhenASourceDoesNotProvidePackageSearchResource()
+    public async Task ExecuteContinuesWhenASourceDoesNotProvidePackageSearchResource()
     {
         const string goodSource = "https://good.example.test/v3/index.json";
         const string unsupportedSource = "https://unsupported.example.test/v3/index.json";
@@ -136,11 +153,10 @@ public class ToolSearchCommandTests
             (source, _) => Task.FromResult<PackageSearchResource?>(
                 source.Source == unsupportedSource ? null : new EmptyPackageSearchResource()));
 
-        int exitCode = RunToolSearch(
+        (int exitCode, BufferedReporter output, BufferedReporter error) = await RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", "--source", unsupportedSource, "--source", goodSource],
             request,
-            out BufferedReporter output,
-            out BufferedReporter error);
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
         output.Lines.Should().Contain(l => l.Contains(goodSource));
@@ -149,7 +165,7 @@ public class ToolSearchCommandTests
     }
 
     [TestMethod]
-    public void ExecuteReturnsOneAndPrintsFailuresForAllSourcesWhenEverySourceFails()
+    public async Task ExecuteReturnsOneAndPrintsFailuresForAllSourcesWhenEverySourceFails()
     {
         const string source1 = "https://source1.example.test/v3/index.json";
         const string source2 = "https://source2.example.test/v3/index.json";
@@ -160,11 +176,10 @@ public class ToolSearchCommandTests
             [source2] = "boom2",
         });
 
-        int exitCode = RunToolSearch(
+        (int exitCode, BufferedReporter output, BufferedReporter error) = await RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", "--source", source1, "--source", source2],
             fake,
-            out BufferedReporter output,
-            out BufferedReporter error);
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(1);
         output.Lines.Should().BeEmpty();
@@ -175,7 +190,7 @@ public class ToolSearchCommandTests
     }
 
     [TestMethod]
-    public void ExecuteQueriesBothSourceAndAddSourceTogether()
+    public async Task ExecuteQueriesBothSourceAndAddSourceTogether()
     {
         const string exclusiveSource = "https://exclusive.example.test/v3/index.json";
         const string additionalSource = "https://additional.example.test/v3/index.json";
@@ -186,22 +201,21 @@ public class ToolSearchCommandTests
             [additionalSource] = [],
         });
 
-        int exitCode = RunToolSearch(
+        (int exitCode, _, _) = await RunToolSearchAsync(
             [
                 "dotnet", "tool", "search", "mytool",
                 "--source", exclusiveSource,
                 "--add-source", additionalSource
             ],
             fake,
-            out _,
-            out _);
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
         fake.RequestedSourceUrls.Should().Equal(exclusiveSource, additionalSource);
     }
 
     [TestMethod]
-    public void ExecuteInitializesCredentialsBeforeQueryingSources()
+    public async Task ExecuteInitializesCredentialsBeforeQueryingSources()
     {
         const string source = "https://source.example.test/v3/index.json";
         bool credentialsInitialized = false;
@@ -212,22 +226,21 @@ public class ToolSearchCommandTests
             },
             beforeRequest: () => credentialsInitialized.Should().BeTrue());
 
-        int exitCode = RunToolSearch(
+        (int exitCode, _, _) = await RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", "--source", source, "--interactive"],
             fake,
-            out _,
-            out _,
             setupCredentialService: interactive =>
             {
                 interactive.Should().BeTrue();
                 credentialsInitialized = true;
-            });
+            },
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
     }
 
     [TestMethod]
-    public void ExecuteUsesNonInteractiveCredentialsByDefault()
+    public async Task ExecuteUsesNonInteractiveCredentialsByDefault()
     {
         const string source = "https://source.example.test/v3/index.json";
         bool? interactiveValue = null;
@@ -237,12 +250,11 @@ public class ToolSearchCommandTests
                 [source] = [],
             });
 
-        int exitCode = RunToolSearch(
+        (int exitCode, _, _) = await RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", "--source", source],
             fake,
-            out _,
-            out _,
-            setupCredentialService: interactive => interactiveValue = interactive);
+            setupCredentialService: interactive => interactiveValue = interactive,
+            cancellationToken: TestContext.CancellationToken);
 
         exitCode.Should().Be(0);
         interactiveValue.Should().BeFalse();
@@ -255,13 +267,10 @@ public class ToolSearchCommandTests
             .Select(index => $"https://source{index}.example.test/v3/index.json")
             .ToArray();
         var fake = new BlockingNugetToolSearchApiRequest(expectedFirstBatchSize: 4);
-        BufferedReporter? output = null;
-
-        Task<int> execution = Task.Run(() => RunToolSearch(
+        Task<(int ExitCode, BufferedReporter Output, BufferedReporter Error)> execution = RunToolSearchAsync(
             ["dotnet", "tool", "search", "mytool", .. sources.SelectMany(source => new[] { "--source", source })],
             fake,
-            out output,
-            out _));
+            cancellationToken: TestContext.CancellationToken);
 
         try
         {
@@ -274,10 +283,11 @@ public class ToolSearchCommandTests
             fake.ReleaseRequests();
         }
 
-        (await execution).Should().Be(0);
+        (int exitCode, BufferedReporter output, _) = await execution;
+        exitCode.Should().Be(0);
         fake.MaximumConcurrentRequests.Should().Be(4);
 
-        List<string> outputLines = output!.Lines.ToList();
+        List<string> outputLines = output.Lines.ToList();
         int previousHeadingIndex = -1;
         foreach (string source in sources)
         {
@@ -287,13 +297,12 @@ public class ToolSearchCommandTests
         }
     }
 
-    private static int RunToolSearch(
+    private static async Task<(int ExitCode, BufferedReporter Output, BufferedReporter Error)> RunToolSearchAsync(
         string[] args,
         INugetToolSearchApiRequest nugetToolSearchApiRequest,
-        out BufferedReporter output,
-        out BufferedReporter error,
         string? currentWorkingDirectory = null,
-        Action<bool>? setupCredentialService = null)
+        Action<bool>? setupCredentialService = null,
+        CancellationToken cancellationToken = default)
     {
         BufferedReporter capturedOutput = new();
         BufferedReporter capturedError = new();
@@ -310,10 +319,8 @@ public class ToolSearchCommandTests
                 nugetToolSearchApiRequest,
                 currentWorkingDirectory,
                 setupCredentialService ?? (_ => { }));
-            int exitCode = command.Execute();
-            output = capturedOutput;
-            error = capturedError;
-            return exitCode;
+            int exitCode = await command.ExecuteAsync(cancellationToken);
+            return (exitCode, capturedOutput, capturedError);
         }
         finally
         {
@@ -347,14 +354,18 @@ public class ToolSearchCommandTests
 
         public List<NugetSearchApiParameter> RequestedParameters { get; } = [];
 
+        public List<CancellationToken> RequestedCancellationTokens { get; } = [];
+
         public Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
             NugetSearchApiParameter nugetSearchApiParameter,
-            PackageSource source)
+            PackageSource source,
+            CancellationToken cancellationToken)
         {
             beforeRequest?.Invoke();
             string sourceUrl = source.Source;
             RequestedSourceUrls.Add(sourceUrl);
             RequestedParameters.Add(nugetSearchApiParameter);
+            RequestedCancellationTokens.Add(cancellationToken);
 
             if (_failureMessages.TryGetValue(sourceUrl, out string? failureMessage))
             {
@@ -386,7 +397,8 @@ public class ToolSearchCommandTests
 
         public async Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
             NugetSearchApiParameter nugetSearchApiParameter,
-            PackageSource source)
+            PackageSource source,
+            CancellationToken cancellationToken)
         {
             int activeRequests = Interlocked.Increment(ref _activeRequests);
             int observedMaximum = Volatile.Read(ref _maximumConcurrentRequests);
@@ -410,7 +422,7 @@ public class ToolSearchCommandTests
 
             try
             {
-                await _releaseRequests.Task;
+                await _releaseRequests.Task.WaitAsync(cancellationToken);
                 return [CreateSearchResultPackage(new Uri(source.Source).Host)];
             }
             finally

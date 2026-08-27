@@ -1,20 +1,18 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 /// <summary>
-/// All fields are possibly null other than Id, Version, Tags, Authors, Versions
+/// A package returned by NuGet search.
 /// </summary>
 internal class SearchResultPackage(
     PackageId id,
     string latestVersion,
-    string description,
-    string summary,
+    string? description,
+    string? summary,
     IReadOnlyCollection<string> tags,
     IReadOnlyCollection<string> authors,
     long totalDownloads,
@@ -23,8 +21,8 @@ internal class SearchResultPackage(
 {
     public PackageId Id { get; } = id;
     public string LatestVersion { get; } = latestVersion ?? throw new ArgumentNullException(nameof(latestVersion));
-    public string Description { get; } = description;
-    public string Summary { get; } = summary;
+    public string? Description { get; } = description;
+    public string? Summary { get; } = summary;
     public IReadOnlyCollection<string> Tags { get; } = tags ?? throw new ArgumentNullException(nameof(tags));
     public IReadOnlyCollection<string> Authors { get; } = authors ?? throw new ArgumentNullException(nameof(authors));
     public long TotalDownloads { get; } = totalDownloads;

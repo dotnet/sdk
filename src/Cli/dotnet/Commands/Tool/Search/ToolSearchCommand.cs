@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Microsoft.DotNet.Cli.Utils;
@@ -12,28 +11,40 @@ using NuGet.Credentials;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
-internal sealed class ToolSearchCommand(
-    ParseResult result,
-    INugetToolSearchApiRequest nugetToolSearchApiRequest = null,
-    string currentWorkingDirectory = null,
-    Action<bool> setupCredentialService = null)
-    : CommandBase<ToolSearchCommandDefinition>(result)
+internal sealed class ToolSearchCommand
 {
     private const int MaxConcurrentSourceRequests = 4;
-    private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
-    private readonly string _currentWorkingDirectory = currentWorkingDirectory;
-    private readonly Action<bool> _setupCredentialService = setupCredentialService
-        ?? (interactive => DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(), !interactive));
-    private readonly SearchResultPrinter _searchResultPrinter = new(Reporter.Output);
+    private readonly ParseResult _parseResult;
+    private readonly ToolSearchCommandDefinition _definition;
+    private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest;
+    private readonly string? _currentWorkingDirectory;
+    private readonly Action<bool> _setupCredentialService;
+    private readonly SearchResultPrinter _searchResultPrinter;
 
-    public override int Execute()
+    public ToolSearchCommand(
+        ParseResult result,
+        INugetToolSearchApiRequest? nugetToolSearchApiRequest = null,
+        string? currentWorkingDirectory = null,
+        Action<bool>? setupCredentialService = null)
     {
-        var isDetailed = _parseResult.GetValue(Definition.DetailOption);
+        result.ShowHelpOrErrorIfAppropriate();
+        _parseResult = result;
+        _definition = (ToolSearchCommandDefinition)result.CommandResult.Command;
+        _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
+        _currentWorkingDirectory = currentWorkingDirectory;
+        _setupCredentialService = setupCredentialService
+            ?? (interactive => DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(), !interactive));
+        _searchResultPrinter = new SearchResultPrinter(Reporter.Output);
+    }
+
+    public async Task<int> ExecuteAsync(CancellationToken cancellationToken)
+    {
+        var isDetailed = _parseResult.GetValue(_definition.DetailOption);
 
         NuGetSourceConfiguration sourceConfiguration = NuGetSourceConfiguration.Load(
-            nugetConfig: _parseResult.GetValue(Definition.ConfigOption),
-            sourceFeedOverrides: _parseResult.GetValue(Definition.SourceOption),
-            additionalSourceFeeds: _parseResult.GetValue(Definition.AddSourceOption),
+            nugetConfig: _parseResult.GetValue(_definition.ConfigOption),
+            sourceFeedOverrides: _parseResult.GetValue(_definition.SourceOption),
+            additionalSourceFeeds: _parseResult.GetValue(_definition.AddSourceOption),
             basePath: _currentWorkingDirectory,
             invalidSource: _searchResultPrinter.PrintInvalidSource);
 
@@ -43,15 +54,14 @@ internal sealed class ToolSearchCommand(
             return 1;
         }
 
-        _setupCredentialService(_parseResult.GetValue(Definition.InteractiveOption));
+        _setupCredentialService(_parseResult.GetValue(_definition.InteractiveOption));
 
         NugetSearchApiParameter nugetSearchApiParameter = GetNugetSearchApiParameter();
         using var concurrencyLimiter = new SemaphoreSlim(MaxConcurrentSourceRequests);
-        SourceSearchResult[] results = Task.WhenAll(
+        SourceSearchResult[] results = await Task.WhenAll(
             sourceConfiguration.PackageSources.Select(
-                source => SearchSourceAsync(source, nugetSearchApiParameter, concurrencyLimiter)))
-            .GetAwaiter()
-            .GetResult();
+                source => SearchSourceAsync(source, nugetSearchApiParameter, concurrencyLimiter, cancellationToken)))
+            .ConfigureAwait(false);
 
         int successCount = 0;
         foreach (SourceSearchResult result in results)
@@ -73,26 +83,27 @@ internal sealed class ToolSearchCommand(
 
     internal NugetSearchApiParameter GetNugetSearchApiParameter()
         => new(
-            searchTerm: _parseResult.GetValue(Definition.SearchTermArgument),
-            skip: GetParsedResultAsInt(Definition.SkipOption),
-            take: GetParsedResultAsInt(Definition.TakeOption),
-            prerelease: _parseResult.GetValue(Definition.PrereleaseOption));
+            searchTerm: _parseResult.GetValue(_definition.SearchTermArgument),
+            skip: GetParsedResultAsInt(_definition.SkipOption),
+            take: GetParsedResultAsInt(_definition.TakeOption),
+            prerelease: _parseResult.GetValue(_definition.PrereleaseOption));
 
     private async Task<SourceSearchResult> SearchSourceAsync(
         PackageSource source,
         NugetSearchApiParameter searchParameters,
-        SemaphoreSlim concurrencyLimiter)
+        SemaphoreSlim concurrencyLimiter,
+        CancellationToken cancellationToken)
     {
-        await concurrencyLimiter.WaitAsync().ConfigureAwait(false);
+        await concurrencyLimiter.WaitAsync(cancellationToken).ConfigureAwait(false);
         try
         {
             IReadOnlyCollection<SearchResultPackage> packages =
-                await _nugetToolSearchApiRequest.GetResult(searchParameters, source).ConfigureAwait(false);
+                await _nugetToolSearchApiRequest.GetResult(searchParameters, source, cancellationToken).ConfigureAwait(false);
             return new SourceSearchResult(source, packages, ErrorMessage: null);
         }
         catch (NugetSearchApiRequestException e)
         {
-            return new SourceSearchResult(source, Packages: null, e.Message);
+            return new SourceSearchResult(source, Packages: [], e.Message);
         }
         finally
         {
@@ -124,5 +135,5 @@ internal sealed class ToolSearchCommand(
     private sealed record SourceSearchResult(
         PackageSource Source,
         IReadOnlyCollection<SearchResultPackage> Packages,
-        string ErrorMessage);
+        string? ErrorMessage);
 }

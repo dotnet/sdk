@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using NuGet.Configuration;
 
@@ -15,5 +13,6 @@ internal interface INugetToolSearchApiRequest
     /// </summary>
     Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
         NugetSearchApiParameter nugetSearchApiParameter,
-        PackageSource source);
+        PackageSource source,
+        CancellationToken cancellationToken);
 }

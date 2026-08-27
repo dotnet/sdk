@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Tool.Search;
 using Microsoft.DotNet.Cli.ToolPackage;
@@ -67,8 +65,8 @@ namespace dotnet.Tests.ToolSearchTests
                 _reporter.Lines.Should().Contain(l => l.Contains(expectedInformationToBePresent),
                     $"Expect \"{expectedInformationToBePresent}\" to be present");
 
-            _reporter.Lines.Should().NotContain(l => l.Contains(_filledSearchResultPackage.Description));
-            _reporter.Lines.Should().NotContain(l => l.Contains(_filledSearchResultPackage.Summary));
+            _reporter.Lines.Should().NotContain(l => l.Contains(Required(_filledSearchResultPackage.Description)));
+            _reporter.Lines.Should().NotContain(l => l.Contains(Required(_filledSearchResultPackage.Summary)));
             _reporter.Lines.Should().NotContain(l => l.Contains(_filledSearchResultPackage.Tags.First()));
         }
 
@@ -85,8 +83,8 @@ namespace dotnet.Tests.ToolSearchTests
                 _filledSearchResultPackage.TotalDownloads.ToString(),
                 _filledSearchResultPackage.Versions.First().Version,
                 _filledSearchResultPackage.Versions.First().Downloads.ToString(),
-                _mostEmptyToCheckNullException.Id.ToString(), _filledSearchResultPackage.Description,
-                _filledSearchResultPackage.Summary, _filledSearchResultPackage.Tags.First(),
+                _mostEmptyToCheckNullException.Id.ToString(), Required(_filledSearchResultPackage.Description),
+                Required(_filledSearchResultPackage.Summary), _filledSearchResultPackage.Tags.First(),
                 _filledSearchResultPackage.Versions.First().Version,
                 _filledSearchResultPackage.Versions.First().Downloads.ToString(),
             };
@@ -162,5 +160,8 @@ namespace dotnet.Tests.ToolSearchTests
             Action a = () => printer.PrintSourceFailure(source, "boom");
             a.Should().NotThrow();
         }
+
+        private static string Required(string? value) =>
+            value ?? throw new InvalidOperationException("The test package metadata must contain this value.");
     }
 }

@@ -1,8 +1,6 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-#nullable disable
-
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using FluentAssertions.Extensions;
@@ -724,18 +722,18 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             File.GetLastAccessTime(sentinelPath2).Should().BeCloseTo(updateTime2, 1.Seconds());
         }
 
-        private List<(PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation)> GetExpectedDownloadedPackages(string sdkFeatureBand = "6.0.100")
+        private List<(PackageId, NuGetVersion?, DirectoryPath?, PackageSourceLocation?)> GetExpectedDownloadedPackages(string sdkFeatureBand = "6.0.100")
         {
             var expectedDownloadedPackages = _installedManifests
-                .Select(id => ((PackageId, NuGetVersion, DirectoryPath?, PackageSourceLocation))(new PackageId($"{id}.manifest-{sdkFeatureBand}"), null, null, null)).ToList();
+                .Select(id => ((PackageId, NuGetVersion?, DirectoryPath?, PackageSourceLocation?))(new PackageId($"{id}.manifest-{sdkFeatureBand}"), null, null, null)).ToList();
             return expectedDownloadedPackages;
         }
 
         private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater(
             [CallerMemberName] string testName = "",
-            Func<string, string> getEnvironmentVariable = null,
-            PackageSourceLocation packageSourceLocation = null,
-            IEnumerable<NuGetVersion> packageVersions = null)
+            Func<string, string>? getEnvironmentVariable = null,
+            PackageSourceLocation? packageSourceLocation = null,
+            IEnumerable<NuGetVersion>? packageVersions = null)
         {
             var testDir = TestAssetsManager.CreateTestDirectory(testName: testName).Path;
 
@@ -758,9 +756,9 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             string testDir,
             string featureBand,
             [CallerMemberName] string testName = "",
-            Func<string, string> getEnvironmentVariable = null,
-            PackageSourceLocation packageSourceLocation = null,
-            IEnumerable<NuGetVersion> packageVersions = null)
+            Func<string, string>? getEnvironmentVariable = null,
+            PackageSourceLocation? packageSourceLocation = null,
+            IEnumerable<NuGetVersion>? packageVersions = null)
         {
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
