@@ -157,6 +157,21 @@
         <target state="translated">要清理的目标运行时。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">允许在预期和意外的 testhost 退出时收集故障转储。</target>
@@ -242,6 +257,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 超时值采用以下格式指定: 1.5h / 90m / 5400s / 5400000ms。如果未使用任何单位(例如 5400000)，则假定该值以毫秒为单位。
 在与数据驱动测试一起使用时，超时行为取决于所使用的测试适配器。对于 xUnit、NUnit 和 MSTest 2.2.4+，将在每个测试用例后续订超时，
 对于 2.2.4 之前的 MSTest，超时用于所有测试用例。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdConfig">
@@ -555,8 +585,8 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">定义要测试的项目或解决方案文件的路径。使用项目文件的路径或包含项目文件的目录的路径。如果未指定，则默认为当前目录。</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">定义要测试的项目或解决方案文件的路径。使用项目文件的路径或包含项目文件的目录的路径。如果未指定，则默认为当前目录。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
@@ -574,6 +604,20 @@ This is equivalent to deleting project.assets.json.</source>
 The specified directory will be created if it does not exist.</source>
         <target state="translated">要放置测试结果的目录。
 若不存在，将创建指定目录。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutDescription">
+        <source>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
+        <target state="new">Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutName">
+        <source>LAYOUT</source>
+        <target state="new">LAYOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -1316,6 +1360,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="Option_Install_Force">
         <source>Allows installing template packages from the specified sources even if they would override a template package from another source.</source>
         <target state="translated">允许从指定的源安装模板包，即使它们将替代另一个源中的模板包。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

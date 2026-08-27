@@ -2367,7 +2367,7 @@ A type that implements System.IDisposable inherits from a type that also impleme
 |Category|Usage|
 |Enabled|True|
 |Severity|Hidden|
-|CodeFix|True|
+|CodeFix|False|
 ---
 
 ## [CA2216](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2216): Disposable types should declare finalizer
@@ -2817,6 +2817,18 @@ Comparing a span to 'null' or 'default' might not do what you intended. 'default
 ## [CA2266](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2266): File-based program entry point should start with '#!'
 
 When a file-based program consists of multiple files, the entry point file should start with a shebang ('#!') line to clearly distinguish it from other included files.
+
+|Item|Value|
+|-|-|
+|Category|Usage|
+|Enabled|True|
+|Severity|Warning|
+|CodeFix|True|
+---
+
+## [CA2267](https://learn.microsoft.com/dotnet/fundamentals/code-analysis/quality-rules/ca2267): Quote whitespace in file-based program directive values
+
+Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.
 
 |Item|Value|
 |-|-|

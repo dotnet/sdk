@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
@@ -167,7 +168,9 @@ public class TestApplicationHandlerTests : IDisposable
         var handshake = BuildHandshake(
             executionMode: HandshakeMessageExecutionModes.Run,
             supportedPostProcessorKinds: "microsoft.testing.trx;example.junit",
-            supportedPostProcessorExtensions: ".trx;.xml");
+            supportedPostProcessorExtensions: ".trx;.xml",
+            supportedTruncatedRunPostProcessorKinds: "example.junit",
+            supportedTruncatedRunPostProcessorExtensions: ".xml");
 
         bool accepted = handler.OnHandshakeReceived(handshake, gotSupportedVersion: true);
 
@@ -175,6 +178,8 @@ public class TestApplicationHandlerTests : IDisposable
         ArtifactPostProcessingApplication application = manager.SnapshotApplications().Should().ContainSingle().Subject;
         application.SupportedKinds.Should().BeEquivalentTo("microsoft.testing.trx", "example.junit");
         application.SupportedExtensions.Should().BeEquivalentTo(".trx", ".xml");
+        application.SupportedTruncatedRunKinds.Should().BeEquivalentTo("example.junit");
+        application.SupportedTruncatedRunExtensions.Should().BeEquivalentTo(".xml");
     }
 
     [TestMethod]
@@ -202,6 +207,33 @@ public class TestApplicationHandlerTests : IDisposable
         artifact.TargetFramework.Should().Be(TargetFramework);
         artifact.Architecture.Should().Be("x64");
         artifact.ExecutionId.Should().Be("exec-1");
+    }
+
+    [TestMethod]
+    public void OnFileArtifactsReceived_DuringArtifactPostProcessing_RecordsInputProvenance()
+    {
+        var invocation = new ArtifactPostProcessingInvocation("manifest.json");
+        (TestApplicationHandler handler, _, _) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingInvocation: invocation);
+        handler.OnHandshakeReceived(
+            BuildHandshake(
+                HandshakeMessageExecutionModes.Tool,
+                hostType: HandshakeMessageHostTypes.ArtifactPostProcessor,
+                includeInstanceId: false),
+            gotSupportedVersion: true).Should().BeTrue();
+        string outputPath = Path.GetFullPath("merged.trx");
+        string[] inputPaths = [Path.GetFullPath("first.trx"), Path.GetFullPath("second.trx")];
+
+        handler.OnFileArtifactsReceived(new FileArtifactMessages(
+            "exec-1",
+            "inst-1",
+            [new FileArtifactMessage(outputPath, "Merged TRX", null, null, null, null, "microsoft.testing.trx", inputPaths)]));
+
+        ArtifactPostProcessingArtifact output = invocation.SnapshotOutputs().Should().ContainSingle().Subject;
+        output.Path.Should().Be(outputPath);
+        output.InputArtifactPaths.Should().Equal(inputPaths);
     }
 
     [TestMethod]
@@ -383,6 +415,107 @@ public class TestApplicationHandlerTests : IDisposable
         reporter.HasHandshakeFailure.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Related to https://github.com/dotnet/sdk/issues/55549. Output already streamed to the terminal is
+    /// reported as nothing left to show (<c>ProcessOutputCollector.GetOutputToReport</c> returns empty),
+    /// and the handler must then render no output block at all rather than an empty heading.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WithNoOutputToReport_RendersNoOutputBlockInTheExitCodeSummary()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnHandshakeReceived(BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run), gotSupportedVersion: true)
+            .Should().BeTrue();
+
+        handler.OnTestProcessExited(exitCode: 1, outputData: string.Empty, errorData: string.Empty);
+
+        // The run went through the normal completion summary rather than the handshake-failure path.
+        reporter.HasHandshakeFailure.Should().BeFalse();
+
+        string rendered = console.GetOutput();
+        rendered.Should().NotContain(CliCommandStrings.StandardOutput);
+        rendered.Should().NotContain(CliCommandStrings.StandardError);
+    }
+
+    /// <summary>
+    /// The other side of <see cref="OnTestProcessExited_WithNoOutputToReport_RendersNoOutputBlockInTheExitCodeSummary"/>:
+    /// hosts that never stream (Microsoft.Testing.Platform versions below protocol 1.1.0) rely on the
+    /// summary as the only place their output is shown, so it must still be printed there.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WithOutputToReport_StillReportsItInTheExitCodeSummary()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnHandshakeReceived(BuildHandshake(executionMode: HandshakeMessageExecutionModes.Run), gotSupportedVersion: true)
+            .Should().BeTrue();
+
+        handler.OnTestProcessExited(
+            exitCode: 1,
+            outputData: "buffered-stdout-line",
+            errorData: "buffered-stderr-line");
+
+        string rendered = console.GetOutput();
+        rendered.Should().Contain("buffered-stdout-line");
+        rendered.Should().Contain("buffered-stderr-line");
+    }
+
+    /// <summary>
+    /// Suppressing already-streamed output must not cost the failing assembly's identity: the
+    /// handshake-failure report is what tells the user which module produced the failure.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WithNoOutputToReportAndHandshakeFailed_StillReportsTheAssembly()
+    {
+        (TestApplicationHandler handler, TerminalTestReporter reporter, CapturingConsole console) = CreateHandler(isHelp: false, isDiscovery: false);
+
+        handler.OnTestProcessExited(exitCode: 1, outputData: string.Empty, errorData: string.Empty);
+
+        reporter.HasHandshakeFailure.Should().BeTrue();
+
+        string rendered = console.GetOutput();
+        rendered.Should().Contain(TargetPath, "the failing assembly still has to be identified");
+        rendered.Should().Contain(TargetFramework);
+    }
+
+    /// <summary>
+    /// Artifact post-processing writes the reported output straight back to the terminal instead of going
+    /// through a summary. It is not gated on the exit code, so it has to honour "nothing to report" too.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WithNoOutputToReportDuringArtifactPostProcessing_WritesNothing()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingInvocation: new ArtifactPostProcessingInvocation("manifest.json"));
+
+        handler.OnTestProcessExited(exitCode: 0, outputData: string.Empty, errorData: string.Empty);
+
+        console.GetOutput().Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// The other side of the artifact post-processing path: output that was never streamed still has to
+    /// reach the terminal there.
+    /// </summary>
+    [TestMethod]
+    public void OnTestProcessExited_WithOutputToReportDuringArtifactPostProcessing_WritesIt()
+    {
+        (TestApplicationHandler handler, _, CapturingConsole console) = CreateHandler(
+            isHelp: false,
+            isDiscovery: false,
+            artifactPostProcessingInvocation: new ArtifactPostProcessingInvocation("manifest.json"));
+
+        handler.OnTestProcessExited(
+            exitCode: 0,
+            outputData: "buffered-stdout-line",
+            errorData: "buffered-stderr-line");
+
+        console.GetOutput().Should().Contain("buffered-stdout-line").And.Contain("buffered-stderr-line");
+    }
+
     private const string TargetPath = "/repo/bin/Debug/net9.0/MyTest.dll";
     private const string ProjectPath = "/repo/MyTest.csproj";
     private const string TargetFramework = "net9.0";
@@ -445,7 +578,9 @@ public class TestApplicationHandlerTests : IDisposable
         bool includeInstanceId = true,
         int? attemptNumber = null,
         string? supportedPostProcessorKinds = null,
-        string? supportedPostProcessorExtensions = null)
+        string? supportedPostProcessorExtensions = null,
+        string? supportedTruncatedRunPostProcessorKinds = null,
+        string? supportedTruncatedRunPostProcessorExtensions = null)
     {
         var properties = new Dictionary<byte, string>
         {
@@ -482,6 +617,18 @@ public class TestApplicationHandlerTests : IDisposable
         if (supportedPostProcessorExtensions is not null)
         {
             properties[HandshakeMessagePropertyNames.SupportedPostProcessorExtensionsLegacy] = supportedPostProcessorExtensions;
+        }
+
+        if (supportedTruncatedRunPostProcessorKinds is not null)
+        {
+            properties[HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorKinds] =
+                supportedTruncatedRunPostProcessorKinds;
+        }
+
+        if (supportedTruncatedRunPostProcessorExtensions is not null)
+        {
+            properties[HandshakeMessagePropertyNames.SupportedTruncatedRunPostProcessorExtensionsLegacy] =
+                supportedTruncatedRunPostProcessorExtensions;
         }
 
         return new HandshakeMessage(properties);

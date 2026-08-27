@@ -46,9 +46,10 @@
          a prerequisite for both native and cross-arch publishing. -->
     <_DotnetAotIsSameOSBuild Condition="'$(TargetOS)' == '$(HostOS)'">true</_DotnetAotIsSameOSBuild>
 
-    <!-- Native: same OS and same architecture as the build host (and not an explicit cross-build).
-         linux-musl is excluded because its NativeAOT toolchain is not wired up here. -->
-    <_DotnetAotIsNativeBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' == '$(BuildArchitecture)' and '$(CrossBuild)' != 'true' and '$(OSName)' != 'linux-musl'">true</_DotnetAotIsNativeBuild>
+    <!-- Native: same OS and same architecture as the build host. CrossBuild may still be true when
+         the build uses a same-architecture rootfs. linux-musl is excluded because its NativeAOT
+         toolchain is not wired up here. -->
+    <_DotnetAotIsNativeBuild Condition="'$(_DotnetAotIsSameOSBuild)' == 'true' and '$(TargetArchitecture)' == '$(BuildArchitecture)' and '$(OSName)' != 'linux-musl'">true</_DotnetAotIsNativeBuild>
 
     <!-- Cross: same OS but a different architecture from the build host. On Windows/macOS the cross
          toolchain (MSVC arm64 linker / clang) is multi-target, so an architecture mismatch alone is

@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Globalization;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -16,6 +17,23 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
+
+    internal static DateTime? ParseSourceDateEpoch(string? value)
+    {
+        if (!long.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out long seconds) || seconds < 0)
+        {
+            return null;
+        }
+
+        try
+        {
+            return DateTimeOffset.FromUnixTimeSeconds(seconds).UtcDateTime;
+        }
+        catch (ArgumentOutOfRangeException)
+        {
+            return null;
+        }
+    }
 
     public override bool Execute()
     {
@@ -163,8 +181,15 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             imageBuilder.ManifestMediaType,
             requestedImageFormat,
             destinationImageReference);
+        DateTime createdAt = ParseSourceDateEpoch(SourceDateEpoch) ?? DateTime.UtcNow;
         var userId = imageBuilder.IsWindows ? null : ContainerHelpers.TryParseUserId(ContainerUser);
-        Layer newLayer = Layer.FromDirectory(PublishDirectory, WorkingDirectory, imageBuilder.IsWindows, imageBuilder.ManifestMediaType, userId);
+        Layer newLayer = Layer.FromDirectory(
+            PublishDirectory,
+            WorkingDirectory,
+            imageBuilder.IsWindows,
+            imageBuilder.ManifestMediaType,
+            userId,
+            modificationTime: createdAt);
         imageBuilder.AddLayer(newLayer);
         imageBuilder.SetWorkingDirectory(WorkingDirectory);
 
@@ -178,6 +203,13 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             foreach (ITaskItem label in Labels)
             {
                 imageBuilder.AddLabel(label.ItemSpec, label.GetMetadata("Value"));
+            }
+
+            if (GenerateCreatedLabels)
+            {
+                string createdLabel = createdAt.ToString("o", CultureInfo.InvariantCulture);
+                imageBuilder.AddLabel("org.opencontainers.image.created", createdLabel);
+                imageBuilder.AddLabel("org.opencontainers.artifact.created", createdLabel);
             }
 
             if (GenerateDigestLabel)
@@ -208,7 +240,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
             return false;
         }
 
-        BuiltImage builtImage = imageBuilder.Build();
+        BuiltImage builtImage = imageBuilder.Build(createdAt);
         cancellationToken.ThrowIfCancellationRequested();
 
         // at this point we're done with modifications and are just pushing the data other places
@@ -227,7 +259,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 
         if (!SkipPublishing)
         {
-            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, Log, telemetry, cancellationToken)
+            await ImagePublisher.PublishImageAsync(builtImage, sourceImageReference, destinationImageReference, NoCache, Log, telemetry, cancellationToken)
                 .ConfigureAwait(false);
         }
 

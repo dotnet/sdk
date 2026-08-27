@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
         {
             public NugetPackageMetadata(PackageSource packageSource, IPackageSearchMetadata metadata, IPackageSearchMetadata? extraMetadata = null)
             {
-                Authors = metadata.Authors;
+                Authors = metadata.Authors ?? string.Empty;
                 Identity = metadata.Identity;
                 Description = metadata.Description;
                 ProjectUrl = metadata.ProjectUrl;
