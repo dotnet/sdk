@@ -134,7 +134,7 @@ echo "Found artifacts: ${artifact_names[*]}"
 platforms=""
 zip_dir=$(mktemp -d "${temp_dir}/aot-size-zips.XXXXXX")
 trap 'rm -rf "$zip_dir"' EXIT
-declare -a pair_platforms pr_archives base_archives curl_args
+declare -a pair_platforms=() pr_archives=() base_archives=() curl_args=()
 
 # Build one curl invocation containing every complete PR/baseline artifact pair.
 for artifact_name in "${artifact_names[@]}"; do
