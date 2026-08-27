@@ -23,6 +23,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
             using var packageManager = new PackageManager();
             string packageLocation = PackTestTemplatesNuGetPackage(packageManager);
             packageLocation = await packageManager.GetNuGetPackage("Microsoft.Azure.WebJobs.ProjectTemplates");
+            TestUtils.SetupNuGetConfigForPackagesLocation(testDir, Path.GetDirectoryName(packageLocation)!);
 
             new DotnetCommand(
                 Log,
@@ -59,6 +60,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 new DotnetNewCommand(Log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
+                    .WithWorkingDirectory(testDir)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
@@ -81,6 +83,7 @@ namespace Microsoft.TemplateSearch.TemplateDiscovery.IntegrationTests
                 new DotnetNewCommand(Log, "func", "--search")
                     .WithCustomHive(settingsPath)
                     .WithoutTelemetry()
+                    .WithWorkingDirectory(testDir)
                     .WithEnvironmentVariable("DOTNET_NEW_SEARCH_FILE_OVERRIDE", cacheFilePath)
                     .WithEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE", "true")
                     .Execute()
