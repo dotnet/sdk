@@ -30,6 +30,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _shimsDirectory;
         private readonly string _toolsDirectory;
 
+        public TestContext TestContext { get; set; } = null!;
+
         public ToolUninstallGlobalOrToolPathCommandTests()
         {
             _reporter = new BufferedReporter();
@@ -95,6 +97,43 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _fileSystem.Directory.Exists(packageDirectory.Value).Should().BeFalse();
             _fileSystem.File.Exists(shimPath).Should().BeFalse();
+        }
+
+        [TestMethod]
+        public async Task GivenAPackageLockUninstallWaitCanBeCanceled()
+        {
+            await CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(TestContext.CancellationToken);
+            var store = new ToolPackageStoreMock(new DirectoryPath(_toolsDirectory), _fileSystem);
+            var lockAcquired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var releaseLock = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            Task<int> lockTask = ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
+                store.Root,
+                new PackageId(PackageId),
+                packageVersionDisplay: "*",
+                TestContext.CancellationToken,
+                async () =>
+                {
+                    lockAcquired.SetResult();
+                    await releaseLock.Task.WaitAsync(TestContext.CancellationToken);
+                    return 0;
+                });
+
+            await lockAcquired.Task.WaitAsync(TestContext.CancellationToken);
+            using var cancellationTokenSource = new CancellationTokenSource();
+            cancellationTokenSource.Cancel();
+
+            try
+            {
+                Func<Task> uninstall = () => CreateUninstallCommand($"-g {PackageId}").Execute(cancellationTokenSource.Token);
+                await uninstall.Should().ThrowExactlyAsync<OperationCanceledException>();
+
+                store.EnumeratePackages().Should().ContainSingle();
+            }
+            finally
+            {
+                releaseLock.SetResult();
+                await lockTask;
+            }
         }
 
         [TestMethod]

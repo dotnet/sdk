@@ -15,6 +15,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
+using Moq;
 using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
@@ -173,6 +174,35 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(HigherPackageVersion);
             _store.EnumeratePackageVersions(_packageId2).Single().Version.ToFullString().Should()
                 .Be(HigherPackageVersion);
+        }
+
+        [TestMethod]
+        public void GivenAPackageIsRemovedAfterUpdateAllTakesItsSnapshotItIsNotReinstalled()
+        {
+            CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}")
+                .Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+            var uninstaller = new ToolPackageUninstallerMock(_fileSystem, _store);
+            var staleStoreQuery = new Mock<IToolPackageStoreQuery>(MockBehavior.Strict);
+            staleStoreQuery
+                .Setup(query => query.EnumeratePackageVersions(_packageId))
+                .Returns(() =>
+                {
+                    IToolPackage installedPackage = _store.EnumeratePackageVersions(_packageId).Single();
+                    uninstaller.Uninstall(installedPackage.PackageDirectory);
+                    return [];
+                });
+
+            var command = new ToolUpdateGlobalOrToolPathCommand(
+                Parser.Parse("dotnet tool update --all -g"),
+                (_, _, _) => (_store, staleStoreQuery.Object, _toolPackageDownloader, uninstaller),
+                (_, _) => GetMockedShellShimRepository(),
+                _reporter,
+                _store);
+
+            command.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
+
+            _store.EnumeratePackageVersions(_packageId).Should().BeEmpty();
         }
 
         [TestMethod]

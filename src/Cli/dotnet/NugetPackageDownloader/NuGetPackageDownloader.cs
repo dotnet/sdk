@@ -160,12 +160,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         bool includePreview = false,
         bool? includeUnlisted = null,
         DirectoryPath? downloadFolder = null,
-        PackageSourceMapping packageSourceMapping = null)
+        PackageSourceMapping packageSourceMapping = null,
+        CancellationToken cancellationToken = default)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
-
         (var source, var resolvedPackageVersion) = await GetPackageSourceAndVersion(packageId, packageVersion,
-            packageSourceLocation, includePreview, includeUnlisted ?? packageVersion is not null, packageSourceMapping).ConfigureAwait(false);
+            packageSourceLocation, includePreview, includeUnlisted ?? packageVersion is not null, packageSourceMapping, cancellationToken).ConfigureAwait(false);
 
         FindPackageByIdResource resource = null;
         SourceRepository repository = GetSourceRepository(source);
@@ -319,7 +318,10 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         return GetNupkgUrl(packageBaseAddress[0].ToString(), packageId, resolvedPackageVersion);
     }
 
-    public async Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder)
+    public async Task<IEnumerable<string>> ExtractPackageAsync(
+        string packagePath,
+        DirectoryPath targetFolder,
+        CancellationToken cancellationToken = default)
     {
         await using FileStream packageStream = File.OpenRead(packagePath);
         PackageFolderReader packageReader = new(targetFolder.Value);
@@ -329,8 +331,6 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             null,
             _verboseLogger);
         NuGetPackagePathResolver packagePathResolver = new(targetFolder.Value);
-        CancellationToken cancellationToken = CancellationToken.None;
-
         var allFilesInPackage = await PackageExtractor.ExtractPackageAsync(
             targetFolder.Value,
             packageStream,
@@ -378,10 +378,9 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
          PackageSourceLocation packageSourceLocation = null,
          bool includePreview = false,
          bool includeUnlisted = false,
-         PackageSourceMapping packageSourceMapping = null)
+         PackageSourceMapping packageSourceMapping = null,
+         CancellationToken cancellationToken = default)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
-
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation, packageSourceMapping);
@@ -791,23 +790,24 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
 
     public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
-         PackageSourceLocation packageSourceLocation = null)
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default)
     {
         if (versionRange.MinVersion != null && versionRange.MaxVersion != null && versionRange.MinVersion == versionRange.MaxVersion)
         {
             return versionRange.MinVersion;
         }
 
-        return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)
+        return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation, cancellationToken)
             .ConfigureAwait(false))
             .version;
     }
 
     public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
-         PackageSourceLocation packageSourceLocation = null)
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default)
     {
-        CancellationToken cancellationToken = CancellationToken.None;
         IPackageSearchMetadata packageMetadata;
 
         IEnumerable<PackageSource> packagesSources = LoadNuGetSources(packageId, packageSourceLocation);

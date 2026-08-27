@@ -43,6 +43,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _pathToPlaceShim;
         private readonly string _pathToPlacePackages;
         private const string PackageId = "global.tool.console.demo";
+        private const string OtherPackageId = "global.tool.console.other";
         private const string PackageVersion = "1.0.4";
         private const string HigherPackageVersion = "2.0.0";
         private const string LowerPackageVersion = "1.0.0";
@@ -111,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [TestMethod]
-        public void ExecutePassesCancellationTokenToPackageInstallation()
+        public async Task ExecutePassesCancellationTokenToPackageInstallation()
         {
             var command = new ToolInstallGlobalOrToolPathCommand(
                 _parseResult,
@@ -122,8 +123,172 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             using var cancellationTokenSource = new CancellationTokenSource();
             cancellationTokenSource.Cancel();
 
-            Assert.ThrowsExactly<OperationCanceledException>(
+            await Assert.ThrowsExactlyAsync<OperationCanceledException>(
                 () => command.Execute(cancellationTokenSource.Token));
+        }
+
+        [TestMethod]
+        public async Task ConcurrentInstallsOfDifferentVersionsSerializeTheCompleteInstallation()
+        {
+            int activeDownloads = 0;
+            int maximumActiveDownloads = 0;
+            int createdPackageServices = 0;
+            object downloadCountLock = new();
+            var firstDownloadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var secondPackageServicesCreated = new ManualResetEventSlim();
+            CreateToolPackageStoresAndDownloaderAndUninstaller createPackageServices = (_, _, _) =>
+            {
+                var downloader = new ToolPackageDownloaderMock2(
+                    _toolPackageStore,
+                    runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
+                    currentWorkingDirectory: null,
+                    fileSystem: _fileSystem);
+                downloader.AddMockPackage(new MockFeedPackage
+                {
+                    PackageId = PackageId,
+                    Version = PackageVersion,
+                    ToolCommandName = ToolCommandName
+                });
+                downloader.AddMockPackage(new MockFeedPackage
+                {
+                    PackageId = PackageId,
+                    Version = HigherPackageVersion,
+                    ToolCommandName = ToolCommandName
+                });
+                downloader.DownloadCallback = () =>
+                {
+                    int currentDownloads = Interlocked.Increment(ref activeDownloads);
+                    lock (downloadCountLock)
+                    {
+                        maximumActiveDownloads = Math.Max(maximumActiveDownloads, currentDownloads);
+                    }
+
+                    firstDownloadStarted.TrySetResult();
+                    if (!secondPackageServicesCreated.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken))
+                    {
+                        throw new TimeoutException("The second install did not start.");
+                    }
+                    Thread.Sleep(100);
+                    Interlocked.Decrement(ref activeDownloads);
+                };
+                if (Interlocked.Increment(ref createdPackageServices) == 2)
+                {
+                    secondPackageServicesCreated.Set();
+                }
+                return (_toolPackageStore, _toolPackageStoreQuery, downloader, _toolPackageUninstallerMock);
+            };
+            var firstCommand = new ToolInstallGlobalOrToolPathCommand(
+                Parser.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}"),
+                createPackageServices,
+                _createShellShimRepository,
+                _environmentPathInstructionMock,
+                new BufferedReporter());
+            var secondCommand = new ToolInstallGlobalOrToolPathCommand(
+                Parser.Parse($"dotnet tool install -g {PackageId} --version {HigherPackageVersion}"),
+                createPackageServices,
+                _createShellShimRepository,
+                _environmentPathInstructionMock,
+                new BufferedReporter());
+
+            Task<int> firstInstall = Task.Run(() => firstCommand.Execute(CancellationToken.None));
+            await firstDownloadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            Task<int> secondInstall = Task.Run(() => secondCommand.Execute(CancellationToken.None));
+
+            int[] results = await Task.WhenAll(firstInstall, secondInstall);
+
+            results.Should().Equal(0, 0);
+            maximumActiveDownloads.Should().Be(1);
+            _toolPackageStoreQuery.EnumeratePackages().Should().ContainSingle()
+                .Which.Version.ToNormalizedString().Should().Be(HigherPackageVersion);
+        }
+
+        [TestMethod]
+        public async Task ConcurrentInstallsOfDifferentPackagesSerializeSharedShimCreation()
+        {
+            int activeDownloads = 0;
+            int maximumActiveDownloads = 0;
+            int createdPackageServices = 0;
+            object downloadCountLock = new();
+            var firstDownloadStarted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            using var secondPackageServicesCreated = new ManualResetEventSlim();
+            CreateToolPackageStoresAndDownloaderAndUninstaller createPackageServices = (_, _, _) =>
+            {
+                var downloader = new ToolPackageDownloaderMock2(
+                    _toolPackageStore,
+                    runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
+                    currentWorkingDirectory: null,
+                    fileSystem: _fileSystem);
+                downloader.AddMockPackage(new MockFeedPackage
+                {
+                    PackageId = PackageId,
+                    Version = PackageVersion,
+                    ToolCommandName = ToolCommandName
+                });
+                downloader.AddMockPackage(new MockFeedPackage
+                {
+                    PackageId = OtherPackageId,
+                    Version = PackageVersion,
+                    ToolCommandName = ToolCommandName
+                });
+                downloader.DownloadCallback = () =>
+                {
+                    int currentDownloads = Interlocked.Increment(ref activeDownloads);
+                    lock (downloadCountLock)
+                    {
+                        maximumActiveDownloads = Math.Max(maximumActiveDownloads, currentDownloads);
+                    }
+
+                    firstDownloadStarted.TrySetResult();
+                    if (!secondPackageServicesCreated.Wait(TimeSpan.FromSeconds(5), TestContext.CancellationToken))
+                    {
+                        throw new TimeoutException("The second install did not start.");
+                    }
+                    Thread.Sleep(100);
+                    Interlocked.Decrement(ref activeDownloads);
+                };
+                if (Interlocked.Increment(ref createdPackageServices) == 2)
+                {
+                    secondPackageServicesCreated.Set();
+                }
+                return (_toolPackageStore, _toolPackageStoreQuery, downloader, _toolPackageUninstallerMock);
+            };
+            var firstCommand = new ToolInstallGlobalOrToolPathCommand(
+                Parser.Parse($"dotnet tool install -g {PackageId} --version {PackageVersion}"),
+                createPackageServices,
+                _createShellShimRepository,
+                _environmentPathInstructionMock,
+                new BufferedReporter());
+            var secondCommand = new ToolInstallGlobalOrToolPathCommand(
+                Parser.Parse($"dotnet tool install -g {OtherPackageId} --version {PackageVersion}"),
+                createPackageServices,
+                _createShellShimRepository,
+                _environmentPathInstructionMock,
+                new BufferedReporter());
+
+            Task<Exception> firstInstall = ExecuteAndCaptureExceptionAsync(firstCommand);
+            await firstDownloadStarted.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+            Task<Exception> secondInstall = ExecuteAndCaptureExceptionAsync(secondCommand);
+
+            Exception[] results = await Task.WhenAll(firstInstall, secondInstall);
+
+            results.Should().ContainSingle(e => e == null);
+            results.OfType<GracefulException>().Should().ContainSingle();
+            maximumActiveDownloads.Should().Be(1);
+            _toolPackageStoreQuery.EnumeratePackages().Should().ContainSingle();
+            _fileSystem.File.Exists(ExpectedCommandPath()).Should().BeTrue();
+
+            static async Task<Exception> ExecuteAndCaptureExceptionAsync(ToolInstallGlobalOrToolPathCommand command)
+            {
+                try
+                {
+                    await Task.Run(() => command.Execute(CancellationToken.None));
+                    return null;
+                }
+                catch (Exception exception)
+                {
+                    return exception;
+                }
+            }
         }
 
         [TestMethod]
@@ -892,7 +1057,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _environmentPathInstructionMock,
                 _reporter);
 
-            var exceptionThrown = await Assert.ThrowsExactlyAsync<AggregateException>(() => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None));
+            var exceptionThrown = await Assert.ThrowsExactlyAsync<GracefulException>(() => toolInstallGlobalOrToolPathCommand.Execute(CancellationToken.None));
             exceptionThrown.Message.Should().Contain("-invalid is invalid");
         }
 

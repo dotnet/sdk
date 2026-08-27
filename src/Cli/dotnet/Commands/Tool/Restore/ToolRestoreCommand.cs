@@ -75,7 +75,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
 
     public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public Task<int> Execute(CancellationToken cancellationToken)
+    public async Task<int> Execute(CancellationToken cancellationToken)
     {
         FilePath? customManifestFileLocation = GetCustomManifestFileLocation();
 
@@ -99,7 +99,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
 
             _reporter.WriteLine(e.Message.Yellow());
             _reporter.WriteLine(CliCommandStrings.NoToolsWereRestored.Yellow());
-            return Task.FromResult(0);
+            return 0;
         }
 
         var toolPackageRestorer = new ToolPackageRestorer(
@@ -111,10 +111,25 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
             _localToolsResolverCache,
             _fileSystem);
 
-        ToolRestoreResult[] toolRestoreResults =
-            [.. packagesFromManifest
-                .AsEnumerable()
-                .Select(package => toolPackageRestorer.InstallPackage(package, configFile, cancellationToken))];
+        ToolRestoreResult[] toolRestoreResults;
+        if (_restoreActionConfig.DisableParallel)
+        {
+            var results = new List<ToolRestoreResult>(packagesFromManifest.Count);
+            foreach (ToolManifestPackage package in packagesFromManifest)
+            {
+                results.Add(await toolPackageRestorer
+                    .InstallPackageAsync(package, configFile, cancellationToken)
+                    .ConfigureAwait(false));
+            }
+
+            toolRestoreResults = [.. results];
+        }
+        else
+        {
+            toolRestoreResults = await Task.WhenAll(
+                packagesFromManifest.Select(
+                    package => toolPackageRestorer.InstallPackageAsync(package, configFile, cancellationToken))).ConfigureAwait(false);
+        }
 
         Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
             toolRestoreResults.Select(result => result.SaveToCache)
@@ -125,7 +140,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
 
         _localToolsResolverCache.Save(downloaded);
 
-        return Task.FromResult(PrintConclusionAndReturn(toolRestoreResults));
+        return PrintConclusionAndReturn(toolRestoreResults);
     }
 
     private int PrintConclusionAndReturn(ToolRestoreResult[] toolRestoreResults)

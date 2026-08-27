@@ -18,14 +18,18 @@ internal interface INuGetPackageDownloader
         bool includePreview = false,
         bool? includeUnlisted = null,
         DirectoryPath? downloadFolder = null,
-        PackageSourceMapping packageSourceMapping = null);
+        PackageSourceMapping packageSourceMapping = null,
+        CancellationToken cancellationToken = default);
 
     Task<string> GetPackageUrl(PackageId packageId,
         NuGetVersion packageVersion = null,
         PackageSourceLocation packageSourceLocation = null,
         bool includePreview = false);
 
-    Task<IEnumerable<string>> ExtractPackageAsync(string packagePath, DirectoryPath targetFolder);
+    Task<IEnumerable<string>> ExtractPackageAsync(
+        string packagePath,
+        DirectoryPath targetFolder,
+        CancellationToken cancellationToken = default);
 
     Task<NuGetVersion> GetLatestPackageVersion(PackageId packageId,
          PackageSourceLocation packageSourceLocation = null,
@@ -38,9 +42,11 @@ internal interface INuGetPackageDownloader
 
     Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
-         PackageSourceLocation packageSourceLocation = null);
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default);
 
     Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
-        PackageSourceLocation packageSourceLocation = null);
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default);
 }

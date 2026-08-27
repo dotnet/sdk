@@ -186,6 +186,78 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
         [TestMethod]
+        public async Task WhenDisableParallelIsSpecifiedPackagesRestoreSequentially()
+        {
+            int activeDownloads = 0;
+            int maximumActiveDownloads = 0;
+            object downloadCountLock = new();
+            var downloader = new ToolPackageDownloaderMock(
+                _toolPackageStore,
+                _fileSystem,
+                _reporter,
+                feeds:
+                [
+                    new MockFeed
+                    {
+                        Type = MockFeedType.ImplicitAdditionalFeed,
+                        Packages =
+                        [
+                            new MockFeedPackage
+                            {
+                                PackageId = _packageIdA.ToString(),
+                                Version = _packageVersionA.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameA.ToString()
+                            },
+                            new MockFeedPackage
+                            {
+                                PackageId = _packageIdB.ToString(),
+                                Version = _packageVersionB.ToNormalizedString(),
+                                ToolCommandName = _toolCommandNameB.ToString()
+                            }
+                        ]
+                    }
+                ],
+                downloadAsyncCallback: async cancellationToken =>
+                {
+                    int currentDownloads = Interlocked.Increment(ref activeDownloads);
+                    lock (downloadCountLock)
+                    {
+                        maximumActiveDownloads = Math.Max(maximumActiveDownloads, currentDownloads);
+                    }
+
+                    await Task.Delay(50, cancellationToken);
+                    Interlocked.Decrement(ref activeDownloads);
+                });
+            IToolManifestFinder manifestFinder = new MockManifestFinder(
+            [
+                new ToolManifestPackage(
+                    _packageIdA,
+                    _packageVersionA,
+                    [_toolCommandNameA],
+                    new DirectoryPath(_temporaryDirectory),
+                    false),
+                new ToolManifestPackage(
+                    _packageIdB,
+                    _packageVersionB,
+                    [_toolCommandNameB],
+                    new DirectoryPath(_temporaryDirectory),
+                    false)
+            ]);
+            ParseResult parseResult = Parser.Parse("dotnet tool restore --disable-parallel");
+            var command = new ToolRestoreCommand(
+                parseResult,
+                downloader,
+                manifestFinder,
+                _localToolsResolverCache,
+                _fileSystem,
+                _reporter);
+
+            await command.Execute(CancellationToken.None);
+
+            maximumActiveDownloads.Should().Be(1);
+        }
+
+        [TestMethod]
         public void WhenRestoredCommandHasTheSameCommandNameItThrows()
         {
             IToolManifestFinder manifestFinder =

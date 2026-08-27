@@ -10,11 +10,13 @@ using System.Transactions;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
 using Microsoft.Extensions.DependencyModel.Tests;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
 using NuGet.Frameworks;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.PackageInstall.Tests
@@ -513,6 +515,93 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
+        public async Task GivenConcurrentLocalInstallWhenFirstTransactionRollsBackSecondInstallRemains()
+        {
+            var (_, _, downloader, _, _, fileSystem, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false);
+            var mockDownloader = (ToolPackageDownloaderMock2)downloader;
+            var firstInstallCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var allowRollback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            int downloadCount = 0;
+            mockDownloader.BeforeDownloadCallback = _ => Interlocked.Increment(ref downloadCount);
+
+            Task firstInstall = Task.Run(async () =>
+            {
+                using var transaction = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero,
+                    TransactionScopeAsyncFlowOption.Enabled);
+
+                await InstallLocalPackageAsync(downloader, TestPackageId);
+                firstInstallCompleted.SetResult();
+                await allowRollback.Task;
+            });
+
+            await firstInstallCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Task<IToolPackage> secondInstall = Task.Run(
+                () => InstallLocalPackageAsync(downloader, TestPackageId));
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                secondInstall.IsCompleted.Should().BeFalse();
+            }
+            finally
+            {
+                allowRollback.SetResult();
+            }
+
+            await firstInstall;
+            IToolPackage package = await secondInstall;
+
+            downloadCount.Should().Be(2);
+            fileSystem.Directory.Exists(package.PackageDirectory.Value).Should().BeTrue();
+        }
+
+        [TestMethod]
+        public async Task GivenLocalPackageReadWhenInstallRollsBackReadWaitsAndReturnsNoPackage()
+        {
+            var (_, _, downloader, _, _, _, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false);
+            var firstInstallCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var allowRollback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            Task firstInstall = Task.Run(async () =>
+            {
+                using var transaction = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero,
+                    TransactionScopeAsyncFlowOption.Enabled);
+
+                await InstallLocalPackageAsync(downloader, TestPackageId);
+                firstInstallCompleted.SetResult();
+                await allowRollback.Task;
+            });
+
+            await firstInstallCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Task<IToolPackage> readPackage = downloader.TryGetDownloadedToolAsync(
+                TestPackageId,
+                NuGetVersion.Parse(TestPackageVersion),
+                _testTargetframework,
+                TestVerbosity);
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                readPackage.IsCompleted.Should().BeFalse();
+            }
+            finally
+            {
+                allowRollback.SetResult();
+            }
+
+            await firstInstall;
+            (await readPackage).Should().BeNull();
+        }
+
+        [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
         public void GivenSecondInstallOfLocalToolItShouldNotThrowException(bool testMockBehaviorIsInSync)
@@ -868,7 +957,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .Directory
                 .EnumerateFileSystemEntries(store.Root.Value)
                 .Should()
-                .NotContain(e => Path.GetFileName(e) != ToolPackageStoreAndQuery.StagingDirectory);
+                .NotContain(e => Path.GetFileName(e) != ToolPackageStoreAndQuery.StagingDirectory
+                    && Path.GetFileName(e) != ToolPackageStoreAndQuery.LockDirectory);
 
             fileSystem
                 .Directory
@@ -883,8 +973,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 bool includeLocalFeedInNugetConfig,
                 [CallerMemberName] string callingMethod = "",
                 string identiifer = null,
-                TimeSpan? mutexInitialWaitTimeout = null,
-                TimeSpan? mutexWaitTimeout = null)
+                TimeSpan? lockInitialWaitTimeout = null,
+                TimeSpan? lockWaitTimeout = null)
         {
             var root = new DirectoryPath(TestAssetsManager.CreateTestDirectory(callingMethod, identifier: useMock.ToString() + identiifer).Path);
             var reporter = new BufferedReporter();
@@ -914,8 +1004,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     runtimeJsonPathForTests: SdkTestContext.GetRuntimeGraphFilePath(),
                     currentWorkingDirectory: root.Value,
                     fileSystem,
-                    mutexInitialWaitTimeout,
-                    mutexWaitTimeout);
+                    lockInitialWaitTimeout,
+                    lockWaitTimeout);
 
                 uninstaller = new ToolPackageUninstallerMock(fileSystem, storeAndQuery);
             }
@@ -1091,19 +1181,96 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        public void GivenAContendedMutexTimeoutIsNotMaskedByRelease()
+        public async Task GivenDifferentLocalToolsTheyUseSeparateAssetDirectories()
+        {
+            var (_, _, downloader, _, _, _, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false);
+            var mockDownloader = (ToolPackageDownloaderMock2)downloader;
+
+            await Task.WhenAll(
+                InstallLocalPackageAsync(downloader, new PackageId("test.tool.a")),
+                InstallLocalPackageAsync(downloader, new PackageId("test.tool.b")));
+
+            mockDownloader.AssetFilePaths.Should().HaveCount(2);
+            mockDownloader.AssetFilePaths
+                .Select(Path.GetDirectoryName)
+                .Should().OnlyHaveUniqueItems();
+        }
+
+        [TestMethod]
+        public async Task GivenDifferentLocalToolsWithTheSameRidPackageTheySerializeRidPackageDownload()
+        {
+            var (_, _, downloader, _, _, _, _) = Setup(
+                useMock: true,
+                includeLocalFeedInNugetConfig: false);
+            var mockDownloader = (ToolPackageDownloaderMock2)downloader;
+            PackageId ridPackageId = new("test.tool.shared.rid");
+            mockDownloader.RidSpecificPackages = new Dictionary<string, PackageIdentity>
+            {
+                [RuntimeInformation.RuntimeIdentifier] = new PackageIdentity(
+                    ridPackageId.ToString(),
+                    NuGetVersion.Parse(TestPackageVersion))
+            };
+
+            using CountdownEvent parentDownloadsReady = new(2);
+            using ManualResetEventSlim firstRidDownloadStarted = new();
+            using ManualResetEventSlim secondRidDownloadStarted = new();
+            using ManualResetEventSlim releaseRidDownload = new();
+            int ridDownloadCount = 0;
+            mockDownloader.BeforeDownloadCallback = packageId =>
+            {
+                if (packageId.ToString() != ridPackageId.ToString())
+                {
+                    parentDownloadsReady.Signal();
+                    parentDownloadsReady.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
+                    return;
+                }
+
+                if (Interlocked.Increment(ref ridDownloadCount) == 1)
+                {
+                    firstRidDownloadStarted.Set();
+                    releaseRidDownload.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
+                }
+                else
+                {
+                    secondRidDownloadStarted.Set();
+                }
+            };
+
+            Task<IToolPackage> firstInstall = Task.Run(
+                () => InstallLocalPackageAsync(downloader, new PackageId("test.tool.a")));
+            Task<IToolPackage> secondInstall = Task.Run(
+                () => InstallLocalPackageAsync(downloader, new PackageId("test.tool.b")));
+
+            try
+            {
+                firstRidDownloadStarted.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
+                secondRidDownloadStarted.Wait(TimeSpan.FromMilliseconds(250)).Should().BeFalse();
+            }
+            finally
+            {
+                releaseRidDownload.Set();
+            }
+
+            await Task.WhenAll(firstInstall, secondInstall);
+            ridDownloadCount.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void GivenAContendedFileLockTimesOut()
         {
             var (store, _, downloader, _, _, _, _) = Setup(
                 useMock: true,
                 includeLocalFeedInNugetConfig: false,
-                mutexInitialWaitTimeout: TimeSpan.Zero,
-                mutexWaitTimeout: TimeSpan.FromMilliseconds(50));
-            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(
+                lockInitialWaitTimeout: TimeSpan.Zero,
+                lockWaitTimeout: TimeSpan.FromMilliseconds(50));
+            string lockFilePath = ToolPackageDownloaderBase.GetToolInstallLockFilePath(
                 store.Root,
                 TestPackageId,
                 NuGetVersion.Parse(TestPackageVersion));
 
-            WithHeldMutex(mutexName, () =>
+            WithHeldFileLock(lockFilePath, () =>
             {
                 Action install = () => InstallGlobalPackage(downloader, CancellationToken.None);
 
@@ -1116,18 +1283,18 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        public void GivenAContendedMutexCancellationStopsWaiting()
+        public void GivenAContendedFileLockCancellationStopsWaiting()
         {
             var (store, _, downloader, _, _, _, _) = Setup(
                 useMock: true,
                 includeLocalFeedInNugetConfig: false,
-                mutexInitialWaitTimeout: TimeSpan.Zero);
-            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(
+                lockInitialWaitTimeout: TimeSpan.Zero);
+            string lockFilePath = ToolPackageDownloaderBase.GetToolInstallLockFilePath(
                 store.Root,
                 TestPackageId,
                 NuGetVersion.Parse(TestPackageVersion));
 
-            WithHeldMutex(mutexName, () =>
+            WithHeldFileLock(lockFilePath, () =>
             {
                 using var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromMilliseconds(50));
                 Action install = () => InstallGlobalPackage(downloader, cancellationTokenSource.Token);
@@ -1137,46 +1304,132 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        public void GivenAnAbandonedMutexInstallationContinues()
+        public void GivenAStaleFileLockInstallationContinues()
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, _) = Setup(
                 useMock: true,
                 includeLocalFeedInNugetConfig: false);
-            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(
+            string lockFilePath = ToolPackageDownloaderBase.GetToolInstallLockFilePath(
                 store.Root,
                 TestPackageId,
                 NuGetVersion.Parse(TestPackageVersion));
 
-            using var abandonedMutex = new Mutex(false, mutexName);
-            var abandoningThread = new Thread(() => abandonedMutex.WaitOne());
-            abandoningThread.Start();
-            abandoningThread.Join();
+            Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
+            File.WriteAllText(lockFilePath, "stale");
 
             IToolPackage package = InstallGlobalPackage(downloader, CancellationToken.None);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
+            File.Exists(lockFilePath).Should().BeTrue();
             uninstaller.Uninstall(package.PackageDirectory);
         }
 
         [TestMethod]
-        public void ToolInstallMutexNameIsBoundedAndScopedToInstallIdentity()
+        public async Task StoreLockIsHeldUntilAmbientTransactionCompletes()
+        {
+            DirectoryPath root = new(TestAssetsManager.CreateTestDirectory().Path);
+            var firstLockAcquired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var allowRollback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var secondLockAcquired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+            Task firstLock = Task.Run(async () =>
+            {
+                using var transaction = new TransactionScope(
+                    TransactionScopeOption.Required,
+                    TimeSpan.Zero,
+                    TransactionScopeAsyncFlowOption.Enabled);
+
+                await ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
+                    root,
+                    TestPackageId,
+                    TestPackageVersion,
+                    CancellationToken.None,
+                    () =>
+                    {
+                        firstLockAcquired.SetResult();
+                        return Task.FromResult(true);
+                    });
+
+                await allowRollback.Task;
+            });
+
+            await firstLockAcquired.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            Task<bool> secondLock = Task.Run(
+                () => ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
+                    root,
+                    TestPackageId,
+                    TestPackageVersion,
+                    CancellationToken.None,
+                    () =>
+                    {
+                        secondLockAcquired.SetResult();
+                        return Task.FromResult(true);
+                    }));
+
+            try
+            {
+                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                secondLockAcquired.Task.IsCompleted.Should().BeFalse();
+            }
+            finally
+            {
+                allowRollback.SetResult();
+            }
+
+            await firstLock;
+            (await secondLock).Should().BeTrue();
+            secondLockAcquired.Task.IsCompletedSuccessfully.Should().BeTrue();
+        }
+
+        [TestMethod]
+        public void ToolInstallLockFilePathIsBoundedAndScopedToInstallIdentity()
         {
             DirectoryPath root = new(TestAssetsManager.CreateTestDirectory().Path);
             DirectoryPath otherRoot = new(Path.Combine(root.Value, "other"));
             var version = NuGetVersion.Parse(TestPackageVersion);
 
-            string mutexName = ToolPackageDownloaderBase.GetToolInstallMutexName(root, TestPackageId, version);
+            string lockFilePath = ToolPackageDownloaderBase.GetToolInstallLockFilePath(root, TestPackageId, version);
 
-            mutexName.Should().HaveLength("dotnet-tool-install-".Length + 64);
-            ToolPackageDownloaderBase.GetToolInstallMutexName(
+            Path.GetFileName(lockFilePath).Should().HaveLength(64 + ".lock".Length);
+            Path.GetDirectoryName(lockFilePath).Should().Be(
+                Path.Combine(Path.GetFullPath(root.Value), ToolPackageStoreAndQuery.LockDirectory));
+            ToolPackageDownloaderBase.GetToolInstallLockFilePath(
                     new DirectoryPath(root.Value + Path.DirectorySeparatorChar),
                     new PackageId(TestPackageId.ToString().ToUpperInvariant()),
-                    version)
-                .Should().Be(mutexName);
-            ToolPackageDownloaderBase.GetToolInstallMutexName(otherRoot, TestPackageId, version)
-                .Should().NotBe(mutexName);
-            ToolPackageDownloaderBase.GetToolInstallMutexName(root, TestPackageId, NuGetVersion.Parse("1.0.5"))
-                .Should().NotBe(mutexName);
+                    NuGetVersion.Parse(TestPackageVersion.ToUpperInvariant()))
+                .Should().Be(lockFilePath);
+            ToolPackageDownloaderBase.GetToolInstallLockFilePath(otherRoot, TestPackageId, version)
+                .Should().NotBe(lockFilePath);
+            ToolPackageDownloaderBase.GetToolInstallLockFilePath(root, TestPackageId, NuGetVersion.Parse("1.0.5"))
+                .Should().NotBe(lockFilePath);
+        }
+
+        [TestMethod]
+        public void ToolInstallLockRetriesOnlyContentionErrors()
+        {
+            int contentionError = OperatingSystem.IsWindows()
+                ? unchecked((int)0x80070020)
+                : OperatingSystem.IsMacOS() ? 35 : 11;
+
+            ToolPackageDownloaderBase
+                .IsToolInstallLockContention(new IOException("contended", contentionError))
+                .Should().BeTrue();
+            ToolPackageDownloaderBase
+                .IsToolInstallLockContention(new IOException("failed", unchecked((int)0x80070005)))
+                .Should().BeFalse();
+        }
+
+        private Task<IToolPackage> InstallLocalPackageAsync(
+            IToolPackageDownloader downloader,
+            PackageId packageId)
+        {
+            return downloader.InstallPackageAsync(
+                new PackageLocation(additionalFeeds: [GetTestLocalFeedPath()]),
+                packageId,
+                TestVerbosity,
+                VersionRange.Parse(TestPackageVersion),
+                _testTargetframework,
+                verifySignatures: false);
         }
 
         private IToolPackage InstallGlobalPackage(
@@ -1194,42 +1447,15 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 cancellationToken: cancellationToken);
         }
 
-        private static void WithHeldMutex(string mutexName, Action action)
+        private static void WithHeldFileLock(string lockFilePath, Action action)
         {
-            using var mutex = new Mutex(false, mutexName);
-            using var acquired = new ManualResetEventSlim();
-            using var release = new ManualResetEventSlim();
-            Exception holderException = null;
-            var holderThread = new Thread(() =>
-            {
-                try
-                {
-                    mutex.WaitOne();
-                    acquired.Set();
-                    release.Wait();
-                    mutex.ReleaseMutex();
-                }
-                catch (Exception exception)
-                {
-                    holderException = exception;
-                    acquired.Set();
-                }
-            });
-            holderThread.Start();
-            acquired.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
-
-            try
-            {
-                holderException.Should().BeNull();
-                action();
-            }
-            finally
-            {
-                release.Set();
-                holderThread.Join();
-            }
-
-            holderException.Should().BeNull();
+            Directory.CreateDirectory(Path.GetDirectoryName(lockFilePath)!);
+            using var lockFile = new FileStream(
+                lockFilePath,
+                FileMode.OpenOrCreate,
+                FileAccess.ReadWrite,
+                FileShare.None);
+            action();
         }
     }
 }

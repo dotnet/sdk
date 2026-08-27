@@ -43,7 +43,7 @@ internal class ToolPackageRestorer
         _fileSystem = fileSystem ?? new FileSystemWrapper();
     }
 
-    public ToolRestoreResult InstallPackage(
+    public async Task<ToolRestoreResult> InstallPackageAsync(
         ToolManifestPackage package,
         FilePath? configFile,
         CancellationToken cancellationToken = default)
@@ -62,7 +62,7 @@ internal class ToolPackageRestorer
         try
         {
             IToolPackage toolPackage =
-                _toolPackageDownloader.InstallPackage(
+                await _toolPackageDownloader.InstallPackageAsync(
                     new PackageLocation(
                         nugetConfig: configFile,
                         additionalFeeds: _additionalSources,
@@ -74,7 +74,7 @@ internal class ToolPackageRestorer
                     targetFramework: targetFramework,
                     restoreActionConfig: _restoreActionConfig,
                     cancellationToken: cancellationToken
-                    );
+                    ).ConfigureAwait(false);
 
             if (!ManifestCommandMatchesActualInPackage(package.CommandNames, [toolPackage.Command]))
             {
@@ -86,7 +86,7 @@ internal class ToolPackageRestorer
             }
 
             // Check for newer versions and prepare warning message
-            string warning = CheckForNewerVersion(package, configFile);
+            string warning = await CheckForNewerVersionAsync(package, configFile, cancellationToken).ConfigureAwait(false);
 
             return ToolRestoreResult.Success(
                 saveToCache:
@@ -135,14 +135,17 @@ internal class ToolPackageRestorer
                && _fileSystem.File.Exists(toolCommand.Executable.Value);
     }
 
-    private string CheckForNewerVersion(ToolManifestPackage package, FilePath? configFile)
+    private async Task<string> CheckForNewerVersionAsync(
+        ToolManifestPackage package,
+        FilePath? configFile,
+        CancellationToken cancellationToken)
     {
         try
         {
             // Use wildcard version range to get the latest version
             var latestVersionRange = VersionRange.Parse("*");
 
-            var (latestVersion, _) = _toolPackageDownloader.GetNuGetVersion(
+            var (latestVersion, _) = await _toolPackageDownloader.GetNuGetVersionAsync(
                 new PackageLocation(
                     nugetConfig: configFile,
                     additionalFeeds: _additionalSources,
@@ -151,7 +154,8 @@ internal class ToolPackageRestorer
                 package.PackageId,
                 _verbosity,
                 latestVersionRange,
-                _restoreActionConfig);
+                _restoreActionConfig,
+                cancellationToken).ConfigureAwait(false);
 
             // Compare versions - only warn if there's a newer stable version or if the manifest uses prerelease
             if (latestVersion != null && latestVersion > package.Version)
@@ -164,7 +168,7 @@ internal class ToolPackageRestorer
                 }
             }
         }
-        catch
+        catch (Exception e) when (e is not OperationCanceledException)
         {
             // If we can't check for newer versions, don't show a warning
             // This could happen due to network issues, package source problems, etc.

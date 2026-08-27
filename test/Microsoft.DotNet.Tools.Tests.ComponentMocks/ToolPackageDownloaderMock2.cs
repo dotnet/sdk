@@ -1,11 +1,13 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Concurrent;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Packaging;
+using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
@@ -19,6 +21,12 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         public Action? DownloadCallback { get; set; }
 
+        public Action<PackageId>? BeforeDownloadCallback { get; set; }
+
+        public ConcurrentBag<string> AssetFilePaths { get; } = [];
+
+        public IDictionary<string, PackageIdentity>? RidSpecificPackages { get; set; }
+
         public string? MockFeedWithNoPackages { get; set; }
 
         List<MockFeedPackage>? _packages = null;
@@ -28,15 +36,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             string runtimeJsonPathForTests,
             string currentWorkingDirectory,
             IFileSystem fileSystem,
-            TimeSpan? mutexInitialWaitTimeout = null,
-            TimeSpan? mutexWaitTimeout = null)
+            TimeSpan? lockInitialWaitTimeout = null,
+            TimeSpan? lockWaitTimeout = null)
             : base(
                 store,
                 runtimeJsonPathForTests,
                 currentWorkingDirectory,
                 fileSystem,
-                mutexInitialWaitTimeout,
-                mutexWaitTimeout)
+                lockInitialWaitTimeout,
+                lockWaitTimeout)
         {
         }
 
@@ -71,6 +79,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
         protected override void CreateAssetFile(PackageId packageId, NuGetVersion version, DirectoryPath packagesRootPath, string assetFilePath, string runtimeJsonGraph, Cli.Utils.VerbosityOptions verbosity, string? targetFramework = null)
         {
+            AssetFilePaths.Add(assetFilePath);
+
             var mockPackage = GetPackage(packageId, version);
             if (mockPackage == null)
             {
@@ -124,8 +134,9 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             };
         }
 
-        protected override NuGetVersion DownloadAndExtractPackage(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
-            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted = false)
+        protected override Task<NuGetVersion> DownloadAndExtractPackageAsync(PackageId packageId, INuGetPackageDownloader nugetPackageDownloader, string packagesRootPath,
+            NuGetVersion packageVersion, PackageSourceLocation packageSourceLocation, Cli.Utils.VerbosityOptions verbosity, bool includeUnlisted,
+            CancellationToken cancellationToken)
         {
 
             var package = GetPackage(packageId, packageVersion);
@@ -147,8 +158,11 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
 
             var fakeExecutablePath = Path.Combine(fakeExecutableSubDirectory, FakeEntrypointName);
 
-            TransactionalAction.Run(() =>
+            BeforeDownloadCallback?.Invoke(packageId);
+
+            try
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 _fileSystem.Directory.CreateDirectory(fakeExecutableSubDirectory);
                 _fileSystem.File.CreateEmptyFile(fakeExecutablePath);
                 _fileSystem.File.WriteAllText(Path.Combine(fakeExecutableSubDirectory, "DotnetToolSettings.xml"),
@@ -174,20 +188,22 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 {
                     DownloadCallback();
                 }
-
-            }, rollback: () =>
+            }
+            catch
             {
                 if (_fileSystem.Directory.Exists(nupkgDir))
                 {
                     _fileSystem.Directory.Delete(nupkgDir, true);
                 }
-            });
 
-            return resolvedVersion;
+                throw;
+            }
+
+            return Task.FromResult(resolvedVersion);
         }
         protected override ToolConfiguration GetToolConfiguration(PackageId id, DirectoryPath packageDirectory, DirectoryPath assetsJsonParentDirectory)
         {
-            return new ToolConfiguration(DefaultToolCommandName, FakeEntrypointName, "dotnet");
+            return new ToolConfiguration(DefaultToolCommandName, FakeEntrypointName, "dotnet", RidSpecificPackages);
 
         }
         protected override bool IsPackageInstalled(PackageId packageId, NuGetVersion packageVersion, string packagesRootPath)
