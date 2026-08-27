@@ -278,9 +278,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        // Regression test: --add-source must only bind a single following token so that it does not
-        // greedily consume the positional template-name argument. See LegacyOptions.CreateAddSourceOption()
-        // for the equivalent, pre-existing fix on the legacy `new --search` option.
         [DataRow("new search --add-source https://add1.test/index.json console")]
         public void Search_AddSourceOption_DoesNotConsumePositionalName(string command)
         {
@@ -297,9 +294,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        // Confirms that disabling multiple-arguments-per-token does not regress the documented ability
-        // to pass multiple NuGet feeds by repeating --add-source; only a single --add-source occurrence
-        // consuming several tokens at once (the bug covered above) is disallowed.
         [DataRow("new search --add-source https://add1.test/index.json --add-source https://add2.test/index.json console")]
         public void Search_AddSourceOption_SupportsRepeatedFlag(string command)
         {
@@ -357,16 +351,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
 
             Assert.IsNull(args.ConfigFile);
-            // System.CommandLine always resolves an unspecified array-typed option to an empty array
-            // (never null); both are valid "not specified" evidence per SearchCommandArgs' documented contract.
             Assert.IsTrue(args.Sources is null || args.Sources.Count == 0);
             Assert.IsTrue(args.AddSources is null || args.AddSources.Count == 0);
             Assert.IsFalse(args.Interactive);
         }
 
         [TestMethod]
-        // The legacy `new --search` syntax never registers the feed-selection options, so attempting to use
-        // them on that branch must be a parse error rather than silently accepted.
         [DataRow("new --search source --source https://one.test/index.json")]
         [DataRow("new --search source --configfile my-nuget.config")]
         [DataRow("new --search source --add-source https://add1.test/index.json")]

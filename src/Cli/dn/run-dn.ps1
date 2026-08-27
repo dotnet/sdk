@@ -26,7 +26,7 @@
     Aot (default), Managed, or Compare.
 
 .PARAMETER Configuration
-    Release (default) or Debug.
+    Debug (default) or Release.
 
 .PARAMETER Rid
     Runtime identifier. Auto-detected from the host when omitted.
@@ -61,7 +61,7 @@ param(
     [ValidateSet("Flat", "Separated")]
     [string]$Layout = "Flat",
     [switch]$SelfLocate,
-    [string]$Configuration = "Release",
+    [string]$Configuration = "Debug",
     [string]$Rid,
     [switch]$NoBuild
 )

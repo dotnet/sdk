@@ -191,10 +191,6 @@ public static class SharedOptionsFactory
 
     public const string SourceOptionName = "--source";
 
-    // Note: System.CommandLine always resolves an unspecified array-typed option to Array.Empty<T>()
-    // (never null), regardless of DefaultValueFactory/CustomParser/nullable-type annotations. Consumers
-    // that need to distinguish "not specified" from "specified with zero entries" should treat an empty
-    // collection the same as null (see SearchCommandArgs.Sources/AddSources).
     public static Option<string[]> CreateSourceOption() => new Option<string[]>(SourceOptionName, "-s")
     {
         Arity = new ArgumentArity(1, 99),

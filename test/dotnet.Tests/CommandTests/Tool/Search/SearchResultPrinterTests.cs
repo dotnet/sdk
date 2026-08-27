@@ -158,8 +158,6 @@ namespace dotnet.Tests.ToolSearchTests
             var printer = new SearchResultPrinter(_reporter);
             var source = new PackageSource("https://contoso.example/v3/index.json");
 
-            // Should not throw even though no errorReporter was explicitly supplied;
-            // it falls back to Reporter.Error internally.
             Action a = () => printer.PrintSourceFailure(source, "boom");
             a.Should().NotThrow();
         }

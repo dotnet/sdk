@@ -307,8 +307,6 @@ public class ToolSearchCommandTests
         BufferedReporter capturedOutput = new();
         BufferedReporter capturedError = new();
 
-        // ToolSearchCommand captures Reporter.Output at construction time, so the buffered
-        // reporters must be installed before the command instance is created.
         Reporter.SetOutput(capturedOutput);
         Reporter.SetError(capturedError);
         try
