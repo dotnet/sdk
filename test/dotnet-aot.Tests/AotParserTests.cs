@@ -404,9 +404,10 @@ public partial class AotParserTests
     [DataRow("tool list --local")]
     [DataRow("tool run mytool")]
     [DataRow("tool uninstall mypackage")]
+    [DataRow("tool search mysearchterm")]
     public void ParseAotToolCommand_HasNoErrors(string commandLine)
     {
-        // The AOT-capable `tool` subcommands (local list/uninstall and run) parse cleanly
+        // The AOT-capable `tool` subcommands (local list/uninstall, run, and search) parse cleanly
         // because their real implementations are linked into the AOT CLI.
         var result = Parser.Parse(commandLine.Split(' '));
         Assert.IsEmpty(result.Errors);
@@ -427,6 +428,35 @@ public partial class AotParserTests
     }
 
     [TestMethod]
+    public void InvokeAotToolSearchCommand_ExecutesWithoutManagedFallback()
+    {
+        string configPath = Path.Combine(Path.GetTempPath(), $"aot-tool-search-{Guid.NewGuid():N}.config");
+        File.WriteAllText(
+            configPath,
+            """
+            <?xml version="1.0" encoding="utf-8"?>
+            <configuration>
+              <packageSources>
+                <clear />
+              </packageSources>
+            </configuration>
+            """);
+
+        try
+        {
+            var (exitCode, _, stderr) = InvokeWithCapture(
+                ["tool", "search", "mysearchterm", "--configfile", configPath]);
+
+            Assert.AreEqual(1, exitCode);
+            stderr.Should().Contain("No NuGet package sources are configured or enabled.");
+        }
+        finally
+        {
+            File.Delete(configPath);
+        }
+    }
+
+    [TestMethod]
     [DataRow("tool list --global")]                  // global list dispatches to managed CLI
     [DataRow("tool list --tool-path somepath")]      // tool-path list dispatches to managed CLI
     [DataRow("tool uninstall mypackage --global")]   // global uninstall dispatches to managed CLI
@@ -434,7 +464,6 @@ public partial class AotParserTests
     [DataRow("tool update mypackage")]               // update is not AOT-capable
     [DataRow("tool restore")]                        // restore is not AOT-capable
     [DataRow("tool execute dotnetsay")]              // execute is not AOT-capable
-    [DataRow("tool search mysearchterm")]             // PackageSearchResource is not AOT-compatible
     public void InvokeManagedOnlyToolCommand_FallsBackToManaged(string commandLine)
     {
         // The global/tool-path variants and install/update/restore depend on NuGet package

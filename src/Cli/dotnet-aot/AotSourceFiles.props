@@ -290,11 +290,10 @@
 
   <!--
     'dotnet tool' command (AOT-capable subset): the parser plus the real implementations of the
-    local 'tool list'/'tool uninstall' and 'tool run'. The shared manifest/package and
-    command-resolution infrastructure is already linked above (for AOT tool resolution); this
-    group adds only the pieces unique to running these subcommands in-process. Tool search falls
-    back because PackageSearchResource currently roots Newtonsoft.Json's dynamic-code closure.
-    The global/tool-path variants and install/update/restore/execute also fall back to the managed CLI.
+    local 'tool list'/'tool uninstall', 'tool run', and 'tool search'. The shared manifest/package
+    and command-resolution infrastructure is already linked above (for AOT tool resolution); this
+    group adds only the pieces unique to running these subcommands in-process. The global/tool-path
+    variants and install/update/restore/execute fall back to the managed CLI.
   -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\ToolCommandParser.cs" Link="Commands\Tool\ToolCommandParser.cs" />
@@ -303,6 +302,13 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\List\ToolListJsonHelper.cs" Link="Commands\Tool\List\ToolListJsonHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Uninstall\ToolUninstallLocalCommand.cs" Link="Commands\Tool\Uninstall\ToolUninstallLocalCommand.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Run\ToolRunCommand.cs" Link="Commands\Tool\Run\ToolRunCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\ToolSearchCommand.cs" Link="Commands\Tool\Search\ToolSearchCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\SearchResultPrinter.cs" Link="Commands\Tool\Search\SearchResultPrinter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\NugetSearchSerializables.cs" Link="Commands\Tool\Search\NugetSearchSerializables.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\INugetToolSearchApiRequest.cs" Link="NugetSearch\INugetToolSearchApiRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiParameter.cs" Link="NugetSearch\NugetSearchApiParameter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiRequestException.cs" Link="NugetSearch\NugetSearchApiRequestException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetToolSearchApiRequest.cs" Link="NugetSearch\NugetToolSearchApiRequest.cs" />
   </ItemGroup>
 
 </Project>
