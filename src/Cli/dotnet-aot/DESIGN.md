@@ -121,8 +121,11 @@ the dual-path dispatch logic.
 bridge builds the
 **full** command tree (the same `DotNetCommandDefinition` used by the managed
 CLI) so that parsing and `--help` match the managed CLI exactly. Commands that
-can run entirely in AOT (`--version`, `--info`, the AOT-capable `sln`
-subcommands, and the narrow file-based run path described below) execute immediately and return.
+can run entirely in AOT (`--version`, `--info`, root command and option shell
+completion, the AOT-capable `sln` subcommands, and the narrow file-based run path
+described below) execute immediately and return. Shell completion falls back before
+producing output once its input selects a command, allowing the managed parser to
+supply template, project, package, and other command-specific providers.
 Other built-in command shapes are wired with a fallback action that throws
 `CommandNotAvailableInAotException`;
 the bridge catches it (and any unexpected parse-time failure) and transparently
@@ -250,8 +253,9 @@ In the shared files:
   isolated to small inline `#if CLI_AOT` regions: the managed build wires the
   real command handlers, while the AOT build attaches a managed-fallback handler
   to every command (overriding it with real implementations where AOT can run
-  the command, e.g. `sln` and the narrow cached `run` action). The help writer (`DotnetHelpBuilder`) has no
-  conditional compilation: help for the external-tool commands
+  the command, e.g. root-level `complete`, `sln`, and the narrow cached `run`
+  action). The help writer (`DotnetHelpBuilder`) has no conditional compilation:
+  help for the external-tool commands
   (msbuild/nuget/vstest/format/fsi) renders from AOT because those forwarding
   apps use AOT-friendly out-of-process codepaths under `#if CLI_AOT`.
 - **`ParserOptionActions.cs`** — The shared `--help`/`--version`/`--info` option

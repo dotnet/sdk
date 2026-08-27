@@ -9,6 +9,7 @@ using Microsoft.DotNet.Cli.Commands.Format;
 using Microsoft.DotNet.Cli.Commands.Fsi;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add;
 using Microsoft.DotNet.Cli.Commands.Hidden.Add.Package;
+using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 using Microsoft.DotNet.Cli.Commands.Hidden.List;
 using Microsoft.DotNet.Cli.Commands.Hidden.List.Reference;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
@@ -38,7 +39,6 @@ using Microsoft.DotNet.Cli.Commands.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Clean;
 using Microsoft.DotNet.Cli.Commands.Dnx;
 using Microsoft.DotNet.Cli.Commands.Help;
-using Microsoft.DotNet.Cli.Commands.Hidden.Complete;
 using Microsoft.DotNet.Cli.Commands.Hidden.InternalReportInstallSuccess;
 using Microsoft.DotNet.Cli.Commands.Hidden.Parse;
 using Microsoft.DotNet.Cli.Commands.Hidden.Remove;
@@ -227,6 +227,10 @@ public static class Parser
         // Narrow file-based run fast path: explicit, positional, and shorthand invocations can
         // reuse a synthetic CSC cache or a validated cached run contract. Other shapes fall back.
         AotRunCommand.ConfigureCommand(rootCommand.RunCommand);
+
+        // Root command and option labels come from the shared command tree. Once the completion
+        // input selects a command, defer so managed parser configuration supplies its providers.
+        CompleteCommandParser.ConfigureCommand(rootCommand.CompleteCommand);
 
         rootCommand.VersionOption.Action = new PrintVersionAction(rootCommand.VersionOption);
         rootCommand.InfoOption.Action = new PrintInfoAction(rootCommand.InfoOption);

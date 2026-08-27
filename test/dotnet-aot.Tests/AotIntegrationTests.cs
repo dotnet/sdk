@@ -6,6 +6,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
+using Microsoft.DotNet.Configurer;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.NET.TestFramework.Utilities;
@@ -319,6 +320,112 @@ public partial class AotIntegrationTests
 
         Assert.AreEqual(0, exitCode);
         stdout.Should().Contain("Usage:");
+    }
+
+    [TestMethod]
+    public void AotComplete_RootLabels_RunWithoutManagedFallbackOrFirstRunSideEffects()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"dotnet-aot-complete-{Guid.NewGuid():N}");
+        string sdkDirectory = Path.Combine(testDirectory, "sdk");
+        string cliHome = Path.Combine(testDirectory, "home");
+        Directory.CreateDirectory(sdkDirectory);
+        Directory.CreateDirectory(cliHome);
+
+        string dnPath = FindDnPath()!;
+        string aotLibraryDirectory = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR")
+            ?? Path.GetDirectoryName(dnPath)!;
+        string aotLibraryFileName = OperatingSystem.IsWindows() ? "dotnet-aot.dll"
+            : OperatingSystem.IsMacOS() ? "libdotnet-aot.dylib"
+            : "libdotnet-aot.so";
+        File.Copy(
+            Path.Combine(aotLibraryDirectory, aotLibraryFileName),
+            Path.Combine(sdkDirectory, aotLibraryFileName));
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_AOT_SDK_DIR"] = sdkDirectory,
+            ["DOTNET_AOT_LIBRARY_DIR"] = sdkDirectory,
+            ["DOTNET_CLI_HOME"] = cliHome,
+            ["DOTNET_CLI_TELEMETRY_OPTOUT"] = bool.TrueString,
+            ["DOTNET_GENERATE_ASPNET_CERTIFICATE"] = bool.FalseString,
+            ["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = bool.FalseString,
+            ["DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK"] = bool.TrueString,
+            ["DOTNET_NOLOGO"] = bool.FalseString,
+        };
+
+        try
+        {
+            var (exitCode, stdout, stderr) = RunDn(
+                ["complete", "--position", "9", "dotnet bu"],
+                enableAot: true,
+                extraEnv: environment);
+
+            Assert.AreEqual(0, exitCode, stderr);
+            Assert.IsTrue(string.IsNullOrEmpty(stderr), stderr);
+            Assert.AreSequenceEqual(
+                ["build", "build-server", "msbuild"],
+                stdout.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries));
+            Assert.IsFalse(File.Exists(Path.Combine(
+                cliHome,
+                ".dotnet",
+                FirstTimeUseNoticeSentinel.SENTINEL)));
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
+    }
+
+    [TestMethod]
+    public void AotComplete_CommandSpecificProviders_FallBackToManaged()
+    {
+        SkipIfDnUnavailable();
+
+        string testDirectory = Path.Combine(Path.GetTempPath(), $"dotnet-aot-complete-fallback-{Guid.NewGuid():N}");
+        string cliHome = Path.Combine(testDirectory, "home");
+        string customHive = Path.Combine(testDirectory, "hive");
+        Directory.CreateDirectory(cliHome);
+
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_CLI_HOME"] = cliHome,
+            ["DOTNET_CLI_TELEMETRY_OPTOUT"] = bool.TrueString,
+            ["DOTNET_GENERATE_ASPNET_CERTIFICATE"] = bool.FalseString,
+            ["DOTNET_ADD_GLOBAL_TOOLS_TO_PATH"] = bool.FalseString,
+            ["DOTNET_SKIP_WORKLOAD_INTEGRITY_CHECK"] = bool.TrueString,
+            ["DOTNET_NOLOGO"] = bool.TrueString,
+        };
+        string completionInput = $"new --debug:custom-hive {customHive} ";
+
+        try
+        {
+            var (warmupExitCode, _, warmupError) = RunDn(
+                ["complete", completionInput],
+                enableAot: true,
+                extraEnv: environment);
+            Assert.AreEqual(0, warmupExitCode, warmupError);
+
+            var (aotExitCode, aotOutput, aotError) = RunDn(
+                ["complete", completionInput],
+                enableAot: true,
+                extraEnv: environment);
+            var (managedExitCode, managedOutput, managedError) = RunDn(
+                ["complete", completionInput],
+                enableAot: false,
+                extraEnv: environment);
+
+            Assert.AreEqual(0, aotExitCode, aotError);
+            Assert.AreEqual(0, managedExitCode, managedError);
+            Assert.IsTrue(string.IsNullOrEmpty(aotError), aotError);
+            Assert.IsTrue(string.IsNullOrEmpty(managedError), managedError);
+            aotOutput.Should().Contain("console");
+            Assert.AreEqual(managedOutput, aotOutput);
+        }
+        finally
+        {
+            Directory.Delete(testDirectory, recursive: true);
+        }
     }
 
     /// <summary>
