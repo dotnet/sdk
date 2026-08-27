@@ -45,7 +45,8 @@ internal static class ToolCommandParser
         command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
         command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
-        command.RestoreCommand.SetAction(parseResult => new ToolRestoreCommand(parseResult).Execute());
+        command.RestoreCommand.SetAction((parseResult, cancellationToken) =>
+            new ToolRestoreCommand(parseResult).ExecuteAsync(cancellationToken));
         command.ExecuteCommand.SetAction((parseResult, cancellationToken) =>
             new ToolExecuteCommand(parseResult).ExecuteAsync(cancellationToken));
 #endif

@@ -87,7 +87,10 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     localToolsResolverCache,
                     new FileSystemWrapper());
 
-                var restoreResult = toolPackageRestorer.InstallPackage(toolManifestPackage, _configFile == null ? null : new FilePath(_configFile));
+                var restoreResult = await toolPackageRestorer.InstallPackageAsync(
+                    toolManifestPackage,
+                    _configFile == null ? null : new FilePath(_configFile),
+                    cancellationToken);
 
                 if (!restoreResult.IsSuccess)
                 {

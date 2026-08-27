@@ -43,9 +43,10 @@ internal class ToolPackageRestorer
         _fileSystem = fileSystem ?? new FileSystemWrapper();
     }
 
-    public ToolRestoreResult InstallPackage(
+    public async Task<ToolRestoreResult> InstallPackageAsync(
         ToolManifestPackage package,
-        FilePath? configFile)
+        FilePath? configFile,
+        CancellationToken cancellationToken)
     {
         string targetFramework = BundledTargetFramework.GetTargetFrameworkMoniker();
 
@@ -84,7 +85,7 @@ internal class ToolPackageRestorer
             }
 
             // Check for newer versions and prepare warning message
-            string warning = CheckForNewerVersion(package, configFile);
+            string warning = await CheckForNewerVersionAsync(package, configFile, cancellationToken);
 
             return ToolRestoreResult.Success(
                 saveToCache:
@@ -133,25 +134,27 @@ internal class ToolPackageRestorer
                && _fileSystem.File.Exists(toolCommand.Executable.Value);
     }
 
-    private string CheckForNewerVersion(ToolManifestPackage package, FilePath? configFile)
+    private async Task<string> CheckForNewerVersionAsync(
+        ToolManifestPackage package,
+        FilePath? configFile,
+        CancellationToken cancellationToken)
     {
         try
         {
             // Use wildcard version range to get the latest version
             var latestVersionRange = VersionRange.Parse("*");
             
-            var (latestVersion, _) = _toolPackageDownloader.GetNuGetVersionAsync(
-                    new PackageLocation(
-                        nugetConfig: configFile,
-                        additionalFeeds: _additionalSources,
-                        sourceFeedOverrides: _overrideSources,
-                        rootConfigDirectory: package.FirstEffectDirectory),
-                    package.PackageId,
-                    _verbosity,
-                    latestVersionRange,
-                    _restoreActionConfig,
-                    CancellationToken.None)
-                .GetAwaiter().GetResult();
+            var (latestVersion, _) = await _toolPackageDownloader.GetNuGetVersionAsync(
+                new PackageLocation(
+                    nugetConfig: configFile,
+                    additionalFeeds: _additionalSources,
+                    sourceFeedOverrides: _overrideSources,
+                    rootConfigDirectory: package.FirstEffectDirectory),
+                package.PackageId,
+                _verbosity,
+                latestVersionRange,
+                _restoreActionConfig,
+                cancellationToken);
 
             // Compare versions - only warn if there's a newer stable version or if the manifest uses prerelease
             if (latestVersion != null && latestVersion > package.Version)
@@ -163,6 +166,10 @@ internal class ToolPackageRestorer
                     return string.Format(CliCommandStrings.RestoreNewVersionAvailable, package.PackageId, latestVersion.ToNormalizedString());
                 }
             }
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
         }
         catch
         {
