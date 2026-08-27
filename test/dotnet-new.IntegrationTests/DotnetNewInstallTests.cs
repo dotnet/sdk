@@ -47,7 +47,10 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             }
             finally
             {
-                Directory.Delete(testRoot, recursive: true);
+                if (!PathUtility.TryDeleteDirectory(testRoot))
+                {
+                    _log.WriteLine($"Failed to delete temporary directory '{testRoot}'.");
+                }
             }
         }
 
