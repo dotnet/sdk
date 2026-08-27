@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
         {
             testOutputHelper = log;
             string home = Utilities.CreateTemporaryFolder("home");
-            dotnetNewTestExecutionDir = Utilities.GetTestExecutionTempFolder();
+            dotnetNewTestExecutionDir = Utilities.CreateTemporaryFolder(nameof(TemplateDiscoveryTool));
             string toolManifestPath = Path.Combine(dotnetNewTestExecutionDir, "dotnet-tools.json");
             if (!File.Exists(toolManifestPath))
             {
@@ -53,6 +53,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
         public void Dispose()
         {
+            Directory.Delete(dotnetNewTestExecutionDir, recursive: true);
         }
     }
 }
