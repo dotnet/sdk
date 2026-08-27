@@ -24,7 +24,6 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
 {
     internal const int DefaultFeedTimeoutMilliseconds = 100;
     internal const string FeedTimeoutEnvironmentVariableName = "DNX_FEED_TIMEOUT_MILLISECONDS";
-    internal const string NoCacheEnvironmentVariableName = "NO_CACHE";
 
     private readonly PackageIdentityWithRange _packageToolIdentityArgument;
     private readonly IEnumerable<string> _forwardArguments;
@@ -51,13 +50,6 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _addSource = result.GetValue(Definition.AddSourceOption) ?? [];
         _verbosity = result.GetValue(Definition.VerbosityOption);
         _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
-        if (EnvironmentVariableParser.ParseBool(
-            Environment.GetEnvironmentVariable(NoCacheEnvironmentVariableName),
-            defaultValue: false))
-        {
-            _restoreActionConfig = _restoreActionConfig with { NoCache = true };
-        }
-
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
