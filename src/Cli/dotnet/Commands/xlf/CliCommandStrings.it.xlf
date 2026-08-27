@@ -3564,8 +3564,8 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Cerca negli strumenti dotnet in nuget.org</target>
+        <source>Search .NET tools in configured NuGet package sources.</source>
+        <target state="needs-review-translation">Cerca negli strumenti dotnet in nuget.org</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchNoSourcesConfigured">
@@ -3596,6 +3596,11 @@ Lo strumento '{1}' (versione '{2}') è stato installato.</target>
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">Numero di risultati da ignorare per l'impaginazione.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSourceDoesNotSupportPackageTypeFiltering">
+        <source>The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</source>
+        <target state="new">The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

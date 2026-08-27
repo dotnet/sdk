@@ -3564,8 +3564,8 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">nuget.org에서 dotnet 도구 검색</target>
+        <source>Search .NET tools in configured NuGet package sources.</source>
+        <target state="needs-review-translation">nuget.org에서 dotnet 도구 검색</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchNoSourcesConfigured">
@@ -3596,6 +3596,11 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">페이지 매김을 위해 건너뛸 결과 수입니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="ToolSearchSourceDoesNotSupportPackageTypeFiltering">
+        <source>The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</source>
+        <target state="new">The source '{0}' does not support searching by package type and cannot be used for .NET tool search.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

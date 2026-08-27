@@ -106,6 +106,18 @@ public class NugetSearchApiRequestTests
             .WithMessage("package type filtering is not supported");
     }
 
+    [TestMethod]
+    public async Task GetResultRejectsSourcesWithoutPackageTypeFiltering()
+    {
+        var request = new NugetToolSearchApiRequest(
+            (_, _) => Task.FromResult<PackageSearchResource?>(new UnsupportedPackageTypeFilteringResource()));
+
+        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source);
+
+        await act.Should().ThrowAsync<NugetSearchApiRequestException>()
+            .WithMessage($"*{Source.Source}*package type*");
+    }
+
     private sealed class CapturingPackageSearchResource : PackageSearchResource
     {
         private readonly IEnumerable<IPackageSearchMetadata>? _results;
@@ -148,5 +160,19 @@ public class NugetSearchApiRequestTests
                 ? Task.FromResult(_results!)
                 : Task.FromException<IEnumerable<IPackageSearchMetadata>>(_exception);
         }
+    }
+
+    private sealed class UnsupportedPackageTypeFilteringResource : PackageSearchResource
+    {
+        public override bool SupportsPackageTypeFiltering => false;
+
+        public override Task<IEnumerable<IPackageSearchMetadata>> SearchAsync(
+            string searchTerm,
+            SearchFilter filters,
+            int skip,
+            int take,
+            ILogger log,
+            CancellationToken cancellationToken)
+            => throw new InvalidOperationException("Search should not be called.");
     }
 }
