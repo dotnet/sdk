@@ -111,9 +111,9 @@ internal sealed class ToolUpdateCommand : CommandBase<ToolUpdateCommandDefinitio
         }
     }
 
-    public override int Execute() => Execute(CancellationToken.None);
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public int Execute(CancellationToken cancellationToken)
+    public Task<int> Execute(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,

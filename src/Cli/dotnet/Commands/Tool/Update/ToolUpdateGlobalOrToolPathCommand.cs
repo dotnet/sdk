@@ -45,11 +45,8 @@ internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdate
             store: _store);
     }
 
-    public override int Execute() => Execute(CancellationToken.None);
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public int Execute(CancellationToken cancellationToken)
-    {
+    public Task<int> Execute(CancellationToken cancellationToken) =>
         _toolInstallGlobalOrToolPathCommand.Execute(cancellationToken);
-        return 0;
-    }
 }

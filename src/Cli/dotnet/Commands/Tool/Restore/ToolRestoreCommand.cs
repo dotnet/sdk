@@ -73,9 +73,9 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
     }
 
-    public override int Execute() => Execute(CancellationToken.None);
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public int Execute(CancellationToken cancellationToken)
+    public Task<int> Execute(CancellationToken cancellationToken)
     {
         FilePath? customManifestFileLocation = GetCustomManifestFileLocation();
 
@@ -99,7 +99,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
 
             _reporter.WriteLine(e.Message.Yellow());
             _reporter.WriteLine(CliCommandStrings.NoToolsWereRestored.Yellow());
-            return 0;
+            return Task.FromResult(0);
         }
 
         var toolPackageRestorer = new ToolPackageRestorer(
@@ -125,7 +125,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
 
         _localToolsResolverCache.Save(downloaded);
 
-        return PrintConclusionAndReturn(toolRestoreResults);
+        return Task.FromResult(PrintConclusionAndReturn(toolRestoreResults));
     }
 
     private int PrintConclusionAndReturn(ToolRestoreResult[] toolRestoreResults)

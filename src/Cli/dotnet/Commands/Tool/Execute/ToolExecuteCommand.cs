@@ -51,9 +51,9 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute() => Execute(CancellationToken.None);
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public int Execute(CancellationToken cancellationToken)
+    public Task<int> Execute(CancellationToken cancellationToken)
     {
         var versionRange = VersionRangeUtilities.GetVersionRange(
             _packageToolIdentityArgument.VersionRange?.OriginalString,
@@ -93,7 +93,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 if (!restoreResult.IsSuccess)
                 {
                     Reporter.Error.WriteLine(restoreResult.Message.Red());
-                    return 1;
+                    return Task.FromResult(1);
                 }
 
                 if (restoreResult.SaveToCache is not null)
@@ -108,7 +108,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     _toolManifestFinder,
                     localToolsResolverCache);
 
-                return ToolRunCommand.ExecuteCommand(localToolsCommandResolver, toolManifestPackage.CommandNames.Single().Value, _forwardArguments, _allowRollForward);
+                return Task.FromResult(ToolRunCommand.ExecuteCommand(localToolsCommandResolver, toolManifestPackage.CommandNames.Single().Value, _forwardArguments, _allowRollForward));
             }
         }
 
@@ -152,6 +152,6 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         var commandSpec = ToolCommandSpecCreator.CreateToolCommandSpec(toolPackage.Command.Name.Value, toolPackage.Command.Executable.Value, toolPackage.Command.Runner, _allowRollForward, _forwardArguments);
         var command = CommandFactoryUsingResolver.Create(commandSpec);
         var result = command.Execute();
-        return result.ExitCode;
+        return Task.FromResult(result.ExitCode);
     }
 }

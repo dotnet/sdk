@@ -11,6 +11,6 @@ internal static class DnxCommandParser
     public static void ConfigureCommand(DnxCommandDefinition command)
     {
         command.SetAction((parseResult, cancellationToken) =>
-            Task.FromResult(new ToolExecuteCommand(parseResult).Execute(cancellationToken)));
+            new ToolExecuteCommand(parseResult).Execute(cancellationToken));
     }
 }

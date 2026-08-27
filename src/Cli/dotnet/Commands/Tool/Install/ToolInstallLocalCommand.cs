@@ -77,9 +77,9 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         _allowPackageDowngrade = parseResult.GetValue(Definition.AllowPackageDowngradeOption);
     }
 
-    public override int Execute() => Execute(CancellationToken.None);
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public int Execute(CancellationToken cancellationToken)
+    public Task<int> Execute(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {
@@ -88,7 +88,7 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
                 ExecuteInstallCommand(manifestPackage.PackageId, versionRange: null, cancellationToken);
             }
 
-            return 0;
+            return Task.FromResult(0);
         }
 
         // package id must be specified (UpdateToolCommandInvalidAllAndPackageId is reported otherwise):
@@ -100,7 +100,7 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(packageId, versionRange, cancellationToken);
+        return Task.FromResult(ExecuteInstallCommand(packageId, versionRange, cancellationToken));
     }
 
     private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange, CancellationToken cancellationToken)

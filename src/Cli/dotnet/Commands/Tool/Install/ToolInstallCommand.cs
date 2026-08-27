@@ -27,9 +27,9 @@ internal sealed class ToolInstallCommand : CommandBase<ToolInstallCommandDefinit
         _framework = parseResult.GetValue(Definition.FrameworkOption);
     }
 
-    public override int Execute() => Execute(CancellationToken.None);
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public int Execute(CancellationToken cancellationToken)
+    public Task<int> Execute(CancellationToken cancellationToken)
     {
         Definition.LocationOptions.EnsureNoConflictGlobalLocalToolPathOption(
             _parseResult,

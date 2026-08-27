@@ -40,17 +40,17 @@ internal static class ToolCommandParser
 #else
         command.SetAction(parseResult => parseResult.HandleMissingCommand());
         command.InstallCommand.SetAction((parseResult, cancellationToken) =>
-            Task.FromResult(new ToolInstallCommand(parseResult).Execute(cancellationToken)));
+            new ToolInstallCommand(parseResult).Execute(cancellationToken));
         command.UninstallCommand.SetAction(parseResult => new ToolUninstallCommand(parseResult).Execute());
         command.UpdateCommand.SetAction((parseResult, cancellationToken) =>
-            Task.FromResult(new ToolUpdateCommand(parseResult).Execute(cancellationToken)));
+            new ToolUpdateCommand(parseResult).Execute(cancellationToken));
         command.ListCommand.SetAction(parseResult => new ToolListCommand(parseResult).Execute());
         command.RunCommand.SetAction(parseResult => new ToolRunCommand(parseResult).Execute());
         command.SearchCommand.SetAction(parseResult => new ToolSearchCommand(parseResult).Execute());
         command.RestoreCommand.SetAction((parseResult, cancellationToken) =>
-            Task.FromResult(new ToolRestoreCommand(parseResult).Execute(cancellationToken)));
+            new ToolRestoreCommand(parseResult).Execute(cancellationToken));
         command.ExecuteCommand.SetAction((parseResult, cancellationToken) =>
-            Task.FromResult(new ToolExecuteCommand(parseResult).Execute(cancellationToken)));
+            new ToolExecuteCommand(parseResult).Execute(cancellationToken));
 #endif
     }
 }

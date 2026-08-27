@@ -138,9 +138,9 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return defaultOption;
     }
 
-    public override int Execute() => Execute(CancellationToken.None);
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
 
-    public int Execute(CancellationToken cancellationToken)
+    public Task<int> Execute(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {
@@ -154,7 +154,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             {
                 ExecuteInstallCommand(new PackageId(toolId.Id.ToString()), versionRange: null, cancellationToken);
             }
-            return 0;
+            return Task.FromResult(0);
         }
 
         // Either --all or package id must be specified:
@@ -165,7 +165,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange, cancellationToken);
+        return Task.FromResult(ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange, cancellationToken));
     }
 
     private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange, CancellationToken cancellationToken)

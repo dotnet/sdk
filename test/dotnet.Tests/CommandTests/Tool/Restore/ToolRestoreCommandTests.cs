@@ -133,7 +133,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(0);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _localToolsResolverCache.TryLoad(
                     new RestoredCommandIdentifier(
@@ -172,7 +172,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(0);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter.Lines.Should().Contain(l => l.Contains(string.Format(
                 CliCommandStrings.RestoreSuccessful, _packageIdA,
@@ -236,7 +236,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                         })),
             };
 
-            Action a = () => toolRestoreCommand.Execute(CancellationToken.None);
+            Action a = () => toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             a.Should().Throw<ToolPackageException>()
                 .And.Message
                 .Should().BeOneOf(allPossibleErrorMessage, "Run in parallel, no order guarantee");
@@ -266,7 +266,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            int executeResult = toolRestoreCommand.Execute(CancellationToken.None);
+            int executeResult = toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _reporter.Lines.Should()
                 .Contain(l => l.Contains(string.Format(CliCommandStrings.PackageFailedToRestore,
                     "non-exists", "")));
@@ -307,7 +307,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(1);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(1);
             _reporter.Lines.Should()
                 .Contain(l =>
                     l.Contains(
@@ -449,7 +449,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(0);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter.Lines.Should()
                 .Contain(l =>
@@ -476,9 +476,9 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             var installCallCountBeforeTheSecondRestore = _installCalledCount;
-            toolRestoreCommand.Execute(CancellationToken.None);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             installCallCountBeforeTheSecondRestore.Should().BeGreaterThan(0);
             _installCalledCount.Should().Be(installCallCountBeforeTheSecondRestore);
@@ -504,10 +504,10 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             _fileSystem.Directory.Delete(_nugetGlobalPackagesFolder.Value, true);
             var installCallCountBeforeTheSecondRestore = _installCalledCount;
-            toolRestoreCommand.Execute(CancellationToken.None);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             installCallCountBeforeTheSecondRestore.Should().BeGreaterThan(0);
             _installCalledCount.Should().Be(installCallCountBeforeTheSecondRestore + 1);
@@ -527,7 +527,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(0);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter.Lines.Should().Contain(l =>
                 l.Contains(AnsiExtensions.Yellow(CliCommandStrings.NoToolsWereRestored)));
@@ -584,7 +584,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(0);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter.Lines.Should().Contain(l =>
                 l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerPackageVersion.ToNormalizedString())));
@@ -640,7 +640,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(0);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter.Lines.Should().Contain(l =>
                 l.Contains(string.Format(CliCommandStrings.RestoreNewVersionAvailable, _packageIdA, newerStableVersion.ToNormalizedString())));
@@ -696,7 +696,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _reporter
             );
 
-            toolRestoreCommand.Execute(CancellationToken.None).Should().Be(0);
+            toolRestoreCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             // Should NOT contain warning about the prerelease version
             _reporter.Lines.Should().NotContain(l =>

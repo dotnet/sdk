@@ -58,7 +58,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAPackageItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -100,7 +100,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAPackageWhenCallFromUninstallRedirectCommandItUninstalls()
         {
-            CreateInstallCommand($"-g {PackageId}  --verbosity minimal").Execute(CancellationToken.None).Should().Be(0);
+            CreateInstallCommand($"-g {PackageId}  --verbosity minimal").Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -170,7 +170,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         [TestMethod]
         public void GivenAFailureToUninstallItLeavesItInstalled()
         {
-            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).Should().Be(0);
+            CreateInstallCommand($"-g {PackageId} --verbosity minimal").Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
