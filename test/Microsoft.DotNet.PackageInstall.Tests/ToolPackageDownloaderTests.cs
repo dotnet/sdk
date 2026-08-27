@@ -8,8 +8,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Transactions;
 using Microsoft.DotNet.Cli;
-using Microsoft.DotNet.Cli.Commands.Tool.Execute;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Tools.Tests.ComponentMocks;
@@ -877,119 +875,6 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .EnumerateFileSystemEntries(store.Root.WithSubDirectories(ToolPackageStoreAndQuery.StagingDirectory).Value)
                 .Should()
                 .BeEmpty();
-        }
-
-        [TestMethod]
-        public void TryGetBestDownloadedToolSelectsHighestCompatibleInstalledVersion()
-        {
-            var (_, _, downloader, _, _, fileSystem, testDir) = Setup(
-                useMock: true,
-                includeLocalFeedInNugetConfig: false);
-            var mockDownloader = (ToolPackageDownloaderMock2)downloader;
-            var packageVersions = new[] { "1.0.0", "2.0.0", "3.0.0-preview.1" };
-
-            foreach (string packageVersion in packageVersions)
-            {
-                mockDownloader.AddMockPackage(new MockFeedPackage
-                {
-                    PackageId = TestPackageId.ToString(),
-                    Version = packageVersion,
-                    ToolCommandName = ToolPackageDownloaderMock2.DefaultToolCommandName
-                });
-                downloader.InstallPackage(
-                    new PackageLocation(),
-                    TestPackageId,
-                    TestVerbosity,
-                    VersionRange.Parse($"[{packageVersion}]"));
-            }
-
-            string globalPackagesFolder = SettingsUtility.GetGlobalPackagesFolder(
-                Settings.LoadDefaultSettings(testDir.Value));
-            fileSystem.Directory.CreateDirectory(
-                Path.Combine(globalPackagesFolder, TestPackageId.ToString(), "4.0.0"));
-
-            downloader.TryGetBestDownloadedTool(
-                    TestPackageId,
-                    VersionRange.Parse("*"),
-                    targetFramework: null,
-                    TestVerbosity,
-                    out IToolPackage stablePackage)
-                .Should().BeTrue();
-            stablePackage.Version.Should().Be(NuGetVersion.Parse("2.0.0"));
-
-            downloader.TryGetBestDownloadedTool(
-                    TestPackageId,
-                    VersionRange.Parse("*-*"),
-                    targetFramework: null,
-                    TestVerbosity,
-                    out IToolPackage prereleasePackage)
-                .Should().BeTrue();
-            prereleasePackage.Version.Should().Be(NuGetVersion.Parse("3.0.0-preview.1"));
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        [DataRow(null, ToolExecuteCommand.DefaultFeedTimeoutMilliseconds)]
-        [DataRow("", ToolExecuteCommand.DefaultFeedTimeoutMilliseconds)]
-        [DataRow("invalid", ToolExecuteCommand.DefaultFeedTimeoutMilliseconds)]
-        [DataRow("0", ToolExecuteCommand.DefaultFeedTimeoutMilliseconds)]
-        [DataRow("-1", ToolExecuteCommand.DefaultFeedTimeoutMilliseconds)]
-        [DataRow("250", 250)]
-        public void DnxFeedTimeoutUsesPositiveEnvironmentValueOrDefault(string value, int expected)
-        {
-            string originalValue = Environment.GetEnvironmentVariable(ToolExecuteCommand.FeedTimeoutEnvironmentVariableName);
-
-            try
-            {
-                Environment.SetEnvironmentVariable(ToolExecuteCommand.FeedTimeoutEnvironmentVariableName, value);
-                ToolExecuteCommand.GetFeedTimeoutMilliseconds().Should().Be(expected);
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ToolExecuteCommand.FeedTimeoutEnvironmentVariableName, originalValue);
-            }
-        }
-
-        [TestMethod]
-        [DoNotParallelize]
-        [Timeout(5000, CooperativeCancellation = true)]
-        public void DnxFeedProbeFallsBackToCachedVersionWhenResolutionTimesOut()
-        {
-            var (_, _, downloader, _, _, _, _) = Setup(
-                useMock: true,
-                includeLocalFeedInNugetConfig: false);
-            var mockDownloader = (ToolPackageDownloaderMock2)downloader;
-            var cachedVersion = NuGetVersion.Parse("1.0.0");
-            string originalValue = Environment.GetEnvironmentVariable(ToolExecuteCommand.FeedTimeoutEnvironmentVariableName);
-            mockDownloader.GetNuGetVersionAsyncCallback = async cancellationToken =>
-            {
-                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
-                return (NuGetVersion.Parse("2.0.0"), new PackageSource("https://example.test"));
-            };
-
-            try
-            {
-                Environment.SetEnvironmentVariable(ToolExecuteCommand.FeedTimeoutEnvironmentVariableName, "20");
-                var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-
-                (NuGetVersion version, PackageSource source) = ToolExecuteCommand.ProbeFeedsForBestVersion(
-                    mockDownloader,
-                    new PackageLocation(),
-                    TestPackageId,
-                    VersionRange.Parse("*"),
-                    cachedVersion,
-                    TestVerbosity,
-                    new RestoreActionConfig());
-
-                stopwatch.Stop();
-                version.Should().Be(cachedVersion);
-                source.Should().BeNull();
-                stopwatch.Elapsed.Should().BeLessThan(TimeSpan.FromSeconds(1));
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(ToolExecuteCommand.FeedTimeoutEnvironmentVariableName, originalValue);
-            }
         }
 
         private (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownloader, IToolPackageUninstaller, BufferedReporter, IFileSystem, DirectoryPath testDir

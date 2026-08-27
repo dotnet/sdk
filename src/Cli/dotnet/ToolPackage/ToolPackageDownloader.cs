@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Utils;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 using Microsoft.TemplateEngine.Utils;
 using NuGet.Client;
 using NuGet.Common;
+using NuGet.Configuration;
 using NuGet.ContentModel;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -30,7 +32,7 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
     {
     }
 
-    protected override INuGetPackageDownloader CreateNuGetPackageDownloader(
+    protected override NuGetPackageDownloader.NuGetPackageDownloader CreateNuGetPackageDownloader(
         bool verifySignatures,
         VerbosityOptions verbosity,
         RestoreActionConfig? restoreActionConfig)
@@ -49,6 +51,66 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             restoreActionConfig: restoreActionConfig,
             verbosityOptions: verbosity,
             currentWorkingDirectory: _currentWorkingDirectory);
+    }
+
+    public bool TryGetBestDownloadedTool(
+        PackageId packageId,
+        VersionRange versionRange,
+        string? targetFramework,
+        VerbosityOptions verbosity,
+        [NotNullWhen(true)] out IToolPackage? toolPackage)
+    {
+        string packageRootDirectory = Path.Combine(_localToolDownloadDir.Value, packageId.ToString());
+        if (!_fileSystem.Directory.Exists(packageRootDirectory))
+        {
+            toolPackage = null;
+            return false;
+        }
+
+        IEnumerable<NuGetVersion> installedVersions = _fileSystem.Directory
+            .EnumerateDirectories(packageRootDirectory)
+            .Select(Path.GetFileName)
+            .Select(version => NuGetVersion.TryParse(version, out NuGetVersion? parsedVersion) ? parsedVersion : null)
+            .Where(version => version is not null && IsPackageInstalled(packageId, version, _localToolDownloadDir.Value))
+            .Cast<NuGetVersion>();
+
+        NuGetVersion? bestVersion = versionRange.FindBestMatch(installedVersions);
+        if (bestVersion is null)
+        {
+            toolPackage = null;
+            return false;
+        }
+
+        return TryGetDownloadedTool(packageId, bestVersion, targetFramework, verbosity, out toolPackage);
+    }
+
+    public async Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
+        PackageLocation packageLocation,
+        PackageId packageId,
+        VerbosityOptions verbosity,
+        VersionRange versionRange,
+        RestoreActionConfig restoreActionConfig,
+        CancellationToken cancellationToken)
+    {
+        var nugetPackageDownloader = CreateNuGetPackageDownloader(
+            verifySignatures: false,
+            verbosity,
+            restoreActionConfig);
+
+        var packageSourceLocation = new PackageSourceLocation(
+            nugetConfig: packageLocation.NugetConfig,
+            rootConfigDirectory: packageLocation.RootConfigDirectory,
+            sourceFeedOverrides: packageLocation.SourceFeedOverrides,
+            additionalSourceFeeds: packageLocation.AdditionalFeeds,
+            basePath: _currentWorkingDirectory);
+
+        return await nugetPackageDownloader
+            .GetBestPackageVersionAndSourceAsync(
+                packageId,
+                versionRange,
+                packageSourceLocation,
+                cancellationToken)
+            .ConfigureAwait(false);
     }
 
     protected override NuGetVersion DownloadAndExtractPackage(

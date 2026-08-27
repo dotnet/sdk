@@ -30,26 +30,9 @@ internal interface IToolPackageDownloader
         RestoreActionConfig? restoreActionConfig = null
     );
 
-    Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
-        PackageLocation packageLocation,
-        PackageId packageId,
-        VerbosityOptions verbosity,
-        VersionRange? versionRange = null,
-        RestoreActionConfig? restoreActionConfig = null,
-        CancellationToken cancellationToken = default
-    );
-
     bool TryGetDownloadedTool(
         PackageId packageId,
         NuGetVersion packageVersion,
-        string? targetFramework,
-        VerbosityOptions verbosity,
-        [NotNullWhen(true)]
-        out IToolPackage? toolPackage);
-
-    bool TryGetBestDownloadedTool(
-        PackageId packageId,
-        VersionRange versionRange,
         string? targetFramework,
         VerbosityOptions verbosity,
         [NotNullWhen(true)]

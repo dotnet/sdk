@@ -33,17 +33,14 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
     private readonly string[] _sources;
     private readonly string[] _addSource;
     private readonly VerbosityOptions _verbosity;
-    private readonly IToolPackageDownloader _toolPackageDownloader;
+    private readonly ToolPackageDownloader _toolPackageDownloader = new(
+        ToolPackageFactory.CreateConcreteToolPackageStore());
 
     private readonly RestoreActionConfig _restoreActionConfig;
 
     private readonly ToolManifestFinder _toolManifestFinder;
 
-    public ToolExecuteCommand(
-        ParseResult result,
-        ToolManifestFinder? toolManifestFinder = null,
-        string? currentWorkingDirectory = null,
-        IToolPackageDownloader? toolPackageDownloader = null)
+    public ToolExecuteCommand(ParseResult result, ToolManifestFinder? toolManifestFinder = null, string? currentWorkingDirectory = null)
         : base(result)
     {
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
@@ -62,7 +59,6 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         }
 
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
-        _toolPackageDownloader = toolPackageDownloader ?? ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
     }
 
     public override int Execute()
@@ -209,7 +205,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
     }
 
     internal static (NuGetVersion? version, PackageSource? source) ProbeFeedsForBestVersion(
-        IToolPackageDownloader toolPackageDownloader,
+        ToolPackageDownloader toolPackageDownloader,
         PackageLocation packageLocation,
         PackageId packageId,
         VersionRange versionRange,
