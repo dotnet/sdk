@@ -92,6 +92,8 @@ namespace dotnet.Tests.ToolSearchTests
             foreach (var expectedInformationToBePresent in expectedInformation)
                 _reporter.Lines.Should().Contain(l => l.Contains(expectedInformationToBePresent),
                     $"Expect \"{expectedInformationToBePresent}\" to be present");
+
+            _reporter.Lines.Should().ContainSingle(l => l.Contains($"{CliCommandStrings.Tags}:"));
         }
 
         [TestMethod]
