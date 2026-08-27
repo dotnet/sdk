@@ -38,7 +38,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
             PackageAvailabilityChecker checker = new(
                 sources: new[] { source },
                 reportFeedFailure: failures.Add,
-                // The candidates set is empty, so no feed should ever need to be queried.
                 repositoryFactory: _ => throw new InvalidOperationException("Should not query any feed when there are no candidates."));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
@@ -80,7 +79,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
                 new[] { s_candidate },
                 CancellationToken.None);
 
-            // A feed that successfully reports "no such package" is still a successful feed query.
             Assert.IsTrue(result.AnyFeedSucceeded);
             Assert.IsEmpty(result.AvailablePackages);
         }
@@ -374,13 +372,10 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
                 sourceMapping: PackageSourceMapping.GetPackageSourceMapping(settings),
                 repositoryFactory: _ => CreateRepository(mappedSource, resource));
 
-            // s_candidate's package id ("Pack.One") does not match the "Some.Other.*" mapping pattern for "mapped-feed".
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 new[] { s_candidate },
                 CancellationToken.None);
 
-            // Nothing was eligible to check on the only configured feed, but the feed itself was never queried
-            // (and thus never failed), so this remains a successful (empty) result rather than an overall failure.
             Assert.IsTrue(result.AnyFeedSucceeded);
             Assert.IsEmpty(result.AvailablePackages);
         }
@@ -478,12 +473,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
             return resource;
         }
 
-        /// <summary>
-        /// Wraps a (possibly null, to simulate an unsupported feed) <see cref="FindPackageByIdResource"/> in a real
-        /// <see cref="SourceRepository"/>, so <see cref="PackageAvailabilityChecker"/> can be exercised through its
-        /// actual resource-resolution path (<see cref="SourceRepository.GetResourceAsync{T}(CancellationToken)"/>)
-        /// without any network access.
-        /// </summary>
         private static SourceRepository CreateRepository(PackageSource source, FindPackageByIdResource? resource)
         {
             return new SourceRepository(source, new[] { new Lazy<INuGetResourceProvider>(() => new StubResourceProvider(resource)) });

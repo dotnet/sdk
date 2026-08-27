@@ -8,11 +8,6 @@ using Microsoft.TemplateSearch.Common.Abstractions;
 
 namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateSearch
 {
-    /// <summary>
-    /// Focused tests for <see cref="CliTemplateSearchCoordinator.IsConfirmedAvailable(ITemplatePackageInfo, IReadOnlySet{PackageAvailabilityCandidate})"/>,
-    /// which narrows .NET template catalog hits down to package id + version pairs confirmed available
-    /// from at least one of the NuGet feeds selected for the invocation.
-    /// </summary>
     [TestClass]
     public class CliTemplateSearchCoordinatorTests : BaseTest
     {
@@ -64,8 +59,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateSearch
         [TestMethod]
         public void IsConfirmedAvailable_NullVersionOnCatalogHit_PassesThroughAsAvailable()
         {
-            // The catalog does not always report a version for a hit; when it doesn't, there is no
-            // package id + version pair to validate against a feed, so the hit is passed through unfiltered.
             ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", version: null);
             IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>();
 
@@ -82,10 +75,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateSearch
         }
 
         [TestMethod]
-        public void IsConfirmedAvailable_VersionComparisonIsCaseSensitive()
+        public void IsConfirmedAvailable_PackageIdComparisonIsCaseSensitive()
         {
-            // PackageAvailabilityCandidate is a record struct with default (ordinal) equality; a differently-cased
-            // package id must not be treated as a match.
             ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", "1.0.0");
             IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>
             {

@@ -5,9 +5,6 @@ using Microsoft.DotNet.Cli.ToolPackage;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
-/// <summary>
-/// A package returned by NuGet search.
-/// </summary>
 internal class SearchResultPackage(
     PackageId id,
     string latestVersion,

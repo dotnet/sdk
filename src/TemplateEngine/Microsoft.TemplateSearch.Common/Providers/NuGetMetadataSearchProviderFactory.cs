@@ -8,9 +8,6 @@ namespace Microsoft.TemplateSearch.Common.Providers
 {
     public sealed class NuGetMetadataSearchProviderFactory : ITemplateSearchProviderFactory
     {
-        // This provider matches templates against a Microsoft-curated template catalog and then
-        // filters the results by package availability on the currently configured NuGet feeds.
-        // It does not query NuGet.org directly, so the display name must not claim that it does.
         string ITemplateSearchProviderFactory.DisplayName => ".NET template catalog";
 
         Guid IIdentifiedComponent.Id => new Guid("6EA368C4-8A56-444C-91D1-55150B296BF2");

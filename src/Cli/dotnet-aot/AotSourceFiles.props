@@ -293,7 +293,7 @@
     local 'tool list'/'tool uninstall', 'tool run', and 'tool search'. The shared manifest/package
     and command-resolution infrastructure is already linked above (for AOT tool resolution); this
     group adds only the pieces unique to running these subcommands in-process. The global/tool-path
-    variants and install/update/restore/execute fall back to the managed CLI.
+    variants and install/update/restore/execute fall back to the managed CLI and are not linked.
   -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\ToolCommandParser.cs" Link="Commands\Tool\ToolCommandParser.cs" />

@@ -407,7 +407,7 @@ public partial class AotParserTests
     [DataRow("tool search mysearchterm")]
     public void ParseAotToolCommand_HasNoErrors(string commandLine)
     {
-        // The AOT-capable `tool` subcommands (local list/uninstall, run, and search) parse cleanly
+        // The AOT-capable `tool` subcommands (local list/uninstall, run, search) parse cleanly
         // because their real implementations are linked into the AOT CLI.
         var result = Parser.Parse(commandLine.Split(' '));
         Assert.IsEmpty(result.Errors);
