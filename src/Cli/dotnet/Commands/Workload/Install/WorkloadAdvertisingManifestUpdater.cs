@@ -343,7 +343,7 @@ internal class WorkloadAdvertisingManifestUpdater(
         var manifests = GetInstalledManifestIds();
         //  TODO: This doesn't seem to account for differing feature bands
         var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest))).ConfigureAwait(false);
-        return availableUpdates.Any();
+        return availableUpdates.Any(updateAvailable => updateAvailable);
     }
 
     private async Task<bool> NewerManifestPackageExists(ManifestId manifest)

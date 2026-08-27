@@ -114,6 +114,20 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
         }
 
         [TestMethod]
+        public async Task GivenAdvertisingManifestUpdateItDoesNotUpdateWhenNoNewerManifestPackagesExist()
+        {
+            (var manifestUpdater, var nugetDownloader, var sentinelPath, var configCommand) = GetTestUpdater(
+                packageVersions: [new NuGetVersion("1.0.0")]);
+
+            configCommand.Execute().Should().Be(0);
+            await manifestUpdater.BackgroundUpdateAdvertisingManifestsWhenRequiredAsync();
+
+            nugetDownloader.GetLatestPackageVersionCallParams.Should().HaveCount(_installedManifests.Length);
+            nugetDownloader.DownloadCallParams.Should().BeEmpty();
+            File.Exists(sentinelPath).Should().BeFalse();
+        }
+
+        [TestMethod]
         public async Task GivenAdvertisingManifestUpdateItHonorsDisablingEnvVar()
         {
             Func<string, string> getEnvironmentVariable = (envVar) => envVar.Equals(EnvironmentVariableNames.WORKLOAD_UPDATE_NOTIFY_DISABLE) ? "true" : string.Empty;
@@ -717,20 +731,36 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             return expectedDownloadedPackages;
         }
 
-        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater([CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null, PackageSourceLocation packageSourceLocation = null)
+        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, WorkloadConfigCommand) GetTestUpdater(
+            [CallerMemberName] string testName = "",
+            Func<string, string> getEnvironmentVariable = null,
+            PackageSourceLocation packageSourceLocation = null,
+            IEnumerable<NuGetVersion> packageVersions = null)
         {
             var testDir = TestAssetsManager.CreateTestDirectory(testName: testName).Path;
 
             var featureBand = "6.0.100";
 
-            (var manifestUpdater, var packageDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(testDir, featureBand, testName, getEnvironmentVariable, packageSourceLocation);
+            (var manifestUpdater, var packageDownloader, var sentinelPath, var workloadResolver) = GetTestUpdater(
+                testDir,
+                featureBand,
+                testName,
+                getEnvironmentVariable,
+                packageSourceLocation,
+                packageVersions);
             var configCommand = new WorkloadConfigCommand(
                 Parser.Parse(["dotnet", "workload", "config", "--update-mode", "manifests"]),
                 workloadResolverFactory: new MockWorkloadResolverFactory(testDir, featureBand, workloadResolver));
             return (manifestUpdater, packageDownloader, sentinelPath, configCommand);
         }
 
-        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, IWorkloadResolver) GetTestUpdater(string testDir, string featureBand, [CallerMemberName] string testName = "", Func<string, string> getEnvironmentVariable = null, PackageSourceLocation packageSourceLocation = null)
+        private (WorkloadManifestUpdater, MockNuGetPackageDownloader, string, IWorkloadResolver) GetTestUpdater(
+            string testDir,
+            string featureBand,
+            [CallerMemberName] string testName = "",
+            Func<string, string> getEnvironmentVariable = null,
+            PackageSourceLocation packageSourceLocation = null,
+            IEnumerable<NuGetVersion> packageVersions = null)
         {
             var dotnetRoot = Path.Combine(testDir, "dotnet");
 
@@ -753,7 +783,7 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
                 SdkFeatureBand = new SdkFeatureBand(featureBand),
             };
             var workloadResolver = WorkloadResolver.CreateForTests(workloadManifestProvider, dotnetRoot);
-            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot);
+            var nugetDownloader = new MockNuGetPackageDownloader(dotnetRoot, packageVersions: packageVersions);
             var installationRepo = new MockInstallationRecordRepository();
             var manifestUpdater = new WorkloadManifestUpdater(_reporter, workloadResolver, nugetDownloader, testDir, installationRepo, new MockPackWorkloadInstaller(dotnetRoot), packageSourceLocation: packageSourceLocation, getEnvironmentVariable: getEnvironmentVariable);
 
