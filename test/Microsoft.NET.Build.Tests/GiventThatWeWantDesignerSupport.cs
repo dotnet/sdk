@@ -4,6 +4,7 @@
 #nullable disable
 
 using Microsoft.Extensions.DependencyModel;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
@@ -15,27 +16,35 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [DataRow("net46", "false")]
+        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup_net46(string targetFramework, string isSelfContained)
+        {
+            RunDesignerSupportTest(targetFramework, isSelfContained);
+        }
+
+        [TestMethod]
         [DataRow("netcoreapp3.0", "true")]
         [DataRow("netcoreapp3.0", "false")]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup_netcore(string targetFramework, string isSelfContained)
+        {
+            //  https://github.com/dotnet/sdk/issues/49665
+            //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
+            RunDesignerSupportTest(targetFramework, isSelfContained);
+        }
+
+        [TestMethod]
         [DataRow("net6.0-windows", "true")]
         [DataRow("net6.0-windows", "false")]
         [DataRow("net7.0-windows10.0.17763", "true")]
         [DataRow("net7.0-windows10.0.17763", "false")]
-        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup(string targetFramework, string isSelfContained)
+        [OSCondition(OperatingSystems.Windows)]
+        public void It_provides_runtime_configuration_and_shadow_copy_files_via_outputgroup_windows(string targetFramework, string isSelfContained)
         {
-            if (targetFramework == "netcoreapp3.0" && RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                //  https://github.com/dotnet/sdk/issues/49665
-                //  error NETSDK1084: There is no application host available for the specified RuntimeIdentifier 'osx-arm64'.
-                return;
-            }
+            RunDesignerSupportTest(targetFramework, isSelfContained);
+        }
 
-            if ((targetFramework == "net6.0-windows" || targetFramework == "net7.0-windows10.0.17763")
-                && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // net6.0-windows is windows only scenario
-                return;
-            }
+        private void RunDesignerSupportTest(string targetFramework, string isSelfContained)
+        {
 
             var projectRef = new TestProject
             {
@@ -141,14 +150,9 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_does_not_include_framework_assets_when_multitargeting_framework_and_core()
         {
-            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                // net6.0-windows is windows only scenario
-                return;
-            }
-
             var projectRef = new TestProject
             {
                 Name = "ReferencedProject",
