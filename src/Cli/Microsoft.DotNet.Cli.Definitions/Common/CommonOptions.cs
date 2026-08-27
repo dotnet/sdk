@@ -267,25 +267,12 @@ internal static class CommonOptions
         => CreateInteractiveOption(acceptArgument: true)
            .ForwardAsSingle(b => $"--property:NuGetInteractive={(b ? "true" : "false")}");
 
-    public static Option<string> CreateConfigFileOption(string description, string helpName)
-    {
-        var option = new Option<string>("--configfile")
+    public static Option<FileInfo> CreateConfigFileOption(string description, string helpName)
+        => new Option<FileInfo>("--configfile")
         {
             Description = description,
             HelpName = helpName
-        };
-
-        option.Validators.Add(result =>
-        {
-            string? path = result.GetValueOrDefault<string>();
-            if (!string.IsNullOrWhiteSpace(path) && !File.Exists(path))
-            {
-                result.AddError(string.Format(CommandDefinitionStrings.NuGetConfigurationFileDoesNotExist, path));
-            }
-        });
-
-        return option;
-    }
+        }.AcceptExistingOnly();
 
     public static Option<bool> CreateDisableBuildServersOption() =>
         new Option<bool>("--disable-build-servers")

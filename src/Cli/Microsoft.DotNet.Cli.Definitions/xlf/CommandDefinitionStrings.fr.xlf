@@ -1287,11 +1287,6 @@ Si la commande est spécifiée sans l’argument, elle répertorie tous les pack
         <target state="translated">Ne restaurez pas le projet avant la génération.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="new">NuGet configuration file '{0}' does not exist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OSArgumentName">
         <source>OS</source>
         <target state="translated">Système d'exploitation</target>

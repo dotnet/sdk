@@ -33,7 +33,7 @@ internal sealed class ToolSearchCommandDefinition : Command
 
     public readonly Option<bool> PrereleaseOption = ToolAppliedOption.CreatePrereleaseOption();
 
-    public readonly Option<string> ConfigOption = ToolAppliedOption.CreateConfigOption();
+    public readonly Option<FileInfo> ConfigOption = ToolAppliedOption.CreateConfigOption();
 
     public readonly Option<string[]> SourceOption = ToolAppliedOption.CreateSourceOption(CommandDefinitionStrings.ToolSearchSourceOptionDescription);
 

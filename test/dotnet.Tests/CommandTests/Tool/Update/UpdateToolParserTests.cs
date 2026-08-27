@@ -59,7 +59,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var definition = Assert.IsExactInstanceOfType<ToolUpdateCommandDefinition>(result.CommandResult.Command);
             result.Errors.Should().BeEmpty();
-            result.GetValue(definition.ConfigOption).Should().Be(configFile);
+            result.GetRequiredValue(definition.ConfigOption).FullName.Should().Be(configFile);
             result.GetValue(definition.FrameworkOption).Should().Be(ToolsetInfo.CurrentTargetFramework);
         }
 

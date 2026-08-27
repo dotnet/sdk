@@ -1287,11 +1287,6 @@ Si el comando se especifica sin el argumento, muestra todos los paquetes de plan
         <target state="translated">No restaure el proyecto antes de la compilación.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="new">NuGet configuration file '{0}' does not exist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OSArgumentName">
         <source>OS</source>
         <target state="translated">SO</target>

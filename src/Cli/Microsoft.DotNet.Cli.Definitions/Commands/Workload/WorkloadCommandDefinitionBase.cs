@@ -28,7 +28,7 @@ internal abstract class WorkloadCommandDefinitionBase(string name, string descri
         Description = CommandDefinitionStrings.WorkloadIdArgumentDescription
     };
 
-    public static Option<string> CreateConfigOption() => CommonOptions.CreateConfigFileOption(
+    public static Option<FileInfo> CreateConfigOption() => CommonOptions.CreateConfigFileOption(
         CommandDefinitionStrings.WorkloadInstallConfigFileOptionDescription,
         CommandDefinitionStrings.WorkloadInstallConfigFileOptionName);
 

@@ -1287,11 +1287,6 @@ Se il comando è specificato senza l'argomento, vengono elencati tutti i pacchet
         <target state="translated">Non ripristina il progetto prima della compilazione.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="new">NuGet configuration file '{0}' does not exist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OSArgumentName">
         <source>OS</source>
         <target state="translated">Sistema operativo</target>

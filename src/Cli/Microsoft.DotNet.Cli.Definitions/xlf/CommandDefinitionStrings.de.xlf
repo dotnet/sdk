@@ -1287,11 +1287,6 @@ Wenn der Befehl ohne Argument angegeben wird, werden alle installierten Vorlagen
         <target state="translated">Hiermit wird das Projekt nicht vor der Erstellung wiederhergestellt.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="new">NuGet configuration file '{0}' does not exist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="OSArgumentName">
         <source>OS</source>
         <target state="translated">Betriebssystem</target>
