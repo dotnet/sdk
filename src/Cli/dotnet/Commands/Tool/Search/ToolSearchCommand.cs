@@ -4,20 +4,26 @@
 #nullable disable
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.NugetSearch;
 using Microsoft.DotNet.Cli.Utils;
 using NuGet.Configuration;
+using NuGet.Credentials;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Search;
 
 internal sealed class ToolSearchCommand(
     ParseResult result,
     INugetToolSearchApiRequest nugetToolSearchApiRequest = null,
-    string currentWorkingDirectory = null)
+    string currentWorkingDirectory = null,
+    Action<bool> setupCredentialService = null)
     : CommandBase<ToolSearchCommandDefinition>(result)
 {
+    private const int MaxConcurrentSourceRequests = 4;
     private readonly INugetToolSearchApiRequest _nugetToolSearchApiRequest = nugetToolSearchApiRequest ?? new NugetToolSearchApiRequest();
     private readonly string _currentWorkingDirectory = currentWorkingDirectory;
+    private readonly Action<bool> _setupCredentialService = setupCredentialService
+        ?? (interactive => DefaultCredentialServiceUtility.SetupDefaultCredentialService(new NuGetConsoleLogger(), !interactive));
     private readonly SearchResultPrinter _searchResultPrinter = new(Reporter.Output);
 
     public override int Execute()
@@ -36,23 +42,29 @@ internal sealed class ToolSearchCommand(
             _searchResultPrinter.PrintNoSourcesConfigured();
             return 1;
         }
+
+        _setupCredentialService(_parseResult.GetValue(Definition.InteractiveOption));
+
         NugetSearchApiParameter nugetSearchApiParameter = GetNugetSearchApiParameter();
+        using var concurrencyLimiter = new SemaphoreSlim(MaxConcurrentSourceRequests);
+        SourceSearchResult[] results = Task.WhenAll(
+            sourceConfiguration.PackageSources.Select(
+                source => SearchSourceAsync(source, nugetSearchApiParameter, concurrencyLimiter)))
+            .GetAwaiter()
+            .GetResult();
+
         int successCount = 0;
-
-        foreach (PackageSource source in sourceConfiguration.PackageSources)
+        foreach (SourceSearchResult result in results)
         {
-            try
+            if (result.ErrorMessage is null)
             {
-                IReadOnlyCollection<SearchResultPackage> searchResultPackages =
-                    _nugetToolSearchApiRequest.GetResult(nugetSearchApiParameter, source).GetAwaiter().GetResult();
-
-                _searchResultPrinter.PrintSourceHeading(source);
-                _searchResultPrinter.Print(isDetailed, searchResultPackages);
+                _searchResultPrinter.PrintSourceHeading(result.Source);
+                _searchResultPrinter.Print(isDetailed, result.Packages);
                 successCount++;
             }
-            catch (NugetSearchApiRequestException e)
+            else
             {
-                _searchResultPrinter.PrintSourceFailure(source, e.Message);
+                _searchResultPrinter.PrintSourceFailure(result.Source, result.ErrorMessage);
             }
         }
 
@@ -65,6 +77,28 @@ internal sealed class ToolSearchCommand(
             skip: GetParsedResultAsInt(Definition.SkipOption),
             take: GetParsedResultAsInt(Definition.TakeOption),
             prerelease: _parseResult.GetValue(Definition.PrereleaseOption));
+
+    private async Task<SourceSearchResult> SearchSourceAsync(
+        PackageSource source,
+        NugetSearchApiParameter searchParameters,
+        SemaphoreSlim concurrencyLimiter)
+    {
+        await concurrencyLimiter.WaitAsync().ConfigureAwait(false);
+        try
+        {
+            IReadOnlyCollection<SearchResultPackage> packages =
+                await _nugetToolSearchApiRequest.GetResult(searchParameters, source).ConfigureAwait(false);
+            return new SourceSearchResult(source, packages, ErrorMessage: null);
+        }
+        catch (NugetSearchApiRequestException e)
+        {
+            return new SourceSearchResult(source, Packages: null, e.Message);
+        }
+        finally
+        {
+            concurrencyLimiter.Release();
+        }
+    }
 
     private int? GetParsedResultAsInt(Option<string> alias)
     {
@@ -86,4 +120,9 @@ internal sealed class ToolSearchCommand(
                     alias));
         }
     }
+
+    private sealed record SourceSearchResult(
+        PackageSource Source,
+        IReadOnlyCollection<SearchResultPackage> Packages,
+        string ErrorMessage);
 }
