@@ -394,6 +394,15 @@ namespace Microsoft.TemplateEngine.Cli {
                 return ResourceManager.GetString("CliTemplateSearchCoordinator_Error_AllFeedsFailed", resourceCulture);
             }
         }
+
+        /// <summary>
+        ///   Looks up a localized string similar to The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file&apos;s source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping.
+        /// </summary>
+        internal static string CannotUseAddSourceWithSourceMapping {
+            get {
+                return ResourceManager.GetString("CannotUseAddSourceWithSourceMapping", resourceCulture);
+            }
+        }
         
         /// <summary>
         ///   Looks up a localized string similar to Search failed: not enough information specified for search..
