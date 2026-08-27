@@ -27,7 +27,7 @@ public sealed class NewSearchCommandDefinition : Command
     // Source-selection options: modern `dotnet new search` only. The legacy `--search`
     // syntax never supported feed selection, so these are not exposed on that branch.
     public readonly Option<string[]> SourceOption = SharedOptionsFactory.CreateSourceOption();
-    public readonly Option<string> ConfigFileOption = SharedOptionsFactory.CreateConfigFileOption();
+    public readonly Option<FileInfo> ConfigFileOption = SharedOptionsFactory.CreateConfigFileOption();
     // Disable multiple arguments per token so a single `--add-source` occurrence cannot greedily
     // consume the positional template-name argument (e.g. `--add-source <url> <name>`); this mirrors
     // the same fix already applied to the legacy option in LegacyOptions.CreateAddSourceOption().

@@ -57,7 +57,7 @@ internal static class ToolAppliedOption
         Arity = ArgumentArity.Zero
     };
 
-    public static Option<string> CreateConfigOption() => CommonOptions.CreateConfigFileOption(
+    public static Option<FileInfo> CreateConfigOption() => CommonOptions.CreateConfigFileOption(
         CommandDefinitionStrings.ToolInstallConfigFileOptionDescription,
         CommandDefinitionStrings.ToolInstallConfigFileOptionName);
 
