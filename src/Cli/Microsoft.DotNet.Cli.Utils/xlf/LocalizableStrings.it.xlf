@@ -17,6 +17,11 @@
         <target state="translated">Non è stato possibile eseguire perché il comando o il file specificato non è stato trovato.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' does not exist.</source>
+        <target state="new">NuGet configuration file '{0}' does not exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
         <target state="translated">Il multiplexer dotnet non è stato trovato</target>
