@@ -140,16 +140,18 @@ internal class ToolPackageRestorer
             // Use wildcard version range to get the latest version
             var latestVersionRange = VersionRange.Parse("*");
             
-            var (latestVersion, _) = _toolPackageDownloader.GetNuGetVersion(
-                new PackageLocation(
-                    nugetConfig: configFile,
-                    additionalFeeds: _additionalSources,
-                    sourceFeedOverrides: _overrideSources,
-                    rootConfigDirectory: package.FirstEffectDirectory),
-                package.PackageId,
-                _verbosity,
-                latestVersionRange,
-                _restoreActionConfig);
+            var (latestVersion, _) = _toolPackageDownloader.GetNuGetVersionAsync(
+                    new PackageLocation(
+                        nugetConfig: configFile,
+                        additionalFeeds: _additionalSources,
+                        sourceFeedOverrides: _overrideSources,
+                        rootConfigDirectory: package.FirstEffectDirectory),
+                    package.PackageId,
+                    _verbosity,
+                    latestVersionRange,
+                    _restoreActionConfig,
+                    CancellationToken.None)
+                .GetAwaiter().GetResult();
 
             // Compare versions - only warn if there's a newer stable version or if the manifest uses prerelease
             if (latestVersion != null && latestVersion > package.Version)
@@ -185,4 +187,3 @@ internal class ToolPackageRestorer
             includeMaxVersion: true);
     }
 }
-

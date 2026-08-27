@@ -151,12 +151,14 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
 
         if (toolPackage is null && bestVersion is null)
         {
-            (bestVersion, packageSource) = _toolPackageDownloader.GetNuGetVersion(
-                packageLocation,
-                packageId,
-                _verbosity,
-                effectiveVersionRange,
-                _restoreActionConfig);
+            (bestVersion, packageSource) = _toolPackageDownloader.GetNuGetVersionAsync(
+                    packageLocation,
+                    packageId,
+                    _verbosity,
+                    effectiveVersionRange,
+                    _restoreActionConfig,
+                    CancellationToken.None)
+                .GetAwaiter().GetResult();
         }
 
         toolLocationActivity?.SetTag("tool.exec.kind", "one-shot");

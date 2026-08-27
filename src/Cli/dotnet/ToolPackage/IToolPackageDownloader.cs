@@ -22,21 +22,13 @@ internal interface IToolPackageDownloader
         RestoreActionConfig? restoreActionConfig = null
     );
 
-    (NuGetVersion version, PackageSource source) GetNuGetVersion(
-        PackageLocation packageLocation,
-        PackageId packageId,
-        VerbosityOptions verbosity,
-        VersionRange? versionRange = null,
-        RestoreActionConfig? restoreActionConfig = null
-    );
-
     Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
         PackageLocation packageLocation,
         PackageId packageId,
         VerbosityOptions verbosity,
-        VersionRange versionRange,
-        RestoreActionConfig restoreActionConfig,
-        CancellationToken cancellationToken);
+        VersionRange? versionRange = null,
+        RestoreActionConfig? restoreActionConfig = null,
+        CancellationToken cancellationToken = default);
 
     bool TryGetBestDownloadedTool(
         PackageId packageId,

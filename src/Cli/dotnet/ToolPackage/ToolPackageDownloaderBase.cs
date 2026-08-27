@@ -428,42 +428,16 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         }
     }
 
-    public virtual (NuGetVersion version, PackageSource source) GetNuGetVersion(
-        PackageLocation packageLocation,
-        PackageId packageId,
-        VerbosityOptions verbosity,
-        VersionRange? versionRange = null,
-        RestoreActionConfig? restoreActionConfig = null)
-    {
-        if (versionRange == null)
-        {
-            var versionString = "*";
-            versionRange = VersionRange.Parse(versionString);
-        }
-
-        var nugetPackageDownloader = CreateNuGetPackageDownloader(
-            false,
-            verbosity,
-            restoreActionConfig);
-
-        var packageSourceLocation = new PackageSourceLocation(
-            nugetConfig: packageLocation.NugetConfig,
-            rootConfigDirectory: packageLocation.RootConfigDirectory,
-            sourceFeedOverrides: packageLocation.SourceFeedOverrides,
-            additionalSourceFeeds: packageLocation.AdditionalFeeds,
-            basePath: _currentWorkingDirectory);
-
-        return nugetPackageDownloader.GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation).GetAwaiter().GetResult();
-    }
-
     public async Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
         PackageLocation packageLocation,
         PackageId packageId,
         VerbosityOptions verbosity,
-        VersionRange versionRange,
-        RestoreActionConfig restoreActionConfig,
-        CancellationToken cancellationToken)
+        VersionRange? versionRange = null,
+        RestoreActionConfig? restoreActionConfig = null,
+        CancellationToken cancellationToken = default)
     {
+        versionRange ??= VersionRange.Parse("*");
+
         var nugetPackageDownloader = CreateNuGetPackageDownloader(
             verifySignatures: false,
             verbosity,

@@ -270,13 +270,14 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
 
     private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange? versionRange, IToolPackageDownloader toolPackageDownloader)
     {
-        return toolPackageDownloader.GetNuGetVersion(
-            packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
-            packageId: packageId,
-            versionRange: versionRange,
-            verbosity: _verbosity,
-            restoreActionConfig: restoreActionConfig
-        ).version;
+        return toolPackageDownloader.GetNuGetVersionAsync(
+                packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
+                packageId: packageId,
+                versionRange: versionRange,
+                verbosity: _verbosity,
+                restoreActionConfig: restoreActionConfig,
+                cancellationToken: CancellationToken.None)
+            .GetAwaiter().GetResult().version;
     }
 
     private static bool ToolVersionAlreadyInstalled(IToolPackage? oldPackageNullable, NuGetVersion nuGetVersion)
