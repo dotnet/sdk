@@ -17,6 +17,11 @@
         <target state="translated">지정한 명령 또는 파일을 찾을 수 없어 실행하지 못했습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' does not exist.</source>
+        <target state="new">NuGet configuration file '{0}' does not exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
         <target state="translated">dotnet multiplexer를 찾을 수 없음</target>
