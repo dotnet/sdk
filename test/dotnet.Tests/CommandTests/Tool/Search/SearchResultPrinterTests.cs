@@ -39,7 +39,7 @@ namespace dotnet.Tests.ToolSearchTests
                 null,
                 null,
                 new List<string>(),
-                new List<string> { "author1", "author2" },
+                new List<string>(),
                 1244,
                 true,
                 new List<SearchResultPackageVersion> { new SearchResultPackageVersion("1.0.0", 10), new SearchResultPackageVersion("0.9.0", 1234) });
@@ -93,6 +93,7 @@ namespace dotnet.Tests.ToolSearchTests
                 _reporter.Lines.Should().Contain(l => l.Contains(expectedInformationToBePresent),
                     $"Expect \"{expectedInformationToBePresent}\" to be present");
 
+            _reporter.Lines.Should().ContainSingle(l => l.Contains($"{CliCommandStrings.Authors}:"));
             _reporter.Lines.Should().ContainSingle(l => l.Contains($"{CliCommandStrings.Tags}:"));
         }
 
