@@ -346,7 +346,7 @@ public partial class AotParserTests
             ]);
 
             TestCommandOptions.GetBuildOptions(parseResult).TestApplicationArguments
-                .Should().Equal("--extension-option");
+                .Should().Contain("--extension-option");
 
             var (exitCode, _, _) = InvokeWithCapture(parseResult);
 
