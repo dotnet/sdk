@@ -48,7 +48,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             var packageId = "does.not.exist";
             var command = CreateUninstallCommand($"-g {packageId}");
 
-            Action a = () => command.Execute();
+            Action a = () => command.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>()
                 .And
@@ -84,7 +84,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             _reporter.Lines.Clear();
 
-            CreateUninstallCommand($"-g {PackageId}").Execute().Should().Be(0);
+            CreateUninstallCommand($"-g {PackageId}").Execute(TestContext.CancellationToken).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -191,7 +191,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                     result,
                     toolUninstallGlobalOrToolPathCommand: toolUninstallGlobalOrToolPathCommand);
 
-            uninstallCommand.Execute().Should().Be(0);
+            uninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter
                 .Lines
@@ -234,7 +234,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             Action a = () => CreateUninstallCommand(
                 options: $"-g {PackageId}",
                 uninstallCallback: () => throw new IOException("simulated error"))
-                .Execute();
+                .Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>()
                 .And
@@ -256,7 +256,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var uninstallCommand = CreateUninstallCommand($"--tool-path {toolPath} {PackageId}");
 
-            Action a = () => uninstallCommand.Execute();
+            Action a = () => uninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>()
                 .And

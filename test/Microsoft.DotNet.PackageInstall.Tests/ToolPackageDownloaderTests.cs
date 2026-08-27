@@ -64,7 +64,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -91,7 +92,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     versionRange: VersionRange.Parse(TestPackageVersion),
                     targetFramework: _testTargetframework,
                     isGlobalTool: true,
-                    verifySignatures: false);
+                    verifySignatures: false,
+                    cancellationToken: TestContext.CancellationToken);
 
                 transactionScope.Complete();
             }
@@ -116,7 +118,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -159,7 +162,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -178,7 +182,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var package = downloader.GetNuGetVersion(
                 new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
-                verbosity: TestVerbosity).version;
+                verbosity: TestVerbosity,
+                cancellationToken: TestContext.CancellationToken).version;
 
             package.OriginalVersion.Should().Be(TestPackageVersion);
         }
@@ -204,7 +209,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
-                versionRange: VersionRange.Parse(requestedVersion)).version;
+                versionRange: VersionRange.Parse(requestedVersion),
+                cancellationToken: TestContext.CancellationToken).version;
 
             package.OriginalVersion.Should().Be(expectedVersion);
         }
@@ -224,7 +230,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -245,7 +252,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -269,7 +277,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -303,7 +312,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -330,7 +340,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -356,7 +367,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -388,7 +400,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
                         isGlobalTool: true,
-                        verifySignatures: false);
+                        verifySignatures: false,
+                        cancellationToken: TestContext.CancellationToken);
 
                     FailedStepAfterSuccessRestore();
                     t.Complete();
@@ -423,7 +436,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
                         isGlobalTool: true,
-                        verifySignatures: false);
+                        verifySignatures: false,
+                        cancellationToken: TestContext.CancellationToken);
 
                     first.Should().NotThrow();
 
@@ -433,7 +447,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
                         isGlobalTool: true,
-                        verifySignatures: false);
+                        verifySignatures: false,
+                        cancellationToken: TestContext.CancellationToken);
 
                     t.Complete();
                 }
@@ -481,7 +496,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
-                        verifySignatures: false);
+                        verifySignatures: false,
+                        cancellationToken: TestContext.CancellationToken);
 
                     fileSystem.Directory
                         .Exists(localToolDownloadDir)
@@ -525,6 +541,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var allowRollback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             int downloadCount = 0;
             mockDownloader.BeforeDownloadCallback = _ => Interlocked.Increment(ref downloadCount);
+            CancellationToken cancellationToken = TestContext.CancellationToken;
 
             Task firstInstall = Task.Run(async () =>
             {
@@ -533,18 +550,19 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TimeSpan.Zero,
                     TransactionScopeAsyncFlowOption.Enabled);
 
-                await InstallLocalPackageAsync(downloader, TestPackageId);
+                await InstallLocalPackageAsync(downloader, TestPackageId, cancellationToken);
                 firstInstallCompleted.SetResult();
-                await allowRollback.Task;
-            });
+                await allowRollback.Task.WaitAsync(cancellationToken);
+            }, cancellationToken);
 
-            await firstInstallCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await firstInstallCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
             Task<IToolPackage> secondInstall = Task.Run(
-                () => InstallLocalPackageAsync(downloader, TestPackageId));
+                () => InstallLocalPackageAsync(downloader, TestPackageId, cancellationToken),
+                cancellationToken);
 
             try
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
                 secondInstall.IsCompleted.Should().BeFalse();
             }
             finally
@@ -567,6 +585,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 includeLocalFeedInNugetConfig: false);
             var firstInstallCompleted = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var allowRollback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            CancellationToken cancellationToken = TestContext.CancellationToken;
 
             Task firstInstall = Task.Run(async () =>
             {
@@ -575,21 +594,22 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     TimeSpan.Zero,
                     TransactionScopeAsyncFlowOption.Enabled);
 
-                await InstallLocalPackageAsync(downloader, TestPackageId);
+                await InstallLocalPackageAsync(downloader, TestPackageId, cancellationToken);
                 firstInstallCompleted.SetResult();
-                await allowRollback.Task;
-            });
+                await allowRollback.Task.WaitAsync(cancellationToken);
+            }, cancellationToken);
 
-            await firstInstallCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await firstInstallCompleted.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
             Task<IToolPackage> readPackage = downloader.TryGetDownloadedToolAsync(
                 TestPackageId,
                 NuGetVersion.Parse(TestPackageVersion),
                 _testTargetframework,
-                TestVerbosity);
+                TestVerbosity,
+                TestContext.CancellationToken);
 
             try
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
                 readPackage.IsCompleted.Should().BeFalse();
             }
             finally
@@ -623,7 +643,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
-                        verifySignatures: false);
+                        verifySignatures: false,
+                        cancellationToken: TestContext.CancellationToken);
 
 
                     downloader.InstallPackage(new PackageLocation(additionalFeeds: new[] { source }),
@@ -631,7 +652,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         verbosity: TestVerbosity,
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
-                        verifySignatures: false);
+                        verifySignatures: false,
+                        cancellationToken: TestContext.CancellationToken);
 
                     t.Complete();
                 }
@@ -660,7 +682,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -670,7 +693,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             reporter.Lines.Should().BeEmpty();
 
@@ -714,7 +738,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -741,7 +766,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -777,7 +803,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -806,7 +833,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 verbosity: TestVerbosity,
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -841,7 +869,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse(TestPackageVersion),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, store);
 
@@ -869,7 +898,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 versionRange: VersionRange.Parse("1.0.0-rc*"),
                 targetFramework: _testTargetframework,
                 isGlobalTool: true,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: TestContext.CancellationToken);
 
             AssertPackageInstall(reporter, fileSystem, package, store, storeQuery);
 
@@ -907,7 +937,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     verbosity: TestVerbosity,
                     versionRange: VersionRange.Parse(packageVersion),
                     targetFramework: _testTargetframework,
-                    isGlobalTool: true);
+                    isGlobalTool: true,
+                    cancellationToken: TestContext.CancellationToken);
 
                 action.Should().NotThrow<ToolConfigurationException>();
 
@@ -1142,6 +1173,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             // Run multiple installations concurrently using Task.Run
             // This tests that the mutex prevents file system conflicts during package download/extraction
             var tasks = new List<Task<IToolPackage>>();
+            CancellationToken cancellationToken = TestContext.CancellationToken;
             for (int i = 0; i < 5; i++)
             {
                 tasks.Add(Task.Run(() =>
@@ -1153,7 +1185,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                         versionRange: VersionRange.Parse(TestPackageVersion),
                         targetFramework: _testTargetframework,
                         isGlobalTool: true,
-                        verifySignatures: false);
+                        verifySignatures: false,
+                        cancellationToken: cancellationToken);
                 }));
             }
 
@@ -1189,8 +1222,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var mockDownloader = (ToolPackageDownloaderMock2)downloader;
 
             await Task.WhenAll(
-                InstallLocalPackageAsync(downloader, new PackageId("test.tool.a")),
-                InstallLocalPackageAsync(downloader, new PackageId("test.tool.b")));
+                InstallLocalPackageAsync(downloader, new PackageId("test.tool.a"), TestContext.CancellationToken),
+                InstallLocalPackageAsync(downloader, new PackageId("test.tool.b"), TestContext.CancellationToken));
 
             mockDownloader.AssetFilePaths.Should().HaveCount(2);
             mockDownloader.AssetFilePaths
@@ -1218,19 +1251,20 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             using ManualResetEventSlim secondRidDownloadStarted = new();
             using ManualResetEventSlim releaseRidDownload = new();
             int ridDownloadCount = 0;
+            CancellationToken cancellationToken = TestContext.CancellationToken;
             mockDownloader.BeforeDownloadCallback = packageId =>
             {
                 if (packageId.ToString() != ridPackageId.ToString())
                 {
                     parentDownloadsReady.Signal();
-                    parentDownloadsReady.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
+                    parentDownloadsReady.Wait(TimeSpan.FromSeconds(10), cancellationToken).Should().BeTrue();
                     return;
                 }
 
                 if (Interlocked.Increment(ref ridDownloadCount) == 1)
                 {
                     firstRidDownloadStarted.Set();
-                    releaseRidDownload.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
+                    releaseRidDownload.Wait(TimeSpan.FromSeconds(10), cancellationToken).Should().BeTrue();
                 }
                 else
                 {
@@ -1239,14 +1273,16 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             };
 
             Task<IToolPackage> firstInstall = Task.Run(
-                () => InstallLocalPackageAsync(downloader, new PackageId("test.tool.a")));
+                () => InstallLocalPackageAsync(downloader, new PackageId("test.tool.a"), cancellationToken),
+                cancellationToken);
             Task<IToolPackage> secondInstall = Task.Run(
-                () => InstallLocalPackageAsync(downloader, new PackageId("test.tool.b")));
+                () => InstallLocalPackageAsync(downloader, new PackageId("test.tool.b"), cancellationToken),
+                cancellationToken);
 
             try
             {
-                firstRidDownloadStarted.Wait(TimeSpan.FromSeconds(10)).Should().BeTrue();
-                secondRidDownloadStarted.Wait(TimeSpan.FromMilliseconds(250)).Should().BeFalse();
+                firstRidDownloadStarted.Wait(TimeSpan.FromSeconds(10), cancellationToken).Should().BeTrue();
+                secondRidDownloadStarted.Wait(TimeSpan.FromMilliseconds(250), cancellationToken).Should().BeFalse();
             }
             finally
             {
@@ -1332,6 +1368,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             var allowRollback = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
             var secondLockAcquired = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
+            CancellationToken cancellationToken = TestContext.CancellationToken;
             Task firstLock = Task.Run(async () =>
             {
                 using var transaction = new TransactionScope(
@@ -1343,32 +1380,33 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                     root,
                     TestPackageId,
                     TestPackageVersion,
-                    CancellationToken.None,
+                    cancellationToken,
                     () =>
                     {
                         firstLockAcquired.SetResult();
                         return Task.FromResult(true);
                     });
 
-                await allowRollback.Task;
-            });
+                await allowRollback.Task.WaitAsync(cancellationToken);
+            }, cancellationToken);
 
-            await firstLockAcquired.Task.WaitAsync(TimeSpan.FromSeconds(10));
+            await firstLockAcquired.Task.WaitAsync(TimeSpan.FromSeconds(10), cancellationToken);
             Task<bool> secondLock = Task.Run(
                 () => ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
                     root,
                     TestPackageId,
                     TestPackageVersion,
-                    CancellationToken.None,
+                    cancellationToken,
                     () =>
                     {
                         secondLockAcquired.SetResult();
                         return Task.FromResult(true);
-                    }));
+                    }),
+                cancellationToken);
 
             try
             {
-                await Task.Delay(TimeSpan.FromMilliseconds(250));
+                await Task.Delay(TimeSpan.FromMilliseconds(250), cancellationToken);
                 secondLockAcquired.Task.IsCompleted.Should().BeFalse();
             }
             finally
@@ -1421,7 +1459,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
 
         private Task<IToolPackage> InstallLocalPackageAsync(
             IToolPackageDownloader downloader,
-            PackageId packageId)
+            PackageId packageId,
+            CancellationToken cancellationToken)
         {
             return downloader.InstallPackageAsync(
                 new PackageLocation(additionalFeeds: [GetTestLocalFeedPath()]),
@@ -1429,7 +1468,8 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 TestVerbosity,
                 VersionRange.Parse(TestPackageVersion),
                 _testTargetframework,
-                verifySignatures: false);
+                verifySignatures: false,
+                cancellationToken: cancellationToken);
         }
 
         private IToolPackage InstallGlobalPackage(

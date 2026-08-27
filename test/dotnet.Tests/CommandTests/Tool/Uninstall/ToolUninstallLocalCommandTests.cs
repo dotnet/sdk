@@ -29,6 +29,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly ToolManifestEditor _toolManifestEditor;
         private readonly ToolUninstallLocalCommand _defaultToolUninstallLocalCommand;
 
+        public TestContext TestContext { get; set; } = null!;
+
         public ToolUninstallLocalCommandTests()
         {
             _reporter = new BufferedReporter();
@@ -120,7 +122,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 parseResult,
                 toolUninstallLocalCommand: toolUninstallLocalCommand);
 
-            toolUninstallCommand.Execute().Should().Be(0);
+            toolUninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult().Should().Be(0);
 
             _fileSystem.File.ReadAllText(_manifestFilePath).Should().Be(_entryRemovedJsonContent);
         }
