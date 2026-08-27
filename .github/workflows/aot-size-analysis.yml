@@ -240,13 +240,9 @@ jobs:
           BASE_BUILD_ID: ${{ steps.builds.outputs.base_build_id }}
         run: >-
           bash ".github/workflows/aot-size-analysis/scripts/generate-report.sh"
-          --azdo-org "$AZDO_ORG"
-          --azdo-project "$AZDO_PROJECT"
           --platforms "$PLATFORMS"
-          --pr-build-id "$PR_BUILD_ID"
-          --base-build-id "$BASE_BUILD_ID"
-          --pr-head-sha "$PR_HEAD_SHA"
-          --base-branch "$BASE_BRANCH"
+          --pr-build-url "https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${PR_BUILD_ID}"
+          --baseline-build-url "https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${BASE_BUILD_ID}"
           --temp-dir "$RUNNER_TEMP"
           --output-file "$GITHUB_OUTPUT"
 

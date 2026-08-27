@@ -7,26 +7,18 @@ print_usage() {
 Usage: generate-report.sh [options]
 
 Options:
-  --azdo-org <name>        Azure DevOps organization
-  --azdo-project <name>    Azure DevOps project
-  --platforms <list>       Space-separated platforms to analyze
-  --pr-build-id <id>       Pull request build ID
-  --base-build-id <id>     Baseline build ID
-  --pr-head-sha <sha>      GitHub pull request head commit
-  --base-branch <name>     GitHub pull request base branch
-  --temp-dir <path>        Directory containing extracted artifacts
-  --output-file <path>     File that receives step outputs
-  -h, --help               Show this help
+  --platforms <list>           Space-separated platforms to analyze
+  --pr-build-url <url>         Pull request build link
+  --baseline-build-url <url>   Baseline build link
+  --temp-dir <path>            Directory containing extracted artifacts
+  --output-file <path>         File that receives step outputs
+  -h, --help                   Show this help
 
 Example:
   generate-report.sh \
-    --azdo-org dnceng-public \
-    --azdo-project public \
     --platforms "Linux_x64_AOT Windows_x64_AOT" \
-    --pr-build-id 1569498 \
-    --base-build-id 1569822 \
-    --pr-head-sha 0123456789abcdef \
-    --base-branch main \
+    --pr-build-url "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1569498" \
+    --baseline-build-url "https://dev.azure.com/dnceng-public/public/_build/results?buildId=1569822" \
     --temp-dir /tmp/aot-size-analysis \
     --output-file /tmp/generate-report.out
 EOF
@@ -56,51 +48,27 @@ end_group() {
   printf '::endgroup::\n'
 }
 
-azdo_org=""
-azdo_project=""
 platforms=""
-pr_build_id=""
-base_build_id=""
-pr_head_sha=""
-base_branch=""
+pr_build_url=""
+baseline_build_url=""
 temp_dir=""
 output_file=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
-    --azdo-org)
-      require_value "$@"
-      azdo_org="$2"
-      shift 2
-      ;;
-    --azdo-project)
-      require_value "$@"
-      azdo_project="$2"
-      shift 2
-      ;;
     --platforms)
       require_value "$@"
       platforms="$2"
       shift 2
       ;;
-    --pr-build-id)
+    --pr-build-url)
       require_value "$@"
-      pr_build_id="$2"
+      pr_build_url="$2"
       shift 2
       ;;
-    --base-build-id)
+    --baseline-build-url)
       require_value "$@"
-      base_build_id="$2"
-      shift 2
-      ;;
-    --pr-head-sha)
-      require_value "$@"
-      pr_head_sha="$2"
-      shift 2
-      ;;
-    --base-branch)
-      require_value "$@"
-      base_branch="$2"
+      baseline_build_url="$2"
       shift 2
       ;;
     --temp-dir)
@@ -125,9 +93,8 @@ while [ "$#" -gt 0 ]; do
   esac
 done
 
-if [ -z "$azdo_org" ] || [ -z "$azdo_project" ] || [ -z "$platforms" ] ||
-    [ -z "$pr_build_id" ] || [ -z "$base_build_id" ] || [ -z "$pr_head_sha" ] ||
-    [ -z "$base_branch" ] || [ -z "$temp_dir" ] || [ -z "$output_file" ]; then
+if [ -z "$platforms" ] || [ -z "$pr_build_url" ] || [ -z "$baseline_build_url" ] ||
+    [ -z "$temp_dir" ] || [ -z "$output_file" ]; then
   echo "All options except --help are required." >&2
   print_usage >&2
   exit 2
@@ -135,7 +102,6 @@ fi
 
 report_file="${temp_dir}/size-report.md"
 details_file="${temp_dir}/size-details.md"
-azdo_build_url="https://dev.azure.com/${azdo_org}/${azdo_project}/_build/results?buildId="
 
 # Pass 1: run sizoscope-cli for each platform, collect summary data
 declare -A platform_totals
@@ -147,7 +113,13 @@ for platform in $platforms; do
   pr_mstat=$(find "${temp_dir}/pr/${platform}" -name "dotnet-aot.mstat" -type f -print -quit)
   base_mstat=$(find "${temp_dir}/base/${platform}" -name "dotnet-aot.mstat" -type f -print -quit)
 
+  pr_mstat_size=$(stat --format='%s' "$pr_mstat")
+  base_mstat_size=$(stat --format='%s' "$base_mstat")
+  echo "Baseline MSTAT: ${base_mstat_size} bytes"
+  echo "PR MSTAT: ${pr_mstat_size} bytes"
+
   diff_file="${temp_dir}/${platform}-diff.md"
+  start_time=$(date +%s%N)
   if sizoscope-cli "$base_mstat" "$pr_mstat" --output "$diff_file"; then
     has_any_diff=true
 
@@ -156,6 +128,11 @@ for platform in $platforms; do
     # Expected format: "Total accounted size difference: 781.8 kB"
     total_size=$(echo "$total_line" | sed -n 's/^Total accounted size difference: *//p')
     platform_totals["$platform"]="${total_size:-unknown}"
+    elapsed_ns=$(($(date +%s%N) - start_time))
+    detail_line_count=$(tail -n +2 "$diff_file" | grep -cve '^[[:space:]]*$' || true)
+    printf 'Completed in %d.%03d seconds; total accounted size difference: %s; detail lines: %d\n' \
+      "$((elapsed_ns / 1000000000))" "$(((elapsed_ns / 1000000) % 1000))" \
+      "${total_size:-unknown}" "$detail_line_count"
 
     # Accumulate per-platform details
     {
@@ -188,7 +165,7 @@ fi
 {
   echo "## 📊 NativeAOT Size Analysis"
   echo ""
-  echo "Comparing PR build [\`${pr_head_sha:0:8}\`](${azdo_build_url}${pr_build_id}) against baseline on \`${base_branch}\` ([build](${azdo_build_url}${base_build_id}))."
+  echo "Comparing [PR build](${pr_build_url}) against [baseline build](${baseline_build_url})."
   echo ""
   echo "| Platform | Size Difference |"
   echo "|----------|-----------------|"
