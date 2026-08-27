@@ -81,7 +81,11 @@ internal class SearchResultPrinter(IReporter reporter, IReporter? errorReporter 
                 _reporter.WriteLine("----------------".Bold());
                 _reporter.WriteLine(p.Id.ToString());
                 _reporter.WriteLine($"{CliCommandStrings.LatestVersion}: ".Bold() + p.LatestVersion);
-                _reporter.WriteLine($"{CliCommandStrings.Authors}: ".Bold() + string.Join(", ", p.Authors));
+                if (p.Authors.Count != 0)
+                {
+                    _reporter.WriteLine($"{CliCommandStrings.Authors}: ".Bold() + string.Join(", ", p.Authors));
+                }
+
                 if (p.Tags.Count != 0)
                 {
                     _reporter.WriteLine($"{CliCommandStrings.Tags}: ".Bold() + string.Join(", ", p.Tags));
