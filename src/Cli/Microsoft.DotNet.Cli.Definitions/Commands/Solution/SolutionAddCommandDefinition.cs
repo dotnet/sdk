@@ -34,6 +34,7 @@ public sealed class SolutionAddCommandDefinition : Command
         Description = CommandDefinitionStrings.SolutionAddReferencedProjectsOptionDescription,
         DefaultValueFactory = (_) => true,
         Arity = ArgumentArity.Zero,
+        Hidden = true,
     };
 
     public SolutionAddCommandDefinition()
