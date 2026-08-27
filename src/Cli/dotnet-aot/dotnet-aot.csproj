@@ -19,9 +19,6 @@
     <NativeLib>Shared</NativeLib>
     <PublishAot>true</PublishAot>
     <IsAotCompatible>true</IsAotCompatible>
-    <!-- NuGet.Protocol's AOT-safe serializer is selected through a linker feature switch.
-         Keep product publishes optimized so ILC can remove the disabled Newtonsoft.Json path. -->
-    <Optimize>true</Optimize>
     <OptimizationPreference>Size</OptimizationPreference>
     <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
     <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
