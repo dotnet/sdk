@@ -3516,11 +3516,6 @@ L'outil '{1}' (version '{2}') a été installé correctement.</target>
         <target state="translated">CHEMIN</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="translated">Le fichier config NuGet '{0}' n'existe pas.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="translated">Aucun ID de package n’a été spécifié pour l’installation de l’outil.</target>

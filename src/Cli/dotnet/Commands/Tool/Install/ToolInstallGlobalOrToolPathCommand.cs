@@ -186,11 +186,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         _activity?.DisplayName = $"Install {packageId}";
         _activity?.SetTag("tool.package.id", packageId);
 
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
-        {
-            throw new GracefulException(string.Format(CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist, Path.GetFullPath(_configFilePath)));
-        }
-
         DirectoryPath? toolPath = null;
         if (!string.IsNullOrEmpty(_toolPath))
         {
@@ -325,17 +320,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                         oldPackage.Version.ToNormalizedString())
                 ],
                 isUserError: false);
-        }
-    }
-
-    private void ValidateArguments()
-    {
-        if (!string.IsNullOrEmpty(_configFilePath) && !File.Exists(_configFilePath))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
-                    Path.GetFullPath(_configFilePath)));
         }
     }
 
