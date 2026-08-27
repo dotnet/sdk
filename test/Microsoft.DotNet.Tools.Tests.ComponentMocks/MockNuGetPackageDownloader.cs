@@ -136,7 +136,20 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
 
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
             VersionRange versionRange,PackageSourceLocation packageSourceLocation = null)
+            => GetBestPackageVersionAndSourceAsync(
+                packageId,
+                versionRange,
+                packageSourceLocation,
+                CancellationToken.None);
+
+        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
+            PackageId packageId,
+            VersionRange versionRange,
+            PackageSourceLocation packageSourceLocation,
+            CancellationToken cancellationToken)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
             if (!ShouldFindPackage(packageId, packageSourceLocation))
             {
                 return Task.FromException<(NuGetVersion version, PackageSource source)>(new NuGetPackageNotFoundException(string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MOCK_FEEDS_TEXT)));

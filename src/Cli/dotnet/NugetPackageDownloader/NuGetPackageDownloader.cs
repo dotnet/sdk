@@ -812,7 +812,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             packageSourceLocation,
             CancellationToken.None).ConfigureAwait(false);
 
-    internal async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
+    public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
         PackageId packageId,
         VersionRange versionRange,
         PackageSourceLocation packageSourceLocation,

@@ -32,8 +32,8 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
     private readonly string[] _sources;
     private readonly string[] _addSource;
     private readonly VerbosityOptions _verbosity;
-    private readonly ToolPackageDownloader _toolPackageDownloader = new(
-        ToolPackageFactory.CreateConcreteToolPackageStore());
+    private readonly IToolPackageDownloader _toolPackageDownloader =
+        ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
     private readonly RestoreActionConfig _restoreActionConfig;
 
@@ -197,7 +197,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
     }
 
     internal static (NuGetVersion? version, PackageSource? source) ProbeFeedsForBestVersion(
-        ToolPackageDownloader toolPackageDownloader,
+        IToolPackageDownloader toolPackageDownloader,
         PackageLocation packageLocation,
         PackageId packageId,
         VersionRange versionRange,
