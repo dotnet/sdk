@@ -1405,7 +1405,7 @@ public class NativeLibraryClass
                 .Execute()
                 .Should().Pass();
 
-            getValuesCommand.GetValues().Should().Equal(
+            getValuesCommand.GetValues().Should().Equal([
                 "_CheckForBuildWithNoBuild",
                 "BuildOnlySettings",
                 "PrepareForBuild",
@@ -1425,7 +1425,8 @@ public class NativeLibraryClass
                 "IncrementalClean",
                 "PostBuildEvent",
                 "GenerateBuildDependencyFile",
-                "GenerateBuildRuntimeConfigurationFiles");
+                "GenerateBuildRuntimeConfigurationFiles"],
+                because: "CoreBuildDependsOn changed. Review added or removed targets for their impact on optimized publish, update the optimized target chain if necessary, then update this expected list.");
         }
 
         [TestMethod]
