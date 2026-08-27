@@ -42,7 +42,7 @@ internal sealed class ToolSearchCommand
         var isDetailed = _parseResult.GetValue(_definition.DetailOption);
 
         NuGetSourceConfiguration sourceConfiguration = NuGetSourceConfiguration.Load(
-            nugetConfig: _parseResult.GetValue(_definition.ConfigOption),
+            nugetConfig: _parseResult.GetValue(_definition.ConfigOption)?.FullName,
             sourceFeedOverrides: _parseResult.GetValue(_definition.SourceOption),
             additionalSourceFeeds: _parseResult.GetValue(_definition.AddSourceOption),
             basePath: _currentWorkingDirectory,

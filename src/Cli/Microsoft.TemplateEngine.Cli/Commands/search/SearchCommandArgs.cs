@@ -36,7 +36,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
             // These options are only registered on the modern `dotnet new search` command (see
             // NewSearchCommandDefinition); on the legacy `--search` branch the fields exist but are never
             // added to the parser, so the parsed values are always the option defaults (null/empty/false).
-            ConfigFile = parseResult.GetValue(command.Definition.ConfigFileOption);
+            ConfigFile = parseResult.GetValue(command.Definition.ConfigFileOption)?.FullName;
             Sources = parseResult.GetValue(command.Definition.SourceOption);
             AddSources = parseResult.GetValue(command.Definition.AddSourceOption);
             Interactive = parseResult.GetValue(command.Definition.InteractiveOption);

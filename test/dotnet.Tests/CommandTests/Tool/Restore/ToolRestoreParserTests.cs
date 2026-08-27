@@ -31,7 +31,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
 
             var definition = Assert.IsExactInstanceOfType<ToolRestoreCommandDefinition>(result.CommandResult.Command);
             result.Errors.Should().BeEmpty();
-            result.GetRequiredValue(definition.ConfigOption).Should().Be(configFile);
+            result.GetRequiredValue(definition.ConfigOption).FullName.Should().Be(configFile);
         }
 
         [TestMethod]

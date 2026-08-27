@@ -66,7 +66,7 @@ internal sealed class ToolInstallLocalCommand : CommandBase<ToolUpdateInstallCom
         restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(parseResult);
 
         _toolLocalPackageInstaller = new ToolInstallLocalInstaller(
-            configFilePath: parseResult.GetValue(Definition.ConfigOption),
+            configFilePath: parseResult.GetValue(Definition.ConfigOption)?.FullName,
             sources: parseResult.GetValue(Definition.AddSourceOption),
             sourceFeedOverrides: parseResult.GetValue(Definition.SourceOption),
             verbosity: parseResult.GetValue(Definition.VerbosityOption),
