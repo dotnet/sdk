@@ -2300,6 +2300,18 @@ Widening and user defined conversions are not supported with generic types.</val
   <data name="MissingShebangInFileBasedProgramCodeFixTitle" xml:space="preserve">
     <value>Add '#!' (shebang)</value>
   </data>
+  <data name="PreferQuotedFileBasedProgramDirectiveTitle" xml:space="preserve">
+    <value>Quote whitespace in file-based program directive values</value>
+  </data>
+  <data name="PreferQuotedFileBasedProgramDirectiveDescription" xml:space="preserve">
+    <value>Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</value>
+  </data>
+  <data name="PreferQuotedFileBasedProgramDirectiveMessage" xml:space="preserve">
+    <value>Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</value>
+  </data>
+  <data name="PreferQuotedFileBasedProgramDirectiveCodeFixTitle" xml:space="preserve">
+    <value>Add quotes around the directive value</value>
+  </data>
   <data name="CollapseMultiplePathOperationsTitle" xml:space="preserve">
     <value>Collapse consecutive Path.Combine or Path.Join operations</value>
   </data>
