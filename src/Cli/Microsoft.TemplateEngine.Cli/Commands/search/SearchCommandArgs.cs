@@ -68,7 +68,7 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         internal IReadOnlyList<string>? AddSources { get; }
 
         /// <summary>
-        /// Whether <c>--interactive</c> was specified, allowing interactive NuGet credential prompts.
+        /// Whether interactive NuGet credential prompts are allowed.
         /// </summary>
         internal bool Interactive { get; }
     }
