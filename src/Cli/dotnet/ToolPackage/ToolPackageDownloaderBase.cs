@@ -397,10 +397,11 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
         if (ResolveRidSpecificPackage(packageId, packageVersion, packageDownloadDir, assetFileDirectory, verbosity) is PackageIdentity ridSpecificPackage)
         {
             PackageId ridSpecificPackageId = new(ridSpecificPackage.Id);
+            NuGetVersion ridSpecificPackageVersion = ridSpecificPackage.Version ?? packageVersion;
             await DownloadPackageIfNeededAsync(
                 packageDownloadDir,
                 ridSpecificPackageId,
-                ridSpecificPackage.Version,
+                ridSpecificPackageVersion,
                 nugetPackageDownloader,
                 packageSourceLocation,
                 includeUnlisted: true,
@@ -408,7 +409,7 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
                 lockPackageDownloads,
                 cancellationToken).ConfigureAwait(false);
 
-            CreateAssetFile(ridSpecificPackageId, ridSpecificPackage.Version, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
+            CreateAssetFile(ridSpecificPackageId, ridSpecificPackageVersion, packageDownloadDir, Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
         }
     }
 
@@ -741,12 +742,13 @@ internal abstract class ToolPackageDownloaderBase : IToolPackageDownloader
             if (ResolveRidSpecificPackage(packageId, packageVersion, _localToolDownloadDir, assetFileDirectory, verbosity) is PackageIdentity ridSpecificPackage)
             {
                 PackageId ridSpecificPackageId = new(ridSpecificPackage.Id);
-                if (!IsPackageInstalled(ridSpecificPackageId, ridSpecificPackage.Version, _localToolDownloadDir.Value))
+                NuGetVersion ridSpecificPackageVersion = ridSpecificPackage.Version ?? packageVersion;
+                if (!IsPackageInstalled(ridSpecificPackageId, ridSpecificPackageVersion, _localToolDownloadDir.Value))
                 {
                     return null;
                 }
 
-                CreateAssetFile(ridSpecificPackageId, ridSpecificPackage.Version, _localToolDownloadDir,
+                CreateAssetFile(ridSpecificPackageId, ridSpecificPackageVersion, _localToolDownloadDir,
                     Path.Combine(assetFileDirectory.Value, ToolPackageInstance.RidSpecificPackageAssetsFileName), _runtimeJsonPath, verbosity, targetFramework);
             }
 

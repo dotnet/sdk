@@ -1243,7 +1243,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
             {
                 [RuntimeInformation.RuntimeIdentifier] = new PackageIdentity(
                     ridPackageId.ToString(),
-                    NuGetVersion.Parse(TestPackageVersion))
+                    version: null)
             };
 
             using CountdownEvent parentDownloadsReady = new(2);
