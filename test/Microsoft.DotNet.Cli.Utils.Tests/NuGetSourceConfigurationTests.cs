@@ -85,6 +85,20 @@ public class NuGetSourceConfigurationTests
             Path.Combine(directory, "additional-feed"));
     }
 
+    [TestMethod]
+    public void MissingExplicitConfigFileThrowsGracefulException()
+    {
+        string configPath = Path.Combine(_testDirectory, "missing.config");
+
+        Action action = () => NuGetSourceConfiguration.Load(
+            nugetConfig: configPath,
+            basePath: _testDirectory);
+
+        action.Should()
+            .ThrowExactly<GracefulException>()
+            .WithMessage($"NuGet configuration file '{configPath}' does not exist.");
+    }
+
     private string CreateNuGetConfig(string sections)
     {
         File.WriteAllText(
