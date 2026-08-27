@@ -434,7 +434,7 @@ public partial class AotParserTests
     [DataRow("tool update mypackage")]               // update is not AOT-capable
     [DataRow("tool restore")]                        // restore is not AOT-capable
     [DataRow("tool execute dotnetsay")]              // execute is not AOT-capable
-    [DataRow("tool search mysearchterm")]             // search uses NuGet.Protocol
+    [DataRow("tool search mysearchterm")]             // PackageSearchResource is not AOT-compatible
     public void InvokeManagedOnlyToolCommand_FallsBackToManaged(string commandLine)
     {
         // The global/tool-path variants and install/update/restore depend on NuGet package

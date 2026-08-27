@@ -292,8 +292,9 @@
     'dotnet tool' command (AOT-capable subset): the parser plus the real implementations of the
     local 'tool list'/'tool uninstall' and 'tool run'. The shared manifest/package and
     command-resolution infrastructure is already linked above (for AOT tool resolution); this
-    group adds only the pieces unique to running these subcommands in-process. Commands using
-    NuGet.Protocol and the global/tool-path variants fall back to the managed CLI and are not linked.
+    group adds only the pieces unique to running these subcommands in-process. Tool search falls
+    back because PackageSearchResource currently roots Newtonsoft.Json's dynamic-code closure.
+    The global/tool-path variants and install/update/restore/execute also fall back to the managed CLI.
   -->
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\ToolCommandParser.cs" Link="Commands\Tool\ToolCommandParser.cs" />
