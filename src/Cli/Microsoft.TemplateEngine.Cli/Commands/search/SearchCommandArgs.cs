@@ -33,9 +33,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
                 Language = GetFilterValue(FilterOptionDefinition.LanguageFilter);
             }
 
-            // These options are only registered on the modern `dotnet new search` command (see
-            // NewSearchCommandDefinition); on the legacy `--search` branch the fields exist but are never
-            // added to the parser, so the parsed values are always the option defaults (null/empty/false).
             ConfigFile = parseResult.GetValue(command.Definition.ConfigFileOption)?.FullName;
             Sources = parseResult.GetValue(command.Definition.SourceOption);
             AddSources = parseResult.GetValue(command.Definition.AddSourceOption);
@@ -50,26 +47,12 @@ namespace Microsoft.TemplateEngine.Cli.Commands
 
         internal string? Language { get; }
 
-        /// <summary>
-        /// The NuGet config file specified via <c>--configfile</c>, or <see langword="null"/> if not specified.
-        /// </summary>
         internal string? ConfigFile { get; }
 
-        /// <summary>
-        /// The exclusive set of NuGet feeds specified via <c>--source</c>, or <see langword="null"/>/empty if not specified.
-        /// When non-empty, these feeds replace the configured feeds entirely.
-        /// </summary>
         internal IReadOnlyList<string>? Sources { get; }
 
-        /// <summary>
-        /// Additional NuGet feeds specified via <c>--add-source</c>, or <see langword="null"/>/empty if not specified.
-        /// These feeds are added on top of the configured (or <see cref="Sources"/> overridden) feeds.
-        /// </summary>
         internal IReadOnlyList<string>? AddSources { get; }
 
-        /// <summary>
-        /// Whether interactive NuGet credential prompts are allowed.
-        /// </summary>
         internal bool Interactive { get; }
     }
 }

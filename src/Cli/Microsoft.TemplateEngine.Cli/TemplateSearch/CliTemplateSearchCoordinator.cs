@@ -63,10 +63,6 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                 return NewCommandStatus.NotFound;
             }
 
-            // The .NET template catalog can lag behind (or, via a replacement/proxy feed, diverge from) the NuGet
-            // feeds actually selected for this invocation. Narrow the catalog matches down to only the package
-            // id + version pairs that are confirmed available from at least one of the currently selected feeds
-            // before anything is displayed or suggested for install.
             PackageAvailabilityResult availability = await FilterAvailablePackagesAsync(searchResults, commandArgs, cancellationToken).ConfigureAwait(false);
             if (!availability.AnyFeedSucceeded)
             {
@@ -107,6 +103,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
                         .Bold().Red());
                 }
             }
+
             Reporter.Output.WriteLine();
             IReadOnlyList<(ITemplatePackageInfo PackageInfo, IReadOnlyList<ITemplateInfo> MatchedTemplates)> allFilteredHits =
                 searchResults.Where(r => r.Success).SelectMany(r => filteredHitsByResult[r]).ToList();
@@ -130,12 +127,6 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             return NewCommandStatus.NotFound;
         }
 
-        /// <summary>
-        /// Narrows the catalog search hits down to the package id + version pairs confirmed available from at
-        /// least one of the NuGet feeds selected for this invocation (via NuGet.config, <c>--configfile</c>,
-        /// <c>--source</c>, and <c>--add-source</c>). Also initializes the NuGet credential service when
-        /// <see cref="SearchCommandArgs.Interactive"/> is requested, mirroring <see cref="TemplatePackageCoordinator"/>.
-        /// </summary>
         private static async Task<PackageAvailabilityResult> FilterAvailablePackagesAsync(
             IReadOnlyList<SearchResult> searchResults,
             SearchCommandArgs commandArgs,
@@ -169,9 +160,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
             if (candidates.Count == 0)
             {
-                // Nothing to confirm: the catalog itself returned no versioned candidates. This is unrelated to feed
-                // availability (it is a normal "no matches" outcome), so it must not be reported as a feed failure -
-                // let the caller fall through to its regular no-hits handling.
+                // No versioned candidates means no feed query is required.
                 return new PackageAvailabilityResult(candidates, anyFeedSucceeded: true);
             }
 
@@ -179,18 +168,11 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             PackageAvailabilityResult availability = await checker.GetAvailablePackagesAsync(candidates, cancellationToken).ConfigureAwait(false);
             if (!availability.AnyFeedSucceeded)
             {
-                // All selected feeds failed to respond at all (individual feed failures are already reported to
-                // stderr by the checker as they occur); give the user a clear top-level reason for the empty result.
                 Reporter.Error.WriteLine(LocalizableStrings.CliTemplateSearchCoordinator_Error_AllFeedsFailed.Bold().Red());
             }
             return availability;
         }
 
-        /// <summary>
-        /// A catalog hit is kept when either it was confirmed available from a selected feed, or it has no version
-        /// to confirm (the catalog does not always report one) - in that case it is passed through unfiltered, since
-        /// there is no package id + version pair to validate against a feed.
-        /// </summary>
         internal static bool IsConfirmedAvailable(ITemplatePackageInfo packageInfo, IReadOnlySet<PackageAvailabilityCandidate> availablePackages)
         {
             if (string.IsNullOrEmpty(packageInfo.Version))

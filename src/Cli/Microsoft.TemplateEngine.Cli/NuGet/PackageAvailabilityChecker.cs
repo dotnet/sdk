@@ -10,15 +10,8 @@ using NuGet.Versioning;
 
 namespace Microsoft.TemplateEngine.Cli.NuGet
 {
-    /// <summary>
-    /// Identifies a specific package id + version pair, as discovered from the .NET template catalog, that needs to be
-    /// confirmed as actually available from one of the currently selected NuGet feeds before it is shown to the user.
-    /// </summary>
     internal readonly record struct PackageAvailabilityCandidate(string PackageId, string PackageVersion);
 
-    /// <summary>
-    /// The result of checking a set of <see cref="PackageAvailabilityCandidate"/> instances against the configured NuGet feeds.
-    /// </summary>
     internal sealed class PackageAvailabilityResult
     {
         internal PackageAvailabilityResult(IReadOnlySet<PackageAvailabilityCandidate> availablePackages, bool anyFeedSucceeded)
@@ -27,28 +20,11 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             AnyFeedSucceeded = anyFeedSucceeded;
         }
 
-        /// <summary>
-        /// The subset of the requested candidates that were confirmed to be available (matching package id and version)
-        /// from at least one of the selected NuGet feeds.
-        /// </summary>
         internal IReadOnlySet<PackageAvailabilityCandidate> AvailablePackages { get; }
 
-        /// <summary>
-        /// <see langword="true"/> when at least one required package query completed successfully (even if it
-        /// reported no matching packages at all); <see langword="false"/> when none of the selected feeds were usable.
-        /// When source mapping excludes every candidate, no query is required and the result is also successful.
-        /// </summary>
         internal bool AnyFeedSucceeded { get; }
     }
 
-    /// <summary>
-    /// Confirms which package id + version pairs discovered via the .NET template catalog are actually available from
-    /// the NuGet feeds selected for a <c>dotnet new search</c> invocation (the feeds configured via NuGet.config,
-    /// narrowed/overridden by <c>--configfile</c>, <c>--source</c>, and <c>--add-source</c>).
-    /// This allows replacement or proxy feeds to filter out catalog entries that are not (or are no longer) available
-    /// from any reachable feed. It intentionally does not attempt to discover packages that are absent from the
-    /// catalog altogether - it can only narrow catalog results, not add to them.
-    /// </summary>
     internal sealed class PackageAvailabilityChecker
     {
         private const int MaxConcurrentPackageChecks = 4;
@@ -61,14 +37,6 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
         private readonly Action<string> _reportFeedFailure;
         private readonly Func<PackageSource, SourceRepository> _repositoryFactory;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="PackageAvailabilityChecker"/>.
-        /// </summary>
-        /// <param name="sources">The NuGet feeds selected for this invocation.</param>
-        /// <param name="sourceMapping">The effective configured package source mapping, or <see langword="null"/> when mapping is disabled or bypassed by source overrides.</param>
-        /// <param name="logger">The NuGet <see cref="ILogger"/> to use for feed queries. Defaults to <see cref="NullLogger.Instance"/>.</param>
-        /// <param name="reportFeedFailure">Callback invoked with a human readable message when an individual feed cannot be queried. Defaults to writing to <see cref="Reporter.Error"/>.</param>
-        /// <param name="repositoryFactory">Factory used to create a <see cref="SourceRepository"/> for a given <see cref="PackageSource"/>. Defaults to <see cref="Repository.Factory"/>. Overridable for testing.</param>
         internal PackageAvailabilityChecker(
             IReadOnlyList<PackageSource> sources,
             PackageSourceMapping? sourceMapping = null,
@@ -83,9 +51,6 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             _repositoryFactory = repositoryFactory ?? ((PackageSource source) => Repository.Factory.GetCoreV3(source));
         }
 
-        /// <summary>
-        /// Resolves the package source mapping policy used by template search.
-        /// </summary>
         internal static PackageSourceMapping? GetEffectivePackageSourceMapping(
             ISettings settings,
             bool sourceOverridesSpecified,
@@ -110,9 +75,6 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             return sourceMapping;
         }
 
-        /// <summary>
-        /// Checks which of the given <paramref name="candidates"/> are available from at least one of the selected NuGet feeds.
-        /// </summary>
         internal async Task<PackageAvailabilityResult> GetAvailablePackagesAsync(
             IReadOnlyCollection<PackageAvailabilityCandidate> candidates,
             CancellationToken cancellationToken)

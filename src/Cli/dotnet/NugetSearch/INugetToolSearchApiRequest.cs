@@ -8,9 +8,6 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 
 internal interface INugetToolSearchApiRequest
 {
-    /// <summary>
-    /// Queries the given source using NuGet's package search resource.
-    /// </summary>
     Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
         NugetSearchApiParameter nugetSearchApiParameter,
         PackageSource source,
