@@ -198,8 +198,9 @@ jobs:
         with:
           persist-credentials: false
           ref: ${{ github.workflow_sha }}
-          sparse-checkout: .github/workflows/aot-size-analysis/scripts
-
+          sparse-checkout: |
+            .github/workflows/aot-size-analysis/scripts
+            NuGet.config
       - name: Find PR and baseline builds
         id: builds
         run: >-
