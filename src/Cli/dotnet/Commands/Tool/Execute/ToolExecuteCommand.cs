@@ -53,7 +53,9 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute()
+    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         var versionRange = VersionRangeUtilities.GetVersionRange(
             _packageToolIdentityArgument.VersionRange?.OriginalString,
@@ -133,14 +135,15 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
             }
             else
             {
-                (bestVersion, packageSource) = ProbeFeedsForBestVersion(
+                (bestVersion, packageSource) = await ProbeFeedsForBestVersionAsync(
                     _toolPackageDownloader,
                     packageLocation,
                     packageId,
                     effectiveVersionRange,
                     cachedToolPackage.Version,
                     _verbosity,
-                    _restoreActionConfig);
+                    _restoreActionConfig,
+                    cancellationToken);
 
                 if (bestVersion is null || bestVersion <= cachedToolPackage.Version)
                 {
@@ -151,14 +154,13 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
 
         if (toolPackage is null && bestVersion is null)
         {
-            (bestVersion, packageSource) = _toolPackageDownloader.GetNuGetVersionAsync(
-                    packageLocation,
-                    packageId,
-                    _verbosity,
-                    effectiveVersionRange,
-                    _restoreActionConfig,
-                    CancellationToken.None)
-                .GetAwaiter().GetResult();
+            (bestVersion, packageSource) = await _toolPackageDownloader.GetNuGetVersionAsync(
+                packageLocation,
+                packageId,
+                _verbosity,
+                effectiveVersionRange,
+                _restoreActionConfig,
+                cancellationToken);
         }
 
         toolLocationActivity?.SetTag("tool.exec.kind", "one-shot");
@@ -198,29 +200,30 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         return result.ExitCode;
     }
 
-    internal static (NuGetVersion? version, PackageSource? source) ProbeFeedsForBestVersion(
+    internal static async Task<(NuGetVersion? version, PackageSource? source)> ProbeFeedsForBestVersionAsync(
         IToolPackageDownloader toolPackageDownloader,
         PackageLocation packageLocation,
         PackageId packageId,
         VersionRange versionRange,
         NuGetVersion cachedVersion,
         VerbosityOptions verbosity,
-        RestoreActionConfig restoreActionConfig)
+        RestoreActionConfig restoreActionConfig,
+        CancellationToken cancellationToken)
     {
-        using var cancellationTokenSource = new CancellationTokenSource(GetFeedTimeoutMilliseconds());
+        using var timeoutTokenSource = new CancellationTokenSource(GetFeedTimeoutMilliseconds());
+        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
 
         try
         {
-            return toolPackageDownloader.GetNuGetVersionAsync(
-                    packageLocation,
-                    packageId,
-                    verbosity,
-                    versionRange,
-                    restoreActionConfig,
-                    cancellationTokenSource.Token)
-                .GetAwaiter().GetResult();
+            return await toolPackageDownloader.GetNuGetVersionAsync(
+                packageLocation,
+                packageId,
+                verbosity,
+                versionRange,
+                restoreActionConfig,
+                linkedTokenSource.Token);
         }
-        catch (OperationCanceledException) when (cancellationTokenSource.IsCancellationRequested)
+        catch (OperationCanceledException) when (timeoutTokenSource.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
         {
             return (cachedVersion, null);
         }
