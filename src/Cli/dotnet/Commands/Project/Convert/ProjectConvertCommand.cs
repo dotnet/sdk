@@ -539,6 +539,7 @@ internal sealed class ProjectConvertCommand : CommandBase<ProjectConvertCommandD
                     result.Add(new CSharpDirective.Project(refDirective.Info, relativePath)
                     {
                         OriginalName = refDirective.OriginalName,
+                        Metadata = refDirective.Metadata,
                     });
                     continue;
                 }
