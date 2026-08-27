@@ -134,19 +134,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
             return (await GetBestPackageVersionAndSourceAsync(packageId, versionRange, packageSourceLocation)).version;
         }
 
-        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-            VersionRange versionRange,PackageSourceLocation packageSourceLocation = null)
-            => GetBestPackageVersionAndSourceAsync(
-                packageId,
-                versionRange,
-                packageSourceLocation,
-                CancellationToken.None);
-
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
             PackageId packageId,
             VersionRange versionRange,
-            PackageSourceLocation packageSourceLocation,
-            CancellationToken cancellationToken)
+            PackageSourceLocation packageSourceLocation = null,
+            CancellationToken cancellationToken = default)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

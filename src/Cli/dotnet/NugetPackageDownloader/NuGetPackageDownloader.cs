@@ -803,20 +803,11 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             .version;
     }
 
-    public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-        VersionRange versionRange,
-        PackageSourceLocation packageSourceLocation = null)
-        => await GetBestPackageVersionAndSourceAsync(
-            packageId,
-            versionRange,
-            packageSourceLocation,
-            CancellationToken.None).ConfigureAwait(false);
-
     public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
         PackageId packageId,
         VersionRange versionRange,
-        PackageSourceLocation packageSourceLocation,
-        CancellationToken cancellationToken)
+        PackageSourceLocation packageSourceLocation = null,
+        CancellationToken cancellationToken = default)
     {
         IPackageSearchMetadata packageMetadata;
 

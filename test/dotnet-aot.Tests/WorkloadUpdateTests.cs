@@ -282,12 +282,7 @@ public class WorkloadUpdateTests
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
             PackageId packageId,
             VersionRange versionRange,
-            PackageSourceLocation? packageSourceLocation = null) => throw new NotSupportedException();
-
-        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
-            PackageId packageId,
-            VersionRange versionRange,
-            PackageSourceLocation? packageSourceLocation,
-            CancellationToken cancellationToken) => throw new NotSupportedException();
+            PackageSourceLocation? packageSourceLocation = null,
+            CancellationToken cancellationToken = default) => throw new NotSupportedException();
     }
 }

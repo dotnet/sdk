@@ -43,14 +43,11 @@ namespace Microsoft.DotNet.Cli.NuGetPackageDownloader
         public Task<IEnumerable<NuGetVersion>> GetLatestPackageVersions(PackageId packageId, int numberOfResults, PackageSourceLocation packageSourceLocation = null, bool includePreview = false) => throw new NotImplementedException();
         public Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId, VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
 
-        public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
-            VersionRange versionRange, PackageSourceLocation packageSourceLocation = null) => throw new NotImplementedException();
-
         public Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
             PackageId packageId,
             VersionRange versionRange,
-            PackageSourceLocation packageSourceLocation,
-            CancellationToken cancellationToken) => throw new NotImplementedException();
+            PackageSourceLocation packageSourceLocation = null,
+            CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
         public Task<string> GetPackageUrl(PackageId packageId,
             NuGetVersion packageVersion,
