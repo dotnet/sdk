@@ -1287,6 +1287,11 @@ If command is specified without the argument, it lists all the template packages
         <target state="translated">建置前請勿還原該專案。</target>
         <note />
       </trans-unit>
+      <trans-unit id="NuGetConfigurationFileDoesNotExist">
+        <source>NuGet configuration file '{0}' does not exist.</source>
+        <target state="new">NuGet configuration file '{0}' does not exist.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="OSArgumentName">
         <source>OS</source>
         <target state="translated">作業系統</target>

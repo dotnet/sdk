@@ -25,14 +25,6 @@ internal sealed class ToolInstallLocalInstaller(
 
     public IToolPackage Install(FilePath manifestFile, PackageId packageId, VersionRange? versionRange)
     {
-        if (!string.IsNullOrEmpty(configFilePath) && !File.Exists(configFilePath))
-        {
-            throw new GracefulException(
-                string.Format(
-                    CliCommandStrings.ToolInstallNuGetConfigurationFileDoesNotExist,
-                    Path.GetFullPath(configFilePath)));
-        }
-
         FilePath? configFile = null;
         if (!string.IsNullOrEmpty(configFilePath))
         {

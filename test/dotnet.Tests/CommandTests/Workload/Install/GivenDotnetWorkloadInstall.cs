@@ -29,6 +29,17 @@ namespace Microsoft.DotNet.Cli.Workload.Install.Tests
             _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
         }
 
+        [TestMethod]
+        public void ConfigFileMustExist()
+        {
+            string configFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.config");
+
+            ParseResult parseResult = Parser.Parse($"dotnet workload install wasm-tools --configfile \"{configFile}\"");
+
+            parseResult.Errors.Should().ContainSingle();
+            parseResult.Errors[0].Message.Should().Contain(configFile);
+        }
+
         // These two tests hit an IOException when run in helix on non-windows
         [TestMethod]
         [OSCondition(OperatingSystems.Windows)]

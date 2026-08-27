@@ -3426,11 +3426,6 @@ Tool '{1}' (version '{2}') was successfully installed.</source>
         <target state="translated">PATH</target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolInstallNuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="translated">NuGet 構成ファイル '{0}' は存在しません。</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolInstallPackageIdMissing">
         <source>A package ID was not specified for tool installation.</source>
         <target state="new">A package ID was not specified for tool installation.</target>

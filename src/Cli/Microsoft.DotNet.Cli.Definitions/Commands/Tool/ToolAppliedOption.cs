@@ -57,11 +57,9 @@ internal static class ToolAppliedOption
         Arity = ArgumentArity.Zero
     };
 
-    public static Option<string> CreateConfigOption() => new("--configfile")
-    {
-        Description = CommandDefinitionStrings.ToolInstallConfigFileOptionDescription,
-        HelpName = CommandDefinitionStrings.ToolInstallConfigFileOptionName
-    };
+    public static Option<string> CreateConfigOption() => CommonOptions.CreateConfigFileOption(
+        CommandDefinitionStrings.ToolInstallConfigFileOptionDescription,
+        CommandDefinitionStrings.ToolInstallConfigFileOptionName);
 
     public static Option<string[]> CreateSourceOption(string? description = null) => new Option<string[]>("--source")
     {

@@ -204,10 +204,7 @@ public static class SharedOptionsFactory
 
     public const string ConfigFileOptionName = "--configfile";
 
-    public static Option<string> CreateConfigFileOption() => new(ConfigFileOptionName)
-    {
-        Arity = new ArgumentArity(1, 1),
-        Description = CommandDefinitionStrings.ConfigFileDescription,
-        HelpName = CommandDefinitionStrings.ConfigFileArgumentName
-    };
+    public static Option<string> CreateConfigFileOption() => CommonOptions.CreateConfigFileOption(
+        CommandDefinitionStrings.ConfigFileDescription,
+        CommandDefinitionStrings.ConfigFileArgumentName);
 }
