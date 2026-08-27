@@ -31,12 +31,6 @@ public sealed class NuGetSourceConfiguration
         if (!string.IsNullOrWhiteSpace(nugetConfig))
         {
             string configPath = GetFullPath(nugetConfig, basePath);
-            if (!File.Exists(configPath))
-            {
-                throw new GracefulException(
-                    string.Format(LocalizableStrings.NuGetConfigurationFileDoesNotExist, configPath));
-            }
-
             settings = NuGet.Configuration.Settings.LoadSpecificSettings(
                 Path.GetDirectoryName(configPath)!,
                 Path.GetFileName(configPath));

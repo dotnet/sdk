@@ -241,16 +241,18 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        [DataRow("new search source --source https://one.test/index.json --source https://two.test/index.json --configfile my-nuget.config --add-source https://add1.test/index.json --add-source https://add2.test/index.json --interactive")]
-        public void Search_CanParseSourceSelectionOptions(string command)
+        public void Search_CanParseSourceSelectionOptions()
         {
+            string configFile = typeof(SearchTests).Assembly.Location;
+            string command = $"new search source --source https://one.test/index.json --source https://two.test/index.json --configfile \"{configFile}\" --add-source https://add1.test/index.json --add-source https://add2.test/index.json --interactive";
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             var myCommand = CliTestHostFactory.CreateNewCommand(host);
 
             ParseResult parseResult = myCommand.Parse(command);
             SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
 
-            Assert.AreEqual("my-nuget.config", args.ConfigFile);
+            Assert.IsEmpty(parseResult.Errors);
+            Assert.AreEqual(configFile, args.ConfigFile);
             Assert.IsNotNull(args.Sources);
             Assert.HasCount(2, args.Sources!);
             Assert.Contains("https://one.test/index.json", args.Sources!);
@@ -260,6 +262,19 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             Assert.Contains("https://add1.test/index.json", args.AddSources!);
             Assert.Contains("https://add2.test/index.json", args.AddSources!);
             Assert.IsTrue(args.Interactive);
+        }
+
+        [TestMethod]
+        public void Search_ConfigFileMustExist()
+        {
+            string configFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.config");
+            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
+            var myCommand = CliTestHostFactory.CreateNewCommand(host);
+
+            ParseResult parseResult = myCommand.Parse($"new search source --configfile \"{configFile}\"");
+
+            Assert.HasCount(1, parseResult.Errors);
+            Assert.Contains(configFile, parseResult.Errors[0].Message);
         }
 
         [TestMethod]

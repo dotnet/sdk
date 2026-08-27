@@ -37,10 +37,23 @@ namespace Microsoft.DotNet.Tests.ParserTests
         [TestMethod]
         public void ToolSearchParserCanGetConfigFileOption()
         {
-            var result = Parser.Parse(@"dotnet tool search mytool --configfile C:\TestAssetLocalNugetFeed");
+            string configFile = typeof(ToolSearchParserTests).Assembly.Location;
+            var result = Parser.Parse($"dotnet tool search mytool --configfile \"{configFile}\"");
 
             var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.ConfigOption).Should().Be(@"C:\TestAssetLocalNugetFeed");
+            result.Errors.Should().BeEmpty();
+            result.GetRequiredValue(definition.ConfigOption).Should().Be(configFile);
+        }
+
+        [TestMethod]
+        public void ToolSearchParserRejectsMissingConfigFile()
+        {
+            string configFile = Path.Combine(Path.GetTempPath(), $"{Guid.NewGuid():N}.config");
+
+            var result = Parser.Parse($"dotnet tool search mytool --configfile \"{configFile}\"");
+
+            result.Errors.Should().ContainSingle();
+            result.Errors[0].Message.Should().Contain(configFile);
         }
 
         [TestMethod]

@@ -17,11 +17,6 @@
         <target state="translated">Не удалось выполнить, поскольку указанная команда или файл не найдены.</target>
         <note />
       </trans-unit>
-      <trans-unit id="NuGetConfigurationFileDoesNotExist">
-        <source>NuGet configuration file '{0}' does not exist.</source>
-        <target state="new">NuGet configuration file '{0}' does not exist.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="UnableToLocateDotnetMultiplexer">
         <source>Unable to locate dotnet multiplexer</source>
         <target state="translated">Не удается найти мультиплексор dotnet.</target>
