@@ -137,12 +137,11 @@ Copyright (c) .NET Foundation. All rights reserved.
       <Output TaskParameter="FilteredEndpoints" ItemName="_HtmlFileEndpointsToRemove" />
     </FilterStaticWebAssetEndpoints>
     <ItemGroup>
-      <!-- Re-tag the original HTML assets as publish-only placeholder sources. Remove + re-Include
-           instead of Update, because Update="@(items)" inside a target applies the metadata to the
-           whole StaticWebAsset item list rather than only the referenced items. -->
+      <!-- Re-tag the original HTML assets as publish-only. Remove + re-Include instead of Update,
+           because Update="@(items)" inside a target applies the metadata to the whole StaticWebAsset
+           item list rather than only the referenced items. -->
       <_HtmlPlaceholderSourceAssets Include="@(_HtmlFilesToRemove)">
         <AssetKind>Publish</AssetKind>
-        <HtmlAssetPlaceholderSource>true</HtmlAssetPlaceholderSource>
       </_HtmlPlaceholderSourceAssets>
       <StaticWebAsset Remove="@(_HtmlFilesToRemove)" />
       <StaticWebAsset Include="@(_HtmlPlaceholderSourceAssets)" />
