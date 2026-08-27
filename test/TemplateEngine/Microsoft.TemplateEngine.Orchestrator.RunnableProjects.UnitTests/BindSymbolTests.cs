@@ -9,6 +9,7 @@ using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Abstractions.Components;
 using Microsoft.TemplateEngine.Abstractions.Mount;
 using Microsoft.TemplateEngine.Abstractions.Parameters;
+using Microsoft.TemplateEngine.Edge;
 using Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel;
 using Microsoft.TemplateEngine.TestHelper;
 
@@ -691,9 +692,7 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 
         private static IEnvironment CreateEnvironment(string variableName, string variableValue)
         {
-            IEnvironment environment = A.Fake<IEnvironment>();
-            A.CallTo(() => environment.GetEnvironmentVariable(A<string>._))
-                .ReturnsLazily((string name) => Environment.GetEnvironmentVariable(name));
+            IEnvironment environment = A.Fake<IEnvironment>(options => options.Wrapping(new DefaultEnvironment()));
             A.CallTo(() => environment.GetEnvironmentVariable(variableName)).Returns(variableValue);
             return environment;
         }
