@@ -334,9 +334,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageLocation.RootConfigDirectory,
                 packageLocation.SourceFeedOverrides);
 
-            return Task.FromResult((
-                NuGetVersion.Parse(feedPackage.Version),
-                new PackageSource("http://mock-feed", "MockFeed")));
+            return Task.FromResult((NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed")));
         }
 
         public bool TryGetBestDownloadedTool(

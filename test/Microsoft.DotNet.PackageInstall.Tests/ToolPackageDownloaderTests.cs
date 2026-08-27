@@ -177,7 +177,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
-                cancellationToken: CancellationToken.None)).version;
+                cancellationToken: TestContext.CancellationToken)).version;
 
             package.OriginalVersion.Should().Be(TestPackageVersion);
         }
@@ -199,14 +199,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 useMock: testMockBehaviorIsInSync,
                 includeLocalFeedInNugetConfig: true);
 
-            var package = (await downloader.GetNuGetVersionAsync(
-                new PackageLocation(
-                    nugetConfig: testDir.WithFile("NuGet.config"),
+            var package = (await downloader.GetNuGetVersionAsync(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
                 versionRange: VersionRange.Parse(requestedVersion),
-                cancellationToken: CancellationToken.None)).version;
+                cancellationToken: TestContext.CancellationToken)).version;
 
             package.OriginalVersion.Should().Be(expectedVersion);
         }

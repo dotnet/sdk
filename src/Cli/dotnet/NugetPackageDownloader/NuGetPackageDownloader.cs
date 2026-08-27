@@ -803,8 +803,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             .version;
     }
 
-    public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(
-        PackageId packageId,
+    public async Task<(NuGetVersion version, PackageSource source)> GetBestPackageVersionAndSourceAsync(PackageId packageId,
         VersionRange versionRange,
         PackageSourceLocation packageSourceLocation = null,
         CancellationToken cancellationToken = default)
@@ -935,16 +934,7 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             _verboseLogger.LogWarning(e.ToString());
             foundPackages = Enumerable.Empty<PackageSearchMetadata>();
         }
-        catch (HttpRequestException e) when (_restoreActionConfig.IgnoreFailedSources)
-        {
-            _verboseLogger.LogWarning(e.ToString());
-            foundPackages = Enumerable.Empty<PackageSearchMetadata>();
-        }
         catch (FatalProtocolException e)
-        {
-            throw new NuGetPackageInstallerException($"{string.Format(CliStrings.FailedToLoadNuGetSource, source.Source)}: {e.Message}", e);
-        }
-        catch (HttpRequestException e)
         {
             throw new NuGetPackageInstallerException($"{string.Format(CliStrings.FailedToLoadNuGetSource, source.Source)}: {e.Message}", e);
         }

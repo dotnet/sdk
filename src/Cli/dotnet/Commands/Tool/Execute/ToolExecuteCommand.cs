@@ -230,19 +230,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         {
             return (cachedVersion, null);
         }
-        catch (NuGetPackageNotFoundException)
-        {
-            return (cachedVersion, null);
-        }
-        catch (NuGetPackageInstallerException e) when (IsSourceFailure(e))
-        {
-            return (cachedVersion, null);
-        }
-        catch (FatalProtocolException)
-        {
-            return (cachedVersion, null);
-        }
-        catch (HttpRequestException)
+        catch (Exception e) when (IsFeedProbeFailure(e))
         {
             return (cachedVersion, null);
         }
@@ -262,7 +250,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
            versionRange.IsMinInclusive &&
            versionRange.IsMaxInclusive;
 
-    private static bool IsSourceFailure(Exception exception)
-        => exception is FatalProtocolException or HttpRequestException ||
-           exception.InnerException is not null && IsSourceFailure(exception.InnerException);
+    private static bool IsFeedProbeFailure(Exception exception)
+        => exception is NuGetPackageNotFoundException or FatalProtocolException or HttpRequestException ||
+           exception.InnerException is not null && IsFeedProbeFailure(exception.InnerException);
 }

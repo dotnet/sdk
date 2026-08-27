@@ -385,9 +385,11 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         }
 
         [TestMethod]
-        [DataRow("exec")]
-        [DataRow("dnx")]
-        public void ToolExecUsesCachedToolWhenSourceIsUnavailable(string command)
+        [DataRow("exec", false)]
+        [DataRow("exec", true)]
+        [DataRow("dnx", false)]
+        [DataRow("dnx", true)]
+        public void ToolExecUsesCachedToolWhenSourceIsUnavailable(string command, bool useExactVersion)
         {
             var toolSettings = new TestToolBuilder.TestToolSettings();
             string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
@@ -402,34 +404,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 .And.HaveStdOutContaining("Hello Tool!");
 
             string unavailableSource = Path.Combine(testDirectory.Path, "unavailable-source");
-            CreateToolExecCommand(command, toolSettings.ToolPackageId, unavailableSource)
-                .WithEnvironmentVariables(homeFolder)
-                .WithWorkingDirectory(testDirectory.Path)
-                .Execute()
-                .Should().Pass()
-                .And.HaveStdOutContaining("Hello Tool!");
-        }
-
-        [TestMethod]
-        [DataRow("exec")]
-        [DataRow("dnx")]
-        public void ToolExecUsesExactCachedToolWithoutContactingSource(string command)
-        {
-            var toolSettings = new TestToolBuilder.TestToolSettings();
-            string toolPackagesPath = ToolBuilder.CreateTestTool(Log, toolSettings, collectBinlogs: true);
-            var testDirectory = TestAssetsManager.CreateTestDirectory();
-            var homeFolder = Path.Combine(testDirectory.Path, "home");
-
-            CreateToolExecCommand(command, toolSettings.ToolPackageId, toolPackagesPath)
-                .WithEnvironmentVariables(homeFolder)
-                .WithWorkingDirectory(testDirectory.Path)
-                .Execute()
-                .Should().Pass();
-
-            string unavailableSource = Path.Combine(testDirectory.Path, "unavailable-source");
+            string packageId = useExactVersion
+                ? $"{toolSettings.ToolPackageId}@{toolSettings.ToolPackageVersion}"
+                : toolSettings.ToolPackageId;
             CreateToolExecCommand(
                     command,
-                    $"{toolSettings.ToolPackageId}@{toolSettings.ToolPackageVersion}",
+                    packageId,
                     unavailableSource)
                 .WithEnvironmentVariables(homeFolder)
                 .WithWorkingDirectory(testDirectory.Path)
