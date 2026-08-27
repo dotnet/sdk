@@ -16,29 +16,27 @@ namespace Microsoft.DotNet.Cli.NugetSearch;
 internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
 {
     private readonly Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> _getPackageSearchResource;
-    private readonly CancellationToken _cancellationToken;
 
-    public NugetToolSearchApiRequest(CancellationToken cancellationToken = default)
-        : this(GetPackageSearchResource, cancellationToken)
+    public NugetToolSearchApiRequest()
+        : this(GetPackageSearchResource)
     {
     }
 
     internal NugetToolSearchApiRequest(
-        Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> getPackageSearchResource,
-        CancellationToken cancellationToken = default)
+        Func<PackageSource, CancellationToken, Task<PackageSearchResource?>> getPackageSearchResource)
     {
         _getPackageSearchResource = getPackageSearchResource;
-        _cancellationToken = cancellationToken;
     }
 
     public async Task<IReadOnlyCollection<SearchResultPackage>> GetResult(
         NugetSearchApiParameter nugetSearchApiParameter,
-        PackageSource source)
+        PackageSource source,
+        CancellationToken cancellationToken)
     {
         ArgumentNullException.ThrowIfNull(nugetSearchApiParameter);
         ArgumentNullException.ThrowIfNull(source);
 
-        using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(_cancellationToken);
+        using var timeoutCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
         timeoutCancellation.CancelAfter(TimeSpan.FromSeconds(10));
 
         try
@@ -97,7 +95,7 @@ internal sealed class NugetToolSearchApiRequest : INugetToolSearchApiRequest
         {
             throw new NugetSearchApiRequestException(ex.Message);
         }
-        catch (OperationCanceledException ex) when (!_cancellationToken.IsCancellationRequested)
+        catch (OperationCanceledException ex) when (!cancellationToken.IsCancellationRequested)
         {
             throw new NugetSearchApiRequestException(ex.Message);
         }

@@ -17,6 +17,8 @@ public class NugetSearchApiRequestTests
 {
     private static readonly PackageSource Source = new("https://example.test/v3/index.json");
 
+    public TestContext TestContext { get; set; } = null!;
+
     [TestMethod]
     public async Task GetResultUsesPackageSearchResourceAndMapsTypedMetadata()
     {
@@ -44,7 +46,7 @@ public class NugetSearchApiRequestTests
             });
         var parameter = new NugetSearchApiParameter("sample", skip: 3, take: 4, prerelease: true);
 
-        IReadOnlyCollection<SearchResultPackage> result = await request.GetResult(parameter, Source);
+        IReadOnlyCollection<SearchResultPackage> result = await request.GetResult(parameter, Source, CancellationToken.None);
 
         resource.SearchTerm.Should().Be("sample");
         resource.Filter.Should().NotBeNull();
@@ -72,7 +74,7 @@ public class NugetSearchApiRequestTests
         var request = new NugetToolSearchApiRequest(
             (_, _) => Task.FromResult<PackageSearchResource?>(null));
 
-        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source);
+        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None);
 
         (await act.Should().ThrowAsync<NugetSearchApiRequestException>())
             .WithMessage($"*{Source.Source}*{nameof(PackageSearchResource)}*");
@@ -86,7 +88,7 @@ public class NugetSearchApiRequestTests
         var request = new NugetToolSearchApiRequest(
             (_, _) => Task.FromResult<PackageSearchResource?>(resource));
 
-        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source);
+        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None);
 
         await act.Should().ThrowAsync<NugetSearchApiRequestException>()
             .WithMessage("the source did not respond");
@@ -100,7 +102,7 @@ public class NugetSearchApiRequestTests
         var request = new NugetToolSearchApiRequest(
             (_, _) => Task.FromResult<PackageSearchResource?>(resource));
 
-        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source);
+        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None);
 
         await act.Should().ThrowAsync<NugetSearchApiRequestException>()
             .WithMessage("package type filtering is not supported");
@@ -112,10 +114,30 @@ public class NugetSearchApiRequestTests
         var request = new NugetToolSearchApiRequest(
             (_, _) => Task.FromResult<PackageSearchResource?>(new UnsupportedPackageTypeFilteringResource()));
 
-        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source);
+        Func<Task> act = () => request.GetResult(new NugetSearchApiParameter("sample"), Source, CancellationToken.None);
 
         await act.Should().ThrowAsync<NugetSearchApiRequestException>()
             .WithMessage($"*{Source.Source}*package type*");
+    }
+
+    [TestMethod]
+    public async Task GetResultPropagatesCallerCancellation()
+    {
+        TaskCompletionSource started = new(TaskCreationOptions.RunContinuationsAsynchronously);
+        var request = new NugetToolSearchApiRequest(
+            async (_, cancellationToken) =>
+            {
+                started.SetResult();
+                await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+                return null;
+            });
+        using CancellationTokenSource cancellation = new();
+
+        Task action = request.GetResult(new NugetSearchApiParameter("sample"), Source, cancellation.Token);
+        await started.Task.WaitAsync(TimeSpan.FromSeconds(5), TestContext.CancellationToken);
+        cancellation.Cancel();
+
+        await FluentActions.Awaiting(() => action).Should().ThrowAsync<OperationCanceledException>();
     }
 
     private sealed class CapturingPackageSearchResource : PackageSearchResource
