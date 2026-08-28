@@ -42,6 +42,15 @@ namespace Microsoft.DotNet.Cli.Workload.List.Tests
         }
 
         [TestMethod]
+        public void GivenInteractiveFalseWorkloadListDoesNotEnableInteractiveMode()
+        {
+            var parseResult = Parser.Parse("dotnet workload list --interactive false");
+            var commandDefinition = Assert.IsExactInstanceOfType<WorkloadListCommandDefinition>(parseResult.CommandResult.Command);
+
+            parseResult.GetValue(commandDefinition.RestoreOptions.InteractiveOption).Should().BeFalse();
+        }
+
+        [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
         public void GivenAvailableWorkloadsItCanComputeVisualStudioIds()
         {

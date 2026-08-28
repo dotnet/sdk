@@ -39,7 +39,7 @@ internal static class NewCommandParser
                 || Env.GetEnvironmentVariableAsBool(EnableProjectContextEvaluationEnvVarName);
 
             var diagnosticMode = parseResult.GetValue(definition.DiagnosticOption);
-            var isInteractive = parseResult.HasOption(definition.LegacyOptions.InteractiveOption);
+            var isInteractive = parseResult.GetValue(definition.LegacyOptions.InteractiveOption);
             var projectPath = parseResult.GetValue(definition.InstantiateOptions.ProjectOption);
             var outputPath = parseResult.GetValue(definition.InstantiateOptions.OutputOption);
 

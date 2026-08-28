@@ -42,7 +42,7 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
 
         var resolvedReporter = _machineReadableOption ? NullReporter.Instance : Reporter;
         _workloadListHelper = new WorkloadInfoHelper(
-            parseResult.HasOption(Definition.RestoreOptions.InteractiveOption),
+            parseResult.GetValue(Definition.RestoreOptions.InteractiveOption),
             Verbosity,
             parseResult.GetValue(Definition.VersionOption) ?? null,
             VerifySignatures,
