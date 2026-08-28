@@ -19,7 +19,7 @@ are colocated under
 | Shared test harness | [`test/Microsoft.NET.TestFramework.MSTest`](../../test/Microsoft.NET.TestFramework.MSTest) |
 | Configured PR test scopes and trigger paths | [`test/ConditionalTests.props`](../../test/ConditionalTests.props) |
 | Conditional-filtering design and maintenance | [`pr-test-filtering.md`](../../documentation/project-docs/pr-test-filtering.md) |
-| Full repository build and suite | [Root instructions](../copilot-instructions.md#build-and-test) and [Developer Guide](../../documentation/project-docs/developer-guide.md#running-tests) |
+| Full repository build and suite | [Root instructions](../../AGENTS.md#build-and-test) and [Developer Guide](../../documentation/project-docs/developer-guide.md#running-tests) |
 | Helix publishing and partitioning | [`test/UnitTests.proj`](../../test/UnitTests.proj) |
 | Reproducing a Helix layout locally | [`repro-helix-failure.md`](../../documentation/project-docs/repro-helix-failure.md) |
 
