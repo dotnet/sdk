@@ -29,7 +29,8 @@ internal class InstallPathResolver
         PathSource PathSource);
 
     /// <summary>
-    /// Resolves the install path using the following precedence:
+    /// Resolves the install path using the following precedence when
+    /// <paramref name="useGlobalJsonSdkPaths"/> is <see langword="true"/>:
     /// 1. Explicitly provided install path
     /// 2. global.json's sdk.paths — its first meaningful entry, which is either a literal path
     ///    or, when that entry is the "$host$" sentinel, the default host install location
@@ -37,17 +38,19 @@ internal class InstallPathResolver
     /// </summary>
     /// <param name="explicitInstallPath">The install path explicitly provided by the user (e.g., --install-path option).</param>
     /// <param name="globalJsonInfo">Information from global.json, if available.</param>
+    /// <param name="useGlobalJsonSdkPaths">Whether global.json sdk.paths participates in path resolution.</param>
     /// <returns>The resolution result.</returns>
     /// <exception cref="DotnetInstallException">Thrown when the install path cannot be resolved.</exception>
     public InstallPathResolutionResult Resolve(
         string? explicitInstallPath,
-        GlobalJsonInfo? globalJsonInfo)
+        GlobalJsonInfo? globalJsonInfo,
+        bool useGlobalJsonSdkPaths = true)
     {
-        string? installPathFromGlobalJson = globalJsonInfo?.GlobalJsonPath is not null
+        string? installPathFromGlobalJson = useGlobalJsonSdkPaths && globalJsonInfo?.GlobalJsonPath is not null
             ? globalJsonInfo.SdkPath
             : null;
 
-        bool globalJsonUsesDefaultHostLocation = globalJsonInfo?.GlobalJsonPath is not null
+        bool globalJsonUsesDefaultHostLocation = useGlobalJsonSdkPaths && globalJsonInfo?.GlobalJsonPath is not null
             && globalJsonInfo.UsesDefaultHostLocation;
 
         if (explicitInstallPath is not null)
