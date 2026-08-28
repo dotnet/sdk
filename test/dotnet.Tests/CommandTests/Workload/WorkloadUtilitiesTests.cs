@@ -1,7 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
+using System.Reflection;
 using Microsoft.DotNet.Cli.Commands.Workload;
+using Microsoft.DotNet.Cli.Commands.Workload.Config;
+using Microsoft.DotNet.Cli.Commands.Workload.Install;
+using Microsoft.DotNet.Cli.Commands.Workload.List;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Workload.List.Tests;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.Workload.Tests;
@@ -21,6 +28,31 @@ public class WorkloadUtilitiesTests : SdkTest
         bool resultExplicit = WorkloadUtilities.ShouldVerifySignatures(skipSignCheck: false);
 
         resultParameterless.Should().Be(resultExplicit);
+    }
+
+    [TestMethod]
+    public void WorkloadList_InteractiveFalse_DisablesInteractiveMode()
+    {
+        string testDirectory = TestAssetsManager.CreateTestDirectory().Path;
+        var parseResult = Parser.Parse("dotnet workload list --interactive false");
+        parseResult.Errors.Should().BeEmpty();
+
+        var command = new WorkloadListCommand(
+            parseResult,
+            workloadRecordRepo: new MockWorkloadRecordRepo([]),
+            currentSdkVersion: "6.0.100",
+            dotnetDir: testDirectory,
+            userProfileDir: testDirectory);
+
+        var workloadInfoHelper = (WorkloadInfoHelper)typeof(WorkloadListCommand)
+            .GetField("_workloadListHelper", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(command)!;
+        var installer = Assert.IsExactInstanceOfType<FileBasedInstaller>(workloadInfoHelper.Installer);
+        var restoreActionConfig = (RestoreActionConfig)typeof(FileBasedInstaller)
+            .GetField("_restoreActionConfig", BindingFlags.Instance | BindingFlags.NonPublic)!
+            .GetValue(installer)!;
+
+        restoreActionConfig.Interactive.Should().BeFalse();
     }
 
     [TestMethod]
