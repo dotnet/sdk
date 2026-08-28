@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <RootNamespace>Microsoft.Extensions.DotNetDeltaApplier</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
