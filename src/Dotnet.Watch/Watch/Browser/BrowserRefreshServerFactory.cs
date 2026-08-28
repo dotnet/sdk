@@ -42,6 +42,7 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
     public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, WebApplicationAppModel appModel, CancellationToken cancellationToken)
     {
         BrowserRefreshServer? server;
+        BrowserRefreshServer? serverToDispose = null;
         bool hasExistingServer;
 
         var key = projectNode.ProjectInstance.GetId();
@@ -49,12 +50,21 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         lock (_serversGuard)
         {
             hasExistingServer = _servers.TryGetValue(key, out server);
-            if (!hasExistingServer)
+            if (hasExistingServer && server != null && server.SupportsLaunchUrlBootstrap != appModel.UseLaunchUrlBootstrap)
+            {
+                serverToDispose = server;
+                server = appModel.TryCreateRefreshServer(projectNode);
+                _servers[key] = server;
+                hasExistingServer = false;
+            }
+            else if (!hasExistingServer)
             {
                 server = appModel.TryCreateRefreshServer(projectNode);
                 _servers.Add(key, server);
             }
         }
+
+        serverToDispose?.Dispose();
 
         if (server == null)
         {

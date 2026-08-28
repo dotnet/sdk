@@ -65,14 +65,14 @@ internal static class DotNetWatcher
                 ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
                 : null;
 
-            browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
-
             Action<OutputLine>? outputObserver = null;
             if (projectRootNode != null)
             {
                 Debug.Assert(context.MainProjectOptions != null);
                 outputObserver = context.BrowserLauncher.TryGetBrowserLaunchOutputObserver(projectRootNode, context.MainProjectOptions, browserRefreshServer, shutdownCancellationToken);
             }
+
+            browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
 
             processSpec.RedirectOutput(outputObserver, context.ProcessOutputReporter, context.EnvironmentOptions, projectRootNode?.GetDisplayName() ?? "");
 

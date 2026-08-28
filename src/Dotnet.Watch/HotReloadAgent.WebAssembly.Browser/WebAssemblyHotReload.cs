@@ -62,7 +62,7 @@ internal static partial class WebAssemblyHotReload
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static async Task InitializeAsync(string baseUri)
+    public static async Task InitializeAsync(string baseUri, bool applyPreviousUpdates)
     {
         if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
@@ -78,7 +78,10 @@ internal static partial class WebAssemblyHotReload
                 throw new InvalidOperationException("Hot Reload agent already initialized");
             }
 
-            await ApplyPreviousDeltasAsync(agent, baseUri);
+            if (applyPreviousUpdates)
+            {
+                await ApplyPreviousDeltasAsync(agent, baseUri);
+            }
         }
     }
 

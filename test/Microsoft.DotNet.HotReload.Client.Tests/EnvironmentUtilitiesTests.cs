@@ -29,4 +29,20 @@ public class EnvironmentUtilitiesTests
 
         Assert.AreSequenceEqual([new KeyValuePair<string, string>("X", "b;a")], builder);
     }
+
+    [TestMethod]
+    public void RemoveValues()
+    {
+        var builder = new Dictionary<string, string>
+        {
+            ["X"] = "a;b;c"
+        };
+
+        builder.RemoveListItem("X", "b", separator: ';');
+        Assert.AreEqual("a;c", builder["X"]);
+
+        builder.RemoveListItem("X", "a", separator: ';');
+        builder.RemoveListItem("X", "c", separator: ';');
+        Assert.IsFalse(builder.ContainsKey("X"));
+    }
 }

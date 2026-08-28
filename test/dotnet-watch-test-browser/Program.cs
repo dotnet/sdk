@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 if (args is not [var urlArg])
@@ -24,7 +25,21 @@ var encryptedSecret = GetEncryptedSecret(publicKey, secret);
 using var webSocket = await OpenWebSocket(webSocketUrls, encryptedSecret);
 var buffer = new byte[8 * 1024];
 
-while (await TryReceiveMessageAsync(webSocket, message => Log($"Received: {Encoding.UTF8.GetString(message)}")))
+while (await TryReceiveMessageAsync(webSocket, async message =>
+{
+    var messageText = Encoding.UTF8.GetString(message.Span);
+    Log($"Received: {messageText}");
+
+    using var payload = JsonDocument.Parse(message);
+    if (payload.RootElement.TryGetProperty("type", out var type) && type.GetString() == "ApplyManagedCodeUpdates")
+    {
+        await webSocket.SendAsync(
+            Encoding.UTF8.GetBytes("""{"success":true,"log":[]}"""),
+            WebSocketMessageType.Text,
+            endOfMessage: true,
+            CancellationToken.None);
+    }
+}))
 {
 }
 
@@ -52,7 +67,7 @@ static async Task<WebSocket> OpenWebSocket(string[] urls, string encryptedSecret
     throw new InvalidOperationException("Unable to establish a connection.");
 }
 
-static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<ReadOnlySpan<byte>> receiver)
+static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Func<ReadOnlyMemory<byte>, Task> receiver)
 {
     var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
 
@@ -82,12 +97,19 @@ static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<Rea
         }
     }
 
-    receiver(writer.WrittenSpan);
+    await receiver(writer.WrittenMemory);
     return true;
 }
 
 static async Task<(string[] url, string key)> GetWebSocketUrlsAndPublicKey(Uri baseUrl)
 {
+    if (TryGetLaunchUrlConfig(baseUrl) is { } launchUrlConfig)
+    {
+        Log($"WebSocket urls are '{string.Join(',', launchUrlConfig.urls)}'.");
+        Log($"Key is '{launchUrlConfig.key}'.");
+        return launchUrlConfig;
+    }
+
     var refreshScriptUrl = new Uri(baseUrl, "/_framework/aspnetcore-browser-refresh.js");
 
     Log($"Fetching: {refreshScriptUrl}");
@@ -103,6 +125,25 @@ static async Task<(string[] url, string key)> GetWebSocketUrlsAndPublicKey(Uri b
     Log($"Key is '{key}'.");
 
     return (webSocketUrl, key);
+}
+
+static (string[] urls, string key)? TryGetLaunchUrlConfig(Uri url)
+{
+    const string parameter = "__dotnet_watch=";
+    var configPart = url.Fragment
+        .TrimStart('#')
+        .Split('&')
+        .FirstOrDefault(part => part.StartsWith(parameter, StringComparison.Ordinal));
+
+    if (configPart == null)
+    {
+        return null;
+    }
+
+    using var config = JsonDocument.Parse(Uri.UnescapeDataString(configPart[parameter.Length..]));
+    return (
+        config.RootElement.GetProperty("webSocketUrls").GetString()!.Split(','),
+        config.RootElement.GetProperty("serverKey").GetString()!);
 }
 
 static string[] GetWebSocketUrls(string refreshScript)

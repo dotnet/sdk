@@ -29,6 +29,8 @@ internal static class PropertyNames
     public const string PublishTrimmed = nameof(PublishTrimmed);
     public const string PublishAot = nameof(PublishAot);
     public const string EnableHotReloadInRuntimeConfigDevFile = nameof(EnableHotReloadInRuntimeConfigDevFile);
+    public const string WasmEnableHotReload = nameof(WasmEnableHotReload);
+    public const string Configuration = nameof(Configuration);
 }
 
 internal static class ItemNames

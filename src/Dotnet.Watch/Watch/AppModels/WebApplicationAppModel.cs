@@ -27,6 +27,8 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// </summary>
     public abstract ProjectGraphNode LaunchingProject { get; }
 
+    internal virtual bool UseLaunchUrlBootstrap => false;
+
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
@@ -64,7 +66,8 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
                 middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
                 webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
-                suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
+                suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None,
+                useLaunchUrlBootstrap: UseLaunchUrlBootstrap);
         }
 
         return null;
@@ -103,7 +106,15 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             return false;
         }
 
-        logger.Log(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        if (UseLaunchUrlBootstrap)
+        {
+            logger.LogDebug("Using browser refresh launch URL bootstrap.");
+        }
+        else
+        {
+            logger.Log(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        }
+
         return true;
     }
 }

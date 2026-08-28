@@ -21,4 +21,25 @@ internal static class EnvironmentUtilities
             environment[key] = value + separator + existingValue;
         }
     }
+
+    public static void RemoveListItem(this IDictionary<string, string> environment, string key, string value, char separator)
+    {
+        if (!environment.TryGetValue(key, out var existingValue))
+        {
+            return;
+        }
+
+        var remainingValue = string.Join(
+            separator.ToString(),
+            Array.FindAll(existingValue.Split(separator), item => item != value));
+
+        if (remainingValue.Length == 0)
+        {
+            environment.Remove(key);
+        }
+        else
+        {
+            environment[key] = remainingValue;
+        }
+    }
 }

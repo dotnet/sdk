@@ -28,8 +28,9 @@ internal sealed class BrowserRefreshServer(
     string middlewareAssemblyPath,
     string dotnetPath,
     WebSocketConfig webSocketConfig,
-    bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    bool suppressTimeouts,
+    bool useLaunchUrlBootstrap)
+    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory, useLaunchUrlBootstrap)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
