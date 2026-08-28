@@ -329,6 +329,7 @@ namespace Analyzer.Utilities
         public const string SystemRuntimeCompilerServicesICriticalNotifyCompletion = "System.Runtime.CompilerServices.ICriticalNotifyCompletion";
         public const string SystemRuntimeCompilerServicesInlineArrayAttribute = "System.Runtime.CompilerServices.InlineArrayAttribute";
         public const string SystemRuntimeCompilerServicesINotifyCompletion = "System.Runtime.CompilerServices.INotifyCompletion";
+        public const string SystemRuntimeCompilerServicesIUnion = "System.Runtime.CompilerServices.IUnion";
         public const string SystemRuntimeCompilerServicesInternalsVisibleToAttribute = "System.Runtime.CompilerServices.InternalsVisibleToAttribute";
         public const string SystemRuntimeCompilerServicesMethodImplOptions = "System.Runtime.CompilerServices.MethodImplOptions";
         public const string SystemRuntimeCompilerServicesModuleInitializerAttribute = "System.Runtime.CompilerServices.ModuleInitializerAttribute";

@@ -78,6 +78,14 @@ public struct EmptyStruct
             await new VerifyCS.Test
             {
                 TestCode = """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        public interface IUnion { }
+
+                        [global::System.AttributeUsage(global::System.AttributeTargets.Struct)]
+                        public sealed class UnionAttribute : global::System.Attribute { }
+                    }
+
                     public union A(int, string);
                     """,
                 LanguageVersion = LanguageVersion.Preview
@@ -90,10 +98,18 @@ public struct EmptyStruct
             await new VerifyCS.Test
             {
                 TestCode = """
-                    using System.Runtime.CompilerServices;
+                    #nullable enable
 
-                    [Union]
-                    public struct A : IUnion
+                    namespace System.Runtime.CompilerServices
+                    {
+                        public interface IUnion { }
+
+                        [global::System.AttributeUsage(global::System.AttributeTargets.Struct)]
+                        public sealed class UnionAttribute : global::System.Attribute { }
+                    }
+
+                    [System.Runtime.CompilerServices.Union]
+                    public struct A : System.Runtime.CompilerServices.IUnion
                     {
                         public A(int value) => Value = value;
                         public A(string value) => Value = value;
