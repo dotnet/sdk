@@ -216,7 +216,7 @@ jobs:
           # call inside a command substitution would only exit the subshell.
           ado_get() {
             local what="$1" url="$2" rc
-            ADO_DOC=$(curl -sSL --fail --retry 3 --connect-timeout 15 --max-time 60 "${url}")
+            ADO_DOC=$(curl -sSL --fail --retry 3 --connect-timeout 10 --max-time 20 --retry-max-time 40 "${url}")
             rc=$?
             if [ "${rc}" -ne 0 ] || [ -z "${ADO_DOC}" ]; then
               echo "::warning::Could not fetch the ${what} from Azure DevOps (curl exit ${rc}); treating as a data-resolution failure."
@@ -464,7 +464,7 @@ jobs:
           #
           # `canceled` and `abandoned` legs count alongside `failed`: they also
           # finish without logs, and are a real gap in the artifact set.
-          timeline_json=$(curl -sSL --retry 3 --connect-timeout 15 --max-time 60 "${ADO_API}/build/builds/${BUILD_ID}/timeline?api-version=7.1" 2>/dev/null || true)
+          timeline_json=$(curl -sSL --retry 3 --connect-timeout 10 --max-time 20 --retry-max-time 40 "${ADO_API}/build/builds/${BUILD_ID}/timeline?api-version=7.1" 2>/dev/null || true)
           MISSING_LEGS=""
           # An unreadable timeline must not look like a complete build. A failed
           # request, a non-JSON error page and an ADO error document all left
@@ -524,10 +524,14 @@ jobs:
           MAX_UNZIP_BYTES=2147483648    # 2 GB uncompressed per artifact
           MAX_TOTAL_BYTES=4294967296    # 4 GB uncompressed across all artifacts
           MAX_TOTAL_ZIP_BYTES=3221225472 # 3 GB compressed downloaded in total
-          # A transfer smaller than this can't yield a usable archive, so a
-          # remaining allowance below it is treated as exhausted rather than
-          # spent on a download that will only be discarded.
-          MIN_ZIP_BYTES=1048576         # 1 MB
+          # `--max-time` is per attempt, so `--retry N` multiplies it: the whole
+          # download phase, not one transfer, is what has to fit inside this job's
+          # `timeout-minutes`. Give the loop a wall-clock deadline and derive every
+          # transfer's budget from what is left of it, so no combination of slow
+          # artifacts and retries can take the job down before the controlled no-op.
+          DOWNLOAD_BUDGET=420           # 7 minutes for all artifact transfers
+          MAX_ATTEMPT_SECONDS=120       # per attempt; the full set really takes ~30s
+          DOWNLOAD_DEADLINE=$(( $(date +%s) + DOWNLOAD_BUDGET ))
           MAX_ARTIFACTS=40              # cap only; the real count is path-dependent
           TOTAL_BYTES=0
           TOTAL_ZIP_BYTES=0
@@ -574,16 +578,22 @@ jobs:
             ZIP_CAP="${MAX_ZIP_BYTES}"
             ZIP_ALLOWANCE=$((MAX_TOTAL_ZIP_BYTES - TOTAL_ZIP_BYTES))
             [ "${ZIP_ALLOWANCE}" -lt "${ZIP_CAP}" ] && ZIP_CAP="${ZIP_ALLOWANCE}"
-            if [ "${ZIP_CAP}" -lt "${MIN_ZIP_BYTES}" ]; then
+            if [ "${ZIP_CAP}" -le 0 ]; then
               echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} is exhausted before ${name}; stopping downloads."; budget_hit=1; break
             fi
-            # `--max-time` must stay comfortably below this job's
-            # `timeout-minutes: 15`, or a transfer that stalls after connecting
-            # takes the whole job down instead of letting the script emit its
-            # controlled no-op — the very failure mode these timeouts exist to
-            # prevent. Real artifact sets download in well under a minute, so
-            # 5 minutes per artifact is already very generous.
-            curl -sSL --retry 3 --connect-timeout 15 --max-time 300 "${url}" 2>/dev/null | head -c $((ZIP_CAP + 1)) > /tmp/a.zip || true
+            # Bound this transfer by the time left as well, and never start one with
+            # no time to finish in.
+            TIME_LEFT=$(( DOWNLOAD_DEADLINE - $(date +%s) ))
+            if [ "${TIME_LEFT}" -le 0 ]; then
+              echo "::warning::Download time budget ${DOWNLOAD_BUDGET}s exhausted before ${name}; stopping downloads."; budget_hit=1; break
+            fi
+            ATTEMPT_SECONDS="${MAX_ATTEMPT_SECONDS}"
+            [ "${TIME_LEFT}" -lt "${ATTEMPT_SECONDS}" ] && ATTEMPT_SECONDS="${TIME_LEFT}"
+            # `--retry-max-time` bounds the whole retry window and `--max-time` one
+            # attempt; without the former, `--retry 3` alone would permit four full
+            # attempts plus backoff and could outlive this job's `timeout-minutes`.
+            # Both come from the time actually left in the download budget.
+            curl -sSL --retry 3 --connect-timeout 15 --max-time "${ATTEMPT_SECONDS}" --retry-max-time "${TIME_LEFT}" "${url}" 2>/dev/null | head -c $((ZIP_CAP + 1)) > /tmp/a.zip || true
             ZIP_BYTES=$(stat -c%s /tmp/a.zip 2>/dev/null || echo 0)
             # Charge the budget with the bytes that actually crossed the wire,
             # including those of an artifact that is about to be skipped.
