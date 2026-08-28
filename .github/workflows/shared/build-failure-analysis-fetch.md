@@ -597,7 +597,7 @@ jobs:
             safe_name=$(printf '%s' "${name}" | tr -c 'A-Za-z0-9._-' '_')
             ai=$((ai + 1))
             url=$(printf '%s' "${artifacts_json}" | jq -r --arg n "${name}" '.value[] | select(.name==$n) | .resource.downloadUrl // empty')
-            [ -z "${url}" ] && { echo "::warning::No download URL for ${name}."; legs_failed=$((legs_failed + 1)); continue; }
+            [ -z "${url}" ] && { echo "::warning::No download URL for ${safe_name}."; legs_failed=$((legs_failed + 1)); continue; }
             find "${AX_DIR:?}" -mindepth 1 -delete
             : > "${ZIP_TMP}"
             # Hard-cap the bytes written to disk regardless of Content-Length:
@@ -615,13 +615,13 @@ jobs:
             ZIP_ALLOWANCE=$((MAX_TOTAL_ZIP_BYTES - TOTAL_ZIP_BYTES))
             [ "${ZIP_ALLOWANCE}" -lt "${ZIP_CAP}" ] && ZIP_CAP="${ZIP_ALLOWANCE}"
             if [ "${ZIP_CAP}" -le 0 ]; then
-              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} is exhausted before ${name}; stopping downloads."; budget_hit=1; break
+              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} is exhausted before ${safe_name}; stopping downloads."; budget_hit=1; break
             fi
             # Bound this transfer by the time left as well, and never start one with
             # no time to finish in.
             TIME_LEFT=$(( FETCH_DEADLINE - $(date +%s) ))
             if [ "${TIME_LEFT}" -le 0 ]; then
-              echo "::warning::Download time budget ${FETCH_BUDGET}s exhausted before ${name}; stopping downloads."; budget_hit=1; break
+              echo "::warning::Download time budget ${FETCH_BUDGET}s exhausted before ${safe_name}; stopping downloads."; budget_hit=1; break
             fi
             ATTEMPT_SECONDS="${MAX_ATTEMPT_SECONDS}"
             [ "${TIME_LEFT}" -lt "${ATTEMPT_SECONDS}" ] && ATTEMPT_SECONDS="${TIME_LEFT}"
@@ -643,6 +643,10 @@ jobs:
               # Fail the leg rather than the backstop: if the shell will not apply
               # the limit, downloading anyway would leave a response with no usable
               # Content-Length free to fill the disk before the size check below runs.
+              # bash counts `ulimit -f` in 1024-byte units, except in POSIX mode where
+              # it counts 512-byte blocks. Pin the mode so this arithmetic means one
+              # thing regardless of how the runner's shell was invoked.
+              set +o posix
               ulimit -f $(( (ZIP_CAP + 1023) / 1024 )) || exit 1
               trap '' XFSZ
               timeout "${TIME_LEFT}" curl -sSL --fail --retry 3 --retry-delay 2 \
@@ -662,20 +666,20 @@ jobs:
             # happens to parse as a ZIP; without this the leg would be accepted from a
             # truncated download. Skipping fails closed via the completeness check.
             if [ "${curl_rc}" -ne 0 ]; then
-              echo "::warning::Skipping ${name}: download failed or was truncated (curl exit ${curl_rc})."; continue
+              echo "::warning::Skipping ${safe_name}: download failed or was truncated (curl exit ${curl_rc})."; continue
             fi
             if [ "${ZIP_BYTES}" -eq 0 ]; then
-              echo "::warning::Skipping ${name}: empty or failed download."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: empty or failed download."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ "${ZIP_BYTES}" -gt "${ZIP_CAP}" ]; then
-              echo "::warning::Skipping ${name}: download exceeded the ${ZIP_CAP}-byte cap."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: download exceeded the ${ZIP_CAP}-byte cap."; legs_failed=$((legs_failed + 1)); continue
             fi
             UNCOMP=$(unzip -l "${ZIP_TMP}" 2>/dev/null | tail -1 | awk '{print $1}')
             # Fail safe: if the uncompressed size isn't a plain integer (corrupt
             # zip / unexpected `unzip -l` output), we can't verify it — skip the
             # artifact rather than let a non-numeric value bypass the `-gt` guard.
             if ! printf '%s' "${UNCOMP}" | grep -qE '^[0-9]+$'; then
-              echo "::warning::Skipping ${name}: could not determine uncompressed size (unparseable unzip output)."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: could not determine uncompressed size (unparseable unzip output)."; legs_failed=$((legs_failed + 1)); continue
             fi
             # ZIP64 uncompressed sizes can reach ~20 digits — beyond Bash's
             # signed 64-bit range, where `-gt` (and the cumulative `$((...))`
@@ -684,13 +688,13 @@ jobs:
             # limit is unambiguously larger, so reject on decimal length first;
             # after this, UNCOMP fits safely in the integer range used below.
             if [ "${#UNCOMP}" -gt "${#MAX_UNZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: uncompressed size has ${#UNCOMP} digits, exceeding the ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: uncompressed size has ${#UNCOMP} digits, exceeding the ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ "${UNCOMP}" -gt "${MAX_UNZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: uncompressed size ${UNCOMP} exceeds ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: uncompressed size ${UNCOMP} exceeds ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ $((TOTAL_BYTES + UNCOMP)) -gt "${MAX_TOTAL_BYTES}" ]; then
-              echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${name}; stopping extraction."; budget_hit=1; break
+              echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${safe_name}; stopping extraction."; budget_hit=1; break
             fi
             # Refuse the archive if any entry path is absolute or has a `..`
             # component (defense-in-depth over unzip's own traversal guard),
@@ -698,7 +702,7 @@ jobs:
             # paths (no `-j`) under a fresh dir + timeout, so two binlogs that
             # share a basename in different folders don't overwrite each other.
             if unzip -Z1 "${ZIP_TMP}" 2>/dev/null | grep -qE '(^/|(^|/)\.\.(/|$))'; then
-              echo "::warning::Skipping ${name}: archive has a suspicious (absolute or ..) entry path."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: archive has a suspicious (absolute or ..) entry path."; legs_failed=$((legs_failed + 1)); continue
             fi
             # `unzip` exit 11 means "no files matched" -- the artifact simply
             # carries no binlog. In the `leg` layout the candidate set is every
@@ -719,7 +723,7 @@ jobs:
             # ever reaching the controlled no-op below.
             TIME_LEFT=$(( FETCH_DEADLINE - $(date +%s) ))
             if [ "${TIME_LEFT}" -le 0 ]; then
-              echo "::warning::Fetch budget exhausted before extracting ${name}; stopping."; break
+              echo "::warning::Fetch budget exhausted before extracting ${safe_name}; stopping."; break
             fi
             [ "${TIME_LEFT}" -gt 120 ] && TIME_LEFT=120
             timeout "${TIME_LEFT}" unzip -o "${ZIP_TMP}" '*.binlog' -d "${AX_DIR}" >/dev/null 2>&1 || uz=$?
@@ -727,7 +731,7 @@ jobs:
               echo "${name}: no binlog inside; nothing to stage from this artifact."; continue
             fi
             if [ "${uz}" -ne 0 ]; then
-              echo "::warning::Skipping ${name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
             fi
             # Consume the cumulative budget only once the archive actually
             # extracted — not on a suspicious-path or extraction-failure skip
