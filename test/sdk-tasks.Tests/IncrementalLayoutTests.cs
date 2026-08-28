@@ -513,7 +513,6 @@ public class IncrementalLayoutTests : SdkTest
               <PropertyGroup>
                 <RepoRoot>{{Escape(repoRoot)}}/</RepoRoot>
                 <IntermediateOutputPath>{{Escape(Path.Combine(root, "obj"))}}/</IntermediateOutputPath>
-                <_IncrementalLayoutStateDirectory>{{Escape(Path.Combine(root, "obj", "incremental-layout"))}}/</_IncrementalLayoutStateDirectory>
                 <_TemplatesMsiLayoutCompletionStamp>{{Escape(completionStamp)}}</_TemplatesMsiLayoutCompletionStamp>
                 <ProductMonikerRid>win-x64</ProductMonikerRid>
                 <ProductVersion>11.0.0</ProductVersion>

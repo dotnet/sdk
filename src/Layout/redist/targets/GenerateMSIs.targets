@@ -16,6 +16,7 @@
     </GenerateSdkBundleDependsOn>
     <!-- When building the sdk bundle only, the sdk and template msis are acquired via DownloadBundledComponents. -->
     <GenerateSdkBundleDependsOn Condition="'$(GenerateSdkBundleOnly)' != 'true'">$(GenerateSdkBundleDependsOn);GenerateSdkMsi;GenerateTemplatesMsis</GenerateSdkBundleDependsOn>
+    <_IncrementalLayoutStateDirectory Condition="'$(_IncrementalLayoutStateDirectory)' == ''">$([MSBuild]::NormalizeDirectory('$(IntermediateOutputPath)', 'incremental-layout'))</_IncrementalLayoutStateDirectory>
     <_TemplatesMsiGenerationInProgressFile>$(_IncrementalLayoutStateDirectory)templates-msi-generation-$(ProductMonikerRid).inprogress</_TemplatesMsiGenerationInProgressFile>
   </PropertyGroup>
 
