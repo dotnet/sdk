@@ -31,9 +31,7 @@ internal static class EnvironmentVariables
         get
         {
             var value = Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE");
-            return string.Equals(value, "trace", StringComparison.OrdinalIgnoreCase)
-                ? LogLevel.Trace
-                : ParseBool(value)
+            return ParseBool(value)
                 ? LogLevel.Debug
                 : null;
         }
