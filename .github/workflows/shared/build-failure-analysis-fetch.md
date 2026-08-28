@@ -554,28 +554,34 @@ jobs:
             # stream through `head -c` (cap + 1) and bound total time. This
             # closes the gap where `curl --max-filesize` alone would let a
             # length-less response write unbounded data before any post-check.
-            curl -sSL --retry 3 --connect-timeout 15 --max-time 1200 "${url}" 2>/dev/null | head -c $((MAX_ZIP_BYTES + 1)) > /tmp/a.zip || true
-            ZIP_BYTES=$(stat -c%s /tmp/a.zip 2>/dev/null || echo 0)
-            # Bound cumulative *compressed* bytes too: the per-artifact and
-            # cumulative-uncompressed caps still allow many mid-sized archives
-            # to be pulled over the network before any of them is inspected.
             #
-            # Charge the budget here, before the skips below, because the bytes
-            # are already on the wire by this point — `curl` above streams into
-            # `head -c` and only then is the size known. Charging after the
-            # per-artifact skip would let every oversized artifact cost a full
-            # MAX_ZIP_BYTES of network without ever being counted, so a build of
-            # MAX_ARTIFACTS oversized legs would download far past this budget
-            # while appearing to stay inside it.
-            TOTAL_ZIP_BYTES=$((TOTAL_ZIP_BYTES + ZIP_BYTES))
-            if [ "${TOTAL_ZIP_BYTES}" -gt "${MAX_TOTAL_ZIP_BYTES}" ]; then
-              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} reached at ${name}; stopping."; budget_hit=1; break
+            # Bound this transfer by whatever is left of the cumulative budget
+            # as well as by the per-artifact cap. Checking the cumulative total
+            # only *after* the transfer would let a download start just under
+            # the limit and still pull a further MAX_ZIP_BYTES, making the real
+            # ceiling `MAX_TOTAL_ZIP_BYTES + MAX_ZIP_BYTES`.
+            ZIP_CAP="${MAX_ZIP_BYTES}"
+            ZIP_ALLOWANCE=$((MAX_TOTAL_ZIP_BYTES - TOTAL_ZIP_BYTES))
+            [ "${ZIP_ALLOWANCE}" -lt "${ZIP_CAP}" ] && ZIP_CAP="${ZIP_ALLOWANCE}"
+            if [ "${ZIP_CAP}" -le 0 ]; then
+              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} exhausted before ${name}; stopping downloads."; budget_hit=1; break
             fi
+            # `--max-time` must stay comfortably below this job's
+            # `timeout-minutes: 15`, or a transfer that stalls after connecting
+            # takes the whole job down instead of letting the script emit its
+            # controlled no-op — the very failure mode these timeouts exist to
+            # prevent. Real artifact sets download in well under a minute, so
+            # 5 minutes per artifact is already very generous.
+            curl -sSL --retry 3 --connect-timeout 15 --max-time 300 "${url}" 2>/dev/null | head -c $((ZIP_CAP + 1)) > /tmp/a.zip || true
+            ZIP_BYTES=$(stat -c%s /tmp/a.zip 2>/dev/null || echo 0)
+            # Charge the budget with the bytes that actually crossed the wire,
+            # including those of an artifact that is about to be skipped.
+            TOTAL_ZIP_BYTES=$((TOTAL_ZIP_BYTES + ZIP_BYTES))
             if [ "${ZIP_BYTES}" -eq 0 ]; then
               echo "::warning::Skipping ${name}: empty or failed download."; legs_failed=$((legs_failed + 1)); continue
             fi
-            if [ "${ZIP_BYTES}" -gt "${MAX_ZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: download exceeded ${MAX_ZIP_BYTES} bytes."; legs_failed=$((legs_failed + 1)); continue
+            if [ "${ZIP_BYTES}" -gt "${ZIP_CAP}" ]; then
+              echo "::warning::Skipping ${name}: download exceeded the ${ZIP_CAP}-byte cap."; legs_failed=$((legs_failed + 1)); continue
             fi
             UNCOMP=$(unzip -l /tmp/a.zip 2>/dev/null | tail -1 | awk '{print $1}')
             # Fail safe: if the uncompressed size isn't a plain integer (corrupt
