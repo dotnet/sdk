@@ -521,9 +521,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>b25932e8d128b5242f1d89691f8e8171b82774c0</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26363.117">
-      <Uri>https://github.com/dotnet/dotnet</Uri>
-      <Sha>b25932e8d128b5242f1d89691f8e8171b82774c0</Sha>
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26427.10">
+      <Uri>https://github.com/dotnet/arcade</Uri>
+      <Sha>2cdfe99944d984749c8bdfc7d8d6a2589ed15d6d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.SignTool" Version="11.0.0-beta.26363.117">
       <Uri>https://github.com/dotnet/dotnet</Uri>
