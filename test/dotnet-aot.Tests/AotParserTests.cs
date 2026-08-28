@@ -21,6 +21,8 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  <see cref="CommandNotAvailableInAotException"/> so the bridge can fall back.
 /// </summary>
 [TestClass]
+[ResourceLock(nameof(Reporter))]
+[ResourceLock(WellKnownResources.Console)]
 public partial class AotParserTests
 {
     private static Exception? RecordException(Action action)

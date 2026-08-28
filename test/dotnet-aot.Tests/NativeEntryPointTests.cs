@@ -15,6 +15,11 @@ namespace Microsoft.DotNet.Cli.Tests;
 ///  "managed fallback not found" error because test env doesn't have dotnet.dll in sdkDir.
 /// </summary>
 [TestClass]
+[ResourceLock(nameof(NativeEntryPoint))]
+[ResourceLock(nameof(Reporter))]
+[ResourceLock(nameof(SdkDirectoryScope))]
+[ResourceLock(WellKnownResources.Console)]
+[ResourceLock(WellKnownResources.EnvironmentVariables)]
 public partial class NativeEntryPointTests
 {
     /// <summary>
@@ -30,6 +35,8 @@ public partial class NativeEntryPointTests
         string? originalTraceState = Environment.GetEnvironmentVariable(Activities.TRACESTATE);
         string? originalTelemetryOptout = Environment.GetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT");
         object? originalSdkRoot = AppContext.GetData(SdkPaths.DataName);
+        string? originalDotnetRoot = NativeEntryPoint.DotnetRoot;
+        string? originalSdkDirectory = NativeEntryPoint.SdkDirectory;
         try
         {
             action();
@@ -42,6 +49,9 @@ public partial class NativeEntryPointTests
             Environment.SetEnvironmentVariable(Activities.TRACESTATE, originalTraceState);
             Environment.SetEnvironmentVariable("DOTNET_CLI_TELEMETRY_OPTOUT", originalTelemetryOptout);
             AppContext.SetData(SdkPaths.DataName, originalSdkRoot);
+            NativeEntryPoint.DotnetRoot = originalDotnetRoot;
+            NativeEntryPoint.SdkDirectory = originalSdkDirectory;
+            SdkPaths.ClearSdkDirectoryCacheForTests();
         }
     }
 
