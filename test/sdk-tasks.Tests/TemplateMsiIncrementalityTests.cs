@@ -321,7 +321,7 @@ public class TemplateMsiIncrementalityTests : SdkTest
     {
         while (File.GetLastWriteTimeUtc(path) <= timestamp)
         {
-            Thread.Yield();
+            WaitForUtcNowToAdvance();
             File.SetLastWriteTimeUtc(path, DateTime.UtcNow);
         }
     }
