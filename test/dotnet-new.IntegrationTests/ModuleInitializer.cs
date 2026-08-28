@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Runtime.CompilerServices;
+using EmptyFiles;
 using VerifyTests.DiffPlex;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
@@ -32,6 +33,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                        directory: BaseIntegrationTest.ApprovalsDirectory,
                        typeName: type.Name,
                        methodName: method.Name));
+
+            FileExtensions.AddTextExtension(".cshtml");
 
             // Customize diff output of verifier
             VerifyDiffPlex.Initialize(OutputType.Compact);

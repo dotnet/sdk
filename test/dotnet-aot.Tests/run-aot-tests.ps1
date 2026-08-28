@@ -130,6 +130,11 @@ if (-not $NoBuild) {
     Write-Host ""
 }
 
+$managedTestModule = Get-ChildItem ([System.IO.Path]::Combine($repoRoot, "artifacts", "bin", "dotnet-aot.Tests", $Configuration)) `
+    -Recurse -Filter "dotnet-aot.Tests.dll" -ErrorAction SilentlyContinue |
+    Where-Object { $_.FullName -like "*$RuntimeIdentifier*" } |
+    Select-Object -First 1 -ExpandProperty FullName
+
 # Run
 if (-not (Test-Path $exePath)) {
     Write-Host "ERROR: Published binary not found at $exePath" -ForegroundColor Red
@@ -142,6 +147,10 @@ if (-not (Test-Path $aotLibraryPath)) {
 }
 if (-not (Test-Path $dnPath)) {
     Write-Host "ERROR: Published dn host not found at $dnPath" -ForegroundColor Red
+    exit 1
+}
+if (-not $managedTestModule) {
+    Write-Host "ERROR: Managed test module not found for Native AOT integration validation." -ForegroundColor Red
     exit 1
 }
 
@@ -163,6 +172,7 @@ $environment = @{
     DOTNET_AOT_LIBRARY_DIR = $aotPublishDir
     DOTNET_AOT_SDK_DIR = $sdkDirectory
     DOTNET_AOT_TEST_DN_PATH = $dnPath
+    DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
     DOTNET_HOST_PATH = $dotnet
     DOTNET_ROOT = [System.IO.Path]::Combine($repoRoot, ".dotnet")
