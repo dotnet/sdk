@@ -210,12 +210,10 @@ internal static class InteractiveFormSelector
         {
             new Markup($"[bold {theme.Brand}]{model.Subtitle.EscapeMarkup()}[/]"),
             Text.Empty,
-            new Markup(string.Format(
-                CultureInfo.InvariantCulture,
-                "[{0}]dotnetup will install .NET SDKs and runtimes in [/][{1}]{2}[/][{0}].[/]",
-                theme.Dim,
-                theme.Accent,
-                model.InstallPath.EscapeMarkup())),
+            new Markup(
+                $"[{theme.Dim}]dotnetup will install .NET SDKs and runtimes in [/]" +
+                $"[{theme.Accent}]{model.InstallPath.EscapeMarkup()}[/]" +
+                $"[{theme.Dim}].[/]"),
             Text.Empty,
         };
 
@@ -224,7 +222,7 @@ internal static class InteractiveFormSelector
             AppendField(rows, model, state, fields[i], i, showAllDetail, windowHeight, labelWidth, showArrow, theme);
         }
 
-        rows.Add(new Markup($"[white]{model.Question.EscapeMarkup()}[/]"));
+        rows.Add(new Markup($"[white]{model.ConfirmationPrompt.EscapeMarkup()}[/]"));
         rows.Add(BuildAcceptRow(state.IsAcceptFocused, showArrow, theme));
         rows.Add(Text.Empty);
         rows.Add(BuildLegend(state, theme));

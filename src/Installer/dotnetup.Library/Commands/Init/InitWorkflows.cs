@@ -102,7 +102,6 @@ internal class InitWorkflows
             return new FormOutcome(
                 SkipInstall: false,
                 Channel: null,
-                ChannelChanged: false,
                 AccessMode: plan.AccessMode,
                 Migrate: false);
         }
@@ -117,7 +116,6 @@ internal class InitWorkflows
         return new FormOutcome(
             SkipInstall: channel is null,
             Channel: channel,
-            ChannelChanged: model.ChannelChangedFromDefault,
             AccessMode: model.SelectedAccessMode(),
             Migrate: model.MigrateSelected());
     }
@@ -138,7 +136,7 @@ internal class InitWorkflows
         {
             effectiveRequests = [];
         }
-        else if (!outcome.ChannelChanged)
+        else if (!SelectedChannelDiffersFromDefault(outcome.Channel, plan.ChannelDisplay.ChannelLabel))
         {
             effectiveRequests = InitWorkflowDefaults.ResolveDefaultRequests(command, requests);
         }
@@ -208,10 +206,17 @@ internal class InitWorkflows
             return [];
         }
 
-        return outcome.ChannelChanged
+        return SelectedChannelDiffersFromDefault(outcome.Channel, plan.ChannelDisplay.ChannelLabel)
             ? [.. plan.DefaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, outcome.Channel))]
             : [.. plan.DefaultInstallSpecs];
     }
+
+    internal static bool SelectedChannelDiffersFromDefault(string? selectedChannel, string? defaultChannel) =>
+        selectedChannel is not null
+        && !string.Equals(
+            selectedChannel,
+            defaultChannel,
+            StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Installs the selected requests (with any migrations), persists the configuration, and

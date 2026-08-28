@@ -71,14 +71,11 @@ internal sealed class InitFormModel
     /// <summary>Short line under the banner.</summary>
     public string Subtitle { get; } = "Welcome to dotnetup!";
 
-    /// <summary>The prompt shown above the fields.</summary>
-    public string Question { get; } = "Install .NET with these settings?";
-
     /// <summary>The form fields, in display order.</summary>
     public IReadOnlyList<FormField> Fields { get; }
 
-    /// <summary>True when the user changed the channel away from the recommended default.</summary>
-    public bool ChannelChangedFromDefault => _channelField.IsChangedFromDefault;
+    /// <summary>The confirmation prompt shown below the fields and above the Accept action.</summary>
+    public string ConfirmationPrompt { get; } = "Install .NET with these settings?";
 
     /// <summary>
     /// The channel the user chose: a fixed channel token, the typed custom value, or <c>null</c>
@@ -229,7 +226,7 @@ internal sealed class InitFormModel
         FormField? migrateField = null;
         if (plan.Migrations.Count > 0)
         {
-            migrateField = BuildMigrateField(() =>
+            migrateField = BuildMigrateField(isVisible: () =>
             {
                 return MigrationWorkflow.FilterMigrationSelections(
                     plan.Migrations,
@@ -383,7 +380,9 @@ internal sealed class InitFormModel
             return [];
         }
 
-        return channelField.IsChangedFromDefault
+        return InitWorkflows.SelectedChannelDiffersFromDefault(
+            selectedChannel,
+            channelTokens[channelField.DefaultIndex])
             ? [.. defaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, selectedChannel))]
             : defaultInstallSpecs;
     }

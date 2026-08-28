@@ -64,6 +64,26 @@ public class InitFormModelTests
     }
 
     [TestMethod]
+    [DataRow("latest", false)]
+    [DataRow("LATEST", false)]
+    [DataRow("10.0", true)]
+    internal void CustomChannel_IsComparedWithDefaultByValue(string customChannel, bool expectedToDiffer)
+    {
+        var channelDisplay = new DefaultChannelDisplay(
+            ChannelVersionResolver.LatestChannel,
+            GlobalJsonPath: null);
+        WalkthroughPlan plan = CreatePlan(channelDisplay);
+        InitFormModel model = InitFormModel.Create(plan, shellProvider: null);
+        FormField channelField = model.Fields[0];
+        channelField.SetCustomValue(channelField.Choices.Count - 1, customChannel);
+
+        InitWorkflows.SelectedChannelDiffersFromDefault(
+            model.SelectedChannel(),
+            plan.ChannelDisplay.ChannelLabel)
+            .Should().Be(expectedToDiffer);
+    }
+
+    [TestMethod]
     public void GlobalJsonChannelDetail_ShowsSourcePath()
     {
         const string globalJsonPath = @"C:\repo\global.json";
@@ -153,6 +173,20 @@ public class InitFormModelTests
     }
 
     [TestMethod]
+    public void TypingDefaultChannel_KeepsRedundantMigrationFieldHidden()
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay("10.0.1xx", GlobalJsonPath: null),
+            [CreateMigration("10.0.1xx", "10.0.100")]);
+        FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
+        FormField channelField = model.Fields[0];
+        channelField.SetCustomValue(channelField.Choices.Count - 1, "10.0.1XX");
+
+        migrationField.IsVisible.Should().BeFalse();
+        model.MigrateSelected().Should().BeFalse();
+    }
+
+    [TestMethod]
     public void MigrationField_IsOmittedWhenThereAreNoCandidates()
     {
         var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
@@ -202,11 +236,17 @@ public class InitFormModelTests
         DefaultChannelDisplay channelDisplay,
         List<MigrationWorkflow.MigrationSelection>? migrations = null,
         DotnetAccessMode accessMode = DotnetAccessMode.None)
+        => InitFormModel.Create(CreatePlan(channelDisplay, migrations, accessMode), shellProvider: null);
+
+    private static WalkthroughPlan CreatePlan(
+        DefaultChannelDisplay channelDisplay,
+        List<MigrationWorkflow.MigrationSelection>? migrations = null,
+        DotnetAccessMode accessMode = DotnetAccessMode.None)
     {
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
-        var plan = new WalkthroughPlan(
+        return new WalkthroughPlan(
             installRoot,
             accessMode,
             migrations ?? [],
@@ -214,8 +254,6 @@ public class InitFormModelTests
             [new MinimalInstallSpec(InstallComponent.SDK, channelDisplay.ChannelLabel)],
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
-
-        return InitFormModel.Create(plan, shellProvider: null);
     }
 
     private static MigrationWorkflow.MigrationSelection CreateMigration(

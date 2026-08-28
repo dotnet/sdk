@@ -18,7 +18,9 @@ internal enum FormMode
 /// <summary>
 /// Pure, console-free state machine for the init form selector. Owns the focus/edit state and the
 /// transitions for arrow navigation, committing a choice, typing into a custom-input choice, and
-/// accepting the form. Kept separate from the Spectre rendering so the behavior is unit-testable.
+/// accepting the form. This state is transient: committed field values remain on
+/// <see cref="FormField"/>, while this type tracks which value is currently highlighted and any
+/// uncommitted text. Kept separate from the Spectre rendering so the behavior is unit-testable.
 ///
 /// A custom-input choice is "live" whenever it is highlighted: typing edits its text buffer in
 /// place and Enter commits the field to that text (just like committing any fixed choice). Moving
@@ -63,10 +65,16 @@ internal sealed class FormSelectorState
     /// </summary>
     public int FocusedRow { get; private set; }
 
-    /// <summary>The choice index highlighted while editing a field; otherwise -1.</summary>
+    /// <summary>
+    /// The transient choice index highlighted while editing a field; otherwise -1. It is copied to
+    /// <see cref="FormField.SelectedIndex"/> only when the user confirms the choice.
+    /// </summary>
     public int EditChoiceIndex { get; private set; } = -1;
 
-    /// <summary>The live text for a highlighted custom-input choice; empty otherwise.</summary>
+    /// <summary>
+    /// The uncommitted text for a highlighted custom-input choice; empty otherwise. Confirming the
+    /// choice stores it in <see cref="FormField.CustomValue"/>.
+    /// </summary>
     public string CustomTextBuffer { get; private set; } = string.Empty;
 
     // The edited field's remembered custom text captured when the field was opened, so Esc can

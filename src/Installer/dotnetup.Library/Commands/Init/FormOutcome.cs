@@ -11,15 +11,14 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// </summary>
 /// <param name="SkipInstall">True when the user chose not to install an SDK now ("none").</param>
 /// <param name="Channel">
-/// The chosen channel token (or typed custom value) when the channel was changed from the default;
-/// <c>null</c> when the default channel is unchanged or when <paramref name="SkipInstall"/> is true.
+/// The selected channel token or typed custom value. In non-interactive sessions this may be
+/// <c>null</c> to indicate that the plan's default install requests should be used unchanged. It is
+/// also <c>null</c> when <paramref name="SkipInstall"/> is true.
 /// </param>
-/// <param name="ChannelChanged">True when the user changed the channel away from the default.</param>
 /// <param name="AccessMode">The chosen dotnet access mode.</param>
 /// <param name="Migrate">True when the user chose to migrate existing system installs.</param>
 internal sealed record FormOutcome(
     bool SkipInstall,
     string? Channel,
-    bool ChannelChanged,
     DotnetAccessMode AccessMode,
     bool Migrate);

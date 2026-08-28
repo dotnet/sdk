@@ -5,7 +5,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 
 /// <summary>
 /// A single field in the init form: a label, the values it can take, the default value, and the
-/// currently selected value.
+/// committed value currently selected in the form. Transient navigation and editing state, such as
+/// the highlighted choice and uncommitted input buffer, belongs to <see cref="FormSelectorState"/>.
 /// </summary>
 internal sealed class FormField
 {
@@ -51,8 +52,8 @@ internal sealed class FormField
     public string Label { get; }
 
     /// <summary>
-    /// An optional one-line explanation of what the field means, shown while the field is focused
-    /// (e.g. explaining what a channel is). Null when the field needs no extra explanation.
+    /// An optional explanation shown while editing and, when <see cref="SummaryShowsDescription"/>
+    /// is true, in the browse summary.
     /// </summary>
     public string? Description { get; }
 
@@ -75,12 +76,16 @@ internal sealed class FormField
     /// <summary>The index of the recommended default value.</summary>
     public int DefaultIndex { get; }
 
-    /// <summary>The index of the currently selected value. Updated when the user picks a value.</summary>
+    /// <summary>
+    /// The index of the committed value. This changes only when the user confirms a choice;
+    /// <see cref="FormSelectorState.EditChoiceIndex"/> tracks the choice highlighted while editing.
+    /// </summary>
     public int SelectedIndex { get; set; }
 
     /// <summary>
-    /// The free-text value typed for a custom-input choice, or null when a fixed value is selected.
-    /// When set, it overrides the displayed value (see <see cref="DisplayValue"/>).
+    /// The committed free-text value for a custom-input choice, or null when a fixed value is
+    /// selected. While editing, <see cref="FormSelectorState.CustomTextBuffer"/> holds the
+    /// uncommitted text. When set, <see cref="DisplayValue"/> uses this instead of the choice title.
     /// </summary>
     public string? CustomValue { get; private set; }
 
