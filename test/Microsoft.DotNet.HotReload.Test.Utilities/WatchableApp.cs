@@ -198,7 +198,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             info.Environment.Add("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             info.Environment.Add("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             info.Environment.Add("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
-            info.Environment["DOTNET_CLI_CONTEXT_VERBOSE"] = "";
+            info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "true");
 
             // Aspire DCP logging:
             info.Environment.Add("DCP_DIAGNOSTICS_LOG_FOLDER", Path.Combine(testOutputPath, "dcp"));
