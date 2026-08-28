@@ -593,11 +593,12 @@ jobs:
             fi
             ATTEMPT_SECONDS="${MAX_ATTEMPT_SECONDS}"
             [ "${TIME_LEFT}" -lt "${ATTEMPT_SECONDS}" ] && ATTEMPT_SECONDS="${TIME_LEFT}"
-            # `--retry-max-time` bounds the whole retry window and `--max-time` one
-            # attempt; without the former, `--retry 3` alone would permit four full
-            # attempts plus backoff and could outlive this job's `timeout-minutes`.
-            # Both come from the time actually left in the download budget.
-            curl -sSL --retry 3 --connect-timeout 15 --max-time "${ATTEMPT_SECONDS}" --retry-max-time "${TIME_LEFT}" "${url}" 2>/dev/null | head -c $((ZIP_CAP + 1)) > /tmp/a.zip || true
+            # `--retry-max-time` only gates whether curl may *start* another retry, so a
+            # retry begun just inside it can still run a further `--max-time`. `timeout`
+            # around the whole invocation is what makes the deadline real rather than a
+            # scheduling hint; a killed transfer is treated like any other failed one and
+            # the leg is reported as missing, which fails closed.
+            timeout "${TIME_LEFT}" curl -sSL --retry 3 --connect-timeout 15 --max-time "${ATTEMPT_SECONDS}" --retry-max-time "${TIME_LEFT}" "${url}" 2>/dev/null | head -c $((ZIP_CAP + 1)) > /tmp/a.zip || true
             ZIP_BYTES=$(stat -c%s /tmp/a.zip 2>/dev/null || echo 0)
             # Charge the budget with the bytes that actually crossed the wire,
             # including those of an artifact that is about to be skipped.
