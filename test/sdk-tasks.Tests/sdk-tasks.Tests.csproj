@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
   </PropertyGroup>
 
