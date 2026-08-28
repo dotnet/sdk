@@ -97,8 +97,8 @@ namespace Microsoft.NET.Sdk.WorkloadMSBuildSdkResolver
         /// </summary>
         public static CachingWorkloadResolver GetShared(bool enabled, string? userProfileDir, string? globalJsonPath)
         {
-            //  Hashed outside the lock: it is file I/O and does not need to be serialized.
-            var key = (enabled, userProfileDir, globalJsonPath, DescribeGlobalJson(globalJsonPath));
+            //  Hashed outside the lock when enabled: it is file I/O and does not need to be serialized.
+            var key = (enabled, userProfileDir, globalJsonPath, enabled ? DescribeGlobalJson(globalJsonPath) : "disabled");
 
             lock (s_sharedLock)
             {
