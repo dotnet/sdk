@@ -125,11 +125,15 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         [DynamicData(nameof(TelemetryCommonPropertiesTests.LLMTelemetryTestCases), typeof(TelemetryCommonPropertiesTests))]
         public void WhenLLMIsDetectedTLLiveUpdateIsDisabled(Dictionary<string, string>? llmEnvVarsToSet, string? expectedLLMName)
         {
             CommandDirectoryContext.PerformActionWithBasePath(WorkingDirectory, () =>
             {
+                var originalValues = llmEnvVarsToSet?
+                    .ToDictionary(pair => pair.Key, pair => Environment.GetEnvironmentVariable(pair.Key));
+
                 try
                 {
                     // Set environment variables to simulate LLM environment
@@ -154,12 +158,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 }
                 finally
                 {
-                    // Clear the environment variables after the test
-                    if (llmEnvVarsToSet is not null)
+                    if (originalValues is not null)
                     {
-                        foreach (var (key, value) in llmEnvVarsToSet)
+                        foreach (var (key, value) in originalValues)
                         {
-                            Environment.SetEnvironmentVariable(key, null);
+                            Environment.SetEnvironmentVariable(key, value);
                         }
                     }
                 }
@@ -167,4 +170,3 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
     }
 }
-

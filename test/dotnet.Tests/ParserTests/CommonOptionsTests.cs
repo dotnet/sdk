@@ -11,6 +11,7 @@ namespace Microsoft.DotNet.Tests.ParserTests;
 public class CommonOptionsTests
 {
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void ConfigurationDefaultsToEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -35,6 +36,7 @@ public class CommonOptionsTests
     }
 
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void ExplicitConfigurationOverridesEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -59,6 +61,7 @@ public class CommonOptionsTests
     }
 
     [TestMethod]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DataRow("")]
     [DataRow(" ")]
     [DataRow("\t")]
