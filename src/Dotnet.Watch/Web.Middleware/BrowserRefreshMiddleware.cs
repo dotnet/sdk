@@ -222,7 +222,7 @@ public sealed class BrowserRefreshMiddleware
 
         private static readonly Action<ILogger, string?, string?, Exception?> _middlewareLoaded = LoggerMessage.Define<string?, string?>(
             LogLevel.Debug,
-            new EventId(1, "MiddlewareLoaded"),
+            new EventId(5, "MiddlewareLoaded"),
             $"{Symbol} Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={{ModifiableAssemblies}}, __ASPNETCORE_BROWSER_TOOLS={{BrowserTools}}");
 
         private static readonly Action<ILogger, Exception?> _setupResponseForBrowserRefresh = LoggerMessage.Define(
