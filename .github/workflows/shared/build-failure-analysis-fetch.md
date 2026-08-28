@@ -194,7 +194,14 @@ jobs:
           set +e
           set +o pipefail
 
-          [ -z "${GITHUB_OUTPUT}" ] && { echo "::error::GITHUB_OUTPUT is not set; refusing to run without a way to emit step outputs." >&2; exit 1; }
+          # A set but unwritable path would pass a non-empty check and then
+          # fail on every append, leaving the step with no outputs at all
+          # instead of the intended controlled no-op. Probe with a zero-byte
+          # append, which verifies writability without adding content.
+          if [ -z "${GITHUB_OUTPUT}" ] || ! printf '' >> "${GITHUB_OUTPUT}" 2>/dev/null; then
+            echo "::error::GITHUB_OUTPUT is unset or not writable; refusing to run without a way to emit step outputs." >&2
+            exit 1
+          fi
 
           emit_none() { echo "binlog-found=false" >> "$GITHUB_OUTPUT"; exit 0; }
 
@@ -517,6 +524,10 @@ jobs:
           MAX_UNZIP_BYTES=2147483648    # 2 GB uncompressed per artifact
           MAX_TOTAL_BYTES=4294967296    # 4 GB uncompressed across all artifacts
           MAX_TOTAL_ZIP_BYTES=3221225472 # 3 GB compressed downloaded in total
+          # A transfer smaller than this can't yield a usable archive, so a
+          # remaining allowance below it is treated as exhausted rather than
+          # spent on a download that will only be discarded.
+          MIN_ZIP_BYTES=1048576         # 1 MB
           MAX_ARTIFACTS=40              # cap only; the real count is path-dependent
           TOTAL_BYTES=0
           TOTAL_ZIP_BYTES=0
@@ -563,8 +574,8 @@ jobs:
             ZIP_CAP="${MAX_ZIP_BYTES}"
             ZIP_ALLOWANCE=$((MAX_TOTAL_ZIP_BYTES - TOTAL_ZIP_BYTES))
             [ "${ZIP_ALLOWANCE}" -lt "${ZIP_CAP}" ] && ZIP_CAP="${ZIP_ALLOWANCE}"
-            if [ "${ZIP_CAP}" -le 0 ]; then
-              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} exhausted before ${name}; stopping downloads."; budget_hit=1; break
+            if [ "${ZIP_CAP}" -lt "${MIN_ZIP_BYTES}" ]; then
+              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} is exhausted before ${name}; stopping downloads."; budget_hit=1; break
             fi
             # `--max-time` must stay comfortably below this job's
             # `timeout-minutes: 15`, or a transfer that stalls after connecting
