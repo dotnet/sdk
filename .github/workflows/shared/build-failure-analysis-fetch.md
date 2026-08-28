@@ -193,7 +193,34 @@ jobs:
           # agent pipeline stays inert.
           set +e
           set +o pipefail
+
+          [ -z "${GITHUB_OUTPUT}" ] && { echo "::error::GITHUB_OUTPUT is not set; refusing to run without a way to emit step outputs." >&2; exit 1; }
+
           emit_none() { echo "binlog-found=false" >> "$GITHUB_OUTPUT"; exit 0; }
+
+          # Fetch an Azure DevOps API document into ADO_DOC. A network failure
+          # or a non-JSON body is a data-resolution failure, not evidence that
+          # there is nothing to analyse, so it is reported as such instead of
+          # falling through to an empty `.records`/`.value` and a misleading
+          # "no failed jobs" warning. These are small JSON documents, so they
+          # are also given a time budget: without one a stalled endpoint hangs
+          # the step until the whole job times out.
+          # Returns non-zero rather than calling emit_none directly, because a
+          # call inside a command substitution would only exit the subshell.
+          ado_get() {
+            local what="$1" url="$2" rc
+            ADO_DOC=$(curl -sSL --fail --retry 3 --connect-timeout 15 --max-time 60 "${url}")
+            rc=$?
+            if [ "${rc}" -ne 0 ] || [ -z "${ADO_DOC}" ]; then
+              echo "::warning::Could not fetch the ${what} from Azure DevOps (curl exit ${rc}); treating as a data-resolution failure."
+              return 1
+            fi
+            if ! printf '%s' "${ADO_DOC}" | jq -e . >/dev/null 2>&1; then
+              echo "::warning::Azure DevOps returned a non-JSON ${what}; treating as a data-resolution failure."
+              return 1
+            fi
+            return 0
+          }
 
           # --- 1. Resolve the Azure DevOps build and the PR it belongs to ---
           # This is the ONLY part of the job that differs between the two
@@ -225,8 +252,9 @@ jobs:
             # Newest build for the PR's merge ref REGARDLESS of status
             # (queue-time descending), so a build queued after an older failure
             # is seen rather than the stale one being analysed silently.
-            builds_json=$(curl -sSL --retry 3 \
-              "${ADO_API}/build/builds?definitions=${ADO_BUILD_DEFINITION_ID}&branchName=refs/pull/${PR_NUMBER}/merge&queryOrder=queueTimeDescending&\$top=1&api-version=7.1")
+            ado_get "build list for PR #${PR_NUMBER}" \
+              "${ADO_API}/build/builds?definitions=${ADO_BUILD_DEFINITION_ID}&branchName=refs/pull/${PR_NUMBER}/merge&queryOrder=queueTimeDescending&\$top=1&api-version=7.1" || emit_none
+            builds_json="${ADO_DOC}"
             BUILD_ID=$(printf '%s' "${builds_json}" | jq -r '.value // [] | .[0].id // empty')
             BUILD_STATUS=$(printf '%s' "${builds_json}" | jq -r '.value // [] | .[0].status // empty')
             echo "Newest dotnet-sdk-public-ci build for PR #${PR_NUMBER}: id='${BUILD_ID}' status='${BUILD_STATUS}'"
@@ -240,7 +268,8 @@ jobs:
               echo "::warning::PR #${PR_NUMBER}'s newest dotnet-sdk-public-ci build (${BUILD_ID}) is still '${BUILD_STATUS}'; wait for it to finish before analysing."
               emit_none
             fi
-            build_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1")
+            ado_get "details of build ${BUILD_ID}" "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1" || emit_none
+            build_json="${ADO_DOC}"
           else
             if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
               BUILD_ID="${DISPATCH_BUILD_ID}"
@@ -259,7 +288,8 @@ jobs:
             # The build metadata is the authoritative source for the PR number
             # (via sourceBranch) as well as for the definition / result /
             # revision validated in step 3.
-            build_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1")
+            ado_get "details of build ${BUILD_ID}" "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1" || emit_none
+            build_json="${ADO_DOC}"
             # A PR build's sourceBranch is exactly `refs/pull/<n>/merge`, so it
             # identifies the PR unambiguously — unlike the commit->PRs API,
             # which can return several PRs in an unspecified order.
@@ -380,7 +410,8 @@ jobs:
           # workflow a silent no-op on every `release/*` PR (0 artifacts matched
           # -> binlog-found=false -> agent skipped), which is exactly the class of
           # failure that looks green forever, so handle both.
-          artifacts_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}/artifacts?api-version=7.1")
+          ado_get "artifact list of build ${BUILD_ID}" "${ADO_API}/build/builds/${BUILD_ID}/artifacts?api-version=7.1" || emit_none
+          artifacts_json="${ADO_DOC}"
           mapfile -t names < <(printf '%s' "${artifacts_json}" | jq -r '
             .value // []
             | map(select(.name | test("_Logs_Attempt[0-9]+$")))
@@ -426,7 +457,7 @@ jobs:
           #
           # `canceled` and `abandoned` legs count alongside `failed`: they also
           # finish without logs, and are a real gap in the artifact set.
-          timeline_json=$(curl -sSL --retry 3 --max-time 60 "${ADO_API}/build/builds/${BUILD_ID}/timeline?api-version=7.1" 2>/dev/null || true)
+          timeline_json=$(curl -sSL --retry 3 --connect-timeout 15 --max-time 60 "${ADO_API}/build/builds/${BUILD_ID}/timeline?api-version=7.1" 2>/dev/null || true)
           MISSING_LEGS=""
           # An unreadable timeline must not look like a complete build. A failed
           # request, a non-JSON error page and an ADO error document all left
@@ -474,7 +505,15 @@ jobs:
           # extraction time, AND enforce a cumulative uncompressed budget across
           # all legs so many individually-small artifacts can't collectively
           # exhaust the runner's disk.
-          MAX_ZIP_BYTES=524288000       # 500 MB compressed per artifact
+          # `MAX_ZIP_BYTES` is a *download* guard, not a size expectation: an
+          # artifact that grows past a cap is silently dropped from the analysis
+          # rather than reported, so a too-tight value quietly hides the very
+          # failure the workflow exists to explain. (On dotnet/roslyn a 500 MB
+          # cap excluded a 636 MB analyzer-logs artifact and the run produced
+          # nothing.) The cumulative caps below are what actually bound the
+          # runner's disk and network, so this one is set well clear of the
+          # legitimate range.
+          MAX_ZIP_BYTES=2147483648      # 2 GB compressed per artifact
           MAX_UNZIP_BYTES=2147483648    # 2 GB uncompressed per artifact
           MAX_TOTAL_BYTES=4294967296    # 4 GB uncompressed across all artifacts
           MAX_TOTAL_ZIP_BYTES=3221225472 # 3 GB compressed downloaded in total
@@ -515,7 +554,7 @@ jobs:
             # stream through `head -c` (cap + 1) and bound total time. This
             # closes the gap where `curl --max-filesize` alone would let a
             # length-less response write unbounded data before any post-check.
-            curl -sSL --retry 3 --max-time 300 "${url}" 2>/dev/null | head -c $((MAX_ZIP_BYTES + 1)) > /tmp/a.zip || true
+            curl -sSL --retry 3 --connect-timeout 15 --max-time 1200 "${url}" 2>/dev/null | head -c $((MAX_ZIP_BYTES + 1)) > /tmp/a.zip || true
             ZIP_BYTES=$(stat -c%s /tmp/a.zip 2>/dev/null || echo 0)
             # Bound cumulative *compressed* bytes too: the per-artifact and
             # cumulative-uncompressed caps still allow many mid-sized archives
