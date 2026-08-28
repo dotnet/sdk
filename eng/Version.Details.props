@@ -55,7 +55,7 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26421.110</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26421.110</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
     <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26421.110</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
-    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26421.110</MicrosoftDotNetHelixJobMonitorPackageVersion>
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26427.10</MicrosoftDotNetHelixJobMonitorPackageVersion>
     <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26421.110</MicrosoftDotNetHelixSdkPackageVersion>
     <MicrosoftDotNetSignToolPackageVersion>11.0.0-beta.26421.110</MicrosoftDotNetSignToolPackageVersion>
     <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-rc.1.26421.110</MicrosoftDotNetWebItemTemplates110PackageVersion>
