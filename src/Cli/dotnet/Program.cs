@@ -212,6 +212,7 @@ public class Program
         s_sigIntRegistration.Dispose();
         s_sigQuitRegistration.Dispose();
         s_sigTermRegistration.Dispose();
+        TelemetryClient.Instance?.WaitForPendingEvents();
         s_mainActivity?.Stop();
         TelemetryClient.FlushProviders();
         Activities.Source.Dispose();
