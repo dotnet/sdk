@@ -666,7 +666,7 @@ jobs:
             # happens to parse as a ZIP; without this the leg would be accepted from a
             # truncated download. Skipping fails closed via the completeness check.
             if [ "${curl_rc}" -ne 0 ]; then
-              echo "::warning::Skipping ${safe_name}: download failed or was truncated (curl exit ${curl_rc})."; continue
+              echo "::warning::Skipping ${safe_name}: download failed or was truncated (curl exit ${curl_rc})."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ "${ZIP_BYTES}" -eq 0 ]; then
               echo "::warning::Skipping ${safe_name}: empty or failed download."; legs_failed=$((legs_failed + 1)); continue
@@ -723,12 +723,12 @@ jobs:
             # ever reaching the controlled no-op below.
             TIME_LEFT=$(( FETCH_DEADLINE - $(date +%s) ))
             if [ "${TIME_LEFT}" -le 0 ]; then
-              echo "::warning::Fetch budget exhausted before extracting ${safe_name}; stopping."; break
+              echo "::warning::Fetch budget exhausted before extracting ${safe_name}; stopping."; budget_hit=1; break
             fi
             [ "${TIME_LEFT}" -gt 120 ] && TIME_LEFT=120
             timeout "${TIME_LEFT}" unzip -o "${ZIP_TMP}" '*.binlog' -d "${AX_DIR}" >/dev/null 2>&1 || uz=$?
             if [ "${uz}" -eq 11 ]; then
-              echo "${name}: no binlog inside; nothing to stage from this artifact."; continue
+              echo "${safe_name}: no binlog inside; nothing to stage from this artifact."; continue
             fi
             if [ "${uz}" -ne 0 ]; then
               echo "::warning::Skipping ${safe_name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
