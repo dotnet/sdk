@@ -20,6 +20,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// which uses live process state, equivalent to the legacy single-threaded behavior.
     /// </summary>
     [TestClass]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public class GivenATaskEnvironmentDefault
     {
         [TestMethod]
