@@ -10,9 +10,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
-// These tests mutate the process current directory, so they must run sequentially.
-// The project disables parallelization (MSTestParallelizeScope=None) and
-// [DoNotParallelize] enforces that for this class.
+// ResourceLock cannot protect unrelated tests that implicitly read the process current directory.
 [DoNotParallelize]
 [TestClass]
 public class GenerateStaticWebAssetsDevelopmentManifestMultiThreadingTest

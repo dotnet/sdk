@@ -166,10 +166,13 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
         errorMessages[0].Should().Be($"""The asset file '{Path.GetFullPath(Path.Combine("wwwroot", "js", "sample.js"))}' specified in the endpoint '{Path.Combine("js","sample.js").Replace('\\', '/')}' does not exist.""");
     }
 
+    // ResourceLock cannot protect unrelated tests that implicitly read the process current directory.
+    [DoNotParallelize]
     [TestMethod]
     public void Execute_RelativeTargetPropsFilePath_ResolvesAgainstProjectDirectory_NotProcessCurrentDirectory() =>
         AssertWritesEndpointsPropsFileRelativeToTaskEnvironmentProjectDirectory("endpoints.props");
 
+    [DoNotParallelize]
     [TestMethod]
     [OSCondition(OperatingSystems.Windows)]
     public void Execute_WhitespaceTargetPropsFilePath_FailsOnWindows()
@@ -182,6 +185,7 @@ public class GenerateStaticWebAssetEndpointsPropsFileTest
         });
     }
 
+    [DoNotParallelize]
     [TestMethod]
     [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
     public void Execute_WhitespaceTargetPropsFilePath_WritesRelativeToTaskEnvironmentProjectDirectoryOnUnix() =>

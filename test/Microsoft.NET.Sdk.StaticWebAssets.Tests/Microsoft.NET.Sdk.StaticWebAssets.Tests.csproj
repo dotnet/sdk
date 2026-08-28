@@ -10,15 +10,10 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <!-- These tests were authored for xUnit with assembly-wide parallelization disabled
-         ([assembly: CollectionBehavior(DisableTestParallelization = true)]). They are not parallel-safe:
-         many integration tests in the same class share fixed test asset directories (e.g. helpers like
-         BuildFrameworkAssetsConsumer reuse the same [CallerMemberName]-derived path), and several task
-         tests mutate the process-global current directory via Directory.SetCurrentDirectory. Running any
-         of them concurrently causes file-in-use, file-already-exists, missing-metadata, and deleted-cwd
-         (GetCwd) races. Override the repo-wide MethodLevel default with None, which emits
-         [assembly: DoNotParallelize] to preserve the original fully-serialized semantics. -->
-    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <!-- Preserve same-class serialization because integration-test helpers share fixed asset directories
+         and caches. Tests that mutate the process current directory use DoNotParallelize: a ResourceLock
+         on only the writers cannot protect unrelated tests that implicitly resolve paths against CWD. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>
