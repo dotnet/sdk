@@ -16,10 +16,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        [ResourceLock(WellKnownResources.EnvironmentVariables)]
         public void ItCanUseEnvironmentVariableToForceCustomPathToVsTestApp()
         {
             string vsTestConsolePath = "VSTEST_CONSOLE_PATH";
             string dummyPath = Path.Join(Path.GetTempPath(), "vstest.custom.console.dll");
+            string? originalVsTestConsolePath = Environment.GetEnvironmentVariable(vsTestConsolePath);
 
             try
             {
@@ -29,9 +31,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
             finally
             {
-                Environment.SetEnvironmentVariable(vsTestConsolePath, null);
+                Environment.SetEnvironmentVariable(vsTestConsolePath, originalVsTestConsolePath);
             }
         }
     }
 }
-
