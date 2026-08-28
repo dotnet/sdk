@@ -185,6 +185,15 @@
       <TestExecutionDirectoryFiles Include="$(RepoRoot)test\ConditionalTests.targets">
         <DestinationFolder>test/</DestinationFolder>
       </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\BundledTemplates.targets">
+        <DestinationFolder>Layout/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\redist\targets\GenerateMSIs.targets">
+        <DestinationFolder>Layout/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
+      <TestExecutionDirectoryFiles Include="$(RepoRoot)src\Layout\pkg\windows\msis\templates\templates.wixproj">
+        <DestinationFolder>Layout/</DestinationFolder>
+      </TestExecutionDirectoryFiles>
 
       <FilesInHelixRoot Include="$(TestLayoutDir)\NuGet.config" />
       <FilesInHelixRoot Condition="$([MSBuild]::IsOSPlatform(`Windows`))" Include="$(RepoRoot)build\SetupHelixEnvironment.cmd" />
