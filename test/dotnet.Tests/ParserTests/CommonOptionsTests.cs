@@ -8,10 +8,10 @@ using Microsoft.DotNet.Cli.CommandLine;
 namespace Microsoft.DotNet.Tests.ParserTests;
 
 [TestClass]
+[DoNotParallelize] // Child dotnet processes in other classes inherit Configuration without acquiring an environment lock.
 public class CommonOptionsTests
 {
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void ConfigurationDefaultsToEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -36,7 +36,6 @@ public class CommonOptionsTests
     }
 
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public void ExplicitConfigurationOverridesEnvironmentVariable()
     {
         string? originalConfiguration = Environment.GetEnvironmentVariable("Configuration");
@@ -61,7 +60,6 @@ public class CommonOptionsTests
     }
 
     [TestMethod]
-    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     [DataRow("")]
     [DataRow(" ")]
     [DataRow("\t")]
