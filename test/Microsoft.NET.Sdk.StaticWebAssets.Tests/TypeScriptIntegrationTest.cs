@@ -233,6 +233,55 @@ public class TypeScriptIntegrationTest : IsolatedNuGetPackageFolderAspNetSdkBase
         new FileInfo(manifestPath).Should().NotExist();
     }
 
+    [TestMethod]
+    public void Build_AfterObjDeleteWithRetainedOutputs_DoesNotDuplicateAssets()
+    {
+        var testAsset = "RazorClassLibrary";
+        ProjectDirectory = CreateAspNetSdkTestAsset(testAsset);
+
+        SetupTypeScriptProject(ProjectDirectory);
+
+        ProjectDirectory.WithProjectChanges(document =>
+        {
+            var propertyGroup = document.Root.Descendants()
+                .FirstOrDefault(e => e.Name.LocalName == "PropertyGroup");
+            propertyGroup?.Add(new XElement("CompressionEnabled", "true"));
+        });
+
+        var build = CreateBuildCommand(ProjectDirectory);
+        ExecuteCommand(build).Should().Pass();
+
+        var jsFilePath = Path.Combine(ProjectDirectory.TestRoot, "wwwroot", "app.js");
+        new FileInfo(jsFilePath).Should().Exist();
+
+        Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "obj"), recursive: true);
+        Directory.Delete(Path.Combine(ProjectDirectory.TestRoot, "bin"), recursive: true);
+
+        new FileInfo(jsFilePath).Should().Exist();
+
+        build = CreateBuildCommand(ProjectDirectory);
+        ExecuteCommand(build).Should().Pass();
+
+        var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+        var finalPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+        var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(finalPath));
+        buildManifest.Should().NotBeNull();
+
+        foreach (var relativePath in new[] { "app.js", "app.js.map" })
+        {
+            var asset = buildManifest.Assets.Should().ContainSingle(
+                candidate => candidate.RelativePath == relativePath &&
+                    candidate.AssetRole == StaticWebAsset.AssetRoles.Primary,
+                $"there should be exactly one primary asset for {relativePath}").Subject;
+
+            buildManifest.Endpoints.Should().ContainSingle(
+                endpoint => endpoint.Route == relativePath &&
+                    endpoint.AssetFile == asset.Identity &&
+                    endpoint.Selectors.Length == 0,
+                $"there should be exactly one default endpoint for {relativePath}");
+        }
+    }
+
     /// <summary>
     /// Sets up a test project with TypeScript configuration using the
     /// Microsoft.TypeScript.MSBuild NuGet package.

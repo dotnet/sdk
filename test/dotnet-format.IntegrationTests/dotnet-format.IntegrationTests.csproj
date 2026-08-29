@@ -2,8 +2,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <!-- Tests are resource-intensive (git clones, restores) and must run serially. -->
-    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <!-- Each test class owns a repository clone; inherited methods within a class share that clone. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

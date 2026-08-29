@@ -14,6 +14,14 @@ For a high-level project description, build status, and contribution flow, see t
 [README](../README.md). For the canonical build/test/debug walkthrough, see the
 [Developer Guide](../documentation/project-docs/developer-guide.md).
 
+### Agent orientation and memory
+
+1. Read the [memory index](memory/INDEX.md) first and load other memory files on demand.
+2. For non-trivial work, also read [ARCHITECTURE.md](memory/ARCHITECTURE.md) and
+   [CONVENTIONS.md](memory/CONVENTIONS.md).
+3. Treat memory as orientation; cross-check important claims against linked primary sources.
+4. Correct stale memory in the same change and keep the index synchronized.
+
 ### Grounding architecture and product claims
 
 Treat this overview as an index, not as independent evidence. In plans, reviews,
@@ -32,107 +40,28 @@ root-cause analyses, and AI-facing documentation:
 
 ### What the SDK does
 
-- Provides the `dotnet` command-line driver (`dotnet build`, `restore`, `publish`, `test`,
-  `run`, `watch`, etc.); see the [managed entry point](../src/Cli/dotnet/Program.cs) and
-  [registered command tree](../src/Cli/dotnet/Parser.cs).
-- Ships the MSBuild logic that turns a `.csproj`/`.fsproj`/`.vbproj` into a build; see the
-  [SDK entry points](../src/Tasks/Microsoft.NET.Build.Tasks/sdk/) and
-  [tasks and targets](../src/Tasks/Microsoft.NET.Build.Tasks/).
-- Bundles related toolsets: project/item templates, Razor/Blazor/Web/Static Web Assets
-  SDKs, container publishing, file/format/watch tools, API compatibility tooling, and
-  workload management. The final SDK layout is assembled by the
-  [`redist` project](../src/Layout/redist/redist.csproj) and its
-  [layout targets](../src/Layout/redist/targets/Directory.Build.targets); in-box project
-  and item template sources live in [`template_feed`](../template_feed/).
+See [ARCHITECTURE.md](memory/ARCHITECTURE.md) for product components and data flow,
+[FILE_MAP.md](memory/FILE_MAP.md) for repository locations, and
+[API_MAP.md](memory/API_MAP.md) for user-facing and extension surfaces.
 
 ### Repository boundaries and the VMR
 
 An SDK command or build can expose behavior implemented by another .NET repository. Find
 the component that defines the behavior before making a change; do not add an SDK
-workaround merely because the symptom appears through `dotnet`.
-
-| Repository | Ownership boundary |
-| --- | --- |
-| [`dotnet/runtime`](https://github.com/dotnet/runtime) | CLR and Mono, the base class libraries, the native `dotnet` host/muxer and apphost, runtime and reference packs, and runtime-owned deployment tooling such as NativeAOT and ILLink. SDK publish targets integrate with these artifacts but do not own their implementation. |
-| [`dotnet/roslyn`](https://github.com/dotnet/roslyn) | The C# and Visual Basic compilers, compiler server, compiler APIs, and C#/VB compiler behavior such as language diagnostics and code generation. The SDK supplies inputs and ships Roslyn artifacts; SDK-generated defaults and command wiring remain SDK-owned. |
-| [`dotnet/fsharp`](https://github.com/dotnet/fsharp) | The F# compiler and F#-specific tooling. |
-| [`dotnet/msbuild`](https://github.com/dotnet/msbuild) | The MSBuild engine, evaluation and execution semantics, logging, and core tasks and targets. SDK-specific `Microsoft.NET.*` tasks and targets remain in this repo. |
-| [`NuGet/NuGet.Client`](https://github.com/NuGet/NuGet.Client) | NuGet restore, package resolution, protocols, and related MSBuild tasks. SDK CLI wrappers and SDK-specific integration remain in this repo. |
-| [`dotnet/project-system`](https://github.com/dotnet/project-system) | Visual Studio-specific project-system behavior. |
-| [`dotnet/dotnet`](https://github.com/dotnet/dotnet) | The Virtual Monolithic Repository (VMR): a synchronized mirror of product repositories plus the infrastructure for building and servicing the integrated .NET product. Product source is mirrored under `src/<repo>`; normal component development still belongs in the owning product repository. |
-
-Do not infer ownership from a diagnostic ID or generated code alone. C# and Visual Basic
-compiler diagnostics and compiler-emitted code belong to Roslyn, but analyzers and source
-generators belong to the repository that implements them, such as `dotnet/runtime` for
-runtime-library generators or `dotnet/sdk` for SDK analyzers.
-
-### Architecture and major components
-
-SDK-owned CLI code has three process entry points of equal importance:
-
-- The managed CLI dispatches commands that
-  [`Parser.cs`](../src/Cli/dotnet/Parser.cs) registers.
-  [`Program.cs`](../src/Cli/dotnet/Program.cs) handles unmatched input through external
-  command resolution and file-based app fallback.
-- The Native AOT CLI starts in
-  [`NativeEntryPoint.cs`](../src/Cli/dotnet-aot/NativeEntryPoint.cs). It handles supported
-  commands directly. Unsupported operations continue in the managed CLI.
-- MSBuild loads [`MSBuildLogger`](../src/Cli/dotnet/Commands/MSBuild/MSBuildLogger.cs) from
-  `dotnet.dll` as an `INodeLogger`. The logger can run in the CLI process, a child MSBuild
-  process, or a persistent MSBuild server. Code called through the logger must not assume
-  that a CLI bootstrap initialized process-wide state. Use `BuildStarted` and
-  `BuildFinished` as request boundaries. `Shutdown` completes one logger instance. It does
-  not necessarily end the process.
-
-Major source areas under [`src/`](../src/):
-
-| Area | Purpose |
-| --- | --- |
-| [`Cli/`](../src/Cli/) | The `dotnet` driver, command implementations, and CLI utilities. [`Cli/dotnet/Program.cs`](../src/Cli/dotnet/Program.cs) is the managed entry point. |
-| [`Tasks/`](../src/Tasks/) | MSBuild tasks and targets. [`Microsoft.NET.Build.Tasks`](../src/Tasks/Microsoft.NET.Build.Tasks/) contains the primary SDK task assembly and SDK imports. |
-| [`Resolvers/`](../src/Resolvers/) | MSBuild SDK resolvers, including SDK and workload resolution. |
-| [`RazorSdk/`](../src/RazorSdk/), [`BlazorWasmSdk/`](../src/BlazorWasmSdk/), [`WasmSdk/`](../src/WasmSdk/), [`WebSdk/`](../src/WebSdk/), [`StaticWebAssetsSdk/`](../src/StaticWebAssetsSdk/) | Web, Razor, Blazor, WebAssembly, and Static Web Assets build SDKs. |
-| [`Containers/`](../src/Containers/) | `dotnet publish` container image support. |
-| [`Dotnet.Watch/`](../src/Dotnet.Watch/), [`Dotnet.Format/`](../src/Dotnet.Format/) | `dotnet watch` and `dotnet format` tools. |
-| [`Compatibility/`](../src/Compatibility/) | ApiCompat, GenAPI, API diff, and package validation tooling. |
-| [`Microsoft.CodeAnalysis.NetAnalyzers/`](../src/Microsoft.CodeAnalysis.NetAnalyzers/) | The .NET code analyzers (`CA####` rules and their fixers), migrated from the retired `dotnet/roslyn-analyzers`. |
-| [`TemplateEngine/`](../src/TemplateEngine/) | Template engine libraries and authoring/discovery tools; see the [Template Engine overview](../documentation/TemplateEngine/README.md). |
-| [`Workloads/`](../src/Workloads/), [`Microsoft.DotNet.TemplateLocator/`](../src/Microsoft.DotNet.TemplateLocator/) | Workload manifests and installation, plus workload-provided template pack location. |
-| [`Layout/`](../src/Layout/) | Composes the final `dotnet` layout through [`redist.csproj`](../src/Layout/redist/redist.csproj). |
-
-### Key files and directories
-
-- [`build.cmd`](../build.cmd) / [`build.sh`](../build.sh) — primary top-level build entry
-  point (Arcade-based). [`test.cmd`](../test.cmd) / [`test.sh`](../test.sh) and
-  [`restore.cmd`](../restore.cmd) / [`restore.sh`](../restore.sh) are thin wrappers that
-  forward to it.
-- [`sdk.slnx`](../sdk.slnx) — the full solution. Filtered solutions exist for focused work:
-  [`cli.slnf`](../cli.slnf), [`tasks.slnf`](../tasks.slnf),
-  [`containers.slnf`](../containers.slnf), [`TemplateEngine.slnf`](../TemplateEngine.slnf),
-  and [`source-build.slnf`](../source-build.slnf).
-- [`global.json`](../global.json) — pins the bootstrap SDK and Arcade versions used to build
-  the repo.
-- [`Directory.Build.props`](../Directory.Build.props) /
-  [`Directory.Build.targets`](../Directory.Build.targets) /
-  [`Directory.Packages.props`](../Directory.Packages.props) — repo-wide MSBuild settings and
-  central package version management.
-- [`eng/`](../eng/) — Arcade build infrastructure, versioning
-  ([`eng/Versions.props`](../eng/Versions.props)), and the
-  `dogfood` scripts.
-- `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default) — the built SDK;
-  `.dotnet/dotnet` is the bootstrap SDK. See the
-  [Developer Guide](../documentation/project-docs/developer-guide.md#building).
-- [`documentation/`](../documentation/) — project docs, including the developer guide and
-  area-specific guides.
-- [`template_feed/`](../template_feed/) — the in-box project and item templates.
-- [`test/`](../test/) — test projects and
-  [`test/TestAssets/TestProjects`](../test/TestAssets/TestProjects/) test inputs.
+workaround merely because the symptom appears through `dotnet`, and do not infer ownership
+from a diagnostic ID. See the canonical
+[ownership map](memory/ARCHITECTURE.md#ownership-boundaries).
 
 ### Build and test
 
-The top-level `build.cmd`/`build.sh` (and `test.cmd`/`test.sh`) wrap Arcade. The build
-script restores and builds the full redist SDK; pass `-test` to also run tests. Common
-switches (run `build.cmd -help` for the full list):
+- Build the redist SDK with `build.cmd` on Windows or `./build.sh` on Linux/macOS.
+- Add `-test` / `--test` for the full suite and `-pack` / `--pack` for packages/installers;
+  avoid these large operations in the routine inner loop.
+- Use [`run-tests` skill](skills/run-tests/SKILL.md) for focused validation and
+  [`incremental-test` skill](skills/incremental-test/SKILL.md) for supported
+  `dotnet.Tests` changes.
+- Product tests exercise `artifacts/bin/redist/<configuration>/dotnet`; ensure it contains
+  the production change before trusting results.
 
 | Switch | Effect |
 | --- | --- |
@@ -151,24 +80,23 @@ Canonical scenarios:
     that resolves against this repo.
   - The built SDK is output to `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
   - The first build is slow; subsequent builds are incremental.
-- Run tests: prefer targeted runs — a single test project or test (see the
-  [Testing](#testing) section) and the `targeted-test` skill. `build.cmd -test` /
-  `./build.sh --test` runs the **entire** suite, which is very large and takes a long time;
-  avoid running the full suite for routine local or agent work.
+- Run tests through the `run-tests` skill. It selects the appropriate focused, scoped, or
+  full-suite workflow and retains actionable diagnostics for focused runs (see
+  [Testing](#testing)).
 - Release build: `build.cmd -c Release`.
-- Run a single test project after a full build:
-  `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "FullyQualifiedName~TestName"`.
-  See the [Testing](#testing) section for assembly filtering and more examples.
 - Validate changes locally using the SDK you built at
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
-- Use the `targeted-test` skill to select projects from the shared
-  `test/ConditionalTests.props` scopes when available and retain detailed failure output,
-  a TRX, and a binlog. For fast inner-loop runs of `dotnet.Tests` without a full rebuild,
-  use `incremental-test`.
+
+See [TESTING_STRATEGY.md](memory/TESTING_STRATEGY.md) and the
+[Developer Guide](../documentation/project-docs/developer-guide.md).
 
 ## Guardrails
 
 These are hard boundaries for agents working in this repo. Treat them as "must not" rules.
+
+### Flag user-visible behavior
+
+Call out intentional user-visible behavior or contract changes in the final handoff.
 
 ### Do not hand-edit generated files
 
@@ -202,65 +130,31 @@ for the required YAML and the reason for this variable.
 
 ## External Dependencies
 
-Adding or updating a dependency is a repo-wide compatibility and supply-chain change,
-not just a project-file edit. Prefer the BCL, existing repository code, or a
-dependency already in use. Add a new dependency only at the narrowest necessary scope.
-
-- **Approved feeds:** Use only the restore sources in the root
-  [`NuGet.config`](../NuGet.config). For normal repository dependencies, do not add
-  ad hoc feeds just to make restore succeed. Do not edit automation-managed feed blocks.
-- **Version policy:** Central package management is enabled in
-  [`Directory.Build.props`](../Directory.Build.props).
-  - Omit `Version` from normal project `PackageReference` items and change the declaration
-    in [`Directory.Packages.props`](../Directory.Packages.props) or its imported owner
-    instead.
-  - Locate the existing `PackageVersion` and update its actual owner: literal versions in
-    `Directory.Packages.props` are managed there, property-backed manual versions live in
-    [`eng/Versions.props`](../eng/Versions.props) or
-    [`eng/ManualVersions.props`](../eng/ManualVersions.props), and packages listed in
-    [`eng/dependabot/Packages.props`](../eng/dependabot/Packages.props) are updated by
-    Dependabot.
-  - For dependencies represented in
-    [`eng/Version.Details.xml`](../eng/Version.Details.xml), use the Darc/Maestro
-    dependency-flow workflow so the manifest, generated properties, and feeds stay in
-    sync; never hand-edit the generated
-    [`eng/Version.Details.props`](../eng/Version.Details.props).
-- **Security:** Local restores enable NuGet Audit for all dependencies at low severity
-  or higher in [`Directory.Build.props`](../Directory.Build.props), using the audit
-  source in [`NuGet.config`](../NuGet.config). Treat `NU19xx` findings as actionable:
-  update or remove the affected package rather than suppressing the warning or weakening
-  audit settings.
+Adding or updating a dependency is a repo-wide compatibility and supply-chain change.
+Follow [CONVENTIONS.md](memory/CONVENTIONS.md#dependency-management).
 
 ## Coding Style
 
-- Code should match the style of the file it's in.
-- Changes should be minimal to resolve a problem in a clean way.
-- User-visible changes to behavior should be considered carefully before committing. They should always be flagged.
-- Only edit the files that are necessary to address the specific issue. Do not run `dotnet format` or make formatting changes to additional files.
-- Prefer using file-based namespaces for new code.
-- Do not allow unused `using` directives to be committed.
-- Use `#if NET` blocks for .NET Core specific code, and `#if NETFRAMEWORK` for .NET Framework specific code.
+Follow [CONVENTIONS.md](memory/CONVENTIONS.md) and the nearest area `AGENTS.md`.
 
 ### Target framework properties
 
-Never hardcode a TFM (`net8.0`, `net9.0`, etc.) in a `.csproj` file. Use the appropriate
-property:
-
-| Context | Property | Defined in |
-| --- | --- | --- |
-| Source projects and test projects (.NET) | `$(SdkTargetFramework)` | Root `Directory.Build.props` (equals `$(NetCurrent)` from Arcade) |
-| Multi-targeting with .NET Framework | Match the pattern used by peer projects in the same area. Some areas use Arcade properties (`$(NetFrameworkToolCurrent)`, `$(NetMinimum)`); others hardcode `net472`. |
-| Test asset projects (`test/TestAssets/`) | `$(CurrentTargetFramework)` | Substituted at test runtime by `TestAssetsManager` via `ToolsetInfo.CurrentTargetFramework` |
+Never hardcode the current TFM in a project. See
+[CONVENTIONS.md](memory/CONVENTIONS.md#framework-and-build-constraints).
 
 ## Testing
 
 - Large changes should always include test changes.
 - The Skip parameter of the Fact attribute to point to the specific issue link.
-- Use the `targeted-test` skill to choose projects from `test/ConditionalTests.props`
+- Use the `run-tests` skill for every local test execution. Choose projects from
+  `test/ConditionalTests.props`
   when the changed paths match a configured scope, or use its fallback mappings for
   unscoped common areas. Run one project, class, or method with detailed live output and
   retained TRX/binlog diagnostics.
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
+- Follow [`test/AGENTS.md`](../test/AGENTS.md) and
+  [TESTING_STRATEGY.md](memory/TESTING_STRATEGY.md) for test framework, assets,
+  parallelism, conditional scopes, snapshots, and Helix guidance.
 - This repo uses conditional test filtering to skip expensive test suites on PRs when
   relevant source files have not changed. When adding new test projects, consider
   registering them as a scope in [`test/ConditionalTests.props`](../test/ConditionalTests.props).
@@ -271,18 +165,10 @@ property:
 1. Read the PR and its comments/reviews. Check for references to other PRs or issues where the problem might have already been solved.
 2. Use the `ci-analysis` skill (if available) to diagnose build failures.
 
-## Localization
-
-- Consider localizing strings in .resx files when possible.
-- When adding a new NETSDK error message in `src/Tasks/Common/Resources/Strings.resx`, assign the next available NETSDK code, append the entry at the end of the file, and update the trailing "latest message added" guard comment.
-
 ## Keeping AI context and docs in sync
 
-Before you consider a change complete, ask: **does this change require updates to AI context, instructions, docs, commands, tests, or workflow guidance — and if so, make those updates in the same PR.** When your change alters something a contributor-facing or AI-facing artifact describes, update that artifact in the same change rather than leaving it stale. Check whether any of the following now describe out-of-date behavior:
-
-- `.github/copilot-instructions.md` (this file) and any `AGENTS.md` in the affected subdirectories — repository conventions, guardrails, build/test recipes, and architecture claims.
-- `.github/skills/*/SKILL.md` and `.github/agents/*.agent.md` — agent workflow guidance and skills.
-- `documentation/` — developer guide and area-specific docs.
-- Command help/usage text, error messages, and localized `.resx` strings that documentation or instructions reference.
+Before completion, run the [`update-docs` skill](skills/update-docs/SKILL.md). It owns the
+required checklist for memory, instructions, `AGENTS.md`, skills, agents, contributor
+documentation, help, snapshots, and localized resources.
 
 If the change is genuinely internal and unobservable to users, contributors, or agents, no artifact update is needed — but make that a deliberate call, not an oversight.

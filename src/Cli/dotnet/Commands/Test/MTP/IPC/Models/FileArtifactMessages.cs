@@ -3,6 +3,14 @@
 
 namespace Microsoft.DotNet.Cli.Commands.Test.IPC.Models;
 
-internal sealed record FileArtifactMessage(string? FullPath, string? DisplayName, string? Description, string? TestUid, string? TestDisplayName, string? SessionUid, string? Kind);
+internal sealed record FileArtifactMessage(
+    string? FullPath,
+    string? DisplayName,
+    string? Description,
+    string? TestUid,
+    string? TestDisplayName,
+    string? SessionUid,
+    string? Kind,
+    string[]? InputArtifactPaths = null);
 
 internal sealed record FileArtifactMessages(string? ExecutionId, string? InstanceId, FileArtifactMessage[] FileArtifacts) : IRequest;

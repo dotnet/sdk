@@ -132,6 +132,11 @@
         <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDeviceOptionsNotSupportedForFileBasedApps">
+        <source>The '--device' and '--list-devices' options are not supported for C# file-based apps.</source>
+        <target state="new">The '--device' and '--list-devices' options are not supported for C# file-based apps.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdDeviceOptionsRequireProject">
         <source>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</source>
         <target state="new">The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</target>

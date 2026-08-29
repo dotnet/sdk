@@ -63,6 +63,33 @@ Copyright (c) .NET Foundation. All rights reserved.
       <FileWrites Include="$(_TypeScriptSwaManifestPath)" />
     </ItemGroup>
 
+    <!--
+      TypeScript outputs can already be present in @(Content) when the project is evaluated,
+      causing ResolveProjectStaticWebAssets to register them before TypeScript compilation.
+      Remove those assets and their endpoints before re-registering them with fresh
+      post-compilation metadata.
+      StaticWebAsset Identity = full path, so Remove with the resolved full paths works.
+    -->
+    <ItemGroup Condition="'@(_TypeScriptWwwrootAssets)' != ''">
+      <_TypeScriptWwwrootFullPaths Include="@(_TypeScriptWwwrootAssets->'%(FullPath)')" />
+      <StaticWebAsset Remove="@(_TypeScriptWwwrootFullPaths)" />
+    </ItemGroup>
+
+    <!-- Remove endpoints that pointed to the stale assets. FilterStaticWebAssetEndpoints
+         matches endpoints whose AssetFile is in the Assets dictionary (keyed by Identity).
+         We pass the full paths as bare items; only Identity is needed for the lookup. -->
+    <FilterStaticWebAssetEndpoints
+      Condition="'@(_TypeScriptWwwrootFullPaths)' != '' And '@(StaticWebAssetEndpoint)' != ''"
+      Endpoints="@(StaticWebAssetEndpoint)"
+      Assets="@(_TypeScriptWwwrootFullPaths)"
+      Filters="">
+      <Output TaskParameter="FilteredEndpoints" ItemName="_StaleTypeScriptEndpoints" />
+    </FilterStaticWebAssetEndpoints>
+
+    <ItemGroup Condition="'@(_StaleTypeScriptEndpoints)' != ''">
+      <StaticWebAssetEndpoint Remove="@(_StaleTypeScriptEndpoints)" />
+    </ItemGroup>
+
     <DefineStaticWebAssets
       Condition="'@(_TypeScriptWwwrootAssets)' != ''"
       CandidateAssets="@(_TypeScriptWwwrootAssets)"

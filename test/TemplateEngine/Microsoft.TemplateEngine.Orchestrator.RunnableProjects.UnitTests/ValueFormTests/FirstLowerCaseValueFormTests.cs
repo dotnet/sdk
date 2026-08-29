@@ -18,14 +18,22 @@ namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.Value
         [DataRow("Indigo", "ındigo", "tr-TR")]
         public void FirstLowerCaseWorksAsExpected(string input, string expected, string? culture)
         {
-            if (!string.IsNullOrEmpty(culture))
+            CultureInfo originalCulture = CultureInfo.CurrentCulture;
+            try
             {
-                CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
-            }
+                if (!string.IsNullOrEmpty(culture))
+                {
+                    CultureInfo.CurrentCulture = culture == "invariant" ? CultureInfo.InvariantCulture : new CultureInfo(culture);
+                }
 
-            IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");
-            string actual = model.Process(input, new Dictionary<string, IValueForm>());
-            Assert.AreEqual(expected, actual);
+                IValueForm model = new FirstLowerCaseValueFormFactory().Create("test");
+                string actual = model.Process(input, new Dictionary<string, IValueForm>());
+                Assert.AreEqual(expected, actual);
+            }
+            finally
+            {
+                CultureInfo.CurrentCulture = originalCulture;
+            }
         }
 
         [TestMethod]

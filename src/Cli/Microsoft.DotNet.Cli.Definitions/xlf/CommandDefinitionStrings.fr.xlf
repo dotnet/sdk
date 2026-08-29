@@ -585,8 +585,8 @@ Cela équivaut à supprimer project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Définit le chemin d’accès du projet ou du fichier solution à tester. Utiliser le chemin du fichier projet ou celui du répertoire contenant ce fichier. Si rien n’est spécifié, la valeur par défaut est le répertoire actif.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Définit le chemin d’accès du projet ou du fichier solution à tester. Utiliser le chemin du fichier projet ou celui du répertoire contenant ce fichier. Si rien n’est spécifié, la valeur par défaut est le répertoire actif.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">

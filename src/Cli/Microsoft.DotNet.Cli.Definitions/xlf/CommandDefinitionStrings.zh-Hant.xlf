@@ -585,8 +585,8 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">定義要測試的專案或解決方案檔案的路徑。請使用專案檔案的路徑，或包含該專案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">定義要測試的專案或解決方案檔案的路徑。請使用專案檔案的路徑，或包含該專案檔案的目錄路徑。如果未指定，則預設為目前目錄。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">

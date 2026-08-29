@@ -4,6 +4,8 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <!-- Preserve class isolation while allowing independent test classes to run concurrently. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

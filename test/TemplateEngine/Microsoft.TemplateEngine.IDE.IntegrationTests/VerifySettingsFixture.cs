@@ -11,30 +11,34 @@ namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
     public class VerifySettingsFixture
     {
+        private static readonly object s_initializationLock = new();
         private static bool s_called;
 
         public VerifySettingsFixture()
         {
-            if (s_called)
+            lock (s_initializationLock)
             {
-                return;
-            }
-            s_called = true;
+                if (s_called)
+                {
+                    return;
+                }
 
-            VerifyMSTest.Verifier.DerivePathInfo(
-                (_, _, type, method) => new(
-                    directory: TestBase.ApprovalsDirectory,
-                    typeName: type.Name,
-                    methodName: method.Name));
+                VerifyMSTest.Verifier.DerivePathInfo(
+                    (_, _, type, method) => new(
+                        directory: TestBase.ApprovalsDirectory,
+                        typeName: type.Name,
+                        methodName: method.Name));
 
-            // Customize diff output of verifier
-            VerifyDiffPlex.Initialize(OutputType.Compact);
+                // Customize diff output of verifier
+                VerifyDiffPlex.Initialize(OutputType.Compact);
 
 #if NET
-            // The shared TemplateVerifier engine is compiled against the xUnit Verify adapter; route its directory
-            // verification to the MSTest adapter so the ambient MSTest test context is used under MTP.
-            VerificationEngine.DirectoryVerifier = VerifyMSTest.Verifier.VerifyDirectory;
+                // The shared TemplateVerifier engine is compiled against the xUnit Verify adapter; route its directory
+                // verification to the MSTest adapter so the ambient MSTest test context is used under MTP.
+                VerificationEngine.DirectoryVerifier = VerifyMSTest.Verifier.VerifyDirectory;
 #endif
+                s_called = true;
+            }
         }
     }
 }
