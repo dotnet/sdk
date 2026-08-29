@@ -968,6 +968,77 @@ public class LifecycleEndToEndTests
             "SDK install spec should record the correct global.json path");
     }
 
+    /// <summary>
+    /// Regression coverage for the init hive: `dotnetup init` configures dotnetup's own managed
+    /// installation, so a repository-local global.json sdk.paths entry must not become the install
+    /// root — while the pinned global.json SDK version is still what gets installed.
+    /// Restricted to non-Windows because init applies the recommended access mode, which on Windows
+    /// writes user-scope environment variables that cannot be isolated to the test environment.
+    /// </summary>
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
+    public void InitIgnoresGlobalJsonPaths_AndInstallsIntoTheDefaultDotnetupHive()
+    {
+        using var testEnv = DotnetupTestUtilities.CreateTestEnvironment();
+
+        string projectDir = Path.Combine(testEnv.TempRoot, "my-project");
+        Directory.CreateDirectory(projectDir);
+
+        string globalJsonPath = Path.Combine(projectDir, "global.json");
+        File.WriteAllText(globalJsonPath, """
+            {
+              "sdk": {
+                "version": "9.0.103",
+                "rollForward": "disable",
+                "paths": [".dotnet"]
+              }
+            }
+            """);
+        string globalJsonInstallPath = Path.GetFullPath(Path.Combine(projectDir, ".dotnet"));
+
+        // Isolate everything init writes outside the install root (shell profile, config) into the
+        // test environment so the real user profile is never touched.
+        string homeDir = Path.Combine(testEnv.TempRoot, "home");
+        Directory.CreateDirectory(homeDir);
+        var environmentVariables = new Dictionary<string, string>
+        {
+            ["HOME"] = homeDir,
+            ["XDG_CONFIG_HOME"] = Path.Combine(homeDir, ".config"),
+            ["DOTNET_DOTNETUP_DATA_DIR"] = Path.Combine(testEnv.TempRoot, "dotnetup-data"),
+            ["DOTNET_TESTHOOK_DEFAULT_DOTNET_PATH"] = testEnv.InstallPath,
+            ["DOTNET_TESTHOOK_MANIFEST_PATH"] = testEnv.ManifestPath,
+        };
+
+        (int exitCode, string output) = DotnetupTestUtilities.RunDotnetupProcess(
+            ["init", "--interactive", "false", "--no-progress", "--shell", "bash"],
+            captureOutput: true,
+            workingDirectory: projectDir,
+            environmentVariables: environmentVariables);
+        exitCode.Should().Be(0, $"dotnetup init failed. Output:\n{output}");
+
+        // The SDK version still comes from global.json, but it is installed into the default hive.
+        Directory.Exists(Path.Combine(testEnv.InstallPath, "sdk", "9.0.103")).Should().BeTrue(
+            $"init should install the global.json SDK version into the default dotnetup hive. Output:\n{output}");
+        Directory.Exists(globalJsonInstallPath).Should().BeFalse(
+            $"init must not adopt the repository's global.json sdk.paths directory as its hive. Output:\n{output}");
+
+        List<InstallSpec> installSpecs;
+        using (var mutex = new ScopedMutex(Constants.MutexNames.ModifyInstallationStates))
+        {
+            var manifest = new DotnetupSharedManifest(testEnv.ManifestPath);
+            var manifestData = manifest.ReadManifest();
+            manifestData.DotnetRoots.Should().NotContain(
+                r => DotnetupUtilities.PathsEqual(r.Path, globalJsonInstallPath),
+                "no install root should be tracked at the global.json sdk.paths directory");
+            installSpecs = manifestData.DotnetRoots
+                .Where(r => DotnetupUtilities.PathsEqual(r.Path, testEnv.InstallPath))
+                .SelectMany(r => r.InstallSpecs)
+                .ToList();
+        }
+
+        installSpecs.Should().ContainSingle(s => s.Component == InstallComponent.SDK,
+            "the SDK should be tracked in the manifest under the default dotnetup hive");
+    }
+
     [TestMethod]
     public void InstallThenUninstall_FolderIsCleanedUp()
     {

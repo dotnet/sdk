@@ -32,7 +32,7 @@ internal static class InitWorkflowDefaults
         DotnetAccessMode accessMode = GetDefaultAccessMode(shellProvider);
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
         var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
-            command.InstallPath, globalJson, useGlobalJsonSdkPaths: false);
+            command.InstallPath, globalJson, command.UseGlobalJsonSdkPaths);
 
         if (preResolvedRequests is { Count: > 0 })
         {
@@ -96,8 +96,7 @@ internal static class InitWorkflowDefaults
     {
         var workflow = new InstallWorkflow(command);
         return workflow.GenerateInstallRequests(
-            [new MinimalInstallSpec(InstallComponent.SDK, channel)],
-            useGlobalJsonSdkPaths: false);
+            [new MinimalInstallSpec(InstallComponent.SDK, channel)]);
     }
 
     /// <summary>

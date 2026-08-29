@@ -12,6 +12,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// </summary>
 internal class InitCommand(ParseResult result) : InstallCommand(result, "init")
 {
+    // Init configures dotnetup's own managed hive, so a repository-local global.json
+    // sdk.paths entry must not become the default install root.
+    public override bool UseGlobalJsonSdkPaths => false;
+
     protected override void ExecuteCore()
     {
         var workflows = new InitWorkflows(DotnetEnvironment, ChannelVersionResolver);

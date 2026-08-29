@@ -50,7 +50,7 @@ internal class InstallWorkflow
         {
             // Pre-resolve the user's requests unless we still need to prompt for a starter channel
             // (in which case the walkthrough generates them after the prompt).
-            var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs, useGlobalJsonSdkPaths: false);
+            var initialRequests = promptForStarterChannel ? null : GenerateInstallRequests(componentSpecs);
             var workflows = new InitWorkflows(_command.DotnetEnvironment, _command.ChannelVersionResolver);
             requests = workflows.InitWalkthrough(_command, initialRequests);
         }
@@ -123,15 +123,14 @@ internal class InstallWorkflow
     /// install path validation, and version resolution via the channel version resolver.
     /// </summary>
     public List<ResolvedInstallRequest> GenerateInstallRequests(
-        MinimalInstallSpec[] componentSpecs,
-        bool useGlobalJsonSdkPaths = true)
+        MinimalInstallSpec[] componentSpecs)
     {
         var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
 
         var pathResolution = _installPathResolver.Resolve(
             _command.InstallPath,
             globalJson,
-            useGlobalJsonSdkPaths);
+            _command.UseGlobalJsonSdkPaths);
 
         ValidateInstallPath(pathResolution.ResolvedInstallPath, pathResolution.PathSource, _command.ManifestPath);
 

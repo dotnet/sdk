@@ -24,6 +24,14 @@ internal abstract class InstallCommand : CommandBase
     public IEnvShellProvider? ShellProvider { get; }
     public bool MigrateFromSystem { get; }
     public virtual bool UpdateGlobalJson => false;
+
+    /// <summary>
+    /// Whether global.json's <c>sdk.paths</c> may supply the install root for this command.
+    /// Install commands honor it so an SDK requested inside a repository lands where that
+    /// repository expects it; <c>dotnetup init</c> overrides this to keep the managed hive
+    /// independent of the directory the command happens to run in.
+    /// </summary>
+    public virtual bool UseGlobalJsonSdkPaths => true;
     public virtual IReadOnlyCollection<InstallComponent> MigrationComponents => [];
 
     public IDotnetEnvironmentManager DotnetEnvironment { get; }

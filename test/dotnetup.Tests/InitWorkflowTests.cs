@@ -1,12 +1,14 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.CommandLine;
 using FluentAssertions;
 using Microsoft.Deployment.DotNet.Releases;
 using Microsoft.Dotnet.Installation;
 using Microsoft.Dotnet.Installation.Internal;
 using Microsoft.DotNet.Tools.Bootstrapper;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Sdk.Install;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Microsoft.DotNet.Tools.Bootstrapper.Tests;
@@ -256,5 +258,76 @@ public class InitWorkflowTests : IDisposable
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
     }
 
+    // ── ResolveWalkthroughPlan and global.json sdk.paths ──
 
+    /// <summary>
+    /// `dotnetup init` configures dotnetup's own hive, so a repository-local global.json
+    /// sdk.paths entry must not be adopted as the install root.
+    /// </summary>
+    [TestMethod]
+    public void ResolveWalkthroughPlan_IgnoresGlobalJsonSdkPaths_ForInit()
+    {
+        var (plan, defaultInstallPath, globalJsonInstallPath) = ResolvePlanInGlobalJsonDirectory(
+            ["init"], parseResult => new InitCommand(parseResult));
+
+        plan.InstallRoot.Path.Should().Be(defaultInstallPath,
+            "init must configure the default dotnetup hive, not the repository's global.json sdk.paths directory");
+        plan.InstallRoot.Path.Should().NotBe(globalJsonInstallPath);
+        plan.InstallRootGlobalJsonPath.Should().BeNull();
+    }
+
+    /// <summary>
+    /// A first-use `dotnetup sdk install` routes through the same walkthrough, but it is still an
+    /// install of a requested SDK, so global.json sdk.paths continues to select the install root.
+    /// </summary>
+    [TestMethod]
+    public void ResolveWalkthroughPlan_UsesGlobalJsonSdkPaths_ForSdkInstall()
+    {
+        var (plan, defaultInstallPath, globalJsonInstallPath) = ResolvePlanInGlobalJsonDirectory(
+            ["sdk", "install"], parseResult => new SdkInstallCommand(parseResult));
+
+        plan.InstallRoot.Path.Should().Be(globalJsonInstallPath,
+            "an SDK install must keep honoring global.json sdk.paths even when it triggers first-use onboarding");
+        plan.InstallRoot.Path.Should().NotBe(defaultInstallPath);
+        plan.InstallRootGlobalJsonPath.Should().NotBeNull();
+    }
+
+    /// <summary>
+    /// Resolves the walkthrough plan for the given command line from a directory whose global.json
+    /// declares an sdk.paths entry, and returns the plan alongside the two candidate install roots.
+    /// </summary>
+    private (WalkthroughPlan Plan, string DefaultInstallPath, string GlobalJsonInstallPath) ResolvePlanInGlobalJsonDirectory(
+        string[] args,
+        Func<ParseResult, InstallCommand> createCommand)
+    {
+        string projectDir = Path.Combine(_tempDir, "project");
+        Directory.CreateDirectory(projectDir);
+        File.WriteAllText(Path.Combine(projectDir, "global.json"), """
+            {
+              "sdk": {
+                "version": "9.0.103",
+                "rollForward": "disable",
+                "paths": [".dotnet"]
+              }
+            }
+            """);
+
+        string defaultInstallPath = Path.Combine(_tempDir, "default-hive");
+        string globalJsonInstallPath = Path.GetFullPath(Path.Combine(projectDir, ".dotnet"));
+        var mock = new MockDotnetInstallManager(defaultInstallPath, existingSystemInstalls: []);
+
+        string originalDirectory = Environment.CurrentDirectory;
+        Environment.CurrentDirectory = projectDir;
+        try
+        {
+            InstallCommand command = createCommand(Parser.Parse(args));
+
+            var plan = InitWorkflowDefaults.ResolveWalkthroughPlan(command, preResolvedRequests: null, mock);
+            return (plan, defaultInstallPath, globalJsonInstallPath);
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalDirectory;
+        }
+    }
 }

@@ -35,6 +35,10 @@ internal class InstallPathResolver
     /// 2. global.json's sdk.paths — its first meaningful entry, which is either a literal path
     ///    or, when that entry is the "$host$" sentinel, the default host install location
     /// 3. Default install path
+    /// When <paramref name="useGlobalJsonSdkPaths"/> is <see langword="false"/>, global.json's
+    /// sdk.paths is ignored entirely: the explicitly provided install path is used when present,
+    /// otherwise the default install path. The result never reports
+    /// <see cref="PathSource.GlobalJson"/> and never carries an install path from global.json.
     /// </summary>
     /// <param name="explicitInstallPath">The install path explicitly provided by the user (e.g., --install-path option).</param>
     /// <param name="globalJsonInfo">Information from global.json, if available.</param>
