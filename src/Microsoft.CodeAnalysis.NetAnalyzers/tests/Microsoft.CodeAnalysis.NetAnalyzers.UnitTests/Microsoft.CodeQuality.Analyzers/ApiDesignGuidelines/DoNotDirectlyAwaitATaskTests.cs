@@ -353,6 +353,96 @@ public class C
             }.RunAsync(CancellationToken.None);
         }
 
+        [TestMethod, WorkItem(4888, "https://github.com/dotnet/roslyn-analyzers/issues/4888")]
+        public Task CSharpAsyncDisposableConstrainedGenericParameter_DiagnosticAsync()
+        {
+            return new VerifyCS.Test
+            {
+                TestCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        private static TAsyncDisposable Create<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+                        private static Task<TAsyncDisposable> CreateAsync<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+
+                        public async Task M1<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = [|Create<TAsyncDisposable>()|];
+                        }
+
+                        public async Task M2<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = [|await [|CreateAsync<TAsyncDisposable>()|]|];
+                        }
+
+                        public async Task M3<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = [|Create<TAsyncDisposable>()|])
+                            {
+                            }
+                        }
+
+                        public async Task M4<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = [|await [|CreateAsync<TAsyncDisposable>()|]|])
+                            {
+                            }
+                        }
+                    }
+                    """,
+                FixedCode = """
+                    using System;
+                    using System.Threading.Tasks;
+
+                    public class C
+                    {
+                        private static TAsyncDisposable Create<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+                        private static Task<TAsyncDisposable> CreateAsync<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable => throw null;
+                    
+                        public async Task M1<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = Create<TAsyncDisposable>().ConfigureAwait(false);
+                        }
+                    
+                        public async Task M2<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using var resource = (await CreateAsync<TAsyncDisposable>().ConfigureAwait(false)).ConfigureAwait(false);
+                        }
+                    
+                        public async Task M3<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = Create<TAsyncDisposable>().ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    
+                        public async Task M4<TAsyncDisposable>()
+                            where TAsyncDisposable : IAsyncDisposable
+                        {
+                            await using (var resource = (await CreateAsync<TAsyncDisposable>().ConfigureAwait(false)).ConfigureAwait(false))
+                            {
+                            }
+                        }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.CSharp10,
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net80,
+            }.RunAsync(CancellationToken.None);
+        }
+
         [TestMethod, WorkItem(4888, "https://github.com/dotnet/sdk/issues/4888")]
         public Task CSharpAsyncDisposableImplementationRefStruct_UsingStatement_NoDiagnosticAsync()
         {
