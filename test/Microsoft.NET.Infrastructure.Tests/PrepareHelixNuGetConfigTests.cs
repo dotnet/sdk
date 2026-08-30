@@ -43,7 +43,7 @@ public class PrepareHelixNuGetConfigTests : SdkTest
                 source => (string)source.Attribute("key")!,
                 source => (string)source.Attribute("value")!);
 
-        Assert.AreEqual(3, sources.Count);
+        Assert.HasCount(3, sources);
         Assert.AreEqual("https://example.test/dotnet11", sources["dotnet11"]);
         Assert.AreEqual("%DOTNET_ROOT%/.nuget", sources["dotnet-under-test"]);
         Assert.AreEqual(
