@@ -32,10 +32,9 @@ public sealed class RunFileTestFixture
             }
 
             RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
-            string runFileDirectory = VirtualProjectBuilder.GetTempSubdirectory();
 
             new DotnetCommand(log, "run", "-")
-                .WithWorkingDirectory(runFileDirectory)
+                .WithWorkingDirectory(RunFileTestBase.OutOfTreeBaseDirectory)
                 .WithStandardInput("""
                     Console.WriteLine("Hello");
                     """)
