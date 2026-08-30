@@ -6,7 +6,7 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <!-- CWD-mutating test classes use a shared resource lock. -->
+    <!-- CWD-mutating classes run in the serial tail because existing relative-path readers do not acquire a lock. -->
     <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>

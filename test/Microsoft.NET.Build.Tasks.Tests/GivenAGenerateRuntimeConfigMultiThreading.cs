@@ -8,7 +8,7 @@ using Microsoft.Build.Utilities;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DoNotParallelize]
     public class GivenAGenerateRuntimeConfigMultiThreading
     {
         [TestMethod]
