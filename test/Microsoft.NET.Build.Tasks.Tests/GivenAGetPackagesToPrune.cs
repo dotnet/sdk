@@ -14,7 +14,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
     /// current working directory differs from the project directory.
     /// </summary>
     [TestClass]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DoNotParallelize]
     public class GivenAGetPackagesToPrune
     {
         private const string NetCoreApp = "Microsoft.NETCore.App";

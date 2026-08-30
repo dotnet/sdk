@@ -6,7 +6,7 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
-    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    [DoNotParallelize]
     public class GivenAGetDependsOnNETStandardMultiThreading
     {
         [TestMethod]
