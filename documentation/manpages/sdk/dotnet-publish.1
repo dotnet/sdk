@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-publish" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-publish" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet publish
 .PP
@@ -32,7 +32,8 @@ dotnet publish [<PROJECT>|<SOLUTION>|<FILE>] [-a|--arch <ARCHITECTURE>]
     [-f|--framework <FRAMEWORK>] [--force] [--interactive]
     [--manifest <PATH_TO_MANIFEST_FILE>] [--no-build] [--no-dependencies]
     [--no-restore] [--nologo] [-o|--output <OUTPUT_DIRECTORY>]
-    [--os <OS>] [-r|--runtime <RUNTIME_IDENTIFIER>]
+    [--os <OS>] [-p|--property:<PROPERTYNAME>=<VALUE>]
+    [-r|--runtime <RUNTIME_IDENTIFIER>]
     [--sc|--self-contained] [--no-self-contained]
     [-s|--source <SOURCE>] [--tl:[auto|on|off]]
     [--ucr|--use-current-runtime]
@@ -187,43 +188,36 @@ The path and filename of a file-based app.
 File-based apps are contained within a single file that is built and run without a corresponding project (\f[I].csproj\f[R]) file.
 For more information, see Build file-based C# apps.
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
-.RS 2
 .PP
 Specifies the target architecture.
 This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
 For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch x86\f[R] sets the RID to \f[V]win-x86\f[R].
 If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6 Preview 7.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
-.RS 2
 .PP
 All build output files from the executed command will go in subfolders under the specified path, separated by project.
 For more information see Artifacts Output Layout.
+This option and the value provided must be explicitly cascaded in any \f[V]dotnet\f[R] command that depends on the output of another \f[V]dotnet\f[R] command, for example, when using \f[V]dotnet build --no-restore\f[R] and \f[V]dotnet publish --no-build\f[R].
 Available since .NET 8 SDK.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
-.RS 2
 .PP
 Defines the build configuration.
 If you\[cq]re developing with the .NET 8 SDK or a later version, the command uses the \f[V]Release\f[R] configuration by default for projects whose TargetFramework is set to \f[V]net8.0\f[R] or a later version.
 The default build configuration is \f[V]Debug\f[R] for earlier versions of the SDK and for earlier target frameworks.
 You can override the default in project settings or by using this option.
 For more information, see `dotnet publish' uses Release configuration and `dotnet pack' uses Release configuration.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--disable-build-servers\f[B]\f[R]
-.RS 2
 .PP
 Forces the command to ignore any persistent build servers.
 This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
 A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
 Available since .NET 7 SDK.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]-f|--framework <FRAMEWORK>\f[B]\f[R]
 .RS 2
@@ -238,13 +232,11 @@ You must specify the target framework in the project file.
 Forces all dependencies to be resolved even if the last restore was successful.
 Specifying this flag is the same as deleting the \f[I]project.assets.json\f[R] file.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--manifest <PATH_TO_MANIFEST_FILE>\f[B]\f[R]
 .RS 2
@@ -316,29 +308,37 @@ To make publish output go to separate folders for each project, specify a relati
 For example, \f[V]dotnet publish -p:PublishDir=.\[rs]publish\f[R] sends publish output for each project to a \f[V]publish\f[R] folder under the folder that contains the project file.
 .RE
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--os <OS>\f[B]\f[R]
-.RS 2
 .PP
 Specifies the target operating system (OS).
 This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
 For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--os linux\f[R] sets the RID to \f[V]linux-x64\f[R].
 If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--sc|--self-contained\f[B]\f[R]
-.RS 2
 .PP
 Publish the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
-The default is \f[V]true\f[R].
-.RE
 .IP \[bu] 2
-\f[B]\f[VB]--no-self-contained\f[B]\f[R]
+\f[B]\f[VB]-p|--property:<PROPERTYNAME>=<VALUE>\f[B]\f[R]
 .RS 2
 .PP
-Equivalent to \f[V]--self-contained false\f[R].
+Sets one or more MSBuild properties.
+Specify multiple properties delimited by semicolons or by repeating the option:
+.IP
+.nf
+\f[C]
+--property:<NAME1>=<VALUE1>;<NAME2>=<VALUE2>
+--property:<NAME1>=<VALUE1> --property:<NAME2>=<VALUE2>
+\f[R]
+.fi
 .RE
+.PP
+\f[B]\f[VB]--no-self-contained\f[B]\f[R]
+.PP
+Publish your application as a framework-dependent application.
+A compatible .NET runtime must be installed on the target machine to run your application.
 .IP \[bu] 2
 \f[B]\f[VB]--source <SOURCE>\f[B]\f[R]
 .RS 2
@@ -353,10 +353,18 @@ Publishes the application for a given runtime.
 For a list of Runtime Identifiers (RIDs), see the RID catalog.
 For more information, see .NET application publishing overview.
 If you use this option, use \f[V]--self-contained\f[R] or \f[V]--no-self-contained\f[R] also.
+.RS
+.PP
+Publishing can be done on the \f[I]solution\f[R] level and on the single \f[I]project\f[R] level.
+When publishing from the \f[I]solution\f[R] level by specifying the optional \f[V]<SOLUTION>\f[R] parameter or leaving it default, MSBuild first compiles the output into the \f[V]publish\f[R] directory \f[B]without\f[R] any symbols.
+This means that later compilations done by MSBuild, based on the initial compilation, will still not include any details for specified \f[V]<RUNTIME_IDENTIFIER>\f[R].
+.PP
+This is expected behavior.
+To avoid this behavior either publish for a single project by specifying the optional \f[V]<PROJECT>\f[R] parameter for your RID or specify RIDs directly in the project config by adding the \f[V]<RuntimeIdentifiers>\f[R] property.
 .RE
-.IP \[bu] 2
+.RE
+.PP
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
-.RS 2
 .PP
 Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
@@ -381,34 +389,27 @@ The primary output of that build (which is hyperlinked).
 Any diagnostics generated for that project.
 .PP
 This option is available starting in .NET 8.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--ucr|--use-current-runtime\f[B]\f[R]
-.RS 2
 .PP
 Use the current runtime as the target runtime.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--version-suffix <VERSION_SUFFIX>\f[B]\f[R]
 .RS 2
 .PP
 Defines the version suffix to replace the asterisk (\f[V]*\f[R]) in the version field of the project file.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH EXAMPLES
 .IP \[bu] 2
 Create a framework-dependent cross-platform binary for the project in the current directory:
