@@ -258,10 +258,23 @@ internal static class SolutionAndProjectUtility
         string? configuration,
         string? platform,
         IReadOnlyDictionary<string, string>? additionalGlobalProperties = null,
-        HashSet<string>? visitedTraversalProjects = null)
-        => GetProjectProperties(
+        HashSet<string>? visitedTraversalProjects = null,
+        IReadOnlyDictionary<string, ProjectInstance>? preEvaluatedProjects = null)
+    {
+        ProjectInstance Evaluate(string? tfm)
+        {
+            if (preEvaluatedProjects is not null &&
+                preEvaluatedProjects.TryGetValue(tfm ?? string.Empty, out ProjectInstance? preEvaluatedProject))
+            {
+                return preEvaluatedProject;
+            }
+
+            return EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm, configuration, platform, additionalGlobalProperties);
+        }
+
+        return GetProjectProperties(
             projectFilePath,
-            tfm => EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm, configuration, platform, additionalGlobalProperties),
+            Evaluate,
             buildOptions,
             buildSession,
             configuration,
@@ -279,6 +292,7 @@ internal static class SolutionAndProjectUtility
                     referencePlatform,
                     additionalGlobalProperties,
                     visited));
+    }
 
     [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
     public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
@@ -464,7 +478,10 @@ internal static class SolutionAndProjectUtility
         string projectFilePath,
         BuildOptions buildOptions,
         MSBuildSession buildSession,
-        EvaluationContext? evaluationContext = null)
+        EvaluationContext? evaluationContext = null,
+        string? configuration = null,
+        string? platform = null,
+        Dictionary<string, ProjectInstance>? evaluatedProjects = null)
     {
         // --device is already handled by HandleDeviceWithTargetFrameworkSelection
         if (!string.IsNullOrWhiteSpace(buildOptions.Device))
@@ -485,18 +502,15 @@ internal static class SolutionAndProjectUtility
         var collection = buildSession.ProjectCollection;
         evaluationContext ??= EvaluationContext.Create(EvaluationContext.SharingPolicy.Shared);
 
-        var projectInstance = ProjectInstance.FromFile(projectFilePath, new ProjectOptions
-        {
-            GlobalProperties = globalProperties,
-            EvaluationContext = evaluationContext,
-            ProjectCollection = collection,
-        });
-
-        // If the project doesn't support device selection, skip entirely
-        if (!projectInstance.Targets.ContainsKey(Constants.ComputeAvailableDevices))
-        {
-            return null;
-        }
+        var projectInstance = EvaluateProject(
+            collection,
+            evaluationContext,
+            projectFilePath,
+            tfm: null,
+            configuration,
+            platform,
+            globalProperties);
+        evaluatedProjects?[string.Empty] = projectInstance;
 
         var targetFramework = projectInstance.GetPropertyValue(ProjectProperties.TargetFramework);
         var targetFrameworks = projectInstance.GetPropertyValue(ProjectProperties.TargetFrameworks);
@@ -526,33 +540,79 @@ internal static class SolutionAndProjectUtility
         }
 
         var devicesByTfm = new Dictionary<string, (string? Device, string? RuntimeIdentifier)>();
+        bool restoreWasPerformed = false;
         foreach (var framework in frameworks)
         {
-            var (device, rid) = SelectDeviceForTfm(projectFilePath, buildOptions, framework, isInteractive, buildSession);
+            ProjectInstance frameworkProject = projectInstance;
+            if (!string.IsNullOrEmpty(framework) &&
+                !string.Equals(framework, targetFramework, StringComparison.OrdinalIgnoreCase))
+            {
+                frameworkProject = EvaluateProject(
+                    collection,
+                    evaluationContext,
+                    projectFilePath,
+                    framework,
+                    configuration,
+                    platform,
+                    globalProperties);
+            }
+            evaluatedProjects?[framework] = frameworkProject;
+
+            // Workload-specific targets are imported only by inner builds, so probe the
+            // TFM-specific evaluation before constructing the selector that executes the target.
+            (string? Device, string? RuntimeIdentifier, bool RestoreWasPerformed) selection =
+                frameworkProject.Targets.ContainsKey(Constants.ComputeAvailableDevices)
+                    ? SelectDeviceForTfm(
+                        projectFilePath,
+                        buildOptions,
+                        framework,
+                        isInteractive,
+                        configuration,
+                        platform,
+                        noRestore: restoreWasPerformed,
+                        buildSession)
+                    : (null, null, false);
+
+            var (device, rid, selectionRestoreWasPerformed) = selection;
+            restoreWasPerformed |= selectionRestoreWasPerformed;
             devicesByTfm[framework] = (device, rid);
         }
 
         return devicesByTfm.Values.Any(v => v.Device is not null)
-            ? new DeviceSelectionResult(devicesByTfm, testTfmsInParallel)
+            ? new DeviceSelectionResult(devicesByTfm, testTfmsInParallel, restoreWasPerformed)
             : null;
     }
 
     internal sealed record DeviceSelectionResult(
         Dictionary<string, (string? Device, string? RuntimeIdentifier)> DevicesByTfm,
-        bool TestTfmsInParallel);
+        bool TestTfmsInParallel,
+        bool RestoreWasPerformed);
 
     /// <summary>
     /// Selects a device for a specific TFM using RunCommandSelector.
-    /// Returns (null, null) if no device support or no devices available for this TFM.
+    /// Returns the selected device, its runtime identifier, and whether restore was performed.
     /// </summary>
-    private static (string? device, string? runtimeIdentifier) SelectDeviceForTfm(
+    private static (string? device, string? runtimeIdentifier, bool restoreWasPerformed) SelectDeviceForTfm(
         string projectFilePath,
         BuildOptions buildOptions,
         string? tfm,
         bool isInteractive,
+        string? configuration,
+        string? platform,
+        bool noRestore,
         MSBuildSession buildSession)
     {
         var msbuildArgsToAppend = buildOptions.MSBuildArgs;
+        if (!string.IsNullOrEmpty(configuration))
+        {
+            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.Configuration}={configuration}");
+        }
+
+        if (!string.IsNullOrEmpty(platform))
+        {
+            msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.Platform}={platform}");
+        }
+
         if (!string.IsNullOrEmpty(tfm))
         {
             msbuildArgsToAppend = msbuildArgsToAppend.Append($"-p:{ProjectProperties.TargetFramework}={tfm}");
@@ -573,16 +633,16 @@ internal static class SolutionAndProjectUtility
         {
             if (!selector.TrySelectDevice(
                 listDevices: false,
-                noRestore: buildOptions.HasNoRestore || buildOptions.HasNoBuild,
+                noRestore: noRestore || buildOptions.HasNoRestore || buildOptions.HasNoBuild,
                 out var selectedDevice,
                 out var runtimeIdentifier,
-                out _))
+                out var restoreWasPerformed))
             {
                 throw new GracefulException(
                     string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"));
             }
 
-            return (selectedDevice, runtimeIdentifier);
+            return (selectedDevice, runtimeIdentifier, restoreWasPerformed);
         }
     }
 
