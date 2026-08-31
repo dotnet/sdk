@@ -27,7 +27,7 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class RunCommand
 {
-    private static readonly Regex s_msBuildPropertyRegex = new(@"\$\((?<token>[^\)]+)\)", RegexOptions.IgnoreCase);
+    private static readonly Regex s_msBuildPropertyRegex = new(@"\$\((?!\[)(?<token>[^\)]+)\)", RegexOptions.IgnoreCase);
 
     public bool NoBuild { get; }
 

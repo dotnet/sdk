@@ -88,7 +88,7 @@ public sealed class RunCommandTests : SdkTest
               "profiles": {
                 "First": {
                   "commandName": "Project",
-                  "commandLineArgs": "\"$(MSBuildProjectDirectory)\" \"$([System.String]::Copy('function'))\" \"@(Items)\" \"%(Identity)\""
+                  "commandLineArgs": "\"$(MSBuildProjectDirectory)\" \"$([System.IO.Path]::DirectorySeparatorChar)\" \"@(Items)\" \"%(Identity)\""
                 }
               }
             }
@@ -98,7 +98,7 @@ public sealed class RunCommandTests : SdkTest
             .WithWorkingDirectory(testProjectDirectory)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining($"ARGS={testProjectDirectory},$([System.String]::Copy('function')),@(Items),%(Identity)");
+            .And.HaveStdOutContaining($"ARGS={testProjectDirectory},$([System.IO.Path]::DirectorySeparatorChar),@(Items),%(Identity)");
     }
 
     [TestMethod]
