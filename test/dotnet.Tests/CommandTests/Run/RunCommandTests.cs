@@ -74,6 +74,34 @@ public sealed class RunCommandTests : SdkTest
     }
 
     [TestMethod]
+    public void MSBuildPropertyExpansion_Project()
+    {
+        var testAppName = "AppThatOutputsDotnetLaunchProfile";
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            .WithSource();
+
+        var testProjectDirectory = testInstance.Path;
+        var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+        File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "commandLineArgs": "\"$(MSBuildProjectDirectory)\""
+                }
+              }
+            }
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testProjectDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($"ARGS={testProjectDirectory}");
+    }
+
+    [TestMethod]
     public void Executable_DefaultWorkingDirectory()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
