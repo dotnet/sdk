@@ -6,6 +6,7 @@ namespace Microsoft.NET.Build.Containers.IntegrationTests;
 internal static class TestSettings
 {
     internal const string DockerDaemonResource = "DockerDaemon";
+    internal const string MSBuildBuildManagerResource = "MSBuildBuildManager";
 
     private static readonly object _tmpLock = new();
     private static string? _testArtifactsDir;
