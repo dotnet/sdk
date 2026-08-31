@@ -153,17 +153,18 @@ jobs:
             BuildConfig: $(_BuildConfig)
 
       - ${{ if notIn(parameters.agentOs, 'Windows_NT', 'Windows_NT_FullFramework', 'Windows_NT_TestAsTools') }}:
-        - script: eng/common/build.sh
-                    ${{ replace(replace(variables['_CIBuild'], '-sign ', ''), ' -sign', '') }}
-                    --configuration $(_BuildConfig)
-                    $(_SignArgs)
-                    $(_OfficialBuildIdArgs)
-                    $(_InternalRuntimeDownloadArgs)
-                    -p:Test=false
+        - script: |
+            ciBuildArgs=" $CIBuildArgs "
+            ciBuildArgs="${ciBuildArgs/ -sign / }"
+            eng/common/build.sh $ciBuildArgs --configuration "$BuildConfig" $SignArgs $OfficialBuildIdArgs $InternalRuntimeDownloadArgs -p:Test=false
           continueOnError: false
           displayName: Build
           env:
             BuildConfig: $(_BuildConfig)
+            CIBuildArgs: $(_CIBuild)
+            SignArgs: $(_SignArgs)
+            OfficialBuildIdArgs: $(_OfficialBuildIdArgs)
+            InternalRuntimeDownloadArgs: $(_InternalRuntimeDownloadArgs)
         - powershell: eng/common/build.sh
                 -configuration $(_BuildConfig)
                 -prepareMachine
