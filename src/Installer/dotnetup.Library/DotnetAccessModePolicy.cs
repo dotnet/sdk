@@ -18,6 +18,13 @@ internal static class DotnetAccessModePolicy
         accessMode is DotnetAccessMode.Everywhere;
 
     /// <summary>
+    /// Returns true when the mode shadows the system dotnet and migration should therefore be
+    /// selected by default to preserve the installed SDKs and runtimes.
+    /// </summary>
+    public static bool ShouldMigrateSystemInstallsByDefault(DotnetAccessMode accessMode) =>
+        accessMode is DotnetAccessMode.Shell or DotnetAccessMode.Everywhere;
+
+    /// <summary>
     /// Returns true when the mode can only be applied on Windows. <see cref="DotnetAccessMode.Everywhere"/>
     /// edits user-level env-var PATH/DOTNET_ROOT, which dotnetup only manages on Windows today. This is
     /// the single source of truth for the platform constraint — every entry point that validates a mode

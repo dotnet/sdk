@@ -24,19 +24,13 @@ internal static class InteractiveFormSelector
     }
 
     /// <summary>
-    /// Displays the form. Returns <c>true</c> if the user accepted (the model's field selections
-    /// hold the chosen values), or <c>false</c> if they quit without accepting.
+    /// Displays the form using interactive console input. The caller must ensure input is not
+    /// redirected. Returns <c>true</c> if the user accepted (the model's field selections hold the
+    /// chosen values), or <c>false</c> if they quit without accepting.
     /// </summary>
     public static bool Show(InitFormModel model)
     {
         var state = new InitFormState(model.Fields);
-
-        if (Console.IsInputRedirected)
-        {
-            AnsiConsole.Write(InitFormRenderer.BuildRenderable(model, state, showArrow: true));
-            return true;
-        }
-
         return RunInteractive(model, state);
     }
 

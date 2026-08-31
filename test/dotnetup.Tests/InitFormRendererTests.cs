@@ -335,6 +335,7 @@ public class InitFormRendererTests
         var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.None,
+            MigrateSystemInstalls: false,
             Migrations: [migration],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
             [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],
@@ -351,6 +352,7 @@ public class InitFormRendererTests
         var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.Everywhere,
+            MigrateSystemInstalls: true,
             Migrations: [],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
             [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],
@@ -394,6 +396,7 @@ public class InitFormRendererTests
         var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.None,
+            MigrateSystemInstalls: false,
             Migrations: [],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
             [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],

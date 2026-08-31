@@ -44,16 +44,20 @@ internal static class InitDefaultsResolver
             DotnetInstallRoot resolvedRoot = first.Request.InstallRoot;
             var resolvedMigrations = ResolveDefaultMigrations(
                 dotnetEnvironment, resolvedRoot, first.Request.Options.ManifestPath);
-            var defaultInstallSpecs = preResolvedRequests
+            var preResolvedInstallSpecs = preResolvedRequests
                 .Select(request => new MinimalInstallSpec(request.Request.Component, request.Request.Channel.Name))
                 .ToList();
 
             return new InitFormDefaults(
                 resolvedRoot,
                 accessMode,
+                ShouldMigrateSystemInstallsByDefault(
+                    accessMode,
+                    resolvedMigrations,
+                    preResolvedInstallSpecs),
                 resolvedMigrations,
                 new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath),
-                defaultInstallSpecs,
+                preResolvedInstallSpecs,
                 shellProvider,
                 GetInstallRootGlobalJsonPath(pathResolution, globalJson, resolvedRoot));
         }
@@ -65,15 +69,26 @@ internal static class InitDefaultsResolver
         var migrations = ResolveDefaultMigrations(dotnetEnvironment, installRoot, command.ManifestPath);
         DefaultChannelDisplay channelDisplay = ResolveChannelDisplay(globalJson);
 
+        MinimalInstallSpec[] defaultInstallSpecs =
+            [new(InstallComponent.SDK, channelDisplay.ChannelLabel)];
+
         return new InitFormDefaults(
             installRoot,
             accessMode,
+            ShouldMigrateSystemInstallsByDefault(accessMode, migrations, defaultInstallSpecs),
             migrations,
             channelDisplay,
-            [new MinimalInstallSpec(InstallComponent.SDK, channelDisplay.ChannelLabel)],
+            defaultInstallSpecs,
             shellProvider,
             GetInstallRootGlobalJsonPath(pathResolution, globalJson, installRoot));
     }
+
+    private static bool ShouldMigrateSystemInstallsByDefault(
+        DotnetAccessMode accessMode,
+        List<MigrationWorkflow.MigrationSelection> migrations,
+        IReadOnlyCollection<MinimalInstallSpec> defaultInstallSpecs) =>
+        DotnetAccessModePolicy.ShouldMigrateSystemInstallsByDefault(accessMode)
+        && MigrationWorkflow.FilterMigrationSelections(migrations, defaultInstallSpecs).Count > 0;
 
     private static string? GetInstallRootGlobalJsonPath(
         InstallPathResolver.InstallPathResolutionResult pathResolution,

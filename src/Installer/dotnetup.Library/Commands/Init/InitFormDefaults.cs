@@ -14,6 +14,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// </summary>
 /// <param name="InstallRoot">The install root the environment is configured against.</param>
 /// <param name="AccessMode">The default access mode.</param>
+/// <param name="MigrateSystemInstalls">Whether migration is selected by default.</param>
 /// <param name="Migrations">The system installs eligible for migration before pending installs are excluded.</param>
 /// <param name="ChannelDisplay">Display information for the default SDK channel.</param>
 /// <param name="DefaultInstallSpecs">The component and channel selections represented by the default channel choice.</param>
@@ -22,6 +23,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 internal sealed record InitFormDefaults(
     DotnetInstallRoot InstallRoot,
     DotnetAccessMode AccessMode,
+    bool MigrateSystemInstalls,
     List<MigrationWorkflow.MigrationSelection> Migrations,
     DefaultChannelDisplay ChannelDisplay,
     IReadOnlyList<MinimalInstallSpec> DefaultInstallSpecs,

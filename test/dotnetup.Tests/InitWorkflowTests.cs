@@ -49,6 +49,18 @@ public class InitWorkflowTests : IDisposable
             .Should().BeTrue();
     }
 
+    [TestMethod]
+    [DataRow(DotnetAccessMode.None, false)]
+    [DataRow(DotnetAccessMode.Shell, true)]
+    [DataRow(DotnetAccessMode.Everywhere, true)]
+    internal void ShouldMigrateSystemInstallsByDefault_MatchesAccessMode(
+        DotnetAccessMode accessMode,
+        bool expected)
+    {
+        DotnetAccessModePolicy.ShouldMigrateSystemInstallsByDefault(accessMode)
+            .Should().Be(expected);
+    }
+
     // ── PromptInstallsToMigrateIfDesired — early-exit paths ──
 
     [TestMethod]

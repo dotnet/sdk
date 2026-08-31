@@ -26,6 +26,9 @@ internal sealed class InitFormModel
     // Index of the "Yes" choice in the access-affecting yes/no fields (Migrate).
     private const int YesIndex = 0;
 
+    // Index of the "No" choice in the access-affecting yes/no fields (Migrate).
+    private const int NoIndex = 1;
+
     private readonly FormField _channelField;
     private readonly IReadOnlyList<string?> _channelTokens;
     private readonly int _globalJsonChannelIndex;
@@ -217,12 +220,14 @@ internal sealed class InitFormModel
         FormField? migrateField = null;
         if (defaults.Migrations.Count > 0)
         {
-            migrateField = BuildMigrateField(isVisible: () =>
-            {
-                return MigrationWorkflow.FilterMigrationSelections(
-                    defaults.Migrations,
-                    GetCurrentInstallSpecs(channelField, channelTokens, defaults.DefaultInstallSpecs)).Count > 0;
-            });
+            migrateField = BuildMigrateField(
+                defaults.MigrateSystemInstalls,
+                isVisible: () =>
+                {
+                    return MigrationWorkflow.FilterMigrationSelections(
+                        defaults.Migrations,
+                        GetCurrentInstallSpecs(channelField, channelTokens, defaults.DefaultInstallSpecs)).Count > 0;
+                });
         }
 
         var fields = new List<FormField> { channelField, accessModeField };
@@ -330,7 +335,7 @@ internal sealed class InitFormModel
     // 'dotnetup env' vocabulary.
     private static string AccessModeTitle(DotnetAccessMode mode) => mode.ToString();
 
-    private static FormField BuildMigrateField(Func<bool> isVisible)
+    private static FormField BuildMigrateField(bool migrateByDefault, Func<bool> isVisible)
     {
         var choices = new List<FieldChoice>
         {
@@ -341,7 +346,7 @@ internal sealed class InitFormModel
         return new FormField(
             "Migrate system installs",
             choices,
-            defaultIndex: YesIndex,
+            defaultIndex: migrateByDefault ? YesIndex : NoIndex,
             isVisible: isVisible);
     }
 

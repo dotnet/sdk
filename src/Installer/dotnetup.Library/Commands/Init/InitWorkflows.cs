@@ -87,8 +87,7 @@ internal class InitWorkflows
     /// <summary>
     /// Runs the interactive init form (when interactive) and reads the user's choices into a
     /// <see cref="FormOutcome"/>, or returns null when the user exits. In non-interactive sessions
-    /// the recommended setup is used without prompting and nothing is migrated, preserving the
-    /// historical behavior.
+    /// the same defaults are used without prompting.
     /// </summary>
     private static FormOutcome? ResolveFormOutcome(InstallCommand command, InitFormDefaults defaults)
     {
@@ -98,7 +97,7 @@ internal class InitWorkflows
             return new FormOutcome(
                 Channel: null,
                 AccessMode: defaults.AccessMode,
-                Migrate: false);
+                Migrate: defaults.MigrateSystemInstalls);
         }
 
         InitFormModel model = InitFormModel.Create(

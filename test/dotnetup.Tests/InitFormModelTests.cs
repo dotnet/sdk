@@ -102,6 +102,20 @@ public class InitFormModelTests
     }
 
     [TestMethod]
+    [DataRow(DotnetAccessMode.None, false)]
+    [DataRow(DotnetAccessMode.Shell, true)]
+    [DataRow(DotnetAccessMode.Everywhere, true)]
+    internal void MigrationDefault_MatchesAccessMode(DotnetAccessMode accessMode, bool expected)
+    {
+        var model = CreateModel(
+            new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
+            [CreateMigration("10.0.1xx", "10.0.100")],
+            accessMode);
+
+        model.MigrateSelected().Should().Be(expected);
+    }
+
+    [TestMethod]
     public void ChangedRuntimeChannel_PreservesRuntimeComponent()
     {
         var installRoot = new DotnetInstallRoot(
@@ -148,11 +162,12 @@ public class InitFormModelTests
     }
 
     [TestMethod]
-    public void ChangingChannel_ShowsPreviouslyRedundantMigrationField()
+    public void ChangingChannel_ShowsPreviouslyRedundantMigrationFieldWithoutOptingIn()
     {
         var model = CreateModel(
             new DefaultChannelDisplay("10.0.1xx", GlobalJsonPath: null),
-            [CreateMigration("10.0.1xx", "10.0.100")]);
+            [CreateMigration("10.0.1xx", "10.0.100")],
+            accessMode: DotnetAccessMode.Shell);
         FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
         migrationField.IsVisible.Should().BeFalse();
         model.MigrateSelected().Should().BeFalse();
@@ -162,7 +177,7 @@ public class InitFormModelTests
         channelField.SetCustomValue(customIndex, "9.0.3xx");
 
         migrationField.IsVisible.Should().BeTrue();
-        model.MigrateSelected().Should().BeTrue();
+        model.MigrateSelected().Should().BeFalse();
     }
 
     [TestMethod]
@@ -239,12 +254,19 @@ public class InitFormModelTests
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
+        IReadOnlyList<MinimalInstallSpec> defaultInstallSpecs =
+            [new MinimalInstallSpec(InstallComponent.SDK, channelDisplay.ChannelLabel)];
+        List<MigrationWorkflow.MigrationSelection> migrationCandidates = migrations ?? [];
         return new InitFormDefaults(
             installRoot,
             accessMode,
-            migrations ?? [],
+            DotnetAccessModePolicy.ShouldMigrateSystemInstallsByDefault(accessMode)
+                && MigrationWorkflow.FilterMigrationSelections(
+                    migrationCandidates,
+                    defaultInstallSpecs).Count > 0,
+            migrationCandidates,
             channelDisplay,
-            [new MinimalInstallSpec(InstallComponent.SDK, channelDisplay.ChannelLabel)],
+            defaultInstallSpecs,
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
     }
