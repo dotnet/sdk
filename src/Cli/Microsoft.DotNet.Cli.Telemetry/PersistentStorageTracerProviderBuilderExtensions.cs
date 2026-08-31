@@ -47,7 +47,8 @@ public static class PersistentStorageTracerProviderBuilderExtensions
             connectionString.InstrumentationKey,
             connectionString.TrackUri,
             options.LeasePeriodMilliseconds,
-            options.MaxBlobsPerDrain);
+            options.MaxBlobsPerDrain,
+            options.StartBackgroundDrain);
         return builder.AddProcessor(new SimpleActivityExportProcessor(exporter));
     }
 }

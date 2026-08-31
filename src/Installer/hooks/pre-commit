@@ -1,0 +1,44 @@
+#!/bin/sh
+# Pre-commit hook: auto-formats dotnetup code with dotnet format.
+# Install via: src/Installer/hooks/install.sh  (or install.ps1 on Windows)
+#
+# If dotnet format fails (e.g. dotnet not found), the commit proceeds anyway
+# so this hook never blocks work.
+
+REPO_ROOT="$(git rev-parse --show-toplevel)"
+DOTNET="$REPO_ROOT/.dotnet/dotnet"
+
+# Only run if the repo-local dotnet exists
+if [ ! -f "$DOTNET" ]; then
+    exit 0
+fi
+
+# Check if any staged files are under the dotnetup/Installation directories
+DOMINATED_PATHS="src/Installer/dotnetup/ src/Installer/Microsoft.Dotnet.Installation/ test/dotnetup.Tests/"
+DOMINATED=false
+for path in $DOMINATED_PATHS; do
+    if git diff --cached --name-only | grep -q "^$path"; then
+        DOMINATED=true
+        break
+    fi
+done
+
+if [ "$DOMINATED" = false ]; then
+    exit 0
+fi
+
+echo "[dotnetup] Running dotnet format on staged changes..."
+
+# Format each project; ignore failures so commits are never blocked
+"$DOTNET" format "$REPO_ROOT/src/Installer/dotnetup/dotnetup.csproj" --no-restore 2>/dev/null || true
+"$DOTNET" format "$REPO_ROOT/src/Installer/Microsoft.Dotnet.Installation/Microsoft.Dotnet.Installation.csproj" --no-restore 2>/dev/null || true
+"$DOTNET" format "$REPO_ROOT/test/dotnetup.Tests/dotnetup.Tests.csproj" --no-restore 2>/dev/null || true
+
+# Re-stage any files that were reformatted
+for path in $DOMINATED_PATHS; do
+    git diff --name-only -- "$REPO_ROOT/$path" | while read -r file; do
+        git add -- "$REPO_ROOT/$file"
+    done
+done
+
+exit 0

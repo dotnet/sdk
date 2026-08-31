@@ -208,6 +208,8 @@ jobs:
       # Fall back to Azure DevOps-provided environment variables when the caller did not
       # supply organization / repository explicitly. BUILD_REPOSITORY_NAME is typically
       # 'owner/repo' for GitHub-backed builds and 'owner-repo' for internal builds.
+      # The internal-build fallback assumes the owner and repository names do not
+      # contain additional hyphens; pass the parameters explicitly otherwise.
       if [ -z "$organization" ] || [ -z "$repository" ]; then
         buildRepoName="${BUILD_REPOSITORY_NAME:-}"
         if [ -n "$buildRepoName" ] && [[ "$buildRepoName" == */* ]]; then

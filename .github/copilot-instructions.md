@@ -260,6 +260,13 @@ property:
   when the changed paths match a configured scope, or use its fallback mappings for
   unscoped common areas. Run one project, class, or method with detailed live output and
   retained TRX/binlog diagnostics.
+- To run tests in this repo (after a full build, invoke the repo-local bootstrap SDK directly):
+  - For MSTest-style projects: `./.dotnet/dotnet test path/to/project.csproj --filter "FullyQualifiedName~TestName"`
+  - To run a built test assembly directly: `./.dotnet/dotnet exec artifacts/bin/redist/Debug/TestAssembly.dll --filter "TestMethodName"`
+  - Examples:
+    - `./.dotnet/dotnet test test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~ItShowsTheAppropriateMessageToTheUser"`
+    - `./.dotnet/dotnet exec artifacts/bin/redist/Debug/dotnet.Tests.dll --filter "ItShowsTheAppropriateMessageToTheUser"`
+  - Most test projects require a full redist SDK build first (see the build steps above); `dotnetup.Tests` is the exception and runs without one.
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
 - This repo uses conditional test filtering to skip expensive test suites on PRs when
   relevant source files have not changed. When adding new test projects, consider

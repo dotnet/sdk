@@ -1,0 +1,158 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
+using Microsoft.DotNet.Tools.Bootstrapper.Shell;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
+
+/// <summary>
+/// Resolves the recommended init setup (access mode, install root, channel display, and
+/// migration candidates) for the walkthrough summary. Resolution here is side-effect-free: it
+/// performs no network calls, writes no console output, and does not throw on an unresolvable
+/// channel. The actual install requests are resolved separately (and only once the user commits
+/// to installing) via <see cref="ResolveDefaultRequests"/>, so simply viewing the summary or
+/// choosing to exit never triggers version resolution.
+/// </summary>
+internal static class InitWorkflowDefaults
+{
+    /// <summary>
+    /// Resolves the recommended setup to display in the summary (install root, access mode,
+    /// migration candidates, and channel display) without prompting, resolving versions, or
+    /// emitting output. When <paramref name="preResolvedRequests"/> is supplied, its already-resolved
+    /// root/channel/manifest are reused instead of being re-derived.
+    /// </summary>
+    public static WalkthroughPlan ResolveWalkthroughPlan(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? preResolvedRequests,
+        IDotnetEnvironmentManager dotnetEnvironment)
+    {
+        IEnvShellProvider? shellProvider = command.ShellProvider ?? ShellDetection.GetCurrentShellProvider();
+        DotnetAccessMode accessMode = GetDefaultAccessMode(shellProvider);
+        var globalJson = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
+        var pathResolution = new InstallPathResolver(dotnetEnvironment).Resolve(
+            command.InstallPath, globalJson);
+
+        if (preResolvedRequests is { Count: > 0 })
+        {
+            var first = preResolvedRequests[0];
+            DotnetInstallRoot resolvedRoot = first.Request.InstallRoot;
+            var resolvedMigrations = ResolveDefaultMigrations(
+                dotnetEnvironment, accessMode, resolvedRoot, first.Request.Options.ManifestPath, preResolvedRequests);
+
+            return new WalkthroughPlan(
+                resolvedRoot,
+                accessMode,
+                resolvedMigrations,
+                new DefaultChannelDisplay(first.Request.Channel.Name, first.Request.Options.GlobalJsonPath),
+                shellProvider,
+                GetInstallRootGlobalJsonPath(pathResolution, globalJson, resolvedRoot));
+        }
+
+        var installRoot = new DotnetInstallRoot(
+            pathResolution.ResolvedInstallPath,
+            InstallerUtilities.GetDefaultInstallArchitecture());
+
+        var migrations = ResolveDefaultMigrations(
+            dotnetEnvironment, accessMode, installRoot, command.ManifestPath, existingRequests: null);
+
+        return new WalkthroughPlan(
+            installRoot,
+            accessMode,
+            migrations,
+            ResolveChannelDisplay(globalJson),
+            shellProvider,
+            GetInstallRootGlobalJsonPath(pathResolution, globalJson, installRoot));
+    }
+
+    private static string? GetInstallRootGlobalJsonPath(
+        InstallPathResolver.InstallPathResolutionResult pathResolution,
+        GlobalJsonInfo globalJson,
+        DotnetInstallRoot installRoot)
+        => pathResolution.PathSource is PathSource.GlobalJson
+            && DotnetupUtilities.PathsEqual(pathResolution.ResolvedInstallPath, installRoot.Path)
+                ? globalJson.GlobalJsonPath
+                : null;
+
+    /// <summary>
+    /// Resolves the default install requests. Uses the pre-resolved requests when supplied;
+    /// otherwise resolves the default SDK channel (from global.json or "latest"). This performs
+    /// version resolution and may print global.json messaging, so it is only called once the user
+    /// has committed to installing.
+    /// </summary>
+    public static List<ResolvedInstallRequest> ResolveDefaultRequests(
+        InstallCommand command,
+        List<ResolvedInstallRequest>? requests)
+    {
+        return requests ?? GenerateSdkInstallRequests(command, channel: null);
+    }
+
+    /// <summary>
+    /// Generates a single SDK install request for the given channel (or the default channel when
+    /// null), resolving the path, global.json, version, and validation through the install workflow.
+    /// </summary>
+    public static List<ResolvedInstallRequest> GenerateSdkInstallRequests(InstallCommand command, string? channel)
+    {
+        var workflow = new InstallWorkflow(command);
+        return workflow.GenerateInstallRequests(
+            [new MinimalInstallSpec(InstallComponent.SDK, channel)]);
+    }
+
+    /// <summary>
+    /// Returns the recommended access mode without prompting. On Windows this is everywhere mode;
+    /// otherwise it is terminal-profile mode when a supported shell is available, and isolation mode
+    /// when it is not. This is the value shown in the summary and used by the "proceed with
+    /// defaults" branch.
+    /// </summary>
+    public static DotnetAccessMode GetDefaultAccessMode(IEnvShellProvider? shellProvider = null)
+    {
+        // Default to Everywhere mode on Windows
+        if (OperatingSystem.IsWindows())
+        {
+            return DotnetAccessMode.Everywhere;
+        }
+
+        if ((shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
+        {
+            return DotnetAccessMode.None;
+        }
+
+        return DotnetAccessMode.Shell;
+    }
+
+    /// <summary>
+    /// Builds the deduplicated migration candidates for the recommended mode without prompting.
+    /// Returns an empty list when the mode does not migrate system installs.
+    /// </summary>
+    public static List<MigrationWorkflow.MigrationSelection> ResolveDefaultMigrations(
+        IDotnetEnvironmentManager dotnetEnvironment,
+        DotnetAccessMode accessMode,
+        DotnetInstallRoot installRoot,
+        string? manifestPath,
+        IReadOnlyCollection<ResolvedInstallRequest>? existingRequests)
+    {
+        if (!DotnetAccessModePolicy.ShouldPromptToConvertSystemInstalls(accessMode))
+        {
+            return [];
+        }
+
+        var systemInstalls = MigrationWorkflow.GetMigrationCandidates(dotnetEnvironment);
+        return MigrationWorkflow.BuildMigrationSelections(systemInstalls, installRoot, manifestPath, existingRequests);
+    }
+
+    /// <summary>
+    /// Resolves the channel label to display in the summary directly from global.json (or "latest")
+    /// without resolving a concrete version, so the summary never triggers a network call.
+    /// </summary>
+    private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo globalJson)
+    {
+        if (globalJson.GlobalJsonPath is not null
+            && GlobalJsonChannelResolver.ResolveChannel(globalJson.GlobalJsonPath) is { } channel)
+        {
+            return new DefaultChannelDisplay(channel, globalJson.GlobalJsonPath);
+        }
+
+        return new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, null);
+    }
+}
