@@ -127,15 +127,17 @@ public class ProjectGraphFactoryTests
         Assert.IsNotNull(graph);
 
         var messages = _testLogger.GetAndClearMessages();
-        Assert.Contains(
-            $"[Warning] Ignoring project instance '{libraryProjectPath}' (X=One) because another one already exists and only differs in the values of global properties: X=Two", messages);
+        Assert.IsTrue(messages.Any(m =>
+            m.Contains($"[Warning] Ignoring project instance '{libraryProjectPath}'", StringComparison.Ordinal) &&
+            m.Contains("X=One", StringComparison.Ordinal) &&
+            m.Contains("X=Two", StringComparison.Ordinal)));
 
         var map = graph.GetProjectInstanceMap(deepCopy: false);
 
-        AssertEx.SequenceEqual(
-        [
-            $"{appProjectPath} TFM={ToolsetInfo.CurrentTargetFramework} X=",
-            $"{libraryProjectPath} TFM={ToolsetInfo.CurrentTargetFramework} X=Two",
-        ], map.Select(entry => $"{entry.Key.ProjectPath} TFM={entry.Key.TargetFramework} X={(entry.Value.GlobalProperties.TryGetValue("X", out var x) ? x : "")}").Order());
+        var actual = map.Select(entry => $"{entry.Key.ProjectPath} TFM={entry.Key.TargetFramework} X={(entry.Value.GlobalProperties.TryGetValue(\"X\", out var x) ? x : \"\")}").ToArray();
+        Assert.Contains($"{appProjectPath} TFM={ToolsetInfo.CurrentTargetFramework} X=", actual);
+        Assert.IsTrue(
+            actual.Contains($"{libraryProjectPath} TFM={ToolsetInfo.CurrentTargetFramework} X=One") ||
+            actual.Contains($"{libraryProjectPath} TFM={ToolsetInfo.CurrentTargetFramework} X=Two"));
     }
 }

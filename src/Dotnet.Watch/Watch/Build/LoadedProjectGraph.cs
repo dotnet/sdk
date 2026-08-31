@@ -123,8 +123,8 @@ internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection c
             DisplayProperties(existingNode));
 
         string DisplayProperties(ProjectGraphNode node)
-            => string.Join(",", propertiesDiff.Select(propertyName => $"{propertyName}={node.ProjectInstance.GlobalProperties[propertyName]}"));
-    }
+            => string.Join(",", propertiesDiff.Select(propertyName =>
+                $"{propertyName}={(node.ProjectInstance.GlobalProperties.TryGetValue(propertyName, out var value) ? value : "<unset>")}"));
 
     public IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> GetProjectInstanceMap(bool deepCopy)
         => _innerBuildNodes.SelectMany(entry => entry.Value).ToImmutableDictionary(
