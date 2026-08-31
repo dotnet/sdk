@@ -53,7 +53,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             {
                 TemplateSpecificArgs = arguments ?? Enumerable.Empty<string>(),
                 VerifyCommandOutput = true,
-                SnapshotsDirectory = "Approvals",
+                SnapshotsDirectory = ApprovalsDirectory,
                 SettingsDirectory = _sharedHome.HomeDirectory,
                 DoNotAppendTemplateArgsToScenarioName = true,
                 DotnetExecutablePath = SdkTestContext.Current.ToolsetUnderTest?.DotNetHostPath,
