@@ -171,6 +171,42 @@ public partial class AotIntegrationTests
         }
     }
 
+    [TestMethod]
+    public void AotTestModules_RunsManagedTestModule()
+    {
+        SkipIfDnUnavailable();
+        string? testModule = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_MANAGED_TEST_MODULE");
+        if (string.IsNullOrEmpty(testModule) || !File.Exists(testModule))
+        {
+            Assert.Inconclusive("A managed Microsoft.Testing.Platform module was not provided for Native AOT validation.");
+        }
+
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
+            ["DOTNET_CLI_CONTEXT_VERBOSE_TO_STDERR"] = bool.TrueString,
+            ["DOTNET_TEST_RUNNER"] = "Microsoft.Testing.Platform",
+        };
+        var (exitCode, stdout, stderr) = RunDn(
+            [
+                "test",
+                "--test-modules", Path.GetFileName(testModule),
+                "--root-directory", Path.GetDirectoryName(testModule)!,
+                "--no-progress",
+                "--no-ansi",
+                "--",
+                "--filter", "FullyQualifiedName~AotParserTests.ParseVersion_HasNoErrors",
+            ],
+            enableAot: true,
+            timeoutMs: 60_000,
+            extraEnv: environment);
+
+        Assert.AreEqual(0, exitCode, stderr);
+        stderr.Should().Contain("AOT test tier: TestModules.");
+        stdout.Should().Contain("total: 1");
+        stdout.Should().Contain("succeeded: 1");
+    }
+
     private static Dictionary<string, string> CreateRunEnvironment(string hostPath)
     {
         string dotnetRoot = Path.GetDirectoryName(hostPath)!;
