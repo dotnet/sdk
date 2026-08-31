@@ -437,6 +437,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             task.StaticWebAssets[0].GetMetadata("AssetGroups").Should().Be("MyGroup");
         }
 
+        // ResourceLock cannot protect unrelated tests that implicitly read the process current directory.
+        [DoNotParallelize]
         [TestMethod]
         public void MakeReferencedAssetOriginalItemSpecAbsolute_ResolvesAgainstProjectDirectoryNotProcessCurrentDirectory()
         {
