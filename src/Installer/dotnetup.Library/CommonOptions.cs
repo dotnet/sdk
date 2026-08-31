@@ -37,9 +37,7 @@ internal class CommonOptions
 
     /// <summary>
     /// Hidden test hook: preview the <c>dotnetup init</c> form and the settings it would apply
-    /// without installing anything or changing the environment. Also toggled by the
-    /// <c>DOTNETUP_DRY_RUN</c> environment variable (see <see cref="Commands.Shared.DryRunSetting"/>),
-    /// which additionally covers the first-run onboarding path and CI/screenshot testing.
+    /// without installing anything or changing the environment.
     /// </summary>
     public static readonly Option<bool> DryRunOption = new("--dry-run")
     {

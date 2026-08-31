@@ -40,7 +40,7 @@ internal abstract class InstallCommand : CommandBase
         Verbosity = parseResult.GetValue(CommonOptions.VerbosityOption);
         RequireMuxerUpdate = parseResult.GetValue(CommonOptions.RequireMuxerUpdateOption);
         Untracked = parseResult.GetValue(CommonOptions.UntrackedOption);
-        DryRun = parseResult.GetValue(CommonOptions.DryRunOption) || DryRunSetting.IsEnabledFromEnvironment();
+        DryRun = parseResult.GetValue(CommonOptions.DryRunOption);
         ShellProvider = parseResult.GetValue(CommonOptions.ShellOption);
         MigrateFromSystem = parseResult.GetValue(CommonOptions.MigrateFromSystemOption);
 

@@ -12,7 +12,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 /// </summary>
 internal static class InteractiveFormSelector
 {
-    // Arrow/cursor flash interval in milliseconds (matches InteractiveOptionSelector).
+    // Arrow/cursor flash interval in milliseconds.
     private const int FlashIntervalMs = 600;
 
     private enum KeyResult

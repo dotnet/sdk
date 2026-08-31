@@ -34,8 +34,7 @@ internal class InitWorkflows
     /// <summary>
     /// Interactive onboarding flow used both by the explicit <c>dotnetup init</c> command
     /// and by the first interactive install when dotnetup has not yet been configured.
-    /// Resolves the recommended setup, shows the summary selector, and then either applies
-    /// that recommended setup (proceed), runs the step-by-step prompts (customize), or exits.
+    /// Resolves the recommended setup, and shows the form where the options can be reviewed and modified.
     /// When <paramref name="requests"/> is supplied, those already-resolved install requests are
     /// reused as the recommended requests instead of resolving the default SDK channel.
     /// </summary>
@@ -191,12 +190,8 @@ internal class InitWorkflows
 
     private static void PrintPreviewLine(string label, string value, string accent)
     {
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "  [white]{0}:[/]  [{1}]{2}[/]",
-            label.EscapeMarkup(),
-            accent,
-            value.EscapeMarkup()));
+        SpectreAnsiConsole.MarkupLine(
+            $"  [white]{label.EscapeMarkup()}:[/]  [{accent}]{value.EscapeMarkup()}[/]");
     }
 
     private static MinimalInstallSpec[] BuildSelectedInstallSpecs(WalkthroughPlan plan, FormOutcome outcome)
