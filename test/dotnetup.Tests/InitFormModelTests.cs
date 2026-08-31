@@ -82,9 +82,9 @@ public class InitFormModelTests
         const string globalJsonPath = @"C:\repo\global.json";
         var model = CreateModel(new DefaultChannelDisplay("9.0", globalJsonPath));
 
-        FieldDetail detail = model.BuildDetail(model.Fields[0], choiceIndex: 0);
+        IReadOnlyList<DetailLine> lines = model.BuildDerivedDetailLines(model.Fields[0], choiceIndex: 0);
 
-        detail.Lines.Should().ContainSingle()
+        lines.Should().ContainSingle()
             .Which.Should().Be(new DetailLine("From global.json:", globalJsonPath));
     }
 
@@ -136,14 +136,14 @@ public class InitFormModelTests
             ]);
         FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
 
-        model.BuildDetail(migrationField, choiceIndex: 0).Lines
+        model.BuildDerivedDetailLines(migrationField, choiceIndex: 0)
             .Should().ContainSingle().Which.Value.Should().Be("9.0.300");
 
         FormField channelField = model.Fields[0];
         int customIndex = channelField.Choices.Count - 1;
         channelField.SetCustomValue(customIndex, "9.0.3xx");
 
-        model.BuildDetail(migrationField, choiceIndex: 0).Lines
+        model.BuildDerivedDetailLines(migrationField, choiceIndex: 0)
             .Should().ContainSingle().Which.Value.Should().Be("10.0.100");
     }
 
@@ -199,7 +199,7 @@ public class InitFormModelTests
         migrationField.SelectChoice(1);
 
         model.MigrateSelected().Should().BeFalse();
-        model.BuildDetail(migrationField, choiceIndex: 1).Lines.Should().BeEmpty();
+        model.BuildDerivedDetailLines(migrationField, choiceIndex: 1).Should().BeEmpty();
     }
 
     [TestMethod]
@@ -216,13 +216,13 @@ public class InitFormModelTests
             ]);
         FormField migrationField = model.Fields.Single(field => field.Label == "Migrate system installs");
 
-        FieldDetail detail = model.BuildDetail(migrationField, choiceIndex: 0);
+        IReadOnlyList<DetailLine> lines = model.BuildDerivedDetailLines(migrationField, choiceIndex: 0);
 
-        detail.Lines.Should().HaveCount(2);
-        detail.Lines[0].Label.Should().Be(".NET SDKs:");
-        detail.Lines[0].Value.Should().EndWith("and 1 more");
-        detail.Lines[1].Label.Should().ContainEquivalentOf("runtime");
-        detail.Lines[1].Value.Should().Be("10.0.5");
+        lines.Should().HaveCount(2);
+        lines[0].Label.Should().Be(".NET SDKs:");
+        lines[0].Value.Should().EndWith("and 1 more");
+        lines[1].Label.Should().ContainEquivalentOf("runtime");
+        lines[1].Value.Should().Be("10.0.5");
     }
 
     private static InitFormModel CreateModel(

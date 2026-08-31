@@ -95,13 +95,12 @@ internal sealed class InitFormModel
     public string InstallPath { get; }
 
     /// <summary>
-    /// Computes the detail (help text + derived info lines) for the given field's value at
-    /// <paramref name="choiceIndex"/>. Used both while browsing (the selected value) and while
-    /// editing (the highlighted value).
+    /// Computes the derived informational lines for the given field's value at
+    /// <paramref name="choiceIndex"/>. Static help text belongs to the corresponding
+    /// <see cref="FieldChoice"/>.
     /// </summary>
-    public FieldDetail BuildDetail(FormField field, int choiceIndex)
+    public IReadOnlyList<DetailLine> BuildDerivedDetailLines(FormField field, int choiceIndex)
     {
-        string helper = field.Choices[choiceIndex].HelperText;
         var lines = new List<DetailLine>();
 
         if (ReferenceEquals(field, _channelField))
@@ -120,7 +119,7 @@ internal sealed class InitFormModel
             lines.AddRange(BuildMigrationLines());
         }
 
-        return new FieldDetail(helper, lines);
+        return lines;
     }
 
     // The concrete artifacts an access mode produces (the shell profile it edits, the env vars and

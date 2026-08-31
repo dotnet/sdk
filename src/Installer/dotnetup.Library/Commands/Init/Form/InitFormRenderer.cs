@@ -253,8 +253,9 @@ internal static class InitFormRenderer
                 new Markup(BuildCustomInputMarkup(state.CustomTextBuffer, showArrow, theme)));
         }
 
-        FieldDetail detail = model.BuildDetail(field, state.EditChoiceIndex);
-        yield return Indent(ChoiceDetailIndent, HelpMarkup(detail.HelperText, theme));
+        yield return Indent(
+            ChoiceDetailIndent,
+            HelpMarkup(field.Choices[state.EditChoiceIndex].HelperText, theme));
     }
 
     // Renders each choice row, its help text, and the highlighted choice's derived details.
@@ -298,7 +299,7 @@ internal static class InitFormRenderer
 
             if (selected && showDerived)
             {
-                foreach (DetailLine line in model.BuildDetail(field, index).Lines)
+                foreach (DetailLine line in model.BuildDerivedDetailLines(field, index))
                 {
                     Markup detail;
                     if (line.Value is null)
