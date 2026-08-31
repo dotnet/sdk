@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-run" "1" "2025-10-30" "" ".NET Documentation"
+.TH "dotnet-run" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet run
 .PP
@@ -28,12 +28,15 @@ dotnet-run - Runs source code without any explicit compile or launch commands.
 \f[C]
 dotnet run [<applicationArguments>]
   [-a|--arch <ARCHITECTURE>] [--artifacts-path <ARTIFACTS_DIR>]
-  [-c|--configuration <CONFIGURATION>] [-e|--environment <KEY=VALUE>]
-  [--file <FILE_PATH>] [-f|--framework <FRAMEWORK>] [--force] [--interactive]
-  [--launch-profile <NAME>] [--no-build] [--no-dependencies]
-  [--no-launch-profile] [--no-restore] [--os <OS>] [--project <PATH>]
-  [-r|--runtime <RUNTIME_IDENTIFIER>] [--tl:[auto|on|off]]
-  [-v|--verbosity <LEVEL>] [[--] [application arguments]]
+  [-c|--configuration <CONFIGURATION>] [--disable-build-servers]
+  [-e|--environment <KEY=VALUE>] [--file <FILE_PATH>]
+  [-f|--framework <FRAMEWORK>] [--force] [--interactive]
+  [-lp|--launch-profile <NAME>] [--no-build] [--no-cache]
+  [--no-dependencies] [--no-launch-profile] [--no-restore] [--os <OS>]
+  [-p|--property:<PROPERTYNAME>=<VALUE>]
+  [--project <PATH>] [-r|--runtime <RUNTIME_IDENTIFIER>]
+  [--sc|--self-contained] [--tl:[auto|on|off]] [-v|--verbosity <LEVEL>]
+  [[--] [application arguments]]
 
 dotnet run -h|--help
 \f[R]
@@ -44,10 +47,6 @@ The \f[V]dotnet run\f[R] command provides a convenient option to run your applic
 It\[cq]s useful for fast iterative development from the command line.
 The command depends on the \f[V]dotnet build\f[R] command to build the code.
 Any requirements for the build apply to \f[V]dotnet run\f[R] as well.
-.RS
-.PP
-\f[V]dotnet run\f[R] doesn\[cq]t respect arguments like \f[V]/property:property=value\f[R], which are respected by \f[V]dotnet build\f[R].
-.RE
 .PP
 Output files are written into the default location, which is \f[V]bin/<configuration>/<target>\f[R].
 For example if you have a \f[V]netcoreapp2.1\f[R] application and you run \f[V]dotnet run\f[R], the output is placed in \f[V]bin/Debug/netcoreapp2.1\f[R].
@@ -95,6 +94,38 @@ Arguments passed to the application that is being run.
 .PP
 Any arguments that aren\[cq]t recognized by \f[V]dotnet run\f[R] are passed to the application.
 To separate arguments for \f[V]dotnet run\f[R] from arguments for the application, use the \f[V]--\f[R] option.
+.SS Forward arguments to the application
+.PP
+\f[V]dotnet run\f[R] forwards any token it doesn\[cq]t recognize to the application.
+The forwarded tokens keep their original order, but \f[V]dotnet run\f[R] first removes the options it understands.
+When a recognized option appears between an unrecognized option name and its value, removing the recognized option can change the meaning of the leftover tokens.
+.PP
+For example, the following command interleaves the recognized option \f[V]--project\f[R] between tokens the application is meant to receive:
+.IP
+.nf
+\f[C]
+dotnet run --app-flag --app-name --project ConsoleApp.csproj A.txt
+\f[R]
+.fi
+.PP
+After \f[V]dotnet run\f[R] consumes \f[V]--project ConsoleApp.csproj\f[R], the application receives \f[V]--app-flag --app-name A.txt\f[R].
+The application then treats \f[V]A.txt\f[R] as the value of \f[V]--app-name\f[R], which doesn\[cq]t match the original command line.
+.PP
+To avoid this ambiguity, place application arguments after a literal \f[V]--\f[R]:
+.IP
+.nf
+\f[C]
+dotnet run --project ConsoleApp.csproj -- --app-flag --app-name A.txt
+\f[R]
+.fi
+.PP
+The \f[V]--\f[R] separator marks every following token as an application argument, so \f[V]dotnet run\f[R] doesn\[cq]t reorder or reinterpret them.
+The separator also future-proofs scripts against new \f[V]dotnet run\f[R] options that might later match a token previously forwarded to the application.
+.RS
+.PP
+The same behavior applies to \f[V]dotnet build\f[R] and to \f[V]dotnet test\f[R] in Microsoft.Testing.Platform (MTP) mode, which forward unrecognized tokens to MSBuild or to the test application respectively.
+For more information about \f[V]dotnet test\f[R], see Forward arguments to the test application.
+.RE
 .SH OPTIONS
 .IP \[bu] 2
 \f[B]\f[VB]--\f[B]\f[R]
@@ -103,40 +134,33 @@ To separate arguments for \f[V]dotnet run\f[R] from arguments for the applicatio
 Delimits arguments to \f[V]dotnet run\f[R] from arguments for the application being run.
 All arguments after this delimiter are passed to the application run.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-a|--arch <ARCHITECTURE>\f[B]\f[R]
-.RS 2
 .PP
 Specifies the target architecture.
 This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
 For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--arch x86\f[R] sets the RID to \f[V]win-x86\f[R].
 If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6 Preview 7.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--artifacts-path <ARTIFACTS_DIR>\f[B]\f[R]
-.RS 2
 .PP
 All build output files from the executed command will go in subfolders under the specified path, separated by project.
 For more information see Artifacts Output Layout.
+This option and the value provided must be explicitly cascaded in any \f[V]dotnet\f[R] command that depends on the output of another \f[V]dotnet\f[R] command, for example, when using \f[V]dotnet build --no-restore\f[R] and \f[V]dotnet publish --no-build\f[R].
 Available since .NET 8 SDK.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-c|--configuration <CONFIGURATION>\f[B]\f[R]
-.RS 2
 .PP
 Defines the build configuration.
 The default for most projects is \f[V]Debug\f[R], but you can override the build configuration settings in your project.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--disable-build-servers\f[B]\f[R]
-.RS 2
 .PP
 Forces the command to ignore any persistent build servers.
 This option provides a consistent way to disable all use of build caching, which forces a build from scratch.
 A build that doesn\[cq]t rely on caches is useful when the caches might be corrupted or incorrect for some reason.
 Available since .NET 7 SDK.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]-e|--environment <KEY=VALUE>\f[B]\f[R]
 .RS 2
@@ -164,23 +188,8 @@ The path to the file-based app to run.
 If a path isn\[cq]t specified, the current directory is used to find and run the file.
 For more information on file-based apps, see Build file-based C# apps.
 .PP
-On Unix, you can run file-based apps directly, using the source file name on the command line instead of \f[V]dotnet run\f[R].
-First, ensure the file has execute permissions.
-Then, add a shebang line \f[V]#!\f[R] as the first line of the file, for example:
-.IP
-.nf
-\f[C]
-#!/usr/bin/env dotnet run
-\f[R]
-.fi
-.PP
-Then you can run the file directly from the command line:
-.IP
-.nf
-\f[C]
-\&./ConsoleApp.cs
-\f[R]
-.fi
+On Unix, execute file-based apps directly using the filename by adding a shebang (\f[V]#!\f[R]) directive and setting the execute permission.
+For more information, see Unix shebang (\f[V]#!\f[R]) support.
 .PP
 Introduced in .NET SDK 10.0.100.
 .RE
@@ -191,16 +200,13 @@ Introduced in .NET SDK 10.0.100.
 Forces all dependencies to be resolved even if the last restore was successful.
 Specifying this flag is the same as deleting the \f[I]project.assets.json\f[R] file.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--interactive\f[B]\f[R]
-.RS 2
 .PP
 Allows the command to stop and wait for user input or action.
 For example, to complete authentication.
-Available since .NET Core 3.0 SDK.
-.RE
 .IP \[bu] 2
-\f[B]\f[VB]--launch-profile <NAME>\f[B]\f[R]
+\f[B]\f[VB]-lp|--launch-profile <NAME>\f[B]\f[R]
 .RS 2
 .PP
 The name of the launch profile (if any) to use when launching the application.
@@ -238,23 +244,19 @@ Doesn\[cq]t try to use \f[I]launchSettings.json\f[R] to configure the applicatio
 .PP
 Doesn\[cq]t execute an implicit restore when running the command.
 .RE
-.IP \[bu] 2
-\f[B]\f[VB]--no-self-contained\f[B]\f[R]
-.RS 2
 .PP
-Publish your application as a framework dependent application.
+\f[B]\f[VB]--no-self-contained\f[B]\f[R]
+.PP
+Publish your application as a framework-dependent application.
 A compatible .NET runtime must be installed on the target machine to run your application.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--os <OS>\f[B]\f[R]
-.RS 2
 .PP
 Specifies the target operating system (OS).
 This is a shorthand syntax for setting the Runtime Identifier (RID), where the provided value is combined with the default RID.
 For example, on a \f[V]win-x64\f[R] machine, specifying \f[V]--os linux\f[R] sets the RID to \f[V]linux-x64\f[R].
 If you use this option, don\[cq]t use the \f[V]-r|--runtime\f[R] option.
 Available since .NET 6.
-.RE
 .IP \[bu] 2
 \f[B]\f[VB]--project <PATH>\f[B]\f[R]
 .RS 2
@@ -301,17 +303,12 @@ dotnet run -- --property name=value
 Specifies the target runtime to restore packages for.
 For a list of Runtime Identifiers (RIDs), see the RID catalog.
 .RE
-.IP \[bu] 2
-\f[B]\f[VB]-sc|--self-contained\f[B]\f[R]
-.RS 2
 .PP
-Publishes the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target system.
-The default is \f[V]false\f[R].
-However, when targeting .NET 7 or lower, the default is \f[V]true\f[R] if a runtime identifier is specified.
-.RE
-.IP \[bu] 2
+\f[B]\f[VB]--sc|--self-contained\f[B]\f[R]
+.PP
+Publish the .NET runtime with your application so the runtime doesn\[cq]t need to be installed on the target machine.
+.PP
 \f[B]\f[VB]--tl:[auto|on|off]\f[B]\f[R]
-.RS 2
 .PP
 Specifies whether \f[I]Terminal Logger\f[R] should be used for the build output.
 The default is \f[V]auto\f[R], which first verifies the environment before enabling terminal logging.
@@ -336,22 +333,17 @@ The primary output of that build (which is hyperlinked).
 Any diagnostics generated for that project.
 .PP
 This option is available starting in .NET 8.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH ENVIRONMENT VARIABLES
 .PP
 There are four mechanisms by which environment variables can be applied to the launched application:
