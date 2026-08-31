@@ -97,7 +97,7 @@
        fewer (but larger) work items and reducing per-item overhead on Helix queues. -->
   <ItemGroup>
     <SDKCustomTestProject Update="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj">
-      <MethodLimitMultiplier>10</MethodLimitMultiplier>
+      <MethodLimitMultiplier>20</MethodLimitMultiplier>
     </SDKCustomTestProject>
     <SDKCustomTestProject Update="TemplateEngine\**\*.csproj;**\Microsoft.TemplateEngine.Cli.UnitTests.csproj">
       <MethodLimitMultiplier>20</MethodLimitMultiplier>
@@ -112,6 +112,21 @@
          MTP (exit code 8). Consolidate into a single work item; the real test count is small. -->
     <SDKCustomTestProject Update="**\dotnet-aot.Tests.csproj">
       <MethodLimitMultiplier>20</MethodLimitMultiplier>
+    </SDKCustomTestProject>
+    <!-- These assemblies now parallelize within each process. Use fewer, larger shards to avoid
+         paying the per-work-item payload and environment setup cost for mostly sub-minute shards,
+         while retaining multiple machines for their longest integration-test tails. -->
+    <SDKCustomTestProject Update="**\dotnet.Tests.csproj;**\Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj">
+      <MethodLimitMultiplier>4</MethodLimitMultiplier>
+    </SDKCustomTestProject>
+    <SDKCustomTestProject Update="**\Microsoft.NET.Build.Tests.csproj">
+      <MethodLimitMultiplier>2</MethodLimitMultiplier>
+    </SDKCustomTestProject>
+    <!-- Only this class invokes TypeScript tooling. Installing Node in every work item adds
+         substantial setup time, especially on Windows agents where Node is not preinstalled. -->
+    <SDKCustomTestProject Update="**\Microsoft.NET.Sdk.StaticWebAssets.Tests.csproj">
+      <NodeRequiredTestClass>Microsoft.NET.Sdk.StaticWebAssets.Tests.TypeScriptIntegrationTest</NodeRequiredTestClass>
+      <NodeVersion>22.22.3</NodeVersion>
     </SDKCustomTestProject>
     <!-- EndToEnd.Tests needs installer archives which are excluded from the shared
          correlation payload to reduce download/unpack overhead for all other work items.
@@ -134,6 +149,13 @@
 
   <!-- need to be a target in order to have IsPosixShell available -->
   <Target Name="CopyHelixFiles" AfterTargets="Publish">
+
+    <PropertyGroup>
+      <HelixPayloadOnHost>$(RepoRoot)artifacts\tmp\Helixpayload</HelixPayloadOnHost>
+      <HelixNuGetPayload>$(RepoRoot)artifacts\tmp\HelixNuGetPayload</HelixNuGetPayload>
+      <HelixInstallerArchives>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</HelixInstallerArchives>
+      <HelixNuGetConfig>$(RepoRoot)artifacts\tmp\HelixNuGetConfig\NuGet.config</HelixNuGetConfig>
+    </PropertyGroup>
 
     <ItemGroup>
       <BuiltSdks Include="$(RepoRoot)artifacts\bin\$(Configuration)\Sdks\**\*.*" />
@@ -164,7 +186,7 @@
       <TemplateSampleFiles Include="$(RepoRoot)documentation\TemplateEngine\Samples\**\*.*" />
 
       <!-- Files in testExecutionDirectory to prevent environment interference -->
-      <TestExecutionDirectoryFiles Include="$(TestLayoutDir)NuGet.config" />
+      <TestExecutionDirectoryFiles Include="$(HelixNuGetConfig)" />
       <TestExecutionDirectoryFiles Include="$(TestLayoutDir)Directory.Build.props" />
       <TestExecutionDirectoryFiles Include="$(TestLayoutDir)Directory.Build.targets" />
       <TestExecutionDirectoryFiles Include="$(RepoRoot)testAsset.props" />
@@ -194,11 +216,9 @@
       <FilesInHelixRoot Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' " Include="$(RepoRoot)build\helix-debug-entitlements.plist" />
     </ItemGroup>
 
-    <PropertyGroup>
-      <HelixPayloadOnHost>$(RepoRoot)artifacts\tmp\Helixpayload</HelixPayloadOnHost>
-      <HelixNuGetPayload>$(RepoRoot)artifacts\tmp\HelixNuGetPayload</HelixNuGetPayload>
-      <HelixInstallerArchives>$(RepoRoot)artifacts\tmp\HelixInstallerArchives</HelixInstallerArchives>
-    </PropertyGroup>
+    <PrepareHelixNuGetConfig
+        SourceFile="$(TestLayoutDir)NuGet.config"
+        DestinationFile="$(HelixNuGetConfig)" />
 
     <!-- Stage nupkgs (excluding installer archives) for the shared correlation payload.
          This avoids downloading large SDK archives on every work item. -->
@@ -233,22 +253,14 @@
 
   <Target Name="AppendHelixPreCommand" BeforeTargets="CoreTest" DependsOnTargets="CopyHelixFiles">
     <PropertyGroup>
-      <!-- Node.js version for TypeScript tests on Helix (Microsoft.TypeScript.MSBuild requires Node 20+) -->
-      <NodeVersion>22.22.3</NodeVersion>
-      <_NodeArchitecture Condition="'$(TargetArchitecture)' != ''">$(TargetArchitecture)</_NodeArchitecture>
-      <_NodeArchitecture Condition="'$(TargetArchitecture)' == ''">x64</_NodeArchitecture>
-      <!-- Install Node.js for TypeScript compilation tests.
-           Done inside SetupHelixEnvironment scripts to avoid PATH semicolons
-           conflicting with HelixPreCommands separator. -->
-      <HelixPreCommands Condition="!$(IsPosixShell)">set DOTNET_SDK_TEST_NODE_VERSION=$(NodeVersion);call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
-      <HelixPreCommands Condition="$(IsPosixShell)">export DOTNET_SDK_TEST_NODE_VERSION=$(NodeVersion);export DOTNET_SDK_TEST_NODE_ARCH=$(_NodeArchitecture);. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="!$(IsPosixShell)">call %HELIX_CORRELATION_PAYLOAD%\t\SetupHelixEnvironment.cmd $(TestFullMSBuild);$(HelixPreCommands)</HelixPreCommands>
+      <HelixPreCommands Condition="$(IsPosixShell)">. $HELIX_CORRELATION_PAYLOAD/t/SetupHelixEnvironment.sh;$(HelixPreCommands)</HelixPreCommands>
       <!-- Install wasm-tools workload on Helix for AoT tests (see: https://github.com/dotnet/sdk/issues/22655).
            This must happen on Helix (not the build machine) because cross-arch builds produce a dotnet binary
            that cannot execute on the build machine's architecture.
            Point to the test NuGet.config so the workload packs can be resolved from the configured feeds. -->
       <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and !$(IsPosixShell)">$(HelixPreCommands);%DOTNET_ROOT%\dotnet workload install wasm-tools --skip-manifest-update --configfile %TestExecutionDirectory%\NuGet.config</HelixPreCommands>
       <HelixPreCommands Condition="'$(RunAoTTests)' == 'true' and $(IsPosixShell)">$(HelixPreCommands);$DOTNET_ROOT/dotnet workload install wasm-tools --skip-manifest-update --configfile $TestExecutionDirectory/NuGet.config</HelixPreCommands>
-      <HelixPostCommands Condition="!$(IsPosixShell)">PowerShell -ExecutionPolicy ByPass "dotnet nuget locals all -l | ForEach-Object { $_.Split(' ')[1]} | Where-Object{$_ -like '*cache'} | Get-ChildItem -Recurse -File -Filter '*.dat' | Measure";$(HelixPostCommands)</HelixPostCommands>
       <!-- Upload any crash/hang dumps to the work item so they are retained. Matches both the MTP
            crash/hang dump extensions (*_crash.dmp / *_hang.dmp) and the legacy VSTest blame-hang
            dumps (*hangdump.dmp). -->

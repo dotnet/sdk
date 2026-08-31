@@ -161,7 +161,8 @@ build.cmd # to have a full build first
 ```
 
 The runner builds the selected test project incrementally and retains its TRX and MSBuild
-binlog paths under `artifacts/log/test-runs/`.
+binlog paths under `artifacts/log/test-runs/`. Pass `--repeat N` to build once and run
+the selected tests repeatedly, with separate TRX output and timing for each iteration.
 
 ## Run tests in Visual Studio
 
