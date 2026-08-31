@@ -7,6 +7,7 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Text.RegularExpressions;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -26,6 +27,8 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class RunCommand
 {
+    private static readonly Regex s_msBuildPropertyRegex = new(@"\$\((?<token>[^\)]+)\)", RegexOptions.IgnoreCase);
+
     public bool NoBuild { get; }
 
     /// <summary>
@@ -571,7 +574,10 @@ public class RunCommand
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
-            command.SetCommandArgs(project?.ExpandString(launchSettings.CommandLineArgs) ?? launchSettings.CommandLineArgs);
+            command.SetCommandArgs(
+                project is null
+                    ? launchSettings.CommandLineArgs
+                    : s_msBuildPropertyRegex.Replace(launchSettings.CommandLineArgs, match => project.ExpandString(match.Value)));
         }
 
         return command;
