@@ -520,6 +520,7 @@ public class RunCommand
     private ICommand GetTargetCommandForProject(ProjectLaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
     {
         ICommand command;
+        ProjectInstance? project = null;
         IReadOnlyDictionary<string, string> runtimeEnvironmentVariables = EnvironmentVariables;
         if (cachedRunProperties != null)
         {
@@ -540,7 +541,6 @@ public class RunCommand
         {
             Reporter.Verbose.WriteLine("Getting target command: evaluating project.");
 
-            ProjectInstance project;
             bool hasRuntimeEnvironmentVariableSupport;
             try
             {
@@ -571,7 +571,7 @@ public class RunCommand
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
-            command.SetCommandArgs(launchSettings.CommandLineArgs);
+            command.SetCommandArgs(project?.ExpandString(launchSettings.CommandLineArgs) ?? launchSettings.CommandLineArgs);
         }
 
         return command;
