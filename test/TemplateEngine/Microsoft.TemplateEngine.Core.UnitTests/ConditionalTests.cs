@@ -31,7 +31,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         internal ConditionalTests(EnvironmentSettingsHelper environmentSettingsHelper)
         {
-            _engineEnvironmentSettings = environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = CreateEnvironment(environmentSettingsHelper, GetType().Name);
         }
 
         /// <summary>

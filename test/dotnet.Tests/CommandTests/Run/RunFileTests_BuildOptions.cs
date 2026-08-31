@@ -1153,6 +1153,24 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .And.HaveStdOutContaining("hello");
     }
 
+    [TestMethod]
+    public void UnquotedDirectiveWarning()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property Description=value with a space
+            Console.WriteLine("hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2267")
+            .And.HaveStdOutContaining("hello");
+    }
+
     /// <summary>
     /// File-based projects using the default SDK do not include embedded resources by default.
     /// </summary>

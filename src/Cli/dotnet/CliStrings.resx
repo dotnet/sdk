@@ -663,4 +663,7 @@ setx PATH "%PATH%;{0}"
   <data name="SdkRootDirectoryDoesNotExist" xml:space="preserve">
     <value>The SDK root directory '{0}' provided via the '{1}' setting does not exist.</value>
   </data>
+  <data name="ResolvedPathEscapesTargetDirectory" xml:space="preserve">
+    <value>The resolved path '{0}' escapes the target directory '{1}'.</value>
+  </data>
 </root>

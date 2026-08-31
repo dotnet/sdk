@@ -11,6 +11,8 @@ namespace Microsoft.NET.Build.Containers;
 /// </remarks>
 internal interface IManifestOperations
 {
+    public Task<bool> ExistsAsync(string repositoryName, string reference, CancellationToken cancellationToken);
+
     public Task<HttpResponseMessage> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken);
 
     public Task PutAsync(string repositoryName, string reference, string manifestListJson, string mediaType, CancellationToken cancellationToken);

@@ -29,6 +29,8 @@
     <PackageReference Include="NuGet.Credentials" />
     <PackageReference Include="NuGet.Packaging" />
     <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="NuGet.Frameworks" />
     <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Microsoft.Win32.Msi\Microsoft.Win32.Msi.csproj" Condition="'$(TargetOS)' == 'windows'" />
   </ItemGroup>
 

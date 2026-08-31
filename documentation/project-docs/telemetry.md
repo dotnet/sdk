@@ -282,6 +282,33 @@ The logger creates an internal activity for each build. When trace context is av
 the activity is a child of the invoking CLI trace. Server reuse changes telemetry delivery
 and correlation only. It does not change the listed data points or properties.
 
+The activity remains open through logger shutdown because MSBuild emits the final `build`
+telemetry event after `BuildFinished` (see
+[dotnet/sdk#55749](https://github.com/dotnet/sdk/issues/55749)).
+`TelemetryHostMatrixTests` validates the real OTLP export path for cold and hot MSBuild
+servers, in-process builds, server fallback, and telemetry opt-out. The test installs the
+pinned Aspire CLI version from the repository's configured feeds, runs its dashboard on
+loopback endpoints, and verifies exported events through the dashboard telemetry API.
+
+#### `msbuild/roslyn/compilercache`
+
+**When fired**: When the Roslyn [compiler output cache](https://github.com/dotnet/roslyn/blob/main/docs/compilers/Design/compiler-output-cache-experiment.md)
+is enabled and a compilation runs on the compiler server through the MSBuild `Csc` or `Vbc` task
+
+**Properties**:
+
+- `cachestatus`: Cache lookup result: `hit` or `miss`
+- `storeresult`: Cache store result: `none`, `stored`, `skippedrace`, `skippedexists`, or `failed`
+- `language`: Compiler language: `C#` or `Visual Basic`
+- `keycomputems`: Milliseconds spent computing the deterministic cache key
+- `restorems`: Milliseconds spent attempting to restore a cached result
+- `storems`: Milliseconds spent storing the result; omitted when no store was attempted
+- `compilems`: Milliseconds spent compiling and emitting on a cache miss; omitted on a cache hit or when compilation failed
+
+**Description**: Tracks the effectiveness and performance of the experimental Roslyn compiler output cache
+
+---
+
 #### `msbuild/targetframeworkeval`
 
 **When fired**: When target framework is evaluated

@@ -18,8 +18,9 @@ namespace Microsoft.DotNet.Cli.Commands.MSBuild;
 /// MSBuild loads this type from <c>dotnet.dll</c> as a distributed logger. The logger is a
 /// separate SDK entry point. It can run in the managed CLI process, a child MSBuild
 /// process, or a persistent MSBuild server. Some hosts do not run either CLI bootstrap.
-/// The logger initializes process-wide telemetry when necessary. It creates and clears
-/// request-specific activity state at <c>BuildStarted</c> and <c>BuildFinished</c>.
+/// The logger initializes process-wide telemetry when necessary. It creates
+/// request-specific activity state at <c>BuildStarted</c> and completes it at logger
+/// shutdown, after MSBuild has emitted its final telemetry event.
 /// </remarks>
 public sealed class MSBuildLogger : INodeLogger
 {
@@ -36,8 +37,8 @@ public sealed class MSBuildLogger : INodeLogger
     /// Whether this logger initialized the process-wide telemetry client.
     /// </summary>
     /// <remarks>
-    /// The initializer controls provider shutdown. If this logger did not initialize the
-    /// client, the managed CLI controls its lifetime.
+    /// The initializer flushes providers when this logger instance ends. If this logger did
+    /// not initialize the client, the managed CLI controls the provider lifetime.
     /// </remarks>
     private readonly bool _initializedTelemetryClient;
 
@@ -45,9 +46,9 @@ public sealed class MSBuildLogger : INodeLogger
     /// The activity owned by the current build.
     /// </summary>
     /// <remarks>
-    /// This activity belongs to one build. It must not remain active after
-    /// <c>BuildFinished</c>. A persistent server can run later builds with unrelated parent
-    /// trace contexts in the same process.
+    /// This activity belongs to one build. It remains active until logger shutdown because
+    /// MSBuild emits final telemetry after <c>BuildFinished</c>. A persistent server can run
+    /// later builds with unrelated parent trace contexts in the same process.
     /// </remarks>
     private Activity? _activity;
 
@@ -90,6 +91,11 @@ public sealed class MSBuildLogger : INodeLogger
     internal const string SdkContainerPublishErrorEventName = "sdk/container/publish/error";
 
     /// <summary>
+    /// Emitted by the Roslyn <c>Csc</c>/<c>Vbc</c> build task.
+    /// </summary>
+    internal const string RoslynCompilerCacheEventName = "roslyn/compilercache";
+
+    /// <summary>
     /// Stores aggregated telemetry data by event name and property name.
     /// </summary>
     /// <remarks>
@@ -117,6 +123,7 @@ public sealed class MSBuildLogger : INodeLogger
             {
                 _ = new TelemetryClient(sessionId);
                 _initializedTelemetryClient = true;
+                TelemetryClient.RegisterProviderShutdownOnProcessExit();
             }
 
             _telemetry = TelemetryClient.Instance;
@@ -154,7 +161,7 @@ public sealed class MSBuildLogger : INodeLogger
     /// <remarks>
     /// The logger subscribes to telemetry events and <c>BuildStarted</c> only when telemetry
     /// is enabled. This avoids work for opted-out builds. The logger always subscribes to
-    /// <c>BuildFinished</c>. This lets the logger clear its activity before a later request.
+    /// <c>BuildFinished</c> so it can record the build result.
     /// </remarks>
     public void Initialize(IEventSource eventSource)
     {
@@ -198,6 +205,8 @@ public sealed class MSBuildLogger : INodeLogger
     /// </remarks>
     private void OnBuildStarted(object sender, BuildStartedEventArgs e)
     {
+        StopActivity();
+
         ActivityContext parentContext =
             Activity.Current?.Context
             ?? TelemetryClient.GetParentActivityContext()
@@ -209,19 +218,17 @@ public sealed class MSBuildLogger : INodeLogger
     }
 
     /// <summary>
-    /// Completes telemetry and activity state for one MSBuild request.
+    /// Records the result of one MSBuild request.
     /// </summary>
     /// <remarks>
-    /// The logger attaches MSBuild events before it stops the activity. This order ensures
-    /// that exporters include the events when they capture the stopped activity. The method
-    /// sets the span status from the overall build result. It then clears the activity so a
-    /// later server build cannot use the completed activity as its parent.
+    /// MSBuild emits its final build telemetry after <c>BuildFinished</c>. This method sets
+    /// the span status but leaves the activity open until <see cref="Shutdown"/>, after the
+    /// final telemetry event has been delivered to the logger.
     /// </remarks>
     private void OnBuildFinished(object sender, BuildFinishedEventArgs e)
     {
         SendAggregatedEventsOnBuildFinished(_telemetry);
         _activity?.SetStatus(e.Succeeded ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
-        StopActivity();
     }
 
     /// <summary>
@@ -323,6 +330,9 @@ public sealed class MSBuildLogger : INodeLogger
                     toBeHashed: []
                 );
                 break;
+            case RoslynCompilerCacheEventName:
+                TrackEvent(telemetry, $"msbuild/{RoslynCompilerCacheEventName}", args.Properties);
+                break;
             // Pass through events that don't need special handling
             case SdkTaskBaseCatchExceptionTelemetryEventName:
             case PublishPropertiesTelemetryEventName:
@@ -363,7 +373,7 @@ public sealed class MSBuildLogger : INodeLogger
 
         if (telemetry is TelemetryClient telemetryClient)
         {
-            // Add production events before BuildFinished stops the activity.
+            // Add production events synchronously while the build activity is active.
             // Test clients use ITelemetryClient without a real telemetry client.
             telemetryClient.ThreadBlockingTrackEvent(eventName, properties ?? eventProperties);
         }
@@ -389,12 +399,12 @@ public sealed class MSBuildLogger : INodeLogger
     /// Completes this MSBuild logger instance and writes its diagnostic telemetry log.
     /// </summary>
     /// <remarks>
-    /// <c>BuildFinished</c> normally stops the build activity. <see cref="Shutdown"/> also
-    /// stops the activity if an aborted build did not deliver <c>BuildFinished</c>. MSBuild
-    /// calls this method when the logger instance ends. The method waits for queued events
-    /// before it writes the diagnostic log. If this logger initialized the telemetry client,
-    /// it owns provider shutdown. When the managed CLI runs MSBuild in the same process,
-    /// provider shutdown remains with the CLI that initialized the client.
+    /// MSBuild calls this method after it has emitted the final build telemetry event. This
+    /// method stops the build activity, waits for queued events, and writes the diagnostic
+    /// log. If this logger initialized the telemetry client, it flushes the process-wide
+    /// providers without shutting them down because a persistent server can run later
+    /// builds. When the managed CLI runs MSBuild in the same process, the CLI controls the
+    /// provider lifetime.
     /// </remarks>
     public void Shutdown()
     {
@@ -404,7 +414,10 @@ public sealed class MSBuildLogger : INodeLogger
         {
             if (_initializedTelemetryClient)
             {
-                TelemetryClient.FlushProviders();
+                // A persistent MSBuild server creates a logger for each build. Flush this
+                // request without shutting down the process-wide providers needed by later
+                // builds in the same server process.
+                TelemetryClient.ForceFlushProviders();
             }
             else
             {
@@ -420,7 +433,7 @@ public sealed class MSBuildLogger : INodeLogger
     /// </summary>
     /// <remarks>
     /// The invoking host owns the ambient parent activity. This method does not stop the
-    /// parent. Because this method clears the field, both <c>BuildFinished</c> and
+    /// parent. Because this method clears the field, both a replacement build and
     /// <see cref="Shutdown"/> can call it safely.
     /// </remarks>
     private void StopActivity()

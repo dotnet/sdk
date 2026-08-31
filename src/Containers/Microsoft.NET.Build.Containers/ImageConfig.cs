@@ -85,7 +85,7 @@ internal sealed class ImageConfig
     /// <summary>
     /// Builds in additional configuration and returns updated image configuration in JSON format as string.
     /// </summary>
-    internal string BuildConfig()
+    internal string BuildConfig(DateTime createdAt)
     {
         var newConfig = new JsonObject();
 
@@ -141,7 +141,7 @@ internal sealed class ImageConfig
         int numberOfLayers = _rootFsLayers.Count;
         int numberOfNonEmptyLayerHistoryEntries = _history.Count(h => h.empty_layer is null or false);
         int missingHistoryEntries = numberOfLayers - numberOfNonEmptyLayerHistoryEntries;
-        HistoryEntry customHistoryEntry = new(created: DateTime.UtcNow, author: ".NET SDK",
+        HistoryEntry customHistoryEntry = new(created: createdAt, author: ".NET SDK",
             created_by: $".NET SDK Container Tooling, version {Constants.Version}");
         for (int i = 0; i < missingHistoryEntries; i++)
         {
@@ -152,7 +152,7 @@ internal sealed class ImageConfig
         {
             ["config"] = newConfig,
             //update creation date
-            ["created"] = RFC3339Format(DateTime.UtcNow),
+            ["created"] = RFC3339Format(createdAt),
             ["rootfs"] = new JsonObject()
             {
                 ["type"] = "layers",

@@ -259,9 +259,41 @@ internal static class SolutionAndProjectUtility
         string? platform,
         IReadOnlyDictionary<string, string>? additionalGlobalProperties = null,
         HashSet<string>? visitedTraversalProjects = null)
+        => GetProjectProperties(
+            projectFilePath,
+            tfm => EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm, configuration, platform, additionalGlobalProperties),
+            buildOptions,
+            buildSession,
+            configuration,
+            platform,
+            additionalGlobalProperties,
+            visitedTraversalProjects,
+            (path, referenceConfiguration, referencePlatform, visited) =>
+                GetProjectProperties(
+                    path,
+                    projectCollection,
+                    evaluationContext,
+                    buildOptions,
+                    buildSession,
+                    referenceConfiguration,
+                    referencePlatform,
+                    additionalGlobalProperties,
+                    visited));
+
+    [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
+    public static IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> GetProjectProperties(
+        string projectFilePath,
+        Func<string?, ProjectInstance> evaluateProject,
+        BuildOptions buildOptions,
+        MSBuildSession buildSession,
+        string? configuration = null,
+        string? platform = null,
+        IReadOnlyDictionary<string, string>? additionalGlobalProperties = null,
+        HashSet<string>? visitedTraversalProjects = null,
+        Func<string, string?, string?, HashSet<string>, IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules>>? expandTraversalProject = null)
     {
         var projects = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        ProjectInstance projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, tfm: null, configuration, platform, additionalGlobalProperties);
+        ProjectInstance projectInstance = evaluateProject(null);
 
         // Traversal projects (e.g. Microsoft.Build.Traversal "dirs.proj") are not test projects themselves.
         // They act as a container that forwards build/test operations to their ProjectReference items.
@@ -269,6 +301,11 @@ internal static class SolutionAndProjectUtility
         // evaluate each of them. This is done recursively so that nested traversal projects work as well.
         if (IsTraversalProject(projectInstance))
         {
+            if (expandTraversalProject is null)
+            {
+                return projects;
+            }
+
             // Track visited (project, configuration, platform) tuples across the whole traversal graph so
             // that a project referenced by multiple traversal projects with the same configuration/platform
             // (a "diamond") is only tested once, while the same project referenced with a *different*
@@ -286,7 +323,11 @@ internal static class SolutionAndProjectUtility
                     continue;
                 }
 
-                projects.AddRange(GetProjectProperties(reference.FullPath, projectCollection, evaluationContext, buildOptions, buildSession, reference.Configuration, reference.Platform, additionalGlobalProperties, visitedTraversalProjects));
+                projects.AddRange(expandTraversalProject(
+                    reference.FullPath,
+                    reference.Configuration,
+                    reference.Platform,
+                    visitedTraversalProjects));
             }
 
             return projects;
@@ -324,7 +365,7 @@ internal static class SolutionAndProjectUtility
             {
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
+                    projectInstance = evaluateProject(framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)
@@ -338,7 +379,7 @@ internal static class SolutionAndProjectUtility
                 List<TestModule>? innerModules = null;
                 foreach (var framework in frameworks)
                 {
-                    projectInstance = EvaluateProject(projectCollection, evaluationContext, projectFilePath, framework, configuration, platform, additionalGlobalProperties);
+                    projectInstance = evaluateProject(framework);
                     Logger.LogTrace($"Loaded inner project '{Path.GetFileName(projectFilePath)}' has '{ProjectProperties.IsTestingPlatformApplication}' = '{projectInstance.GetPropertyValue(ProjectProperties.IsTestingPlatformApplication)}' (TFM: '{framework}').");
 
                     if (GetModuleFromProject(projectInstance, buildOptions, buildSession) is { } module)

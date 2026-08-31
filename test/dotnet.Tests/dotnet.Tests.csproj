@@ -36,6 +36,10 @@
 
   <ItemGroup>
     <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>AspireCliVersion</_Parameter1>
+      <_Parameter2>$(AspireCliVersion)</_Parameter2>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
       <_Parameter1>MSTestVersion</_Parameter1>
       <_Parameter2>$(MSTestVersion)</_Parameter2>
     </AssemblyAttribute>

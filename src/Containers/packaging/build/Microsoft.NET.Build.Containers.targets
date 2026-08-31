@@ -100,6 +100,7 @@
       <!-- Only default a tag name if no tag names at all are provided -->
       <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
+      <ContainerPushNoCache Condition="'$(ContainerPushNoCache)' == ''">false</ContainerPushNoCache>
     </PropertyGroup>
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
@@ -149,7 +150,6 @@
 
     <!-- Labels generated from descriptions from the spec at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
     <ItemGroup Label="Conventional Label assignment" Condition="'$(ContainerGenerateLabels)' == 'true'">
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageCreated)' == 'true'" Include="org.opencontainers.image.created;org.opencontainers.artifact.created" Value="$([System.DateTime]::UtcNow.ToString('o'))" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.artifact.description;org.opencontainers.image.description" Value="$(ContainerDescription)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageAuthors)' == 'true' and '$(ContainerAuthors)' != ''" Include="org.opencontainers.image.authors" Value="$(ContainerAuthors)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageUrl)' == 'true' and '$(ContainerInformationUrl)' != ''" Include="org.opencontainers.image.url" Value="$(ContainerInformationUrl)" />
@@ -275,9 +275,12 @@
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
+                    SourceDateEpoch="$(SOURCE_DATE_EPOCH)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
                     SkipPublishing="$(_SkipContainerPublishing)"
+                    NoCache="$(ContainerPushNoCache)"
                     GenerateLabels="$(ContainerGenerateLabels)"
+                    GenerateCreatedLabels="$(ContainerGenerateLabelsImageCreated)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
@@ -332,7 +335,9 @@
           _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerGenerateLabels=$(ContainerGenerateLabels);
+          ContainerGenerateLabelsImageCreated=$(ContainerGenerateLabelsImageCreated);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
+          ContainerPushNoCache=$(ContainerPushNoCache);
           _SkipContainerPublishing=$(_SkipContainerPublishing);
           ContainerImageFormat=$(_SingleImageContainerFormat);
           _IsMultiRIDBuild=false;

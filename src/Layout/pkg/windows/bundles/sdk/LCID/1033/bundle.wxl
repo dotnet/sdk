@@ -80,7 +80,4 @@ This product collects usage data
   <!--_locComment="{Locked='Visual Studio'}"-->
   <String Id="VisualStudioWarning" Value="If you plan to use .NET [VERSIONMAJOR].[VERSIONMINOR] with Visual Studio, Visual Studio 2026 [MINIMUMVSVERSION] or newer is required. &lt;A HREF=&quot;https://aka.ms/dotnet[VERSIONMAJOR]-release-notes&quot;&gt;Learn more&lt;/A&gt;." />
   <String Id="LicenseAssent" Value="By clicking Install, you agree to the following terms:" />
-  <String Id="InstallPathx64x86" Value="The installation path for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;" />
-  <String Id="InstallPathARM64x86" Value="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x86 SDK installations: &quot;[DOTNETHOME_X86]&quot;" />
-  <String Id="InstallPathARM64x64" Value="The installation path for ARM64 SDK installations: &quot;[DOTNETHOME_ARM64]&quot; cannot be the same as for x64 SDK installations: &quot;[DOTNETHOME_X64]&quot;" />
 </WixLocalization>
