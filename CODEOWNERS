@@ -109,10 +109,10 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @dotnet/hot-reload @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @dotnet/hot-reload @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @dotnet/hot-reload
+/test/dotnet-watch.Tests/ @dotnet/hot-reload
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/Dotnet.Watch/ @dotnet/hot-reload @dotnet/roslyn-ide
+/src/Dotnet.Watch/ @dotnet/hot-reload
 /src/Dotnet.Watch/BrowserRefresh @dotnet/aspnet-blazor-eng
 /src/Dotnet.Watch/AspireService @dotnet/aspnet-blazor-eng
 
