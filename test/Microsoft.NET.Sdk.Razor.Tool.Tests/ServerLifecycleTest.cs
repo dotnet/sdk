@@ -10,6 +10,7 @@ using Microsoft.NET.TestFramework;
 namespace Microsoft.NET.Sdk.Razor.Tool.Tests
 {
     [TestClass]
+    [ResourceLock(WellKnownResources.EnvironmentVariables)]
     public class ServerLifecycleTest
     {
         public TestContext TestContext { get; set; }

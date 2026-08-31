@@ -3,6 +3,8 @@
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Integration tests share the Razor build server, which can cross-contaminate concurrent project builds. -->
+    <MSTestParallelizeScope>None</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>
