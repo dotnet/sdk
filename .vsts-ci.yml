@@ -74,6 +74,12 @@ extends:
         env:
           ROOTFS_DIR: /crossrootfs/arm64
 
+    sdl:
+      sourceAnalysisPool:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
+
     stages:
     ############### BUILD STAGE ###############
     # Run build jobs for non-check-in runs.
