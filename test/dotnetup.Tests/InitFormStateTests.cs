@@ -7,12 +7,12 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 namespace Microsoft.DotNet.Tools.Dotnetup.Tests;
 
 [TestClass]
-public class FormSelectorStateTests
+public class InitFormStateTests
 {
     [TestMethod]
     public void InitialFocus_IsAcceptRow()
     {
-        var state = new FormSelectorState(SampleFields());
+        var state = new InitFormState(SampleFields());
 
         state.Mode.Should().Be(FormMode.Form);
         state.FocusedRow.Should().Be(state.AcceptRow);
@@ -22,7 +22,7 @@ public class FormSelectorStateTests
     [TestMethod]
     public void Enter_OnAccept_CompletesForm()
     {
-        var state = new FormSelectorState(SampleFields());
+        var state = new InitFormState(SampleFields());
 
         state.Enter();
 
@@ -33,7 +33,7 @@ public class FormSelectorStateTests
     public void FormNavigation_ClampsBetweenFirstFieldAndAccept()
     {
         var fields = SampleFields();
-        var state = new FormSelectorState(fields);
+        var state = new InitFormState(fields);
 
         state.MoveUp();
         state.FocusedField.Should().BeSameAs(fields[1]);
@@ -110,7 +110,7 @@ public class FormSelectorStateTests
     [TestMethod]
     public void Cancel_InFormMode_IsNoOp()
     {
-        var state = new FormSelectorState(SampleFields());
+        var state = new InitFormState(SampleFields());
 
         state.Cancel();
 
@@ -228,7 +228,7 @@ public class FormSelectorStateTests
             defaultIndex: 0,
             isVisible: () => gate.SelectedIndex == 0);
         var trailing = new FormField("Trailing", [new FieldChoice("x", "")], defaultIndex: 0);
-        var state = new FormSelectorState([gate, dependent, trailing]);
+        var state = new InitFormState([gate, dependent, trailing]);
 
         state.AcceptRow.Should().Be(3);
         state.MoveUp();
@@ -258,7 +258,7 @@ public class FormSelectorStateTests
             [new FieldChoice("a", "")],
             defaultIndex: 0,
             isVisible: () => gate.SelectedIndex == 0);
-        var state = new FormSelectorState([gate, dependent]);
+        var state = new InitFormState([gate, dependent]);
 
         state.VisibleFields.Should().ContainSingle();
         state.MoveUp();
@@ -290,9 +290,9 @@ public class FormSelectorStateTests
             defaultIndex: 0),
     ];
 
-    private static FormSelectorState FocusFirstField(IReadOnlyList<FormField> fields)
+    private static InitFormState FocusFirstField(IReadOnlyList<FormField> fields)
     {
-        var state = new FormSelectorState(fields);
+        var state = new InitFormState(fields);
         for (int index = state.AcceptRow; index > 0; index--)
         {
             state.MoveUp();

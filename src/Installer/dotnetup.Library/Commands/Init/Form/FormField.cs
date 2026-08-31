@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 /// <summary>
 /// A single field in the init form: a label, the values it can take, the default value, and the
 /// committed value currently selected in the form. Transient navigation and editing state, such as
-/// the highlighted choice and uncommitted input buffer, belongs to <see cref="FormSelectorState"/>.
+/// the highlighted choice and uncommitted input buffer, belongs to <see cref="InitFormState"/>.
 /// </summary>
 internal sealed class FormField
 {
@@ -18,7 +18,7 @@ internal sealed class FormField
         int defaultIndex,
         string? description = null,
         bool inlineHelp = false,
-        bool summaryShowsDescription = false,
+        bool browseDetailShowsDescription = false,
         Func<bool>? isVisible = null)
     {
         if (choices.Count == 0)
@@ -37,7 +37,7 @@ internal sealed class FormField
         SelectedIndex = defaultIndex;
         Description = description;
         InlineHelp = inlineHelp;
-        SummaryShowsDescription = summaryShowsDescription;
+        BrowseDetailShowsDescription = browseDetailShowsDescription;
         _isVisible = isVisible;
     }
 
@@ -52,17 +52,17 @@ internal sealed class FormField
     public string Label { get; }
 
     /// <summary>
-    /// An optional explanation shown while editing and, when <see cref="SummaryShowsDescription"/>
-    /// is true, in the browse summary.
+    /// An optional explanation shown while editing and, when
+    /// <see cref="BrowseDetailShowsDescription"/> is true, as the browse detail.
     /// </summary>
     public string? Description { get; }
 
     /// <summary>
-    /// When true, the summary (browse) line shows the field <see cref="Description"/> (the concept)
-    /// rather than the selected option's help — used for fields whose value is self-explanatory but
-    /// whose concept is not (e.g. SDK Channel).
+    /// When true, the browse detail shows the field <see cref="Description"/> rather than the
+    /// selected option's helper text. This is used when the value is self-explanatory but the field
+    /// itself is not (e.g. SDK Channel).
     /// </summary>
-    public bool SummaryShowsDescription { get; }
+    public bool BrowseDetailShowsDescription { get; }
 
     /// <summary>
     /// When true, each choice's (short) help text is rendered on the same line as the choice in the
@@ -78,13 +78,13 @@ internal sealed class FormField
 
     /// <summary>
     /// The index of the committed value. This changes only when the user confirms a choice;
-    /// <see cref="FormSelectorState.EditChoiceIndex"/> tracks the choice highlighted while editing.
+    /// <see cref="InitFormState.EditChoiceIndex"/> tracks the choice highlighted while editing.
     /// </summary>
     public int SelectedIndex { get; set; }
 
     /// <summary>
     /// The committed free-text value for a custom-input choice, or null when a fixed value is
-    /// selected. While editing, <see cref="FormSelectorState.CustomTextBuffer"/> holds the
+    /// selected. While editing, <see cref="InitFormState.CustomTextBuffer"/> holds the
     /// uncommitted text. When set, <see cref="DisplayValue"/> uses this instead of the choice title.
     /// </summary>
     public string? CustomValue { get; private set; }

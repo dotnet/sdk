@@ -4,7 +4,7 @@
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 
 /// <summary>
-/// The display/interaction mode of the form selector.
+/// The display/interaction mode of the init form.
 /// </summary>
 internal enum FormMode
 {
@@ -16,7 +16,7 @@ internal enum FormMode
 }
 
 /// <summary>
-/// Pure, console-free state machine for the init form selector. Owns the focus/edit state and the
+/// Pure, console-free state machine for the init form. Owns the focus/edit state and the
 /// transitions for arrow navigation, committing a choice, typing into a custom-input choice, and
 /// accepting the form. This state is transient: committed field values remain on
 /// <see cref="FormField"/>, while this type tracks which value is currently highlighted and any
@@ -29,11 +29,11 @@ internal enum FormMode
 /// Row layout (Form mode): rows <c>0..Fields.Count-1</c> are the fields; the final row
 /// (<c>Fields.Count</c>) is the Accept action, which is the initial focus so a single Enter accepts.
 /// </summary>
-internal sealed class FormSelectorState
+internal sealed class InitFormState
 {
     private IReadOnlyList<FormField> Fields { get; }
 
-    public FormSelectorState(IReadOnlyList<FormField> fields)
+    public InitFormState(IReadOnlyList<FormField> fields)
     {
         if (fields.Count == 0)
         {

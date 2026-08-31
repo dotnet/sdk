@@ -68,14 +68,8 @@ internal sealed class InitFormModel
         _profilePaths = profilePaths;
     }
 
-    /// <summary>Short line under the banner.</summary>
-    public string Subtitle { get; } = "Welcome to dotnetup!";
-
     /// <summary>The form fields, in display order.</summary>
     public IReadOnlyList<FormField> Fields { get; }
-
-    /// <summary>The confirmation prompt shown below the fields and above the Accept action.</summary>
-    public string ConfirmationPrompt { get; } = "Install .NET with these settings?";
 
     /// <summary>
     /// The channel the user chose: a fixed channel token, the typed custom value, or <c>null</c>
@@ -296,7 +290,7 @@ internal sealed class InitFormModel
             defaultIndex,
             description: "Determines which version of .NET to install and how it stays updated \u2014 'latest', 'lts', 'preview', 'daily', or a version like '10.0'.",
             inlineHelp: true,
-            summaryShowsDescription: true);
+            browseDetailShowsDescription: true);
         return (field, tokens, globalJsonIndex);
 
         void AddChannelChoice(string channel, string helperText)
