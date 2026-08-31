@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NET.Build.Containers.Resources;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -214,9 +215,9 @@ public class DockerDaemonTests : IDisposable
         DestinationImageReference destination = new(registry, "repository", ["tag"]);
 
         Assert.AreEqual(
-            SchemaTypes.DockerManifestV2,
+            OrasProject.Oras.Docker.MediaType.Manifest,
             ContainerHelpers.GetManifestMediaType(
-                SchemaTypes.OciManifestV1,
+                MediaType.ImageManifest,
                 KnownImageFormats.Docker,
                 destination));
     }

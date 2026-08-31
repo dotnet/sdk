@@ -8,6 +8,8 @@ namespace Microsoft.NET.Build.Containers;
 
 internal sealed class DigestUtils
 {
+    private static readonly Regex s_digestPattern = new(@"^([a-z0-9]+(?:[+._-][a-z0-9]+)*):([a-zA-Z0-9=_-]+)$");
+
     /// <summary>
     /// The set of registered algorithm identifiers from the OCI image-spec,
     /// mapped to the regex pattern that the encoded portion of the digest must
@@ -135,12 +137,12 @@ internal sealed class DigestUtils
     /// </remarks>
     private static void ValidateAndParseDigest(string digest, out string algorithm, out ReadOnlySpan<byte> encodedValue)
     {
-        Match match = ReferenceParser.AnchoredDigestRegexp.Match(digest);
+        Match match = s_digestPattern.Match(digest);
 
         if (!match.Success)
         {
             throw new InvalidDigestException(
-                $"Digest '{digest}' does not match expected pattern '{ReferenceParser.AnchoredDigestRegexp}'.");
+                $"Digest '{digest}' does not match expected pattern '{s_digestPattern}'.");
         }
 
         algorithm = match.Groups[1].Value;

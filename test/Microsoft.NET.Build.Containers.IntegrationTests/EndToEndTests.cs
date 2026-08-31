@@ -10,6 +10,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.Build.Containers.LocalDaemons;
 using Microsoft.NET.Build.Containers.Resources;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
@@ -315,7 +316,7 @@ public class EndToEndTests : SdkTest, IDisposable
             ImageSha = builtImage.ImageSha,
             Manifest = builtImage.Manifest,
             ManifestDigest = builtImage.ManifestDigest,
-            ManifestMediaType = SchemaTypes.OciManifestV1,
+            ManifestMediaType = MediaType.ImageManifest,
             Layers = builtImage.Layers,
             Architecture = builtImage.Architecture,
             OS = builtImage.OS

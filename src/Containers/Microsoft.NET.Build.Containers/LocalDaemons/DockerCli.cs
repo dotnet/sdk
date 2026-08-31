@@ -12,6 +12,7 @@ using Microsoft.DotNet.Cli.Utils;
 #endif
 using Microsoft.Extensions.Logging;
 using Microsoft.NET.Build.Containers.Resources;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers;
 
@@ -130,13 +131,13 @@ internal sealed class DockerCli
         }
     }
 
-    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
+    public async Task LoadAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
         // For loading to the local registry, we use the Docker format. Two reasons: one - compatibility with previous behavior before oci formatted publishing was available, two - Podman cannot load multi tag oci image tarball.
         => await LoadAsync(image, sourceReference, destinationReference, WriteDockerImageToStreamAsync, cancellationToken);
 
-    public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken) 
+    public async Task LoadAsync(MultiArchImage multiArchImage, SourceImageReference sourceReference, DestinationImageReference destinationReference, CancellationToken cancellationToken)
         => await LoadAsync(multiArchImage, sourceReference, destinationReference, WriteMultiArchOciImageToStreamAsync, cancellationToken, checkContainerdStore: true);
-    
+
     public async Task<bool> IsAvailableAsync(CancellationToken cancellationToken)
     {
         bool commandPathWasUnknown = _command is null; // avoid running the version command twice.
@@ -287,11 +288,11 @@ internal sealed class DockerCli
 #if NET
     public static async Task WriteImageToStreamAsync(BuiltImage image, SourceImageReference sourceReference, DestinationImageReference destinationReference, Stream imageStream, CancellationToken cancellationToken)
     {
-        if (image.ManifestMediaType == SchemaTypes.DockerManifestV2)
+        if (image.ManifestMediaType == OrasProject.Oras.Docker.MediaType.Manifest)
         {
             await WriteDockerImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
         }
-        else if (image.ManifestMediaType == SchemaTypes.OciManifestV1)
+        else if (image.ManifestMediaType == MediaType.ImageManifest)
         {
             await WriteOciImageToStreamAsync(image, sourceReference, destinationReference, imageStream, cancellationToken);
         }
@@ -471,7 +472,7 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
-            SchemaTypes.OciManifestV1,
+            MediaType.ImageManifest,
             image.ManifestDigest,
             image.Manifest.Length,
             destinationReference.Repository,
@@ -539,7 +540,7 @@ internal sealed class DockerCli
         var manifestListDigest = DigestUtils.ComputeSha256Digest(multiArchImage.ImageIndex);
         var manifestListSha = DigestUtils.GetEncoded(manifestListDigest);
         var manifestListPath = $"{_blobsPath}/{manifestListSha}";
-        
+
         using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(multiArchImage.ImageIndex)))
         {
             PaxTarEntry indexEntry = new(TarEntryType.RegularFile, manifestListPath)
@@ -553,10 +554,10 @@ internal sealed class DockerCli
         cancellationToken.ThrowIfCancellationRequested();
 
         string indexJson = ImageIndexGenerator.GenerateImageIndexWithAnnotations(
-            multiArchImage.ImageIndexMediaType, 
-            manifestListDigest, 
-            multiArchImage.ImageIndex.Length, 
-            destinationReference.Repository, 
+            multiArchImage.ImageIndexMediaType,
+            manifestListDigest,
+            multiArchImage.ImageIndex.Length,
+            destinationReference.Repository,
             destinationReference.Tags);
 
         using (MemoryStream indexStream = new(Encoding.UTF8.GetBytes(indexJson)))

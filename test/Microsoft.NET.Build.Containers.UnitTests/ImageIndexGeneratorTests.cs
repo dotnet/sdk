@@ -1,7 +1,9 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text.Json;
 using Microsoft.NET.Build.Containers.Resources;
+using OrasProject.Oras.Oci;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -27,7 +29,7 @@ public class ImageIndexGeneratorTests
     [TestMethod]
     public void UnsupportedMediaTypeThrows()
     {
-        BuiltImage[] images = 
+        BuiltImage[] images =
         [
             new BuiltImage
             {
@@ -45,11 +47,11 @@ public class ImageIndexGeneratorTests
     }
 
     [TestMethod]
-    [DataRow(SchemaTypes.DockerManifestV2)]
-    [DataRow(SchemaTypes.OciManifestV1)]
+    [DataRow(OrasProject.Oras.Docker.MediaType.Manifest)]
+    [DataRow(MediaType.ImageManifest)]
     public void ImagesWithMixedMediaTypes(string supportedMediaType)
     {
-        BuiltImage[] images = 
+        BuiltImage[] images =
         [
             new BuiltImage
             {
@@ -85,7 +87,7 @@ public class ImageIndexGeneratorTests
                 Config = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest1",
-                ManifestMediaType = SchemaTypes.DockerManifestV2,
+                ManifestMediaType = OrasProject.Oras.Docker.MediaType.Manifest,
                 Architecture = "arch1",
                 OS = "os1"
             },
@@ -94,15 +96,15 @@ public class ImageIndexGeneratorTests
                 Config = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest2",
-                ManifestMediaType = SchemaTypes.DockerManifestV2,
+                ManifestMediaType = OrasProject.Oras.Docker.MediaType.Manifest,
                 Architecture = "arch2",
                 OS = "os2"
             }
         ];
 
         var (imageIndex, mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
-        Assert.AreEqual("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.docker.distribution.manifest.list.v2+json\",\"manifests\":[{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2+json\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}},{\"mediaType\":\"application/vnd.docker.distribution.manifest.v2+json\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\"}}]}", imageIndex);
-        Assert.AreEqual(SchemaTypes.DockerManifestListV2, mediaType);
+        Assert.AreEqual(OrasProject.Oras.Docker.MediaType.ManifestList, mediaType);
+        AssertImageIndex(imageIndex, mediaType, OrasProject.Oras.Docker.MediaType.Manifest);
     }
 
     [TestMethod]
@@ -115,7 +117,7 @@ public class ImageIndexGeneratorTests
                 Config = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest1",
-                ManifestMediaType = SchemaTypes.OciManifestV1,
+                ManifestMediaType = MediaType.ImageManifest,
                 Architecture = "arch1",
                 OS = "os1"
             },
@@ -124,21 +126,57 @@ public class ImageIndexGeneratorTests
                 Config = "",
                 Manifest = "123",
                 ManifestDigest = "sha256:digest2",
-                ManifestMediaType = SchemaTypes.OciManifestV1,
+                ManifestMediaType = MediaType.ImageManifest,
                 Architecture = "arch2",
                 OS = "os2"
             }
         ];
 
         var (imageIndex, mediaType) = ImageIndexGenerator.GenerateImageIndex(images);
-        Assert.AreEqual("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1+json\",\"manifests\":[{\"mediaType\":\"application/vnd.oci.image.manifest.v1+json\",\"size\":3,\"digest\":\"sha256:digest1\",\"platform\":{\"architecture\":\"arch1\",\"os\":\"os1\"}},{\"mediaType\":\"application/vnd.oci.image.manifest.v1+json\",\"size\":3,\"digest\":\"sha256:digest2\",\"platform\":{\"architecture\":\"arch2\",\"os\":\"os2\"}}]}", imageIndex);
-        Assert.AreEqual(SchemaTypes.OciImageIndexV1, mediaType);
+        Assert.AreEqual(MediaType.ImageIndex, mediaType);
+        AssertImageIndex(imageIndex, mediaType, MediaType.ImageManifest);
     }
 
     [TestMethod]
     public void GenerateImageIndexWithAnnotations()
     {
         string imageIndex = ImageIndexGenerator.GenerateImageIndexWithAnnotations("mediaType", "sha256:digest", 3, "repository", ["1.0", "2.0"]);
-        Assert.AreEqual("{\"schemaVersion\":2,\"mediaType\":\"application/vnd.oci.image.index.v1+json\",\"manifests\":[{\"mediaType\":\"mediaType\",\"size\":3,\"digest\":\"sha256:digest\",\"platform\":{},\"annotations\":{\"io.containerd.image.name\":\"docker.io/library/repository:1.0\",\"org.opencontainers.image.ref.name\":\"1.0\"}},{\"mediaType\":\"mediaType\",\"size\":3,\"digest\":\"sha256:digest\",\"platform\":{},\"annotations\":{\"io.containerd.image.name\":\"docker.io/library/repository:2.0\",\"org.opencontainers.image.ref.name\":\"2.0\"}}]}", imageIndex);
+
+        var index = JsonSerializer.Deserialize<OrasProject.Oras.Oci.Index>(imageIndex);
+        Assert.IsNotNull(index);
+        Assert.AreEqual(2, index.SchemaVersion);
+        Assert.AreEqual(MediaType.ImageIndex, index.MediaType);
+        Assert.HasCount(2, index.Manifests);
+        for (int i = 0; i < index.Manifests.Count; i++)
+        {
+            Descriptor manifest = index.Manifests[i];
+            string tag = $"{i + 1}.0";
+            Assert.AreEqual("mediaType", manifest.MediaType);
+            Assert.AreEqual(3, manifest.Size);
+            Assert.AreEqual("sha256:digest", manifest.Digest);
+            Assert.IsNull(manifest.Platform);
+            Assert.IsNotNull(manifest.Annotations);
+            Assert.AreEqual($"docker.io/library/repository:{tag}", manifest.Annotations["io.containerd.image.name"]);
+            Assert.AreEqual(tag, manifest.Annotations["org.opencontainers.image.ref.name"]);
+        }
+    }
+
+    private static void AssertImageIndex(string imageIndex, string indexMediaType, string manifestMediaType)
+    {
+        var index = JsonSerializer.Deserialize<OrasProject.Oras.Oci.Index>(imageIndex);
+        Assert.IsNotNull(index);
+        Assert.AreEqual(2, index.SchemaVersion);
+        Assert.AreEqual(indexMediaType, index.MediaType);
+        Assert.HasCount(2, index.Manifests);
+        for (int i = 0; i < index.Manifests.Count; i++)
+        {
+            Descriptor manifest = index.Manifests[i];
+            Assert.AreEqual(manifestMediaType, manifest.MediaType);
+            Assert.AreEqual(3, manifest.Size);
+            Assert.AreEqual($"sha256:digest{i + 1}", manifest.Digest);
+            Assert.IsNotNull(manifest.Platform);
+            Assert.AreEqual($"arch{i + 1}", manifest.Platform.Architecture);
+            Assert.AreEqual($"os{i + 1}", manifest.Platform.Os);
+        }
     }
 }
