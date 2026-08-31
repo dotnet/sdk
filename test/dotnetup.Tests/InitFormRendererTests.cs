@@ -94,7 +94,7 @@ public class InitFormRendererTests
         string[] lines = Lines(output);
 
         int channelLine = Array.FindIndex(lines, line => line.Contains("SDK Channel", StringComparison.Ordinal));
-        int environmentLine = Array.FindIndex(lines, line => line.Contains("Environment setup", StringComparison.Ordinal));
+        int environmentLine = Array.FindIndex(lines, line => line.Contains("Access mode", StringComparison.Ordinal));
 
         environmentLine.Should().Be(channelLine + 1);
         renderedHeight.Should().BeLessThanOrEqualTo(height);
@@ -162,7 +162,7 @@ public class InitFormRendererTests
         string[] lines = Lines(output);
 
         output.Should().Contain("SDK Channel");
-        output.Should().Contain("Environment setup");
+        output.Should().Contain("Access mode");
         output.Should().Contain("Migrate system installs");
         output.Should().NotContain("Install the SDK and runtime versions");
         int acceptLine = Array.FindIndex(lines, line => line.Contains("Accept and install", StringComparison.Ordinal));
@@ -198,7 +198,7 @@ public class InitFormRendererTests
         string output = RenderForm(model, state, width: 120, height, out int renderedHeight);
 
         output.Should().Contain("SDK Channel");
-        output.Should().Contain("Environment setup");
+        output.Should().Contain("Access mode");
         output.Should().Contain("Migrate system installs");
         output.Should().Contain("Accept and install");
         output.Should().NotContain("Install .NET with these settings?");
@@ -213,7 +213,7 @@ public class InitFormRendererTests
         string output = RenderForm(width: 120, height, expandChannel: true, out int renderedHeight);
 
         output.Should().Contain("<other>");
-        output.Should().NotContain("Environment setup");
+        output.Should().NotContain("Access mode");
         output.Should().NotContain("Accept and install");
         renderedHeight.Should().BeLessThanOrEqualTo(height);
     }

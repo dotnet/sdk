@@ -101,7 +101,7 @@ public class InitFormModelTests
         var model = CreateModel(
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
             accessMode: DotnetAccessMode.Shell);
-        FormField accessModeField = model.Fields.Single(field => field.Label == "Environment setup");
+        FormField accessModeField = model.Fields.Single(field => field.Label == "Access mode");
 
         accessModeField.DisplayValue.Should().Be(DotnetAccessMode.Shell.ToString());
         accessModeField.IsChangedFromDefault.Should().BeFalse();

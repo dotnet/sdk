@@ -324,10 +324,10 @@ internal sealed class InitFormModel
 
         int defaultIndex = Math.Max(0, modes.IndexOf(recommended));
         var field = new FormField(
-            "Environment setup",
+            "Access mode",
             choices,
             defaultIndex,
-            description: "Controls where the dotnet you install is available.");
+            description: "Controls where the dotnet you install is available. Change it later with 'dotnetup env set'.");
         return (field, modes);
     }
 

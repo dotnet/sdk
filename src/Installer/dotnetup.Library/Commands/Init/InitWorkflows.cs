@@ -183,7 +183,7 @@ internal class InitWorkflows
             : "No";
 
         PrintPreviewLine("SDK channel", channelText, accent);
-        PrintPreviewLine("Environment setup", outcome.AccessMode.ToString(), accent);
+        PrintPreviewLine("Access mode", outcome.AccessMode.ToString(), accent);
         PrintPreviewLine("Migrate system installs", migrateText, accent);
         PrintPreviewLine("Installs in", plan.InstallRoot.Path, accent);
     }
