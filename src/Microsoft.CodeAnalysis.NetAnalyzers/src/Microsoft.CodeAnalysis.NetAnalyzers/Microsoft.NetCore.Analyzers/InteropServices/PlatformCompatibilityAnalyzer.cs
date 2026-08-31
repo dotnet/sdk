@@ -1342,6 +1342,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                 return;
             }
 
+            // A 'nameof' expression only captures the name of the member at compile time, the member itself is never accessed
+            if (operation.GetAncestor<INameOfOperation>(OperationKind.NameOf) != null)
+            {
+                return;
+            }
+
             var symbol = GetOperationSymbol(operation);
 
             if (symbol == null || symbol is ITypeSymbol type && type.SpecialType != SpecialType.None)
@@ -1415,6 +1421,13 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         containingSymbol = method.AssociatedSymbol!;
                     }
 
+                    // A guard member has no platform requirements of its own so that it can be called from any call site,
+                    // but its body still runs within the platform context established by the containing type or assembly
+                    if (HasGuardAttribute(containingSymbol))
+                    {
+                        containingSymbol = containingSymbol.ContainingSymbol;
+                    }
+
                     if (TryGetOrCreatePlatformAttributes(containingSymbol, true, crossPlatform, platformSpecificMembers, relatedPlatforms, out var callSiteAttributes))
                     {
                         if (callSiteAttributes.Callsite != Callsite.Empty &&
@@ -1435,6 +1448,19 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
         private static bool OperationHasOnlyAssemblyAttributesAndCalledFromSameAssembly(PlatformAttributes operationAttributes, ISymbol symbol, ISymbol containingSymbol) =>
             operationAttributes.IsAssemblyAttribute && containingSymbol.ContainingAssembly == symbol.ContainingAssembly;
+
+        private static bool HasGuardAttribute(ISymbol symbol)
+        {
+            foreach (AttributeData attribute in symbol.GetAttributes())
+            {
+                if (attribute.AttributeClass?.Name is SupportedOSPlatformGuardAttribute or UnsupportedOSPlatformGuardAttribute)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
 
         private static bool UsedInCreatingNotSupportedException(IArgumentOperation operation, ITypeSymbol? notSupportedExceptionType)
         {

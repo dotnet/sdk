@@ -798,7 +798,7 @@ public class Test
         M2(WindowsOnlyPropertySetter);
         var name = nameof(WindowsOnlyPropertyGetter);
         name = nameof(WindowsOnlyPropertySetter);
-        name = nameof([|WindowsOnlyProperty|]);
+        name = nameof(WindowsOnlyProperty); // 'nameof' does not access the property
     }
     public bool M2(bool option)
     {
@@ -3604,6 +3604,59 @@ public class Test
     }
 }";
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [TestMethod, WorkItem(54066, "https://github.com/dotnet/sdk/issues/54066")]
+        public async Task NameOfPlatformSpecificMemberNotWarnAsync()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+public class Test
+{
+    public void M1()
+    {
+        Console.WriteLine(nameof(WindowsOnly.Method));
+        Console.WriteLine(nameof(WindowsOnly.Field));
+        Console.WriteLine(nameof(WindowsOnly.Property));
+        Console.WriteLine(nameof(WindowsOnly.Property.Length));
+        Console.WriteLine([|WindowsOnly.Property|]); // Actually reading the property still warns
+    }
+}
+
+[SupportedOSPlatform(""windows"")]
+public class WindowsOnly
+{
+    public static string Field;
+    public static string Property => string.Empty;
+    public static void Method() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+
+            var vbSource = @"
+Imports System
+Imports System.Runtime.Versioning
+
+Public Class Test
+    Public Sub M1()
+        Console.WriteLine(NameOf(WindowsOnly.Method))
+        Console.WriteLine(NameOf(WindowsOnly.Field))
+        Console.WriteLine(NameOf(WindowsOnly.Prop))
+        Console.WriteLine([|WindowsOnly.Prop|]) ' Actually reading the property still warns
+    End Sub
+End Class
+
+<SupportedOSPlatform(""windows"")>
+Public Class WindowsOnly
+    Public Shared Field As String
+    Public Shared ReadOnly Property Prop As String
+    Public Shared Sub Method()
+    End Sub
+End Class";
+
+            await VerifyAnalyzerVBAsync(vbSource, s_msBuildPlatforms);
         }
 
         [TestMethod]

@@ -4291,6 +4291,65 @@ class Test
             await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
         }
 
+        [TestMethod, WorkItem(54066, "https://github.com/dotnet/sdk/issues/54066")]
+        public async Task GuardMemberBodyKeepsPlatformContextOfContainerAsync()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+[assembly: SupportedOSPlatform(""windows10.0.18362.0"")]
+
+class Test
+{
+    [SupportedOSPlatformGuard(""windows10.0.20348.0"")]
+    private static bool IsWindows20348OrNewerMethod() => SupportedOnWindows10240(); // call site is still reachable on 'windows' 10.0.18362.0 and later
+
+    [SupportedOSPlatformGuard(""windows10.0.20348.0"")]
+    private static bool IsWindows20348OrNewerProperty => SupportedOnWindows10240();
+
+    [SupportedOSPlatformGuard(""windows10.0.20348.0"")]
+    private static readonly bool s_isWindows20348OrNewer = SupportedOnWindows10240();
+
+    [SupportedOSPlatform(""windows10.0.10240.0"")]
+    private static bool SupportedOnWindows10240() => true;
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
+        [TestMethod, WorkItem(54066, "https://github.com/dotnet/sdk/issues/54066")]
+        public async Task GuardMemberBodyStillWarnsForApiOutsideOfPlatformContextAsync()
+        {
+            var source = @"
+using System.Runtime.Versioning;
+
+[SupportedOSPlatform(""windows10.0.18362.0"")]
+class Test
+{
+    private static void NotAGuard()
+    {
+        SupportedOnWindows10240();
+        [|SupportedOnWindows20348()|]; // This call site is reachable on: 'windows' 10.0.18362.0 and later. 'Test.SupportedOnWindows20348()' is only supported on: 'windows' 10.0.20348.0 and later.
+    }
+
+    [SupportedOSPlatformGuard(""windows10.0.20348.0"")]
+    private static bool IsWindows20348OrNewer()
+    {
+        SupportedOnWindows10240();
+        [|SupportedOnWindows20348()|]; // Same diagnostics as the method above, the guard attribute does not widen the call site
+        return true;
+    }
+
+    [SupportedOSPlatform(""windows10.0.10240.0"")]
+    private static void SupportedOnWindows10240() { }
+
+    [SupportedOSPlatform(""windows10.0.20348.0"")]
+    private static void SupportedOnWindows20348() { }
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         [TestMethod]
         public async Task GuardMembersWithSupportedGuardAttributesAsync()
         {
