@@ -5,6 +5,8 @@ This file should be imported by eng/Versions.props
 -->
 <Project>
   <PropertyGroup>
+    <!-- dotnet-arcade dependencies -->
+    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26427.10</MicrosoftDotNetHelixJobMonitorPackageVersion>
     <!-- dotnet-core-setup dependencies -->
     <NETStandardLibraryRefPackageVersion>2.1.0</NETStandardLibraryRefPackageVersion>
     <!-- dotnet-dotnet dependencies -->
@@ -55,7 +57,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetBuildTasksInstallersPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetBuildTasksInstallersPackageVersion>
     <MicrosoftDotNetBuildTasksTemplatingPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetBuildTasksTemplatingPackageVersion>
     <MicrosoftDotNetBuildTasksWorkloadsPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetBuildTasksWorkloadsPackageVersion>
-    <MicrosoftDotNetHelixJobMonitorPackageVersion>11.0.0-beta.26427.10</MicrosoftDotNetHelixJobMonitorPackageVersion>
     <MicrosoftDotNetHelixSdkPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetHelixSdkPackageVersion>
     <MicrosoftDotNetSignToolPackageVersion>11.0.0-beta.26410.101</MicrosoftDotNetSignToolPackageVersion>
     <MicrosoftDotNetWebItemTemplates110PackageVersion>11.0.0-rc.1.26410.101</MicrosoftDotNetWebItemTemplates110PackageVersion>
@@ -144,6 +145,8 @@ This file should be imported by eng/Versions.props
   </PropertyGroup>
   <!--Property group for alternate package version names-->
   <PropertyGroup>
+    <!-- dotnet-arcade dependencies -->
+    <MicrosoftDotNetHelixJobMonitorVersion>$(MicrosoftDotNetHelixJobMonitorPackageVersion)</MicrosoftDotNetHelixJobMonitorVersion>
     <!-- dotnet-core-setup dependencies -->
     <NETStandardLibraryRefVersion>$(NETStandardLibraryRefPackageVersion)</NETStandardLibraryRefVersion>
     <!-- dotnet-dotnet dependencies -->
@@ -194,7 +197,6 @@ This file should be imported by eng/Versions.props
     <MicrosoftDotNetBuildTasksInstallersVersion>$(MicrosoftDotNetBuildTasksInstallersPackageVersion)</MicrosoftDotNetBuildTasksInstallersVersion>
     <MicrosoftDotNetBuildTasksTemplatingVersion>$(MicrosoftDotNetBuildTasksTemplatingPackageVersion)</MicrosoftDotNetBuildTasksTemplatingVersion>
     <MicrosoftDotNetBuildTasksWorkloadsVersion>$(MicrosoftDotNetBuildTasksWorkloadsPackageVersion)</MicrosoftDotNetBuildTasksWorkloadsVersion>
-    <MicrosoftDotNetHelixJobMonitorVersion>$(MicrosoftDotNetHelixJobMonitorPackageVersion)</MicrosoftDotNetHelixJobMonitorVersion>
     <MicrosoftDotNetHelixSdkVersion>$(MicrosoftDotNetHelixSdkPackageVersion)</MicrosoftDotNetHelixSdkVersion>
     <MicrosoftDotNetSignToolVersion>$(MicrosoftDotNetSignToolPackageVersion)</MicrosoftDotNetSignToolVersion>
     <MicrosoftDotNetWebItemTemplates110Version>$(MicrosoftDotNetWebItemTemplates110PackageVersion)</MicrosoftDotNetWebItemTemplates110Version>
