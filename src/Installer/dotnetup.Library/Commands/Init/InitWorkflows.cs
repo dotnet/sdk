@@ -21,9 +21,6 @@ internal class InitWorkflows
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
 
-    /// <summary>Sentinel channel value indicating the user wants to skip the initial install.</summary>
-    internal const string NoneChannel = "none";
-
     public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment)
     {
         _dotnetEnvironment = dotnetEnvironment;
@@ -99,7 +96,6 @@ internal class InitWorkflows
         if (!interactive)
         {
             return new FormOutcome(
-                SkipInstall: false,
                 Channel: null,
                 AccessMode: plan.AccessMode,
                 Migrate: false);
@@ -111,10 +107,8 @@ internal class InitWorkflows
             return null;
         }
 
-        string? channel = model.SelectedChannel();
         return new FormOutcome(
-            SkipInstall: channel is null,
-            Channel: channel,
+            Channel: model.SelectedChannel(),
             AccessMode: model.SelectedAccessMode(),
             Migrate: model.MigrateSelected());
     }
@@ -131,11 +125,7 @@ internal class InitWorkflows
         FormOutcome outcome)
     {
         List<ResolvedInstallRequest> effectiveRequests;
-        if (outcome.SkipInstall)
-        {
-            effectiveRequests = [];
-        }
-        else if (!SelectedChannelDiffersFromDefault(outcome.Channel, plan.ChannelDisplay.ChannelLabel))
+        if (!SelectedChannelDiffersFromDefault(outcome.Channel, plan.ChannelDisplay.ChannelLabel))
         {
             effectiveRequests = InitWorkflowDefaults.ResolveDefaultRequests(command, requests);
         }
@@ -172,9 +162,8 @@ internal class InitWorkflows
 
         SpectreAnsiConsole.MarkupLine($"[{dim}](dry run \u2014 no changes were made to your machine)[/]");
 
-        string channelText = outcome.SkipInstall
-            ? "none (skip install)"
-            : outcome.Channel ?? plan.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
+        string channelText =
+            outcome.Channel ?? plan.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
         List<MigrationWorkflow.MigrationSelection> migrations = MigrationWorkflow.FilterMigrationSelections(
             plan.Migrations,
             BuildSelectedInstallSpecs(plan, outcome));
@@ -196,11 +185,6 @@ internal class InitWorkflows
 
     private static MinimalInstallSpec[] BuildSelectedInstallSpecs(WalkthroughPlan plan, FormOutcome outcome)
     {
-        if (outcome.SkipInstall)
-        {
-            return [];
-        }
-
         return SelectedChannelDiffersFromDefault(outcome.Channel, plan.ChannelDisplay.ChannelLabel)
             ? [.. plan.DefaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, outcome.Channel))]
             : [.. plan.DefaultInstallSpecs];

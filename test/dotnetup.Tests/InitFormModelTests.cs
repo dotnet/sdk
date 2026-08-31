@@ -39,7 +39,7 @@ public class InitFormModelTests
     }
 
     [TestMethod]
-    public void SelectedChannel_MapsFixedCustomAndNoneChoices()
+    public void SelectedChannel_MapsFixedAndCustomChoices()
     {
         var model = CreateModel(new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null));
         FormField channelField = model.Fields[0];
@@ -54,13 +54,6 @@ public class InitFormModelTests
         int customIndex = channelField.Choices.Count - 1;
         channelField.SetCustomValue(customIndex, "9.0.2xx");
         model.SelectedChannel().Should().Be("9.0.2xx");
-
-        int noneIndex = channelField.Choices
-            .Select((choice, index) => (choice, index))
-            .Single(item => item.choice.Title == InitWorkflows.NoneChannel)
-            .index;
-        channelField.SelectChoice(noneIndex);
-        model.SelectedChannel().Should().BeNull();
     }
 
     [TestMethod]

@@ -72,8 +72,7 @@ internal sealed class InitFormModel
     public IReadOnlyList<FormField> Fields { get; }
 
     /// <summary>
-    /// The channel the user chose: a fixed channel token, the typed custom value, or <c>null</c>
-    /// when the user chose to skip the initial install ("none").
+    /// The channel the user chose: a fixed channel token or the typed custom value.
     /// </summary>
     public string? SelectedChannel()
     {
@@ -82,8 +81,7 @@ internal sealed class InitFormModel
             return _channelField.CustomValue;
         }
 
-        string? token = _channelTokens[_channelField.SelectedIndex];
-        return string.Equals(token, InitWorkflows.NoneChannel, StringComparison.Ordinal) ? null : token;
+        return _channelTokens[_channelField.SelectedIndex];
     }
 
     /// <summary>The access mode the user chose.</summary>
@@ -276,8 +274,6 @@ internal sealed class InitFormModel
         AddChannelChoice(ChannelVersionResolver.LtsChannel, "Long Term Support");
         AddChannelChoice(ChannelVersionResolver.PreviewChannel, "Latest preview");
         AddChannelChoice(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build");
-        choices.Add(new FieldChoice(InitWorkflows.NoneChannel, "Pick what to install later"));
-        tokens.Add(InitWorkflows.NoneChannel);
         choices.Add(new FieldChoice("<other>", "Type your own, e.g. 10.0.1xx", IsCustomInput: true));
         tokens.Add(null);
 
@@ -359,8 +355,7 @@ internal sealed class InitFormModel
             return channelField.CustomValue;
         }
 
-        string? token = channelTokens[channelField.SelectedIndex];
-        return string.Equals(token, InitWorkflows.NoneChannel, StringComparison.Ordinal) ? null : token;
+        return channelTokens[channelField.SelectedIndex];
     }
 
     private static IReadOnlyCollection<MinimalInstallSpec> GetCurrentInstallSpecs(
