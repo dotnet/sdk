@@ -4,7 +4,8 @@ name: Check vendored source files
 # sources, as listed in eng/vendored-files.json. See eng/vendored-files.md.
 #
 # - Scheduled runs and manual dispatch perform full drift detection and open
-#   (or update) tracking issues labelled `area-vendored-sync`.
+#   (or update) tracking issues labelled `area-vendored-sync` plus the area
+#   labels declared for the entry in eng/vendored-files.json.
 # - Pull-request runs that touch the manifest, script, or workflow validate the
 #   manifest structure only (no network, no issue mutation).
 

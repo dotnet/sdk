@@ -504,7 +504,7 @@ Custom orderers/test framework hooks must be reimplemented against MSTest's exte
 ### Step 13: Build and verify parity
 
 1. `dotnet build` -- must succeed with zero errors. Address remaining errors using the mapping reference.
-2. `dotnet test` -- run with the **same** filter/runner combination as before migration.
+2. Invoke the [`run-tests`](../run-tests/SKILL.md) skill to test the same project, framework, and filter as the Step 1.7 baseline.
 3. **Compare pass/fail counts** to the baseline from Step 1.7. Investigate any deltas:
    - **New failures on shared-state tests** -- you enabled parallelization (Choice A/C in Step 11) and tests are now stomping each other. Add `[DoNotParallelize]` to the specific class(es), or fix the shared state.
    - **Tests previously parallel now serial (wall-clock much longer)** -- you forgot `[assembly: Parallelize]`. See Step 11 Choice A.

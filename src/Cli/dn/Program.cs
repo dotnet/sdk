@@ -22,17 +22,16 @@ partial class Program
         string baseDir = AppContext.BaseDirectory.TrimEnd(Path.DirectorySeparatorChar);
         string dotnetRoot = ResolveDotnetRoot();
 
-        // The muxer loads dotnet-aot from the resolved SDK directory. For local testing, allow the
-        // harness to emulate the deployed (non-flat) layout - where dotnet-aot lives in sdk\<version>\
-        // while dn stays in the parent - via DOTNET_AOT_SDK_DIR, which overrides both where the
-        // library is loaded from and the sdk_dir passed to dotnet_execute. Defaults to dn's own
-        // directory (the flat layout).
+        // The muxer loads dotnet-aot from the resolved SDK directory. The harness can override the
+        // SDK and native-library directories independently so it can use a complete installed SDK
+        // without modifying it.
         string sdkDir = ResolveAotSdkDir(baseDir);
-        if (!string.Equals(sdkDir, baseDir, StringComparison.OrdinalIgnoreCase))
+        string aotLibraryDir = ResolveAotLibraryDir(sdkDir);
+        if (!string.Equals(aotLibraryDir, baseDir, StringComparison.OrdinalIgnoreCase))
         {
             NativeLibrary.SetDllImportResolver(typeof(Program).Assembly, (name, assembly, searchPath) =>
                 string.Equals(name, "dotnet-aot", StringComparison.Ordinal)
-                    && NativeLibrary.TryLoad(Path.Combine(sdkDir, AotLibraryFileName), out nint handle)
+                    && NativeLibrary.TryLoad(Path.Combine(aotLibraryDir, AotLibraryFileName), out nint handle)
                         ? handle
                         : nint.Zero);
         }
@@ -120,9 +119,9 @@ partial class Program
     }
 
     /// <summary>
-    ///  Resolves the directory dotnet-aot is loaded from (and passed as sdk_dir). Honors the
+    ///  Resolves the directory passed to dotnet-aot as <c>sdk_dir</c>. Honors the
     ///  DOTNET_AOT_SDK_DIR override for emulating the deployed non-flat layout; otherwise defaults
-    ///  to dn's own directory.
+    ///  to dn's own directory. The native-library load directory is resolved separately.
     /// </summary>
     private static string ResolveAotSdkDir(string baseDir)
     {
@@ -130,6 +129,19 @@ partial class Program
         return !string.IsNullOrEmpty(overrideDir) && Directory.Exists(overrideDir)
             ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(overrideDir))
             : baseDir;
+    }
+
+    /// <summary>
+    ///  Resolves the directory from which the test harness loads dotnet-aot. By default this is the
+    ///  resolved SDK directory, matching the muxer; DOTNET_AOT_LIBRARY_DIR lets tests keep native
+    ///  artifacts separate from an installed SDK.
+    /// </summary>
+    private static string ResolveAotLibraryDir(string sdkDir)
+    {
+        string? overrideDir = Environment.GetEnvironmentVariable("DOTNET_AOT_LIBRARY_DIR");
+        return !string.IsNullOrEmpty(overrideDir) && Directory.Exists(overrideDir)
+            ? Path.TrimEndingDirectorySeparator(Path.GetFullPath(overrideDir))
+            : sdkDir;
     }
 
     /// <summary>
