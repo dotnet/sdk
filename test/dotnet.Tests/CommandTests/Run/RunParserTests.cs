@@ -7,9 +7,6 @@ using Microsoft.NET.TestFramework;
 namespace Microsoft.DotNet.Tests.ParserTests
 {
     [TestClass]
-    // These tests mutate process-wide CurrentDirectory, which production code can read indirectly from other parallel tests.
-    // A resource lock cannot serialize those indirect readers.
-    [DoNotParallelize]
     public class RunParserTests : IDisposable
     {
         private readonly string _previousWorkingDirectory;
