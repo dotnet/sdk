@@ -170,20 +170,27 @@ namespace Microsoft.NET.TestFramework
         }
 
         private static SdkTestContext? _current;
+        private static readonly object s_initializationLock = new();
 
         public static SdkTestContext Current
         {
             get
             {
-                if (_current == null)
+                lock (s_initializationLock)
                 {
-                    Initialize();
+                    if (_current == null)
+                    {
+                        InitializeCore();
+                    }
+                    return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
                 }
-                return _current ?? throw new InvalidOperationException("SdkTestContext.Current should never be null.");
             }
             set
             {
-                _current = value;
+                lock (s_initializationLock)
+                {
+                    _current = value;
+                }
             }
         }
 
@@ -223,6 +230,14 @@ namespace Microsoft.NET.TestFramework
 
 
         public static void Initialize()
+        {
+            lock (s_initializationLock)
+            {
+                InitializeCore();
+            }
+        }
+
+        private static void InitializeCore()
         {
             //  Show verbose debugging output for tests
             CommandLoggingContext.SetVerbose(true);
