@@ -65,14 +65,14 @@ public class InitFormModelTests
         var channelDisplay = new DefaultChannelDisplay(
             ChannelVersionResolver.LatestChannel,
             GlobalJsonPath: null);
-        WalkthroughPlan plan = CreatePlan(channelDisplay);
-        InitFormModel model = InitFormModel.Create(plan, shellProvider: null);
+        InitFormDefaults defaults = CreateDefaults(channelDisplay);
+        InitFormModel model = InitFormModel.Create(defaults, shellProvider: null);
         FormField channelField = model.Fields[0];
         channelField.SetCustomValue(channelField.Choices.Count - 1, customChannel);
 
         InitWorkflows.SelectedChannelDiffersFromDefault(
             model.SelectedChannel(),
-            plan.ChannelDisplay.ChannelLabel)
+            defaults.ChannelDisplay.ChannelLabel)
             .Should().Be(expectedToDiffer);
     }
 
@@ -229,9 +229,9 @@ public class InitFormModelTests
         DefaultChannelDisplay channelDisplay,
         List<MigrationWorkflow.MigrationSelection>? migrations = null,
         DotnetAccessMode accessMode = DotnetAccessMode.None)
-        => InitFormModel.Create(CreatePlan(channelDisplay, migrations, accessMode), shellProvider: null);
+        => InitFormModel.Create(CreateDefaults(channelDisplay, migrations, accessMode), shellProvider: null);
 
-    private static WalkthroughPlan CreatePlan(
+    private static InitFormDefaults CreateDefaults(
         DefaultChannelDisplay channelDisplay,
         List<MigrationWorkflow.MigrationSelection>? migrations = null,
         DotnetAccessMode accessMode = DotnetAccessMode.None)
@@ -239,7 +239,7 @@ public class InitFormModelTests
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
-        return new WalkthroughPlan(
+        return new InitFormDefaults(
             installRoot,
             accessMode,
             migrations ?? [],

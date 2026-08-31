@@ -162,14 +162,14 @@ public class InitWorkflowTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
     public void GetDefaultAccessMode_ReturnsShell_WhenShellProviderIsAvailableOnNonWindows()
     {
-        InitWorkflowDefaults.GetDefaultAccessMode(new BashEnvShellProvider())
+        InitDefaultsResolver.GetDefaultAccessMode(new BashEnvShellProvider())
             .Should().Be(DotnetAccessMode.Shell);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void GetDefaultAccessMode_ReturnsEverywhere_WhenShellProviderIsAvailableOnWindows()
     {
-        InitWorkflowDefaults.GetDefaultAccessMode(new BashEnvShellProvider())
+        InitDefaultsResolver.GetDefaultAccessMode(new BashEnvShellProvider())
             .Should().Be(DotnetAccessMode.Everywhere);
     }
 
@@ -178,7 +178,7 @@ public class InitWorkflowTests : IDisposable
     [DataRow(DotnetAccessMode.Shell)]
     internal void GetDefaultAccessMode_ReturnsConfiguredMode(DotnetAccessMode configuredAccessMode)
     {
-        InitWorkflowDefaults.GetDefaultAccessMode(
+        InitDefaultsResolver.GetDefaultAccessMode(
             shellProvider: null,
             configuredAccessMode: configuredAccessMode)
             .Should().Be(configuredAccessMode);
@@ -187,7 +187,7 @@ public class InitWorkflowTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void GetDefaultAccessMode_ReturnsConfiguredEverywhereModeOnWindows()
     {
-        InitWorkflowDefaults.GetDefaultAccessMode(
+        InitDefaultsResolver.GetDefaultAccessMode(
             shellProvider: null,
             configuredAccessMode: DotnetAccessMode.Everywhere)
             .Should().Be(DotnetAccessMode.Everywhere);
@@ -196,7 +196,7 @@ public class InitWorkflowTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
     public void GetDefaultAccessMode_IgnoresConfiguredEverywhereModeOutsideWindows()
     {
-        InitWorkflowDefaults.GetDefaultAccessMode(
+        InitDefaultsResolver.GetDefaultAccessMode(
             new BashEnvShellProvider(),
             configuredAccessMode: DotnetAccessMode.Everywhere)
             .Should().Be(DotnetAccessMode.Shell);
@@ -205,10 +205,10 @@ public class InitWorkflowTests : IDisposable
     [TestMethod]
     public void GetDefaultDotnetupOnPath_PreservesConfiguredValue()
     {
-        InitWorkflowDefaults.GetDefaultDotnetupOnPath(
+        InitDefaultsResolver.GetDefaultDotnetupOnPath(
             new DotnetupConfigData { DotnetupOnPath = false })
             .Should().BeFalse();
-        InitWorkflowDefaults.GetDefaultDotnetupOnPath(configured: null)
+        InitDefaultsResolver.GetDefaultDotnetupOnPath(configured: null)
             .Should().BeTrue();
     }
 
@@ -311,7 +311,7 @@ public class InitWorkflowTests : IDisposable
                 new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
             ]);
 
-        var result = InitWorkflowDefaults.ResolveDefaultMigrations(
+        var result = InitDefaultsResolver.ResolveDefaultMigrations(
             mock, installRoot, manifestPath: null);
 
         result.Should().NotBeEmpty();

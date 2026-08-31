@@ -332,7 +332,7 @@ public class InitFormRendererTests
             new UpdateChannel("8.0"),
             new ReleaseVersion("8.0.100"),
             InstallerUtilities.GetDefaultInstallArchitecture());
-        var plan = new WalkthroughPlan(
+        var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.None,
             Migrations: [migration],
@@ -340,7 +340,7 @@ public class InitFormRendererTests
             [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
-        return InitFormModel.Create(plan, shellProvider: null);
+        return InitFormModel.Create(defaults, shellProvider: null);
     }
 
     private static InitFormModel CreateExpandedEnvironment(out InitFormState state)
@@ -348,7 +348,7 @@ public class InitFormRendererTests
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
-        var plan = new WalkthroughPlan(
+        var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.Everywhere,
             Migrations: [],
@@ -359,7 +359,7 @@ public class InitFormRendererTests
         var shellProvider = new TestShellProvider(
             Path.GetTempPath(),
             "Microsoft.PowerShell_profile.ps1");
-        InitFormModel model = InitFormModel.Create(plan, shellProvider);
+        InitFormModel model = InitFormModel.Create(defaults, shellProvider);
         state = new InitFormState(model.Fields);
         state.MoveUp();
         state.Enter();
@@ -391,7 +391,7 @@ public class InitFormRendererTests
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
-        var plan = new WalkthroughPlan(
+        var defaults = new InitFormDefaults(
             installRoot,
             DotnetAccessMode.None,
             Migrations: [],
@@ -399,7 +399,7 @@ public class InitFormRendererTests
             [new MinimalInstallSpec(InstallComponent.SDK, ChannelVersionResolver.LatestChannel)],
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
-        return InitFormModel.Create(plan, shellProvider: null);
+        return InitFormModel.Create(defaults, shellProvider: null);
     }
 
     private static string RenderForm(

@@ -11,7 +11,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// </summary>
 /// <param name="Channel">
 /// The selected channel token or typed custom value. In non-interactive sessions this may be
-/// <c>null</c> to indicate that the plan's default install requests should be used unchanged.
+/// <c>null</c> to indicate that the form's default install requests should be used unchanged.
 /// </param>
 /// <param name="AccessMode">The chosen dotnet access mode.</param>
 /// <param name="Migrate">True when the user chose to migrate existing system installs.</param>

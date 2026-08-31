@@ -8,22 +8,20 @@ using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
-/// Resolves the recommended init setup (access mode, install root, channel display, and
-/// migration candidates) for the walkthrough summary. Resolution here is side-effect-free: it
-/// performs no network calls, writes no console output, and does not throw on an unresolvable
-/// channel. The actual install requests are resolved separately (and only once the user commits
-/// to installing) via <see cref="ResolveDefaultRequests"/>, so simply viewing the summary or
-/// choosing to exit never triggers version resolution.
+/// Resolves the defaults and supporting context used by the init form. Resolution here is
+/// side-effect-free: it performs no network calls, writes no console output, and does not throw on
+/// an unresolvable channel. The actual install requests are resolved separately (and only once the
+/// user accepts the form) via <see cref="ResolveDefaultRequests"/>, so simply viewing or exiting
+/// the form never triggers version resolution.
 /// </summary>
-internal static class InitWorkflowDefaults
+internal static class InitDefaultsResolver
 {
     /// <summary>
-    /// Resolves the recommended setup to display in the summary (install root, access mode,
-    /// migration candidates, and channel display) without prompting, resolving versions, or
-    /// emitting output. When <paramref name="preResolvedRequests"/> is supplied, its already-resolved
-    /// root/channel/manifest are reused instead of being re-derived.
+    /// Resolves the defaults and context for the init form without prompting, resolving versions,
+    /// or emitting output. When <paramref name="preResolvedRequests"/> is supplied, its
+    /// already-resolved root, channel, and manifest are reused instead of being re-derived.
     /// </summary>
-    public static WalkthroughPlan ResolveWalkthroughPlan(
+    public static InitFormDefaults ResolveFormDefaults(
         InstallCommand command,
         List<ResolvedInstallRequest>? preResolvedRequests,
         IDotnetEnvironmentManager dotnetEnvironment,
@@ -50,7 +48,7 @@ internal static class InitWorkflowDefaults
                 .Select(request => new MinimalInstallSpec(request.Request.Component, request.Request.Channel.Name))
                 .ToList();
 
-            return new WalkthroughPlan(
+            return new InitFormDefaults(
                 resolvedRoot,
                 accessMode,
                 resolvedMigrations,
@@ -67,7 +65,7 @@ internal static class InitWorkflowDefaults
         var migrations = ResolveDefaultMigrations(dotnetEnvironment, installRoot, command.ManifestPath);
         DefaultChannelDisplay channelDisplay = ResolveChannelDisplay(globalJson);
 
-        return new WalkthroughPlan(
+        return new InitFormDefaults(
             installRoot,
             accessMode,
             migrations,
@@ -169,8 +167,8 @@ internal static class InitWorkflowDefaults
     }
 
     /// <summary>
-    /// Resolves the channel label to display in the summary directly from global.json (or "latest")
-    /// without resolving a concrete version, so the summary never triggers a network call.
+    /// Resolves the default channel label directly from global.json (or "latest") without resolving
+    /// a concrete version, so displaying the form never triggers a network call.
     /// </summary>
     private static DefaultChannelDisplay ResolveChannelDisplay(GlobalJsonInfo globalJson)
     {

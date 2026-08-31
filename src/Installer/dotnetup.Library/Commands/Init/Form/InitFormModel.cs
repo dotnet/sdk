@@ -9,14 +9,14 @@ using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 
 /// <summary>
-/// Builds the init form's fields from a resolved <see cref="WalkthroughPlan"/> and computes the
+/// Builds the init form's fields from resolved <see cref="InitFormDefaults"/> and computes the
 /// per-field detail shown beside them, and translates the user's accepted selections back into the
 /// domain values (channel, access mode, whether to migrate). This is the single place that knows
 /// the field/value ↔ domain mapping; the renderer and state machine stay domain-agnostic.
 ///
-/// Construction is side-effect-free and network-free: choices come from the plan and static channel
-/// tokens (concrete SDK versions are resolved later, only when an install actually runs), so simply
-/// showing the form never triggers a download.
+/// Construction is side-effect-free and network-free: choices come from the defaults and static
+/// channel tokens (concrete SDK versions are resolved later, only when an install actually runs),
+/// so simply showing the form never triggers a download.
 /// </summary>
 internal sealed class InitFormModel
 {
@@ -202,27 +202,27 @@ internal sealed class InitFormModel
     }
 
     /// <summary>
-    /// Builds the form from the resolved <paramref name="plan"/>: an SDK channel field, a single
+    /// Builds the form from the resolved <paramref name="defaults"/>: an SDK channel field, a single
     /// access-mode field (its choices vary by platform), and — only when there are candidates — a
     /// migrate field. The <paramref name="shellProvider"/> supplies the profile file(s) shown in the
     /// access-mode detail; it may be null when no supported shell is detected.
     /// </summary>
-    public static InitFormModel Create(WalkthroughPlan plan, IEnvShellProvider? shellProvider)
+    public static InitFormModel Create(InitFormDefaults defaults, IEnvShellProvider? shellProvider)
     {
         (FormField channelField, IReadOnlyList<string?> channelTokens, int globalJsonChannelIndex) =
-            BuildChannelField(plan.ChannelDisplay);
+            BuildChannelField(defaults.ChannelDisplay);
 
         (FormField accessModeField, IReadOnlyList<DotnetAccessMode> accessModes) =
-            BuildAccessModeField(plan.AccessMode);
+            BuildAccessModeField(defaults.AccessMode);
 
         FormField? migrateField = null;
-        if (plan.Migrations.Count > 0)
+        if (defaults.Migrations.Count > 0)
         {
             migrateField = BuildMigrateField(isVisible: () =>
             {
                 return MigrationWorkflow.FilterMigrationSelections(
-                    plan.Migrations,
-                    GetCurrentInstallSpecs(channelField, channelTokens, plan.DefaultInstallSpecs)).Count > 0;
+                    defaults.Migrations,
+                    GetCurrentInstallSpecs(channelField, channelTokens, defaults.DefaultInstallSpecs)).Count > 0;
             });
         }
 
@@ -237,13 +237,13 @@ internal sealed class InitFormModel
             channelField,
             channelTokens,
             globalJsonChannelIndex,
-            plan.ChannelDisplay.GlobalJsonPath,
+            defaults.ChannelDisplay.GlobalJsonPath,
             accessModeField,
             accessModes,
             migrateField,
-            plan.Migrations,
-            plan.DefaultInstallSpecs,
-            plan.InstallRoot.Path,
+            defaults.Migrations,
+            defaults.DefaultInstallSpecs,
+            defaults.InstallRoot.Path,
             shellProvider?.GetProfilePaths() ?? []);
     }
 
