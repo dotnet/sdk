@@ -259,6 +259,79 @@ namespace Microsoft.NET.Build.Tests
             targetPaths.Should().BeEquivalentTo(["Newtonsoft.Json.dll", "ReferencedProject.dll", "ReferencedProject.pdb"]);
         }
 
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        public void It_does_not_include_framework_assets_when_multitargeting_with_out_of_proc_designer_opted_in_for_all_frameworks()
+        {
+            var projectRef = new TestProject
+            {
+                Name = "ReferencedProject",
+                TargetFrameworks = "net8.0-windows;net48",
+            };
+
+            var project = new TestProject
+            {
+                Name = "MultiTargetOopDesignerTest",
+                IsExe = true,
+                TargetFrameworks = "net8.0-windows;net48",
+                PackageReferences = { new TestPackageReference("NewtonSoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()) },
+                ReferencedProjects = { projectRef },
+            };
+            // Opt in to the out-of-process designer for every TargetFramework, including net48.
+            project.AdditionalProperties["UseWinFormsOutOfProcDesigner"] = "true";
+
+            var asset = TestAssetsManager.CreateTestProject(project);
+
+            (string DepsFile, string RuntimeConfig, List<string> OtherFiles) QueryOutputGroup(string targetFramework)
+            {
+                var command = new GetValuesCommand(
+                    Log,
+                    Path.Combine(asset.Path, project.Name),
+                    targetFramework,
+                    "DesignerRuntimeImplementationProjectOutputGroupOutput",
+                    GetValuesCommand.ValueType.Item)
+                {
+                    DependsOnTargets = "DesignerRuntimeImplementationProjectOutputGroup",
+                    MetadataNames = { "TargetPath" },
+                };
+
+                command.Execute().Should().Pass();
+
+                string depsFile = null;
+                string runtimeConfig = null;
+                var otherFiles = new List<string>();
+
+                foreach (var item in command.GetValuesWithMetadata())
+                {
+                    var targetPath = item.metadata["TargetPath"];
+                    switch (targetPath)
+                    {
+                        case var _ when targetPath.EndsWith(".designer.deps.json"):
+                            depsFile = item.value;
+                            break;
+                        case var _ when targetPath.EndsWith(".designer.runtimeconfig.json"):
+                            runtimeConfig = item.value;
+                            break;
+                        default:
+                            otherFiles.Add(targetPath);
+                            break;
+                    }
+                }
+
+                return (depsFile, runtimeConfig, otherFiles);
+            }
+
+            var coreResult = QueryOutputGroup("net8.0-windows");
+            coreResult.DepsFile.Should().NotBeNull();
+            coreResult.RuntimeConfig.Should().NotBeNull();
+            coreResult.OtherFiles.Should().BeEquivalentTo(["ReferencedProject.dll", "ReferencedProject.pdb"]);
+
+            var frameworkResult = QueryOutputGroup("net48");
+            frameworkResult.DepsFile.Should().BeNull();
+            frameworkResult.RuntimeConfig.Should().BeNull();
+            frameworkResult.OtherFiles.Should().BeEmpty();
+        }
+
         private static JToken GetRuntimeOptions(string runtimeConfigFilePath)
         {
             var config = ParseRuntimeConfig(runtimeConfigFilePath);
