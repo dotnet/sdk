@@ -7,6 +7,8 @@ using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
     [TestClass]
+    // Concurrent builds from this class and CommonTemplatesTests can hang on two-core Helix agents.
+    [ResourceLock(nameof(DotnetBuildCommand))]
     public class DotnetClassTemplateTests : BaseIntegrationTest
     {
         private ITestOutputHelper _log => Log;
