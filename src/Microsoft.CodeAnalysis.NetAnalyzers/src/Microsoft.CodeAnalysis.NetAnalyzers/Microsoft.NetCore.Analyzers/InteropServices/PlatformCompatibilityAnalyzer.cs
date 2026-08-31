@@ -1421,11 +1421,12 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
                         containingSymbol = method.AssociatedSymbol!;
                     }
 
-                    // A guard member has no platform requirements of its own so that it can be called from any call site,
-                    // but its body still runs within the platform context established by the containing type or assembly
-                    if (HasGuardAttribute(containingSymbol))
+                    // A guard member sheds the platform requirements of its containing type so that it can be referenced
+                    // from any call site, therefore its body cannot rely on them either. The assembly wide requirements
+                    // still hold though, as every call site within the assembly is bound by them
+                    if (HasGuardAttribute(containingSymbol) && containingSymbol.ContainingAssembly is { } containingAssembly)
                     {
-                        containingSymbol = containingSymbol.ContainingSymbol;
+                        containingSymbol = containingAssembly;
                     }
 
                     if (TryGetOrCreatePlatformAttributes(containingSymbol, true, crossPlatform, platformSpecificMembers, relatedPlatforms, out var callSiteAttributes))
