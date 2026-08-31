@@ -18,7 +18,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
         : IAsyncDisposable
     {
         public static WatchableApp CreateDotnetWatchApp(ITestOutputHelper logger)
-            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["--trace", "-bl"]);
+            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["-bl"]);
+
+        private bool _traceLogging = true;
 
         public DebugTestOutputLogger Logger { get; } = new DebugTestOutputLogger(logger);
 
@@ -37,7 +39,9 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void SuppressVerboseLogging()
         {
-            // remove default --trace and -bl args
+            _traceLogging = false;
+
+            // remove default -bl args
             WatchArgs.Clear();
         }
 
@@ -181,6 +185,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
                 commandName
             };
 
+            if (_traceLogging && !HasLogLevelOption(WatchArgs) && !HasLogLevelOption(arguments))
+            {
+                args.Add("--trace");
+            }
+
             args.AddRange(WatchArgs);
             args.AddRange(arguments);
 
@@ -198,7 +207,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             info.Environment.Add("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             info.Environment.Add("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             info.Environment.Add("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
-            info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "true");
+            info.Environment["DOTNET_CLI_CONTEXT_VERBOSE"] = "";
 
             // Aspire DCP logging:
             info.Environment.Add("DCP_DIAGNOSTICS_LOG_FOLDER", Path.Combine(testOutputPath, "dcp"));
@@ -221,6 +230,11 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             return info;
         }
+
+        private static bool HasLogLevelOption(IEnumerable<string> arguments)
+            => arguments
+                .TakeWhile(static argument => argument != "--")
+                .Any(static argument => argument is "--quiet" or "-q" or "--verbose" or "--trace");
 
         public void Start(
             TestAsset asset,
