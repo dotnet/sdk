@@ -34,6 +34,7 @@ public sealed class RunFileTestFixture
             RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
 
             new DotnetCommand(log, "run", "-")
+                .WithWorkingDirectory(RunFileTestBase.OutOfTreeBaseDirectory)
                 .WithStandardInput("""
                     Console.WriteLine("Hello");
                     """)
