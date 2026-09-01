@@ -24,30 +24,26 @@ the downloaded executable with its SHA-512 checksum and install it in
 On macOS or Linux, run:
 
 ```bash
-curl -fsSL https://aka.ms/dotnet/dotnetup/preview/get-dotnetup.sh | bash
+curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh | bash
 ```
 
-On Windows, save and run the PowerShell script:
+On Windows, run:
 
 ```powershell
-$script = Join-Path $env:TEMP 'get-dotnetup.ps1'
-Invoke-WebRequest https://aka.ms/dotnet/dotnetup/preview/get-dotnetup.ps1 -OutFile $script
-& $script
+irm https://aka.ms/dotnetup/get-dotnetup.ps1 | iex
 ```
 
 To install the latest `daily` build on macOS or Linux, run:
 
 ```bash
-curl -fsSL https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.sh |
+curl -fsSL https://aka.ms/dotnetup/get-dotnetup.sh |
   bash -s -- --quality daily
 ```
 
 To install the latest `daily` build on Windows, run:
 
 ```powershell
-$script = Join-Path $env:TEMP 'get-dotnetup-daily.ps1'
-Invoke-WebRequest https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1 -OutFile $script
-& $script -Quality daily
+iex "& { $(irm https://aka.ms/dotnetup/get-dotnetup.ps1) } -Quality daily"
 ```
 
 > [!IMPORTANT]
