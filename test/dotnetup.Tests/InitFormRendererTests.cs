@@ -359,7 +359,7 @@ public class InitFormRendererTests
             ShellProvider: null,
             InstallRootGlobalJsonPath: null);
         var shellProvider = new TestShellProvider(
-            Path.GetTempPath(),
+            Path.GetPathRoot(Path.GetTempPath())!,
             "Microsoft.PowerShell_profile.ps1");
         InitFormModel model = InitFormModel.Create(defaults, shellProvider);
         state = new InitFormState(model.Fields);
