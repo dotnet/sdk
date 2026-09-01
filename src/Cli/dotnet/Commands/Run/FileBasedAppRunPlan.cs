@@ -391,9 +391,10 @@ internal static class FileBasedAppRunPlan
             SdkVersion = inputs.SdkVersion,
             RuntimeVersion = inputs.RuntimeVersion,
         };
-        DirectoryInfo? entryPointFileDirectory = entryPointFile.Directory;
-        Debug.Assert(entryPointFileDirectory != null);
-        CollectImplicitBuildFiles(entryPointFileDirectory, cacheEntry.ImplicitBuildFiles, out string? exampleMSBuildFile);
+
+        DirectoryInfo? originalEntryPointFileDirectory = originalEntryPointFile.Directory;
+        Debug.Assert(originalEntryPointFileDirectory != null);
+        CollectImplicitBuildFiles(originalEntryPointFileDirectory, cacheEntry.ImplicitBuildFiles, out string? exampleMSBuildFile);
 
         return new FileBasedAppCacheInfo
         {
