@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
 using Microsoft.Build.Evaluation;
@@ -1817,6 +1818,59 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
         // TargetFramework can be evaluated.
         (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
+    }
+
+    [TestMethod]
+    [DataRow(true, "", true)]
+    [DataRow(true, "FileBasedApp", false)]
+    [DataRow(false, "", false)]
+    public async Task Api_VirtualProjectBuilder_ArtifactsPathCompatibility(
+        bool defaultArtifactsPathPropsImported,
+        string artifactsPathLocationType,
+        bool expectLegacyArtifactsPath)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, "Console.WriteLine();");
+
+        var artifactsPath = Path.Join(testInstance.Path, "artifacts");
+        var virtualProjectBuilder = new VirtualProjectBuilder(
+            BuildService.Instance,
+            programPath,
+            VirtualProjectBuildingCommand.TargetFramework,
+            artifactsPath: artifactsPath);
+
+        using var projectCollection = new ProjectCollection();
+        var result = await virtualProjectBuilder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            additionalGlobalProperties: new Dictionary<string, string>
+            {
+                ["_DefaultArtifactsPathPropsImported"] = defaultArtifactsPathPropsImported.ToString(),
+                ["_ArtifactsPathLocationType"] = artifactsPathLocationType,
+            });
+
+        var xml = result.ProjectRootElement.GetRawXml();
+        Log.WriteLine(xml);
+
+        if (expectLegacyArtifactsPath)
+        {
+            xml.Should()
+                .Contain("<IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>")
+                .And.Contain($"<ArtifactsPath>{SecurityElement.Escape(artifactsPath)}</ArtifactsPath>")
+                .And.Contain("<PublishDir>artifacts/$(AssemblyName)</PublishDir>")
+                .And.Contain("<PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>")
+                .And.NotContain("<FileBasedAppArtifactsPath>");
+        }
+        else
+        {
+            xml.Should()
+                .Contain($"<FileBasedAppArtifactsPath>{SecurityElement.Escape(artifactsPath)}</FileBasedAppArtifactsPath>")
+                .And.NotContain("<IncludeProjectNameInArtifactsPaths>")
+                .And.NotContain("<ArtifactsPath>")
+                .And.NotContain("<PublishDir>")
+                .And.NotContain("<PackageOutputPath>");
+        }
     }
 
     [TestMethod, CombinatorialData]
