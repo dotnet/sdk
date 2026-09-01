@@ -6,7 +6,6 @@ using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Evaluation.Context;
-using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
@@ -720,16 +719,7 @@ internal static class SolutionAndProjectUtility
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        LaunchProfileParseResult result;
-        try
-        {
-            result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName, expandMSBuildProperty);
-        }
-        catch (InvalidProjectFileException ex)
-        {
-            result = LaunchProfileParseResult.Failure(ex.Message);
-        }
-
+        LaunchProfileParseResult result = CommonRunHelpers.ReadLaunchProfileFromFile(launchSettingsPath, profileName, expandMSBuildProperty);
         if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());

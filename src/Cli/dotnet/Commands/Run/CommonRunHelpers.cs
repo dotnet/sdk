@@ -3,6 +3,9 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+#if !CLI_AOT
+using Microsoft.Build.Exceptions;
+#endif
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
@@ -160,7 +163,26 @@ internal static class CommonRunHelpers
             report(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath), true);
         }
 
+        return ReadLaunchProfileFromFile(launchSettingsPath, launchProfile, expandMSBuildProperty);
+    }
+
+    internal static LaunchProfileParseResult ReadLaunchProfileFromFile(
+        string launchSettingsPath,
+        string? launchProfile,
+        Func<string, string>? expandMSBuildProperty)
+    {
+#if CLI_AOT
         return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, expandMSBuildProperty);
+#else
+        try
+        {
+            return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, expandMSBuildProperty);
+        }
+        catch (InvalidProjectFileException ex)
+        {
+            return LaunchProfileParseResult.Failure(ex.Message);
+        }
+#endif
     }
 
     /// <summary>

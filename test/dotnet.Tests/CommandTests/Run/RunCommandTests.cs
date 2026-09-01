@@ -106,6 +106,34 @@ public sealed class RunCommandTests : SdkTest
     }
 
     [TestMethod]
+    public void InvalidMSBuildExpressionInLaunchSettingsDoesNotPreventRun()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        string launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+        File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "commandLineArgs": "$([)"
+                }
+              }
+            }
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdErrContaining(string.Format(
+                CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                LaunchProfileParser.GetLaunchProfileDisplayName(launchProfile: null),
+                "").Trim());
+    }
+
+    [TestMethod]
     public void Executable_DefaultWorkingDirectory()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
