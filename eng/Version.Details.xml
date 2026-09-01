@@ -250,22 +250,22 @@
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-runtime</Uri>
       <Sha>3879076d9a06ce098d37c3882fb1845a6627335b</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.20">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Runtime.win-x64" Version="9.0.21">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>3badfeb5a36ea32d77d52f5ddeef7a7f2a07b281</Sha>
+      <Sha>d4ea8c40f83b0c7cf524c4f76ced86ffbfda2232</Sha>
       <SourceBuildTarball RepoName="windowsdesktop" ManagedOnly="true" />
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.20-servicing.26431.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.SharedFramework.x64.9.0" Version="9.0.21-servicing.26451.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>3badfeb5a36ea32d77d52f5ddeef7a7f2a07b281</Sha>
+      <Sha>d4ea8c40f83b0c7cf524c4f76ced86ffbfda2232</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.20">
+    <Dependency Name="Microsoft.WindowsDesktop.App.Ref" Version="9.0.21">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>3badfeb5a36ea32d77d52f5ddeef7a7f2a07b281</Sha>
+      <Sha>d4ea8c40f83b0c7cf524c4f76ced86ffbfda2232</Sha>
     </Dependency>
-    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.20-servicing.26431.3">
+    <Dependency Name="VS.Redist.Common.WindowsDesktop.TargetingPack.x64.9.0" Version="9.0.21-servicing.26451.4">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-windowsdesktop</Uri>
-      <Sha>3badfeb5a36ea32d77d52f5ddeef7a7f2a07b281</Sha>
+      <Sha>d4ea8c40f83b0c7cf524c4f76ced86ffbfda2232</Sha>
     </Dependency>
     <Dependency Name="Microsoft.NET.Sdk.WindowsDesktop" Version="9.0.20-rtm.26421.6" CoherentParentDependency="Microsoft.WindowsDesktop.App.Ref">
       <Uri>https://dev.azure.com/dnceng/internal/_git/dotnet-wpf</Uri>
