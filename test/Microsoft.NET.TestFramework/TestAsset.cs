@@ -63,8 +63,15 @@ namespace Microsoft.NET.TestFramework
         /// <summary>
         ///  Copies all of the source code from the TestAsset's original location to the previously-configured destination directory.
         /// </summary>
-        /// <returns></returns>
-        public TestAsset WithSource()
+        /// <param name="targetFramework">
+        /// Target framework to use for $(CurrentTargetFramework) property.
+        /// </param>
+        /// <param name="packageVersionPropertySubstitutions">
+        /// Properties used in PackageReference version attributes in the test projects that should be replaced with the given values.
+        /// </param>
+        public TestAsset WithSource(
+            string? targetFramework = null,
+            IEnumerable<(string versionPropertyName, string version)>? packageVersionPropertySubstitutions = null)
         {
             _projectFiles = new List<string>();
 
@@ -93,10 +100,12 @@ namespace Microsoft.NET.TestFramework
                 File.Copy(srcFile, destFile, true);
             }
 
+            targetFramework ??= ToolsetInfo.CurrentTargetFramework;
+
             var substitutions = new[]
             {
-                (propertyName: "TargetFramework", variableName: "CurrentTargetFramework", value: ToolsetInfo.CurrentTargetFramework),
-                (propertyName: "CurrentTargetFramework", variableName: "CurrentTargetFramework", value: ToolsetInfo.CurrentTargetFramework),
+                (propertyName: "TargetFramework", variableName: "CurrentTargetFramework", value: targetFramework),
+                (propertyName: "CurrentTargetFramework", variableName: "CurrentTargetFramework", value: targetFramework),
                 (propertyName: "RuntimeIdentifier", variableName: "LatestWinRuntimeIdentifier", value: ToolsetInfo.LatestWinRuntimeIdentifier),
                 (propertyName: "RuntimeIdentifier", variableName: "LatestLinuxRuntimeIdentifier", value: ToolsetInfo.LatestLinuxRuntimeIdentifier),
                 (propertyName: "RuntimeIdentifier", variableName: "LatestMacRuntimeIdentifier", value: ToolsetInfo.LatestMacRuntimeIdentifier),
@@ -108,7 +117,7 @@ namespace Microsoft.NET.TestFramework
                 UpdateProjProperty(propertyName, variableName, value);
             }
 
-            foreach (var (propertyName, version) in ToolsetInfo.GetPackageVersionProperties())
+            foreach (var (propertyName, version) in packageVersionPropertySubstitutions ?? ToolsetInfo.GetPackageVersionProperties())
             {
                 ReplacePackageVersionVariable(propertyName, version);
             }

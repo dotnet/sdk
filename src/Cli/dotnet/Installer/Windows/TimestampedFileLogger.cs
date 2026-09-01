@@ -176,7 +176,18 @@ internal class TimestampedFileLogger : SetupLoggerBase, IDisposable, ISynchroniz
     {
         if (!_messageQueue.IsAddingCompleted)
         {
-            _messageQueue.Add(message);
+            try
+            {
+                _messageQueue.Add(message);
+            }
+            catch (ObjectDisposedException)
+            {
+                // The logger was disposed between the IsAddingCompleted check and Add.
+            }
+            catch (InvalidOperationException)
+            {
+                // CompleteAdding was called between the IsAddingCompleted check and Add.
+            }
         }
     }
 }

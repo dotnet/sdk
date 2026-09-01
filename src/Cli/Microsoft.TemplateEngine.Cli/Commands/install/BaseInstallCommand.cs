@@ -2,40 +2,15 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
+using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.TemplateEngine.Abstractions;
 using Microsoft.TemplateEngine.Edge.Settings;
 
 namespace Microsoft.TemplateEngine.Cli.Commands
 {
-    internal abstract class BaseInstallCommand : BaseCommand<InstallCommandArgs>
+    internal abstract class BaseInstallCommand(Func<ParseResult, ITemplateEngineHost> hostBuilder, NewInstallCommandDefinition definition)
+        : BaseCommand<InstallCommandArgs, NewInstallCommandDefinition>(hostBuilder, definition)
     {
-        internal BaseInstallCommand(
-            NewCommand parentCommand,
-            Func<ParseResult, ITemplateEngineHost> hostBuilder,
-            string commandName)
-            : base(hostBuilder, commandName, SymbolStrings.Command_Install_Description)
-        {
-            ParentCommand = parentCommand;
-            Arguments.Add(NameArgument);
-            Options.Add(InteractiveOption);
-            Options.Add(AddSourceOption);
-            Options.Add(ForceOption);
-        }
-
-        internal static Argument<string[]> NameArgument { get; } = new("package")
-        {
-            Description = SymbolStrings.Command_Install_Argument_Package,
-            Arity = new ArgumentArity(1, 99)
-        };
-
-        internal static Option<bool> ForceOption { get; } = SharedOptionsFactory.CreateForceOption().WithDescription(SymbolStrings.Option_Install_Force);
-
-        internal virtual Option<bool> InteractiveOption { get; } = SharedOptions.InteractiveOption;
-
-        internal virtual Option<string[]> AddSourceOption { get; } = SharedOptionsFactory.CreateAddSourceOption();
-
-        protected NewCommand ParentCommand { get; }
-
         protected override Task<NewCommandStatus> ExecuteAsync(
             InstallCommandArgs args,
             IEngineEnvironmentSettings environmentSettings,
@@ -48,8 +23,6 @@ namespace Microsoft.TemplateEngine.Cli.Commands
         }
 
         protected override InstallCommandArgs ParseContext(ParseResult parseResult)
-        {
-            return new InstallCommandArgs(this, parseResult);
-        }
+            => new(this, parseResult);
     }
 }

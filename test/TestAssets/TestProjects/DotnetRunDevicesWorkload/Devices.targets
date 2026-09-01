@@ -1,0 +1,19 @@
+<Project>
+
+  <Target Name="ComputeAvailableDevices" Returns="@(Devices)" DependsOnTargets="ResolveFrameworkReferences">
+    <ItemGroup Condition="'$(SingleDevice)' != 'true' and '$(TargetFramework)' != 'net9.0'">
+      <Devices Include="test-device-1" Description="Test Device 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
+      <Devices Include="test-device-2" Description="Test Device 2" Type="Device" Status="Online" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(SingleDevice)' != 'true' and '$(TargetFramework)' == 'net9.0'">
+      <Devices Include="test-device-downlevel-1" Description="Test Device Downlevel 1" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
+      <Devices Include="test-device-downlevel-2" Description="Test Device Downlevel 2" Type="Simulator" Status="Booted" />
+    </ItemGroup>
+  </Target>
+
+  <!-- DeployToDevice target for testing, ResolveFrameworkReferences mimics Android -->
+  <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
+    <Message Text="DeployToDevice: Deployed to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" />
+  </Target>
+
+</Project>

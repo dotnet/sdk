@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
         {
             _resolver = new TemplateLocator(Environment.GetEnvironmentVariable, null, VSSettings.Ambient, null, null);
             _fakeDotnetRootDirectory =
-                Path.Combine(TestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
+                Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
 
             var fakeSdkDirectory = Path.Combine(_fakeDotnetRootDirectory, "sdk", "5.0.102");
             Directory.CreateDirectory(fakeSdkDirectory);
@@ -64,7 +64,7 @@ namespace Microsoft.DotNet.TemplateLocator.Tests
         public void GivenNoManifestDirectoryItShouldReturnEmpty()
         {
             var fakeDotnetRootDirectory =
-                Path.Combine(TestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
+                Path.Combine(SdkTestContext.Current.TestExecutionDirectory, Path.GetRandomFileName());
             var result = _resolver.GetDotnetSdkTemplatePackages("5.0.102", fakeDotnetRootDirectory, userProfileDir: null);
             result.Should().BeEmpty();
         }

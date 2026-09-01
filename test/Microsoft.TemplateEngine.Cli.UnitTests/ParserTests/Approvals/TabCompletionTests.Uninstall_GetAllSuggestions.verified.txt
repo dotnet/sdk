@@ -1,1 +1,30 @@
-﻿[]
+﻿[
+  {
+    Label: --diagnostics,
+    Kind: Keyword,
+    SortText: --diagnostics,
+    InsertText: --diagnostics,
+    Detail: Enables diagnostic output.
+  },
+  {
+    Label: --verbosity,
+    Kind: Keyword,
+    SortText: --verbosity,
+    InsertText: --verbosity,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
+  },
+  {
+    Label: -d,
+    Kind: Keyword,
+    SortText: -d,
+    InsertText: -d,
+    Detail: Enables diagnostic output.
+  },
+  {
+    Label: -v,
+    Kind: Keyword,
+    SortText: -v,
+    InsertText: -v,
+    Detail: Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic].
+  }
+]

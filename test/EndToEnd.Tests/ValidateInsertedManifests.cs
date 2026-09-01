@@ -12,7 +12,7 @@ namespace EndToEnd.Tests
         [Fact]
         public void ManifestReaderCanReadManifests()
         {
-            var sdkManifestDir = Path.Combine(Path.GetDirectoryName(TestContext.Current.ToolsetUnderTest.DotNetHostPath), "sdk-manifests");
+            var sdkManifestDir = Path.Combine(Path.GetDirectoryName(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath), "sdk-manifests");
             var sdkversionDir = new DirectoryInfo(sdkManifestDir).EnumerateDirectories().First();
             foreach (var manifestVersionDir in sdkversionDir.EnumerateDirectories())
             {

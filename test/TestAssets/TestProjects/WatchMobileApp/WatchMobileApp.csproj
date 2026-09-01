@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>$(CurrentTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <!-- properties placeholder -->
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- This simulates a mobile project that would have this capability set by the workload -->
+    <ProjectCapability Include="HotReloadWebSockets" />
+    <!-- items placeholder -->
+  </ItemGroup>
+</Project>

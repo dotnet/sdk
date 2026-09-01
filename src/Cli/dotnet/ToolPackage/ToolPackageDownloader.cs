@@ -135,7 +135,8 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
 
         //  Create NuGetv3LocalRepository
         NuGetv3LocalRepository localRepository = new(packagesRootPath.Value);
-        var package = localRepository.FindPackage(packageId.ToString(), version);
+        // We verify the package has been installed correctly prior to calling this method.
+        var package = localRepository.FindPackage(packageId.ToString(), version)!;
 
         if (verbosity.IsDetailedOrDiagnostic())
         {
@@ -187,7 +188,9 @@ internal class ToolPackageDownloader : ToolPackageDownloaderBase
             AddToolsAssets(conventions, lockFileLib, collection, managedCriteria);
         }
 
-        var lockFile = new LockFile();
+        //  Use legacy lock file format (v3) because this synthetic assets file uses framework-based target keys,
+        //  not the alias-based keys required by the v4 format (https://github.com/NuGet/NuGet.Client/pull/6972).
+        var lockFile = new LockFile() { Version = 3 };
         var lockFileTarget = new LockFileTarget()
         {
             TargetFramework = currentTargetFramework,

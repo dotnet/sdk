@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
 
 using Microsoft.NetCore.Analyzers.Runtime;
+using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
@@ -16,6 +17,11 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
         protected override bool IsAttributeSyntax(SyntaxNode node)
         {
             return node is AttributeSyntax;
+        }
+
+        protected override bool IsCollectionExpressionSyntax(SyntaxNode node)
+        {
+            return node.IsKind(SyntaxKindEx.CollectionExpression);
         }
     }
 }

@@ -85,11 +85,11 @@ internal static class DeviceIdGetter
             // Cache device Id in Windows registry matching the OS architecture
             using (RegistryKey baseKey = RegistryKey.OpenBaseKey(RegistryHive.CurrentUser, RegistryView.Registry64))
             {
-                using(var key = baseKey.CreateSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
+                using (var key = baseKey.CreateSubKey(@"SOFTWARE\Microsoft\DeveloperTools"))
                 {
                     if (key != null)
                     {
-                      key.SetValue("deviceid", deviceId);
+                        key.SetValue("deviceid", deviceId);
                     }
                 }
             }

@@ -14,8 +14,8 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
     {
         public ReadStaticWebAssetsManifestFileTest()
         {
-            Directory.CreateDirectory(Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest)));
-            TempFilePath = Path.Combine(TestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest), Guid.NewGuid().ToString("N") + ".json");
+            Directory.CreateDirectory(Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest)));
+            TempFilePath = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, nameof(ReadStaticWebAssetsManifestFileTest), Guid.NewGuid().ToString("N") + ".json");
         }
 
         public string TempFilePath { get; }

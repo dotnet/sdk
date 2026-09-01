@@ -36,7 +36,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
             // Call vstest
             var result = new DotnetVSTestCommand(Log)
                 .Execute(outputDll, "--logger:console;verbosity=normal");
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut
                     .Should().Contain("Total tests: 2")
@@ -77,7 +77,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                                         });
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");
@@ -148,7 +148,7 @@ namespace Microsoft.DotNet.Cli.VSTest.Tests
                                         });
 
             // Verify
-            if (!TestContext.IsLocalized())
+            if (!SdkTestContext.IsLocalized())
             {
                 result.StdOut.Should().NotMatch("The test run parameter argument '*' is invalid.");
                 result.StdOut.Should().Contain("Total tests: 1");

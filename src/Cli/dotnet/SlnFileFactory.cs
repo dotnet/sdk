@@ -91,6 +91,8 @@ public static class SlnFileFactory
         {
             JsonElement root = JsonDocument.Parse(File.ReadAllText(filteredSolutionPath)).RootElement;
             originalSolutionPath = Uri.UnescapeDataString(root.GetProperty("solution").GetProperty("path").GetString());
+            // Normalize path separators to OS-specific for cross-platform compatibility
+            originalSolutionPath = SlnfFileHelper.NormalizePathSeparatorsToOS(originalSolutionPath);
             filteredSolutionProjectPaths = [.. root.GetProperty("solution").GetProperty("projects").EnumerateArray().Select(p => p.GetString())];
             originalSolutionPathAbsolute = Path.GetFullPath(originalSolutionPath, Path.GetDirectoryName(filteredSolutionPath));
         }

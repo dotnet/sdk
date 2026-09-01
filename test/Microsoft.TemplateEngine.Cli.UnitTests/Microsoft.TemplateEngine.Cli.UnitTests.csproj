@@ -5,7 +5,6 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsUnitTestProject>true</IsUnitTestProject>
-    <EnableStyleCopAnalyzer>true</EnableStyleCopAnalyzer>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 

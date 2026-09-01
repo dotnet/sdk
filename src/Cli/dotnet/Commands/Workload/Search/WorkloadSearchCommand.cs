@@ -10,7 +10,7 @@ using Microsoft.NET.Sdk.WorkloadManifestReader;
 
 namespace Microsoft.DotNet.Cli.Commands.Workload.Search;
 
-internal class WorkloadSearchCommand : WorkloadCommandBase
+internal sealed class WorkloadSearchCommand : WorkloadCommandBase<WorkloadSearchCommandDefinition>
 {
     private readonly IWorkloadResolver _workloadResolver;
     private readonly string _workloadIdStub;
@@ -18,13 +18,13 @@ internal class WorkloadSearchCommand : WorkloadCommandBase
     public WorkloadSearchCommand(
         ParseResult result,
         IReporter reporter = null,
-        IWorkloadResolverFactory workloadResolverFactory = null) : base(result, CommonOptions.HiddenVerbosityOption, reporter)
+        IWorkloadResolverFactory workloadResolverFactory = null) : base(result, reporter)
     {
-        _workloadIdStub = result.GetValue(WorkloadSearchCommandParser.WorkloadIdStubArgument);
+        _workloadIdStub = result.GetValue(Definition.WorkloadIdStubArgument);
 
         workloadResolverFactory ??= new WorkloadResolverFactory();
 
-        if (!string.IsNullOrEmpty(result.GetValue(WorkloadSearchCommandParser.VersionOption)))
+        if (!string.IsNullOrEmpty(result.GetValue(Definition.VersionOption)))
         {
             throw new GracefulException(CliCommandStrings.SdkVersionOptionNotSupported);
         }

@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Build.Construction;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
@@ -11,6 +12,7 @@ using Microsoft.Build.Logging;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
+using Microsoft.DotNet.ProjectTools;
 using NuGet.Frameworks;
 
 namespace Microsoft.DotNet.Cli;
@@ -32,7 +34,7 @@ internal class MsbuildProject
     {
         _projects = projects;
         ProjectRootElement = project;
-        ProjectDirectory = PathUtility.EnsureTrailingSlash(ProjectRootElement.DirectoryPath);
+        ProjectDirectory = PathUtilities.EnsureTrailingSlash(ProjectRootElement.DirectoryPath);
         _interactive = interactive;
     }
 
@@ -66,49 +68,24 @@ internal class MsbuildProject
 
     public static MsbuildProject FromDirectory(ProjectCollection projects, string projectDirectory, bool interactive)
     {
-        FileInfo projectFile = GetProjectFileFromDirectory(projectDirectory);
+        var projectFilePath = GetProjectFileFromDirectory(projectDirectory);
 
-        var project = TryOpenProject(projects, projectFile.FullName);
+        var project = TryOpenProject(projects, projectFilePath);
         if (project == null)
         {
-            throw new GracefulException(CliStrings.FoundInvalidProject, projectFile.FullName);
+            throw new GracefulException(CliStrings.FoundInvalidProject, projectFilePath);
         }
 
         return new MsbuildProject(projects, project, interactive);
     }
 
-    public static FileInfo GetProjectFileFromDirectory(string projectDirectory)
-    {
-        DirectoryInfo dir;
-        try
-        {
-            dir = new DirectoryInfo(projectDirectory);
-        }
-        catch (ArgumentException)
-        {
-            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
-        }
+    public static string GetProjectFileFromDirectory(string projectDirectory)
+        => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out var projectFilePath, out var error)
+            ? projectFilePath
+            : throw new GracefulException(error);
 
-        if (!dir.Exists)
-        {
-            throw new GracefulException(CliStrings.CouldNotFindProjectOrDirectory, projectDirectory);
-        }
-
-        FileInfo[] files = dir.GetFiles("*proj");
-        if (files.Length == 0)
-        {
-            throw new GracefulException(
-                CliStrings.CouldNotFindAnyProjectInDirectory,
-                projectDirectory);
-        }
-
-        if (files.Length > 1)
-        {
-            throw new GracefulException(CliStrings.MoreThanOneProjectInDirectory, projectDirectory);
-        }
-
-        return files.First();
-    }
+    public static bool TryGetProjectFileFromDirectory(string projectDirectory, [NotNullWhen(true)] out string projectFilePath)
+        => ProjectLocator.TryGetProjectFileFromDirectory(projectDirectory, out projectFilePath, out _);
 
     public int AddProjectToProjectReferences(string framework, IEnumerable<string> refs)
     {

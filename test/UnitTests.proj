@@ -16,14 +16,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj;**\*.AnalyzerRedirecting.Tests.csproj" />
+    <SDKCustomXUnitProject Include="**\*.Tests.csproj" Exclude="**\*.AoT.Tests.csproj;TestAssets\**\*.Tests.csproj" />
     <SDKCustomXUnitProject Include="**\*UnitTests.csproj" Exclude="TestAssets\**\*UnitTests.csproj" />
     <SDKCustomXUnitProject Include="**\*IntegrationTests.csproj" Exclude="TestAssets\**\*IntegrationTests.csproj" />
     <SDKCustomXUnitProject Include="$(RepoRoot)src\Microsoft.CodeAnalysis.NetAnalyzers\tests\**\*.*Tests.csproj" />
-    <SDKCustomXUnitProject Condition="$(_AGENTOSNAME) == 'Windows_NT_FullFramework'" Include="**\*.AnalyzerRedirecting.Tests.csproj">
-      <TargetFramework>net472</TargetFramework>
-      <RuntimeTargetFramework>net472</RuntimeTargetFramework>
-    </SDKCustomXUnitProject>
 
     <SDKCustomXUnitProject Include="..\src\Tasks\Microsoft.NET.Build.Extensions.Tasks.UnitTests\Microsoft.NET.Build.Extensions.Tasks.UnitTests.csproj" ExcludeAdditionalParameters="true" />
     <SDKCustomXUnitProject Include="..\src\Tasks\Microsoft.NET.Build.Tasks.UnitTests\Microsoft.NET.Build.Tasks.UnitTests.csproj" ExcludeAdditionalParameters="true" />
@@ -53,7 +49,6 @@
       Microsoft.DotNet.MSBuildSdkResolver.Tests\Microsoft.DotNet.MSBuildSdkResolver.Tests.csproj;
       Microsoft.DotNet.PackageValidation.Tests\Microsoft.DotNet.PackageValidation.Tests.csproj;
       Microsoft.DotNet.TemplateLocator.Tests\Microsoft.DotNet.TemplateLocator.Tests.csproj;
-      Microsoft.NET.Build.Containers.IntegrationTests\Microsoft.NET.Build.Containers.IntegrationTests.csproj;
       Microsoft.NET.Sdk.Publish.Tasks.Tests\Microsoft.NET.Sdk.Publish.Tasks.Tests.csproj;
       Microsoft.NET.Sdk.WorkloadManifestReader.Tests\Microsoft.NET.Sdk.WorkloadManifestReader.Tests.csproj;
       Microsoft.Win32.Msi.Tests\Microsoft.Win32.Msi.Tests.csproj"

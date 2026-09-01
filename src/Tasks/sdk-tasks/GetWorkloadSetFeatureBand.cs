@@ -3,6 +3,8 @@
 
 #nullable disable
 
+using Microsoft.NET.Sdk.WorkloadManifestReader;
+
 namespace Microsoft.DotNet.Build.Tasks
 {
     public class GetWorkloadSetFeatureBand : Task
@@ -15,7 +17,7 @@ namespace Microsoft.DotNet.Build.Tasks
 
         public override bool Execute()
         {
-            WorkloadSetFeatureBand = Cli.WorkloadSetVersion.GetFeatureBand(WorkloadSetVersion).ToString();
+            WorkloadSetFeatureBand = SdkFeatureBand.FromWorkloadSetVersion(WorkloadSetVersion).ToString();
             return true;
         }
     }

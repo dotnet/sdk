@@ -83,7 +83,7 @@ jobs:
     displayName: 🟣 Restore dependencies
   - script: |
       .\artifacts\sdk-build-env.bat
-        dotnet run --project .\src\BuiltInTools\dotnet-format\dotnet-format.csproj -c Release  -- @eng\dotnet-format\validate.rsp
+        dotnet run --project .\src\Dotnet.Format\dotnet-format\dotnet-format.csproj -c Release  -- @eng\dotnet-format\validate.rsp
     displayName: 🟣 Run dotnet-format
   - task: ${{ parameters.oneESCompat.publishTaskPrefix }}PublishBuildArtifacts@1
     displayName: 🟣 Publish Logs

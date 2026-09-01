@@ -22,24 +22,24 @@
       TestAssets.PostActions.AddJsonProperty.WithE...  TestAssets.PostActions.AddJsonProperty.WithExistingProject.ExistingProject                Test Asset          
       TestAssets.PostActions.AddJsonProperty.WithE...  TestAssets.PostActions.AddJsonProperty.WithExistingProject.MyProject                      Test Asset          
       TestAssets.PostActions.AddJsonProperty.WithS...  TestAssets.PostActions.AddJsonProperty.WithSourceNameChangeInJson                         Test Asset          
-      TestAssets.PostActions.AddPackageReference.B...  TestAssets.PostActions.AddPackageReference.BasicWithFiles                                 Test Asset          
       TestAssets.PostActions.AddPackageReference.B...  TestAssets.PostActions.AddPackageReference.Basic                                          Test Asset          
+      TestAssets.PostActions.AddPackageReference.B...  TestAssets.PostActions.AddPackageReference.BasicWithFiles                                 Test Asset          
       TestAssets.PostActions.AddProjectReference.B...  TestAssets.PostActions.AddProjectReference.Basic                                          Test Asset          
-      TestAssets.PostActions.AddProjectReference.E...  TestAssets.PostActions.AddProjectReference.ExistingWithRename                             Test Asset          
       TestAssets.PostActions.AddProjectReference.E...  TestAssets.PostActions.AddProjectReference.Existing                                       Test Asset          
+      TestAssets.PostActions.AddProjectReference.E...  TestAssets.PostActions.AddProjectReference.ExistingWithRename                             Test Asset          
+      TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.Basic                                         Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicInSolutionRoot                           Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicWithFiles                                Test Asset          
       TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.BasicWithIndexes                              Test Asset          
-      TestAssets.PostActions.AddProjectToSolution....  TestAssets.PostActions.AddProjectToSolution.Basic                                         Test Asset          
       TestAssets.PostActions.Instructions.Basic        TestAssets.PostActions.Instructions.Basic                                                 Test Asset          
-      TestAssets.PostActions.RestoreNuGet.BasicWit...  TestAssets.PostActions.RestoreNuGet.BasicWithFiles                                        Test Asset          
       TestAssets.PostActions.RestoreNuGet.Basic        TestAssets.PostActions.RestoreNuGet.Basic                                                 Test Asset          
-      TestAssets.PostActions.RestoreNuGet.CustomSo...  TestAssets.PostActions.RestoreNuGet.CustomSourcePathFiles                                 Test Asset          
+      TestAssets.PostActions.RestoreNuGet.BasicWit...  TestAssets.PostActions.RestoreNuGet.BasicWithFiles                                        Test Asset          
       TestAssets.PostActions.RestoreNuGet.CustomSo...  TestAssets.PostActions.RestoreNuGet.CustomSourcePath                                      Test Asset          
-      TestAssets.PostActions.RestoreNuGet.CustomSo...  TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPathFiles                           Test Asset          
+      TestAssets.PostActions.RestoreNuGet.CustomSo...  TestAssets.PostActions.RestoreNuGet.CustomSourcePathFiles                                 Test Asset          
       TestAssets.PostActions.RestoreNuGet.CustomSo...  TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPath                                Test Asset          
-      TestAssets.PostActions.RestoreNuGet.CustomTa...  TestAssets.PostActions.RestoreNuGet.CustomTargetPathFiles                                 Test Asset          
+      TestAssets.PostActions.RestoreNuGet.CustomSo...  TestAssets.PostActions.RestoreNuGet.CustomSourceTargetPathFiles                           Test Asset          
       TestAssets.PostActions.RestoreNuGet.CustomTa...  TestAssets.PostActions.RestoreNuGet.CustomTargetPath                                      Test Asset          
+      TestAssets.PostActions.RestoreNuGet.CustomTa...  TestAssets.PostActions.RestoreNuGet.CustomTargetPathFiles                                 Test Asset          
       TestAssets.PostActions.RestoreNuGet.Files_Ma...  TestAssets.PostActions.RestoreNuGet.Files_MatchSpecifiedFiles                             Test Asset          
       TestAssets.PostActions.RestoreNuGet.Files_Mi...  TestAssets.PostActions.RestoreNuGet.Files_MismatchSpecifiedFiles                          Test Asset          
       TestAssets.PostActions.RestoreNuGet.Files_Pa...  TestAssets.PostActions.RestoreNuGet.Files_PatternWithFileName                             Test Asset          
@@ -48,16 +48,16 @@
       TestAssets.PostActions.RestoreNuGet.Files_Su...  TestAssets.PostActions.RestoreNuGet.Files_SupportSemicolonDelimitedList                   Test Asset          
       TestAssets.PostActions.RestoreNuGet.Invalid      TestAssets.PostActions.RestoreNuGet.Invalid                                               Test Asset          
       TestAssets.PostActions.RestoreNuGet.Invalid....  TestAssets.PostActions.RestoreNuGet.Invalid.ContinueOnError                               Test Asset          
-      TestAssets.PostActions.RestoreNuGet.SourceRe...  TestAssets.PostActions.RestoreNuGet.SourceRenameFiles                                     Test Asset          
       TestAssets.PostActions.RestoreNuGet.SourceRe...  TestAssets.PostActions.RestoreNuGet.SourceRename                                          Test Asset          
+      TestAssets.PostActions.RestoreNuGet.SourceRe...  TestAssets.PostActions.RestoreNuGet.SourceRenameFiles                                     Test Asset          
       TestAssets.PostActions.RestoreNuGet.TwoProje...  TestAssets.PostActions.RestoreNuGet.TwoProjectsFiles                                      Test Asset          
       TestAssets.PostActions.RestoreNuGet.TwoProje...  TestAssets.PostActions.RestoreNuGet.TwoProjectsPrimaryOutputs                             Test Asset          
-      TestAssets.PostActions.RestoreNuGet.TwoProje...  TestAssets.PostActions.RestoreNuGet.TwoProjectsWithSourceRenames2                         Test Asset          
       TestAssets.PostActions.RestoreNuGet.TwoProje...  TestAssets.PostActions.RestoreNuGet.TwoProjectsWithSourceRenames                          Test Asset          
+      TestAssets.PostActions.RestoreNuGet.TwoProje...  TestAssets.PostActions.RestoreNuGet.TwoProjectsWithSourceRenames2                         Test Asset          
       TestAssets.PostActions.RunScript.Basic           TestAssets.PostActions.RunScript.Basic                                                    Test Asset          
       TestAssets.PostActions.RunScript.DoNotRedirect   TestAssets.PostActions.RunScript.DoNotRedirect                                            Test Asset          
-      TestAssets.PostActions.RunScript.RedirectOnE...  TestAssets.PostActions.RunScript.RedirectOnError                                          Test Asset          
       TestAssets.PostActions.RunScript.Redirect        TestAssets.PostActions.RunScript.Redirect                                                 Test Asset          
+      TestAssets.PostActions.RunScript.RedirectOnE...  TestAssets.PostActions.RunScript.RedirectOnError                                          Test Asset          
       TestAssets.PostActions.UnknownPostAction         TestAssets.PostActions.UnknownPostAction                                                  Test Asset          
       TemplateConditionalProcessing                    TestAssets.TemplateConditionalProcessing                                                  Test Asset          
       Basic FSharp                                     template-grouping                                                           item          Test Asset  C#,F#   
@@ -77,28 +77,28 @@
       TestAssets.TemplateWithFileRenameDate            TestAssets.TemplateWithFileRenameDate                                                     Test Asset          
       TemplateWithJoinAndFolderRename                  TestAssets.TemplateWithJoinAndFolderRename                                                Test Asset          
       name                                             TestAssets.TemplateWithLocalization                                         project       Test Asset  C#      
+      TemplateWithMultiValueChoice                     TestAssets.TemplateWithMultiValueChoice                                                   Test Asset          
+      TemplateWithMultipleRenamesOnSameFile            TestAssets.TemplateWithMultipleRenamesOnSameFile                                          Test Asset          
       TemplateWithMultipleRenamesOnSameFileHandles...  TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesInducedOverlap                     Test Asset          
       TemplateWithMultipleRenamesOnSameFileHandles...  TestAssets.TemplateWithMultipleRenamesOnSameFileHandlesOverlap                            Test Asset          
-      TemplateWithMultipleRenamesOnSameFile            TestAssets.TemplateWithMultipleRenamesOnSameFile                                          Test Asset          
-      TemplateWithMultiValueChoice                     TestAssets.TemplateWithMultiValueChoice                                                   Test Asset          
       TemplateWithParamsSharingPrefix                  TestAssets.TemplateWithParamsSharingPrefix                                  project       Test Asset          
       TemplateWithPlaceholderFiles                     TestAssets.TemplateWithPlaceholderFiles                                                   Test Asset          
       TemplateWithPortsAndCoalesce                     TestAssets.TemplateWithPortsAndCoalesce                                                   Test Asset          
-      TemplateWithPreferDefaultNameButNoDefaultName    TestAssets.TemplateWithPreferDefaultNameButNoDefaultName                    project       Test Asset          
       TemplateWithPreferDefaultName                    TestAssets.TemplateWithPreferDefaultName                                    project       Test Asset          
+      TemplateWithPreferDefaultNameButNoDefaultName    TestAssets.TemplateWithPreferDefaultNameButNoDefaultName                    project       Test Asset          
       TemplateWithRegexMatchMacro                      TestAssets.TemplateWithRegexMatchMacro                                                    Test Asset          
       TemplateWithRenames                              TestAssets.TemplateWithRenames                                                            Test Asset          
       TemplateWithRequiredParameters                   TestAssets.TemplateWithRequiredParameters                                                 Test Asset          
       TemplateWithSourceBasedRenames                   TestAssets.TemplateWithSourceBasedRenames                                                 Test Asset          
+      TemplateWithSourceName                           TestAssets.TemplateWithSourceName                                                         Test Asset          
       TemplateWithSourceNameAndCustomSourceAndTarg...  TestAssets.TemplateWithSourceNameAndCustomSourceAndTargetPaths                            Test Asset          
       TemplateWithSourceNameAndCustomSourcePath        TestAssets.TemplateWithSourceNameAndCustomSourcePath                                      Test Asset          
       TemplateWithSourceNameAndCustomTargetPath        TestAssets.TemplateWithSourceNameAndCustomTargetPath                                      Test Asset          
       TemplateWithSourceNameInTargetPathGetsRenamed    TestAssets.TemplateWithSourceNameInTargetPathGetsRenamed                                  Test Asset          
-      TemplateWithSourceName                           TestAssets.TemplateWithSourceName                                                         Test Asset          
       TemplateWithSourcePathOutsideConfigRoot          TestAssets.TemplateWithSourcePathOutsideConfigRoot                                        Test Asset          
       TemplateWithTags                                 TestAssets.TemplateWithTags                                                 project       Test Asset  C#      
       TemplateWithUnspecifiedSourceName                TestAssets.TemplateWithUnspecifiedSourceName                                              Test Asset          
       TemplateWithValueForms                           TestAssets.TemplateWithValueForms                                                         Test Asset          
-      Basic Template Without Exclude                   withoutexclude                                                              project                           
       Basic Template With Exclude                      withexclude                                                                 project                           
+      Basic Template Without Exclude                   withoutexclude                                                              project                           
       

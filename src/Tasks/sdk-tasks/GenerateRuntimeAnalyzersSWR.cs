@@ -30,16 +30,6 @@ namespace Microsoft.DotNet.Cli.Build
                       ]);
 
             AddFolder(sb,
-                      "AnalyzerRedirecting",
-                      @$"{installDir}\AnalyzerRedirecting",
-                      filesToInclude:
-                      [
-                          "Microsoft.Net.Sdk.AnalyzerRedirecting.dll",
-                          "Microsoft.Net.Sdk.AnalyzerRedirecting.pkgdef",
-                          "extension.vsixmanifest",
-                      ]);
-
-            AddFolder(sb,
                       "AspNetCoreAnalyzers",
                       @$"{installDir}\AspNetCoreAnalyzers");
 
