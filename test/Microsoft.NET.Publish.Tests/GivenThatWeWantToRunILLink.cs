@@ -65,10 +65,8 @@ namespace Microsoft.NET.Publish.Tests
             DoesDepsFileHaveAssembly(depsFile, UnusedFrameworkAssembly).Should().BeTrue();
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
+        // https://github.com/dotnet/sdk/issues/49665
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.0", true)]
-        [InlineData("netcoreapp3.0", false)]
         [InlineData("net5.0", false)]
         [InlineData(ToolsetInfo.CurrentTargetFramework, false)]
         public void ILLink_runs_and_creates_linked_app(string targetFramework, bool referenceClassLibAsPackage)
@@ -1258,9 +1256,8 @@ namespace Microsoft.NET.Publish.Tests
             semaphoreFirstModifiedTime.Should().Be(semaphoreSecondModifiedTime);
         }
 
-        //  https://github.com/dotnet/sdk/issues/49665
+        // https://github.com/dotnet/sdk/issues/49665
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("netcoreapp3.1")]
         [InlineData("net5.0")]
         [InlineData("net6.0")]
         public void ILLink_old_defaults_keep_nonframework(string targetFramework)
@@ -1687,7 +1684,6 @@ namespace Microsoft.NET.Publish.Tests
         //  https://github.com/dotnet/sdk/issues/49665
         [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
         [InlineData("net5.0")]
-        [InlineData("netcoreapp3.1")]
         public void ILLink_displays_informational_warning_up_to_net5_by_default(string targetFramework)
         {
             var projectName = "HelloWorld";
@@ -2230,7 +2226,7 @@ namespace HelloWorld
                 // NOTE: If using a package reference for the reference project, it will be retrieved
                 // from the nuget cache. Set the reference project TFM to the lowest common denominator
                 // of these tests to prevent conflicts.
-                TargetFrameworks = usePackageReference ? "netcoreapp3.0" : targetFrameworks,
+                TargetFrameworks = usePackageReference ? "net5.0" : targetFrameworks,
             };
             referenceProject.SourceFiles[$"{referenceProjectName}.cs"] = @"
 using System;
