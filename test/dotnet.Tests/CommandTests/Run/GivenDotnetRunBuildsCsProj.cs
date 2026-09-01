@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Text.Json;
 using Microsoft.DotNet.Cli.Commands;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.TemplateEngine.Utils;
@@ -1143,6 +1144,65 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                 .Execute()
                 .Should().Pass()
                 .And.HaveStdOutContaining(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
+        }
+
+        [TestMethod]
+        public void ExecutableLaunchProfileEnvironmentIsNotOverriddenByNestedRun()
+        {
+            // https://github.com/dotnet/sdk/issues/56023:
+            // An "Executable" profile that launches another SDK command which runs the application
+            // (e.g. `dotnet watch run`) must not have its environment overridden by the default launch profile.
+            var testInstance = CreateTestInstanceWithNestedRunProfile("run --no-build");
+
+            new DotnetCommand(Log, "run", "--launch-profile", "NestedRun")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("env: MyCoolEnvironmentVariableKey=FromExecutableProfile")
+                .And.HaveStdOutContaining("env: DOTNET_LAUNCH_PROFILE=NestedRun");
+        }
+
+        [TestMethod]
+        public void ExecutableLaunchProfileDoesNotSuppressExplicitlySpecifiedNestedLaunchProfile()
+        {
+            var testInstance = CreateTestInstanceWithNestedRunProfile("run --no-build --launch-profile Profile2");
+
+            new DotnetCommand(Log, "run", "--launch-profile", "NestedRun")
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute()
+                .Should().Pass()
+                .And.HaveStdOutContaining("env: DOTNET_LAUNCH_PROFILE=XYZ");
+        }
+
+        private TestAsset CreateTestInstanceWithNestedRunProfile(string commandLineArgs)
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings", identifier: commandLineArgs)
+                .WithSource();
+
+            var launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+            var launchSettings = File.ReadAllText(launchSettingsPath);
+
+            // Add an "Executable" profile launching `dotnet run` on the same project.
+            // The default profile (the first one) sets MyCoolEnvironmentVariableKey to a different value.
+            File.WriteAllText(launchSettingsPath, launchSettings.Replace("""
+              "profiles": {
+            """, $$"""
+              "profiles": {
+                "NestedRun": {
+                  "commandName": "Executable",
+                  "executablePath": {{JsonSerializer.Serialize(SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath)}},
+                  "commandLineArgs": "{{commandLineArgs}}",
+                  "environmentVariables": {
+                    "MyCoolEnvironmentVariableKey": "FromExecutableProfile"
+                  }
+                },
+            """));
+
+            new BuildCommand(testInstance)
+                .Execute()
+                .Should().Pass();
+
+            return testInstance;
         }
     }
 }

@@ -17,6 +17,13 @@ internal static class EnvironmentVariableNames
     public static readonly string DOTNET_CLI_FORCE_UTF8_ENCODING = nameof(DOTNET_CLI_FORCE_UTF8_ENCODING);
     public static readonly string TELEMETRY_OPTOUT = "DOTNET_CLI_TELEMETRY_OPTOUT";
     public static readonly string DOTNET_ROOT = nameof(DOTNET_ROOT);
+    /// <summary>
+    /// Set by <c>dotnet run</c> on processes it launches for a launch profile with <c>"commandName": "Executable"</c>.
+    /// Signals to nested SDK commands (such as the <c>dotnet run</c> started by a <c>dotnet watch</c> that the profile launched)
+    /// that a launch profile has already been applied to the environment of the current process,
+    /// so that they don't apply the default launch profile on top of it.
+    /// </summary>
+    public static readonly string DOTNET_LAUNCH_PROFILE_APPLIED = nameof(DOTNET_LAUNCH_PROFILE_APPLIED);
     public static readonly string DOTNET_HOST_PATH = nameof(DOTNET_HOST_PATH);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG = nameof(DOTNET_MSBUILD_SDK_RESOLVER_ENABLE_LOG);
     public static readonly string DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR = nameof(DOTNET_MSBUILD_SDK_RESOLVER_SDKS_DIR);
