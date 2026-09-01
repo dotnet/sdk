@@ -68,36 +68,38 @@ internal class InitWorkflows
 
         // Show the interactive form (or, non-interactively, take the recommended defaults) and read
         // back the user's raw choices without resolving any install requests yet.
-        FormOutcome? outcome = ResolveFormOutcome(command, defaults);
-        if (outcome is null)
+        InitFormSelection? formSelection = ResolveFormSelection(command, defaults);
+        if (formSelection is null)
         {
             return []; // User chose to exit without changes.
         }
 
         if (command.DryRun)
         {
-            PrintDryRunPreview(defaults, outcome);
+            PrintDryRunPreview(defaults, formSelection);
             return [];
         }
 
-        WalkthroughSelection selection = BuildSelection(command, requests, defaults, outcome);
-        return ExecuteWalkthroughSelection(command, selection, defaults.InstallRoot, previousConfig);
+        InitExecutionPlan plan = ResolveExecutionPlan(command, requests, defaults, formSelection);
+        return ExecutePlan(command, plan, defaults.InstallRoot, previousConfig);
     }
 
     /// <summary>
     /// Runs the interactive init form (when interactive) and reads the user's choices into a
-    /// <see cref="FormOutcome"/>, or returns null when the user exits. In non-interactive sessions
-    /// the same defaults are used without prompting.
+    /// <see cref="InitFormSelection"/>, or returns null when the user exits. In non-interactive
+    /// sessions the same defaults are used without prompting.
     /// </summary>
-    private static FormOutcome? ResolveFormOutcome(InstallCommand command, InitFormDefaults defaults)
+    private static InitFormSelection? ResolveFormSelection(
+        InstallCommand command,
+        InitFormDefaults defaults)
     {
         bool interactive = command.Interactive && !Console.IsInputRedirected;
         if (!interactive)
         {
-            return new FormOutcome(
+            return new InitFormSelection(
                 Channel: null,
                 AccessMode: defaults.AccessMode,
-                Migrate: defaults.MigrateSystemInstalls);
+                MigrateSystemInstalls: defaults.MigrateSystemInstalls);
         }
 
         InitFormModel model = InitFormModel.Create(
@@ -108,39 +110,39 @@ internal class InitWorkflows
             return null;
         }
 
-        return new FormOutcome(
+        return new InitFormSelection(
             Channel: model.SelectedChannel(),
             AccessMode: model.SelectedAccessMode(),
-            Migrate: model.MigrateSelected());
+            MigrateSystemInstalls: model.MigrateSelected());
     }
 
     /// <summary>
-    /// Turns the user's <see cref="FormOutcome"/> into a <see cref="WalkthroughSelection"/>,
+    /// Turns the user's <see cref="InitFormSelection"/> into an <see cref="InitExecutionPlan"/>,
     /// resolving concrete install requests only now (this may resolve versions / hit the network),
     /// which is why dry-run stops before this step.
     /// </summary>
-    private static WalkthroughSelection BuildSelection(
+    private static InitExecutionPlan ResolveExecutionPlan(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests,
         InitFormDefaults defaults,
-        FormOutcome outcome)
+        InitFormSelection formSelection)
     {
-        List<ResolvedInstallRequest> effectiveRequests;
-        if (!SelectedChannelDiffersFromDefault(outcome.Channel, defaults.ChannelDisplay.ChannelLabel))
+        List<ResolvedInstallRequest> installRequests;
+        if (!SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel))
         {
-            effectiveRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests);
+            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests);
         }
         else
         {
-            effectiveRequests = InitDefaultsResolver.GenerateInstallRequests(
+            installRequests = InitDefaultsResolver.GenerateInstallRequests(
                 command,
-                BuildChangedChannelSpecs(requests, outcome.Channel));
+                BuildChangedChannelSpecs(requests, formSelection.Channel));
         }
 
-        List<MigrationWorkflow.MigrationSelection> migrations = outcome.Migrate
-            ? MigrationWorkflow.FilterMigrationSelections(defaults.Migrations, effectiveRequests)
+        List<MigrationWorkflow.MigrationSelection> migrations = formSelection.MigrateSystemInstalls
+            ? MigrationWorkflow.FilterMigrationSelections(defaults.Migrations, installRequests)
             : [];
-        return new WalkthroughSelection(effectiveRequests, outcome.AccessMode, migrations);
+        return new InitExecutionPlan(installRequests, formSelection.AccessMode, migrations);
     }
 
     internal static MinimalInstallSpec[] BuildChangedChannelSpecs(
@@ -156,7 +158,9 @@ internal class InitWorkflows
     /// Prints what the accepted settings would do, without installing or changing the environment.
     /// Kept network-free: it echoes the chosen channel rather than resolving a concrete version.
     /// </summary>
-    private static void PrintDryRunPreview(InitFormDefaults defaults, FormOutcome outcome)
+    private static void PrintDryRunPreview(
+        InitFormDefaults defaults,
+        InitFormSelection formSelection)
     {
         string dim = DotnetupTheme.Current.Dim;
         string accent = DotnetupTheme.Current.Accent;
@@ -164,16 +168,16 @@ internal class InitWorkflows
         SpectreAnsiConsole.MarkupLine($"[{dim}](dry run \u2014 no changes were made to your machine)[/]");
 
         string channelText =
-            outcome.Channel ?? defaults.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
+            formSelection.Channel ?? defaults.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
         List<MigrationWorkflow.MigrationSelection> migrations = MigrationWorkflow.FilterMigrationSelections(
             defaults.Migrations,
-            BuildSelectedInstallSpecs(defaults, outcome));
-        string migrateText = outcome.Migrate
+            BuildSelectedInstallSpecs(defaults, formSelection));
+        string migrateText = formSelection.MigrateSystemInstalls
             ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", migrations.Count)
             : "No";
 
         PrintPreviewLine("SDK channel", channelText, accent);
-        PrintPreviewLine("Access mode", outcome.AccessMode.ToString(), accent);
+        PrintPreviewLine("Access mode", formSelection.AccessMode.ToString(), accent);
         PrintPreviewLine("Migrate system installs", migrateText, accent);
         PrintPreviewLine("Installs in", defaults.InstallRoot.Path, accent);
     }
@@ -184,10 +188,12 @@ internal class InitWorkflows
             $"  [white]{label.EscapeMarkup()}:[/]  [{accent}]{value.EscapeMarkup()}[/]");
     }
 
-    private static MinimalInstallSpec[] BuildSelectedInstallSpecs(InitFormDefaults defaults, FormOutcome outcome)
+    private static MinimalInstallSpec[] BuildSelectedInstallSpecs(
+        InitFormDefaults defaults,
+        InitFormSelection formSelection)
     {
-        return SelectedChannelDiffersFromDefault(outcome.Channel, defaults.ChannelDisplay.ChannelLabel)
-            ? [.. defaults.DefaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, outcome.Channel))]
+        return SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel)
+            ? [.. defaults.DefaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, formSelection.Channel))]
             : [.. defaults.DefaultInstallSpecs];
     }
 
@@ -202,14 +208,14 @@ internal class InitWorkflows
     /// Installs the selected requests (with any migrations), persists the configuration, and
     /// applies the environment changes for the chosen mode.
     /// </summary>
-    private List<ResolvedInstallRequest> ExecuteWalkthroughSelection(
+    private List<ResolvedInstallRequest> ExecutePlan(
         InstallCommand command,
-        WalkthroughSelection selection,
+        InitExecutionPlan plan,
         DotnetInstallRoot defaultInstallRoot,
         DotnetupConfigData? previousConfig)
     {
-        List<ResolvedInstallRequest> effectiveRequests = selection.Requests;
-        DotnetAccessMode accessMode = selection.AccessMode;
+        List<ResolvedInstallRequest> effectiveRequests = plan.InstallRequests;
+        DotnetAccessMode accessMode = plan.AccessMode;
 
         // Start the predownload now that the install requests are known, so the cache populates
         // while the config is written.
@@ -229,10 +235,10 @@ internal class InitWorkflows
         ExceptionDispatchInfo? installFailure = null;
         try
         {
-            if (selection.Migrations.Count > 0)
+            if (plan.Migrations.Count > 0)
             {
                 effectiveRequests = RunInstallsWithMigration(
-                    command, effectiveRequests, selection.Migrations, installRoot, manifestPath, predownloadTask);
+                    command, effectiveRequests, plan.Migrations, installRoot, manifestPath, predownloadTask);
             }
             else
             {

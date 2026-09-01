@@ -6,7 +6,7 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// <summary>
 /// The user's raw init choices, captured from the interactive form (or the recommended defaults in
 /// non-interactive sessions) before any concrete install requests are resolved. Keeping this
-/// separate from <see cref="WalkthroughSelection"/> lets dry-run preview the decision without
+/// separate from <see cref="InitExecutionPlan"/> lets dry-run preview the selection without
 /// resolving versions or touching the network.
 /// </summary>
 /// <param name="Channel">
@@ -14,8 +14,8 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 /// <c>null</c> to indicate that the form's default install requests should be used unchanged.
 /// </param>
 /// <param name="AccessMode">The chosen dotnet access mode.</param>
-/// <param name="Migrate">True when the user chose to migrate existing system installs.</param>
-internal sealed record FormOutcome(
+/// <param name="MigrateSystemInstalls">True when the user chose to migrate existing system installs.</param>
+internal sealed record InitFormSelection(
     string? Channel,
     DotnetAccessMode AccessMode,
-    bool Migrate);
+    bool MigrateSystemInstalls);
