@@ -53,6 +53,10 @@ Repository policy:
   hand-edit generated `eng/Version.Details.props`.
 - Treat `NU19xx` audit findings as actionable: update or remove the package rather than
   suppressing the warning or weakening audit settings.
+- Pin external GitHub Actions and reusable workflows in runtime workflow YAML to full
+  40-character commit SHAs, with the tag or branch in a trailing comment. Dependabot
+  maintains these pins through [`.github/dependabot.yml`](../dependabot.yml); do not
+  hand-edit generated `*.lock.yml` workflows.
 
 ## Canonical Convention Owners
 
