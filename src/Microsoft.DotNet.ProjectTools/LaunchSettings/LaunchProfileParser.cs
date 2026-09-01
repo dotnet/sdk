@@ -8,6 +8,7 @@ namespace Microsoft.DotNet.ProjectTools;
 
 internal abstract partial class LaunchProfileParser
 {
+    // Keep launch profile expansion consistent with Visual Studio's DebugTokenReplacer.
     [GeneratedRegex(@"\$\([^)]+\)", RegexOptions.IgnoreCase)]
     private static partial Regex MSBuildPropertyRegex();
 
