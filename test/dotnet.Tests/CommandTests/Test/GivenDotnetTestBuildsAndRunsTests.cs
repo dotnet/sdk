@@ -139,15 +139,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
             var runJsonPath = Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json");
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchArgument>--from-launch-settings</LaunchArgument>
+                    <LaunchEnvironment>TestValue1</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
 
-            File.WriteAllText(launchSettingsPath, $$"""
+            File.WriteAllText(launchSettingsPath, """
                 {
                     "profiles": {
                         "ConsoleApp25": {
                             "commandName": "Project",
-                            "commandLineArgs": "--from-launch-settings",
+                            "commandLineArgs": "$(LaunchArgument)",
                             "environmentVariables": {
-                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "{{EnvironmentVariableReference("TEST_ENV_VAR")}}"
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
                             }
                         }
                     }
@@ -161,7 +169,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnvironmentVariable("TEST_ENV_VAR", "TestValue1")
                                     .Execute("-c", configuration);
 
             if (!SdkTestContext.IsLocalized())

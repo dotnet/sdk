@@ -88,7 +88,10 @@ public sealed class RunCommandTests : SdkTest
               "profiles": {
                 "First": {
                   "commandName": "Project",
-                  "commandLineArgs": "\"$(MSBuildProjectDirectory)\" \"$([System.IO.Path]::DirectorySeparatorChar)\" \"@(Items)\" \"%(Identity)\""
+                  "commandLineArgs": "\"$(MSBuildProjectDirectory)\" \"$([System.Int32]::MaxValue)\" \"@(Items)\" \"%(Identity)\"",
+                  "environmentVariables": {
+                    "TEST_VAR1": "$(MSBuildProjectDirectory)"
+                  }
                 }
               }
             }
@@ -98,7 +101,8 @@ public sealed class RunCommandTests : SdkTest
             .WithWorkingDirectory(testProjectDirectory)
             .Execute()
             .Should().Pass()
-            .And.HaveStdOutContaining($"ARGS={testProjectDirectory},$([System.IO.Path]::DirectorySeparatorChar),@(Items),%(Identity)");
+            .And.HaveStdOutContaining($"ARGS={testProjectDirectory},{int.MaxValue},@(Items),%(Identity)")
+            .And.HaveStdOutContaining($"TEST_VAR1=<<<{testProjectDirectory}>>>");
     }
 
     [TestMethod]
@@ -169,6 +173,49 @@ public sealed class RunCommandTests : SdkTest
         var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
         Assert.AreEqual("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
+    }
+
+    [TestMethod]
+    public void Executable_MSBuildPropertyExpansion()
+    {
+        var root = TestAssetsManager.CreateTestDirectory().Path;
+        var projectPath = Path.Combine(root, "myproj.csproj");
+        var launchSettingsDirectory = Path.Combine(root, "Properties");
+        Directory.CreateDirectory(launchSettingsDirectory);
+        File.WriteAllText(projectPath, """
+            <Project>
+              <PropertyGroup>
+                <LaunchExecutable>executable</LaunchExecutable>
+                <LaunchArgument>expanded-argument</LaunchArgument>
+                <LaunchWorkingDirectory>working</LaunchWorkingDirectory>
+                <LaunchEnvironment>expanded-environment</LaunchEnvironment>
+              </PropertyGroup>
+            </Project>
+            """);
+        File.WriteAllText(Path.Combine(launchSettingsDirectory, "launchSettings.json"), """
+            {
+              "profiles": {
+                "MyProfile": {
+                  "commandName": "Executable",
+                  "executablePath": "$(LaunchExecutable)",
+                  "commandLineArgs": "$(LaunchArgument)",
+                  "workingDirectory": "$(LaunchWorkingDirectory)",
+                  "environmentVariables": {
+                    "VALUE": "$(LaunchEnvironment)"
+                  }
+                }
+              }
+            }
+            """);
+
+        var runCommand = CreateRunCommand(projectPath);
+        var result = runCommand.ReadLaunchProfileSettings();
+
+        var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(result.Profile);
+        Assert.AreEqual("executable", model.ExecutablePath);
+        Assert.AreEqual("expanded-argument", model.CommandLineArgs);
+        Assert.AreEqual(Path.Combine(launchSettingsDirectory, "working"), model.WorkingDirectory);
+        Assert.AreEqual("expanded-environment", model.EnvironmentVariables["VALUE"]);
     }
 
     [TestMethod]

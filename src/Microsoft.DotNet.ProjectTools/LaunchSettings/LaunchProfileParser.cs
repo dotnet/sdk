@@ -2,20 +2,33 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.DotNet.ProjectTools;
 
-internal abstract class LaunchProfileParser
+internal abstract partial class LaunchProfileParser
 {
-    public abstract LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json);
+    [GeneratedRegex(@"\$\([^)]+\)", RegexOptions.IgnoreCase)]
+    private static partial Regex MSBuildPropertyRegex();
 
-    protected static string? ParseCommandLineArgs(string? value)
-        => value != null ? ExpandVariables(value) : null;
+    public abstract LaunchProfileParseResult ParseProfile(
+        string launchSettingsPath,
+        string? launchProfileName,
+        string json,
+        Func<string, string>? expandMSBuildProperty = null);
+
+    protected static string? ParseCommandLineArgs(string? value, Func<string, string>? expandMSBuildProperty)
+        => value is not null ? ExpandVariables(value, expandMSBuildProperty) : null;
 
     public static string GetLaunchProfileDisplayName(string? launchProfile)
         => string.IsNullOrEmpty(launchProfile) ? Resources.DefaultLaunchProfileDisplayName : launchProfile;
 
-    protected static ImmutableDictionary<string, string> ParseEnvironmentVariables(ImmutableDictionary<string, string> values)
+    internal static bool RequiresMSBuildExpansion(string? value)
+        => value is not null && MSBuildPropertyRegex().IsMatch(value);
+
+    protected static ImmutableDictionary<string, string> ParseEnvironmentVariables(
+        ImmutableDictionary<string, string> values,
+        Func<string, string>? expandMSBuildProperty)
     {
         if (values.Count == 0)
         {
@@ -26,12 +39,17 @@ internal abstract class LaunchProfileParser
         foreach (var (key, value) in values)
         {
             // override previously set variables:
-            builder[key] = ExpandVariables(value);
+            builder[key] = ExpandVariables(value, expandMSBuildProperty);
         }
 
         return builder.ToImmutable();
     }
 
-    protected static string ExpandVariables(string value)
-        => Environment.ExpandEnvironmentVariables(value);
+    protected static string ExpandVariables(string value, Func<string, string>? expandMSBuildProperty)
+    {
+        string expandedValue = Environment.ExpandEnvironmentVariables(value);
+        return expandMSBuildProperty is null
+            ? expandedValue
+            : MSBuildPropertyRegex().Replace(expandedValue, match => expandMSBuildProperty(match.Value));
+    }
 }
