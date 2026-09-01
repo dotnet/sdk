@@ -27,22 +27,22 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [DataRow("double", "double.MinValue", "double.MaxValue")]
         public async Task TestConstantExpectedSupportedUnmanagedTypesAsync(string type, string minValue, string maxValue)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod1([ConstantExpected] {type} val) {{ }}
-    public static void TestMethod2([ConstantExpected(Min={minValue})] {type} val) {{ }}
-    public static void TestMethod3([ConstantExpected(Max={maxValue})] {type} val) {{ }}
-    public static void TestMethod4([ConstantExpected(Min={minValue}, Max={maxValue})] {type} val) {{ }}
-    public static void TestMethod5([ConstantExpected(Min=null)] {type} val) {{ }}
-    public static void TestMethod6([ConstantExpected(Max=null)] {type} val) {{ }}
-    public static void TestMethod7([ConstantExpected(Min=null, Max=null)] {type} val) {{ }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod1([ConstantExpected] {{type}} val) { }
+                    public static void TestMethod2([ConstantExpected(Min={{minValue}})] {{type}} val) { }
+                    public static void TestMethod3([ConstantExpected(Max={{maxValue}})] {{type}} val) { }
+                    public static void TestMethod4([ConstantExpected(Min={{minValue}}, Max={{maxValue}})] {{type}} val) { }
+                    public static void TestMethod5([ConstantExpected(Min=null)] {{type}} val) { }
+                    public static void TestMethod6([ConstantExpected(Max=null)] {{type}} val) { }
+                    public static void TestMethod7([ConstantExpected(Min=null, Max=null)] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -57,50 +57,50 @@ public class Test
         [DataRow("ulong", "ulong.MinValue", "ulong.MaxValue")]
         public async Task TestConstantExpectedSupportedEnumTypesAsync(string type, string minValue, string maxValue)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod1([ConstantExpected] AEnum val) {{ }}
-    public static void TestMethod2([ConstantExpected(Min={minValue})] AEnum val) {{ }}
-    public static void TestMethod3([ConstantExpected(Max={maxValue})] AEnum val) {{ }}
-    public static void TestMethod4([ConstantExpected(Min={minValue}, Max={maxValue})] AEnum val) {{ }}
-    public static void TestMethod5([ConstantExpected(Min=null)] AEnum val) {{ }}
-    public static void TestMethod6([ConstantExpected(Max=null)] AEnum val) {{ }}
-    public static void TestMethod7([ConstantExpected(Min=null, Max=null)] AEnum val) {{ }}
-}}
+                public class Test
+                {
+                    public static void TestMethod1([ConstantExpected] AEnum val) { }
+                    public static void TestMethod2([ConstantExpected(Min={{minValue}})] AEnum val) { }
+                    public static void TestMethod3([ConstantExpected(Max={{maxValue}})] AEnum val) { }
+                    public static void TestMethod4([ConstantExpected(Min={{minValue}}, Max={{maxValue}})] AEnum val) { }
+                    public static void TestMethod5([ConstantExpected(Min=null)] AEnum val) { }
+                    public static void TestMethod6([ConstantExpected(Max=null)] AEnum val) { }
+                    public static void TestMethod7([ConstantExpected(Min=null, Max=null)] AEnum val) { }
+                }
 
-public enum AEnum : {type}
-{{
-    One,
-    Two
-}}
-";
+                public enum AEnum : {{type}}
+                {
+                    One,
+                    Two
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
         [TestMethod]
         public async Task TestConstantExpectedSupportedComplexTypesAsync()
         {
-            string csInput = @"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = """
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{
-    public static void TestMethodString([ConstantExpected] string val) { }
-    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
-    
-    public static class GenenricClass<T>
-    {
-        public static void TestMethodGeneric([ConstantExpected] T val) { }
-    }
-}
-";
+                public class Test
+                {
+                    public static void TestMethodString([ConstantExpected] string val) { }
+                    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
+
+                    public static class GenenricClass<T>
+                    {
+                        public static void TestMethodGeneric([ConstantExpected] T val) { }
+                    }
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -120,34 +120,34 @@ public class Test
         [DataRow("string")]
         public async Task TestConstantExpectedSupportedComplex2TypesAsync(string type)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public interface ITest<T>
-    {{
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }}
-    public interface ITest2<T>
-    {{
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }}
-    public abstract class AbstractTest<T>
-    {{
-        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
-    }}
+                public class Test
+                {
+                    public interface ITest<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public interface ITest2<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public abstract class AbstractTest<T>
+                    {
+                        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
+                    }
 
-    public class Generic : AbstractTest<{type}>, ITest<{type}>, ITest2<{type}>
-    {{
-        public {type} Method({type} operand1, {{|#0:{type} operand2|}}) => throw new NotImplementedException();
-        {type} ITest2<{type}>.Method({type} operand1, {{|#1:{type} operand2|}}) => throw new NotImplementedException();
-        public override {type} Method2({type} operand1, {{|#2:{type} operand2|}}) => throw new NotImplementedException();
-    }}
-}}
-";
+                    public class Generic : AbstractTest<{{type}}>, ITest<{{type}}>, ITest2<{{type}}>
+                    {
+                        public {{type}} Method({{type}} operand1, {|#0:{{type}} operand2|}) => throw new NotImplementedException();
+                        {{type}} ITest2<{{type}}>.Method({{type}} operand1, {|#1:{{type}} operand2|}) => throw new NotImplementedException();
+                        public override {{type}} Method2({{type}} operand1, {|#2:{{type}} operand2|}) => throw new NotImplementedException();
+                    }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.AttributeExpectedRule)
                         .WithLocation(0),
@@ -173,67 +173,67 @@ public class Test
         [DataRow("string")]
         public async Task TestMissingConstantExpectedSupportedComplex2TypesAsync(string type)
         {
-            string csInput = @$"
-using System;
-using Similar;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using Similar;
+                #nullable enable
 
-public class Test
-{{
-    public interface ITest<T>
-    {{
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }}
-    public interface ITest2<T>
-    {{
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }}
-    public abstract class AbstractTest<T>
-    {{
-        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
-    }}
+                public class Test
+                {
+                    public interface ITest<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public interface ITest2<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public abstract class AbstractTest<T>
+                    {
+                        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
+                    }
 
-    public class Generic : AbstractTest<{type}>, ITest<{type}>, ITest2<{type}>
-    {{
-        public {type} Method({type} operand1, {type} operand2) => throw new NotImplementedException();
-        {type} ITest2<{type}>.Method({type} operand1, {type} operand2) => throw new NotImplementedException();
-        public override {type} Method2({type} operand1, {type} operand2) => throw new NotImplementedException();
-    }}
-}}
-";
+                    public class Generic : AbstractTest<{{type}}>, ITest<{{type}}>, ITest2<{{type}}>
+                    {
+                        public {{type}} Method({{type}} operand1, {{type}} operand2) => throw new NotImplementedException();
+                        {{type}} ITest2<{{type}}>.Method({{type}} operand1, {{type}} operand2) => throw new NotImplementedException();
+                        public override {{type}} Method2({{type}} operand1, {{type}} operand2) => throw new NotImplementedException();
+                    }
+                }
+                """;
             await TestCSMissingAttributeAsync(csInput);
         }
 
         [TestMethod]
         public async Task TestConstantExpectedSupportedComplex3TypesAsync()
         {
-            string csInput = @"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = """
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{
-    public interface ITest<T>
-    {
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }
-    public interface ITest2<T>
-    {
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }
-    public abstract class AbstractTest<T>
-    {
-        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
-    }
-    public class GenericForward<T> : AbstractTest<T>, ITest<T>, ITest2<T>
-    {
-        public T Method(T operand1, {|#0:T operand2|}) => throw new NotImplementedException();
-        T ITest2<T>.Method(T operand1, {|#1:T operand2|}) => throw new NotImplementedException();
-        public override T Method2(T operand1, {|#2:T operand2|}) => throw new NotImplementedException();
-    }
-}
-";
+                public class Test
+                {
+                    public interface ITest<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public interface ITest2<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public abstract class AbstractTest<T>
+                    {
+                        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public class GenericForward<T> : AbstractTest<T>, ITest<T>, ITest2<T>
+                    {
+                        public T Method(T operand1, {|#0:T operand2|}) => throw new NotImplementedException();
+                        T ITest2<T>.Method(T operand1, {|#1:T operand2|}) => throw new NotImplementedException();
+                        public override T Method2(T operand1, {|#2:T operand2|}) => throw new NotImplementedException();
+                    }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.AttributeExpectedRule)
                         .WithLocation(0),
@@ -256,16 +256,16 @@ public class Test
         [DataRow("", "<T>", "T[]", "T[]")]
         public async Task TestConstantExpectedUnsupportedTypesAsync(string classGeneric, string methodGeneric, string type, string diagnosticType)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test{classGeneric}
-{{
-    public static void TestMethod{methodGeneric}([{{|#0:ConstantExpected|}}] {type} val) {{ }}
-}}
-";
+                public class Test{{classGeneric}}
+                {
+                    public static void TestMethod{{methodGeneric}}([{|#0:ConstantExpected|}] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1856.UnsupportedTypeRule)
                         .WithLocation(0)
@@ -281,33 +281,33 @@ public class Test{classGeneric}
         [DataRow("(int, long)")]
         public async Task TestConstantExpectedUnsupportedIgnoredComplexTypesAsync(string type)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public interface ITest<T>
-    {{
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }}
-    public interface ITest2<T>
-    {{
-        T Method(T operand1, [ConstantExpected] T operand2);
-    }}
-    public abstract class AbstractTest<T>
-    {{
-        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
-    }}
-    public class Generic : AbstractTest<{type}>, ITest<{type}>, ITest2<{type}>
-    {{
-        public {type} Method({type} operand1, {type} operand2) => throw new NotImplementedException();
-        {type} ITest2<{type}>.Method({type} operand1, {type} operand2) => throw new NotImplementedException();
-        public override {type} Method2({type} operand1, {type} operand2) => throw new NotImplementedException();
-    }}
-}}
-";
+                public class Test
+                {
+                    public interface ITest<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public interface ITest2<T>
+                    {
+                        T Method(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public abstract class AbstractTest<T>
+                    {
+                        public abstract T Method2(T operand1, [ConstantExpected] T operand2);
+                    }
+                    public class Generic : AbstractTest<{{type}}>, ITest<{{type}}>, ITest2<{{type}}>
+                    {
+                        public {{type}} Method({{type}} operand1, {{type}} operand2) => throw new NotImplementedException();
+                        {{type}} ITest2<{{type}}>.Method({{type}} operand1, {{type}} operand2) => throw new NotImplementedException();
+                        public override {{type}} Method2({{type}} operand1, {{type}} operand2) => throw new NotImplementedException();
+                    }
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -329,18 +329,18 @@ public class Test
         [DataRow("", "<T>", "T", "\"min\"", "false")]
         public async Task TestConstantExpectedIncompatibleConstantTypeErrorAsync(string classGeneric, string methodGeneric, string type, string badMinValue, string badMaxValue)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test{classGeneric}
-{{
-    public static void TestMethod{methodGeneric}([ConstantExpected({{|#0:Min = {badMinValue}|}})] {type} val) {{ }}
-    public static void TestMethod2{methodGeneric}([ConstantExpected({{|#1:Min = {badMinValue}|}}, {{|#2:Max = {badMaxValue}|}})] {type} val) {{ }}
-    public static void TestMethod3{methodGeneric}([ConstantExpected({{|#3:Max = {badMaxValue}|}})] {type} val) {{ }}
-}}
-";
+                public class Test{{classGeneric}}
+                {
+                    public static void TestMethod{{methodGeneric}}([ConstantExpected({|#0:Min = {{badMinValue}}|})] {{type}} val) { }
+                    public static void TestMethod2{{methodGeneric}}([ConstantExpected({|#1:Min = {{badMinValue}}|}, {|#2:Max = {{badMaxValue}}|})] {{type}} val) { }
+                    public static void TestMethod3{{methodGeneric}}([ConstantExpected({|#3:Max = {{badMaxValue}}|})] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1856.IncompatibleConstantTypeRule)
                         .WithLocation(0)
@@ -370,16 +370,16 @@ public class Test{classGeneric}
         [DataRow("double", "1", "0")]
         public async Task TestConstantExpectedInvertedConstantTypeErrorAsync(string type, string min, string max)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod([{{|#0:ConstantExpected(Min = {min}, Max = {max})|}}] {type} val) {{ }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod([{|#0:ConstantExpected(Min = {{min}}, Max = {{max}})|}] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1856.InvertedRangeRule)
                         .WithLocation(0));
@@ -396,26 +396,26 @@ public class Test
         [DataRow("ulong", "AEnum.Five", "AEnum.Two")]
         public async Task TestEnumConstantExpectedInvertedConstantTypeErrorAsync(string type, string min, string max)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod([{{|#0:ConstantExpected(Min = {min}, Max = {max})|}}] {type} val) {{ }}
-}}
+                public class Test
+                {
+                    public static void TestMethod([{|#0:ConstantExpected(Min = {{min}}, Max = {{max}})|}] {{type}} val) { }
+                }
 
-public enum AEnum : {type}
-{{
-    Zero,
-    One = 1,
-    Two = 1 << 1,
-    Three = 1 << 2,
-    Four = 1 << 3,
-    Five = 1 << 4
-}}
-";
+                public enum AEnum : {{type}}
+                {
+                    Zero,
+                    One = 1,
+                    Two = 1 << 1,
+                    Three = 1 << 2,
+                    Four = 1 << 3,
+                    Five = 1 << 4
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1856.InvertedRangeRule)
                         .WithLocation(0));
@@ -435,20 +435,20 @@ public enum AEnum : {type}
         {
             string minString = min.ToString();
             string maxString = max.ToString();
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod([ConstantExpected({{|#0:Min = {min1}|}})] {type} val) {{ }}
-    public static void TestMethod2([ConstantExpected({{|#1:Min = {min1}|}}, {{|#2:Max = {max1}|}})] {type} val) {{ }}
-    public static void TestMethod3([ConstantExpected({{|#3:Max = {max1}|}})] {type} val) {{ }}
-    public static void TestMethod4([ConstantExpected({{|#4:Min = {badMinValue}|}}, {{|#5:Max = {max1}|}})] {type} val) {{ }}
-    public static void TestMethod5([ConstantExpected({{|#6:Min = {min1}|}}, {{|#7:Max = {badMaxValue}|}})] {type} val) {{ }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod([ConstantExpected({|#0:Min = {{min1}}|})] {{type}} val) { }
+                    public static void TestMethod2([ConstantExpected({|#1:Min = {{min1}}|}, {|#2:Max = {{max1}}|})] {{type}} val) { }
+                    public static void TestMethod3([ConstantExpected({|#3:Max = {{max1}}|})] {{type}} val) { }
+                    public static void TestMethod4([ConstantExpected({|#4:Min = {{badMinValue}}|}, {|#5:Max = {{max1}}|})] {{type}} val) { }
+                    public static void TestMethod5([ConstantExpected({|#6:Min = {{min1}}|}, {|#7:Max = {{badMaxValue}}|})] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1856.InvalidBoundsRule)
                     .WithLocation(0)
@@ -489,30 +489,30 @@ public class Test
         {
             string minString = min.ToString();
             string maxString = max.ToString();
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod([ConstantExpected({{|#0:Min = {min1}|}})] AEnum val) {{ }}
-    public static void TestMethod2([ConstantExpected({{|#1:Min = {min1}|}}, {{|#2:Max = {max1}|}})] AEnum val) {{ }}
-    public static void TestMethod3([ConstantExpected({{|#3:Max = {max1}|}})] AEnum val) {{ }}
-    public static void TestMethod4([ConstantExpected({{|#4:Min = {badMinValue}|}}, {{|#5:Max = {max1}|}})] AEnum val) {{ }}
-    public static void TestMethod5([ConstantExpected({{|#6:Min = {min1}|}}, {{|#7:Max = {badMaxValue}|}})] AEnum val) {{ }}
-}}
+                public class Test
+                {
+                    public static void TestMethod([ConstantExpected({|#0:Min = {{min1}}|})] AEnum val) { }
+                    public static void TestMethod2([ConstantExpected({|#1:Min = {{min1}}|}, {|#2:Max = {{max1}}|})] AEnum val) { }
+                    public static void TestMethod3([ConstantExpected({|#3:Max = {{max1}}|})] AEnum val) { }
+                    public static void TestMethod4([ConstantExpected({|#4:Min = {{badMinValue}}|}, {|#5:Max = {{max1}}|})] AEnum val) { }
+                    public static void TestMethod5([ConstantExpected({|#6:Min = {{min1}}|}, {|#7:Max = {{badMaxValue}}|})] AEnum val) { }
+                }
 
-public enum AEnum : {type}
-{{
-    Zero,
-    One = 1,
-    Two = 1 << 1,
-    Three = 1 << 2,
-    Four = 1 << 3,
-    Five = 1 << 4
-}}
-";
+                public enum AEnum : {{type}}
+                {
+                    Zero,
+                    One = 1,
+                    Two = 1 << 1,
+                    Three = 1 << 2,
+                    Four = 1 << 3,
+                    Five = 1 << 4
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1856.InvalidBoundsRule)
                     .WithLocation(0)
@@ -556,34 +556,34 @@ public enum AEnum : {type}
         [DataRow("string", "null", "null", "\"true\"", "\"false\"")]
         public async Task TestArgumentConstantAsync(string type, string minValue, string maxValue, string value, string expression)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod()
-    {{
-        TestMethodWithConstant({value});
-        TestMethodWithConstant({expression});
-        TestMethodWithConstrainedConstant({value});
-        TestMethodWithConstrainedConstant({expression});
-        TestMethodGeneric<{type}>({value});
-        TestMethodGeneric<{type}>({expression});
-        GenericClass<{type}>.TestMethodGeneric({value});
-        GenericClass<{type}>.TestMethodGeneric({expression});
-    }}
-    public static void TestMethodWithConstant([ConstantExpected] {type} val) {{ }}
-    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {minValue}, Max = {maxValue})] {type} val) {{ }}
-    public static void TestMethodGeneric<T>([ConstantExpected] T val) {{ }}
-    
-    public static class GenericClass<T>
-    {{
-        public static void TestMethodGeneric([ConstantExpected] T val) {{ }}
-    }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod()
+                    {
+                        TestMethodWithConstant({{value}});
+                        TestMethodWithConstant({{expression}});
+                        TestMethodWithConstrainedConstant({{value}});
+                        TestMethodWithConstrainedConstant({{expression}});
+                        TestMethodGeneric<{{type}}>({{value}});
+                        TestMethodGeneric<{{type}}>({{expression}});
+                        GenericClass<{{type}}>.TestMethodGeneric({{value}});
+                        GenericClass<{{type}}>.TestMethodGeneric({{expression}});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] {{type}} val) { }
+                    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {{minValue}}, Max = {{maxValue}})] {{type}} val) { }
+                    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
+
+                    public static class GenericClass<T>
+                    {
+                        public static void TestMethodGeneric([ConstantExpected] T val) { }
+                    }
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -598,44 +598,44 @@ public class Test
         [DataRow("ulong", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
         public async Task TestEnumArgumentConstantAsync(string type, string minValue, string maxValue, string value, string expression)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod()
-    {{
-        TestMethodWithConstant({value});
-        TestMethodWithConstant({expression});
-        TestMethodWithConstrainedConstant({value});
-        TestMethodWithConstrainedConstant({expression});
-        TestMethodGeneric<AEnum>({value});
-        TestMethodGeneric<AEnum>({expression});
-        GenericClass<AEnum>.TestMethodGeneric({value});
-        GenericClass<AEnum>.TestMethodGeneric({expression});
-    }}
-    public static void TestMethodWithConstant([ConstantExpected] AEnum val) {{ }}
-    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {minValue}, Max = {maxValue})] AEnum val) {{ }}
-    public static void TestMethodGeneric<T>([ConstantExpected] T val) {{ }}
-    
-    public static class GenericClass<T>
-    {{
-        public static void TestMethodGeneric([ConstantExpected] T val) {{ }}
-    }}
-}}
+                public class Test
+                {
+                    public static void TestMethod()
+                    {
+                        TestMethodWithConstant({{value}});
+                        TestMethodWithConstant({{expression}});
+                        TestMethodWithConstrainedConstant({{value}});
+                        TestMethodWithConstrainedConstant({{expression}});
+                        TestMethodGeneric<AEnum>({{value}});
+                        TestMethodGeneric<AEnum>({{expression}});
+                        GenericClass<AEnum>.TestMethodGeneric({{value}});
+                        GenericClass<AEnum>.TestMethodGeneric({{expression}});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] AEnum val) { }
+                    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {{minValue}}, Max = {{maxValue}})] AEnum val) { }
+                    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
 
-public enum AEnum : {type}
-{{
-    Zero,
-    One = 1,
-    Two = 1 << 1,
-    Three = 1 << 2,
-    Four = 1 << 3,
-    Five = 1 << 4
-}}
-";
+                    public static class GenericClass<T>
+                    {
+                        public static void TestMethodGeneric([ConstantExpected] T val) { }
+                    }
+                }
+
+                public enum AEnum : {{type}}
+                {
+                    Zero,
+                    One = 1,
+                    Two = 1 << 1,
+                    Three = 1 << 2,
+                    Four = 1 << 3,
+                    Five = 1 << 4
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -654,28 +654,28 @@ public enum AEnum : {type}
         [DataRow("string")]
         public async Task TestArgumentNotConstantAsync(string type)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod({type} nonConstant)
-    {{
-        TestMethodWithConstant({{|#0:nonConstant|}});
-        TestMethodGeneric<{type}>({{|#1:nonConstant|}});
-        GenenricClass<{type}>.TestMethodGeneric({{|#2:nonConstant|}});
-    }}
-    public static void TestMethodWithConstant([ConstantExpected] {type} val) {{ }}
-    public static void TestMethodGeneric<T>([ConstantExpected] T val) {{ }}
-    
-    public static class GenenricClass<T>
-    {{
-        public static void TestMethodGeneric([ConstantExpected] T val) {{ }}
-    }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod({{type}} nonConstant)
+                    {
+                        TestMethodWithConstant({|#0:nonConstant|});
+                        TestMethodGeneric<{{type}}>({|#1:nonConstant|});
+                        GenenricClass<{{type}}>.TestMethodGeneric({|#2:nonConstant|});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] {{type}} val) { }
+                    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
+
+                    public static class GenenricClass<T>
+                    {
+                        public static void TestMethodGeneric([ConstantExpected] T val) { }
+                    }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantNotConstantRule)
                         .WithLocation(0),
@@ -696,34 +696,34 @@ public class Test
         [DataRow("ulong")]
         public async Task TestEnumArgumentNotConstantAsync(string type)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod(AEnum nonConstant)
-    {{
-        TestMethodWithConstant({{|#0:nonConstant|}});
-        TestMethodGeneric<AEnum>({{|#1:nonConstant|}});
-        GenenricClass<AEnum>.TestMethodGeneric({{|#2:nonConstant|}});
-    }}
-    public static void TestMethodWithConstant([ConstantExpected] AEnum val) {{ }}
-    public static void TestMethodGeneric<T>([ConstantExpected] T val) {{ }}
-    
-    public static class GenenricClass<T>
-    {{
-        public static void TestMethodGeneric([ConstantExpected] T val) {{ }}
-    }}
-}}
+                public class Test
+                {
+                    public static void TestMethod(AEnum nonConstant)
+                    {
+                        TestMethodWithConstant({|#0:nonConstant|});
+                        TestMethodGeneric<AEnum>({|#1:nonConstant|});
+                        GenenricClass<AEnum>.TestMethodGeneric({|#2:nonConstant|});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] AEnum val) { }
+                    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
 
-public enum AEnum : {type}
-{{
-    One,
-    Two
-}}
-";
+                    public static class GenenricClass<T>
+                    {
+                        public static void TestMethodGeneric([ConstantExpected] T val) { }
+                    }
+                }
+
+                public enum AEnum : {{type}}
+                {
+                    One,
+                    Two
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantNotConstantRule)
                         .WithLocation(0),
@@ -738,28 +738,28 @@ public enum AEnum : {type}
         [DataRow("string", "(string)(object)20")]
         public async Task TestArgumentInvalidConstantAsync(string type, string constant)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod()
-    {{
-        TestMethodWithConstant({{|#0:{constant}|}});
-        TestMethodGeneric<{type}>({{|#1:{constant}|}});
-        GenericClass<{type}>.TestMethodGeneric({{|#2:{constant}|}});
-    }}
-    public static void TestMethodWithConstant([ConstantExpected] {type} val) {{ }}
-    public static void TestMethodGeneric<T>([ConstantExpected] T val) {{ }}
-    
-    public static class GenericClass<T>
-    {{
-        public static void TestMethodGeneric([ConstantExpected] T val) {{ }}
-    }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod()
+                    {
+                        TestMethodWithConstant({|#0:{{constant}}|});
+                        TestMethodGeneric<{{type}}>({|#1:{{constant}}|});
+                        GenericClass<{{type}}>.TestMethodGeneric({|#2:{{constant}}|});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] {{type}} val) { }
+                    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
+
+                    public static class GenericClass<T>
+                    {
+                        public static void TestMethodGeneric([ConstantExpected] T val) { }
+                    }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantInvalidConstantRule)
                     .WithLocation(0)
@@ -786,20 +786,20 @@ public class Test
         [DataRow("double", "3", "4", "5")]
         public async Task TestArgumentOutOfBoundsConstantAsync(string type, string min, string max, string testValue)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod()
-    {{
-        TestMethodWithConstant({{|#0:{testValue}|}});
-    }}
-    public static void TestMethodWithConstant([ConstantExpected(Min = {min}, Max = {max})] {type} val) {{ }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod()
+                    {
+                        TestMethodWithConstant({|#0:{{testValue}}|});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected(Min = {{min}}, Max = {{max}})] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantOutOfBoundsRule)
                         .WithLocation(0)
@@ -817,30 +817,30 @@ public class Test
         [DataRow("ulong", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
         public async Task TestEnumArgumentOutOfBoundsConstantAsync(string type, string min, string max, string testValue)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod()
-    {{
-        TestMethodWithConstant({{|#0:{testValue}|}});
-    }}
-    public static void TestMethodWithConstant([ConstantExpected(Min = {min}, Max = {max})] AEnum val) {{ }}
-}}
+                public class Test
+                {
+                    public static void TestMethod()
+                    {
+                        TestMethodWithConstant({|#0:{{testValue}}|});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected(Min = {{min}}, Max = {{max}})] AEnum val) { }
+                }
 
-public enum AEnum : {type}
-{{
-    Zero,
-    One,
-    Two,
-    Three,
-    Four,
-    Five
-}}
-";
+                public enum AEnum : {{type}}
+                {
+                    Zero,
+                    One,
+                    Two,
+                    Three,
+                    Four,
+                    Five
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantOutOfBoundsRule)
                         .WithLocation(0)
@@ -850,26 +850,26 @@ public enum AEnum : {type}
         [TestMethod]
         public async Task TestArgumentInvalidGenericTypeParameterConstantAsync()
         {
-            string csInput = @"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = """
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{
-    public static void TestMethod(int[] nonConstant)
-    {
-        TestMethodGeneric<int[]>(nonConstant); // ignore scenario
-        GenericClass<int[]>.TestMethodGeneric(nonConstant); // ignore scenario
-    }
-    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
-    
-    public static class GenericClass<T>
-    {
-        public static void TestMethodGeneric([ConstantExpected] T val) { }
-    }
-}
-";
+                public class Test
+                {
+                    public static void TestMethod(int[] nonConstant)
+                    {
+                        TestMethodGeneric<int[]>(nonConstant); // ignore scenario
+                        GenericClass<int[]>.TestMethodGeneric(nonConstant); // ignore scenario
+                    }
+                    public static void TestMethodGeneric<T>([ConstantExpected] T val) { }
+
+                    public static class GenericClass<T>
+                    {
+                        public static void TestMethodGeneric([ConstantExpected] T val) { }
+                    }
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -888,26 +888,26 @@ public class Test
         [DataRow("bool", "false", "false")]
         public async Task TestConstantCompositionAsync(string type, string min, string max)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod([ConstantExpected] {type} constant)
-    {{
-        TestMethodWithConstant(constant);
-    }}
-    public static void TestMethodWithConstant([ConstantExpected] {type} val) {{ }}
-    public static void TestMethodConstrained([ConstantExpected(Min = {min}, Max = {max})] {type} constant)
-    {{
-        TestMethodWithConstant(constant);
-        TestMethodWithConstrainedConstant(constant);
-    }}
-    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {min}, Max = {max})] {type} val) {{ }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethod([ConstantExpected] {{type}} constant)
+                    {
+                        TestMethodWithConstant(constant);
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] {{type}} val) { }
+                    public static void TestMethodConstrained([ConstantExpected(Min = {{min}}, Max = {{max}})] {{type}} constant)
+                    {
+                        TestMethodWithConstant(constant);
+                        TestMethodWithConstrainedConstant(constant);
+                    }
+                    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {{min}}, Max = {{max}})] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -922,56 +922,56 @@ public class Test
         [DataRow("ulong", "AEnum.Two", "AEnum.Three")]
         public async Task TestEnumConstantCompositionAsync(string type, string min, string max)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethod([ConstantExpected] AEnum constant)
-    {{
-        TestMethodWithConstant(constant);
-    }}
-    public static void TestMethodWithConstant([ConstantExpected] AEnum val) {{ }}
-    public static void TestMethodConstrained([ConstantExpected(Min = {min}, Max = {max})] AEnum constant)
-    {{
-        TestMethodWithConstant(constant);
-        TestMethodWithConstrainedConstant(constant);
-    }}
-    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {min}, Max = {max})] AEnum val) {{ }}
-}}
+                public class Test
+                {
+                    public static void TestMethod([ConstantExpected] AEnum constant)
+                    {
+                        TestMethodWithConstant(constant);
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] AEnum val) { }
+                    public static void TestMethodConstrained([ConstantExpected(Min = {{min}}, Max = {{max}})] AEnum constant)
+                    {
+                        TestMethodWithConstant(constant);
+                        TestMethodWithConstrainedConstant(constant);
+                    }
+                    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {{min}}, Max = {{max}})] AEnum val) { }
+                }
 
-public enum AEnum : {type}
-{{
-    Zero,
-    One = 1,
-    Two = 1 << 1,
-    Three = 1 << 2,
-    Four = 1 << 3,
-    Five = 1 << 4
-}}
-";
+                public enum AEnum : {{type}}
+                {
+                    Zero,
+                    One = 1,
+                    Two = 1 << 1,
+                    Three = 1 << 2,
+                    Four = 1 << 3,
+                    Five = 1 << 4
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
         [TestMethod]
         public async Task TestConstantCompositionStringAsync()
         {
-            string csInput = @"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = """
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{
-    public static void TestMethod([ConstantExpected] string constant)
-    {
-        TestMethodWithConstant(constant);
-    }
-    public static void TestMethodWithConstant([ConstantExpected] string val) { }
-}
-";
+                public class Test
+                {
+                    public static void TestMethod([ConstantExpected] string constant)
+                    {
+                        TestMethodWithConstant(constant);
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] string val) { }
+                }
+                """;
             await TestCSAsync(csInput);
         }
 
@@ -990,20 +990,20 @@ public class Test
         [DataRow("bool", "false", "false", "true", false, false)]
         public async Task TestConstantCompositionOutOfBoundsAsync(string type, string min, string max, string outOfBoundMax, object minValue, object maxValue)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethodConstrained([ConstantExpected(Min = {min}, Max = {outOfBoundMax})] {type} constant)
-    {{
-        TestMethodWithConstrainedConstant({{|#0:constant|}});
-    }}
-    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {min}, Max = {max})] {type} val) {{ }}
-}}
-";
+                public class Test
+                {
+                    public static void TestMethodConstrained([ConstantExpected(Min = {{min}}, Max = {{outOfBoundMax}})] {{type}} constant)
+                    {
+                        TestMethodWithConstrainedConstant({|#0:constant|});
+                    }
+                    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {{min}}, Max = {{max}})] {{type}} val) { }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantOutOfBoundsRule)
                         .WithLocation(0)
@@ -1021,30 +1021,30 @@ public class Test
         [DataRow("ulong", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
         public async Task TestEnumConstantCompositionOutOfBoundsAsync(string type, string min, string max, string outOfBoundMax, object minValue, object maxValue)
         {
-            string csInput = @$"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = $$"""
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{{
-    public static void TestMethodConstrained([ConstantExpected(Min = {min}, Max = {outOfBoundMax})] AEnum constant)
-    {{
-        TestMethodWithConstrainedConstant({{|#0:constant|}});
-    }}
-    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {min}, Max = {max})] AEnum val) {{ }}
-}}
+                public class Test
+                {
+                    public static void TestMethodConstrained([ConstantExpected(Min = {{min}}, Max = {{outOfBoundMax}})] AEnum constant)
+                    {
+                        TestMethodWithConstrainedConstant({|#0:constant|});
+                    }
+                    public static void TestMethodWithConstrainedConstant([ConstantExpected(Min = {{min}}, Max = {{max}})] AEnum val) { }
+                }
 
-public enum AEnum : {type}
-{{
-    Zero,
-    One = 1,
-    Two = 1 << 1,
-    Three = 1 << 2,
-    Four = 1 << 3,
-    Five = 1 << 4
-}}
-";
+                public enum AEnum : {{type}}
+                {
+                    Zero,
+                    One = 1,
+                    Two = 1 << 1,
+                    Three = 1 << 2,
+                    Four = 1 << 3,
+                    Five = 1 << 4
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantOutOfBoundsRule)
                         .WithLocation(0)
@@ -1054,26 +1054,26 @@ public enum AEnum : {type}
         [TestMethod]
         public async Task TestConstantCompositionNotSameTypeAsync()
         {
-            string csInput = @"
-using System;
-using System.Diagnostics.CodeAnalysis;
-#nullable enable
+            string csInput = """
+                using System;
+                using System.Diagnostics.CodeAnalysis;
+                #nullable enable
 
-public class Test
-{
-    public static void TestMethod([ConstantExpected] long constant)
-    {
-        TestMethodWithConstant({|#0:(int)constant|});
-        TestMethodWithStringConstant({|#1:(string)(object)constant|});
-    }
-    public static void TestMethod([ConstantExpected] short constant)
-    {
-        TestMethodWithConstant({|#2:constant|});
-    }
-    public static void TestMethodWithConstant([ConstantExpected] int val) { }
-    public static void TestMethodWithStringConstant([ConstantExpected] string val) { }
-}
-";
+                public class Test
+                {
+                    public static void TestMethod([ConstantExpected] long constant)
+                    {
+                        TestMethodWithConstant({|#0:(int)constant|});
+                        TestMethodWithStringConstant({|#1:(string)(object)constant|});
+                    }
+                    public static void TestMethod([ConstantExpected] short constant)
+                    {
+                        TestMethodWithConstant({|#2:constant|});
+                    }
+                    public static void TestMethodWithConstant([ConstantExpected] int val) { }
+                    public static void TestMethodWithStringConstant([ConstantExpected] string val) { }
+                }
+                """;
             await TestCSAsync(csInput,
                 VerifyCS.Diagnostic(ConstantExpectedAnalyzer.CA1857.ConstantInvalidConstantRule)
                         .WithLocation(0)
@@ -1111,16 +1111,18 @@ public class Test
             await test.RunAsync(CancellationToken.None);
         }
 
-        private const string SimilarAttributeSource = @"#nullable enable
-using System;
-namespace Similar
-{
-    [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
-    public sealed class ConstantExpectedAttribute : Attribute
-    {
-        public object? Min { get; set; }
-        public object? Max { get; set; }
-    }
-}";
+        private const string SimilarAttributeSource = """
+            #nullable enable
+            using System;
+            namespace Similar
+            {
+                [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
+                public sealed class ConstantExpectedAttribute : Attribute
+                {
+                    public object? Min { get; set; }
+                    public object? Max { get; set; }
+                }
+            }
+            """;
     }
 }

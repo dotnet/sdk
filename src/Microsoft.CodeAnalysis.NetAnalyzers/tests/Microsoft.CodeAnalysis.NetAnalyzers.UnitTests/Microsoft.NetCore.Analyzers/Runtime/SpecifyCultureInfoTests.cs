@@ -17,21 +17,22 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
     public class SpecifyCultureInfoTests
     {
         [TestMethod]
-        [DataRow("build_property.InvariantGlobalization = false", @"[|""aaa"".ToLower()|]")]
-        [DataRow("build_property.InvariantGlobalization = true", @"""aaa"".ToLower()")]
+        [DataRow("build_property.InvariantGlobalization = false", """"[|"aaa".ToLower()|]"""")]
+        [DataRow("build_property.InvariantGlobalization = true", "\"aaa\".ToLower()")]
         public async Task CA1304_PlainString_CSharp_InvariantGlobalizationAsync(string property, string returnExpression)
         {
-            var source = $@"
-using System;
-using System.Globalization;
+            var source = $$"""
+                using System;
+                using System.Globalization;
 
-public class CultureInfoTestClass0
-{{
-    public string SpecifyCultureInfo01()
-    {{
-        return {returnExpression};
-    }}
-}}";
+                public class CultureInfoTestClass0
+                {
+                    public string SpecifyCultureInfo01()
+                    {
+                        return {{returnExpression}};
+                    }
+                }
+                """;
             await new VerifyCS.Test
             {
                 TestState =
@@ -45,58 +46,62 @@ public class CultureInfoTestClass0
         [TestMethod]
         public async Task CA1304_PlainString_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass0
-{
-    public string SpecifyCultureInfo01()
-    {
-        return ""aaa"".ToLower();
-    }
-}",
+                using System;
+                using System.Globalization;
+
+                public class CultureInfoTestClass0
+                {
+                    public string SpecifyCultureInfo01()
+                    {
+                        return "aaa".ToLower();
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 16, "string.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "string.ToLower(CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_VariableStringInsideDifferentContainingSymbols_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass1
-{
-    public string LowercaseAString(string name)
-    {
-        return name.ToLower();
-    }
+                using System;
+                using System.Globalization;
 
-    public string InsideALambda(string insideLambda)
-    {
-        Func<string> ddd = () =>
-        {
-            return insideLambda.ToLower();
-        };
+                public class CultureInfoTestClass1
+                {
+                    public string LowercaseAString(string name)
+                    {
+                        return name.ToLower();
+                    }
 
-        return null;
-    }
+                    public string InsideALambda(string insideLambda)
+                    {
+                        Func<string> ddd = () =>
+                        {
+                            return insideLambda.ToLower();
+                        };
 
-    public string PropertyWithALambda
-    {
-        get
-        {
-            Func<string> ddd = () =>
-            {
-                return ""InsideGetter"".ToLower();
-            };
+                        return null;
+                    }
 
-            return null;
-        }
-    }
-}
-",
+                    public string PropertyWithALambda
+                    {
+                        get
+                        {
+                            Func<string> ddd = () =>
+                            {
+                                return "InsideGetter".ToLower();
+                            };
+
+                            return null;
+                        }
+                    }
+                }
+
+                """,
             GetCSharpResultAt(9, 16, "string.ToLower()", "CultureInfoTestClass1.LowercaseAString(string)", "string.ToLower(CultureInfo)"),
             GetCSharpResultAt(16, 20, "string.ToLower()", "CultureInfoTestClass1.InsideALambda(string)", "string.ToLower(CultureInfo)"),
             GetCSharpResultAt(28, 24, "string.ToLower()", "CultureInfoTestClass1.PropertyWithALambda.get", "string.ToLower(CultureInfo)"));
@@ -105,53 +110,57 @@ public class CultureInfoTestClass1
         [TestMethod]
         public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadHasCultureInfoAsFirstArgument(""aaa"");
-    }
+                using System;
+                using System.Globalization;
 
-    public static void MethodOverloadHasCultureInfoAsFirstArgument(string format)
-    {
-        MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo.CurrentCulture, format);
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadHasCultureInfoAsFirstArgument("aaa");
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo provider, string format)
-    {
-        Console.WriteLine(string.Format(provider, format));
-    }
-}",
+                    public static void MethodOverloadHasCultureInfoAsFirstArgument(string format)
+                    {
+                        MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo.CurrentCulture, format);
+                    }
+
+                    public static void MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo provider, string format)
+                    {
+                        Console.WriteLine(string.Format(provider, format));
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(string)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo, string)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadHasCultureInfoAsFirstAndSecondArgument_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass2
-{
-    public static void Method(CultureInfo provider)
-    {
-        MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref provider);
-    }
+                using System;
+                using System.Globalization;
 
-    public static void MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo provider)
-    {
-        MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref provider, CultureInfo.CurrentCulture);
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method(CultureInfo provider)
+                    {
+                        MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref provider);
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo provider, CultureInfo provider2)
-    {
-    }
-}",
+                    public static void MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo provider)
+                    {
+                        MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref provider, CultureInfo.CurrentCulture);
+                    }
+
+                    public static void MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo provider, CultureInfo provider2)
+                    {
+                    }
+                }
+                """,
             // Test0.cs(9,9): warning CA1304: The behavior of 'CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo)' could vary based on the current user's locale settings. Replace this call in 'CultureInfoTestClass2.Method(CultureInfo)' with a call to 'CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo, CultureInfo)'.
             GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo)", "CultureInfoTestClass2.Method(CultureInfo)", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstAndSecondArgument(ref CultureInfo, CultureInfo)"));
         }
@@ -159,350 +168,368 @@ public class CultureInfoTestClass2
         [TestMethod]
         public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_RefKindRef_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Globalization;
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadHasCultureInfoAsFirstArgument(""aaa"");
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadHasCultureInfoAsFirstArgument("aaa");
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsFirstArgument(string format)
-    {
-        var provider = CultureInfo.CurrentCulture;
-        MethodOverloadHasCultureInfoAsFirstArgument(ref provider, format);
-    }
+                    public static void MethodOverloadHasCultureInfoAsFirstArgument(string format)
+                    {
+                        var provider = CultureInfo.CurrentCulture;
+                        MethodOverloadHasCultureInfoAsFirstArgument(ref provider, format);
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsFirstArgument(ref CultureInfo provider, string format)
-    {
-        Console.WriteLine(string.Format(provider, format));
-    }
-}");
+                    public static void MethodOverloadHasCultureInfoAsFirstArgument(ref CultureInfo provider, string format)
+                    {
+                        Console.WriteLine(string.Format(provider, format));
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadHasCultureInfoAsLastArgument(""aaa"");
-    }
+                using System;
+                using System.Globalization;
 
-    public static void MethodOverloadHasCultureInfoAsLastArgument(string format)
-    {
-        MethodOverloadHasCultureInfoAsLastArgument(format, CultureInfo.CurrentCulture);
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadHasCultureInfoAsLastArgument("aaa");
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsLastArgument(string format, CultureInfo provider)
-    {
-        Console.WriteLine(string.Format(provider, format));
-    }
+                    public static void MethodOverloadHasCultureInfoAsLastArgument(string format)
+                    {
+                        MethodOverloadHasCultureInfoAsLastArgument(format, CultureInfo.CurrentCulture);
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsLastArgument(CultureInfo provider, string format)
-    {
-        Console.WriteLine(string.Format(provider, format));
-    }
-}",
+                    public static void MethodOverloadHasCultureInfoAsLastArgument(string format, CultureInfo provider)
+                    {
+                        Console.WriteLine(string.Format(provider, format));
+                    }
+
+                    public static void MethodOverloadHasCultureInfoAsLastArgument(CultureInfo provider, string format)
+                    {
+                        Console.WriteLine(string.Format(provider, format));
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(string)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(string, CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_RefKindOut_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Globalization;
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadHasCultureInfoAsLastArgument(""aaa"");
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadHasCultureInfoAsLastArgument("aaa");
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsLastArgument(string format)
-    {
-        CultureInfo provider;
-        MethodOverloadHasCultureInfoAsLastArgument(format, out provider);
-    }
+                    public static void MethodOverloadHasCultureInfoAsLastArgument(string format)
+                    {
+                        CultureInfo provider;
+                        MethodOverloadHasCultureInfoAsLastArgument(format, out provider);
+                    }
 
-    public static void MethodOverloadHasCultureInfoAsLastArgument(string format, out CultureInfo provider)
-    {
-        provider = CultureInfo.CurrentCulture;
-        Console.WriteLine(string.Format(provider, format));
-    }
-}");
+                    public static void MethodOverloadHasCultureInfoAsLastArgument(string format, out CultureInfo provider)
+                    {
+                        provider = CultureInfo.CurrentCulture;
+                        Console.WriteLine(string.Format(provider, format));
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadHasJustCultureInfo_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadHasJustCultureInfo();
-    }
+                using System;
+                using System.Globalization;
 
-    public static void MethodOverloadHasJustCultureInfo()
-    {
-        MethodOverloadHasJustCultureInfo(CultureInfo.CurrentCulture);
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadHasJustCultureInfo();
+                    }
 
-    public static void MethodOverloadHasJustCultureInfo(CultureInfo provider)
-    {
-        Console.WriteLine(string.Format(provider, """"));
-    }
-}",
+                    public static void MethodOverloadHasJustCultureInfo()
+                    {
+                        MethodOverloadHasJustCultureInfo(CultureInfo.CurrentCulture);
+                    }
+
+                    public static void MethodOverloadHasJustCultureInfo(CultureInfo provider)
+                    {
+                        Console.WriteLine(string.Format(provider, ""));
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo(CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_DoesNotRecommendObsoleteOverload_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Globalization;
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadHasJustCultureInfo();
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadHasJustCultureInfo();
+                    }
 
-    public static void MethodOverloadHasJustCultureInfo()
-    {
-        MethodOverloadHasJustCultureInfo(CultureInfo.CurrentCulture);
-    }
+                    public static void MethodOverloadHasJustCultureInfo()
+                    {
+                        MethodOverloadHasJustCultureInfo(CultureInfo.CurrentCulture);
+                    }
 
-    [Obsolete]
-    public static void MethodOverloadHasJustCultureInfo(CultureInfo provider)
-    {
-        Console.WriteLine(string.Format(provider, """"));
-    }
-}");
+                    [Obsolete]
+                    public static void MethodOverloadHasJustCultureInfo(CultureInfo provider)
+                    {
+                        Console.WriteLine(string.Format(provider, ""));
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task CA1304_TargetMethodIsGenericsAndNonGenerics_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        TargetMethodIsNonGenerics();
-        TargetMethodIsGenerics<int>(); // No Diagnostics
-    }
+                using System;
+                using System.Globalization;
 
-    public static void TargetMethodIsNonGenerics()
-    {
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        TargetMethodIsNonGenerics();
+                        TargetMethodIsGenerics<int>(); // No Diagnostics
+                    }
 
-    public static void TargetMethodIsNonGenerics<T>(CultureInfo provider)
-    {
-    }
+                    public static void TargetMethodIsNonGenerics()
+                    {
+                    }
 
-    public static void TargetMethodIsGenerics<V>()
-    {
-    }
+                    public static void TargetMethodIsNonGenerics<T>(CultureInfo provider)
+                    {
+                    }
 
-    public static void TargetMethodIsGenerics(CultureInfo provider)
-    {
-    }
-}",
+                    public static void TargetMethodIsGenerics<V>()
+                    {
+                    }
+
+                    public static void TargetMethodIsGenerics(CultureInfo provider)
+                    {
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "CultureInfoTestClass2.TargetMethodIsNonGenerics()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.TargetMethodIsNonGenerics<T>(CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadIncludeNonCandidates_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadCount3();
-    }
+                using System;
+                using System.Globalization;
 
-    public static void MethodOverloadCount3()
-    {
-        MethodOverloadCount3(CultureInfo.CurrentCulture);
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadCount3();
+                    }
 
-    public static void MethodOverloadCount3(CultureInfo provider)
-    {
-        Console.WriteLine(string.Format(provider, """"));
-    }
-    public static void MethodOverloadCount3(string b)
-    {
-    }
-}",
+                    public static void MethodOverloadCount3()
+                    {
+                        MethodOverloadCount3(CultureInfo.CurrentCulture);
+                    }
+
+                    public static void MethodOverloadCount3(CultureInfo provider)
+                    {
+                        Console.WriteLine(string.Format(provider, ""));
+                    }
+                    public static void MethodOverloadCount3(string b)
+                    {
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadCount3()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadCount3(CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadWithJustCultureInfoAsExtraParameter_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        MethodOverloadWithJustCultureInfoAsExtraParameter(2, 3);
-    }
+                using System;
+                using System.Globalization;
 
-    public static void MethodOverloadWithJustCultureInfoAsExtraParameter(int a, int b)
-    {
-        MethodOverloadWithJustCultureInfoAsExtraParameter(a, b, CultureInfo.CurrentCulture);
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        MethodOverloadWithJustCultureInfoAsExtraParameter(2, 3);
+                    }
 
-    public static void MethodOverloadWithJustCultureInfoAsExtraParameter(int a, int b, CultureInfo provider)
-    {
-        Console.WriteLine(string.Format(provider, """"));
-    }
-}",
+                    public static void MethodOverloadWithJustCultureInfoAsExtraParameter(int a, int b)
+                    {
+                        MethodOverloadWithJustCultureInfoAsExtraParameter(a, b, CultureInfo.CurrentCulture);
+                    }
+
+                    public static void MethodOverloadWithJustCultureInfoAsExtraParameter(int a, int b, CultureInfo provider)
+                    {
+                        Console.WriteLine(string.Format(provider, ""));
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(int, int)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(int, int, CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_NoDiagnostics_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Globalization;
 
-public class CultureInfoTestClass2
-{
-    public static void Method()
-    {
-        // No Diag - Inherited CultureInfo
-        MethodOverloadHasInheritedCultureInfo(""aaa"");
-        // No Diag - Since the overload has more parameters apart from CultureInfo
-        MethodOverloadHasMoreThanCultureInfo(""aaa"");
-        // No Diag - Since the CultureInfo parameter is neither as the first parameter nor as the last parameter
-        MethodOverloadWithJustCultureInfoAsInbetweenParameter("""", """");
-        // No Diag - Since the non-CultureInfo parameter in the overload has RefKind != RefKind.None
-        MethodOverloadHasNonCultureInfoWithRefKindRef("""");
-    }
+                public class CultureInfoTestClass2
+                {
+                    public static void Method()
+                    {
+                        // No Diag - Inherited CultureInfo
+                        MethodOverloadHasInheritedCultureInfo("aaa");
+                        // No Diag - Since the overload has more parameters apart from CultureInfo
+                        MethodOverloadHasMoreThanCultureInfo("aaa");
+                        // No Diag - Since the CultureInfo parameter is neither as the first parameter nor as the last parameter
+                        MethodOverloadWithJustCultureInfoAsInbetweenParameter("", "");
+                        // No Diag - Since the non-CultureInfo parameter in the overload has RefKind != RefKind.None
+                        MethodOverloadHasNonCultureInfoWithRefKindRef("");
+                    }
 
-    public static void MethodOverloadHasInheritedCultureInfo(string format)
-    {
-        MethodOverloadHasInheritedCultureInfo(new DerivedCultureInfo(""""), format);
-    }
+                    public static void MethodOverloadHasInheritedCultureInfo(string format)
+                    {
+                        MethodOverloadHasInheritedCultureInfo(new DerivedCultureInfo(""), format);
+                    }
 
-    public static void MethodOverloadHasInheritedCultureInfo(DerivedCultureInfo provider, string format)
-    {
-        Console.WriteLine(string.Format(provider, format));
-    }
+                    public static void MethodOverloadHasInheritedCultureInfo(DerivedCultureInfo provider, string format)
+                    {
+                        Console.WriteLine(string.Format(provider, format));
+                    }
 
-    public static void MethodOverloadHasMoreThanCultureInfo(string format)
-    {
-        MethodOverloadHasMoreThanCultureInfo(format, null, CultureInfo.CurrentCulture);
-    }
+                    public static void MethodOverloadHasMoreThanCultureInfo(string format)
+                    {
+                        MethodOverloadHasMoreThanCultureInfo(format, null, CultureInfo.CurrentCulture);
+                    }
 
-    public static void MethodOverloadHasMoreThanCultureInfo(string format, string what, CultureInfo provider)
-    {
-        Console.WriteLine(string.Format(provider, format));
-    }
+                    public static void MethodOverloadHasMoreThanCultureInfo(string format, string what, CultureInfo provider)
+                    {
+                        Console.WriteLine(string.Format(provider, format));
+                    }
 
-    public static void MethodOverloadWithJustCultureInfoAsInbetweenParameter(string a, string b)
-    {
-        MethodOverloadWithJustCultureInfoAsInbetweenParameter(a, CultureInfo.CurrentCulture, b);
-    }
+                    public static void MethodOverloadWithJustCultureInfoAsInbetweenParameter(string a, string b)
+                    {
+                        MethodOverloadWithJustCultureInfoAsInbetweenParameter(a, CultureInfo.CurrentCulture, b);
+                    }
 
-    public static void MethodOverloadWithJustCultureInfoAsInbetweenParameter(string a, CultureInfo provider, string b)
-    {
-        Console.WriteLine(string.Format(provider, """"));
-    }
+                    public static void MethodOverloadWithJustCultureInfoAsInbetweenParameter(string a, CultureInfo provider, string b)
+                    {
+                        Console.WriteLine(string.Format(provider, ""));
+                    }
 
-    public static void MethodOverloadHasNonCultureInfoWithRefKindRef(string format)
-    {
-        MethodOverloadHasNonCultureInfoWithRefKindRef(ref format, CultureInfo.CurrentCulture);
-    }
+                    public static void MethodOverloadHasNonCultureInfoWithRefKindRef(string format)
+                    {
+                        MethodOverloadHasNonCultureInfoWithRefKindRef(ref format, CultureInfo.CurrentCulture);
+                    }
 
-    public static void MethodOverloadHasNonCultureInfoWithRefKindRef(ref string format, CultureInfo provider)
-    {
-        Console.WriteLine(string.Format(provider, format));
-    }
-}
+                    public static void MethodOverloadHasNonCultureInfoWithRefKindRef(ref string format, CultureInfo provider)
+                    {
+                        Console.WriteLine(string.Format(provider, format));
+                    }
+                }
 
-public class DerivedCultureInfo : CultureInfo
-{
-    public DerivedCultureInfo(string name):
-        base(name)
-    {
-    }
-}");
+                public class DerivedCultureInfo : CultureInfo
+                {
+                    public DerivedCultureInfo(string name):
+                        base(name)
+                    {
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task CA1304_PlainString_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class CultureInfoTestClass0
-    Public Function SpecifyCultureInfo01() As String
-        Return ""aaa"".ToLower()
-    End Function
-End Class",
+                Imports System
+                Imports System.Globalization
+
+                Public Class CultureInfoTestClass0
+                    Public Function SpecifyCultureInfo01() As String
+                        Return "aaa".ToLower()
+                    End Function
+                End Class
+                """,
             GetBasicResultAt(7, 16, "String.ToLower()", "CultureInfoTestClass0.SpecifyCultureInfo01()", "String.ToLower(CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_VariableStringInsideDifferentContainingSymbols_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class CultureInfoTestClass1
-    Public Function LowercaseAString(name As String) As String
-        Return name.ToLower()
-    End Function
+                Imports System
+                Imports System.Globalization
 
-    Public Function InsideALambda(insideLambda As String) As String
-        Dim ddd As Func(Of String) = Function()
-                                        Return insideLambda.ToLower()
-                                     End Function
+                Public Class CultureInfoTestClass1
+                    Public Function LowercaseAString(name As String) As String
+                        Return name.ToLower()
+                    End Function
 
-        Return Nothing
-    End Function
+                    Public Function InsideALambda(insideLambda As String) As String
+                        Dim ddd As Func(Of String) = Function()
+                                                        Return insideLambda.ToLower()
+                                                     End Function
 
-    Public ReadOnly Property PropertyWithALambda() As String
-        Get
-            Dim ddd As Func(Of String) = Function()
-                                            Return ""InsideGetter"".ToLower()
-                                         End Function
-            Return Nothing
-        End Get
-    End Property
-End Class",
+                        Return Nothing
+                    End Function
+
+                    Public ReadOnly Property PropertyWithALambda() As String
+                        Get
+                            Dim ddd As Func(Of String) = Function()
+                                                            Return "InsideGetter".ToLower()
+                                                         End Function
+                            Return Nothing
+                        End Get
+                    End Property
+                End Class
+                """,
             GetBasicResultAt(7, 16, "String.ToLower()", "CultureInfoTestClass1.LowercaseAString(String)", "String.ToLower(CultureInfo)"),
             GetBasicResultAt(12, 48, "String.ToLower()", "CultureInfoTestClass1.InsideALambda(String)", "String.ToLower(CultureInfo)"),
             GetBasicResultAt(21, 52, "String.ToLower()", "CultureInfoTestClass1.PropertyWithALambda()", "String.ToLower(CultureInfo)"));
@@ -511,173 +538,184 @@ End Class",
         [TestMethod]
         public async Task CA1304_MethodOverloadHasCultureInfoAsFirstArgument_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class CultureInfoTestClass2
-    Public Shared Sub Method()
-        MethodOverloadHasCultureInfoAsFirstArgument(""aaa"")
-    End Sub
+                Imports System
+                Imports System.Globalization
 
-    Public Shared Sub MethodOverloadHasCultureInfoAsFirstArgument(format As String)
-        MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo.CurrentCulture, format)
-    End Sub
+                Public Class CultureInfoTestClass2
+                    Public Shared Sub Method()
+                        MethodOverloadHasCultureInfoAsFirstArgument("aaa")
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasCultureInfoAsFirstArgument(provider As CultureInfo, format As String)
-        Console.WriteLine(String.Format(provider, format))
-    End Sub
-End Class",
+                    Public Shared Sub MethodOverloadHasCultureInfoAsFirstArgument(format As String)
+                        MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo.CurrentCulture, format)
+                    End Sub
+
+                    Public Shared Sub MethodOverloadHasCultureInfoAsFirstArgument(provider As CultureInfo, format As String)
+                        Console.WriteLine(String.Format(provider, format))
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(String)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsFirstArgument(CultureInfo, String)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadHasCultureInfoAsLastArgument_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class CultureInfoTestClass2
-    Public Shared Sub Method()
-        MethodOverloadHasCultureInfoAsLastArgument(""aaa"")
-    End Sub
+                Imports System
+                Imports System.Globalization
 
-    Public Shared Sub MethodOverloadHasCultureInfoAsLastArgument(format As String)
-        MethodOverloadHasCultureInfoAsLastArgument(format, CultureInfo.CurrentCulture)
-    End Sub
+                Public Class CultureInfoTestClass2
+                    Public Shared Sub Method()
+                        MethodOverloadHasCultureInfoAsLastArgument("aaa")
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasCultureInfoAsLastArgument(format As String, provider As CultureInfo)
-        Console.WriteLine(String.Format(provider, format))
-    End Sub
+                    Public Shared Sub MethodOverloadHasCultureInfoAsLastArgument(format As String)
+                        MethodOverloadHasCultureInfoAsLastArgument(format, CultureInfo.CurrentCulture)
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasCultureInfoAsLastArgument(provider As CultureInfo, format As String)
-        Console.WriteLine(String.Format(provider, format))
-    End Sub
-End Class",
+                    Public Shared Sub MethodOverloadHasCultureInfoAsLastArgument(format As String, provider As CultureInfo)
+                        Console.WriteLine(String.Format(provider, format))
+                    End Sub
+
+                    Public Shared Sub MethodOverloadHasCultureInfoAsLastArgument(provider As CultureInfo, format As String)
+                        Console.WriteLine(String.Format(provider, format))
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(String)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasCultureInfoAsLastArgument(String, CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadHasJustCultureInfo_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class CultureInfoTestClass2
-    Public Shared Sub Method()
-        MethodOverloadHasJustCultureInfo()
-    End Sub
+                Imports System
+                Imports System.Globalization
 
-    Public Shared Sub MethodOverloadHasJustCultureInfo()
-        MethodOverloadHasJustCultureInfo(CultureInfo.CurrentCulture)
-    End Sub
+                Public Class CultureInfoTestClass2
+                    Public Shared Sub Method()
+                        MethodOverloadHasJustCultureInfo()
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasJustCultureInfo(provider As CultureInfo)
-        Console.WriteLine(String.Format(provider, """"))
-    End Sub
-End Class",
+                    Public Shared Sub MethodOverloadHasJustCultureInfo()
+                        MethodOverloadHasJustCultureInfo(CultureInfo.CurrentCulture)
+                    End Sub
+
+                    Public Shared Sub MethodOverloadHasJustCultureInfo(provider As CultureInfo)
+                        Console.WriteLine(String.Format(provider, ""))
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadHasJustCultureInfo(CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadIncludeNonCandidates_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class CultureInfoTestClass2
-    Public Shared Sub Method()
-        MethodOverloadCount3()
-    End Sub
+                Imports System
+                Imports System.Globalization
 
-    Public Shared Sub MethodOverloadCount3()
-        MethodOverloadCount3(CultureInfo.CurrentCulture)
-    End Sub
+                Public Class CultureInfoTestClass2
+                    Public Shared Sub Method()
+                        MethodOverloadCount3()
+                    End Sub
 
-    Public Shared Sub MethodOverloadCount3(provider As CultureInfo)
-        Console.WriteLine(String.Format(provider, """"))
-    End Sub
+                    Public Shared Sub MethodOverloadCount3()
+                        MethodOverloadCount3(CultureInfo.CurrentCulture)
+                    End Sub
 
-    Public Shared Sub MethodOverloadCount3(b As String)
-    End Sub
-End Class",
+                    Public Shared Sub MethodOverloadCount3(provider As CultureInfo)
+                        Console.WriteLine(String.Format(provider, ""))
+                    End Sub
+
+                    Public Shared Sub MethodOverloadCount3(b As String)
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadCount3()", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadCount3(CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_MethodOverloadWithJustCultureInfoAsExtraParameter_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class CultureInfoTestClass2
-    Public Shared Sub Method()
-        MethodOverloadWithJustCultureInfoAsExtraParameter(2, 3)
-    End Sub
+                Imports System
+                Imports System.Globalization
 
-    Public Shared Sub MethodOverloadWithJustCultureInfoAsExtraParameter(a As Integer, b As Integer)
-        MethodOverloadWithJustCultureInfoAsExtraParameter(a, b, CultureInfo.CurrentCulture)
-    End Sub
+                Public Class CultureInfoTestClass2
+                    Public Shared Sub Method()
+                        MethodOverloadWithJustCultureInfoAsExtraParameter(2, 3)
+                    End Sub
 
-    Public Shared Sub MethodOverloadWithJustCultureInfoAsExtraParameter(a As Integer, b As Integer, provider As CultureInfo)
-        Console.WriteLine(String.Format(provider, """"))
-    End Sub
-End Class",
+                    Public Shared Sub MethodOverloadWithJustCultureInfoAsExtraParameter(a As Integer, b As Integer)
+                        MethodOverloadWithJustCultureInfoAsExtraParameter(a, b, CultureInfo.CurrentCulture)
+                    End Sub
+
+                    Public Shared Sub MethodOverloadWithJustCultureInfoAsExtraParameter(a As Integer, b As Integer, provider As CultureInfo)
+                        Console.WriteLine(String.Format(provider, ""))
+                    End Sub
+                End Class
+                """,
             GetBasicResultAt(7, 9, "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(Integer, Integer)", "CultureInfoTestClass2.Method()", "CultureInfoTestClass2.MethodOverloadWithJustCultureInfoAsExtraParameter(Integer, Integer, CultureInfo)"));
         }
 
         [TestMethod]
         public async Task CA1304_NoDiagnostics_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Globalization
 
-Public Class CultureInfoTestClass2
-    Public Shared Sub Method()
-        ' No Diag - Inherited CultureInfo
-        MethodOverloadHasInheritedCultureInfo(""aaa"")
-        ' No Diag - There are more parameters apart from CultureInfo
-        MethodOverloadHasMoreThanCultureInfo(""aaa"")
-        ' No Diag - The CultureInfo parameter is neither the first parameter nor the last parameter
-        MethodOverloadWithJustCultureInfoAsInbetweenParameter("""", """")
-    End Sub
+                Public Class CultureInfoTestClass2
+                    Public Shared Sub Method()
+                        ' No Diag - Inherited CultureInfo
+                        MethodOverloadHasInheritedCultureInfo("aaa")
+                        ' No Diag - There are more parameters apart from CultureInfo
+                        MethodOverloadHasMoreThanCultureInfo("aaa")
+                        ' No Diag - The CultureInfo parameter is neither the first parameter nor the last parameter
+                        MethodOverloadWithJustCultureInfoAsInbetweenParameter("", "")
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasInheritedCultureInfo(format As String)
-        MethodOverloadHasInheritedCultureInfo(New DerivedCultureInfo(""""), format)
-    End Sub
+                    Public Shared Sub MethodOverloadHasInheritedCultureInfo(format As String)
+                        MethodOverloadHasInheritedCultureInfo(New DerivedCultureInfo(""), format)
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasInheritedCultureInfo(provider As DerivedCultureInfo, format As String)
-        Console.WriteLine(String.Format(provider, format))
-    End Sub
+                    Public Shared Sub MethodOverloadHasInheritedCultureInfo(provider As DerivedCultureInfo, format As String)
+                        Console.WriteLine(String.Format(provider, format))
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasMoreThanCultureInfo(format As String)
-        MethodOverloadHasMoreThanCultureInfo(format, Nothing, CultureInfo.CurrentCulture)
-    End Sub
+                    Public Shared Sub MethodOverloadHasMoreThanCultureInfo(format As String)
+                        MethodOverloadHasMoreThanCultureInfo(format, Nothing, CultureInfo.CurrentCulture)
+                    End Sub
 
-    Public Shared Sub MethodOverloadHasMoreThanCultureInfo(format As String, what As String, provider As CultureInfo)
-        Console.WriteLine(String.Format(provider, format))
-    End Sub
+                    Public Shared Sub MethodOverloadHasMoreThanCultureInfo(format As String, what As String, provider As CultureInfo)
+                        Console.WriteLine(String.Format(provider, format))
+                    End Sub
 
-    Public Shared Sub MethodOverloadWithJustCultureInfoAsInbetweenParameter(a As String, b As String)
-        MethodOverloadWithJustCultureInfoAsInbetweenParameter(a, CultureInfo.CurrentCulture, b)
-    End Sub
+                    Public Shared Sub MethodOverloadWithJustCultureInfoAsInbetweenParameter(a As String, b As String)
+                        MethodOverloadWithJustCultureInfoAsInbetweenParameter(a, CultureInfo.CurrentCulture, b)
+                    End Sub
 
-    Public Shared Sub MethodOverloadWithJustCultureInfoAsInbetweenParameter(a As String, provider As CultureInfo, b As String)
-        Console.WriteLine(String.Format(provider, """"))
-    End Sub
-End Class
+                    Public Shared Sub MethodOverloadWithJustCultureInfoAsInbetweenParameter(a As String, provider As CultureInfo, b As String)
+                        Console.WriteLine(String.Format(provider, ""))
+                    End Sub
+                End Class
 
-Public Class DerivedCultureInfo
-    Inherits CultureInfo
-    Public Sub New(name As String)
-        MyBase.New(name)
-    End Sub
-End Class");
+                Public Class DerivedCultureInfo
+                    Inherits CultureInfo
+                    Public Sub New(name As String)
+                        MyBase.New(name)
+                    End Sub
+                End Class
+                """);
         }
 
         [TestMethod, WorkItem(3204, "https://github.com/dotnet/roslyn-analyzers/issues/3204")]
@@ -701,28 +739,32 @@ End Class");
                 {
                     Sources =
                     {
-                        @"
-using System.Globalization;
+                        """
 
-namespace NS
-{
-    public class C
-    {
-        public void M1(string s) {}
-        public void M1(string s, CultureInfo ci) {}
+                            using System.Globalization;
 
-        public void M()
-        {
-            M1(""aaa"");
-        }
-    }
-}",
+                            namespace NS
+                            {
+                                public class C
+                                {
+                                    public void M1(string s) {}
+                                    public void M1(string s, CultureInfo ci) {}
+
+                                    public void M()
+                                    {
+                                        M1("aaa");
+                                    }
+                                }
+                            }
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+
+                        """), },
                 },
             };
 
@@ -739,28 +781,32 @@ namespace NS
                 {
                     Sources =
                     {
-                        @"
-Imports System.Globalization
+                        """
 
-Namespace NS
-    Public Class C
-        Public Sub M1(ByVal s As String)
-        End Sub
+                            Imports System.Globalization
 
-        Public Sub M1(ByVal s As String, ByVal ci As CultureInfo)
-        End Sub
+                            Namespace NS
+                                Public Class C
+                                    Public Sub M1(ByVal s As String)
+                                    End Sub
 
-        Public Sub M()
-            M1(""aaa"")
-        End Sub
-    End Class
-End Namespace",
+                                    Public Sub M1(ByVal s As String, ByVal ci As CultureInfo)
+                                    End Sub
+
+                                    Public Sub M()
+                                        M1("aaa")
+                                    End Sub
+                                End Class
+                            End Namespace
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-"), },
+                        [*]
+                        {editorConfigText}
+
+                        """), },
                 },
             };
 
