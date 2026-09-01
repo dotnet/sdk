@@ -173,6 +173,7 @@ $environment = @{
     DOTNET_AOT_SDK_DIR = $sdkDirectory
     DOTNET_AOT_TEST_DN_PATH = $dnPath
     DOTNET_AOT_TEST_MANAGED_TEST_MODULE = $managedTestModule
+    DOTNET_AOT_TEST_NUGET_CONFIG = [System.IO.Path]::Combine($repoRoot, "NuGet.config")
     DOTNET_AOT_TEST_SDK_DIRECTORY = $sdkDirectory
     DOTNET_HOST_PATH = $dotnet
     DOTNET_ROOT = [System.IO.Path]::Combine($repoRoot, ".dotnet")

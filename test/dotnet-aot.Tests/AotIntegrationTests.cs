@@ -368,6 +368,13 @@ public partial class AotIntegrationTests
         string testDirectory = TestPathUtility.ResolveTempPrefixLink(
             Path.Join(Path.GetTempPath(), $"dotnet-aot-run-file-{Guid.NewGuid():N}"));
         Directory.CreateDirectory(testDirectory);
+        string? nugetConfigPath = Environment.GetEnvironmentVariable("DOTNET_AOT_TEST_NUGET_CONFIG");
+        if (string.IsNullOrEmpty(nugetConfigPath) || !File.Exists(nugetConfigPath))
+        {
+            Assert.Inconclusive("DOTNET_AOT_TEST_NUGET_CONFIG must identify the NuGet configuration for cached run-file integration setup.");
+        }
+        File.Copy(nugetConfigPath, Path.Join(testDirectory, "NuGet.config"));
+
         string entryPointPath = Path.Join(testDirectory, "Program.cs");
         File.WriteAllText(entryPointPath, """
             if (Environment.GetEnvironmentVariable("REPORT_PROFILE") == "1")
