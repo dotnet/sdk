@@ -11,14 +11,14 @@ shared between the .NET CLI and Visual Studio. The build output is a complete, r
 (`Debug` by default).
 
 For a high-level project description, build status, and contribution flow, see the
-[README](../README.md). For the canonical build/test/debug walkthrough, see the
-[Developer Guide](../documentation/project-docs/developer-guide.md).
+[README](README.md). For the canonical build/test/debug walkthrough, see the
+[Developer Guide](documentation/project-docs/developer-guide.md).
 
 ### Agent orientation and memory
 
-1. Read the [memory index](memory/INDEX.md) first and load other memory files on demand.
-2. For non-trivial work, also read [ARCHITECTURE.md](memory/ARCHITECTURE.md) and
-   [CONVENTIONS.md](memory/CONVENTIONS.md).
+1. Read the [memory index](.github/memory/INDEX.md) first and load other memory files on demand.
+2. For non-trivial work, also read [ARCHITECTURE.md](.github/memory/ARCHITECTURE.md) and
+   [CONVENTIONS.md](.github/memory/CONVENTIONS.md).
 3. Treat memory as orientation; cross-check important claims against linked primary sources.
 4. Correct stale memory in the same change and keep the index synchronized.
 
@@ -40,9 +40,9 @@ root-cause analyses, and AI-facing documentation:
 
 ### What the SDK does
 
-See [ARCHITECTURE.md](memory/ARCHITECTURE.md) for product components and data flow,
-[FILE_MAP.md](memory/FILE_MAP.md) for repository locations, and
-[API_MAP.md](memory/API_MAP.md) for user-facing and extension surfaces.
+See [ARCHITECTURE.md](.github/memory/ARCHITECTURE.md) for product components and data flow,
+[FILE_MAP.md](.github/memory/FILE_MAP.md) for repository locations, and
+[API_MAP.md](.github/memory/API_MAP.md) for user-facing and extension surfaces.
 
 ### Repository boundaries and the VMR
 
@@ -50,15 +50,15 @@ An SDK command or build can expose behavior implemented by another .NET reposito
 the component that defines the behavior before making a change; do not add an SDK
 workaround merely because the symptom appears through `dotnet`, and do not infer ownership
 from a diagnostic ID. See the canonical
-[ownership map](memory/ARCHITECTURE.md#ownership-boundaries).
+[ownership map](.github/memory/ARCHITECTURE.md#ownership-boundaries).
 
 ### Build and test
 
 - Build the redist SDK with `build.cmd` on Windows or `./build.sh` on Linux/macOS.
 - Add `-test` / `--test` for the full suite and `-pack` / `--pack` for packages/installers;
   avoid these large operations in the routine inner loop.
-- Use [`run-tests` skill](skills/run-tests/SKILL.md) for focused validation and
-  [`incremental-test` skill](skills/incremental-test/SKILL.md) for supported
+- Use [`run-tests` skill](.github/skills/run-tests/SKILL.md) for focused validation and
+  [`incremental-test` skill](.github/skills/incremental-test/SKILL.md) for supported
   `dotnet.Tests` changes.
 - Product tests exercise `artifacts/bin/redist/<configuration>/dotnet`; ensure it contains
   the production change before trusting results.
@@ -87,8 +87,8 @@ Canonical scenarios:
 - Validate changes locally using the SDK you built at
   `artifacts/bin/redist/<configuration>/dotnet` (`Debug` by default).
 
-See [TESTING_STRATEGY.md](memory/TESTING_STRATEGY.md) and the
-[Developer Guide](../documentation/project-docs/developer-guide.md).
+See [TESTING_STRATEGY.md](.github/memory/TESTING_STRATEGY.md) and the
+[Developer Guide](documentation/project-docs/developer-guide.md).
 
 ## Guardrails
 
@@ -107,7 +107,7 @@ manually edit:
 - **`.xlf` localization files.** Change the source `.resx` strings instead, then
   regenerate the `.xlf` with the `/t:UpdateXlf` MSBuild target. Correctly regenerated
   entries have a state of `needs-review-translation` or `new`. See
-  [Localization](../documentation/project-docs/Localization.md) for the full workflow.
+  [Localization](documentation/project-docs/Localization.md) for the full workflow.
 - **Generated man pages** under `documentation/manpages/sdk`. These are generated from
   documentation; change the upstream documentation in https://github.com/dotnet/docs instead.
 - **Generated workflow lock files** (`.github/workflows/*.lock.yml`).
@@ -125,22 +125,22 @@ workflow. Use the applicable value without changes:
   `azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)`
 
 When you change shared CI environment variables, preserve this variable. See
-the [developer guide](../documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation)
+the [developer guide](documentation/project-docs/developer-guide.md#ci-workflow-telemetry-correlation)
 for the required YAML and the reason for this variable.
 
 ## External Dependencies
 
 Adding or updating a dependency is a repo-wide compatibility and supply-chain change.
-Follow [CONVENTIONS.md](memory/CONVENTIONS.md#dependency-management).
+Follow [CONVENTIONS.md](.github/memory/CONVENTIONS.md#dependency-management).
 
 ## Coding Style
 
-Follow [CONVENTIONS.md](memory/CONVENTIONS.md) and the nearest area `AGENTS.md`.
+Follow [CONVENTIONS.md](.github/memory/CONVENTIONS.md) and the nearest area `AGENTS.md`.
 
 ### Target framework properties
 
 Never hardcode the current TFM in a project. See
-[CONVENTIONS.md](memory/CONVENTIONS.md#framework-and-build-constraints).
+[CONVENTIONS.md](.github/memory/CONVENTIONS.md#framework-and-build-constraints).
 
 ## Testing
 
@@ -152,13 +152,13 @@ Never hardcode the current TFM in a project. See
   unscoped common areas. Run one project, class, or method with detailed live output and
   retained TRX/binlog diagnostics.
 - For incremental test runs of `dotnet.Tests` (avoids slow full `build.cmd`), use the `incremental-test` skill.
-- Follow [`test/AGENTS.md`](../test/AGENTS.md) and
-  [TESTING_STRATEGY.md](memory/TESTING_STRATEGY.md) for test framework, assets,
+- Follow [`test/AGENTS.md`](test/AGENTS.md) and
+  [TESTING_STRATEGY.md](.github/memory/TESTING_STRATEGY.md) for test framework, assets,
   parallelism, conditional scopes, snapshots, and Helix guidance.
 - This repo uses conditional test filtering to skip expensive test suites on PRs when
   relevant source files have not changed. When adding new test projects, consider
-  registering them as a scope in [`test/ConditionalTests.props`](../test/ConditionalTests.props).
-  See [`documentation/project-docs/pr-test-filtering.md`](../documentation/project-docs/pr-test-filtering.md) for details.
+  registering them as a scope in [`test/ConditionalTests.props`](test/ConditionalTests.props).
+  See [`documentation/project-docs/pr-test-filtering.md`](documentation/project-docs/pr-test-filtering.md) for details.
 
 ## Investigating PR validation failures
 
@@ -167,7 +167,7 @@ Never hardcode the current TFM in a project. See
 
 ## Keeping AI context and docs in sync
 
-Before completion, run the [`update-docs` skill](skills/update-docs/SKILL.md). It owns the
+Before completion, run the [`update-docs` skill](.github/skills/update-docs/SKILL.md). It owns the
 required checklist for memory, instructions, `AGENTS.md`, skills, agents, contributor
 documentation, help, snapshots, and localized resources.
 

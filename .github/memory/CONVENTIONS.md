@@ -62,7 +62,7 @@ Repository policy:
 
 | Subject | Canonical source |
 | --- | --- |
-| Hard guardrails, CI telemetry, and generated files | [Root instructions](../copilot-instructions.md#guardrails) |
+| Hard guardrails, CI telemetry, and generated files | [Root instructions](../../AGENTS.md#guardrails) |
 | Repository build properties and analyzer configuration | [`Directory.Build.props`](../../Directory.Build.props), [`Directory.Build.targets`](../../Directory.Build.targets), [`.editorconfig`](../../.editorconfig) |
 | CLI commands and AOT constraints | [`src/Cli/AGENTS.md`](../../src/Cli/AGENTS.md) and CLI skills |
 | MSBuild tasks, targets, diagnostics, and framework compatibility | [`src/Tasks/AGENTS.md`](../../src/Tasks/AGENTS.md) |
