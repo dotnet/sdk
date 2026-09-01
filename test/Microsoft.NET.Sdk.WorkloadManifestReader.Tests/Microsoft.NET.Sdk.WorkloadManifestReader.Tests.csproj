@@ -4,6 +4,8 @@
     <TargetFrameworks>net472;$(SdkTargetFramework)</TargetFrameworks>
     <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(SdkTargetFramework)</TargetFrameworks>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <!-- Test classes either use immutable inputs or isolated TestAssetsManager directories. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
 
     <!-- By default test projects don't append TargetFramework to output path, but for multi-targeted tests
          we need to -->
