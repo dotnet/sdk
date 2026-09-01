@@ -34,8 +34,6 @@ public class InitWorkflowTests : IDisposable
         try { Directory.Delete(_tempDir, recursive: true); } catch { /* cleanup best-effort */ }
     }
 
-    // ── ShouldPromptToConvertSystemInstalls ──
-
     [TestMethod]
     public void ShouldReplaceSystemConfiguration_ReturnsFalse_ForNone()
     {
@@ -52,42 +50,18 @@ public class InitWorkflowTests : IDisposable
     }
 
     [TestMethod]
-    public void ShouldPromptToConvertSystemInstalls_ReturnsFalse_ForNone()
+    [DataRow(DotnetAccessMode.None, false)]
+    [DataRow(DotnetAccessMode.Shell, true)]
+    [DataRow(DotnetAccessMode.Everywhere, true)]
+    internal void ShouldMigrateSystemInstallsByDefault_MatchesAccessMode(
+        DotnetAccessMode accessMode,
+        bool expected)
     {
-        DotnetAccessModePolicy.ShouldPromptToConvertSystemInstalls(DotnetAccessMode.None)
-            .Should().BeFalse();
-    }
-
-    [TestMethod]
-    [DataRow(DotnetAccessMode.Shell)]
-    [DataRow(DotnetAccessMode.Everywhere)]
-    internal void ShouldPromptToConvertSystemInstalls_ReturnsTrue_ForNonIsolationModes(DotnetAccessMode accessMode)
-    {
-        DotnetAccessModePolicy.ShouldPromptToConvertSystemInstalls(accessMode)
-            .Should().BeTrue();
+        DotnetAccessModePolicy.ShouldMigrateSystemInstallsByDefault(accessMode)
+            .Should().Be(expected);
     }
 
     // ── PromptInstallsToMigrateIfDesired — early-exit paths ──
-
-    [TestMethod]
-    public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenAccessModeIsNone()
-    {
-        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
-        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
-        var mock = new MockDotnetInstallManager(
-            defaultInstallPath: _tempDir,
-            existingSystemInstalls:
-            [
-                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-            ]);
-
-        var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, DotnetAccessMode.None, installRoot);
-
-        result.Should().BeEmpty();
-        // GetExistingSystemInstalls should not be called when ShouldPromptToConvertSystemInstalls is false
-        mock.GetExistingSystemInstallsCallCount.Should().Be(0);
-    }
 
     [TestMethod]
     public void PromptInstallsToMigrateIfDesired_ReturnsEmpty_WhenNoSystemInstallsExist()
@@ -100,7 +74,7 @@ public class InitWorkflowTests : IDisposable
 
         string manifestPath = Path.Combine(_tempDir, "manifest.json");
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
-            mock, DotnetAccessMode.Shell, installRoot, manifestPath);
+            mock, installRoot, manifestPath);
 
         result.Should().BeEmpty();
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
@@ -120,7 +94,6 @@ public class InitWorkflowTests : IDisposable
 
         var result = InitWorkflows.PromptInstallsToMigrateIfDesired(
             mock,
-            DotnetAccessMode.Shell,
             installRoot,
             interactive: false);
 
@@ -201,44 +174,145 @@ public class InitWorkflowTests : IDisposable
     [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
     public void GetDefaultAccessMode_ReturnsShell_WhenShellProviderIsAvailableOnNonWindows()
     {
-        InitWorkflowDefaults.GetDefaultAccessMode(new BashEnvShellProvider())
+        InitDefaultsResolver.GetDefaultAccessMode(new BashEnvShellProvider())
             .Should().Be(DotnetAccessMode.Shell);
     }
 
     [TestMethod, OSCondition(OperatingSystems.Windows)]
     public void GetDefaultAccessMode_ReturnsEverywhere_WhenShellProviderIsAvailableOnWindows()
     {
-        InitWorkflowDefaults.GetDefaultAccessMode(new BashEnvShellProvider())
+        InitDefaultsResolver.GetDefaultAccessMode(new BashEnvShellProvider())
             .Should().Be(DotnetAccessMode.Everywhere);
+    }
+
+    [TestMethod]
+    [DataRow(DotnetAccessMode.None)]
+    [DataRow(DotnetAccessMode.Shell)]
+    internal void GetDefaultAccessMode_ReturnsConfiguredMode(DotnetAccessMode configuredAccessMode)
+    {
+        InitDefaultsResolver.GetDefaultAccessMode(
+            shellProvider: null,
+            configuredAccessMode: configuredAccessMode)
+            .Should().Be(configuredAccessMode);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Windows)]
+    public void GetDefaultAccessMode_ReturnsConfiguredEverywhereModeOnWindows()
+    {
+        InitDefaultsResolver.GetDefaultAccessMode(
+            shellProvider: null,
+            configuredAccessMode: DotnetAccessMode.Everywhere)
+            .Should().Be(DotnetAccessMode.Everywhere);
+    }
+
+    [TestMethod, OSCondition(OperatingSystems.Linux | OperatingSystems.OSX | OperatingSystems.FreeBSD)]
+    public void GetDefaultAccessMode_IgnoresConfiguredEverywhereModeOutsideWindows()
+    {
+        InitDefaultsResolver.GetDefaultAccessMode(
+            new BashEnvShellProvider(),
+            configuredAccessMode: DotnetAccessMode.Everywhere)
+            .Should().Be(DotnetAccessMode.Shell);
+    }
+
+    [TestMethod]
+    public void GetDefaultDotnetupOnPath_PreservesConfiguredValue()
+    {
+        InitDefaultsResolver.GetDefaultDotnetupOnPath(
+            new DotnetupConfigData { DotnetupOnPath = false })
+            .Should().BeFalse();
+        InitDefaultsResolver.GetDefaultDotnetupOnPath(configured: null)
+            .Should().BeTrue();
     }
 
     // The no-shell isolation fallback (which reads the SHELL environment variable) is covered
     // deterministically by InitWorkflowShellFallbackTests, which mutates SHELL and therefore runs
     // in a serialized collection.
 
-    // ── ResolveDefaultMigrations ──
-
     [TestMethod]
-    public void ResolveDefaultMigrations_ReturnsEmpty_ForIsolationMode()
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void InitWalkthrough_SkipsForLocalSdkPath()
     {
-        var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
-        var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
-        var mock = new MockDotnetInstallManager(
-            defaultInstallPath: _tempDir,
-            existingSystemInstalls:
-            [
-                new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-            ]);
+        Directory.CreateDirectory(Path.Combine(_tempDir, ".dotnet"));
+        File.WriteAllText(
+            Path.Combine(_tempDir, "global.json"),
+            """
+            {
+              "sdk": {
+                "paths": [".dotnet"]
+              }
+            }
+            """);
 
-        var result = InitWorkflowDefaults.ResolveDefaultMigrations(
-            mock, DotnetAccessMode.None, installRoot, manifestPath: null, existingRequests: null);
+        var mock = new MockDotnetInstallManager(defaultInstallPath: _tempDir);
+        var parseResult = Parser.Parse(["init"]);
+        var command = new InitCommand(parseResult);
 
-        result.Should().BeEmpty();
+        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
+            () => new InitWorkflows(mock).InitWalkthrough(command));
+
+        requests.Should().BeEmpty();
         mock.GetExistingSystemInstallsCallCount.Should().Be(0);
+        mock.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        mock.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        mock.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+        DotnetupConfig.Exists().Should().BeFalse();
     }
 
     [TestMethod]
-    public void ResolveDefaultMigrations_ReturnsCandidates_ForShell()
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void HasLocalSdkPathGlobalJson_ReturnsFalseForHostSentinel()
+    {
+        File.WriteAllText(
+            Path.Combine(_tempDir, "global.json"),
+            """
+            {
+              "sdk": {
+                "paths": ["$host$"]
+              }
+            }
+            """);
+
+        bool hasLocalSdkPath = RunFromTempDirectory(InitWorkflows.HasLocalSdkPathGlobalJson);
+
+        hasLocalSdkPath.Should().BeFalse();
+    }
+
+    [TestMethod]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
+    public void InitWalkthrough_DryRunIgnoresLocalSdkPath()
+    {
+        Directory.CreateDirectory(Path.Combine(_tempDir, ".dotnet"));
+        File.WriteAllText(
+            Path.Combine(_tempDir, "global.json"),
+            """
+            {
+              "sdk": {
+                "paths": [".dotnet"]
+              }
+            }
+            """);
+
+        var mock = new MockDotnetInstallManager(
+            defaultInstallPath: _tempDir,
+            existingSystemInstalls: []);
+        var parseResult = Parser.Parse(["init", "--dry-run"]);
+        var command = new InitCommand(parseResult);
+
+        List<ResolvedInstallRequest> requests = RunFromTempDirectory(
+            () => new InitWorkflows(mock).InitWalkthrough(command));
+
+        requests.Should().BeEmpty();
+        mock.GetExistingSystemInstallsCallCount.Should().Be(1);
+        mock.ApplyEnvironmentModificationsCallCount.Should().Be(0);
+        mock.ApplyTerminalProfileModificationsCallCount.Should().Be(0);
+        mock.ApplyDotnetupOnUserPathCallCount.Should().Be(0);
+        DotnetupConfig.Exists().Should().BeFalse();
+    }
+
+    // ── ResolveDefaultMigrations ──
+
+    [TestMethod]
+    public void ResolveDefaultMigrations_ReturnsCandidates()
     {
         var nativeArch = InstallerUtilities.GetDefaultInstallArchitecture();
         var installRoot = new DotnetInstallRoot(_tempDir, nativeArch);
@@ -247,11 +321,10 @@ public class InitWorkflowTests : IDisposable
             existingSystemInstalls:
             [
                 new DotnetInstall(installRoot, new ReleaseVersion("10.0.100"), InstallComponent.SDK),
-                new DotnetInstall(installRoot, new ReleaseVersion("10.0.0"), InstallComponent.Runtime),
             ]);
 
-        var result = InitWorkflowDefaults.ResolveDefaultMigrations(
-            mock, DotnetAccessMode.Shell, installRoot, manifestPath: null, existingRequests: null);
+        var result = InitDefaultsResolver.ResolveDefaultMigrations(
+            mock, installRoot, manifestPath: null);
 
         result.Should().NotBeEmpty();
         mock.GetExistingSystemInstallsCallCount.Should().Be(1);
@@ -270,5 +343,19 @@ public class InitWorkflowTests : IDisposable
         InitWorkflows.DisplayEnvironmentSetupProgress(console);
 
         output.ToString().Should().Contain("Setting up your environment.");
+    }
+
+    private T RunFromTempDirectory<T>(Func<T> action)
+    {
+        string originalCurrentDirectory = Environment.CurrentDirectory;
+        try
+        {
+            Environment.CurrentDirectory = _tempDir;
+            return action();
+        }
+        finally
+        {
+            Environment.CurrentDirectory = originalCurrentDirectory;
+        }
     }
 }

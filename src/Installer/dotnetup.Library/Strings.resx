@@ -177,19 +177,6 @@
   <data name="InitCommandDescription" xml:space="preserve">
     <value>Configure or reconfigure dotnetup settings and install .NET through the interactive setup flow.</value>
   </data>
-  <data name="AccessModeNone" xml:space="preserve">
-    <value>Isolation Mode</value>
-  </data>
-  <data name="AccessModeShell" xml:space="preserve">
-    <value>Terminal Mode</value>
-  </data>
-  <data name="PathPreferenceSuggestedSuffix" xml:space="preserve">
-    <value>(Suggested)</value>
-    <comment>Hint appended after the recommended mode name in the init summary, e.g. "Terminal Mode (Suggested)".</comment>
-  </data>
-  <data name="AccessModeEverywhere" xml:space="preserve">
-    <value>Everywhere Mode</value>
-  </data>
   <data name="PathGuidanceNone" xml:space="preserve">
     <value>You can run .NET commands with 'dotnetup dotnet &lt;command&gt;' (or 'dotnetup do &lt;command&gt;' for short).</value>
   </data>
@@ -198,33 +185,6 @@
   </data>
   <data name="PathGuidanceEverywhere" xml:space="preserve">
     <value>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</value>
-  </data>
-  <data name="PathDescriptionNone" xml:space="preserve">
-    <value>Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</value>
-  </data>
-  <data name="PathDescriptionShell" xml:space="preserve">
-    <value>Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</value>
-  </data>
-  <data name="PathDescriptionShellBase" xml:space="preserve">
-    <value>Configure the current shell profile to use installs managed by dotnetup.</value>
-  </data>
-  <data name="PathDescriptionEverywhere" xml:space="preserve">
-    <value>Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</value>
-  </data>
-  <data name="PathTooltipNone" xml:space="preserve">
-    <value>Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</value>
-  </data>
-  <data name="PathTooltipShell" xml:space="preserve">
-    <value>Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</value>
-  </data>
-  <data name="PathTooltipShellWindowsNote" xml:space="preserve">
-    <value>Only PowerShell will work in this mode. CMD has no profile file.</value>
-  </data>
-  <data name="PathTooltipEverywhere" xml:space="preserve">
-    <value>Recommended if you want all applications, debuggers, and IDEs — not just terminals launched from your shell — to use dotnetup's .NET installs. Requires administrator privileges to update the system PATH; any existing machine-wide install stays on the PATH behind it.</value>
-  </data>
-  <data name="PathReplacementModeUnixError" xml:space="preserve">
-    <value>Everywhere Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</value>
   </data>
   <data name="HelpOptionsTitle" xml:space="preserve">
     <value>Options:</value>
@@ -404,72 +364,5 @@ Or open a new terminal.</value>
   <data name="EnvScriptDotnetupOnlyConflict" xml:space="preserve">
     <value>--dotnetup-only cannot be combined with --dotnet or --dotnetup.</value>
     <comment>{Locked="--dotnetup-only"}{Locked="--dotnet"}{Locked="--dotnetup"}</comment>
-  </data>
-  <data name="SummaryPrompt" xml:space="preserve">
-    <value>Would you like to install .NET with the recommended settings?</value>
-  </data>
-  <data name="SummaryProceedTitleConfigured" xml:space="preserve">
-    <value>Yes, override settings with defaults</value>
-  </data>
-  <data name="SummaryProceedTitleUnconfigured" xml:space="preserve">
-    <value>Yes, proceed with defaults and install</value>
-  </data>
-  <data name="SummaryProceedDescriptionConfigured" xml:space="preserve">
-    <value>Replace your current settings with the recommended ones above.</value>
-  </data>
-  <data name="SummaryProceedDescriptionUnconfigured" xml:space="preserve">
-    <value>Install with the recommended settings shown above.</value>
-  </data>
-  <data name="SummaryCustomizeTitle" xml:space="preserve">
-    <value>No, customize setup</value>
-  </data>
-  <data name="SummaryCustomizeDescription" xml:space="preserve">
-    <value>Choose the channel, mode, and migrations yourself.</value>
-  </data>
-  <data name="SummaryExitTitle" xml:space="preserve">
-    <value>Exit without changes</value>
-  </data>
-  <data name="SummaryExitDescription" xml:space="preserve">
-    <value>Make no changes and quit.</value>
-  </data>
-  <data name="SummaryWelcome" xml:space="preserve">
-    <value>Welcome to {0}!</value>
-    <comment>{0} is the styled "dotnetup" product name.</comment>
-  </data>
-  <data name="SummaryChannelLabel" xml:space="preserve">
-    <value>SDK Channel:</value>
-  </data>
-  <data name="SummaryChannelGlobalJsonSuffix" xml:space="preserve">
-    <value>determined from global.json at {0}</value>
-    <comment>{0} is a file path. Shown in parentheses after the channel name.</comment>
-  </data>
-  <data name="SummaryModeLabel" xml:space="preserve">
-    <value>Mode:</value>
-  </data>
-  <data name="SummaryModeCurrent" xml:space="preserve">
-    <value>current: {0}</value>
-    <comment>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</comment>
-  </data>
-  <data name="SummaryModeConfiguration" xml:space="preserve">
-    <value>{0} modifies {1} to set {2} and {3} to prefer {4}.</value>
-    <comment>{0} is the suggested mode name; {1} is one or more shell profile paths or the system environment variables; {2} is PATH; {3} is DOTNET_ROOT; {4} is the dotnetup install path.</comment>
-  </data>
-  <data name="SummaryModeSystemEnvironmentVariables" xml:space="preserve">
-    <value>the system environment variables</value>
-  </data>
-  <data name="SummaryModeInstallRootGlobalJsonSuffix" xml:space="preserve">
-    <value>(inferred from {0})</value>
-    <comment>{0} is the path to the global.json file that supplied the dotnetup install root.</comment>
-  </data>
-  <data name="SummaryModeUnsupportedShell" xml:space="preserve">
-    <value>{0} is suggested because the current shell ({1}) cannot be detected or is not supported. Supported shells: {2}.</value>
-    <comment>{0} is the suggested isolation mode name; {1} is the current SHELL value or "(not set)"; {2} is the list of supported shell names.</comment>
-  </data>
-  <data name="SummaryMigrateHeader" xml:space="preserve">
-    <value>System installs to migrate:</value>
-  </data>
-  <data name="SummaryMigrateMore" xml:space="preserve">
-    <value>... and {0} more</value>
-    <comment>{0} is the count of additional migration candidates not individually listed.</comment>
   </data>
 </root>

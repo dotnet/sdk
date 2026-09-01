@@ -2,21 +2,6 @@
 <xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="1.2" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-transitional.xsd">
   <file datatype="xml" source-language="en" target-language="ja" original="../Strings.resx">
     <body>
-      <trans-unit id="AccessModeEverywhere">
-        <source>Everywhere Mode</source>
-        <target state="new">Everywhere Mode</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AccessModeNone">
-        <source>Isolation Mode</source>
-        <target state="new">Isolation Mode</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="AccessModeShell">
-        <source>Terminal Mode</source>
-        <target state="new">Terminal Mode</target>
-        <note />
-      </trans-unit>
       <trans-unit id="CommandInteractiveOptionDescription">
         <source>Allows the command to stop and wait for user input or action.</source>
         <target state="new">Allows the command to stop and wait for user input or action.</target>
@@ -391,26 +376,6 @@ Or open a new terminal.</target>
         <target state="new">Total</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathDescriptionEverywhere">
-        <source>Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</source>
-        <target state="new">Add dotnetup's .NET to the system PATH, ahead of any machine-wide install, so every application uses it. Requires elevation.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathDescriptionNone">
-        <source>Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</source>
-        <target state="new">Use 'dotnetup dotnet' to consume installs managed by dotnetup. New installs can be used alongside your existing installs.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathDescriptionShell">
-        <source>Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</source>
-        <target state="new">Configure the current shell profile to use installs managed by dotnetup. Only applications launched from the shell will leverage dotnetup installs.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathDescriptionShellBase">
-        <source>Configure the current shell profile to use installs managed by dotnetup.</source>
-        <target state="new">Configure the current shell profile to use installs managed by dotnetup.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="PathGuidanceEverywhere">
         <source>PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</source>
         <target state="new">PATH and DOTNET_ROOT have been updated. You can use 'dotnet' directly in new terminal sessions.</target>
@@ -426,140 +391,10 @@ Or open a new terminal.</target>
         <target state="new">Your shell profile has been updated. Restart your terminal or source your profile to use 'dotnet' directly.</target>
         <note />
       </trans-unit>
-      <trans-unit id="PathPreferenceSuggestedSuffix">
-        <source>(Suggested)</source>
-        <target state="new">(Suggested)</target>
-        <note>Hint appended after the recommended mode name in the init summary, e.g. "Terminal Mode (Suggested)".</note>
-      </trans-unit>
-      <trans-unit id="PathReplacementModeUnixError">
-        <source>Everywhere Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</source>
-        <target state="new">Everywhere Mode is not supported on this operating system. Please choose Isolation Mode or Terminal Mode instead.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathTooltipEverywhere">
-        <source>Recommended if you want all applications, debuggers, and IDEs — not just terminals launched from your shell — to use dotnetup's .NET installs. Requires administrator privileges to update the system PATH; any existing machine-wide install stays on the PATH behind it.</source>
-        <target state="new">Recommended if you want all applications, debuggers, and IDEs — not just terminals launched from your shell — to use dotnetup's .NET installs. Requires administrator privileges to update the system PATH; any existing machine-wide install stays on the PATH behind it.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathTooltipNone">
-        <source>Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</source>
-        <target state="new">Recommended for users without admin rights, or for users who want to keep their system managed installs (e.g. {0}) as the default.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathTooltipShell">
-        <source>Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</source>
-        <target state="new">Modify the current shell profile file to consume dotnetup on PATH environment variables. Recommended for users who want to develop using dotnetup and launch their IDE through the terminal.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="PathTooltipShellWindowsNote">
-        <source>Only PowerShell will work in this mode. CMD has no profile file.</source>
-        <target state="new">Only PowerShell will work in this mode. CMD has no profile file.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="RootCommandDescription">
         <source>.NET toolchain manager for user level installs.</source>
         <target state="new">.NET toolchain manager for user level installs.</target>
         <note />
-      </trans-unit>
-      <trans-unit id="SummaryChannelGlobalJsonSuffix">
-        <source>determined from global.json at {0}</source>
-        <target state="new">determined from global.json at {0}</target>
-        <note>{0} is a file path. Shown in parentheses after the channel name.</note>
-      </trans-unit>
-      <trans-unit id="SummaryChannelLabel">
-        <source>SDK Channel:</source>
-        <target state="new">SDK Channel:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryCustomizeDescription">
-        <source>Choose the channel, mode, and migrations yourself.</source>
-        <target state="new">Choose the channel, mode, and migrations yourself.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryCustomizeTitle">
-        <source>No, customize setup</source>
-        <target state="new">No, customize setup</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryExitDescription">
-        <source>Make no changes and quit.</source>
-        <target state="new">Make no changes and quit.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryExitTitle">
-        <source>Exit without changes</source>
-        <target state="new">Exit without changes</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryMigrateHeader">
-        <source>System installs to migrate:</source>
-        <target state="new">System installs to migrate:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryMigrateMore">
-        <source>... and {0} more</source>
-        <target state="new">... and {0} more</target>
-        <note>{0} is the count of additional migration candidates not individually listed.</note>
-      </trans-unit>
-      <trans-unit id="SummaryModeConfiguration">
-        <source>{0} modifies {1} to set {2} and {3} to prefer {4}.</source>
-        <target state="new">{0} modifies {1} to set {2} and {3} to prefer {4}.</target>
-        <note>{0} is the suggested mode name; {1} is one or more shell profile paths or the system environment variables; {2} is PATH; {3} is DOTNET_ROOT; {4} is the dotnetup install path.</note>
-      </trans-unit>
-      <trans-unit id="SummaryModeCurrent">
-        <source>current: {0}</source>
-        <target state="new">current: {0}</target>
-        <note>{0} is the user's currently configured mode name. Shown in parentheses after the recommended mode.</note>
-      </trans-unit>
-      <trans-unit id="SummaryModeInstallRootGlobalJsonSuffix">
-        <source>(inferred from {0})</source>
-        <target state="new">(inferred from {0})</target>
-        <note>{0} is the path to the global.json file that supplied the dotnetup install root.</note>
-      </trans-unit>
-      <trans-unit id="SummaryModeLabel">
-        <source>Mode:</source>
-        <target state="new">Mode:</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryModeSystemEnvironmentVariables">
-        <source>the system environment variables</source>
-        <target state="new">the system environment variables</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryModeUnsupportedShell">
-        <source>{0} is suggested because the current shell ({1}) cannot be detected or is not supported. Supported shells: {2}.</source>
-        <target state="new">{0} is suggested because the current shell ({1}) cannot be detected or is not supported. Supported shells: {2}.</target>
-        <note>{0} is the suggested isolation mode name; {1} is the current SHELL value or "(not set)"; {2} is the list of supported shell names.</note>
-      </trans-unit>
-      <trans-unit id="SummaryProceedDescriptionConfigured">
-        <source>Replace your current settings with the recommended ones above.</source>
-        <target state="new">Replace your current settings with the recommended ones above.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryProceedDescriptionUnconfigured">
-        <source>Install with the recommended settings shown above.</source>
-        <target state="new">Install with the recommended settings shown above.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryProceedTitleConfigured">
-        <source>Yes, override settings with defaults</source>
-        <target state="new">Yes, override settings with defaults</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryProceedTitleUnconfigured">
-        <source>Yes, proceed with defaults and install</source>
-        <target state="new">Yes, proceed with defaults and install</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryPrompt">
-        <source>Would you like to install .NET with the recommended settings?</source>
-        <target state="new">Would you like to install .NET with the recommended settings?</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="SummaryWelcome">
-        <source>Welcome to {0}!</source>
-        <target state="new">Welcome to {0}!</target>
-        <note>{0} is the styled "dotnetup" product name.</note>
       </trans-unit>
       <trans-unit id="TelemetryNotice">
         <source>dotnetup collects usage data to help improve your experience. You can opt out by setting the DOTNET_CLI_TELEMETRY_OPTOUT environment variable to '1'. Learn more: https://aka.ms/dotnetup-telemetry</source>

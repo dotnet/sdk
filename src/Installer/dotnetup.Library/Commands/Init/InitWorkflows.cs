@@ -4,6 +4,7 @@
 using System.Globalization;
 using System.Runtime.ExceptionServices;
 using Microsoft.Dotnet.Installation.Internal;
+using Microsoft.DotNet.Tools.Bootstrapper.Commands.Init.Form;
 using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 using Microsoft.DotNet.Tools.Bootstrapper.Shell;
 using Spectre.Console;
@@ -19,17 +20,10 @@ namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 internal class InitWorkflows
 {
     private readonly IDotnetEnvironmentManager _dotnetEnvironment;
-    private readonly ChannelVersionResolver _channelVersionResolver;
 
-    /// <summary>Sentinel channel value indicating the user wants to skip the initial install.</summary>
-    internal const string NoneChannel = "none";
-
-    private sealed record ChannelExample(string Channel, string Description, string? ResolvedVersion);
-
-    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment, ChannelVersionResolver channelVersionResolver)
+    public InitWorkflows(IDotnetEnvironmentManager dotnetEnvironment)
     {
         _dotnetEnvironment = dotnetEnvironment;
-        _channelVersionResolver = channelVersionResolver;
     }
 
     // ── Init Flow Orchestrators ──
@@ -37,8 +31,7 @@ internal class InitWorkflows
     /// <summary>
     /// Interactive onboarding flow used both by the explicit <c>dotnetup init</c> command
     /// and by the first interactive install when dotnetup has not yet been configured.
-    /// Resolves the recommended setup, shows the summary selector, and then either applies
-    /// that recommended setup (proceed), runs the step-by-step prompts (customize), or exits.
+    /// Resolves the recommended setup, and shows the form where the options can be reviewed and modified.
     /// When <paramref name="requests"/> is supplied, those already-resolved install requests are
     /// reused as the recommended requests instead of resolving the default SDK channel.
     /// </summary>
@@ -46,87 +39,183 @@ internal class InitWorkflows
         InstallCommand command,
         List<ResolvedInstallRequest>? requests = null)
     {
+        // When a nearby global.json pins a local SDK via "sdk.paths", dotnetup is not the
+        // environment owner for this directory: skip onboarding (the form, access-mode setup, and
+        // migration) so we don't point the environment at a repo-local path or migrate system
+        // installs. 'dotnetup install' can still install .NET to that path. Dry-run ignores
+        // global.json entirely so the form can be previewed from any directory.
+        if (!command.DryRun && HasLocalSdkPathGlobalJson())
+        {
+            SpectreAnsiConsole.MarkupLine(
+                $"[{DotnetupTheme.Current.Dim}]A global.json here specifies a local .NET SDK path, so dotnetup left your environment unchanged. Use 'dotnetup install' to install .NET to that path.[/]");
+            return [];
+        }
+
         ShowBanner();
 
-        // Resolve the recommended setup for the summary. This is side-effect-free: it performs no
-        // version resolution, writes no output, and does not throw on an unresolvable channel, so
-        // simply viewing the summary or choosing to exit never triggers an install or a download.
-        WalkthroughPlan plan = InitWorkflowDefaults.ResolveWalkthroughPlan(command, requests, _dotnetEnvironment);
+        DotnetupConfigData? previousConfig = DotnetupConfig.Read();
 
-        DotnetAccessMode? previousAccessMode = DotnetupConfig.ReadAccessMode();
+        // Resolve the recommended setup. This is side-effect-free: it performs no version
+        // resolution, writes no output, and does not throw on an unresolvable channel, so simply
+        // viewing the form or choosing to exit never triggers an install or a download. Dry-run
+        // ignores global.json so the preview reflects a normal directory.
+        InitFormDefaults defaults = InitDefaultsResolver.ResolveFormDefaults(
+            command,
+            requests,
+            _dotnetEnvironment,
+            configuredAccessMode: previousConfig?.AccessMode,
+            ignoreGlobalJson: command.DryRun);
 
-        WalkthroughSelection? selection = ResolveWalkthroughSelection(command, requests, plan, previousAccessMode);
-        if (selection is null)
+        // Show the interactive form (or, non-interactively, take the recommended defaults) and read
+        // back the user's raw choices without resolving any install requests yet.
+        InitFormSelection? formSelection = ResolveFormSelection(command, defaults);
+        if (formSelection is null)
         {
             return []; // User chose to exit without changes.
         }
 
-        return ExecuteWalkthroughSelection(command, selection, plan.InstallRoot, previousAccessMode);
-    }
-
-    /// <summary>
-    /// Shows the summary selector (when interactive) and resolves the user's choice into a
-    /// <see cref="WalkthroughSelection"/>, resolving the concrete install requests only for the
-    /// branches that actually install. Returns null when the user chooses to exit. In
-    /// non-interactive sessions the historical behavior is preserved: the recommended setup is
-    /// applied silently and nothing is migrated.
-    /// </summary>
-    private WalkthroughSelection? ResolveWalkthroughSelection(
-        InstallCommand command,
-        List<ResolvedInstallRequest>? requests,
-        WalkthroughPlan plan,
-        DotnetAccessMode? previousAccessMode)
-    {
-        bool interactiveSummary = command.Interactive && !Console.IsInputRedirected;
-        if (!interactiveSummary)
+        if (command.DryRun)
         {
-            return new WalkthroughSelection(
-                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.AccessMode, []);
+            PrintDryRunPreview(defaults, formSelection);
+            return [];
         }
 
-        WalkthroughDecision decision = WalkthroughSummary.Show(plan, previousAccessMode);
-        return decision switch
-        {
-            WalkthroughDecision.Exit => null,
-            WalkthroughDecision.Proceed => new WalkthroughSelection(
-                InitWorkflowDefaults.ResolveDefaultRequests(command, requests), plan.AccessMode, plan.Migrations),
-            _ => ResolveCustomizedSelection(command, requests, plan),
-        };
+        InitExecutionPlan plan = ResolveExecutionPlan(command, requests, defaults, formSelection);
+        return ExecutePlan(command, plan, defaults.InstallRoot, previousConfig);
     }
 
     /// <summary>
-    /// Runs the existing step-by-step walkthrough (channel, mode, and migration prompts).
+    /// Runs the interactive init form (when interactive) and reads the user's choices into a
+    /// <see cref="InitFormSelection"/>, or returns null when the user exits. In non-interactive
+    /// sessions the same defaults are used without prompting.
     /// </summary>
-    private WalkthroughSelection ResolveCustomizedSelection(
+    private static InitFormSelection? ResolveFormSelection(
+        InstallCommand command,
+        InitFormDefaults defaults)
+    {
+        bool interactive = command.Interactive && !Console.IsInputRedirected;
+        if (!interactive)
+        {
+            return new InitFormSelection(
+                Channel: null,
+                AccessMode: defaults.AccessMode,
+                MigrateSystemInstalls: defaults.MigrateSystemInstalls);
+        }
+
+        InitFormModel model = InitFormModel.Create(
+            defaults,
+            command.ShellProvider ?? ShellDetection.GetCurrentShellProvider());
+        if (!InteractiveFormSelector.Show(model))
+        {
+            return null;
+        }
+
+        return new InitFormSelection(
+            Channel: model.SelectedChannel(),
+            AccessMode: model.SelectedAccessMode(),
+            MigrateSystemInstalls: model.MigrateSelected());
+    }
+
+    /// <summary>
+    /// Turns the user's <see cref="InitFormSelection"/> into an <see cref="InitExecutionPlan"/>,
+    /// resolving concrete install requests only now (this may resolve versions / hit the network),
+    /// which is why dry-run stops before this step.
+    /// </summary>
+    private static InitExecutionPlan ResolveExecutionPlan(
         InstallCommand command,
         List<ResolvedInstallRequest>? requests,
-        WalkthroughPlan plan)
+        InitFormDefaults defaults,
+        InitFormSelection formSelection)
     {
-        List<ResolvedInstallRequest> effectiveRequests = ResolveWalkthroughRequests(command, requests);
-        DotnetAccessMode accessMode = GetInitAccessMode(command.Interactive, command.ShellProvider);
-        List<MigrationWorkflow.MigrationSelection> toMigrate = PromptInstallsToMigrateIfDesired(
-            _dotnetEnvironment,
-            accessMode,
-            GetInstallRootOrDefault(effectiveRequests, plan.InstallRoot),
-            GetManifestPath(effectiveRequests),
-            effectiveRequests,
-            command.Interactive);
+        List<ResolvedInstallRequest> installRequests;
+        if (!SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel))
+        {
+            installRequests = InitDefaultsResolver.ResolveDefaultRequests(command, requests);
+        }
+        else
+        {
+            installRequests = InitDefaultsResolver.GenerateInstallRequests(
+                command,
+                BuildChangedChannelSpecs(requests, formSelection.Channel));
+        }
 
-        return new WalkthroughSelection(effectiveRequests, accessMode, toMigrate);
+        List<MigrationWorkflow.MigrationSelection> migrations = formSelection.MigrateSystemInstalls
+            ? MigrationWorkflow.FilterMigrationSelections(defaults.Migrations, installRequests)
+            : [];
+        return new InitExecutionPlan(installRequests, formSelection.AccessMode, migrations);
     }
+
+    internal static MinimalInstallSpec[] BuildChangedChannelSpecs(
+        List<ResolvedInstallRequest>? requests,
+        string? channel)
+    {
+        return requests is { Count: > 0 }
+            ? [.. requests.Select(request => new MinimalInstallSpec(request.Request.Component, channel))]
+            : [new MinimalInstallSpec(InstallComponent.SDK, channel)];
+    }
+
+    /// <summary>
+    /// Prints what the accepted settings would do, without installing or changing the environment.
+    /// Kept network-free: it echoes the chosen channel rather than resolving a concrete version.
+    /// </summary>
+    private static void PrintDryRunPreview(
+        InitFormDefaults defaults,
+        InitFormSelection formSelection)
+    {
+        string dim = DotnetupTheme.Current.Dim;
+        string accent = DotnetupTheme.Current.Accent;
+
+        SpectreAnsiConsole.MarkupLine($"[{dim}](dry run \u2014 no changes were made to your machine)[/]");
+
+        string channelText =
+            formSelection.Channel ?? defaults.ChannelDisplay.ChannelLabel ?? ChannelVersionResolver.LatestChannel;
+        List<MigrationWorkflow.MigrationSelection> migrations = MigrationWorkflow.FilterMigrationSelections(
+            defaults.Migrations,
+            BuildSelectedInstallSpecs(defaults, formSelection));
+        string migrateText = formSelection.MigrateSystemInstalls
+            ? string.Format(CultureInfo.InvariantCulture, "Yes ({0} install(s))", migrations.Count)
+            : "No";
+
+        PrintPreviewLine("SDK channel", channelText, accent);
+        PrintPreviewLine("Access mode", formSelection.AccessMode.ToString(), accent);
+        PrintPreviewLine("Migrate system installs", migrateText, accent);
+        PrintPreviewLine("Installs in", defaults.InstallRoot.Path, accent);
+    }
+
+    private static void PrintPreviewLine(string label, string value, string accent)
+    {
+        SpectreAnsiConsole.MarkupLine(
+            $"  [white]{label.EscapeMarkup()}:[/]  [{accent}]{value.EscapeMarkup()}[/]");
+    }
+
+    private static MinimalInstallSpec[] BuildSelectedInstallSpecs(
+        InitFormDefaults defaults,
+        InitFormSelection formSelection)
+    {
+        return SelectedChannelDiffersFromDefault(formSelection.Channel, defaults.ChannelDisplay.ChannelLabel)
+            ? [.. defaults.DefaultInstallSpecs.Select(spec => new MinimalInstallSpec(spec.Component, formSelection.Channel))]
+            : [.. defaults.DefaultInstallSpecs];
+    }
+
+    internal static bool SelectedChannelDiffersFromDefault(string? selectedChannel, string? defaultChannel) =>
+        selectedChannel is not null
+        && !string.Equals(
+            selectedChannel,
+            defaultChannel,
+            StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
     /// Installs the selected requests (with any migrations), persists the configuration, and
     /// applies the environment changes for the chosen mode.
     /// </summary>
-    private List<ResolvedInstallRequest> ExecuteWalkthroughSelection(
+    private List<ResolvedInstallRequest> ExecutePlan(
         InstallCommand command,
-        WalkthroughSelection selection,
+        InitExecutionPlan plan,
         DotnetInstallRoot defaultInstallRoot,
-        DotnetAccessMode? previousAccessMode)
+        DotnetupConfigData? previousConfig)
     {
-        List<ResolvedInstallRequest> effectiveRequests = selection.Requests;
-        DotnetAccessMode accessMode = selection.AccessMode;
+        List<ResolvedInstallRequest> effectiveRequests = plan.InstallRequests;
+        DotnetAccessMode accessMode = plan.AccessMode;
 
         // Start the predownload now that the install requests are known, so the cache populates
         // while the config is written.
@@ -146,10 +235,10 @@ internal class InitWorkflows
         ExceptionDispatchInfo? installFailure = null;
         try
         {
-            if (selection.Migrations.Count > 0)
+            if (plan.Migrations.Count > 0)
             {
                 effectiveRequests = RunInstallsWithMigration(
-                    command, effectiveRequests, selection.Migrations, installRoot, manifestPath, predownloadTask);
+                    command, effectiveRequests, plan.Migrations, installRoot, manifestPath, predownloadTask);
             }
             else
             {
@@ -165,7 +254,7 @@ internal class InitWorkflows
 
         // Save config and apply configuration(s) regardless of partial install failure, so the
         // user's choice persists and the successful installs are usable (PATH / shell profile).
-        const bool dotnetupOnPath = true;
+        bool dotnetupOnPath = InitDefaultsResolver.GetDefaultDotnetupOnPath(previousConfig);
         SaveConfig(accessMode, dotnetupOnPath);
 
         ObservedEnvironmentState observed = new EnvironmentStateInspector(_dotnetEnvironment)
@@ -181,29 +270,9 @@ internal class InitWorkflows
         // One or more installs failed; surface the error after configuration was applied.
         installFailure?.Throw();
 
-        DisplaySetupResult(accessMode, previousAccessMode);
+        DisplaySetupResult(accessMode, previousConfig?.AccessMode);
 
         return effectiveRequests;
-    }
-
-    private List<ResolvedInstallRequest> ResolveWalkthroughRequests(
-        InstallCommand command,
-        List<ResolvedInstallRequest>? requests)
-    {
-        if (requests is not null)
-        {
-            return requests;
-        }
-
-        // Step 0: Explain channels and let the user pick one
-        string selectedChannel = PromptChannel();
-        if (selectedChannel == NoneChannel)
-        {
-            return [];
-        }
-
-        // Generate the install request via the workflow (handles path resolution, global.json, validation)
-        return InitWorkflowDefaults.GenerateSdkInstallRequests(command, selectedChannel);
     }
 
     /// <summary>
@@ -270,127 +339,7 @@ internal class InitWorkflows
     internal static void DisplayEnvironmentSetupProgress(IAnsiConsole console)
         => console.MarkupLine("Setting up your environment.");
 
-    private static DotnetAccessMode GetInitAccessMode(bool interactive, IEnvShellProvider? shellProvider = null)
-    {
-        if (!interactive)
-        {
-            return InitWorkflowDefaults.GetDefaultAccessMode(shellProvider);
-        }
-
-        if (!OperatingSystem.IsWindows() && (shellProvider ?? ShellDetection.GetCurrentShellProvider()) is null)
-        {
-            SpectreAnsiConsole.MarkupLine(DotnetupTheme.Dim(
-                $"[{DotnetupTheme.Current.Warning}]Warning:[/] Shell '{ShellDetection.GetCurrentShellDisplayName().EscapeMarkup()}' is not supported for automatic environment configuration. dotnetup will continue without changing your shell profile unless you specify one with --shell."));
-            return DotnetAccessMode.None;
-        }
-
-        return ValidateAccessMode(PromptAccessMode());
-    }
-
-    private static DotnetAccessMode ValidateAccessMode(DotnetAccessMode accessMode)
-    {
-        if (!DotnetAccessModePolicy.IsSupportedOnCurrentPlatform(accessMode))
-        {
-            throw new DotnetInstallException(
-                DotnetInstallErrorCode.PlatformNotSupported,
-                Strings.PathReplacementModeUnixError);
-        }
-
-        return accessMode;
-    }
-
     // ── Prompt Functions ──
-
-    /// <summary>
-    /// Explains how dotnetup channels work and lets the user pick a channel.
-    /// Builds example channels dynamically from the release manifest and shows
-    /// what each one currently resolves to.
-    /// </summary>
-    private string PromptChannel()
-    {
-        string brand = DotnetupTheme.Current.Brand;
-        string dim = DotnetupTheme.Current.Dim;
-
-        // The summary screen already greeted the user before reaching this customize prompt.
-        SpectreAnsiConsole.MarkupLine(string.Format(
-            CultureInfo.InvariantCulture,
-            "dotnetup updates and groups installations using [{0} bold]dotnetup channels[/].",
-            brand));
-
-        var globalJsonInfo = GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory);
-        if (globalJsonInfo.GlobalJsonPath is not null)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "[{0}]Channels may be implied from your global.json at [{1}]{2}[/].[/]",
-                dim,
-                brand,
-                globalJsonInfo.GlobalJsonPath.EscapeMarkup()));
-        }
-
-        var examples = BuildChannelExamples();
-
-        var prompt = new SelectionPrompt<ChannelExample>()
-            .Title(string.Format(CultureInfo.InvariantCulture, "[bold]Select an example channel to get started:[/] [{0}](Enter to confirm)[/]", dim))
-            .PageSize(5)
-            .HighlightStyle(Style.Parse(brand))
-            .MoreChoicesText(string.Format(CultureInfo.InvariantCulture, "[{0}](use {1}{2} arrows)[/]", dim, Constants.Symbols.UpArrow, Constants.Symbols.DownArrow))
-            .UseConverter(ex => FormatChannelExample(ex, brand, dim));
-
-        prompt.AddChoices(examples);
-
-        if (Console.IsInputRedirected)
-        {
-            SpectreAnsiConsole.MarkupLine(string.Format(
-                CultureInfo.InvariantCulture,
-                "[{0}]Using default channel: [{1}]latest[/][/]",
-                dim, brand));
-            return ChannelVersionResolver.LatestChannel;
-        }
-
-        var selected = SpectreAnsiConsole.Prompt(prompt);
-        SpectreAnsiConsole.WriteLine();
-        return selected.Channel;
-    }
-
-    /// <summary>
-    /// Prompts the user to choose how they want to access the dotnetup-managed dotnet
-    /// using an interactive selector that shows all options with descriptions and tooltips.
-    /// </summary>
-    internal static DotnetAccessMode PromptAccessMode()
-    {
-        bool isWindows = OperatingSystem.IsWindows();
-
-        string isolationTooltip = string.Format(
-            CultureInfo.InvariantCulture,
-            Strings.PathTooltipNone,
-            isWindows ? "Program Files" : "/usr/local");
-
-        string terminalTooltip = isWindows
-            ? Strings.PathTooltipShell + " " + Strings.PathTooltipShellWindowsNote
-            : Strings.PathTooltipShell;
-
-        var modes = new List<DotnetAccessMode> { DotnetAccessMode.None, DotnetAccessMode.Shell };
-        var options = new List<SelectableOption>
-        {
-            new(Strings.AccessModeNone, Strings.PathDescriptionNone, isolationTooltip),
-            new(Strings.AccessModeShell, isWindows ? Strings.PathDescriptionShell : Strings.PathDescriptionShellBase, terminalTooltip),
-        };
-
-        if (isWindows)
-        {
-            modes.Add(DotnetAccessMode.Everywhere);
-            options.Add(new(Strings.AccessModeEverywhere, Strings.PathDescriptionEverywhere, Strings.PathTooltipEverywhere));
-        }
-
-        // Highlight the recommended mode by default so the customize prompt agrees with the summary
-        // (e.g. Everywhere on Windows), rather than always defaulting to a fixed option.
-        int defaultIndex = Math.Max(0, modes.IndexOf(InitWorkflowDefaults.GetDefaultAccessMode()));
-
-        int selected = InteractiveOptionSelector.Show("How would you like to use dotnetup?", options, defaultIndex);
-
-        return modes[selected];
-    }
 
     /// <summary>
     /// Prompts the user about migrating system installs into the dotnetup-managed directory.
@@ -399,7 +348,6 @@ internal class InitWorkflows
     /// <returns>A list of deduplicated channel selections to migrate, or an empty list if the user declines or no candidates remain.</returns>
     internal static List<MigrationWorkflow.MigrationSelection> PromptInstallsToMigrateIfDesired(
         IDotnetEnvironmentManager dotnetEnvironment,
-        DotnetAccessMode accessMode,
         DotnetInstallRoot installRoot,
         string? manifestPath = null,
         IReadOnlyCollection<ResolvedInstallRequest>? existingRequests = null,
@@ -410,10 +358,13 @@ internal class InitWorkflows
             return [];
         }
 
-        // ResolveDefaultMigrations already returns an empty list for modes that do not migrate
-        // system installs, so no separate ShouldPromptToConvertSystemInstalls guard is needed here.
-        var migrationSelections = InitWorkflowDefaults.ResolveDefaultMigrations(
-            dotnetEnvironment, accessMode, installRoot, manifestPath, existingRequests);
+        var migrationSelections = InitDefaultsResolver.ResolveDefaultMigrations(
+            dotnetEnvironment, installRoot, manifestPath);
+        if (existingRequests is not null)
+        {
+            migrationSelections = MigrationWorkflow.FilterMigrationSelections(migrationSelections, existingRequests);
+        }
+
         if (migrationSelections.Count == 0)
         {
             return [];
@@ -520,78 +471,17 @@ internal class InitWorkflows
         }
     }
 
+    /// <summary>
+    /// True when a nearby global.json pins a local SDK via "sdk.paths". In that case dotnetup is not
+    /// the environment owner for the directory, so first-run onboarding is skipped.
+    /// </summary>
+    internal static bool HasLocalSdkPathGlobalJson()
+        => GlobalJsonModifier.GetGlobalJsonInfo(Environment.CurrentDirectory).SdkPath is not null;
+
     private static void ShowBanner()
     {
         SpectreAnsiConsole.Write(DotnetBotBanner.BuildPanel());
         SpectreAnsiConsole.WriteLine();
-    }
-
-    /// <summary>
-    /// Builds a list of example channels with descriptions and resolved versions.
-    /// Uses the release manifest to find the latest major version dynamically.
-    /// </summary>
-    private List<ChannelExample> BuildChannelExamples()
-    {
-        var resolver = _channelVersionResolver;
-
-        var latestResolved = resolver.GetLatestVersionForChannel(
-            new UpdateChannel(ChannelVersionResolver.LatestChannel), InstallComponent.SDK);
-        string? ltsVersion = resolver.GetLatestVersionForChannel(
-            new UpdateChannel(ChannelVersionResolver.LtsChannel), InstallComponent.SDK)?.ToString();
-        string? previewVersion = resolver.GetLatestVersionForChannel(
-            new UpdateChannel(ChannelVersionResolver.PreviewChannel), InstallComponent.SDK)?.ToString();
-
-        var examples = new List<ChannelExample>
-        {
-            new(ChannelVersionResolver.LatestChannel, "Latest stable release", latestResolved?.ToString()),
-            new(NoneChannel, "I'll tell you what to install later.", null),
-            new(ChannelVersionResolver.LtsChannel, "Long Term Support", ltsVersion),
-            new(ChannelVersionResolver.PreviewChannel, "Latest preview", previewVersion),
-            // Daily resolves against the blob feed, so we don't pre-resolve a version here to avoid
-            // a slow/failing network call during the prompt; it is shown without a resolved version.
-            new(ChannelVersionResolver.DailyChannel, "Latest unsigned daily build", null),
-        };
-
-        if (latestResolved is not null)
-        {
-            string latestVersion = latestResolved.ToString();
-            string majorMinor = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}");
-            string featureBand = FormattableString.Invariant($"{latestResolved.Major}.{latestResolved.Minor}.{latestResolved.SdkFeatureBand / 100}xx");
-
-            examples.Add(new(majorMinor, "Major.Minor channel", latestVersion));
-            examples.Add(new(featureBand, "SDK feature band", latestVersion));
-            examples.Add(new(latestVersion, "Explicit version", latestVersion));
-        }
-
-        return examples;
-    }
-
-    private static string FormatChannelExample(ChannelExample ex, string brand, string dim)
-    {
-        // The "none" sentinel and the daily channel carry no pre-resolved version, so they render
-        // as channel + description without a "→ version" (or "no version available") suffix.
-        if (ex.Channel is NoneChannel or ChannelVersionResolver.DailyChannel)
-        {
-            return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]  [{2}]{3}[/]",
-                brand,
-                ex.Channel.EscapeMarkup().PadRight(12),
-                dim,
-                ex.Description.EscapeMarkup());
-        }
-
-        string resolved = ex.ResolvedVersion is not null
-            ? string.Format(CultureInfo.InvariantCulture, "[{0}] {1} {2}[/]", dim, Constants.Symbols.RightArrow, ex.ResolvedVersion)
-            : string.Format(CultureInfo.InvariantCulture, "[{0}] (no version available)[/]", dim);
-        string suggested = ex.Channel == ChannelVersionResolver.LatestChannel
-            ? " [white](suggested)[/]"
-            : "";
-        return string.Format(CultureInfo.InvariantCulture, "[bold {0}]{1}[/]{2}  [{3}]{4}[/] {5}",
-            brand,
-            ex.Channel.EscapeMarkup().PadRight(12),
-            suggested,
-            dim,
-            ex.Description.EscapeMarkup(),
-            resolved);
     }
 
     /// <summary>

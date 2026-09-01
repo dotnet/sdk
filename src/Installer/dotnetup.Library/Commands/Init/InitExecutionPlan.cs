@@ -7,14 +7,13 @@ using Microsoft.DotNet.Tools.Bootstrapper.Commands.Shared;
 namespace Microsoft.DotNet.Tools.Bootstrapper.Commands.Init;
 
 /// <summary>
-/// The setup the walkthrough resolved to execute after the user made their choice
-/// (either accepting the defaults or customizing). A null selection signals that the
-/// user chose to exit without making any changes.
+/// The resolved work to execute after the user accepts the init form or the equivalent
+/// non-interactive defaults.
 /// </summary>
-/// <param name="Requests">The install requests to execute.</param>
+/// <param name="InstallRequests">The install requests to execute.</param>
 /// <param name="AccessMode">The access mode to apply and persist.</param>
 /// <param name="Migrations">The system installs to migrate alongside the install.</param>
-internal sealed record WalkthroughSelection(
-    List<ResolvedInstallRequest> Requests,
+internal sealed record InitExecutionPlan(
+    List<ResolvedInstallRequest> InstallRequests,
     DotnetAccessMode AccessMode,
     List<MigrationWorkflow.MigrationSelection> Migrations);
