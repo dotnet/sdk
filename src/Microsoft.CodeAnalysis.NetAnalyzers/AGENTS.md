@@ -71,8 +71,9 @@ the driver already implies them and the combination fails. To regenerate `.xlf` 
   upstream `dotnet/roslyn-analyzers` tests use xUnit and must be translated when ported.
   `tests/Test.Utilities/TheoryData.cs` is an MSTest-friendly shim for xUnit's `TheoryData`,
   consumable from `[DynamicData]`.
-- The unit-test assembly uses method-level parallelization. Keep new fixtures, data sources,
-  process-global state, and filesystem paths safe for concurrent test methods.
+- `Microsoft.CodeAnalysis.NetAnalyzers.UnitTests` sets
+  `MSTestParallelizeScope=MethodLevel`. Keep new fixtures, data sources, process-global
+  state, and filesystem paths safe for concurrent test methods.
 - Embedded C# test sources default to `LanguageVersion.CSharp7_3`; set `LanguageVersion`
   explicitly when the source uses newer syntax.
 - `test/ConditionalTests.props` registers a `NetAnalyzers` scope, so PR validation can skip
