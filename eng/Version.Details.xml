@@ -521,9 +521,9 @@
       <Uri>https://github.com/dotnet/dotnet</Uri>
       <Sha>64a29867c5c5c8e0babc9e31313cf3b6e50f0193</Sha>
     </Dependency>
-    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26414.2">
+    <Dependency Name="Microsoft.DotNet.Helix.JobMonitor" Version="11.0.0-beta.26427.10">
       <Uri>https://github.com/dotnet/arcade</Uri>
-      <Sha>09a0bcffb8286738e8679282171cd1ba548c8c52</Sha>
+      <Sha>2cdfe99944d984749c8bdfc7d8d6a2589ed15d6d</Sha>
     </Dependency>
     <Dependency Name="Microsoft.DotNet.SignTool" Version="11.0.0-beta.26410.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>
@@ -544,18 +544,18 @@
     <!-- KEEP IN SYNC: the following testfx packages (Microsoft.Testing.Platform, MSTest, MSTest.Sdk) must
          stay on the SAME testfx build/Sha. The MSTest.Sdk source generator emits registrations against the
          MSTest.TestFramework runtime, so a version skew breaks the NativeAOT CLI test build. See #55302. -->
-    <Dependency Name="Microsoft.Testing.Platform" Version="2.4.0-preview.26411.1">
+    <Dependency Name="Microsoft.Testing.Platform" Version="2.4.0-preview.26429.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>dc84cc9447de9dcd64652d9fed036b0651861e17</Sha>
+      <Sha>16f55b613b1bf4c445521fd546981c104dbcab7b</Sha>
     </Dependency>
-    <Dependency Name="MSTest" Version="4.4.0-preview.26411.1">
+    <Dependency Name="MSTest" Version="4.4.0-preview.26429.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>dc84cc9447de9dcd64652d9fed036b0651861e17</Sha>
+      <Sha>16f55b613b1bf4c445521fd546981c104dbcab7b</Sha>
     </Dependency>
     <!-- MSTest.Sdk is consumed from global.json's msbuild-sdks (not as a PackageReference). -->
-    <Dependency Name="MSTest.Sdk" Version="4.4.0-preview.26411.1">
+    <Dependency Name="MSTest.Sdk" Version="4.4.0-preview.26429.4">
       <Uri>https://github.com/microsoft/testfx</Uri>
-      <Sha>dc84cc9447de9dcd64652d9fed036b0651861e17</Sha>
+      <Sha>16f55b613b1bf4c445521fd546981c104dbcab7b</Sha>
     </Dependency>
     <Dependency Name="Microsoft.Extensions.Configuration.Ini" Version="11.0.0-rc.1.26410.101">
       <Uri>https://github.com/dotnet/dotnet</Uri>

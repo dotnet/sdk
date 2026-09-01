@@ -1,6 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.FileBasedPrograms;
@@ -310,6 +311,106 @@ public sealed class FileBasedAppSourceEditorTests : SdkTest
             // test
 
             /* test */Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
+    public void AddWithMetadataAndQuoting()
+    {
+        Verify(
+            """
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default)
+            {
+                Name = "MyPackage",
+                Version = "1.0.0",
+                Metadata = ImmutableArray.Create(("ExcludeAssets", "runtime"), ("Note", "with spaces")),
+            }),
+            """
+            #:package MyPackage@1.0.0 ExcludeAssets=runtime Note="with spaces"
+
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
+    public void AddWithSpecialCharactersEscapes()
+    {
+        // Values containing a double quote are emitted as an escaped C# string literal; a bare backslash
+        // (no whitespace or quote) needs no quoting and round-trips as-is.
+        Verify(
+            """
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default)
+            {
+                Name = "MyPackage",
+                Version = "1.0.0",
+                Metadata = ImmutableArray.Create(("Quote", "a\"b"), ("Path", "a\\b"), ("Spaced", "a\"b c")),
+            }),
+            """
+            #:package MyPackage@1.0.0 Quote="a\"b" Path=a\b Spaced="a\"b c"
+
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
+    public void AddWithVersionNeedingQuotes()
+    {
+        Verify(
+            """
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default)
+            {
+                Name = "MyPackage",
+                Version = "1.0 beta",
+            }),
+            """
+            #:package MyPackage@"1.0 beta"
+
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
+    public void RefWithMetadataRoundTrips()
+    {
+        // A #:ref directive with trailing metadata is parsed and preserved verbatim when other edits happen.
+        Verify(
+            """
+            #:ref lib.cs Aliases=lib Note="with spaces"
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #:package MyPackage@1.0.0
+            #:ref lib.cs Aliases=lib Note="with spaces"
+            Console.WriteLine();
+            """));
+    }
+
+    [TestMethod]
+    public void LegacyWhitespacePreservedVerbatim()
+    {
+        // Directives using the deprecated unquoted-whitespace form are still parsed and are
+        // preserved verbatim when unrelated edits happen (no breaking change).
+        Verify(
+            """
+            #:package Existing@1.0
+            #:property Description=Hello World
+            #:project ../My Library
+            Console.WriteLine();
+            """,
+            (static editor => editor.Add(new CSharpDirective.Package(default) { Name = "MyPackage", Version = "1.0.0" }),
+            """
+            #:package Existing@1.0
+            #:package MyPackage@1.0.0
+            #:property Description=Hello World
+            #:project ../My Library
+            Console.WriteLine();
             """));
     }
 

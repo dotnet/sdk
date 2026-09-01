@@ -1,22 +1,29 @@
 ---
-name: targeted-test
+name: run-tests
 description: >-
-  Select and run the smallest relevant .NET SDK tests with live output and retained
-  TRX/binlog diagnostics. REQUIRED: invoke before answering any dotnet/sdk request
-  containing an explicit deliverable to select, run, or rerun narrow local tests. Use
-  the owning workflow for the change, then this skill for test selection and execution.
-  Also use to test a completed change, choose tests from changed files, run targeted,
-  focused, or smallest relevant tests, or run one project, class, or method, including
-  plans and dry runs. NEVER invoke when the user says not to run tests yet. DO NOT USE
-  for full suites, end-to-end validation, repo investigations, or review.
+  Select and run .NET SDK tests through the repository's diagnostic-preserving test
+  entry point. REQUIRED whenever an agent will select, run, or rerun local dotnet/sdk
+  tests, including a project, class, method, targeted test, focused test, smallest
+  relevant test, or completed-change validation. NEVER invoke when the user says not to
+  run tests yet.
 license: MIT
 ---
 
-# Targeted tests
+# Run tests
 
-Run the smallest project and filter that cover the changed behavior. This workflow
-streams detailed test output and writes a TRX plus an MSBuild binlog under
-`artifacts/log/targeted-tests/`.
+Use this workflow for every local SDK test execution. Select the smallest project and
+filter that cover the changed behavior, then invoke the centralized runner. It streams
+detailed output and writes a TRX plus an MSBuild binlog under
+`artifacts/log/test-runs/`.
+
+## Choose the execution scope
+
+- For one test, class, or project, invoke `scripts/RunTests.cs` as described below.
+- For an area represented in `test/ConditionalTests.props`, expand the scope and invoke
+  `scripts/RunTests.cs` once per concrete project.
+- When the user explicitly requests the complete repository test suite, explain that it
+  is very large and then run `build.cmd -test` on Windows or `./build.sh --test` on
+  macOS/Linux. Do not use the complete suite for routine validation.
 
 ## Select configured test scopes first
 
@@ -89,19 +96,23 @@ assemblies built beside the test project.
    - Otherwise rebuild the repository. Building only a test project can leave the SDK
      under test stale even when the test assembly itself is current.
 3. If only test code changed, the runner can build the selected test project directly.
+4. Tests that do not exercise the assembled SDK, such as NetAnalyzers unit tests, may
+   pass `--skip-redist-check`. Use it only when the owning workflow confirms that the
+   project does not consume `artifacts/bin/redist`; it does not make stale product bits
+   safe to test.
 
 ## Run
 
-Start with a build-producing run. The runner builds the selected project by default,
-which keeps the test assembly current and produces the binlog needed to diagnose build
-failures. Add `--no-build` only after this session built that exact project after the
-latest test-code change and confirmed its expected output exists. Do not infer readiness
-from another project or an older artifact; when uncertain, omit `--no-build`.
+The runner always performs an incremental build of the selected test project before
+execution. This keeps the test assembly current and guarantees that the run reports an
+MSBuild binlog path. Do not replace the runner with a hand-written `dotnet test`,
+`dotnet exec`, or test-application command: those commands can execute zero tests under
+the wrong platform or omit the diagnostics needed after a failure.
 
 From the repository root on Windows:
 
 ```powershell
-.\.dotnet\dotnet.exe .github\skills\targeted-test\scripts\RunTargetedTests.cs -- `
+.\.dotnet\dotnet.exe scripts\RunTests.cs -- `
   --project test\Microsoft.NET.Build.Tests\Microsoft.NET.Build.Tests.csproj `
   --filter "FullyQualifiedName~GivenThatWeWantToBuildALibrary"
 ```
@@ -109,17 +120,19 @@ From the repository root on Windows:
 On macOS/Linux:
 
 ```bash
-./.dotnet/dotnet .github/skills/targeted-test/scripts/RunTargetedTests.cs -- \
+./.dotnet/dotnet scripts/RunTests.cs -- \
   --project test/Microsoft.NET.Build.Tests/Microsoft.NET.Build.Tests.csproj \
   --filter "FullyQualifiedName~GivenThatWeWantToBuildALibrary"
 ```
 
-Omit `--filter` to run the whole project. Use `--configuration Release` when validating
-a Release redist layout. A `--no-build` run does not produce a new build binlog.
+Omit `--filter` to run the whole project. Multi-targeted projects select
+`SdkTargetFramework` by default; pass `--framework <TFM>` to choose another supported
+target. Use `--configuration Release` when validating a Release redist layout. Unfiltered
+project runs can be expensive; do not treat one as the complete repository suite.
 
-The runner evaluates the project to select its test platform. It executes MSTest.Sdk
-projects through their built Microsoft.Testing.Platform executable and keeps
-`dotnet test` for other projects. It prints the exact command before execution. On
-failure it also prints failed test names when a TRX is available, the retained
-TRX/binlog paths, and the rerun command. Do not replace it with a command that
-suppresses console output or discards those artifacts.
+All supported SDK test projects use MSTest.Sdk/Microsoft.Testing.Platform. The runner
+evaluates the selected framework, builds it, then invokes its test application directly.
+It only requests a TRX when the project enables the TRX report extension. It prints the
+run directory and exact command before execution. At completion it prints the retained
+TRX/binlog paths; on failure it also prints failed test names when a TRX is available and
+the rerun command.

@@ -193,7 +193,57 @@ jobs:
           # agent pipeline stays inert.
           set +e
           set +o pipefail
+
+          # A set but unwritable path would pass a non-empty check and then
+          # fail on every append, leaving the step with no outputs at all
+          # instead of the intended controlled no-op. Probe with a zero-byte
+          # append, which verifies writability without adding content.
+          if [ -z "${GITHUB_OUTPUT}" ] || ! printf '' >> "${GITHUB_OUTPUT}" 2>/dev/null; then
+            echo "::error::GITHUB_OUTPUT is unset or not writable; refusing to run without a way to emit step outputs." >&2
+            exit 1
+          fi
+
           emit_none() { echo "binlog-found=false" >> "$GITHUB_OUTPUT"; exit 0; }
+
+          # Fetch an Azure DevOps API document into ADO_DOC. A network failure
+          # or a non-JSON body is a data-resolution failure, not evidence that
+          # there is nothing to analyse, so it is reported as such instead of
+          # falling through to an empty `.records`/`.value` and a misleading
+          # "no failed jobs" warning. These are small JSON documents, so they
+          # are also given a time budget: without one a stalled endpoint hangs
+          # the step until the whole job times out.
+          # Returns non-zero rather than calling emit_none directly, because a
+          # call inside a command substitution would only exit the subshell.
+          ado_get() {
+            local what="$1" url="$2" rc tmp
+            # `mktemp` rather than a fixed /tmp name: a predictable path is one
+            # pre-created symlink -- or one collision with another job sharing the
+            # runner -- away from being someone else's file.
+            tmp=$(mktemp) || {
+              echo "::warning::Could not create a temporary file for the ${what}; treating as a data-resolution failure."
+              return 1
+            }
+            # Write to a file rather than capturing stdout: `curl --retry` can only
+            # rewind seekable output, and command-substitution stdout is a pipe. A
+            # retry after a partial or error body would append to it, so a *successful*
+            # retry would yield two concatenated documents, `jq` would reject them, and
+            # the run would be reported as a data-resolution failure. With `-o` curl
+            # truncates the file before each attempt, so only the last response
+            # survives.
+            timeout 60 curl -sSL --fail --retry 3 --connect-timeout 10 --max-time 20 --retry-max-time 40 -o "${tmp}" "${url}"
+            rc=$?
+            ADO_DOC=$(cat "${tmp}" 2>/dev/null)
+            rm -f "${tmp}"
+            if [ "${rc}" -ne 0 ] || [ -z "${ADO_DOC}" ]; then
+              echo "::warning::Could not fetch the ${what} from Azure DevOps (curl exit ${rc}); treating as a data-resolution failure."
+              return 1
+            fi
+            if ! printf '%s' "${ADO_DOC}" | jq -e . >/dev/null 2>&1; then
+              echo "::warning::Azure DevOps returned a non-JSON ${what}; treating as a data-resolution failure."
+              return 1
+            fi
+            return 0
+          }
 
           # --- 1. Resolve the Azure DevOps build and the PR it belongs to ---
           # This is the ONLY part of the job that differs between the two
@@ -225,8 +275,9 @@ jobs:
             # Newest build for the PR's merge ref REGARDLESS of status
             # (queue-time descending), so a build queued after an older failure
             # is seen rather than the stale one being analysed silently.
-            builds_json=$(curl -sSL --retry 3 \
-              "${ADO_API}/build/builds?definitions=${ADO_BUILD_DEFINITION_ID}&branchName=refs/pull/${PR_NUMBER}/merge&queryOrder=queueTimeDescending&\$top=1&api-version=7.1")
+            ado_get "build list for PR #${PR_NUMBER}" \
+              "${ADO_API}/build/builds?definitions=${ADO_BUILD_DEFINITION_ID}&branchName=refs/pull/${PR_NUMBER}/merge&queryOrder=queueTimeDescending&\$top=1&api-version=7.1" || emit_none
+            builds_json="${ADO_DOC}"
             BUILD_ID=$(printf '%s' "${builds_json}" | jq -r '.value // [] | .[0].id // empty')
             BUILD_STATUS=$(printf '%s' "${builds_json}" | jq -r '.value // [] | .[0].status // empty')
             echo "Newest dotnet-sdk-public-ci build for PR #${PR_NUMBER}: id='${BUILD_ID}' status='${BUILD_STATUS}'"
@@ -240,7 +291,8 @@ jobs:
               echo "::warning::PR #${PR_NUMBER}'s newest dotnet-sdk-public-ci build (${BUILD_ID}) is still '${BUILD_STATUS}'; wait for it to finish before analysing."
               emit_none
             fi
-            build_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1")
+            ado_get "details of build ${BUILD_ID}" "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1" || emit_none
+            build_json="${ADO_DOC}"
           else
             if [ "${EVENT_NAME}" = "workflow_dispatch" ]; then
               BUILD_ID="${DISPATCH_BUILD_ID}"
@@ -259,7 +311,8 @@ jobs:
             # The build metadata is the authoritative source for the PR number
             # (via sourceBranch) as well as for the definition / result /
             # revision validated in step 3.
-            build_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1")
+            ado_get "details of build ${BUILD_ID}" "${ADO_API}/build/builds/${BUILD_ID}?api-version=7.1" || emit_none
+            build_json="${ADO_DOC}"
             # A PR build's sourceBranch is exactly `refs/pull/<n>/merge`, so it
             # identifies the PR unambiguously — unlike the commit->PRs API,
             # which can return several PRs in an unspecified order.
@@ -380,7 +433,8 @@ jobs:
           # workflow a silent no-op on every `release/*` PR (0 artifacts matched
           # -> binlog-found=false -> agent skipped), which is exactly the class of
           # failure that looks green forever, so handle both.
-          artifacts_json=$(curl -sSL --retry 3 "${ADO_API}/build/builds/${BUILD_ID}/artifacts?api-version=7.1")
+          ado_get "artifact list of build ${BUILD_ID}" "${ADO_API}/build/builds/${BUILD_ID}/artifacts?api-version=7.1" || emit_none
+          artifacts_json="${ADO_DOC}"
           mapfile -t names < <(printf '%s' "${artifacts_json}" | jq -r '
             .value // []
             | map(select(.name | test("_Logs_Attempt[0-9]+$")))
@@ -426,7 +480,15 @@ jobs:
           #
           # `canceled` and `abandoned` legs count alongside `failed`: they also
           # finish without logs, and are a real gap in the artifact set.
-          timeline_json=$(curl -sSL --retry 3 --max-time 60 "${ADO_API}/build/builds/${BUILD_ID}/timeline?api-version=7.1" 2>/dev/null || true)
+          # Write to a file, not a command substitution: `curl --retry` can only rewind
+          # seekable output, so a retry would append to whatever a failed attempt had
+          # already emitted and a *successful* retry would yield two concatenated
+          # documents. That parses as neither, so a recoverable blip would look like an
+          # unreadable timeline and needlessly disable the analysis below.
+          TL_TMP=$(mktemp) || TL_TMP=""
+          timeout 60 curl -sSL --fail --retry 3 --connect-timeout 10 --max-time 20 --retry-max-time 40 -o "${TL_TMP}" "${ADO_API}/build/builds/${BUILD_ID}/timeline?api-version=7.1" 2>/dev/null || true
+          timeline_json=$(cat "${TL_TMP}" 2>/dev/null)
+          rm -f "${TL_TMP}"
           MISSING_LEGS=""
           # An unreadable timeline must not look like a complete build. A failed
           # request, a non-JSON error page and an ADO error document all left
@@ -436,7 +498,7 @@ jobs:
           # was never established. Probe for the `records` array first and
           # report an explicit unknown when it isn't there.
           timeline_ok=0
-          if printf '%s' "${timeline_json}" | jq -e 'type == "object" and has("records")' >/dev/null 2>&1; then
+          if printf '%s' "${timeline_json}" | jq -e 'type == "object" and (.records | type == "array")' >/dev/null 2>&1; then
             timeline_ok=1
           fi
           if [ "${timeline_ok}" -eq 1 ]; then
@@ -474,13 +536,36 @@ jobs:
           # extraction time, AND enforce a cumulative uncompressed budget across
           # all legs so many individually-small artifacts can't collectively
           # exhaust the runner's disk.
-          MAX_ZIP_BYTES=524288000       # 500 MB compressed per artifact
+          # `MAX_ZIP_BYTES` is a *download* guard, not a size expectation: an
+          # artifact that grows past a cap is silently dropped from the analysis
+          # rather than reported, so a too-tight value quietly hides the very
+          # failure the workflow exists to explain. (On dotnet/roslyn a 500 MB
+          # cap excluded a 636 MB analyzer-logs artifact and the run produced
+          # nothing.) The cumulative caps below are what actually bound the
+          # runner's disk and network, so this one is set well clear of the
+          # legitimate range.
+          MAX_ZIP_BYTES=2147483648      # 2 GB compressed per artifact
           MAX_UNZIP_BYTES=2147483648    # 2 GB uncompressed per artifact
           MAX_TOTAL_BYTES=4294967296    # 4 GB uncompressed across all artifacts
           MAX_TOTAL_ZIP_BYTES=3221225472 # 3 GB compressed downloaded in total
+          # `--max-time` is per attempt, so `--retry N` multiplies it: the whole
+          # download phase, not one transfer, is what has to fit inside this job's
+          # `timeout-minutes`. Give the loop a wall-clock deadline and derive every
+          # transfer's budget from what is left of it, so no combination of slow
+          # artifacts and retries can take the job down before the controlled no-op.
+          FETCH_BUDGET=420           # 7 minutes for all artifact transfers
+          MAX_ATTEMPT_SECONDS=120       # per attempt; the full set really takes ~30s
+          FETCH_DEADLINE=$(( $(date +%s) + FETCH_BUDGET ))
           MAX_ARTIFACTS=40              # cap only; the real count is path-dependent
           TOTAL_BYTES=0
           TOTAL_ZIP_BYTES=0
+          # One private scratch file for every download. A fixed /tmp name is a
+          # pre-created symlink, or a second job on the same runner, away from being
+          # someone else's file.
+          ZIP_TMP=$(mktemp) || { echo "::warning::Could not create a temporary file for downloads."; emit_none; }
+          # A private extraction directory, for the same reason as ZIP_TMP: a fixed
+          # path is another job's directory on a runner we do not have to ourselves.
+          AX_DIR=$(mktemp -d) || { echo "::warning::Could not create a temporary directory for extraction."; emit_none; }
           # Bound the work before starting: a pipeline change (or repeated leg
           # retries adding Attempt<N> artifacts) could grow the matched set well
           # past today's 10. Refuse rather than process a prefix of the list,
@@ -491,6 +576,10 @@ jobs:
             emit_none
           fi
           mkdir -p /tmp/binlogs
+          # Only binlogs extracted by this run may be analyzed. Anything left in
+          # the directory by an earlier run on the same runner would otherwise be
+          # uploaded and attributed to this build.
+          rm -f /tmp/binlogs/*.binlog
           count=0
           staged_legs=0
           # Artifacts we tried to use but could not read (download, size-guard or
@@ -508,42 +597,89 @@ jobs:
             safe_name=$(printf '%s' "${name}" | tr -c 'A-Za-z0-9._-' '_')
             ai=$((ai + 1))
             url=$(printf '%s' "${artifacts_json}" | jq -r --arg n "${name}" '.value[] | select(.name==$n) | .resource.downloadUrl // empty')
-            [ -z "${url}" ] && { echo "::warning::No download URL for ${name}."; legs_failed=$((legs_failed + 1)); continue; }
-            rm -rf /tmp/ax /tmp/a.zip
-            mkdir -p /tmp/ax
+            [ -z "${url}" ] && { echo "::warning::No download URL for ${safe_name}."; legs_failed=$((legs_failed + 1)); continue; }
+            find "${AX_DIR:?}" -mindepth 1 -delete
+            : > "${ZIP_TMP}"
             # Hard-cap the bytes written to disk regardless of Content-Length:
-            # stream through `head -c` (cap + 1) and bound total time. This
+            # `ulimit -f` bounds what this subshell may write, and the size check
+            # below is authoritative. Total time is bounded too. This
             # closes the gap where `curl --max-filesize` alone would let a
             # length-less response write unbounded data before any post-check.
-            curl -sSL --retry 3 --max-time 300 "${url}" 2>/dev/null | head -c $((MAX_ZIP_BYTES + 1)) > /tmp/a.zip || true
-            ZIP_BYTES=$(stat -c%s /tmp/a.zip 2>/dev/null || echo 0)
-            # Bound cumulative *compressed* bytes too: the per-artifact and
-            # cumulative-uncompressed caps still allow many mid-sized archives
-            # to be pulled over the network before any of them is inspected.
             #
-            # Charge the budget here, before the skips below, because the bytes
-            # are already on the wire by this point — `curl` above streams into
-            # `head -c` and only then is the size known. Charging after the
-            # per-artifact skip would let every oversized artifact cost a full
-            # MAX_ZIP_BYTES of network without ever being counted, so a build of
-            # MAX_ARTIFACTS oversized legs would download far past this budget
-            # while appearing to stay inside it.
+            # Bound this transfer by whatever is left of the cumulative budget
+            # as well as by the per-artifact cap. Checking the cumulative total
+            # only *after* the transfer would let a download start just under
+            # the limit and still pull a further MAX_ZIP_BYTES, making the real
+            # ceiling `MAX_TOTAL_ZIP_BYTES + MAX_ZIP_BYTES`.
+            ZIP_CAP="${MAX_ZIP_BYTES}"
+            ZIP_ALLOWANCE=$((MAX_TOTAL_ZIP_BYTES - TOTAL_ZIP_BYTES))
+            [ "${ZIP_ALLOWANCE}" -lt "${ZIP_CAP}" ] && ZIP_CAP="${ZIP_ALLOWANCE}"
+            if [ "${ZIP_CAP}" -le 0 ]; then
+              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} is exhausted before ${safe_name}; stopping downloads."; budget_hit=1; break
+            fi
+            # Bound this transfer by the time left as well, and never start one with
+            # no time to finish in.
+            TIME_LEFT=$(( FETCH_DEADLINE - $(date +%s) ))
+            if [ "${TIME_LEFT}" -le 0 ]; then
+              echo "::warning::Download time budget ${FETCH_BUDGET}s exhausted before ${safe_name}; stopping downloads."; budget_hit=1; break
+            fi
+            ATTEMPT_SECONDS="${MAX_ATTEMPT_SECONDS}"
+            [ "${TIME_LEFT}" -lt "${ATTEMPT_SECONDS}" ] && ATTEMPT_SECONDS="${TIME_LEFT}"
+            # `--retry-max-time` only gates whether curl may *start* another retry, so a
+            # retry begun just inside it can still run a further `--max-time`. `timeout`
+            # around the whole invocation is what makes the deadline real rather than a
+            # scheduling hint; a killed transfer is treated like any other failed one and
+            # the leg is reported as missing, which fails closed.
+            # Download to a file, never a pipe: curl can only rewind seekable output, so
+            # through a pipe a retried body is *appended* and a 503 error page followed
+            # by a successful retry yields a corrupt `<error page><zip>` that can still
+            # pass the size guards, only to make `unzip` return warning status 1 later
+            # and drop the leg. `--fail` additionally keeps HTTP error bodies out of the
+            # file. `ulimit -f` is the disk backstop for responses that declare no
+            # Content-Length; the size check below is authoritative. The block count is
+            # rounded UP so any positive ZIP_CAP still buys at least one block. SIGXFSZ
+            # is ignored so hitting the cap is an ordinary write error.
+            (
+              # Fail the leg rather than the backstop: if the shell will not apply
+              # the limit, downloading anyway would leave a response with no usable
+              # Content-Length free to fill the disk before the size check below runs.
+              # bash counts `ulimit -f` in 1024-byte units, except in POSIX mode where
+              # it counts 512-byte blocks. Pin the mode so this arithmetic means one
+              # thing regardless of how the runner's shell was invoked.
+              set +o posix
+              ulimit -f $(( (ZIP_CAP + 1023) / 1024 )) || exit 1
+              trap '' XFSZ
+              timeout "${TIME_LEFT}" curl -sSL --fail --retry 3 --retry-delay 2 \
+                --connect-timeout 15 --max-time "${ATTEMPT_SECONDS}" \
+                --retry-max-time "${TIME_LEFT}" -o "${ZIP_TMP}" "${url}"
+            ) 2>/dev/null
+            curl_rc=$?
+            ZIP_BYTES=$(stat -c%s "${ZIP_TMP}" 2>/dev/null || echo 0)
+            # Charge the budget with the bytes retained on disk, including those of an
+            # artifact about to be skipped. This is a disk and extraction budget, not a
+            # meter of network egress: `-o` truncates before each retry, so failed
+            # attempts are not counted here. What bounds those is FETCH_DEADLINE via
+            # the `timeout` wrapper, plus `ulimit -f`, which caps every individual
+            # attempt at ZIP_CAP.
             TOTAL_ZIP_BYTES=$((TOTAL_ZIP_BYTES + ZIP_BYTES))
-            if [ "${TOTAL_ZIP_BYTES}" -gt "${MAX_TOTAL_ZIP_BYTES}" ]; then
-              echo "::warning::Cumulative compressed download budget ${MAX_TOTAL_ZIP_BYTES} reached at ${name}; stopping."; budget_hit=1; break
+            # A timed-out, killed or size-limited transfer can still leave a file that
+            # happens to parse as a ZIP; without this the leg would be accepted from a
+            # truncated download. Skipping fails closed via the completeness check.
+            if [ "${curl_rc}" -ne 0 ]; then
+              echo "::warning::Skipping ${safe_name}: download failed or was truncated (curl exit ${curl_rc})."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ "${ZIP_BYTES}" -eq 0 ]; then
-              echo "::warning::Skipping ${name}: empty or failed download."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: empty or failed download."; legs_failed=$((legs_failed + 1)); continue
             fi
-            if [ "${ZIP_BYTES}" -gt "${MAX_ZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: download exceeded ${MAX_ZIP_BYTES} bytes."; legs_failed=$((legs_failed + 1)); continue
+            if [ "${ZIP_BYTES}" -gt "${ZIP_CAP}" ]; then
+              echo "::warning::Skipping ${safe_name}: download exceeded the ${ZIP_CAP}-byte cap."; legs_failed=$((legs_failed + 1)); continue
             fi
-            UNCOMP=$(unzip -l /tmp/a.zip 2>/dev/null | tail -1 | awk '{print $1}')
+            UNCOMP=$(unzip -l "${ZIP_TMP}" 2>/dev/null | tail -1 | awk '{print $1}')
             # Fail safe: if the uncompressed size isn't a plain integer (corrupt
             # zip / unexpected `unzip -l` output), we can't verify it — skip the
             # artifact rather than let a non-numeric value bypass the `-gt` guard.
             if ! printf '%s' "${UNCOMP}" | grep -qE '^[0-9]+$'; then
-              echo "::warning::Skipping ${name}: could not determine uncompressed size (unparseable unzip output)."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: could not determine uncompressed size (unparseable unzip output)."; legs_failed=$((legs_failed + 1)); continue
             fi
             # ZIP64 uncompressed sizes can reach ~20 digits — beyond Bash's
             # signed 64-bit range, where `-gt` (and the cumulative `$((...))`
@@ -552,21 +688,21 @@ jobs:
             # limit is unambiguously larger, so reject on decimal length first;
             # after this, UNCOMP fits safely in the integer range used below.
             if [ "${#UNCOMP}" -gt "${#MAX_UNZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: uncompressed size has ${#UNCOMP} digits, exceeding the ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: uncompressed size has ${#UNCOMP} digits, exceeding the ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ "${UNCOMP}" -gt "${MAX_UNZIP_BYTES}" ]; then
-              echo "::warning::Skipping ${name}: uncompressed size ${UNCOMP} exceeds ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: uncompressed size ${UNCOMP} exceeds ${MAX_UNZIP_BYTES} guard (possible zip bomb)."; legs_failed=$((legs_failed + 1)); continue
             fi
             if [ $((TOTAL_BYTES + UNCOMP)) -gt "${MAX_TOTAL_BYTES}" ]; then
-              echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${name}; stopping extraction."; budget_hit=1; break
+              echo "::warning::Cumulative uncompressed budget ${MAX_TOTAL_BYTES} reached at ${safe_name}; stopping extraction."; budget_hit=1; break
             fi
             # Refuse the archive if any entry path is absolute or has a `..`
             # component (defense-in-depth over unzip's own traversal guard),
             # then extract `*.binlog` entries *preserving* their in-archive
             # paths (no `-j`) under a fresh dir + timeout, so two binlogs that
             # share a basename in different folders don't overwrite each other.
-            if unzip -Z1 /tmp/a.zip 2>/dev/null | grep -qE '(^/|(^|/)\.\.(/|$))'; then
-              echo "::warning::Skipping ${name}: archive has a suspicious (absolute or ..) entry path."; legs_failed=$((legs_failed + 1)); continue
+            if unzip -Z1 "${ZIP_TMP}" 2>/dev/null | grep -qE '(^/|(^|/)\.\.(/|$))'; then
+              echo "::warning::Skipping ${safe_name}: archive has a suspicious (absolute or ..) entry path."; legs_failed=$((legs_failed + 1)); continue
             fi
             # `unzip` exit 11 means "no files matched" -- the artifact simply
             # carries no binlog. In the `leg` layout the candidate set is every
@@ -575,18 +711,27 @@ jobs:
             # failure and must not fail the run closed. Any other non-zero exit
             # (corrupt archive, timeout) still counts as an unreadable leg.
             #
-            # Both cases `continue`, so nothing was written to /tmp/ax and the
+            # Both cases `continue`, so nothing was written to "${AX_DIR}" and the
             # uncompressed budget below is left untouched. Charging it for an
             # archive that extracted nothing would let one large binlog-free
             # artifact push a genuinely useful later leg past MAX_TOTAL_BYTES
             # and trip the fail-closed check on a build that was fine.
             uz=0
-            timeout 120 unzip -o /tmp/a.zip '*.binlog' -d /tmp/ax >/dev/null 2>&1 || uz=$?
+            # Extraction shares the deadline with the transfers. Otherwise a run that
+            # spent most of its budget downloading could still queue one bounded
+            # extraction per artifact and walk the job past `timeout-minutes` without
+            # ever reaching the controlled no-op below.
+            TIME_LEFT=$(( FETCH_DEADLINE - $(date +%s) ))
+            if [ "${TIME_LEFT}" -le 0 ]; then
+              echo "::warning::Fetch budget exhausted before extracting ${safe_name}; stopping."; budget_hit=1; break
+            fi
+            [ "${TIME_LEFT}" -gt 120 ] && TIME_LEFT=120
+            timeout "${TIME_LEFT}" unzip -o "${ZIP_TMP}" '*.binlog' -d "${AX_DIR}" >/dev/null 2>&1 || uz=$?
             if [ "${uz}" -eq 11 ]; then
-              echo "${name}: no binlog inside; nothing to stage from this artifact."; continue
+              echo "${safe_name}: no binlog inside; nothing to stage from this artifact."; continue
             fi
             if [ "${uz}" -ne 0 ]; then
-              echo "::warning::Skipping ${name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
+              echo "::warning::Skipping ${safe_name}: extraction failed or timed out (unzip exit ${uz})."; legs_failed=$((legs_failed + 1)); continue
             fi
             # Consume the cumulative budget only once the archive actually
             # extracted — not on a suspicious-path or extraction-failure skip
@@ -612,10 +757,11 @@ jobs:
               else
                 echo "::warning::Failed to stage ${bl}; skipping."
               fi
-            done < <(find /tmp/ax -type f -name '*.binlog')
+            done < <(find "${AX_DIR}" -type f -name '*.binlog')
             # This leg produced at least one usable binlog.
             [ "${leg_staged}" -eq 1 ] && staged_legs=$((staged_legs + 1))
           done
+          rm -rf "${AX_DIR:?}" "${ZIP_TMP}"
           echo "Extracted ${count} binlog(s) from ${staged_legs}/${#names[@]} artifact(s) into /tmp/binlogs:"
           ls -la /tmp/binlogs || true
           [ "${count}" -eq 0 ] && { echo "::warning::No *.binlog found in any log artifact of build ${BUILD_ID}."; emit_none; }
