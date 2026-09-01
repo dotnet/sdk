@@ -172,10 +172,19 @@ namespace Microsoft.NET.TestFramework
         private static SdkTestContext? _current;
         private static readonly object s_initializationLock = new();
 
+        [ThreadStatic]
+        private static SdkTestContext? t_initializing;
+
         public static SdkTestContext Current
         {
             get
             {
+                SdkTestContext? current = Volatile.Read(ref _current) ?? t_initializing;
+                if (current != null)
+                {
+                    return current;
+                }
+
                 lock (s_initializationLock)
                 {
                     if (_current == null)
@@ -189,7 +198,7 @@ namespace Microsoft.NET.TestFramework
             {
                 lock (s_initializationLock)
                 {
-                    _current = value;
+                    Volatile.Write(ref _current, value);
                 }
             }
         }
@@ -336,23 +345,30 @@ namespace Microsoft.NET.TestFramework
 
             testContext.ToolsetUnderTest = ToolsetInfo.Create(repoRoot, artifactsDir, repoConfiguration);
 
-            //  Important to set this before below code which ends up calling through SdkTestContext.Current, which would
-            //  result in infinite recursion / stack overflow if SdkTestContext.Current wasn't set
-            Current = testContext;
+            // Recursive access on the initializing thread needs the context before the process-wide
+            // environment and hooks are ready. Other threads wait for complete initialization.
+            t_initializing = testContext;
+            try
+            {
+                Environment.SetEnvironmentVariable(
+                    Constants.MSBUILD_EXE_PATH,
+                    Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
 
-            //  Set up test hooks for in-process tests
-            Environment.SetEnvironmentVariable(
-                Constants.MSBUILD_EXE_PATH,
-                Path.Combine(testContext.ToolsetUnderTest.SdkFolderUnderTest, "MSBuild.dll"));
-
-            Environment.SetEnvironmentVariable(
-                "MSBuildSDKsPath",
-                Path.Combine(testContext.ToolsetUnderTest.SdksPath));
+                Environment.SetEnvironmentVariable(
+                    "MSBuildSDKsPath",
+                    Path.Combine(testContext.ToolsetUnderTest.SdksPath));
 
 #if NETCOREAPP
-            MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
-                testContext.ToolsetUnderTest.SdkFolderUnderTest;
+                MSBuildForwardingAppWithoutLogging.MSBuildExtensionsPathTestHook =
+                    testContext.ToolsetUnderTest.SdkFolderUnderTest;
 #endif
+
+                Volatile.Write(ref _current, testContext);
+            }
+            finally
+            {
+                t_initializing = null;
+            }
         }
 
         public static string? GetRepoRoot()
