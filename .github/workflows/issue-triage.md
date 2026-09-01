@@ -19,6 +19,10 @@ on:
       if: github.event_name == 'issues' && github.event.action == 'opened'
       run: sleep 120
   roles: all
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 post-steps:
   # missing_data and report_incomplete should make triage visibly fail, but the
   # safe-output settings below intentionally suppress follow-up issue creation.
@@ -66,6 +70,7 @@ network:
     - github
     - aka.ms
 tools:
+  bash: []
   # cli-proxy + github.mode: gh-proxy route GitHub tools and Safe Outputs through the
   # generated CLI proxy instead of the native HTTP MCP endpoint on the internal awmg-mcpg
   # gateway, avoiding the firewall TCP_DENIED/403 on that single-label host.
