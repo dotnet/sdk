@@ -190,6 +190,38 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
+        [TestMethod]
+        public void RunTestProjectWithInvalidMSBuildExpressionInLaunchSettings_ShouldReturnExitCodeSuccess()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests")
+                .WithSource();
+
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(Path.Join(propertiesDirectory, "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithTests": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("could not be applied");
+                result.StdOut.Should().Contain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
