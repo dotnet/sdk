@@ -1,20 +1,21 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotInstallRootCert,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
-    [Trait(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestProperty(Traits.DataflowAnalysis, Traits.Dataflow.PropertySetAnalysis)]
+    [TestClass]
     public class DoNotInstallRootCertTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStoreNameParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -32,7 +33,7 @@ class TestClass
             GetCSharpResultAt(10, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStoreNameParameterMaybeChangedDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -58,7 +59,7 @@ class TestClass
             GetCSharpResultAt(18, 9, DoNotInstallRootCert.MaybeInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStoreNameParameterUnassignedMaybeChangedWithRootDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -83,7 +84,7 @@ class TestClass
             GetCSharpResultAt(17, 9, DoNotInstallRootCert.MaybeInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStoreNameAndStoreLocationParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -101,7 +102,7 @@ class TestClass
             GetCSharpResultAt(10, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringParameterDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -119,7 +120,7 @@ class TestClass
             GetCSharpResultAt(10, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStringCaseSensitiveDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -137,7 +138,7 @@ class TestClass
             GetCSharpResultAt(10, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringAndStoreLocationParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -155,7 +156,7 @@ class TestClass
             GetCSharpResultAt(10, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStoreNameParameterWithoutTemporaryObjectDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -171,7 +172,7 @@ class TestClass
             GetCSharpResultAt(8, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStringParameterWithoutTemporaryObjectDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -187,7 +188,7 @@ class TestClass
             GetCSharpResultAt(8, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPassX509StoreAsParameterInterproceduralDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -210,7 +211,7 @@ class TestClass
             GetCSharpResultAt(15, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetX509StoreFromLocalFunctionDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -228,7 +229,7 @@ class TestClass
             GetCSharpResultAt(8, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReturnX509StoreInterproceduralDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -249,7 +250,7 @@ class TestClass
             GetCSharpResultAt(8, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNotCallAddMethodNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -264,7 +265,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInstallCertToOtherStoreNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -280,7 +281,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestInstallCertToNullStoreNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -296,7 +297,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCreateAStoreWithoutSettingStoreNameNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -312,7 +313,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStoreNameParameterUnassignedNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -328,7 +329,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestConstructorWithStoreNameParameterUnassignedMaybeChangedWithMyNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -352,7 +353,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestPassX509StoreAsParameterInterproceduralNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -374,7 +375,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -391,7 +392,7 @@ class TestClass
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestReturnX509StoreInterproceduralNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -411,14 +412,14 @@ class TestClass
 }");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData(@"dotnet_code_quality.CA5380.excluded_symbol_names = TestMethod
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = TestMethod")]
+        [DataRow(@"dotnet_code_quality.CA5380.excluded_symbol_names = TestMethod
                       dotnet_code_quality.CA5381.excluded_symbol_names = TestMethod")]
-        [InlineData(@"dotnet_code_quality.CA5380.excluded_symbol_names = TestMet*
+        [DataRow(@"dotnet_code_quality.CA5380.excluded_symbol_names = TestMet*
                       dotnet_code_quality.CA5381.excluded_symbol_names = TestMet*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -453,7 +454,7 @@ class TestClass
                 csharpTest.ExpectedDiagnostics.Add(GetCSharpResultAt(10, 9, DoNotInstallRootCert.DefinitelyInstallRootCertRule));
             }
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule)

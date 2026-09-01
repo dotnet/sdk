@@ -24,7 +24,7 @@ internal static class ToolsetUtils
     {
         string packageDir = Path.Combine(SdkTestContext.Current.TestExecutionDirectory, "Container", "package");
 
-        //until the package is stabilized, the package version matches TestContext.Current.ToolsetUnderTest.SdkVersion
+        //until the package is stabilized, the package version matches SdkTestContext.Current.ToolsetUnderTest.SdkVersion
         //after the package is stabilized, the package version doesn't have -prefix (-dev, -ci) anymore
         //so one of those is expected
         string?[] expectedPackageVersions = new[] { SdkTestContext.Current.ToolsetUnderTest?.SdkVersion, SdkTestContext.Current.ToolsetUnderTest?.SdkVersion?.Split('-')[0] };

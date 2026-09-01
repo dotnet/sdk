@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "テンプレート パッケージ",
+  "description": ".NET テンプレートを含むテンプレート パッケージのプロジェクト。",
+  "postActions/instructions/description": "手動操作が必要です",
+  "postActions/instructions/manualInstructions/default/text": "エディターで *.csproj を開き、パッケージ メタデータの構成を完了します。テンプレートを 'content' フォルダーにコピーします。README.md を入力します。"
+}

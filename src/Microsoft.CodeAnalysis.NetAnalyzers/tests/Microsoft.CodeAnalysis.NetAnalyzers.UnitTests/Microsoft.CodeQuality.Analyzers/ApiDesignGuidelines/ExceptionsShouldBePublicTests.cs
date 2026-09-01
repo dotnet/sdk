@@ -1,11 +1,12 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Xunit;
+using Test.Utilities;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.ExceptionsShouldBePublicFixer>;
@@ -15,6 +16,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class ExceptionsShouldBePublicTests
     {
         private static readonly IEnumerable<OutputKind> ExecutableOutputKinds =
@@ -28,8 +30,8 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 
         public static readonly TheoryData<OutputKind> DiagnosticTriggeringOutputKinds = new(Enum.GetValues<OutputKind>().Except(ExecutableOutputKinds));
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestCSharpNonPublicExceptionAsync(OutputKind outputKind)
         {
             await new VerifyCS.Test
@@ -41,11 +43,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            }
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestCSharpNonPublicException2Async(OutputKind outputKind)
         {
             await new VerifyCS.Test
@@ -60,11 +62,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            }
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestCSharpPublicExceptionAsync(OutputKind outputKind)
         {
             await new VerifyCS.Test
@@ -76,11 +78,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            }
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestCSharpNonExceptionTypeAsync(OutputKind outputKind)
         {
             await new VerifyCS.Test
@@ -92,11 +94,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            }
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestVBasicNonPublicExceptionAsync(OutputKind outputKind)
         {
             await new VerifyVB.Test
@@ -108,11 +110,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            End Class
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestVBasicNonPublicException2Async(OutputKind outputKind)
         {
             await new VerifyVB.Test
@@ -126,11 +128,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            End Class
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestVBasicPublicExceptionAsync(OutputKind outputKind)
         {
             await new VerifyVB.Test
@@ -142,11 +144,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            End Class
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticTriggeringOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticTriggeringOutputKinds))]
         public async Task TestVBasicNonExceptionTypeAsync(OutputKind outputKind)
         {
             await new VerifyVB.Test
@@ -159,11 +161,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            End Class
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticSuppressingOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticSuppressingOutputKinds))]
         public async Task TestCSharpWithExecutableAsync(OutputKind outputKind)
         {
             await new VerifyCS.Test
@@ -180,11 +182,11 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            }
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(DiagnosticSuppressingOutputKinds))]
+        [TestMethod]
+        [DynamicData(nameof(DiagnosticSuppressingOutputKinds))]
         public async Task TestVBasicWithExecutableAsync(OutputKind outputKind)
         {
             await new VerifyVB.Test
@@ -201,7 +203,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                            End Class
                            """,
                 TestState = { OutputKind = outputKind }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

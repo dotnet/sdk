@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.DoNotCallOverridableMethodsInConstructorsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotCallOverridableMethodsInConstructorsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -32,7 +33,7 @@ class C
             GetCA2214CSharpResultAt(6, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodCSharpWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -48,7 +49,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -63,7 +64,7 @@ End Class
             GetCA2214BasicResultAt(4, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualMethodBasicwithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -77,7 +78,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214AbstractMethodCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -94,7 +95,7 @@ abstract class C
             GetCA2214CSharpResultAt(6, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214AbstractMethodBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -108,7 +109,7 @@ End Class
             GetCA2214BasicResultAt(4, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214MultipleInstancesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -128,7 +129,7 @@ abstract class C
             GetCA2214CSharpResultAt(7, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214MultipleInstancesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -146,7 +147,7 @@ End Class
            GetCA2214BasicResultAt(5, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NotTopLevelCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -172,7 +173,7 @@ abstract class C
             GetCA2214CSharpResultAt(13, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NotTopLevelBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -193,7 +194,7 @@ End Class
             GetCA2214BasicResultAt(9, 13));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NoDiagnosticsOutsideConstructorCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -209,7 +210,7 @@ abstract class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214NoDiagnosticsOutsideConstructorBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -223,7 +224,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceCSharp_WebAsync()
         {
             await new VerifyCS.Test
@@ -259,10 +260,10 @@ abstract class F : System.ComponentModel.Component
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceCSharp_WinFormsAsync()
         {
             await new VerifyCS.Test
@@ -310,10 +311,10 @@ abstract class F : System.ComponentModel.Component
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceBasic_WinFormsAsync()
         {
             await new VerifyVB.Test
@@ -356,10 +357,10 @@ End Class
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214SpecialInheritanceBasic_WebAsync()
         {
             await new VerifyVB.Test
@@ -391,10 +392,10 @@ End Class
 "
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualOnOtherClassesCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -416,7 +417,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2214VirtualOnOtherClassesBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -435,7 +436,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
+        [TestMethod, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
         public async Task CA2214VirtualInvocationsInLambdaCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -454,7 +455,7 @@ internal abstract class A
 ");
         }
 
-        [Fact, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
+        [TestMethod, WorkItem(1652, "https://github.com/dotnet/roslyn-analyzers/issues/1652")]
         public async Task CA2214VirtualInvocationsInLambdaBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -472,7 +473,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(4142, "https://github.com/dotnet/roslyn-analyzers/issues/4142")]
+        [TestMethod, WorkItem(4142, "https://github.com/dotnet/roslyn-analyzers/issues/4142")]
         public async Task CA2214_VirtualInvocationsInLambdaAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -501,7 +502,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
+        [TestMethod, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
         public async Task CA2214VirtualOnOtherSameClassesCSharp()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -516,7 +517,7 @@ class C
 ");
         }
 
-        [Fact, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
+        [TestMethod, WorkItem(5286, "https://github.com/dotnet/roslyn-analyzers/issues/5286")]
         public async Task CA2214VirtualOnOtherSameClassesBasic()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

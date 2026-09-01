@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -6,7 +7,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.VisualBasic;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.RemoveEmptyFinalizersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -16,9 +16,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class RemoveEmptyFinalizersTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpTestNoWarningAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -96,7 +97,7 @@ public class Class7
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -121,7 +122,7 @@ public class Class2
                 GetCA1821CSharpResultAt(13, 3));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -145,7 +146,7 @@ public class Class2
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -167,7 +168,7 @@ public class Class1
             GetCA1821CSharpResultAt(11, 3));
         }
 
-        [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
+        [TestMethod, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFail_ExpressionBodyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -186,7 +187,7 @@ public class Class1
             GetCA1821CSharpResultAt(11, 3));
         }
 
-        [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
+        [TestMethod, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
         public async Task CA1821_DebugFailAndDebugDirective_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -217,7 +218,7 @@ public class Class1
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -241,10 +242,10 @@ End Class
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
+        [TestMethod, WorkItem(1241, "https://github.com/dotnet/roslyn-analyzers/issues/1241")]
         public async Task CA1821_DebugFailAndReleaseDirective_NoDiagnostic_FalsePositiveAsync()
         {
             await new VerifyCS.Test
@@ -272,7 +273,7 @@ public class Class1
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -297,10 +298,10 @@ End Class
                             .Solution;
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithDebugFailAndDirectiveAroundStatementsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -333,7 +334,7 @@ public class Class2
         }
 
         [WorkItem(820941, "DevDiv")]
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithNonInvocationBodyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -352,7 +353,7 @@ public class Class2
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821BasicTestNoWarningAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -400,7 +401,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821BasicTestRemoveEmptyFinalizersAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -432,7 +433,7 @@ End Class
                 GetCA1821BasicResultAt(20, 29));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821BasicTestRemoveEmptyFinalizersWithScopeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -461,7 +462,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821BasicTestRemoveEmptyFinalizersWithDebugFailAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -485,7 +486,7 @@ End Class
                 GetCA1821BasicResultAt(6, 29));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowStatementAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -499,7 +500,7 @@ public class Class1
                 GetCA1821CSharpResultAt(4, 6));
         }
 
-        [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
+        [TestMethod, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
         public async Task CA1821CSharpTestRemoveEmptyFinalizersWithThrowExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -510,7 +511,7 @@ public class Class1
                 GetCA1821CSharpResultAt(4, 6));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1821BasicTestRemoveEmptyFinalizersWithThrowStatementAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -524,7 +525,7 @@ End Class
                 GetCA1821BasicResultAt(4, 29));
         }
 
-        [Fact, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
+        [TestMethod, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
         public async Task CA1821CSharpRemoveEmptyFinalizersInvalidInvocationExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -538,7 +539,7 @@ public class C1
 ");
         }
 
-        [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
+        [TestMethod, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
         public async Task CA1821CSharpRemoveEmptyFinalizers_ErrorCodeWithBothBlockAndExpressionBodyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -550,7 +551,7 @@ public class C1
 ");
         }
 
-        [Fact, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
+        [TestMethod, WorkItem(1211, "https://github.com/dotnet/roslyn-analyzers/issues/1211")]
         public async Task CA1821BasicRemoveEmptyFinalizersInvalidInvocationExpressionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -562,7 +563,7 @@ End Class
 ");
         }
 
-        [Fact, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
+        [TestMethod, WorkItem(1788, "https://github.com/dotnet/roslyn-analyzers/issues/1788")]
         public async Task CA1821CSharpRemoveEmptyFinalizers_ExpressionBodiedImplAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

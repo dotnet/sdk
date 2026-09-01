@@ -1,17 +1,18 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseXmlReaderForValidatingReader,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class UseXmlReaderForValidatingReaderTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestStreamAndXmlNodeTypeAndXmlParseContextParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -29,7 +30,7 @@ class TestClass
             GetCSharpResultAt(10, 19, "XmlValidatingReader", "XmlValidatingReader"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestStringAndXmlNodeTypeAndXmlParseContextParametersDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +47,7 @@ class TestClass
             GetCSharpResultAt(9, 19, "XmlValidatingReader", "XmlValidatingReader"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestXmlReaderParameterNoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

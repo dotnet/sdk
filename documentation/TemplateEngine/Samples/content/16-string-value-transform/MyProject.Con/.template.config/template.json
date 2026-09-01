@@ -1,0 +1,64 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Milan Jaros",
+  "classifications": [ "Console" ],
+  "name": "Contoso Sample 16",
+  "identity": "MyProject.16.Sample.CSharp",
+  "groupIdentity":"MyProject.16.Sample",
+  "shortName": "sample16",
+  "tags": {
+    "language": "C#",
+    "type":"project"
+  },
+  "sourceName": "MyProject.Con",
+  "preferNameDirectory": true,
+  "symbols":{
+    "ownername":{
+      "type": "parameter",
+      "datatype":"text",
+      "replaces": "John Smith (original)",
+      "defaultValue": "John Doe"
+    },
+    "pascalCasedName": {
+      "type": "derived",
+      "valueSource": "ownername",
+      "replaces": "John Smith (PascalCase)",
+      "valueTransform": "pascalCase"
+    },
+    "camelCasedName": {
+      "type": "derived",
+      "valueSource": "pascalCasedName",
+      "replaces": "John Smith (camelCase)",
+      "valueTransform": "firtstLowerCase"
+    },
+    "kebabCasedName": {
+      "type": "derived",
+      "valueSource": "pascalCasedName",
+      "replaces": "John Smith (kebab-case)",
+      "valueTransform": "kebabCase"
+    }
+  },
+  "forms" :{
+    "titleCase": {
+      "identifier": "titleCase"
+    },
+    "invalidChars": {
+      "identifier": "replace",
+      "pattern": "([\\-_\\.\\ ])",
+      "replacement": ""
+    },
+    "pascalCase": {
+      "identifier": "chain",
+      "steps": [
+        "titleCase",
+        "invalidChars"
+      ]
+    },
+    "kebabCase": {
+      "identifier": "kebabCase"
+    },
+    "firtstLowerCase": {
+      "identifier": "firstLowerCaseInvariant"
+    }
+  }
+}

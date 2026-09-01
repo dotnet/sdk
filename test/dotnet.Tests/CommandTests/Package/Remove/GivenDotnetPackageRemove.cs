@@ -4,12 +4,13 @@
 
 namespace Microsoft.DotNet.Cli.Package.Remove.Tests;
 
-public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(log)
+[TestClass]
+public sealed class GivenDotnetPackageRemove : SdkTest
 {
-    [Fact]
+    [TestMethod]
     public void WhenPackageIsRemovedWithoutProjectArgument()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource().Path;
 
@@ -28,10 +29,10 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
             .And.NotHaveStdErr();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenPackageIsRemovedWithProjectOption()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource().Path;
 
@@ -50,10 +51,10 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
             .And.NotHaveStdErr();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenNoPackageIsPassedCommandFails()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource()
             .Path;
@@ -65,10 +66,10 @@ public sealed class GivenDotnetPackageRemove(ITestOutputHelper log) : SdkTest(lo
             .Fail();
     }
 
-    [Fact]
+    [TestMethod]
     public void WhenMultiplePackagesArePassedCommandFails()
     {
-        var projectDirectory = _testAssetsManager
+        var projectDirectory = TestAssetsManager
             .CopyTestAsset("TestAppSimple")
             .WithSource()
             .Path;

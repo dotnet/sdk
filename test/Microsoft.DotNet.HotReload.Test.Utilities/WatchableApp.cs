@@ -6,8 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.NET.TestFramework;
-using Xunit;
-using Xunit.Abstractions;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.DotNet.Watch.UnitTests
 {
@@ -120,31 +119,31 @@ namespace Microsoft.DotNet.Watch.UnitTests
             return matchingLine;
         }
 
-        public Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        public async Task<string> WaitForOutputLineContaining(string text, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
         {
             LogWaitingForOutput(text, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => line.Contains(text));
+            var line = await Process.GetRequiredOutputLineAsync(line => line.Contains(text));
             LogFoundOutput(text, testPath, testLine);
             return line;
         }
 
-        public Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string? projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string? testPath = null)
+        public async Task<string> WaitForOutputLineContaining(MessageDescriptor descriptor, string? projectDisplay = null, [CallerLineNumber] int testLine = 0, [CallerFilePath] string? testPath = null)
         {
             var pattern = GetPattern(descriptor, projectDisplay, out var patternDisplay);
 
             LogWaitingForOutput(patternDisplay, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
+            var line = await Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
             LogFoundOutput(patternDisplay, testPath, testLine);
 
             return line;
         }
 
-        public Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
+        public async Task<string> WaitForOutputLineContaining(Regex pattern, [CallerFilePath] string? testPath = null, [CallerLineNumber] int testLine = 0)
         {
             var patternDisplay = pattern.ToString();
 
             LogWaitingForOutput(patternDisplay, testPath, testLine);
-            var line = Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
+            var line = await Process.GetRequiredOutputLineAsync(line => pattern.IsMatch(line));
             LogFoundOutput(patternDisplay, testPath, testLine);
 
             return line;
@@ -167,7 +166,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             }
             else
             {
-                Assert.StartsWith(expectedPrefix, line, StringComparison.Ordinal);
+                Assert.IsTrue(line.StartsWith(expectedPrefix, StringComparison.Ordinal));
             }
 
             var result = line.Substring(expectedPrefix.Length);
@@ -176,7 +175,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         }
 
         public async Task AssertOutputLineEquals(string expectedLine)
-            => Assert.Equal("", await AssertOutputLineStartsWith(expectedLine));
+            => Assert.AreEqual("", await AssertOutputLineStartsWith(expectedLine));
 
         public ProcessStartInfo GetProcessStartInfo(string workingDirectory, string testOutputPath, IEnumerable<string> arguments, TestFlags testFlags)
         {
@@ -271,7 +270,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void SendKey(char c)
         {
-            Assert.True(TestFlags.HasFlag(TestFlags.ReadKeyFromStdin));
+            Assert.IsTrue(TestFlags.HasFlag(TestFlags.ReadKeyFromStdin));
 
             Process.Process.StandardInput.Write(c);
             Process.Process.StandardInput.Flush();

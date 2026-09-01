@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Usage.ProvideCorrectArgumentToEnumHasFlag,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Usage.UnitTests
 {
+    [TestClass]
     public class ProvideCorrectArgumentToEnumHasFlagTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2248_EnumTypesAreDifferent_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -58,7 +59,7 @@ End Class
                 VerifyVB.Diagnostic(ProvideCorrectArgumentToEnumHasFlag.DifferentTypeRule).WithLocation(0).WithArguments("OtherEnum", "MyEnum"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2248_EnumTypesAreSame_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +93,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2248_EnumTypesAreSameButNotFlag_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -124,7 +125,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2248_EnumTypesAreDifferentAndNotFlags_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -164,7 +165,7 @@ End Class
                 VerifyVB.Diagnostic(ProvideCorrectArgumentToEnumHasFlag.DifferentTypeRule).WithLocation(0).WithArguments("OtherEnum", "MyEnum"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2248_NullAsArgument_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -208,7 +209,7 @@ End Class
                 VerifyVB.Diagnostic(ProvideCorrectArgumentToEnumHasFlag.DifferentTypeRule).WithLocation(0).WithArguments("<Nothing>", "MyEnum"));
         }
 
-        [Fact, WorkItem(4180, "https://github.com/dotnet/roslyn-analyzers/issues/4180")]
+        [TestMethod, WorkItem(4180, "https://github.com/dotnet/roslyn-analyzers/issues/4180")]
         public async Task CA2248_GenericEnumComparison_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -231,7 +232,7 @@ public class AllEnums<T1>
 }");
         }
 
-        [Fact, WorkItem(4180, "https://github.com/dotnet/roslyn-analyzers/issues/4180")]
+        [TestMethod, WorkItem(4180, "https://github.com/dotnet/roslyn-analyzers/issues/4180")]
         public async Task CA2248_GenericEnumHasFlag_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

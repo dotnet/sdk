@@ -1,10 +1,10 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferDictionaryTryMethodsOverContainsKeyGuardFixer>;
@@ -14,6 +14,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferDictionaryTryAddOverGuardedAddTests
     {
 
@@ -357,15 +358,15 @@ End If";
 
         #endregion
 
-        [Theory]
-        [InlineData(CheckNegativeReturnedValue, CheckNegativeReturnedValueFixed)]
-        [InlineData(CheckNegativeReturnedValueInVariable, CheckNegativeReturnedValueInVariableFixed)]
-        [InlineData(CheckNegativeReturnedValueWithoutBraces, CheckNegativeReturnedValueFixed)]
-        [InlineData(CheckNegativeReturnedValueWithElseRemoval, CheckNegativeReturnedValueWithElseRemovalFixed)]
-        [InlineData(CheckNegativeReturnedValueWithElse, CheckNegativeReturnedValueWithElseFixed)]
-        [InlineData(CheckNegativeReturnedValueAndPreserveLogic, CheckNegativeReturnedValueAndPreserveLogicFixed)]
-        [InlineData(CheckPositiveReturnedValueAndPreserveLogic, CheckPositiveReturnedValueAndPreserveLogicFixed)]
-        [InlineData(CheckPositiveReturnedValueAndPreserveLogicRedundantElse, CheckPositiveReturnedValueAndPreserveLogicRedundantElseFixed)]
+        [TestMethod]
+        [DataRow(CheckNegativeReturnedValue, CheckNegativeReturnedValueFixed)]
+        [DataRow(CheckNegativeReturnedValueInVariable, CheckNegativeReturnedValueInVariableFixed)]
+        [DataRow(CheckNegativeReturnedValueWithoutBraces, CheckNegativeReturnedValueFixed)]
+        [DataRow(CheckNegativeReturnedValueWithElseRemoval, CheckNegativeReturnedValueWithElseRemovalFixed)]
+        [DataRow(CheckNegativeReturnedValueWithElse, CheckNegativeReturnedValueWithElseFixed)]
+        [DataRow(CheckNegativeReturnedValueAndPreserveLogic, CheckNegativeReturnedValueAndPreserveLogicFixed)]
+        [DataRow(CheckPositiveReturnedValueAndPreserveLogic, CheckPositiveReturnedValueAndPreserveLogicFixed)]
+        [DataRow(CheckPositiveReturnedValueAndPreserveLogicRedundantElse, CheckPositiveReturnedValueAndPreserveLogicRedundantElseFixed)]
         public Task ShouldReportDiagnosticAsync(string codeSnippet, string fixedCodeSnippet)
         {
             string testCode = CreateCSharpTestClass(codeSnippet);
@@ -378,19 +379,19 @@ End If";
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { diagnostic },
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(FakeDictionary)]
-        [InlineData(LongRunningOperation)]
-        [InlineData(LongRunningOperationCapturedInVariable)]
-        [InlineData(WithObjectInstantiation)]
-        [InlineData(NotGuardedByContainsKey)]
-        [InlineData(AddOnDifferentDictionary)]
-        [InlineData(KeyIsModified)]
-        [InlineData(DictionaryIsReplaced)]
-        [InlineData(DictionaryDoesNotHaveTryAddMethod)]
+        [TestMethod]
+        [DataRow(FakeDictionary)]
+        [DataRow(LongRunningOperation)]
+        [DataRow(LongRunningOperationCapturedInVariable)]
+        [DataRow(WithObjectInstantiation)]
+        [DataRow(NotGuardedByContainsKey)]
+        [DataRow(AddOnDifferentDictionary)]
+        [DataRow(KeyIsModified)]
+        [DataRow(DictionaryIsReplaced)]
+        [DataRow(DictionaryDoesNotHaveTryAddMethod)]
         public Task ShouldNotReportDiagnosticAsync(string codeSnippet)
         {
             string testCode = CreateCSharpTestClass(codeSnippet);
@@ -399,10 +400,10 @@ End If";
             {
                 TestCode = testCode,
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public Task ValueIsCreatedInConditionalBlock()
         {
             return new VerifyCS.Test
@@ -449,16 +450,16 @@ namespace UnitTests {
 }",
                 LanguageVersion = LanguageVersion.CSharp8,
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(CheckNegativeReturnedValueVb, CheckNegativeReturnedValueVbFixed)]
-        [InlineData(CheckNegativeReturnedValueWithElseRemovalVb, CheckNegativeReturnedValueWithElseRemovalVbFixed)]
-        [InlineData(CheckNegativeReturnedValueWithElseVb, CheckNegativeReturnedValueWithElseVbFixed)]
-        [InlineData(CheckNegativeReturnedValueAndPreserveLogicVb, CheckNegativeReturnedValueAndPreserveLogicVbFixed)]
-        [InlineData(CheckPositiveReturnedValueAndPreserveLogicVb, CheckPositiveReturnedValueAndPreserveLogicVbFixed)]
-        [InlineData(CheckPositiveReturnedValueAndPreserveLogicRedundantElseVb, CheckPositiveReturnedValueAndPreserveLogicRedundantElseVbFixed)]
+        [TestMethod]
+        [DataRow(CheckNegativeReturnedValueVb, CheckNegativeReturnedValueVbFixed)]
+        [DataRow(CheckNegativeReturnedValueWithElseRemovalVb, CheckNegativeReturnedValueWithElseRemovalVbFixed)]
+        [DataRow(CheckNegativeReturnedValueWithElseVb, CheckNegativeReturnedValueWithElseVbFixed)]
+        [DataRow(CheckNegativeReturnedValueAndPreserveLogicVb, CheckNegativeReturnedValueAndPreserveLogicVbFixed)]
+        [DataRow(CheckPositiveReturnedValueAndPreserveLogicVb, CheckPositiveReturnedValueAndPreserveLogicVbFixed)]
+        [DataRow(CheckPositiveReturnedValueAndPreserveLogicRedundantElseVb, CheckPositiveReturnedValueAndPreserveLogicRedundantElseVbFixed)]
         public Task ShouldReportDiagnosticVbAsync(string codeSnippet, string fixedCodeSnippet)
         {
             string testCode = CreateVbTestClass(codeSnippet);
@@ -471,14 +472,14 @@ namespace UnitTests {
                 FixedCode = fixedCode,
                 ExpectedDiagnostics = { diagnostic },
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData(FakeDictionaryVb)]
-        [InlineData(LongRunningOperationVb)]
-        [InlineData(NotGuardedByContainsKeyVb)]
-        [InlineData(AddOnDifferentDictionaryVb)]
+        [TestMethod]
+        [DataRow(FakeDictionaryVb)]
+        [DataRow(LongRunningOperationVb)]
+        [DataRow(NotGuardedByContainsKeyVb)]
+        [DataRow(AddOnDifferentDictionaryVb)]
         public Task ShouldNotReportDiagnosticVbAsync(string codeSnippet)
         {
             string testCode = CreateVbTestClass(codeSnippet);
@@ -487,10 +488,10 @@ namespace UnitTests {
             {
                 TestCode = testCode,
                 DisabledDiagnostics = { PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryGetValueRuleId }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6824, "https://github.com/dotnet/roslyn-analyzers/issues/6824")]
+        [TestMethod, WorkItem(6824, "https://github.com/dotnet/roslyn-analyzers/issues/6824")]
         public Task WhenArgumentIsAParameter()
         {
             return new VerifyCS.Test
@@ -542,10 +543,10 @@ public class Test
                     VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId).WithLocation(0).WithLocation(1),
                     VerifyCS.Diagnostic(PreferDictionaryTryMethodsOverContainsKeyGuardAnalyzer.PreferTryAddRuleId).WithLocation(2).WithLocation(3)
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7217, "https://github.com/dotnet/roslyn-analyzers/issues/7217")]
+        [TestMethod, WorkItem(7217, "https://github.com/dotnet/roslyn-analyzers/issues/7217")]
         public Task WhenAddInIndirectContainsKeyClause_NoDiagnostic()
         {
             const string code = """

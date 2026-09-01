@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetFramework.Analyzers.DoNotUseInsecureDtdProcessingAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -24,7 +24,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
             => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlTextReaderSetInsecureResolution).WithLocation(line, column);
 #pragma warning restore RS0030 // Do not use banned APIs
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlTextReaderNoCtorShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -58,7 +58,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetResolverToNullShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -95,7 +95,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetDtdProcessingToParseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -132,7 +132,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetBothToInsecureValuesShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -173,7 +173,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetInSecureResolverInTryClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -218,7 +218,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetInSecureResolverInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -261,7 +261,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetInSecureResolverInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -305,7 +305,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetDtdprocessingToParseInTryClauseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -350,7 +350,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetDtdprocessingToParseInCatchBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -393,7 +393,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderNoCtorSetDtdprocessingToParseInFinallyBlockShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -437,7 +437,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetInsecureResolverInInitializerShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -479,7 +479,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetDtdProcessingParseInInitializerShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -521,7 +521,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ConstructXmlTextReaderSetBothToInsecureValuesInInitializerShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -565,7 +565,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetInsecureResolverShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -613,7 +613,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderDerivedTypeSetDtdProcessingParseShouldGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -661,7 +661,7 @@ End Namespace",
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderCreatedAsTempSetSecureSettingsShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -705,7 +705,7 @@ Namespace TestNamespace
 End Namespace");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderCreatedAsTempSetInsecureResolverShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -753,7 +753,7 @@ End Namespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task XmlTextReaderCreatedAsTempSetDtdProcessingParseShouldGenerateDiagnosticsAsync()
         {
             await VerifyCSharpAnalyzerAsync(

@@ -1,6 +1,8 @@
 ﻿apicontroller
 blazor
 blazorwasm
+blazorwasm-servicedefaults
+blazorwebworker
 buildprops
 buildtargets
 classlib

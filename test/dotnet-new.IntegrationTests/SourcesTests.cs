@@ -1,18 +1,18 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
+    [TestClass]
     public class SourcesTests : BaseIntegrationTest
     {
-        private readonly ITestOutputHelper _log;
+        private ITestOutputHelper _log => Log;
 
-        public SourcesTests(ITestOutputHelper log) : base(log)
+        public SourcesTests()
         {
-            _log = log;
         }
 
-        [Fact]
+        [TestMethod]
         public void EnsureItsPossibleToIncludePackagesLockJson()
         {
             string home = CreateTemporaryFolder(folderName: "Home");
@@ -24,7 +24,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute()
                 .Should()
                 .ExitWith(0);
-            Assert.Equal(
+            Assert.AreSequenceEqual(
                 new[] { "packages.lock.json", "foo.cs", "bar.cs" }.OrderBy(s => s),
                 Directory.EnumerateFiles(workingDirectory, "*", SearchOption.AllDirectories).Select(Path.GetFileName).OrderBy(s => s));
 
@@ -35,7 +35,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
                 .Execute()
                 .Should()
                 .ExitWith(0);
-            Assert.Equal(
+            Assert.AreSequenceEqual(
                 new[] { "foo.cs", "bar.cs" }.OrderBy(s => s),
                 Directory.EnumerateFiles(workingDirectory, "*", SearchOption.AllDirectories).Select(Path.GetFileName).OrderBy(s => s));
         }

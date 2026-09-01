@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "$comment": "See https://aka.ms/template-json-reference for complete configuration description. Complete TODOs below and remove the $comment properties. It is recommended to use the JSON editor that supports schema hints to get more information about defined JSON properties and their description.",
+  "author": "TODO: fill author name here.",
+  "classifications": [
+    "TODO: fill classification here. Common classifications are: Library, Test, Web etc. Each classification should be a separate element of the array. For more details, see https://aka.ms/template-json-reference#classifications."
+  ],
+  "name": "New Template",
+  "description": "TODO: fill the template description here.",
+  "precedence": "0",
+  "identity": "New.Template.Identity",
+  "shortName": "new-template",
+  "tags": {
+    "$comment": "TODO: fill the language and type below. Common types are: project, item, solution.",
+    "language": "C#",
+    "type": "project"
+  },
+  "$comment_sourceName": "TODO: Source name should follow these rules: https://aka.ms/template-json-source-name. Source name may be removed if replacement for name is not required.",
+  "sourceName": "New.Template.1",
+  "preferNameDirectory": true,
+  "symbols": {
+    "ExampleParameter": {
+      "$comment": "TODO: The symbols section defines variables and their values. For more details, see https://aka.ms/template-json-reference#symbols.",
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "example",
+      "replaces": "valueToReplace",
+      "isEnabled": false
+    }
+  },
+  "sources": [
+    {
+      "$comment": "TODO: Sources control the paths for source and target content. For more details see https://aka.ms/template-json-reference#symbols#source-definition. If source definition is not required, remove the property.",
+      "condition": "false",
+      "source": "./source-files",
+      "target": "./target"
+    }
+  ],
+  "constraints": {
+    "SampleConstraint": {
+      "$comment": "TODO: The template may define the constraints all of which must be met in order for the template to be used. For more details see https://aka.ms/template-json-reference#symbols#template-constraints. If constraints are not required, remove the property.",
+      "type": "os",
+      "args": [ "Linux", "OSX", "Windows" ]
+    }
+  },
+  "primaryOutputs": [
+    {
+      "$comment": "TODO: Primary outputs define the list of template files for further processing, usually post actions. If primary outputs are not required, remove the property.",
+      "path": "New.Template.1.cs",
+      "condition": "false"
+    }
+  ],
+  "postActions": [
+    {
+      "$comment": "TODO: Enables actions to be performed after the project is created. For more details see https://aka.ms/template-json-post-actions. If post actions are not required, remove the property.",
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "condition": "false",
+      "id": "sample-post-action",
+      "manualInstructions": [
+        {
+          "text": "Open file in New.Template.1.cs in the editor."
+        }
+      ],
+      "args": {
+        "files": "0"
+      }
+    }
+  ]
+}

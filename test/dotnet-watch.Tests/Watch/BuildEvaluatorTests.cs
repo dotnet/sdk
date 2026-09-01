@@ -1,10 +1,11 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public partial class BuildEvaluatorTests
 {
     private static readonly MSBuildFileSetFactory.EvaluationResult s_emptyEvaluationResult = new(new Dictionary<string, FileItem>(), projectGraph: null);
@@ -35,7 +36,7 @@ public partial class BuildEvaluatorTests
         };
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProcessAsync_EvaluatesFileSetIfProjFileChanges()
     {
         var context = CreateContext();
@@ -49,10 +50,10 @@ public partial class BuildEvaluatorTests
 
         await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Test.csproj", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
-        Assert.True(evaluator.RequiresRevaluation);
+        Assert.IsTrue(evaluator.RequiresRevaluation);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProcessAsync_DoesNotEvaluateFileSetIfNonProjFileChanges()
     {
         var context = CreateContext();
@@ -67,11 +68,11 @@ public partial class BuildEvaluatorTests
 
         await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
-        Assert.False(evaluator.RequiresRevaluation);
-        Assert.Equal(1, counter);
+        Assert.IsFalse(evaluator.RequiresRevaluation);
+        Assert.AreEqual(1, counter);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProcessAsync_EvaluateFileSetOnEveryChangeIfOptimizationIsSuppressed()
     {
         var context = CreateContext(suppressMSBuildIncrementalism: true);
@@ -87,11 +88,11 @@ public partial class BuildEvaluatorTests
 
         await evaluator.EvaluateAsync(changedFile: new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
-        Assert.True(evaluator.RequiresRevaluation);
-        Assert.Equal(2, counter);
+        Assert.IsTrue(evaluator.RequiresRevaluation);
+        Assert.AreEqual(2, counter);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task ProcessAsync_SetsEvaluationRequired_IfMSBuildFileChanges_ButIsNotChangedFile()
     {
         // There's a chance that the watcher does not correctly report edits to msbuild files on
@@ -124,6 +125,6 @@ public partial class BuildEvaluatorTests
 
         await evaluator.EvaluateAsync(new(new() { FilePath = "Controller.cs", ContainingProjectPaths = [] }, ChangeKind.Update), CancellationToken.None);
 
-        Assert.True(evaluator.RequiresRevaluation);
+        Assert.IsTrue(evaluator.RequiresRevaluation);
     }
 }

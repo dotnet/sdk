@@ -80,14 +80,11 @@ The test project `test\dotnet.Tests\dotnet.Tests.csproj` outputs directly to `ar
 
 ### Step 5: Run the tests
 
-Run specific tests:
-```
-.\.dotnet\dotnet exec artifacts\bin\redist\Debug\dotnet.Tests.dll -method "*TestMethodName*"
-```
+Use the **targeted-test** runner so failures retain detailed output, a TRX, and a
+binlog:
 
-Or run filtered tests via `dotnet test`:
-```
-.\.dotnet\dotnet test test\dotnet.Tests\dotnet.Tests.csproj --no-build --filter "Name~TestMethodName"
+```shell
+./.dotnet/dotnet .github/skills/targeted-test/scripts/RunTargetedTests.cs -- --project test/dotnet.Tests/dotnet.Tests.csproj --filter "Name~TestMethodName" --no-build
 ```
 
 ## Common project paths

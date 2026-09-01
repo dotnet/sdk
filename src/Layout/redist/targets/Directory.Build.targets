@@ -4,6 +4,7 @@
 
   <!-- Shared infra to build and use the sdk-tasks -->
   <Import Project="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.InTree.targets" />
+  <UsingTask TaskName="Microsoft.DotNet.Arcade.Sdk.DownloadFile" AssemblyFile="$(ArcadeSdkBuildTasksAssembly)" Runtime="NET" />
 
   <Import Project="RestoreLayout.targets" />
   <Import Project="BundledManifests.targets" />

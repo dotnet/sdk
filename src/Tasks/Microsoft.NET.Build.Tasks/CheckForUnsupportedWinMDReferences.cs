@@ -11,8 +11,11 @@ namespace Microsoft.NET.Build.Tasks
 {
     //  This task is used for projects targeting .NET 5 and higher and generates errors if there are any
     //  unsupported WinMD references.
-    public class CheckForUnsupportedWinMDReferences : TaskBase
+    [MSBuildMultiThreadableTask]
+    public class CheckForUnsupportedWinMDReferences : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         public string TargetFrameworkMoniker { get; set; }
 
         public ITaskItem[] ReferencePaths { get; set; } = Array.Empty<ITaskItem>();
@@ -49,7 +52,7 @@ namespace Microsoft.NET.Build.Tasks
                 foreach (var referencePath in ReferencePaths)
                 {
                     if (!Path.GetExtension(referencePath.ItemSpec).Equals(".winmd", StringComparison.OrdinalIgnoreCase) &&
-                        AssemblyHasWindowsRuntimeReference(referencePath.ItemSpec))
+                        AssemblyHasWindowsRuntimeReference(TaskEnvironment.GetAbsolutePath(referencePath.ItemSpec)))
                     {
                         //  Ignore System.Runtime.WindowsRuntime.dll, as it has windowsruntime metadata references, but is a dependency of
                         //  the Microsoft.Windows.Sdk.Contracts package, so generating an error about it isn't helpful
@@ -76,9 +79,9 @@ namespace Microsoft.NET.Build.Tasks
 
         }
 
-        private static bool AssemblyHasWindowsRuntimeReference(string sourcePath)
+        private static bool AssemblyHasWindowsRuntimeReference(AbsolutePath sourcePath)
         {
-            using (var assemblyStream = new FileStream(sourcePath, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
+            using (var assemblyStream = new FileStream(sourcePath.Value, FileMode.Open, FileAccess.Read, FileShare.Delete | FileShare.Read))
             {
                 try
                 {

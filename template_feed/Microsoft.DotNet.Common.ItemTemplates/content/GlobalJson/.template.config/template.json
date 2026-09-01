@@ -37,14 +37,36 @@
       "datatype": "string",
       "displayName": "dotnet CLI version"
     },
-    "CombinedVersion": {
+    "CoalescedVersion": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
         "sourceVariableName": "SdkVersion",
         "fallbackVariableName": "dotnet-cli-version"
-      },
-      "replaces": "SDK_VERSION"
+      }
+    },
+    "CombinedVersion": {
+      "type": "generated",
+      "generator": "regex",
+      "datatype": "string",
+      "replaces": "SDK_VERSION",
+      "parameters": {
+        "source": "CoalescedVersion",
+        "steps": [
+          {
+            "regex": "^(\\d+)$",
+            "replacement": "$1.0.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)$",
+            "replacement": "$1.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)\\.(\\d|[1-9]\\d)$",
+            "replacement": "$1.100"
+          }
+        ]
+      }
     },
     "RollForward": {
       "type": "parameter",

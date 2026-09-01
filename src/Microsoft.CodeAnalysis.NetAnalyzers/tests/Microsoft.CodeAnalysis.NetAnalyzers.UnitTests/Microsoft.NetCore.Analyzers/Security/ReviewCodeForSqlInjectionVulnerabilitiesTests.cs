@@ -1,20 +1,21 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<Microsoft.NetCore.Analyzers.Security.ReviewCodeForSqlInjectionVulnerabilities, Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ReviewCodeForSqlInjectionVulnerabilitiesTests : TaintedDataAnalyzerTestBase<ReviewCodeForSqlInjectionVulnerabilities, ReviewCodeForSqlInjectionVulnerabilities>
     {
         protected override DiagnosticDescriptor Rule => ReviewCodeForSqlInjectionVulnerabilities.Rule;
 
-        [Fact]
+        [TestMethod]
         public async Task EntityFramework_FromSql_Constant_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -43,7 +44,7 @@ namespace VulnerableWebApp
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Item_EntityFramework_FromSql_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -73,7 +74,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(20, 13, 20, 45, "IQueryable<string> RelationalQueryableExtensions.FromSql<string>(IQueryable<string> source, RawSqlString sql, params object[] parameters)", "void WebForm.Page_Load(object sender, EventArgs e)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_Violation_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -107,7 +108,7 @@ namespace TestNamespace
                 GetCSharpResultAt(19, 21, 14, 27, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_ParameterizedSolution_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -142,7 +143,7 @@ namespace TestNamespace
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_StoredProcedureSolution_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -177,7 +178,7 @@ namespace TestNamespace
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_Violation_DiagnosticAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync(@"
@@ -206,7 +207,7 @@ End Namespace
                 GetBasicResultAt(16, 70, 14, 34, "Property SqlCommand.CommandText As String", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_ParameterizedSolution_NoDiagnosticAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync(@"
@@ -235,7 +236,7 @@ End Namespace
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_StoredProcedureSolution_NoDiagnosticAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync(@"
@@ -264,7 +265,7 @@ End Namespace
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalString_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -297,7 +298,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(20, 21, 15, 28, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalString_VB_DiagnosticAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync(@"
@@ -325,7 +326,7 @@ End Namespace
                 GetBasicResultAt(16, 72, 14, 35, "Property SqlCommand.CommandText As String", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_DelegateInvocation_OutParam_LocalString_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -362,7 +363,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(24, 21, 19, 26, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_InterfaceInvocation_OutParam_LocalString_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -399,7 +400,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(24, 21, 19, 31, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalStringMoreBlocks_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -438,7 +439,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(27, 17, 18, 25, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_And_QueryString_LocalStringMoreBlocks_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -478,7 +479,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(27, 17, 22, 25, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.QueryString", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Direct_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -507,7 +508,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 31, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Substring_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -536,7 +537,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 31, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Sanitized_HttpRequest_Form_Direct_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -564,7 +565,7 @@ namespace VulnerableWebApp
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Sanitized_HttpRequest_Form_TryParse_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -595,7 +596,7 @@ namespace VulnerableWebApp
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Item_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -624,7 +625,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 31, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Item_Enters_SqlParameters_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -656,7 +657,7 @@ namespace VulnerableWebApp
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Item_Sql_Constructor_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -681,7 +682,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(15, 37, 15, 52, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Method_GenericsSink_DiagnosticAsync()
         {
             var csharpTest = new VerifyCS.Test
@@ -710,10 +711,10 @@ namespace VulnerableWebApp
 
             csharpTest.ExpectedDiagnostics.AddRange(new[] { GetCSharpResultAt(13, 13, 12, 28, "DbSqlQuery<object> DbSet<object>.SqlQuery(string sql, params object[] parameters)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)") });
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Method_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -743,7 +744,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(18, 17, 15, 28, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalNameValueCollectionString_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -774,7 +775,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(19, 17, 15, 70, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_List_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -806,7 +807,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(20, 17, 17, 73, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact(Skip = "Would be nice to distinguish between tainted and non-tainted elements in the List, but for now we taint the entire List from its construction.  FxCop also has a false positive.")]
+        [TestMethod, Ignore("Would be nice to distinguish between tainted and non-tainted elements in the List, but for now we taint the entire List from its construction.  FxCop also has a false positive.")]
         public async Task HttpRequest_Form_List_SafeElement_DiagnosticAsync()
         {
             // Would be nice to distinguish between tainted and non-tainted elements in the List, but for now we taint the entire List from its construction.  FxCop also has a false positive.
@@ -840,7 +841,7 @@ namespace VulnerableWebApp
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Array_List_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -873,7 +874,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(21, 17, 17, 45, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_Array_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -905,7 +906,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(20, 17, 17, 52, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalStructNameValueCollectionString_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -945,7 +946,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(28, 17, 23, 28, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalStructConstructorNameValueCollectionString_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -992,7 +993,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(35, 17, 30, 28, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_Form_LocalStructConstructorNameValueCollectionString_VB_DiagnosticAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync(@"
@@ -1034,7 +1035,7 @@ End Namespace
                 GetBasicResultAt(31, 68, 28, 28, "Property SqlCommand.CommandText As String", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)", "Property HttpRequest.Form As NameValueCollection", "Sub WebForm.Page_Load(sender As Object, e As EventArgs)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_UserLanguages_Direct_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1063,7 +1064,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 31, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "string[] HttpRequest.UserLanguages", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_UserLanguages_LocalStringArray_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1093,7 +1094,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(18, 17, 15, 34, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "string[] HttpRequest.UserLanguages", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpRequest_UserLanguages_LocalStringModified_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1123,7 +1124,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(18, 17, 15, 78, "string SqlCommand.CommandText", "void WebForm.Page_Load(object sender, EventArgs e)", "string[] HttpRequest.UserLanguages", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OkayInputLocalStructNameValueCollectionString_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1164,7 +1165,7 @@ namespace VulnerableWebApp
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OkayInputConst_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1192,7 +1193,7 @@ namespace VulnerableWebApp
             ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataBoundLiteralControl_DirectImplementation_TextAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1221,7 +1222,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 74, "string SqlCommand.CommandText", "void SomeClass.Execute()", "string DataBoundLiteralControl.Text", "void SomeClass.Execute()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DataBoundLiteralControl_Interface_TextAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1250,7 +1251,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 74, "string SqlCommand.CommandText", "void SomeClass.Execute()", "string ITextControl.Text", "void SomeClass.Execute()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HtmlInputButton_ValueAsync()
         {
             // HtmlInputButton derives from HtmlInputControl, and HtmlInputControl.Value is a tainted data source.
@@ -1280,7 +1281,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(17, 17, 17, 74, "string SqlCommand.CommandText", "void SomeClass.Execute()", "string HtmlInputControl.Value", "void SomeClass.Execute()"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SimpleInterproceduralAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1318,7 +1319,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(27, 17, 15, 35, "string SqlCommand.CommandText", "void MyDatabaseLayer.MakeSqlInjection(string sqlInjection)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SimpleInterproceduralTwiceAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1357,7 +1358,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(28, 17, 15, 35, "string SqlCommand.CommandText", "void MyDatabaseLayer.MakeSqlInjection(string sqlInjection)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SimpleLocalFunctionAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1392,7 +1393,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(21, 21, 15, 35, "string SqlCommand.CommandText", "SqlCommand injectSql(string sqlInjection)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SimpleLambdaAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1427,7 +1428,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(21, 21, 15, 35, "string SqlCommand.CommandText", "lambda expression", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodReturnsTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1469,7 +1470,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(31, 17, 15, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodReturnsTaintedButOutputUntaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1511,7 +1512,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodReturnsTaintedButRefUntaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1554,7 +1555,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodReturnsUntaintedButOutputTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1597,7 +1598,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(32, 17, 15, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodReturnsUntaintedButRefTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1641,7 +1642,7 @@ namespace VulnerableWebApp
                 GetCSharpResultAt(33, 17, 15, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodReturnsNotTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1682,7 +1683,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodSanitizesTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1723,7 +1724,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodOutParameterTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1765,7 +1766,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(31, 17, 15, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodOutParameterNotTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1806,7 +1807,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task IntermediateMethodOutParameterSanitizesTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1847,7 +1848,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinaryReturnsDefaultStillTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1893,7 +1894,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(35, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinaryReturnsInputStillTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1938,7 +1939,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(34, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinarySetsOutputToDefaultStillTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -1984,7 +1985,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(35, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinarySetsReferenceToDefaultStillTaintedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2031,7 +2032,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(36, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Property_ConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2071,7 +2072,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(29, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Property_DefaultAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2112,7 +2113,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(30, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Method_ReturnsConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2152,7 +2153,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(29, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Method_SetsOutputToConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2194,7 +2195,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(31, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Method_SetsReferenceToConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2237,7 +2238,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(32, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Method_ReturnsDefaultAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2278,7 +2279,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(30, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Method_SetsReferenceToDefaultAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2322,7 +2323,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(33, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_TaintedObject_Method_ReturnsDefault_UntaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2363,7 +2364,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(30, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Property_ConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2402,7 +2403,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Property_DefaultAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2441,7 +2442,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_ReturnsConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2480,7 +2481,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_SetsOutputToConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2521,7 +2522,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_SetsReferenceToConstructedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2563,7 +2564,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_ReturnsDefaultAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2603,7 +2604,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_SetsReferenceToDefaultAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2645,7 +2646,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_ReturnsDefault_UntaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2684,7 +2685,7 @@ namespace VulnerableWebApp
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_ReturnsDefault_TaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2725,7 +2726,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(30, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_ReturnsInput_TaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2765,7 +2766,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(29, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_ReturnsRandom_TaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2806,7 +2807,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(30, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_SetsOutputToDefault_TaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2848,7 +2849,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(31, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_SetsOutputToInput_TaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2889,7 +2890,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(30, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CrossBinary_UntaintedObject_Method_SetsOutputToRandom_TaintedInputAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -2931,7 +2932,7 @@ namespace VulnerableWebApp
             GetCSharpResultAt(31, 17, 16, 35, "string SqlCommand.CommandText", "void WebForm.ExecuteSql(string sqlCommandText)", "string HttpRequest.this[string key]", "void WebForm.Page_Load(object sender, EventArgs e)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NonMonotonicMergeAssertAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3009,7 +3010,7 @@ public class Class1
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PointsToAnalysisAssertsLocationSetsComparisonAsync()
         {
             await new VerifyCS.Test
@@ -3187,10 +3188,10 @@ public class Class1
                     {
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LotsOfAnalysisEntities_1Async()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3286,7 +3287,7 @@ namespace TestNamespace
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task LotsOfAnalysisEntities_2Async()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3382,7 +3383,7 @@ namespace TestNamespace
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_MvcFromServices_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3403,7 +3404,7 @@ public class MyController : Controller
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_MvcNoFromServices_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3425,7 +3426,7 @@ public class MyController : Controller
                 GetCSharpResultAt(14, 9, 12, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(ISomething input)", "ISomething input", "void MyController.DoSomething(ISomething input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_MultipleActions_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3448,7 +3449,7 @@ public class MyController : Controller
                 GetCSharpResultAt(14, 9, 12, 30, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething2(string input)", "string input", "void MyController.DoSomething2(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_MultipleActions_NotController_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3556,7 +3557,7 @@ public class MyController : Controller
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_InheritedNonController_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3577,7 +3578,7 @@ public class MyController : TotallyNonController
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_InheritedNonAction_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3602,7 +3603,7 @@ public class MyController : MyControllerBase
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_ControllerAttributeAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3620,7 +3621,7 @@ public class My
                 GetCSharpResultAt(10, 9, 8, 29, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_ControllerSuffix_InheritedAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3641,7 +3642,7 @@ public class My : Controller
                 GetCSharpResultAt(13, 9, 11, 29, "SqlCommand.SqlCommand(string cmdText)", "void My.DoSomething(string input)", "string input", "void My.DoSomething(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_ControllerSuffixAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3658,7 +3659,7 @@ public class MyController
                 GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_Reassignment_NoDiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3675,7 +3676,7 @@ public class MyController
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArguments_NoMvcReferenced_NoDiagnosticAsync()
         {
             var csharpTest = new VerifyCS.Test
@@ -3697,10 +3698,10 @@ public class MyController
                 },
             };
 
-            await csharpTest.RunAsync();
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AspNetMvcController_HasPropertySetterAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3719,7 +3720,7 @@ public class MyController
 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaintFunctionArgumentsAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"
@@ -3762,35 +3763,35 @@ public class MyController : Controller
                 GetCSharpResultAt(9, 9, 7, 29, "SqlCommand.SqlCommand(string cmdText)", "void MyController.DoSomething(string input)", "string input", "void MyController.DoSomething(string input)"));
         }
 
-        [Theory]
-        [InlineData("st.Append(stringParam);", true, "string stringParam")]
-        [InlineData("st.Append(intParam);", false)]
-        [InlineData("st.Append(charArrayParam);", true, "char[] charArrayParam", 70)]
-        [InlineData("st.Append(charPointerParam, 10);", true, "char* charPointerParam", 93)]
-        [InlineData("st.Append(charParam);", true, "char charParam", 117)]
+        [TestMethod]
+        [DataRow("st.Append(stringParam);", true, "string stringParam")]
+        [DataRow("st.Append(intParam);", false)]
+        [DataRow("st.Append(charArrayParam);", true, "char[] charArrayParam", 70)]
+        [DataRow("st.Append(charPointerParam, 10);", true, "char* charPointerParam", 93)]
+        [DataRow("st.Append(charParam);", true, "char charParam", 117)]
 
-        [InlineData("st.AppendFormat(stringParam, \"1\");", true, "string stringParam")]
-        [InlineData("st.AppendFormat(\"{0}\", stringParam);", true, "string stringParam")]
-        [InlineData("st.AppendFormat(\"{0}{1}\", \"\", stringParam);", true, "string stringParam")]
-        [InlineData("st.AppendFormat(\"{0}{1}{2}\", \"\", \"\", stringParam);", true, "string stringParam")]
-        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
-        [InlineData("st.AppendFormat(\"{0}{1}{2}{3}{4}\", \"\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
+        [DataRow("st.AppendFormat(stringParam, \"1\");", true, "string stringParam")]
+        [DataRow("st.AppendFormat(\"{0}\", stringParam);", true, "string stringParam")]
+        [DataRow("st.AppendFormat(\"{0}{1}\", \"\", stringParam);", true, "string stringParam")]
+        [DataRow("st.AppendFormat(\"{0}{1}{2}\", \"\", \"\", stringParam);", true, "string stringParam")]
+        [DataRow("st.AppendFormat(\"{0}{1}{2}{3}\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
+        [DataRow("st.AppendFormat(\"{0}{1}{2}{3}{4}\", \"\", \"\", \"\", \"\", stringParam);", true, "string stringParam")]
 
-        [InlineData("st.AppendLine(stringParam);", true, "string stringParam")]
+        [DataRow("st.AppendLine(stringParam);", true, "string stringParam")]
 
-        [InlineData("st.Insert(0, stringParam);", true, "string stringParam")]
-        [InlineData("st.Insert(0, intParam);", false)]
-        [InlineData("st.Insert(0, charArrayParam);", true, "char[] charArrayParam", 70)]
-        [InlineData("st.Insert(0, charParam);", true, "char charParam", 117)]
+        [DataRow("st.Insert(0, stringParam);", true, "string stringParam")]
+        [DataRow("st.Insert(0, intParam);", false)]
+        [DataRow("st.Insert(0, charArrayParam);", true, "char[] charArrayParam", 70)]
+        [DataRow("st.Insert(0, charParam);", true, "char charParam", 117)]
 
-        [InlineData("st.Replace(\"\", stringParam);", true, "string stringParam")]
+        [DataRow("st.Replace(\"\", stringParam);", true, "string stringParam")]
 
-        [InlineData("st[0] = charParam;", true, "char charParam", 117)]
+        [DataRow("st[0] = charParam;", true, "char charParam", 117)]
 
-        [InlineData("st.Append(stringParam); st.CopyTo(0, arr, 0, 10)", true, "string stringParam", 36, "new string(arr)")]
-        [InlineData("st.Append(stringParam); st.Clear()", false)]
+        [DataRow("st.Append(stringParam); st.CopyTo(0, arr, 0, 10)", true, "string stringParam", 36, "new string(arr)")]
+        [DataRow("st.Append(stringParam); st.Clear()", false)]
 
-        [InlineData("StaticString = stringParam", false)]
+        [DataRow("StaticString = stringParam", false)]
         public async Task TaintThis_StringBuilderAsync(string payload, bool warn, string source = "", int sourceColumn = 36, string sinkArg = "st.ToString()")
         {
             string code = $@"
@@ -3827,7 +3828,7 @@ public class MyController
             }
         }
 
-        [Fact]
+        [TestMethod]
         public async Task HttpServerUtility_HtmlEncode_StringWriterOverload_WrongSanitizerAsync()
         {
             await new VerifyCS.Test
@@ -3844,16 +3845,16 @@ public class MyController
                         GetCSharpResultAt(16, 33, 11, 24, "SqlCommand.SqlCommand(string cmdText)", "void WebForm.Page_Load(object sender, EventArgs e)", "NameValueCollection HttpRequest.Form", "void WebForm.Page_Load(object sender, EventArgs e)")
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(4491, "https://github.com/dotnet/roslyn-analyzers/issues/4491")]
+        [TestMethod, WorkItem(4491, "https://github.com/dotnet/roslyn-analyzers/issues/4491")]
         public async Task AssemblyAttributeRegressionTestAsync()
         {
             await VerifyVisualBasicWithDependenciesAsync(@"<Assembly: System.Reflection.AssemblyTitle(""Title"")>");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AspNetCoreHttpRequest_Form_Direct_DiagnosticAsync()
         {
             await VerifyCSharpWithDependenciesAsync(@"

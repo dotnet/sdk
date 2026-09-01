@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 namespace Microsoft.NetFramework.Analyzers.UnitTests
 {
@@ -14,7 +14,7 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         ////private static DiagnosticResult GetCA3075XmlReaderCreateWrongOverloadBasicResultAt(int line, int column)
         ////    => VerifyVB.Diagnostic(DoNotUseInsecureDtdProcessingAnalyzer.RuleXmlReaderCreateWrongOverload).WithLocation(line, column);
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateWrongOverloadShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -48,7 +48,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateInsecureOverloadInGetShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -86,7 +86,7 @@ End Class"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateInsecureOverloadInSetShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -130,7 +130,7 @@ End Class"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateInsecureOverloadInTryShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -172,7 +172,7 @@ End Class"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateInsecureOverloadInCatchShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -212,7 +212,7 @@ End Class"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateInsecureOverloadInFinallyShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -253,7 +253,7 @@ End Class"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateInsecureOverloadInAsyncAwaitShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -297,7 +297,7 @@ End Class"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateInsecureOverloadInDelegateShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -328,7 +328,7 @@ End Class"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateTextReaderOnlyOverloadShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(
@@ -350,7 +350,7 @@ namespace TestNamespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseXmlReaderCreateStreamOnlyOverloadShouldNotGenerateDiagnosticAsync()
         {
             await VerifyCSharpAnalyzerAsync(

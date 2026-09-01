@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Performance.PreferLengthCountIsEmptyOverAnyAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpPreferLengthCountIsEmptyOverAnyFixer>;
@@ -13,12 +13,13 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public class PreferLengthOverAnyTests
     {
         private static readonly DiagnosticResult ExpectedDiagnostic = new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(0);
 
-        [Fact]
-        public Task TestLocalDeclarationAsync()
+        [TestMethod]
+        public async Task TestLocalDeclarationAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -41,11 +42,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
-        public Task VbTestLocalDeclarationAsync()
+        [TestMethod]
+        public async Task VbTestLocalDeclarationAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -68,11 +69,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
-        public Task TestParameterDeclarationAsync()
+        [TestMethod]
+        public async Task TestParameterDeclarationAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -93,11 +94,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
-        public Task VbTestParameterDeclarationAsync()
+        [TestMethod]
+        public async Task VbTestParameterDeclarationAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -118,11 +119,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
-        public Task TestNegatedAnyAsync()
+        [TestMethod]
+        public async Task TestNegatedAnyAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -143,11 +144,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
-        public Task VbTestNegatedAnyAsync()
+        [TestMethod]
+        public async Task VbTestNegatedAnyAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -168,11 +169,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyVB.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
         }
 
-        [Fact]
-        public Task DontWarnOnChainedLinqWithAnyAsync()
+        [TestMethod]
+        public async Task DontWarnOnChainedLinqWithAnyAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -184,11 +185,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
-        public Task VbDontWarnOnChainedLinqWithAnyAsync()
+        [TestMethod]
+        public async Task VbDontWarnOnChainedLinqWithAnyAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -200,11 +201,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyAnalyzerAsync(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
-        public Task DontWarnOnAnyWithPredicateAsync()
+        [TestMethod]
+        public async Task DontWarnOnAnyWithPredicateAsync()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -216,11 +217,11 @@ public class Tests {
     }
 }";
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
-        public Task VbDontWarnOnAnyWithPredicateAsync()
+        [TestMethod]
+        public async Task VbDontWarnOnAnyWithPredicateAsync()
         {
             const string code = @"
 Imports System.Collections.Generic
@@ -232,11 +233,11 @@ Public Class Tests
     End Function
 End Class";
 
-            return VerifyVB.VerifyAnalyzerAsync(code);
+            await VerifyVB.VerifyAnalyzerAsync(code);
         }
 
-        [Fact]
-        public Task DontWarnOnCustomType()
+        [TestMethod]
+        public async Task DontWarnOnCustomType()
         {
             const string code = @"
 using System.Collections.Generic;
@@ -253,11 +254,11 @@ public class MyCollection {
     public int Length => throw null;
 }";
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
-        public Task WhenInExpressionTree_NoDiagnostic()
+        [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
+        public async Task WhenInExpressionTree_NoDiagnostic()
         {
             const string code = """
                                 using System;
@@ -277,11 +278,11 @@ public class MyCollection {
                                 }
                 """;
 
-            return VerifyCS.VerifyAnalyzerAsync(code);
+            await VerifyCS.VerifyAnalyzerAsync(code);
         }
 
-        [Fact, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
-        public Task WhenInFunc_Diagnostic()
+        [TestMethod, WorkItem(7063, "https://github.com/dotnet/roslyn-analyzers/issues/7063")]
+        public async Task WhenInFunc_Diagnostic()
         {
             const string code = """
                                 using System;
@@ -318,7 +319,71 @@ public class MyCollection {
                                 }
                 """;
 
-            return VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+            await VerifyCS.VerifyCodeFixAsync(code, ExpectedDiagnostic, fixedCode);
+        }
+
+        [TestMethod]
+        public async Task CS_NestedAny_FixAllRewritesBothAsync()
+        {
+            const string code = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Tests {
+    public bool M(int[] outer, int[] inner) {
+        return {|#0:({|#1:inner.Any()|} ? outer : inner).Any()|};
+    }
+}";
+            const string fixedCode = @"
+using System.Collections.Generic;
+using System.Linq;
+
+public class Tests {
+    public bool M(int[] outer, int[] inner) {
+        return (inner.Length != 0 ? outer : inner).Length != 0;
+    }
+}";
+
+            await VerifyCS.VerifyCodeFixAsync(
+                code,
+                new[]
+                {
+                    ExpectedDiagnostic,
+                    new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(1),
+                },
+                fixedCode);
+        }
+
+        [TestMethod]
+        public async Task VB_NestedAny_FixAllRewritesBothAsync()
+        {
+            const string code = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class Tests
+    Public Function M(outer As Integer(), inner As Integer()) As Boolean
+        Return {|#0:If({|#1:inner.Any()|}, outer, inner).Any()|}
+    End Function
+End Class";
+            const string fixedCode = @"
+Imports System.Collections.Generic
+Imports System.Linq
+
+Public Class Tests
+    Public Function M(outer As Integer(), inner As Integer()) As Boolean
+        Return If(inner.Length <> 0, outer, inner).Length <> 0
+    End Function
+End Class";
+
+            await VerifyVB.VerifyCodeFixAsync(
+                code,
+                new[]
+                {
+                    ExpectedDiagnostic,
+                    new DiagnosticResult(PreferLengthCountIsEmptyOverAnyAnalyzer.LengthDescriptor).WithLocation(1),
+                },
+                fixedCode);
         }
     }
 }

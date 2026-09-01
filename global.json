@@ -5,12 +5,12 @@
       "$host$"
     ],
     "errorMessage": "The .NET SDK is not installed or is not configured correctly. Please run ./build to install the correct SDK version locally.",
-    "version": "11.0.100-preview.6.26359.118",
+    "version": "11.0.100-rc.1.26420.103",
     "allowPrerelease": true,
     "rollForward": "latestFeature"
   },
   "tools": {
-    "dotnet": "11.0.100-preview.6.26359.118",
+    "dotnet": "11.0.100-rc.1.26420.103",
     "runtimes": {
       "dotnet": [
         "$(MicrosoftNETCorePlatformsPackageVersion)"
@@ -27,8 +27,8 @@
     "runner": "Microsoft.Testing.Platform"
   },
   "msbuild-sdks": {
-    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26410.101",
-    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26410.101",
+    "Microsoft.DotNet.Arcade.Sdk": "11.0.0-beta.26431.116",
+    "Microsoft.DotNet.Helix.Sdk": "11.0.0-beta.26431.116",
     "Microsoft.Build.NoTargets": "3.7.134",
     "Microsoft.Build.Traversal": "4.1.82",
     "Microsoft.WixToolset.Sdk": "6.0.3-dotnet.6",

@@ -89,7 +89,7 @@
       <!-- An empty ContainerRegistry implies pushing to the local registry, putting this here for documentation purposes -->
       <!-- <ContainerRegistry></ContainerRegistry> -->
 
-      <!-- An empty LocalRegistry implies detecting the local registry. LocalRegistry can be set explicity to Docker/Podman. -->
+      <!-- An empty LocalRegistry implies detecting the local registry. LocalRegistry can be set explicitly to Docker/Podman/Wslc/MacOSContainer. -->
       <!-- <LocalRegistry></LocalRegistry> -->
 
       <!-- Compatibility: previous versions used ImageName, but the proper term is Repository. Keep using that if explicitly set. -->
@@ -100,6 +100,7 @@
       <!-- Only default a tag name if no tag names at all are provided -->
       <ContainerImageTag Condition="'$(ContainerImageTag)' == '' and '$(ContainerImageTags)' == ''">latest</ContainerImageTag>
       <ContainerImageTag Condition="'$(AutoGenerateImageTag)' == 'true' and '$(ContainerImageTags)' == ''">$([System.DateTime]::UtcNow.ToString('yyyyMMddhhmmss'))</ContainerImageTag>
+      <ContainerPushNoCache Condition="'$(ContainerPushNoCache)' == ''">false</ContainerPushNoCache>
     </PropertyGroup>
 
     <ParseContainerProperties FullyQualifiedBaseImageName="$(ContainerBaseImage)"
@@ -149,7 +150,6 @@
 
     <!-- Labels generated from descriptions from the spec at https://github.com/opencontainers/image-spec/blob/main/annotations.md#pre-defined-annotation-keys -->
     <ItemGroup Label="Conventional Label assignment" Condition="'$(ContainerGenerateLabels)' == 'true'">
-      <ContainerLabel Condition="'$(ContainerGenerateLabelsImageCreated)' == 'true'" Include="org.opencontainers.image.created;org.opencontainers.artifact.created" Value="$([System.DateTime]::UtcNow.ToString('o'))" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageDescription)' == 'true' and '$(ContainerDescription)' != ''" Include="org.opencontainers.artifact.description;org.opencontainers.image.description" Value="$(ContainerDescription)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageAuthors)' == 'true' and '$(ContainerAuthors)' != ''" Include="org.opencontainers.image.authors" Value="$(ContainerAuthors)" />
       <ContainerLabel Condition="'$(ContainerGenerateLabelsImageUrl)' == 'true' and '$(ContainerInformationUrl)' != ''" Include="org.opencontainers.image.url" Value="$(ContainerInformationUrl)" />
@@ -275,9 +275,12 @@
                     ContainerEnvironmentVariables="@(ContainerEnvironmentVariables)"
                     ContainerRuntimeIdentifier="$(ContainerRuntimeIdentifier)"
                     ContainerUser="$(ContainerUser)"
+                    SourceDateEpoch="$(SOURCE_DATE_EPOCH)"
                     RuntimeIdentifierGraphPath="$(RuntimeIdentifierGraphPath)"
                     SkipPublishing="$(_SkipContainerPublishing)"
+                    NoCache="$(ContainerPushNoCache)"
                     GenerateLabels="$(ContainerGenerateLabels)"
+                    GenerateCreatedLabels="$(ContainerGenerateLabelsImageCreated)"
                     GenerateDigestLabel="$(ContainerGenerateLabelsImageBaseDigest)"> <!-- The RID graph path is provided as a property by the SDK. -->
 
       <Output TaskParameter="GeneratedContainerManifest" PropertyName="GeneratedContainerManifest" />
@@ -301,15 +304,10 @@
 
   <Target Name="_PublishMultiArchContainers" DependsOnTargets="$(PublishContainerDependsOn)" Returns="@(GeneratedContainer)" >
     <PropertyGroup>
-      <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon (only docker) publishing because all images are published in one tarball.-->
+      <!--We want to skip publishing individual images in case of multi-arch tarball publishing or local daemon publishing because all images are published in one tarball.-->
       <!--We don't want to skip publishing individual images in case of remote registry because the individual images should be available in the registry before image index is pushed.-->
-      <!--We don't want to skip publishing individual images in case of local daemon podman because podman loads multi-arch tarball differently - only individual image for the current platform.-->
       <_SkipContainerPublishing>false</_SkipContainerPublishing>
-      <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or ( $(ContainerRegistry) == '' and ( $(LocalRegistry) == '' or $(LocalRegistry) == 'Docker' ) )">true</_SkipContainerPublishing>
-
-      <!--We want to skip CreateImageIndex task in case of local daemon podman because it is not supported.-->
-      <_SkipCreateImageIndex>false</_SkipCreateImageIndex>
-      <_SkipCreateImageIndex Condition="$(ContainerArchiveOutputPath) == '' and $(ContainerRegistry) == '' and $(LocalRegistry) == 'Podman'">true</_SkipCreateImageIndex>
+      <_SkipContainerPublishing Condition="$(ContainerArchiveOutputPath) != '' or $(ContainerRegistry) == ''">true</_SkipContainerPublishing>
 
       <!-- Figure out what format the inner images should be coerced to -->
       <!-- If a user had an opinion, use that -->
@@ -337,7 +335,9 @@
           _ContainerPort=@(ContainerPort->'%(Identity):%(Type)');
           _ContainerEnvironmentVariables=@(ContainerEnvironmentVariable->'%(Identity):%(Value)');
           ContainerGenerateLabels=$(ContainerGenerateLabels);
+          ContainerGenerateLabelsImageCreated=$(ContainerGenerateLabelsImageCreated);
           ContainerGenerateLabelsImageBaseDigest=$(ContainerGenerateLabelsImageBaseDigest);
+          ContainerPushNoCache=$(ContainerPushNoCache);
           _SkipContainerPublishing=$(_SkipContainerPublishing);
           ContainerImageFormat=$(_SingleImageContainerFormat);
           _IsMultiRIDBuild=false;
@@ -354,7 +354,7 @@
         <Output TaskParameter="TargetOutputs" ItemName="GeneratedContainer" />
     </MSBuild>
 
-    <CreateImageIndex Condition="'$(_SkipCreateImageIndex)' == 'false' "
+    <CreateImageIndex
                       GeneratedContainers="@(GeneratedContainer)"
                       LocalRegistry="$(LocalRegistry)"
                       OutputRegistry="$(ContainerRegistry)"
@@ -380,8 +380,8 @@
         Include="$(_ContainerLabel)"/>
       <ContainerLabel
         Condition="@(_ParsedContainerLabel->Count()) > 0 "
-        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[0])"
-        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':')[1])" />
+        Include="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':', 2)[0])"
+        Value="$([System.String]::Copy('%(_ParsedContainerLabel.Identity)').Split(':', 2)[1])" />
 
       <_ParsedContainerPort
         Condition="'$(_ContainerPort)' != ':'"

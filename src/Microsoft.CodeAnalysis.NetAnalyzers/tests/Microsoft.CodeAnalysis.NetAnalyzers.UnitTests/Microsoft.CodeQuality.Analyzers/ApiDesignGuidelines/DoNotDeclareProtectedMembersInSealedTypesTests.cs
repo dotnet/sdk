@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.DoNotDeclareProtectedMembersInSealedTypes,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,10 +11,11 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotDeclareProtectedMembersInSealedTypesTests
     {
 
-        [Fact]
+        [TestMethod]
         public async Task ProtectedSubInNotInheritable_DiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -25,10 +26,10 @@ End Class",
                 VerifyVB.Diagnostic().WithSpan(3, 19, 3, 20).WithArguments("M", "C"));
         }
 
-        [Theory]
-        [InlineData("protected")]
-        [InlineData("protected internal")]
-        [InlineData("private protected")]
+        [TestMethod]
+        [DataRow("protected")]
+        [DataRow("protected internal")]
+        [DataRow("private protected")]
         public Task AnyProtectedVariantMembersInSealed_DiagnosticAsync(string accessModifier)
         {
             return new VerifyCS.Test
@@ -57,13 +58,13 @@ public sealed class C
 dotnet_code_quality.CA1047.api_surface = All
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("Protected")]
-        [InlineData("Protected Friend")]
-        [InlineData("Private Protected")]
+        [TestMethod]
+        [DataRow("Protected")]
+        [DataRow("Protected Friend")]
+        [DataRow("Private Protected")]
         public Task AnyProtectedVariantMemberInNotInheritable_DiagnosticAsync(string accessModifier)
         {
             return new VerifyVB.Test
@@ -93,10 +94,10 @@ End Class"
 dotnet_code_quality.CA1047.api_surface = All
 ") }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ProtectedOverridesMemberInNotInheritable_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -124,30 +125,30 @@ Public NotInheritable Class C2
 End Class");
         }
 
-        [Theory]
+        [TestMethod]
         // General analyzer option
-        [InlineData("Public", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private, Public")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private, Public")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = All")]
         // Specific analyzer option
-        [InlineData("Friend", "dotnet_code_quality.CA1047.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.Design.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.CA1047.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = Private
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = Private
                                 dotnet_code_quality.CA1047.api_surface = All")]
         // Case-insensitive analyzer option
-        [InlineData("Friend", "DOTNET_code_quality.CA1047.API_SURFACE = ALL")]
+        [DataRow("Friend", "DOTNET_code_quality.CA1047.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = All
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1047.api_surface_2 = Private")]
         public async Task VisualBasic_ApiSurfaceOptionAsync(string accessibility, string editorConfigText)
         {
@@ -170,10 +171,10 @@ End Class"
 {editorConfigText}
 "), },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Finalize_NoDiagnosticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

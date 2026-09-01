@@ -5,16 +5,13 @@ using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAWebApp : SdkTest
     {
-        public GivenThatWeWantToPublishAWebApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void It_publishes_as_framework_dependent_by_default()
         {
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset("WebApp")
                 .WithSource();
 
@@ -52,7 +49,8 @@ namespace Microsoft.NET.Publish.Tests
         // This test is for netcoreapp2 and no longer working on ubuntu 2404
         //  Disabled for OSX due to //  https://github.com/dotnet/sdk/issues/49665, should be re-enabled
         //  error : NETSDK1056: Project is targeting runtime 'osx-arm64' but did not resolve any runtime-specific packages. This runtime may not be supported by the target framework.
-        [PlatformSpecificFact(TestPlatforms.Windows)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void It_should_publish_self_contained_for_2x()
         {
             var tfm = "netcoreapp2.2";
@@ -69,7 +67,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.App"));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject);
 
             var command = new PublishCommand(testProjectInstance);
 
@@ -107,9 +105,10 @@ namespace Microsoft.NET.Publish.Tests
         }
 
         //  https://github.com/dotnet/sdk/issues/49665
-        [PlatformSpecificTheory(TestPlatforms.Any & ~TestPlatforms.OSX)]
-        [InlineData("Microsoft.AspNetCore.App")]
-        [InlineData("Microsoft.AspNetCore.All")]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+        [DataRow("Microsoft.AspNetCore.App")]
+        [DataRow("Microsoft.AspNetCore.All")]
         public void It_should_publish_framework_dependent_for_2x(string platformLibrary)
         {
 
@@ -128,7 +127,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference(platformLibrary));
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, platformLibrary);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, platformLibrary);
 
             var command = new PublishCommand(testProjectInstance);
 
@@ -152,16 +151,16 @@ namespace Microsoft.NET.Publish.Tests
             });
         }
 
-        [Theory]
-        [InlineData(null, null)]
-        [InlineData(false, null)]
-        [InlineData(true, null)]
-        [InlineData(null, false)]
-        [InlineData(null, true)]
-        [InlineData(false, false)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
+        [TestMethod]
+        [DataRow(null, null)]
+        [DataRow(false, null)]
+        [DataRow(true, null)]
+        [DataRow(null, false)]
+        [DataRow(null, true)]
+        [DataRow(false, false)]
+        [DataRow(true, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
         public void PublishWebAppWithPublishProfile(bool? selfContained, bool? useAppHost)
         {
             var tfm = ToolsetInfo.CurrentTargetFramework;
@@ -180,7 +179,7 @@ namespace Microsoft.NET.Publish.Tests
             testProject.PackageReferences.Add(new TestPackageReference("Microsoft.AspNetCore.Razor.Design", version: "2.2.0", privateAssets: "all"));
 
             var identifier = (selfContained == null ? "null" : selfContained.ToString()) + (useAppHost == null ? "null" : useAppHost.ToString());
-            var testProjectInstance = _testAssetsManager.CreateTestProject(testProject, identifier: identifier);
+            var testProjectInstance = TestAssetsManager.CreateTestProject(testProject, identifier: identifier);
 
             var projectDirectory = Path.Combine(testProjectInstance.Path, testProject.Name);
             var publishProfilesDirectory = Path.Combine(projectDirectory, "Properties", "PublishProfiles");

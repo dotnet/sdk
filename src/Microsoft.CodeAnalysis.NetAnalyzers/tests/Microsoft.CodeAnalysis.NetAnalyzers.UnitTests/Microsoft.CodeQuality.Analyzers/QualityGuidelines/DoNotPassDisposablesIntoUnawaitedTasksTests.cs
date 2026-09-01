@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.QualityGuidelines.DoNotPassDisposablesIntoUnawaitedTasksAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,11 +11,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
 {
+    [TestClass]
     public class DoNotPassDisposablesIntoUnawaitedTasksTests
     {
         #region Diagnostic
 
-        [Fact]
+        [TestMethod]
         public async Task UsingBlockNoConversion_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -54,7 +55,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UsingBlockWithConversion_DiagnosticAsync()
         {
             // Conversion from MemoryStream to Stream
@@ -94,7 +95,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleDisposables_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -138,7 +139,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task MultipleCallsWithSameDisposable_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -181,7 +182,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task SimpleUsingStatement_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -205,10 +206,10 @@ public class C
                 {
                     VerifyCS.Diagnostic().WithSpan(10, 27, 10, 29)
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AwaitedAfterwardsButDisposedBeforeAwait_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -230,7 +231,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ReturnFromMethod_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -269,7 +270,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NestedUsingStatements_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -314,7 +315,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ManualDisposeWithTryFinally_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -362,7 +363,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ManualDisposeWithTask_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -402,7 +403,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ManualDisposeWithTaskString_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -446,7 +447,7 @@ End Class
 
         #region No Diagnostic
 
-        [Fact]
+        [TestMethod]
         public async Task AwaitedTask_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -484,7 +485,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UnawaitedWithNoDispose_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -522,7 +523,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskWaitedSynchronously_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -560,7 +561,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TaskResultReceivedSynchronously_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -598,7 +599,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AwaitedElsewhereBeforeDispose_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -641,7 +642,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AwaitedElsewhereBeforeDisposeMultipleArgs_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -687,7 +688,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task AwaitedElsewhereBeforeDisposeConfigureAwait_NoDiagnosticAsync()
         {
             // Ensures we register the await even when it's not the direct parent of the local invocation

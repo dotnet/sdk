@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.InteropServices.DoNotUseOutAttributeStringPInvokeParametersAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
 {
+    [TestClass]
     public class DoNotUseOutAttributeStringPInvokeParametersAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task StringByReference_NoDiagnostics_CSAsync()
         {
             string source = @"
@@ -35,7 +36,7 @@ public class C
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_CSAsync()
         {
             string source = @"
@@ -49,7 +50,7 @@ public class C
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutAttributeStringByValue_Diagnostics_CSAsync()
         {
             string source = @"
@@ -71,7 +72,7 @@ public class C
                 CSharpResult(2, "s3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task StringByReference_NoDiagnostics_VBAsync()
         {
             string source = @"
@@ -86,7 +87,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NotPInvoke_NoDiagnostics_VBAsync()
         {
             string source = @"
@@ -100,7 +101,7 @@ End Class
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task OutAttributeStringByValue_Diagnostics_VBAsync()
         {
             string source = @"

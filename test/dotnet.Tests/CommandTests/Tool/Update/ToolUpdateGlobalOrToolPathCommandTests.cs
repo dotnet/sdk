@@ -19,6 +19,7 @@ using Parser = Microsoft.DotNet.Cli.Parser;
 
 namespace Microsoft.DotNet.Tests.Commands.Tool
 {
+    [TestClass]
     public class ToolUpdateGlobalOrToolPathCommandTests : SdkTest
     {
         private readonly BufferedReporter _reporter;
@@ -36,7 +37,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private readonly string _tempDirectory;
         private readonly ToolPackageDownloaderMock2 _toolPackageDownloader;
 
-        public ToolUpdateGlobalOrToolPathCommandTests(ITestOutputHelper log) : base(log)
+        public ToolUpdateGlobalOrToolPathCommandTests()
         {
             _reporter = new BufferedReporter();
             _fileSystem = new FileSystemMockBuilder().UseCurrentSystemTemporaryDirectory().Build();
@@ -103,7 +104,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingRestoreActionConfigOptions()
         {
             var parseResult = Parser.Parse($"dotnet tool update -g {_packageId} --ignore-failed-sources");
@@ -111,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             toolUpdateCommand._toolInstallGlobalOrToolPathCommand.restoreActionConfig.IgnoreFailedSources.Should().BeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenPassingIgnoreFailedSourcesItShouldNotThrow()
         {
             _fileSystem.File.WriteAllText(Path.Combine(_tempDirectory, "nuget.config"), _nugetConfigWithInvalidSources);
@@ -122,7 +123,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
             _fileSystem.File.Delete(Path.Combine(_tempDirectory, "nuget.config"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenANonFeedExistentPackageItErrors()
         {
             var packageId = "does.not.exist";
@@ -135,7 +136,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                    string.Format(CliStrings.IsNotFoundInNuGetFeeds, packageId, MockNuGetPackageDownloader.MOCK_FEEDS_TEXT));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenANonExistentPackageItInstallTheLatest()
         {
             var command = CreateUpdateCommand($"-g {_packageId}");
@@ -147,7 +148,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         }
 
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallItCanUpdateThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -160,7 +161,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(HigherPackageVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerVersionInstallationItCanUpdateAllThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -174,7 +175,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(HigherPackageVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallFromRedirectorItCanUpdateThePackageVersion()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -199,7 +200,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(HigherPackageVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -214,7 +215,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenUpdateAllItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -229,7 +230,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedPreviewVersionInstallationWhenUpdateToHigherVersionItSucceeds()
         {
             var installCommand = CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion} --verbosity minimal");
@@ -244,7 +245,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, HigherPreviewPackageVersion, HigherPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedHigherversionInstallationWhenUpdateToLowerVersionItErrors()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
@@ -259,7 +260,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                   string.Format(CliCommandStrings.UpdateToLowerVersion, LowerPackageVersion, HigherPackageVersion));
         }
 
-       [Fact]
+       [TestMethod]
         public void GivenAnExistedHigherversionInstallationWithDowngradeFlagWhenUpdateToLowerVersionItSucceeds()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
@@ -274,7 +275,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, HigherPackageVersion, LowerPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallWithWildCardVersionItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -289,7 +290,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionInstallationWhenCallWithPrereleaseVersionItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -304,7 +305,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, LowerPackageVersion, HigherPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedHigherVersionInstallationWhenCallWithLowerVersionItThrowsAndRollsBack()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
@@ -324,7 +325,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(HigherPackageVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedSameVersionInstallationWhenCallItCanPrintSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPackageVersion}").Execute();
@@ -339,7 +340,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, HigherPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedSameVersionInstallationWhenCallWithPrereleaseItUsesAPrereleaseSuccessMessage()
         {
             CreateInstallCommand($"-g {_packageId} --version {HigherPreviewPackageVersion}").Execute();
@@ -354,7 +355,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _packageId, HigherPreviewPackageVersion));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionWhenReinstallThrowsIthasTheFirstLineIndicateUpdateFailure()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -381,7 +382,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 string.Format(CliCommandStrings.InvalidToolConfiguration, "Simulated error"));
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenAnExistedLowerversionWhenReinstallThrowsItRollsBack()
         {
             CreateInstallCommand($"-g {_packageId} --version {LowerPackageVersion}").Execute();
@@ -408,7 +409,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 .Be(LowerPackageVersion);
         }
 
-        [Fact]
+        [TestMethod]
         public void GivenPackagedShimIsProvidedWhenRunWithPackageIdItCreatesShimUsingPackagedShim()
         {
 

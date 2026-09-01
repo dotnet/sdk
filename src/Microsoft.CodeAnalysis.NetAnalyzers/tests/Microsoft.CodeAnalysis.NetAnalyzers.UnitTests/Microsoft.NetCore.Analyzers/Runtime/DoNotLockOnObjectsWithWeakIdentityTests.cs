@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotLockOnObjectsWithWeakIdentityAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotLockOnObjectsWithWeakIdentityTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2002TestLockOnStrongTypeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -42,7 +43,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2002TestLockOnWeakIdentitiesAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -162,7 +163,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             GetBasicResultAt(47, 30, "Me"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2002TestLockOnWeakIdentitiesWithScopeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -252,7 +253,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
             End Class");
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2744, "https://github.com/dotnet/roslyn-analyzers/issues/2744")]
         public async Task CA2002_MonitorEnter_DiagnosticAsync()
         {
@@ -296,7 +297,7 @@ End Class
                 GetBasicResultAt(11, 23, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(2744, "https://github.com/dotnet/roslyn-analyzers/issues/2744")]
         public async Task CA2002_MonitorTryEnter_DiagnosticAsync()
         {

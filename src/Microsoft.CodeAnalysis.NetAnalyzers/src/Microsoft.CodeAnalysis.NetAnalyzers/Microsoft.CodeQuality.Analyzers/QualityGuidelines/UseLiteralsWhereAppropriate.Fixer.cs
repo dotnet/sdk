@@ -1,54 +1,54 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
     /// <summary>
     /// CA1802: Use literals where appropriate
     /// </summary>
-    public abstract class UseLiteralsWhereAppropriateFixer : CodeFixProvider
+    public abstract class UseLiteralsWhereAppropriateFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(UseLiteralsWhereAppropriateAnalyzer.RuleId);
-
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
-        }
 
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
 
-            SyntaxNode declaration = root.FindNode(context.Span);
+            SyntaxNode? declaration = root.FindNode(context.Span);
             declaration = SyntaxGenerator.GetGenerator(context.Document).GetDeclaration(declaration, DeclarationKind.Field);
-            var fieldFeclaration = GetFieldDeclaration(declaration);
-            if (fieldFeclaration == null)
+            if (declaration is null || GetFieldDeclaration(declaration) is null)
             {
                 return;
             }
 
             string title = MicrosoftCodeQualityAnalyzersResources.UseLiteralsWhereAppropriateCodeActionTitle;
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title,
-                    cancellationToken => ToConstantDeclarationAsync(context.Document, fieldFeclaration, cancellationToken),
-                    equivalenceKey: title),
-                context.Diagnostics);
+            RegisterCodeFix(context, title, title);
         }
 
-        private async Task<Document> ToConstantDeclarationAsync(Document document, SyntaxNode fieldDeclaration, CancellationToken cancellationToken)
+        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            var editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
+            SyntaxNode? declaration = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            declaration = editor.Generator.GetDeclaration(declaration, DeclarationKind.Field);
+            if (declaration is null)
+            {
+                return Task.CompletedTask;
+            }
+
+            var fieldDeclaration = GetFieldDeclaration(declaration);
+            if (fieldDeclaration == null)
+            {
+                return Task.CompletedTask;
+            }
 
             SyntaxTriviaList leadingTrivia = new SyntaxTriviaList();
             SyntaxTriviaList trailingTrivia = new SyntaxTriviaList();
@@ -88,7 +88,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 
             var constFieldDeclaration = WithModifiers(fieldDeclaration, newModifiers).WithAdditionalAnnotations(Formatter.Annotation);
             editor.ReplaceNode(fieldDeclaration, constFieldDeclaration);
-            return editor.GetChangedDocument();
+            return Task.CompletedTask;
         }
 
         protected abstract SyntaxNode? GetFieldDeclaration(SyntaxNode syntaxNode);

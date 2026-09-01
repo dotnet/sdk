@@ -5,20 +5,21 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class ProgramTests_Arguments(ITestOutputHelper output) : DotNetWatchTestBase(output)
+[TestClass]
+public class ProgramTests_Arguments : DotNetWatchTestBase
 {
-    [Theory]
-    [InlineData(new[] { "--no-hot-reload", "run" }, "")]
-    [InlineData(new[] { "--no-hot-reload", "run", "args" }, "args")]
-    [InlineData(new[] { "--no-hot-reload", "--", "run", "args" }, "run,args")]
-    [InlineData(new[] { "--no-hot-reload" }, "")]
-    [InlineData(new string[] { }, "")]
-    [InlineData(new[] { "run" }, "")]
-    [InlineData(new[] { "run", "args" }, "args")]
-    [InlineData(new[] { "--", "run", "args" }, "run,args")]
-    [InlineData(new[] { "--", "test", "args" }, "test,args")]
-    [InlineData(new[] { "--", "build", "args" }, "build,args")]
-    [InlineData(new[] { "abc" }, "abc")]
+    [TestMethod]
+    [DataRow(new[] { "--no-hot-reload", "run" }, "")]
+    [DataRow(new[] { "--no-hot-reload", "run", "args" }, "args")]
+    [DataRow(new[] { "--no-hot-reload", "--", "run", "args" }, "run,args")]
+    [DataRow(new[] { "--no-hot-reload" }, "")]
+    [DataRow(new string[] { }, "")]
+    [DataRow(new[] { "run" }, "")]
+    [DataRow(new[] { "run", "args" }, "args")]
+    [DataRow(new[] { "--", "run", "args" }, "run,args")]
+    [DataRow(new[] { "--", "test", "args" }, "test,args")]
+    [DataRow(new[] { "--", "build", "args" }, "build,args")]
+    [DataRow(new[] { "abc" }, "abc")]
     public async Task Arguments(string[] arguments, string expectedApplicationArgs)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadApp", identifier: string.Join(",", arguments))
@@ -30,7 +31,8 @@ public class ProgramTests_Arguments(ITestOutputHelper output) : DotNetWatchTestB
         await App.WaitUntilOutputContains($"Arguments = {expectedApplicationArgs}");
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
     public async Task RunArguments_NoHotReload()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
@@ -61,10 +63,11 @@ public class ProgramTests_Arguments(ITestOutputHelper output) : DotNetWatchTestB
         await App.WaitUntilOutputContains("Determining projects to restore...");
 
         // not expected to find verbose output of dotnet watch
-        Assert.DoesNotContain(App.Process.Output, l => l.Contains("Working directory:"));
+        Assert.DoesNotContain("Working directory:", string.Join(Environment.NewLine, App.Process.Output));
     }
 
-    [PlatformSpecificFact(TestPlatforms.Windows | TestPlatforms.Linux)] // https://github.com/dotnet/sdk/issues/53061
+    [TestMethod]
+    [OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)] // https://github.com/dotnet/sdk/issues/53061
     public async Task RunArguments_HotReload()
     {
         var testAsset = TestAssets.CopyTestAsset("WatchHotReloadAppMultiTfm")
@@ -91,12 +94,12 @@ public class ProgramTests_Arguments(ITestOutputHelper output) : DotNetWatchTestB
         await App.WaitUntilOutputContains("Hot reload enabled.");
 
         // not expected to find verbose output of dotnet watch
-        Assert.DoesNotContain(App.Process.Output, l => l.Contains("Working directory:"));
+        Assert.DoesNotContain("Working directory:", string.Join(Environment.NewLine, App.Process.Output));
     }
 
-    [Theory]
-    [InlineData("P1", "argP1")]
-    [InlineData("P and Q and \"R\"", "argPQR")]
+    [TestMethod]
+    [DataRow("P1", "argP1")]
+    [DataRow("P and Q and \"R\"", "argPQR")]
     public async Task ArgumentsFromLaunchSettings_Watch(string profileName, string expectedArgs)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)
@@ -115,9 +118,9 @@ public class ProgramTests_Arguments(ITestOutputHelper output) : DotNetWatchTestB
         await App.WaitUntilOutputContains("Hot Reload disabled by command line switch.");
     }
 
-    [Theory]
-    [InlineData("P1", "argP1")]
-    [InlineData("P and Q and \"R\"", "argPQR")]
+    [TestMethod]
+    [DataRow("P1", "argP1")]
+    [DataRow("P and Q and \"R\"", "argPQR")]
     public async Task ArgumentsFromLaunchSettings_HotReload(string profileName, string expectedArgs)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchAppWithLaunchSettings", identifier: profileName)

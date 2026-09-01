@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseOrdinalStringComparisonAnalyzer,
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpUseOrdinalStringComparisonFixer>;
@@ -12,11 +12,12 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class UseOrdinalStringComparisonFixerTests
     {
         #region Code fix tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -44,7 +45,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -74,7 +75,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixInstanceEqualsOverloadCSharpAsync()
         {
             await VerifyCS.VerifyCodeFixAsync(
@@ -104,7 +105,7 @@ class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixInstanceEqualsOverloadBasicAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(
@@ -138,7 +139,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticCompareOverloadCSharpAsync()
         {
             await new VerifyCS.Test
@@ -208,10 +209,10 @@ class C
                     // Not everything is fixed; we use markup to indicate the remaining ones.
                     MarkupHandling = MarkupMode.Allow,
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1309FixStaticCompareOverloadBasicAsync()
         {
             await new VerifyVB.Test
@@ -299,7 +300,132 @@ End Class
                     // Not everything is fixed; we use markup to indicate the remaining ones.
                     MarkupHandling = MarkupMode.Allow,
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CA1309FixAllNestedEqualsCSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.[|Equals|](b.[|Equals|](c).ToString())) { }
+    }
+}
+",
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal)) { }
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309FixAllNestedEqualsBasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.[|Equals|](b.[|Equals|](c).ToString()) Then
+        End If
+    End Sub
+End Class
+",
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.Ordinal) Then
+        End If
+    End Sub
+End Class
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309FixAllNestedArgumentCSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|])) { }
+    }
+}
+",
+                @"
+class C
+{
+    void M(string a, string b, string c)
+    {
+        if (a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase)) { }
+    }
+}
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309FixAllNestedArgumentBasicAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.Equals(b.Equals(c, [|System.StringComparison.CurrentCulture|]).ToString(), [|System.StringComparison.CurrentCultureIgnoreCase|]) Then
+        End If
+    End Sub
+End Class
+",
+                @"
+Class C
+    Sub M(a As String, b As String, c As String)
+        If a.Equals(b.Equals(c, System.StringComparison.Ordinal).ToString(), System.StringComparison.OrdinalIgnoreCase) Then
+        End If
+    End Sub
+End Class
+");
+        }
+
+        [TestMethod]
+        public async Task CA1309NoFixOfferedForUnfixableOverloadCSharpAsync()
+        {
+            // No added argument turns Compare(string, string, bool) into an acceptable overload, so
+            // the diagnostic is reported without a fix rather than with one that changes nothing.
+            string source = @"
+class C
+{
+    void M(string a, string b)
+    {
+        if (string.[|Compare|](a, b, true) == 0) { }
+    }
+}
+";
+
+            await VerifyCS.VerifyCodeFixAsync(source, source);
+        }
+
+        [TestMethod]
+        public async Task CA1309NoFixOfferedForUnfixableOverloadBasicAsync()
+        {
+            string source = @"
+Class C
+    Sub M(a As String, b As String)
+        If String.[|Compare|](a, b, True) = 0 Then
+        End If
+    End Sub
+End Class
+";
+
+            await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
         #endregion

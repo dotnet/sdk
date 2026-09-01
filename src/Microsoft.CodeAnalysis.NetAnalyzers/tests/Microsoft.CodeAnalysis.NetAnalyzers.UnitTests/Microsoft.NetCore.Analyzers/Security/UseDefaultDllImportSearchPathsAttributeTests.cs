@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.UseDefaultDllImportSearchPathsAttribute,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -17,10 +17,11 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
     // which will ignore all the configuration about the search algorithm.
     // Fow now, this rule didn't take Known Dlls into consideration.
     // If it is needed in the future, we can recover this rule.
+    [TestClass]
     public class UseDefaultDllImportSearchPathsAttributeTests
     {
         // It will try to retrieve the MessageBox from user32.dll, which will be searched in a default order.
-        [Fact]
+        [TestMethod]
         public async Task Test_DllImportAttribute_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -40,7 +41,7 @@ class TestClass
             GetCSharpResultAt(8, 30, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_DllInUpperCase_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +61,7 @@ class TestClass
             GetCSharpResultAt(8, 30, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_WithoutDllExtension_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -80,7 +81,7 @@ class TestClass
             GetCSharpResultAt(8, 30, UseDefaultDllImportSearchPathsAttribute.UseDefaultDllImportSearchPathsAttributeRule, "MessageBox"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_DllImportSearchPathAssemblyDirectory_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -101,7 +102,7 @@ class TestClass
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_UnsafeDllImportSearchPathBits_BitwiseCombination_OneValueIsBad_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -122,7 +123,7 @@ class TestClass
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_UnsafeDllImportSearchPathBits_BitwiseCombination_BothIsBad_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -143,7 +144,7 @@ class TestClass
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory, ApplicationDirectory"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_DllImportSearchPathLegacyBehavior_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -164,7 +165,7 @@ class TestClass
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "LegacyBehavior"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_DllImportSearchPathUseDllDirectoryForDependencies_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -185,7 +186,7 @@ class TestClass
             GetCSharpResultAt(9, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "UseDllDirectoryForDependencies"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_DllImportSearchPathAssemblyDirectory_Assembly_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -207,7 +208,7 @@ class TestClass
             GetCSharpResultAt(10, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_AssemblyDirectory_ApplicationDirectory_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -230,7 +231,7 @@ class TestClass
             GetCSharpResultAt(11, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "ApplicationDirectory"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_ApplicationDirectory_AssemblyDirectory_DiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -253,10 +254,10 @@ class TestClass
             GetCSharpResultAt(11, 30, UseDefaultDllImportSearchPathsAttribute.DoNotUseUnsafeDllImportSearchPathRule, "AssemblyDirectory"));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2 | 256 | 512")]
-        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2 | 256 | 512")]
+        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 770")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_DefaultValue_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -291,11 +292,11 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_NonDefaultValue_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -330,11 +331,11 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 1026")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 1026")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_BitwiseCombination_DiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -369,10 +370,10 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_NoAttribute_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -391,7 +392,7 @@ class TestClass
         }
 
         // user32.dll will be searched in UserDirectories, which is specified by DllImportSearchPath and is good.
-        [Fact]
+        [TestMethod]
         public async Task Test_DllImportAndDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -411,9 +412,9 @@ class TestClass
 }");
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 2 | 1024")]
-        [InlineData("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UserDirectories")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = 2 | 1024")]
+        [DataRow("dotnet_code_quality.CA5392.unsafe_DllImportSearchPath_bits = DllImportSearchPath.AssemblyDirectory | DllImportSearchPath.UserDirectories")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_BitwiseCombination_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -444,11 +445,11 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
+        [TestMethod]
+        [DataRow("dotnet_code_quality.CA5393.unsafe_DllImportSearchPath_bits = 2048")]
         public async Task EditorConfigConfiguration_UnsafeDllImportSearchPathBits_NonDefaultValue_NoDiagnosticAsync(string editorConfigText)
         {
             await new VerifyCS.Test
@@ -479,12 +480,12 @@ class TestClass
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         // In this case, [DefaultDllImportSearchPaths] is applied to the assembly.
         // So, this attribute specifies the paths that are used by default to search for any DLL that provides a function for a platform invoke, in any code in the assembly.
-        [Fact]
+        [TestMethod]
         public async Task Test_DllImportAndAssemblyDefaultDllImportSearchPathsAttributes_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -506,7 +507,7 @@ class TestClass
         }
 
         // It will have a compiler warning and recommend to use [DllImport] also.
-        [Fact]
+        [TestMethod]
         public async Task Test_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -525,7 +526,7 @@ class TestClass
         }
 
         // It will have a compiler warning and recommend to use [DllImport] also.
-        [Fact]
+        [TestMethod]
         public async Task Test_AssemblyDefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -545,7 +546,7 @@ class TestClass
         }
 
         // Local methods with DllImport and no DllImportSearchPaths should warn
-        [Fact]
+        [TestMethod]
         public async Task Test_LocalMethodWithoutSearchPathsWarns()
         {
             await new VerifyCS.Test
@@ -581,11 +582,11 @@ class TestClass
                     //},
                 },
                 LanguageVersion = LanguageVersion.CSharp9,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         // [DllImport] is set with an absolute path, which will let the [DefaultDllImportSearchPaths] be ignored.
-        [WindowsOnlyFact]
+        [TestMethod, OSCondition(OperatingSystems.Windows)]
         public async Task Test_DllImportAttributeWithAbsolutePath_DefaultDllImportSearchPaths_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -606,7 +607,7 @@ class TestClass
         }
 
         // [DllImport] is set with an absolute path.
-        [WindowsOnlyFact]
+        [TestMethod, OSCondition(OperatingSystems.Windows)]
         public async Task Test_DllImportAttributeWithAbsolutePath_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -625,7 +626,7 @@ class TestClass
 }");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod, OSCondition(OperatingSystems.Windows)]
         public async Task Test_UsingNonexistentAbsolutePath_NoDiagnosticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

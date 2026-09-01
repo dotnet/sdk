@@ -1,7 +1,7 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferTypedStringBuilderAppendOverloads,
     Microsoft.NetCore.Analyzers.Runtime.PreferTypedStringBuilderAppendOverloadsFixer>;
@@ -11,18 +11,19 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class PreferTypedStringBuilderAppendOverloadsTests
     {
-        [Theory]
-        [InlineData("int", true)]
-        [InlineData("Int32", true)]
-        [InlineData("string", true)]
-        [InlineData("String", true)]
-        [InlineData("ulong", true)]
-        [InlineData("object", false)]
-        [InlineData("char[]", false)]
-        [InlineData("DateTime", false)]
-        [InlineData("DayOfWeek", false)]
+        [TestMethod]
+        [DataRow("int", true)]
+        [DataRow("Int32", true)]
+        [DataRow("string", true)]
+        [DataRow("String", true)]
+        [DataRow("ulong", true)]
+        [DataRow("object", false)]
+        [DataRow("char[]", false)]
+        [DataRow("DateTime", false)]
+        [DataRow("DayOfWeek", false)]
         public async Task ArgumentIsToStringMethodCallOnLocal_CSharpAsync(string receiverType, bool diagnosticExpected)
         {
             string toString = diagnosticExpected ? "[|value.ToString()|]" : "value.ToString()";
@@ -60,13 +61,13 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ");
         }
 
-        [Theory]
-        [InlineData("Integer", true)]
-        [InlineData("Int32", true)]
-        [InlineData("String", true)]
-        [InlineData("Object", false)]
-        [InlineData("DateTime", false)]
-        [InlineData("DayOfWeek", false)]
+        [TestMethod]
+        [DataRow("Integer", true)]
+        [DataRow("Int32", true)]
+        [DataRow("String", true)]
+        [DataRow("Object", false)]
+        [DataRow("DateTime", false)]
+        [DataRow("DayOfWeek", false)]
         public async Task ArgumentIsToStringMethodCallOnLocal_VBAsync(string receiverType, bool diagnosticExpected)
         {
             string toString = diagnosticExpected ? "[|value.ToString()|]" : "value.ToString()";
@@ -98,16 +99,16 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 End Class");
         }
 
-        [Theory]
-        [InlineData("int", true)]
-        [InlineData("Int32", true)]
-        [InlineData("string", true)]
-        [InlineData("String", true)]
-        [InlineData("ulong", true)]
-        [InlineData("object", false)]
-        [InlineData("char[]", false)]
-        [InlineData("DateTime", false)]
-        [InlineData("DayOfWeek", false)]
+        [TestMethod]
+        [DataRow("int", true)]
+        [DataRow("Int32", true)]
+        [DataRow("string", true)]
+        [DataRow("String", true)]
+        [DataRow("ulong", true)]
+        [DataRow("object", false)]
+        [DataRow("char[]", false)]
+        [DataRow("DateTime", false)]
+        [DataRow("DayOfWeek", false)]
         public async Task ArgumentIsToStringMethodCallOnResult_CSharpAsync(string receiverType, bool diagnosticExpected)
         {
             string toString = diagnosticExpected ? "[|Prop.ToString()|]" : "Prop.ToString()";
@@ -147,11 +148,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ");
         }
 
-        [Theory]
-        [InlineData("42", true)]
-        [InlineData("\"hello\"", true)]
-        [InlineData("DayOfWeek.Monday", false)]
-        [InlineData("DateTime.Now", false)]
+        [TestMethod]
+        [DataRow("42", true)]
+        [DataRow("\"hello\"", true)]
+        [DataRow("DayOfWeek.Monday", false)]
+        [DataRow("DateTime.Now", false)]
         public async Task ArgumentIsToStringMethodCallOnValueAsync(string value, bool diagnosticExpected)
         {
             string toString = value + ".ToString()";
@@ -183,11 +184,11 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 ");
         }
 
-        [Theory]
-        [InlineData("42")]
-        [InlineData("\"hello\"")]
-        [InlineData("DayOfWeek.Monday")]
-        [InlineData("DateTime.Now")]
+        [TestMethod]
+        [DataRow("42")]
+        [DataRow("\"hello\"")]
+        [DataRow("DayOfWeek.Monday")]
+        [DataRow("DateTime.Now")]
         public async Task NoDiagnostic_NoToStringCallAsync(string value)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -201,10 +202,10 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }");
         }
 
-        [Theory]
-        [InlineData("42")]
-        [InlineData("DayOfWeek.Monday")]
-        [InlineData("DateTime.Now")]
+        [TestMethod]
+        [DataRow("42")]
+        [DataRow("DayOfWeek.Monday")]
+        [DataRow("DateTime.Now")]
         public async Task NoDiagnostic_FormattedToStringAsync(string value)
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -236,7 +237,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnostic_NotRelevantMethodAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -258,6 +259,83 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
                     private static void Append(string value) { }
                     private static void Append(int value) { }
+                }");
+        }
+
+        [TestMethod]
+        public async Task Diagnostic_StringConstructorInAppend_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        sb.Append([|new string('c', 5)|]);
+                    }
+                }
+                ", @"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        sb.Append('c', 5);
+                    }
+                }
+                ");
+        }
+
+        [TestMethod]
+        public async Task Diagnostic_StringConstructorWithVariable_CSharpAsync()
+        {
+            await VerifyCS.VerifyCodeFixAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char c = 'a';
+                        int count = 3;
+                        sb.Append([|new string(c, count)|]);
+                    }
+                }
+                ", @"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char c = 'a';
+                        int count = 3;
+                        sb.Append(c, count);
+                    }
+                }
+                ");
+        }
+
+        [TestMethod]
+        public async Task NoDiagnostic_StringConstructorWithCharArray_CSharpAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(@"
+                using System.Text;
+
+                class C
+                {
+                    public void M()
+                    {
+                        var sb = new StringBuilder();
+                        char[] chars = new char[] { 'a', 'b', 'c' };
+                        sb.Append(new string(chars));
+                    }
                 }");
         }
     }

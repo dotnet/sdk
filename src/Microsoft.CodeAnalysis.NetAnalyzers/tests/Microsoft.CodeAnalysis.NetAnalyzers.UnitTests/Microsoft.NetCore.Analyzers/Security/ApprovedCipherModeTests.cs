@@ -1,8 +1,8 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.ApprovedCipherModeAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class ApprovedCipherModeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestECBModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -42,7 +43,7 @@ End Module",
             GetBasicResultAt(7, 26, "ECB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOFBModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -70,7 +71,7 @@ End Module",
             GetBasicResultAt(7, 26, "OFB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCFBModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -98,7 +99,7 @@ End Module",
             GetBasicResultAt(7, 26, "CFB"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCBCModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -126,7 +127,7 @@ End Module"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestCTSModeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"

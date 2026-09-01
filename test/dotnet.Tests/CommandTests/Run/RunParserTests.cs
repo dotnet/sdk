@@ -2,36 +2,45 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands.Run;
+using Microsoft.NET.TestFramework;
 
 namespace Microsoft.DotNet.Tests.ParserTests
 {
-    public class RunParserTests
+    [TestClass]
+    public class RunParserTests : IDisposable
     {
-        public RunParserTests(ITestOutputHelper output)
+        private readonly string _previousWorkingDirectory;
+
+        public RunParserTests()
         {
-            this.output = output;
+            // Reset current working directory after tests run to avoid breaking other tests
+            _previousWorkingDirectory = Directory.GetCurrentDirectory();
         }
 
-        private readonly ITestOutputHelper output;
+        public TestContext TestContext { get; set; } = null!;
 
-        [Fact]
+        public void Dispose()
+        {
+            Directory.SetCurrentDirectory(_previousWorkingDirectory);
+        }
+
+        [TestMethod]
         public void RunParserCanGetArgumentFromDoubleDash()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
-            Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = Path.Combine(newWorkingDir, "HelloWorld.csproj");
-                
+
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath, "--", "foo" });
             runCommand.ApplicationArgs.Single().Should().Be("foo");
         }
 
-        [Fact]
+        [TestMethod]
         public void RunParserCanSeparateInterleavedLoggerArguments()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testDirectory = tam.CreateTestDirectory();
             File.WriteAllText(Path.Join(testDirectory.Path, "Program.cs"), "Console.WriteLine();");
 
@@ -44,10 +53,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain("-tl:off");
         }
 
-        [Fact]
+        [TestMethod]
         public void RunParserPreservesInterleavedLoggerArgumentsAfterDoubleDash()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testDirectory = tam.CreateTestDirectory();
             File.WriteAllText(Path.Join(testDirectory.Path, "Program.cs"), "Console.WriteLine();");
 
@@ -60,10 +69,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("-tl:off");
         }
 
-        [Fact]
+        [TestMethod]
         public void RunParserPreservesDuplicateLoggerArgumentsAfterDoubleDash()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -75,10 +84,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().ContainSingle("-tl:off");
         }
 
-        [Fact]
+        [TestMethod]
         public void DoubleDash_Bl()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -91,10 +100,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 
-        [Fact]
+        [TestMethod]
         public void DoubleDash_Bl_Value()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -107,10 +116,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 
-        [Fact]
+        [TestMethod]
         public void DoubleDash_Tl()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -123,10 +132,13 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 
-        [Theory, CombinatorialData]
-        public void DoubleDash_Tl_Value([CombinatorialValues("auto", "on", "off")] string value)
+        [TestMethod]
+        [DataRow("auto")]
+        [DataRow("on")]
+        [DataRow("off")]
+        public void DoubleDash_Tl_Value(string value)
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld", identifier: value).WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -139,10 +151,10 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 
-        [Fact]
+        [TestMethod]
         public void DoubleDash_Tl_Value_Unknown()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -155,10 +167,12 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 
-        [Theory, CombinatorialData]
-        public void DoubleDash_LoggerParameters([CombinatorialValues("tlp", "clp")] string name)
+        [TestMethod]
+        [DataRow("tlp")]
+        [DataRow("clp")]
+        public void DoubleDash_LoggerParameters(string name)
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld", identifier: name).WithSource();
             var newWorkingDir = testAsset.Path;
 
@@ -171,31 +185,31 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
         }
 
-        [WindowsOnlyFact]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
         public void RunParserAcceptsWindowsPathSeparatorsOnWindows()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
             Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-                
             // Should not throw on Windows
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
             runCommand.ProjectFileFullPath.Should().NotBeNull();
         }
 
-        [UnixOnlyFact]
+        [TestMethod]
+        [OSCondition(ConditionMode.Exclude, OperatingSystems.Windows)]
         public void RunParserAcceptsWindowsPathSeparatorsOnLinux()
         {
-            var tam = new TestAssetsManager(output);
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
             var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
             var newWorkingDir = testAsset.Path;
 
             Directory.SetCurrentDirectory(newWorkingDir);
             var projectPath = @".\HelloWorld.csproj";
-                
             // Should not throw on Linux with backslash separators
             var runCommand = RunCommand.FromArgs(new[] { "--project", projectPath });
             runCommand.ProjectFileFullPath.Should().NotBeNull();

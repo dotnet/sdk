@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UseGenericEventHandlerInstancesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UseGenericEventHandlerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestAlreadyUsingGenericEventHandlerCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -27,7 +28,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAlreadyUsingGenericEventHandlerBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -38,7 +39,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingStructAsEventArgsForOptimizationCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -60,7 +61,7 @@ public class C
             GetCSharpResultAt(13, 47, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E2", "System.EventHandler<BadArgs>"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestUsingStructAsEventArgsForOptimizationBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -79,7 +80,7 @@ End Class
             GetBasicResultAt(10, 18, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E2", "System.EventHandler(Of BadArgs)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGeneratedEventHandlersBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"
@@ -100,7 +101,7 @@ End Class
             GetBasicResultAt(6, 18, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents2, "E4"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonPublicEventAndNonPublicDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -113,7 +114,7 @@ public class EventsClass
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonPublicEventButPublicDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -128,7 +129,7 @@ public class EventsClass
             GetCSharpResultAt(2, 22, UseGenericEventHandlerInstancesAnalyzer.RuleForDelegates, "BadEventHandler"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNonPublicEventAndPublicInvalidDelegateAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -141,7 +142,7 @@ public class EventsClass
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestIgnoreEventsThatAreInterfaceImplementationsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -176,7 +177,7 @@ public class EventsClassExplicit : ITest
             GetCSharpResultAt(4, 22, UseGenericEventHandlerInstancesAnalyzer.RuleForDelegates, "BadEventHandler"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestOverrideEventAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -196,7 +197,7 @@ public class D : C
             GetCSharpResultAt(6, 37, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E", "BadHandler"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestComSourceInterfaceEventAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -210,7 +211,7 @@ public class C
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestViolatingEventsCSharpAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -246,7 +247,7 @@ public class C
             GetCSharpResultAt(17, 36, UseGenericEventHandlerInstancesAnalyzer.RuleForEvents, "E6", "System.EventHandler<int>"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestViolatingEventsBasicAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(@"

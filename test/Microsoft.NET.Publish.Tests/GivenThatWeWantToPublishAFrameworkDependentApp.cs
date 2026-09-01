@@ -8,24 +8,21 @@ using Microsoft.NET.Build.Tasks;
 
 namespace Microsoft.NET.Publish.Tests
 {
+    [TestClass]
     public class GivenThatWeWantToPublishAFrameworkDependentApp : SdkTest
     {
         private const string TestProjectName = "HelloWorld";
 
-        public GivenThatWeWantToPublishAFrameworkDependentApp(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Theory]
-        [InlineData(null, "net6.0")]
-        [InlineData("true", "net6.0")]
-        [InlineData("false", "net6.0")]
-        [InlineData(null, "net7.0")]
-        [InlineData("true", "net7.0")]
-        [InlineData("false", "net7.0")]
-        [InlineData(null, ToolsetInfo.CurrentTargetFramework)]
-        [InlineData("true", ToolsetInfo.CurrentTargetFramework)]
-        [InlineData("false", ToolsetInfo.CurrentTargetFramework)]
+        [TestMethod]
+        [DataRow(null, "net6.0")]
+        [DataRow("true", "net6.0")]
+        [DataRow("false", "net6.0")]
+        [DataRow(null, "net7.0")]
+        [DataRow("true", "net7.0")]
+        [DataRow("false", "net7.0")]
+        [DataRow(null, ToolsetInfo.CurrentTargetFramework)]
+        [DataRow("true", ToolsetInfo.CurrentTargetFramework)]
+        [DataRow("false", ToolsetInfo.CurrentTargetFramework)]
         public void It_publishes_with_or_without_apphost(string useAppHost, string targetFramework)
         {
             if ((targetFramework == "net6.0" || targetFramework == "net7.0") &&
@@ -38,7 +35,7 @@ namespace Microsoft.NET.Publish.Tests
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
             var appHostName = $"{TestProjectName}{Constants.ExeSuffix}";
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName, $"It_publishes_with_or_without_apphost_{(useAppHost ?? "null")}_{targetFramework}")
                 .WithSource()
                 .WithTargetFramework(targetFramework);
@@ -94,12 +91,12 @@ namespace Microsoft.NET.Publish.Tests
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void It_errors_when_using_app_host_with_older_target_framework()
         {
             var runtimeIdentifier = RuntimeInformation.RuntimeIdentifier;
 
-            var testAsset = _testAssetsManager
+            var testAsset = TestAssetsManager
                 .CopyTestAsset(TestProjectName)
                 .WithSource()
                 .WithTargetFramework("netcoreapp2.0");

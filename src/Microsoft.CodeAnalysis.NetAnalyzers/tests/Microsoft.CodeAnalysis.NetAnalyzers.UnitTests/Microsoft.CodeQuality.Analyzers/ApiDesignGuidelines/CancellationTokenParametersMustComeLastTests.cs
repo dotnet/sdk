@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.CancellationTokenParametersMustComeLastAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,9 +13,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class CancellationTokenParametersMustComeLast
     {
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticInEmptyFileAsync()
         {
             var test = @"";
@@ -23,7 +24,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticForMethodAsync()
         {
             var source = @"
@@ -40,7 +41,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticWhenFirstAndLastByOtherInBetweenAsync()
         {
             var source = @"
@@ -57,7 +58,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticWhenLastParamAsync()
         {
             var test = @"
@@ -71,7 +72,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticWhenOnlyParamAsync()
         {
             var test = @"
@@ -85,7 +86,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticWhenParamsComesAfterAsync()
         {
             var test = @"
@@ -99,7 +100,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticWhenOutComesAfterAsync()
         {
             var test = @"
@@ -114,7 +115,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticWhenRefComesAfterAsync()
         {
             var test = @"
@@ -128,7 +129,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticWhenOptionalParameterComesAfterNonOptionalCancellationTokenAsync()
         {
             var test = @"
@@ -142,7 +143,7 @@ class T
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticOnOverrideAsync()
         {
             var test = @"
@@ -164,7 +165,7 @@ class T : B
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticOnImplicitInterfaceImplementationAsync()
         {
             var test = @"
@@ -186,7 +187,7 @@ class T : I
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task NoDiagnosticOnExplicitInterfaceImplementationAsync()
         {
             var test = @"
@@ -208,7 +209,7 @@ class T : I
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
-        [Fact, WorkItem(1491, "https://github.com/dotnet/roslyn-analyzers/issues/1491")]
+        [TestMethod, WorkItem(1491, "https://github.com/dotnet/roslyn-analyzers/issues/1491")]
         public async Task NoDiagnosticOnCancellationTokenExtensionMethodAsync()
         {
             var test = @"
@@ -222,7 +223,7 @@ static class C1
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact, WorkItem(1816, "https://github.com/dotnet/roslyn-analyzers/issues/1816")]
+        [TestMethod, WorkItem(1816, "https://github.com/dotnet/roslyn-analyzers/issues/1816")]
         public async Task NoDiagnosticWhenMultipleAtEndOfParameterListAsync()
         {
             var test = @"
@@ -238,7 +239,7 @@ static class C1
             await VerifyCS.VerifyAnalyzerAsync(test);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DiagnosticOnExtensionMethodWhenCancellationTokenIsNotFirstParameterAsync()
         {
             var test = @"
@@ -256,7 +257,7 @@ static class C1
             await VerifyCS.VerifyAnalyzerAsync(test, expected);
         }
 
-        [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
+        [TestMethod, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
         public async Task CA1068_DoNotReportOnIProgressLastAndCancellationTokenBeforeLastAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -284,7 +285,7 @@ Public Class C
 End Class");
         }
 
-        [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
+        [TestMethod, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
         public async Task CA1068_ReportOnIProgressLastAndCancellationTokenNotBeforeLastAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -320,7 +321,7 @@ End Class",
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, o As Object, progress As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
 
-        [Fact, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
+        [TestMethod, WorkItem(2281, "https://github.com/dotnet/roslyn-analyzers/issues/2281")]
         public async Task CA1068_OnlyExcludeOneIProgressAtTheEndAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -356,7 +357,7 @@ End Class",
                 .WithArguments("Public Function SomeAsync(cancellationToken As System.Threading.CancellationToken, progress1 As System.IProgress(Of Integer), progress2 As System.IProgress(Of Integer)) As System.Threading.Tasks.Task"));
         }
 
-        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithNonOptionalCancellationTokenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -377,7 +378,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -398,7 +399,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsLastParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -419,7 +420,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
+        [TestMethod, WorkItem(4227, "https://github.com/dotnet/roslyn-analyzers/issues/4227")]
         public async Task CA1068_CallerAttributesWithOptionalCancellationTokenAsMiddleParameterAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -440,7 +441,7 @@ public class C
 }");
         }
 
-        [Fact, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
+        [TestMethod, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
         public async Task CA1068_CallerArgumentExpressionAttributeWithOptionalCancellationTokenAsLastParameterAsync()
         {
             await new VerifyCS.Test
@@ -467,10 +468,10 @@ public class C
 }"
                    }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
+        [TestMethod, WorkItem(6557, "https://github.com/dotnet/roslyn-analyzers/issues/6557")]
         public async Task CA1068_CallerArgumentExpressionAttributeWithOptionalCancellationTokenAsMiddleParameterAsync()
         {
             await new VerifyCS.Test
@@ -497,38 +498,38 @@ public class C
 }"
                    }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
+        [TestMethod, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
         // Empty editorconfig
-        [InlineData("public", "")]
-        [InlineData("protected", "")]
-        [InlineData("internal", "")]
-        [InlineData("private", "")]
+        [DataRow("public", "")]
+        [DataRow("protected", "")]
+        [DataRow("internal", "")]
+        [DataRow("private", "")]
         // General analyzer option
-        [InlineData("public", "dotnet_code_quality.api_surface = public")]
-        [InlineData("public", "dotnet_code_quality.api_surface = private, internal, public")]
-        [InlineData("public", "dotnet_code_quality.api_surface = all")]
-        [InlineData("protected", "dotnet_code_quality.api_surface = public")]
-        [InlineData("protected", "dotnet_code_quality.api_surface = private, internal, public")]
-        [InlineData("protected", "dotnet_code_quality.api_surface = all")]
-        [InlineData("internal", "dotnet_code_quality.api_surface = internal")]
-        [InlineData("internal", "dotnet_code_quality.api_surface = private, internal")]
-        [InlineData("internal", "dotnet_code_quality.api_surface = all")]
-        [InlineData("private", "dotnet_code_quality.api_surface = private")]
-        [InlineData("private", "dotnet_code_quality.api_surface = private, public")]
-        [InlineData("private", "dotnet_code_quality.api_surface = all")]
+        [DataRow("public", "dotnet_code_quality.api_surface = public")]
+        [DataRow("public", "dotnet_code_quality.api_surface = private, internal, public")]
+        [DataRow("public", "dotnet_code_quality.api_surface = all")]
+        [DataRow("protected", "dotnet_code_quality.api_surface = public")]
+        [DataRow("protected", "dotnet_code_quality.api_surface = private, internal, public")]
+        [DataRow("protected", "dotnet_code_quality.api_surface = all")]
+        [DataRow("internal", "dotnet_code_quality.api_surface = internal")]
+        [DataRow("internal", "dotnet_code_quality.api_surface = private, internal")]
+        [DataRow("internal", "dotnet_code_quality.api_surface = all")]
+        [DataRow("private", "dotnet_code_quality.api_surface = private")]
+        [DataRow("private", "dotnet_code_quality.api_surface = private, public")]
+        [DataRow("private", "dotnet_code_quality.api_surface = all")]
         // Specific analyzer option
-        [InlineData("internal", "dotnet_code_quality.CA1068.api_surface = all")]
-        [InlineData("internal", "dotnet_code_quality.Design.api_surface = all")]
+        [DataRow("internal", "dotnet_code_quality.CA1068.api_surface = all")]
+        [DataRow("internal", "dotnet_code_quality.Design.api_surface = all")]
         // General + Specific analyzer option
-        [InlineData("internal", @"dotnet_code_quality.api_surface = private
+        [DataRow("internal", @"dotnet_code_quality.api_surface = private
                                   dotnet_code_quality.CA1068.api_surface = all")]
         // Case-insensitive analyzer option
-        [InlineData("internal", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
+        [DataRow("internal", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [InlineData("internal", @"dotnet_code_quality.api_surface = all
+        [DataRow("internal", @"dotnet_code_quality.api_surface = all
                                   dotnet_code_quality.CA1068.api_surface_2 = private")]
         public async Task CA1068_CSharp_ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
@@ -552,38 +553,38 @@ public class C
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
+        [TestMethod, WorkItem(2851, "https://github.com/dotnet/roslyn-analyzers/issues/2851")]
         // Empty editorconfig
-        [InlineData("Public", "")]
-        [InlineData("Protected", "")]
-        [InlineData("Friend", "")]
-        [InlineData("Private", "")]
+        [DataRow("Public", "")]
+        [DataRow("Protected", "")]
+        [DataRow("Friend", "")]
+        [DataRow("Private", "")]
         // General analyzer option
-        [InlineData("Public", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Public", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
-        [InlineData("Protected", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
-        [InlineData("Friend", "dotnet_code_quality.api_surface = All")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = Private, Public")]
-        [InlineData("Private", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Public", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = Private, Friend, Public")]
+        [DataRow("Protected", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = Private, Friend")]
+        [DataRow("Friend", "dotnet_code_quality.api_surface = All")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = Private, Public")]
+        [DataRow("Private", "dotnet_code_quality.api_surface = All")]
         // Specific analyzer option
-        [InlineData("Friend", "dotnet_code_quality.CA1068.api_surface = All")]
-        [InlineData("Friend", "dotnet_code_quality.Design.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.CA1068.api_surface = All")]
+        [DataRow("Friend", "dotnet_code_quality.Design.api_surface = All")]
         // General + Specific analyzer option
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = Private
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = Private
                                 dotnet_code_quality.CA1068.api_surface = All")]
         // Case-insensitive analyzer option
-        [InlineData("Friend", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
+        [DataRow("Friend", "DOTNET_code_quality.CA1068.API_SURFACE = ALL")]
         // Invalid analyzer option ignored
-        [InlineData("Friend", @"dotnet_code_quality.api_surface = All
+        [DataRow("Friend", @"dotnet_code_quality.api_surface = All
                                 dotnet_code_quality.CA1068.api_surface_2 = Private")]
         public async Task CA1068_VisualBasic_ApiSurface_DiagnosticAsync(string accessibility, string editorConfigText)
         {
@@ -606,18 +607,18 @@ End Class"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
+        [TestMethod, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
         // No configuration - validate diagnostics in default configuration
-        [InlineData(@"")]
+        [DataRow(@"")]
         // Exclude all ctors
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
         // Exclude all members starting with C
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = C*")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = C*")]
         // Exclude classes C1 and C2
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = T:C1|T:C2")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = T:C1|T:C2")]
         public async Task CA1068_ExcludedSymbolNames_DiagnosticAsync(string editorConfigText)
         {
             var prefix = editorConfigText.Length == 0 ? "[|" : "";
@@ -650,7 +651,7 @@ public class C2
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -680,14 +681,14 @@ End Class"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
+        [TestMethod, WorkItem(4467, "https://github.com/dotnet/roslyn-analyzers/issues/4467")]
         // No configuration - validate diagnostics in default configuration
-        [InlineData(@"")]
+        [DataRow(@"")]
         // Exclude all ctors
-        [InlineData(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
+        [DataRow(@"dotnet_code_quality.excluded_symbol_names = .ctor")]
         public async Task CA1068_ExcludedSymbolNames_Record_NoDiagnosticAsync(string editorConfigText)
         {
             var prefix = editorConfigText.Length == 0 ? "[|" : "";
@@ -712,7 +713,7 @@ public record " + prefix + "R" + suffix + @"(CancellationToken t, int i) {}"
 {editorConfigText}
 ") }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

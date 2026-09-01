@@ -1,12 +1,13 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading;
 using Test.Utilities;
 using Test.Utilities.CodeMetrics;
-using Xunit;
 
 namespace Microsoft.CodeAnalysis.CodeMetrics.UnitTests
 {
+    [TestClass]
     public class CodeMetricsComputationTests : CodeMetricsTestBase
     {
         protected override string GetMetricsDataString(Compilation compilation)
@@ -14,7 +15,7 @@ namespace Microsoft.CodeAnalysis.CodeMetrics.UnitTests
             return CodeAnalysisMetricData.ComputeAsync(new CodeMetricsAnalysisContext(compilation, CancellationToken.None)).Result.ToString();
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyCompilation()
         {
             var source = @"";
@@ -25,7 +26,7 @@ Assembly: (Lines: 0, ExecutableLines: 0, MntIndex: 100, CycCxty: 0, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyNamespace()
         {
             var source = @"
@@ -37,7 +38,7 @@ Assembly: (Lines: 0, ExecutableLines: 0, MntIndex: 100, CycCxty: 0, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyNamespaces()
         {
             var source = @"
@@ -53,7 +54,7 @@ Assembly: (Lines: 0, ExecutableLines: 0, MntIndex: 100, CycCxty: 0, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypeInNamespace()
         {
             var source = @"
@@ -71,7 +72,7 @@ Assembly: (Lines: 4, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypeInGlobalNamespace()
         {
             var source = @"
@@ -87,7 +88,7 @@ Assembly: (Lines: 3, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypesInNamespaces()
         {
             var source = @"
@@ -114,7 +115,7 @@ Assembly: (Lines: 8, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypesInChildAndParentNamespaces()
         {
             var source = @"
@@ -137,7 +138,7 @@ Assembly: (Lines: 5, ExecutableLines: 0, MntIndex: 100, CycCxty: 2, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypesInDifferentSourceFiles()
         {
             var source1 = @"
@@ -166,7 +167,7 @@ Assembly: (Lines: 8, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, DepthInherit
             VerifyCSharp(new[] { source1, source2 }, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PartialTypeDeclarationsInSameSourceFile()
         {
             var source = @"
@@ -197,7 +198,7 @@ Assembly: (Lines: 14, ExecutableLines: 2, MntIndex: 95, CycCxty: 2, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PartialTypeDeclarationsInDifferentSourceFiles()
         {
             var source1 = @"
@@ -230,7 +231,7 @@ Assembly: (Lines: 14, ExecutableLines: 2, MntIndex: 95, CycCxty: 2, DepthInherit
             VerifyCSharp(new[] { source1, source2 }, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void NestedType()
         {
             var source = @"
@@ -260,7 +261,7 @@ Assembly: (Lines: 13, ExecutableLines: 1, MntIndex: 98, CycCxty: 2, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void GenericType()
         {
             var source = @"
@@ -278,7 +279,7 @@ Assembly: (Lines: 4, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void NestedTypeInTopLevelType()
         {
             var source = @"
@@ -304,7 +305,7 @@ Assembly: (Lines: 10, ExecutableLines: 1, MntIndex: 98, CycCxty: 2, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypesWithInheritance()
         {
             var source = @"
@@ -325,7 +326,7 @@ Assembly: (Lines: 6, ExecutableLines: 0, MntIndex: 100, CycCxty: 2, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypeWithCouplingFromBaseType()
         {
             var source = @"
@@ -349,7 +350,7 @@ Assembly: (Lines: 8, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void TypeWithCouplingFromAttribute()
         {
             var source = @"
@@ -371,7 +372,7 @@ Assembly: (Lines: 7, ExecutableLines: 2, MntIndex: 100, CycCxty: 2, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleEmptyMethod()
         {
             var source = @"class C { void M() { } }";
@@ -385,7 +386,7 @@ Assembly: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleEmptyMethod2()
         {
             var source = @"
@@ -405,7 +406,7 @@ Assembly: (Lines: 6, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodWithIgnoreableParametersAndReturnType()
         {
             var source = @"
@@ -426,7 +427,7 @@ Assembly: (Lines: 7, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodWithParametersAndReturnType()
         {
             var source = @"
@@ -455,7 +456,7 @@ Assembly: (Lines: 10, ExecutableLines: 1, MntIndex: 100, CycCxty: 4, CoupledType
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodWithParameterInitializers()
         {
             var source = @"
@@ -483,7 +484,7 @@ Assembly: (Lines: 10, ExecutableLines: 2, MntIndex: 93, CycCxty: 2, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodWithTypeReferencesInBody()
         {
             var source = @"
@@ -516,7 +517,7 @@ Assembly: (Lines: 12, ExecutableLines: 3, MntIndex: 96, CycCxty: 5, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodsWithDifferentTypeReferencesInBody()
         {
             var source = @"
@@ -551,7 +552,7 @@ Assembly: (Lines: 15, ExecutableLines: 2, MntIndex: 100, CycCxty: 5, CoupledType
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void MethodWithAnonymousType()
         {
             var source = @"
@@ -573,7 +574,7 @@ Assembly: (Lines: 7, ExecutableLines: 1, MntIndex: 94, CycCxty: 1, DepthInherit:
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void MethodWithGenericTypes()
         {
             var source = @"
@@ -605,7 +606,7 @@ Assembly: (Lines: 14, ExecutableLines: 5, MntIndex: 93, CycCxty: 4, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void CountCorrectlyGenericTypes()
         {
             var source = @"
@@ -635,7 +636,7 @@ Assembly: (Lines: 11, ExecutableLines: 3, MntIndex: 93, CycCxty: 3, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void ExcludeCompilerGeneratedTypes()
         {
             var source = @"
@@ -666,7 +667,7 @@ Assembly: (Lines: 13, ExecutableLines: 7, MntIndex: 93, CycCxty: 3, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodWithClosureTypes()
         {
             var source = @"
@@ -694,7 +695,7 @@ Assembly: (Lines: 10, ExecutableLines: 3, MntIndex: 93, CycCxty: 3, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void MethodWithLinqExpression()
         {
             var source = @"
@@ -735,7 +736,7 @@ Assembly: (Lines: 24, ExecutableLines: 18, MntIndex: 61, CycCxty: 1, CoupledType
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void MethodWithAsyncAwait()
         {
             var source = @"
@@ -758,7 +759,7 @@ Assembly: (Lines: 7, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
+        [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public void MethodWithYieldReturn()
         {
             var source = @"
@@ -781,7 +782,7 @@ Assembly: (Lines: 7, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodWithTypeReferencesInAttributes()
         {
             var source = @"
@@ -829,7 +830,7 @@ Assembly: (Lines: 21, ExecutableLines: 5, MntIndex: 93, CycCxty: 5, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void FieldWithIgnoreableType()
         {
             var source = @"
@@ -847,7 +848,7 @@ Assembly: (Lines: 4, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void FieldWithNamedType()
         {
             var source = @"
@@ -869,7 +870,7 @@ Assembly: (Lines: 5, ExecutableLines: 1, MntIndex: 96, CycCxty: 2, CoupledTypes:
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void FieldWithInitializer()
         {
             var source = @"
@@ -891,7 +892,7 @@ Assembly: (Lines: 5, ExecutableLines: 1, MntIndex: 96, CycCxty: 2, CoupledTypes:
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void FieldWithTypeReferencesInInitializer()
         {
             var source = @"
@@ -918,7 +919,7 @@ Assembly: (Lines: 7, ExecutableLines: 2, MntIndex: 96, CycCxty: 4, CoupledTypes:
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void FieldAndMethodWithTypeReferencesInInitializer()
         {
             var source = @"
@@ -952,7 +953,7 @@ Assembly: (Lines: 13, ExecutableLines: 4, MntIndex: 95, CycCxty: 4, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ManySimpleFieldsAndOneComplexMethod()
         {
             var source = @"
@@ -1019,7 +1020,7 @@ Assembly: (Lines: 32, ExecutableLines: 7, MntIndex: 77, CycCxty: 15, DepthInheri
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleFieldsWithDifferentTypeReferencesInBody()
         {
             var source = @"
@@ -1047,7 +1048,7 @@ Assembly: (Lines: 8, ExecutableLines: 2, MntIndex: 98, CycCxty: 4, CoupledTypes:
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MultipleFieldsInSameDeclaration()
         {
             var source = @"
@@ -1075,7 +1076,7 @@ Assembly: (Lines: 7, ExecutableLines: 2, MntIndex: 98, CycCxty: 4, CoupledTypes:
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void FieldWithTypeReferencesInAttribute()
         {
             var source = @"
@@ -1102,7 +1103,7 @@ Assembly: (Lines: 9, ExecutableLines: 3, MntIndex: 88, CycCxty: 2, CoupledTypes:
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleEmptyProperty()
         {
             var source = @"class C { int P { get; } }";
@@ -1117,7 +1118,7 @@ Assembly: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleEmptyProperty2()
         {
             var source = @"
@@ -1142,7 +1143,7 @@ Assembly: (Lines: 10, ExecutableLines: 1, MntIndex: 100, CycCxty: 1, DepthInheri
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleEmptyProperty3()
         {
             var source = @"class C { int P { get; set; } }";
@@ -1158,7 +1159,7 @@ Assembly: (Lines: 1, ExecutableLines: 0, MntIndex: 100, CycCxty: 2, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleEmptyProperty4()
         {
             var source = @"
@@ -1187,7 +1188,7 @@ Assembly: (Lines: 13, ExecutableLines: 1, MntIndex: 100, CycCxty: 2, DepthInheri
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PropertyWithIgnoreableParametersAndReturnType()
         {
             var source = @"
@@ -1207,7 +1208,7 @@ Assembly: (Lines: 4, ExecutableLines: 1, MntIndex: 100, CycCxty: 2, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PropertyWithParametersAndReturnType()
         {
             var source = @"
@@ -1233,7 +1234,7 @@ Assembly: (Lines: 6, ExecutableLines: 1, MntIndex: 100, CycCxty: 4, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PropertyWithParameterInitializers()
         {
             var source = @"
@@ -1265,7 +1266,7 @@ Assembly: (Lines: 10, ExecutableLines: 4, MntIndex: 98, CycCxty: 4, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PropertyWithTypeReferencesInBody()
         {
             var source = @"
@@ -1308,7 +1309,7 @@ Assembly: (Lines: 20, ExecutableLines: 5, MntIndex: 96, CycCxty: 6, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PropertiesWithDifferentTypeReferencesInBody()
         {
             var source = @"
@@ -1346,7 +1347,7 @@ Assembly: (Lines: 17, ExecutableLines: 2, MntIndex: 100, CycCxty: 5, CoupledType
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void PropertyWithTypeReferencesInAttribute()
         {
             var source = @"
@@ -1384,7 +1385,7 @@ Assembly: (Lines: 18, ExecutableLines: 4, MntIndex: 95, CycCxty: 3, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleFieldLikeEvent()
         {
             var source = @"
@@ -1415,7 +1416,7 @@ Assembly: (Lines: 10, ExecutableLines: 0, MntIndex: 100, CycCxty: 3, CoupledType
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void SimpleEventWithAccessors()
         {
             var source = @"
@@ -1456,7 +1457,7 @@ Assembly: (Lines: 16, ExecutableLines: 2, MntIndex: 98, CycCxty: 4, CoupledTypes
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConditionalLogic_IfStatement()
         {
             var source = @"
@@ -1537,7 +1538,7 @@ Assembly: (Lines: 62, ExecutableLines: 11, MntIndex: 86, CycCxty: 16, DepthInher
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConditionalLogic_ConditionalExpression()
         {
             var source = @"
@@ -1575,7 +1576,7 @@ Assembly: (Lines: 21, ExecutableLines: 8, MntIndex: 78, CycCxty: 11, DepthInheri
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConditionalLogic_LogicalOperators()
         {
             var source = @"
@@ -1613,7 +1614,7 @@ Assembly: (Lines: 21, ExecutableLines: 7, MntIndex: 77, CycCxty: 22, DepthInheri
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConditionalLogic_CoalesceAndConditionalAccess()
         {
             var source = @"
@@ -1671,7 +1672,7 @@ Assembly: (Lines: 34, ExecutableLines: 11, MntIndex: 88, CycCxty: 26, CoupledTyp
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void ConditionalLogic_Loops()
         {
             var source = @"
@@ -1765,7 +1766,7 @@ Assembly: (Lines: 75, ExecutableLines: 23, MntIndex: 73, CycCxty: 17, CoupledTyp
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void LocalDeclarationsAndArithmeticOperations()
         {
             var source = @"
@@ -1790,7 +1791,7 @@ Assembly: (Lines: 10, ExecutableLines: 4, MntIndex: 76, CycCxty: 1, DepthInherit
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void MethodWithLotOfArithmeticOperations()
         {
             var source = @"
@@ -1961,7 +1962,7 @@ Assembly: (Lines: 156, ExecutableLines: 123, MntIndex: 27, CycCxty: 4, DepthInhe
             VerifyCSharp(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void VisualBasicTest01()
         {
             var source = @"
@@ -1987,7 +1988,7 @@ Assembly: (Lines: 11, ExecutableLines: 3, MntIndex: 81, CycCxty: 4, DepthInherit
             VerifyBasic(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void VisualBasicTest02()
         {
             var source = @"
@@ -2025,7 +2026,7 @@ Assembly: (Lines: 14, ExecutableLines: 2, MntIndex: 100, CycCxty: 3, DepthInheri
             VerifyBasic(source, expectedMetricsText);
         }
 
-        [Fact]
+        [TestMethod]
         public void EmptyLinesAreNotCounted()
         {
             var source = @"

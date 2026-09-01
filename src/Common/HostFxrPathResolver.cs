@@ -11,6 +11,12 @@ namespace Microsoft.DotNet.HostFxr;
 ///  runtime property (for example when the SDK is launched via <c>dotnet exec dotnet.dll</c>
 ///  rather than as a first-class SDK command, which is how the <c>dnx</c> script works).
 ///  Dependencies are injected so the pure path-resolution logic can be unit tested.
+///  <para>
+///   This file is source-shared (via <c>&lt;Compile Include&gt;</c>) into both the
+///   <c>Microsoft.DotNet.NativeWrapper</c> resolver and the Native AOT <c>dn</c> host so
+///   the two stay in lockstep; a prior divergence between separate copies is what caused
+///   https://github.com/dotnet/sdk/issues/55238 to be fixed in only one place.
+///  </para>
 /// </summary>
 internal static class HostFxrPathResolver
 {

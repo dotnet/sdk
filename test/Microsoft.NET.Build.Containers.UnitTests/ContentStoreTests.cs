@@ -3,11 +3,12 @@
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
+[TestClass]
 public class ContentStoreTests
 {
-    [Theory]
-    [InlineData("sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad")]
-    [InlineData("sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]
+    [TestMethod]
+    [DataRow("sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad")]
+    [DataRow("sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]
     public void PathForDescriptor_AcceptsWellFormedDigest(string digest)
     {
         Descriptor descriptor = CreateDescriptorWithDigest(digest);
@@ -15,14 +16,14 @@ public class ContentStoreTests
         Assert.StartsWith(ContentStore.ContentRoot, path);
     }
 
-    [Theory]
-    [InlineData("")] // empty string
-    [InlineData("sha256:../..\\xyz_not_hex!!")] // non-hex characters
-    [InlineData("c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad")] // missing algorithm prefix
+    [TestMethod]
+    [DataRow("")] // empty string
+    [DataRow("sha256:../..\\xyz_not_hex!!")] // non-hex characters
+    [DataRow("c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad")] // missing algorithm prefix
     public void PathForDescriptor_RejectsInvalidDigest(string digest)
     {
         Descriptor descriptor = CreateDescriptorWithDigest(digest);
-        Assert.Throws<InvalidDigestException>(() =>
+        Assert.ThrowsExactly<InvalidDigestException>(() =>
             ContentStore.PathForDescriptor(descriptor));
     }
 

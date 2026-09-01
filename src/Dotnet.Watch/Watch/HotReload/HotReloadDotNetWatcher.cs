@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using Microsoft.Build.Execution;
 using Microsoft.CodeAnalysis;
 using Microsoft.DotNet.HotReload;
+using Microsoft.DotNet.FileBasedPrograms;
 using Microsoft.DotNet.ProjectTools;
 using Microsoft.Extensions.Logging;
 

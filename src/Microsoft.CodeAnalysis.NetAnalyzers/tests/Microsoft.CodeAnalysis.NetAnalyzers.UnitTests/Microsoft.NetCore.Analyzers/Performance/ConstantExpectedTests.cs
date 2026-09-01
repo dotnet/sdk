@@ -1,30 +1,31 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Performance.CSharpConstantExpectedAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
 {
+    [TestClass]
     public sealed class ConstantExpectedTests
     {
-        [Theory]
-        [InlineData("char", "char.MinValue", "char.MaxValue")]
-        [InlineData("sbyte", "sbyte.MinValue", "sbyte.MaxValue")]
-        [InlineData("short", "short.MinValue", "short.MaxValue")]
-        [InlineData("int", "int.MinValue", "int.MaxValue")]
-        [InlineData("long", "long.MinValue", "long.MaxValue")]
-        [InlineData("byte", "byte.MinValue", "byte.MaxValue")]
-        [InlineData("ushort", "ushort.MinValue", "ushort.MaxValue")]
-        [InlineData("uint", "uint.MinValue", "uint.MaxValue")]
-        [InlineData("ulong", "ulong.MinValue", "ulong.MaxValue")]
-        [InlineData("bool", "false", "true")]
-        [InlineData("float", "float.MinValue", "float.MaxValue")]
-        [InlineData("double", "double.MinValue", "double.MaxValue")]
-        public static async Task TestConstantExpectedSupportedUnmanagedTypesAsync(string type, string minValue, string maxValue)
+        [TestMethod]
+        [DataRow("char", "char.MinValue", "char.MaxValue")]
+        [DataRow("sbyte", "sbyte.MinValue", "sbyte.MaxValue")]
+        [DataRow("short", "short.MinValue", "short.MaxValue")]
+        [DataRow("int", "int.MinValue", "int.MaxValue")]
+        [DataRow("long", "long.MinValue", "long.MaxValue")]
+        [DataRow("byte", "byte.MinValue", "byte.MaxValue")]
+        [DataRow("ushort", "ushort.MinValue", "ushort.MaxValue")]
+        [DataRow("uint", "uint.MinValue", "uint.MaxValue")]
+        [DataRow("ulong", "ulong.MinValue", "ulong.MaxValue")]
+        [DataRow("bool", "false", "true")]
+        [DataRow("float", "float.MinValue", "float.MaxValue")]
+        [DataRow("double", "double.MinValue", "double.MaxValue")]
+        public async Task TestConstantExpectedSupportedUnmanagedTypesAsync(string type, string minValue, string maxValue)
         {
             string csInput = @$"
 using System;
@@ -45,16 +46,16 @@ public class Test
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("sbyte", "sbyte.MinValue", "sbyte.MaxValue")]
-        [InlineData("short", "short.MinValue", "short.MaxValue")]
-        [InlineData("int", "int.MinValue", "int.MaxValue")]
-        [InlineData("long", "long.MinValue", "long.MaxValue")]
-        [InlineData("byte", "byte.MinValue", "byte.MaxValue")]
-        [InlineData("ushort", "ushort.MinValue", "ushort.MaxValue")]
-        [InlineData("uint", "uint.MinValue", "uint.MaxValue")]
-        [InlineData("ulong", "ulong.MinValue", "ulong.MaxValue")]
-        public static async Task TestConstantExpectedSupportedEnumTypesAsync(string type, string minValue, string maxValue)
+        [TestMethod]
+        [DataRow("sbyte", "sbyte.MinValue", "sbyte.MaxValue")]
+        [DataRow("short", "short.MinValue", "short.MaxValue")]
+        [DataRow("int", "int.MinValue", "int.MaxValue")]
+        [DataRow("long", "long.MinValue", "long.MaxValue")]
+        [DataRow("byte", "byte.MinValue", "byte.MaxValue")]
+        [DataRow("ushort", "ushort.MinValue", "ushort.MaxValue")]
+        [DataRow("uint", "uint.MinValue", "uint.MaxValue")]
+        [DataRow("ulong", "ulong.MinValue", "ulong.MaxValue")]
+        public async Task TestConstantExpectedSupportedEnumTypesAsync(string type, string minValue, string maxValue)
         {
             string csInput = @$"
 using System;
@@ -81,8 +82,8 @@ public enum AEnum : {type}
             await TestCSAsync(csInput);
         }
 
-        [Fact]
-        public static async Task TestConstantExpectedSupportedComplexTypesAsync()
+        [TestMethod]
+        public async Task TestConstantExpectedSupportedComplexTypesAsync()
         {
             string csInput = @"
 using System;
@@ -103,21 +104,21 @@ public class Test
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("char")]
-        [InlineData("sbyte")]
-        [InlineData("short")]
-        [InlineData("int")]
-        [InlineData("long")]
-        [InlineData("byte")]
-        [InlineData("ushort")]
-        [InlineData("uint")]
-        [InlineData("ulong")]
-        [InlineData("float")]
-        [InlineData("double")]
-        [InlineData("bool")]
-        [InlineData("string")]
-        public static async Task TestConstantExpectedSupportedComplex2TypesAsync(string type)
+        [TestMethod]
+        [DataRow("char")]
+        [DataRow("sbyte")]
+        [DataRow("short")]
+        [DataRow("int")]
+        [DataRow("long")]
+        [DataRow("byte")]
+        [DataRow("ushort")]
+        [DataRow("uint")]
+        [DataRow("ulong")]
+        [DataRow("float")]
+        [DataRow("double")]
+        [DataRow("bool")]
+        [DataRow("string")]
+        public async Task TestConstantExpectedSupportedComplex2TypesAsync(string type)
         {
             string csInput = @$"
 using System;
@@ -156,21 +157,21 @@ public class Test
                         .WithLocation(2));
         }
 
-        [Theory]
-        [InlineData("char")]
-        [InlineData("sbyte")]
-        [InlineData("short")]
-        [InlineData("int")]
-        [InlineData("long")]
-        [InlineData("byte")]
-        [InlineData("ushort")]
-        [InlineData("uint")]
-        [InlineData("ulong")]
-        [InlineData("float")]
-        [InlineData("double")]
-        [InlineData("bool")]
-        [InlineData("string")]
-        public static async Task TestMissingConstantExpectedSupportedComplex2TypesAsync(string type)
+        [TestMethod]
+        [DataRow("char")]
+        [DataRow("sbyte")]
+        [DataRow("short")]
+        [DataRow("int")]
+        [DataRow("long")]
+        [DataRow("byte")]
+        [DataRow("ushort")]
+        [DataRow("uint")]
+        [DataRow("ulong")]
+        [DataRow("float")]
+        [DataRow("double")]
+        [DataRow("bool")]
+        [DataRow("string")]
+        public async Task TestMissingConstantExpectedSupportedComplex2TypesAsync(string type)
         {
             string csInput = @$"
 using System;
@@ -203,8 +204,8 @@ public class Test
             await TestCSMissingAttributeAsync(csInput);
         }
 
-        [Fact]
-        public static async Task TestConstantExpectedSupportedComplex3TypesAsync()
+        [TestMethod]
+        public async Task TestConstantExpectedSupportedComplex3TypesAsync()
         {
             string csInput = @"
 using System;
@@ -242,18 +243,18 @@ public class Test
                         .WithLocation(2));
         }
 
-        [Theory]
-        [InlineData("", "", "nint", "nint")]
-        [InlineData("", "", "nuint", "nuint")]
-        [InlineData("", "", "object", "object")]
-        [InlineData("", "", "Test", "Test")]
-        [InlineData("", "", "Guid", "System.Guid")]
-        [InlineData("", "", "decimal", "decimal")]
-        [InlineData("", "", "byte[]", "byte[]")]
-        [InlineData("", "", "(int, long)", "(int, long)")]
-        [InlineData("<T>", "", "T[]", "T[]")]
-        [InlineData("", "<T>", "T[]", "T[]")]
-        public static async Task TestConstantExpectedUnsupportedTypesAsync(string classGeneric, string methodGeneric, string type, string diagnosticType)
+        [TestMethod]
+        [DataRow("", "", "nint", "nint")]
+        [DataRow("", "", "nuint", "nuint")]
+        [DataRow("", "", "object", "object")]
+        [DataRow("", "", "Test", "Test")]
+        [DataRow("", "", "Guid", "System.Guid")]
+        [DataRow("", "", "decimal", "decimal")]
+        [DataRow("", "", "byte[]", "byte[]")]
+        [DataRow("", "", "(int, long)", "(int, long)")]
+        [DataRow("<T>", "", "T[]", "T[]")]
+        [DataRow("", "<T>", "T[]", "T[]")]
+        public async Task TestConstantExpectedUnsupportedTypesAsync(string classGeneric, string methodGeneric, string type, string diagnosticType)
         {
             string csInput = @$"
 using System;
@@ -271,14 +272,14 @@ public class Test{classGeneric}
                         .WithArguments(diagnosticType));
         }
 
-        [Theory]
-        [InlineData("object")]
-        [InlineData("Test")]
-        [InlineData("Guid")]
-        [InlineData("decimal")]
-        [InlineData("byte[]")]
-        [InlineData("(int, long)")]
-        public static async Task TestConstantExpectedUnsupportedIgnoredComplexTypesAsync(string type)
+        [TestMethod]
+        [DataRow("object")]
+        [DataRow("Test")]
+        [DataRow("Guid")]
+        [DataRow("decimal")]
+        [DataRow("byte[]")]
+        [DataRow("(int, long)")]
+        public async Task TestConstantExpectedUnsupportedIgnoredComplexTypesAsync(string type)
         {
             string csInput = @$"
 using System;
@@ -310,23 +311,23 @@ public class Test
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("", "", "char", "\"a\"", "\"a\"")]
-        [InlineData("", "", "sbyte", "\"a\"", "\"a\"")]
-        [InlineData("", "", "short", "\"a\"", "\"a\"")]
-        [InlineData("", "", "int", "\"a\"", "\"a\"")]
-        [InlineData("", "", "long", "\"a\"", "\"a\"")]
-        [InlineData("", "", "byte", "\"a\"", "\"a\"")]
-        [InlineData("", "", "ushort", "\"a\"", "\"a\"")]
-        [InlineData("", "", "uint", "\"a\"", "\"a\"")]
-        [InlineData("", "", "ulong", "\"a\"", "\"a\"")]
-        [InlineData("", "", "bool", "\"a\"", "\"a\"")]
-        [InlineData("", "", "float", "\"a\"", "\"a\"")]
-        [InlineData("", "", "double", "\"a\"", "\"a\"")]
-        [InlineData("", "", "string", "true", "false")]
-        [InlineData("<T>", "", "T", "\"min\"", "false")]
-        [InlineData("", "<T>", "T", "\"min\"", "false")]
-        public static async Task TestConstantExpectedIncompatibleConstantTypeErrorAsync(string classGeneric, string methodGeneric, string type, string badMinValue, string badMaxValue)
+        [TestMethod]
+        [DataRow("", "", "char", "\"a\"", "\"a\"")]
+        [DataRow("", "", "sbyte", "\"a\"", "\"a\"")]
+        [DataRow("", "", "short", "\"a\"", "\"a\"")]
+        [DataRow("", "", "int", "\"a\"", "\"a\"")]
+        [DataRow("", "", "long", "\"a\"", "\"a\"")]
+        [DataRow("", "", "byte", "\"a\"", "\"a\"")]
+        [DataRow("", "", "ushort", "\"a\"", "\"a\"")]
+        [DataRow("", "", "uint", "\"a\"", "\"a\"")]
+        [DataRow("", "", "ulong", "\"a\"", "\"a\"")]
+        [DataRow("", "", "bool", "\"a\"", "\"a\"")]
+        [DataRow("", "", "float", "\"a\"", "\"a\"")]
+        [DataRow("", "", "double", "\"a\"", "\"a\"")]
+        [DataRow("", "", "string", "true", "false")]
+        [DataRow("<T>", "", "T", "\"min\"", "false")]
+        [DataRow("", "<T>", "T", "\"min\"", "false")]
+        public async Task TestConstantExpectedIncompatibleConstantTypeErrorAsync(string classGeneric, string methodGeneric, string type, string badMinValue, string badMaxValue)
         {
             string csInput = @$"
 using System;
@@ -355,19 +356,19 @@ public class Test{classGeneric}
                         .WithArguments("Max", type));
         }
 
-        [Theory]
-        [InlineData("char", "'Z'", "'A'")]
-        [InlineData("sbyte", "1", "0")]
-        [InlineData("short", "1", "0")]
-        [InlineData("int", "1", "0")]
-        [InlineData("long", "1", "0")]
-        [InlineData("byte", "1", "0")]
-        [InlineData("ushort", "1", "0")]
-        [InlineData("uint", "1", "0")]
-        [InlineData("ulong", "1", "0")]
-        [InlineData("float", "1", "0")]
-        [InlineData("double", "1", "0")]
-        public static async Task TestConstantExpectedInvertedConstantTypeErrorAsync(string type, string min, string max)
+        [TestMethod]
+        [DataRow("char", "'Z'", "'A'")]
+        [DataRow("sbyte", "1", "0")]
+        [DataRow("short", "1", "0")]
+        [DataRow("int", "1", "0")]
+        [DataRow("long", "1", "0")]
+        [DataRow("byte", "1", "0")]
+        [DataRow("ushort", "1", "0")]
+        [DataRow("uint", "1", "0")]
+        [DataRow("ulong", "1", "0")]
+        [DataRow("float", "1", "0")]
+        [DataRow("double", "1", "0")]
+        public async Task TestConstantExpectedInvertedConstantTypeErrorAsync(string type, string min, string max)
         {
             string csInput = @$"
 using System;
@@ -384,16 +385,16 @@ public class Test
                         .WithLocation(0));
         }
 
-        [Theory]
-        [InlineData("sbyte", "AEnum.Five", "AEnum.Two")]
-        [InlineData("short", "AEnum.Five", "AEnum.Two")]
-        [InlineData("int", "AEnum.Five", "AEnum.Two")]
-        [InlineData("long", "AEnum.Five", "AEnum.Two")]
-        [InlineData("byte", "AEnum.Five", "AEnum.Two")]
-        [InlineData("ushort", "AEnum.Five", "AEnum.Two")]
-        [InlineData("uint", "AEnum.Five", "AEnum.Two")]
-        [InlineData("ulong", "AEnum.Five", "AEnum.Two")]
-        public static async Task TestEnumConstantExpectedInvertedConstantTypeErrorAsync(string type, string min, string max)
+        [TestMethod]
+        [DataRow("sbyte", "AEnum.Five", "AEnum.Two")]
+        [DataRow("short", "AEnum.Five", "AEnum.Two")]
+        [DataRow("int", "AEnum.Five", "AEnum.Two")]
+        [DataRow("long", "AEnum.Five", "AEnum.Two")]
+        [DataRow("byte", "AEnum.Five", "AEnum.Two")]
+        [DataRow("ushort", "AEnum.Five", "AEnum.Two")]
+        [DataRow("uint", "AEnum.Five", "AEnum.Two")]
+        [DataRow("ulong", "AEnum.Five", "AEnum.Two")]
+        public async Task TestEnumConstantExpectedInvertedConstantTypeErrorAsync(string type, string min, string max)
         {
             string csInput = @$"
 using System;
@@ -420,17 +421,17 @@ public enum AEnum : {type}
                         .WithLocation(0));
         }
 
-        [Theory]
-        [InlineData("sbyte", sbyte.MinValue, sbyte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("short", short.MinValue, short.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("int", int.MinValue, int.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("long", long.MinValue, long.MaxValue, "ulong.MaxValue", "ulong.MaxValue", "false", "true")]
-        [InlineData("byte", byte.MinValue, byte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("ushort", ushort.MinValue, ushort.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("uint", uint.MinValue, uint.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("ulong", ulong.MinValue, ulong.MaxValue, "long.MinValue", "-1", "false", "true")]
-        [InlineData("float", float.MinValue, float.MaxValue, "double.MinValue", "double.MaxValue", "false", "true")]
-        public static async Task TestConstantExpectedInvalidBoundsAsync(string type, object min, object max, string min1, string max1, string badMinValue, string badMaxValue)
+        [TestMethod]
+        [DataRow("sbyte", sbyte.MinValue, sbyte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("short", short.MinValue, short.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("int", int.MinValue, int.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("long", long.MinValue, long.MaxValue, "ulong.MaxValue", "ulong.MaxValue", "false", "true")]
+        [DataRow("byte", byte.MinValue, byte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("ushort", ushort.MinValue, ushort.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("uint", uint.MinValue, uint.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("ulong", ulong.MinValue, ulong.MaxValue, "long.MinValue", "-1", "false", "true")]
+        [DataRow("float", float.MinValue, float.MaxValue, "double.MinValue", "double.MaxValue", "false", "true")]
+        public async Task TestConstantExpectedInvalidBoundsAsync(string type, object min, object max, string min1, string max1, string badMinValue, string badMaxValue)
         {
             string minString = min.ToString();
             string maxString = max.ToString();
@@ -475,16 +476,16 @@ public class Test
                     .WithArguments("Max", type));
         }
 
-        [Theory]
-        [InlineData("sbyte", sbyte.MinValue, sbyte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("short", short.MinValue, short.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("int", int.MinValue, int.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("long", long.MinValue, long.MaxValue, "ulong.MaxValue", "ulong.MaxValue", "false", "true")]
-        [InlineData("byte", byte.MinValue, byte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("ushort", ushort.MinValue, ushort.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("uint", uint.MinValue, uint.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
-        [InlineData("ulong", ulong.MinValue, ulong.MaxValue, "long.MinValue", "-1", "false", "true")]
-        public static async Task TestEnumConstantExpectedInvalidBoundsAsync(string type, object min, object max, string min1, string max1, string badMinValue, string badMaxValue)
+        [TestMethod]
+        [DataRow("sbyte", sbyte.MinValue, sbyte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("short", short.MinValue, short.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("int", int.MinValue, int.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("long", long.MinValue, long.MaxValue, "ulong.MaxValue", "ulong.MaxValue", "false", "true")]
+        [DataRow("byte", byte.MinValue, byte.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("ushort", ushort.MinValue, ushort.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("uint", uint.MinValue, uint.MaxValue, "long.MinValue", "long.MaxValue", "false", "true")]
+        [DataRow("ulong", ulong.MinValue, ulong.MaxValue, "long.MinValue", "-1", "false", "true")]
+        public async Task TestEnumConstantExpectedInvalidBoundsAsync(string type, object min, object max, string min1, string max1, string badMinValue, string badMaxValue)
         {
             string minString = min.ToString();
             string maxString = max.ToString();
@@ -539,21 +540,21 @@ public enum AEnum : {type}
                     .WithArguments("Max", "AEnum"));
         }
 
-        [Theory]
-        [InlineData("char", "'A'", "'Z'", "'A'", "(char)('A'+'\\u0001')")]
-        [InlineData("sbyte", "10", "20", "10", "2*5")]
-        [InlineData("short", "10", "20", "10", "2*5")]
-        [InlineData("int", "10", "20", "10", "2*5")]
-        [InlineData("long", "10", "20", "10", "2*5")]
-        [InlineData("byte", "10", "20", "10", "2*5")]
-        [InlineData("ushort", "10", "20", "10", "2*5")]
-        [InlineData("uint", "10", "20", "10", "2*5")]
-        [InlineData("ulong", "10", "20", "10", "2*5")]
-        [InlineData("float", "10", "20", "10", "2*5")]
-        [InlineData("double", "10", "20", "10", "2*5")]
-        [InlineData("bool", "true", "true", "true", "!false")]
-        [InlineData("string", "null", "null", "\"true\"", "\"false\"")]
-        public static async Task TestArgumentConstantAsync(string type, string minValue, string maxValue, string value, string expression)
+        [TestMethod]
+        [DataRow("char", "'A'", "'Z'", "'A'", "(char)('A'+'\\u0001')")]
+        [DataRow("sbyte", "10", "20", "10", "2*5")]
+        [DataRow("short", "10", "20", "10", "2*5")]
+        [DataRow("int", "10", "20", "10", "2*5")]
+        [DataRow("long", "10", "20", "10", "2*5")]
+        [DataRow("byte", "10", "20", "10", "2*5")]
+        [DataRow("ushort", "10", "20", "10", "2*5")]
+        [DataRow("uint", "10", "20", "10", "2*5")]
+        [DataRow("ulong", "10", "20", "10", "2*5")]
+        [DataRow("float", "10", "20", "10", "2*5")]
+        [DataRow("double", "10", "20", "10", "2*5")]
+        [DataRow("bool", "true", "true", "true", "!false")]
+        [DataRow("string", "null", "null", "\"true\"", "\"false\"")]
+        public async Task TestArgumentConstantAsync(string type, string minValue, string maxValue, string value, string expression)
         {
             string csInput = @$"
 using System;
@@ -586,16 +587,16 @@ public class Test
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("sbyte", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        [InlineData("short", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        [InlineData("int", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        [InlineData("long", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        [InlineData("byte", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        [InlineData("ushort", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        [InlineData("uint", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        [InlineData("ulong", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
-        public static async Task TestEnumArgumentConstantAsync(string type, string minValue, string maxValue, string value, string expression)
+        [TestMethod]
+        [DataRow("sbyte", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        [DataRow("short", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        [DataRow("int", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        [DataRow("long", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        [DataRow("byte", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        [DataRow("ushort", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        [DataRow("uint", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        [DataRow("ulong", "AEnum.One", "AEnum.Five", "AEnum.Two", "AEnum.One | AEnum.Two")]
+        public async Task TestEnumArgumentConstantAsync(string type, string minValue, string maxValue, string value, string expression)
         {
             string csInput = @$"
 using System;
@@ -638,20 +639,20 @@ public enum AEnum : {type}
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("char")]
-        [InlineData("sbyte")]
-        [InlineData("short")]
-        [InlineData("int")]
-        [InlineData("long")]
-        [InlineData("byte")]
-        [InlineData("ushort")]
-        [InlineData("uint")]
-        [InlineData("ulong")]
-        [InlineData("float")]
-        [InlineData("double")]
-        [InlineData("string")]
-        public static async Task TestArgumentNotConstantAsync(string type)
+        [TestMethod]
+        [DataRow("char")]
+        [DataRow("sbyte")]
+        [DataRow("short")]
+        [DataRow("int")]
+        [DataRow("long")]
+        [DataRow("byte")]
+        [DataRow("ushort")]
+        [DataRow("uint")]
+        [DataRow("ulong")]
+        [DataRow("float")]
+        [DataRow("double")]
+        [DataRow("string")]
+        public async Task TestArgumentNotConstantAsync(string type)
         {
             string csInput = @$"
 using System;
@@ -684,16 +685,16 @@ public class Test
                         .WithLocation(2));
         }
 
-        [Theory]
-        [InlineData("sbyte")]
-        [InlineData("short")]
-        [InlineData("int")]
-        [InlineData("long")]
-        [InlineData("byte")]
-        [InlineData("ushort")]
-        [InlineData("uint")]
-        [InlineData("ulong")]
-        public static async Task TestEnumArgumentNotConstantAsync(string type)
+        [TestMethod]
+        [DataRow("sbyte")]
+        [DataRow("short")]
+        [DataRow("int")]
+        [DataRow("long")]
+        [DataRow("byte")]
+        [DataRow("ushort")]
+        [DataRow("uint")]
+        [DataRow("ulong")]
+        public async Task TestEnumArgumentNotConstantAsync(string type)
         {
             string csInput = @$"
 using System;
@@ -732,10 +733,10 @@ public enum AEnum : {type}
                         .WithLocation(2));
         }
 
-        [Theory]
-        [InlineData("char", "(char)(object)10.5")]
-        [InlineData("string", "(string)(object)20")]
-        public static async Task TestArgumentInvalidConstantAsync(string type, string constant)
+        [TestMethod]
+        [DataRow("char", "(char)(object)10.5")]
+        [DataRow("string", "(string)(object)20")]
+        public async Task TestArgumentInvalidConstantAsync(string type, string constant)
         {
             string csInput = @$"
 using System;
@@ -771,19 +772,19 @@ public class Test
                     .WithArguments(type));
         }
 
-        [Theory]
-        [InlineData("char", "'B'", "'C'", "'D'")]
-        [InlineData("sbyte", "3", "4", "5")]
-        [InlineData("short", "3", "4", "5")]
-        [InlineData("int", "3", "4", "5")]
-        [InlineData("long", "3", "4", "5")]
-        [InlineData("byte", "3", "4", "5")]
-        [InlineData("ushort", "3", "4", "5")]
-        [InlineData("uint", "3", "4", "5")]
-        [InlineData("ulong", "3", "4", "5")]
-        [InlineData("float", "3", "4", "5")]
-        [InlineData("double", "3", "4", "5")]
-        public static async Task TestArgumentOutOfBoundsConstantAsync(string type, string min, string max, string testValue)
+        [TestMethod]
+        [DataRow("char", "'B'", "'C'", "'D'")]
+        [DataRow("sbyte", "3", "4", "5")]
+        [DataRow("short", "3", "4", "5")]
+        [DataRow("int", "3", "4", "5")]
+        [DataRow("long", "3", "4", "5")]
+        [DataRow("byte", "3", "4", "5")]
+        [DataRow("ushort", "3", "4", "5")]
+        [DataRow("uint", "3", "4", "5")]
+        [DataRow("ulong", "3", "4", "5")]
+        [DataRow("float", "3", "4", "5")]
+        [DataRow("double", "3", "4", "5")]
+        public async Task TestArgumentOutOfBoundsConstantAsync(string type, string min, string max, string testValue)
         {
             string csInput = @$"
 using System;
@@ -805,16 +806,16 @@ public class Test
                         .WithArguments(min.Trim('\''), max.Trim('\'')));
         }
 
-        [Theory]
-        [InlineData("sbyte", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        [InlineData("short", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        [InlineData("int", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        [InlineData("long", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        [InlineData("byte", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        [InlineData("ushort", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        [InlineData("uint", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        [InlineData("ulong", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
-        public static async Task TestEnumArgumentOutOfBoundsConstantAsync(string type, string min, string max, string testValue)
+        [TestMethod]
+        [DataRow("sbyte", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        [DataRow("short", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        [DataRow("int", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        [DataRow("long", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        [DataRow("byte", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        [DataRow("ushort", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        [DataRow("uint", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        [DataRow("ulong", "AEnum.Three", "AEnum.Four", "AEnum.Five")]
+        public async Task TestEnumArgumentOutOfBoundsConstantAsync(string type, string min, string max, string testValue)
         {
             string csInput = @$"
 using System;
@@ -846,8 +847,8 @@ public enum AEnum : {type}
                         .WithArguments("3", "4"));
         }
 
-        [Fact]
-        public static async Task TestArgumentInvalidGenericTypeParameterConstantAsync()
+        [TestMethod]
+        public async Task TestArgumentInvalidGenericTypeParameterConstantAsync()
         {
             string csInput = @"
 using System;
@@ -872,20 +873,20 @@ public class Test
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("char", "'B'", "'C'")]
-        [InlineData("sbyte", "3", "4")]
-        [InlineData("short", "3", "4")]
-        [InlineData("int", "3", "4")]
-        [InlineData("long", "3", "4")]
-        [InlineData("byte", "3", "4")]
-        [InlineData("ushort", "3", "4")]
-        [InlineData("uint", "3", "4")]
-        [InlineData("ulong", "3", "4")]
-        [InlineData("float", "3", "4")]
-        [InlineData("double", "3", "4")]
-        [InlineData("bool", "false", "false")]
-        public static async Task TestConstantCompositionAsync(string type, string min, string max)
+        [TestMethod]
+        [DataRow("char", "'B'", "'C'")]
+        [DataRow("sbyte", "3", "4")]
+        [DataRow("short", "3", "4")]
+        [DataRow("int", "3", "4")]
+        [DataRow("long", "3", "4")]
+        [DataRow("byte", "3", "4")]
+        [DataRow("ushort", "3", "4")]
+        [DataRow("uint", "3", "4")]
+        [DataRow("ulong", "3", "4")]
+        [DataRow("float", "3", "4")]
+        [DataRow("double", "3", "4")]
+        [DataRow("bool", "false", "false")]
+        public async Task TestConstantCompositionAsync(string type, string min, string max)
         {
             string csInput = @$"
 using System;
@@ -910,16 +911,16 @@ public class Test
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("sbyte", "AEnum.Two", "AEnum.Three")]
-        [InlineData("short", "AEnum.Two", "AEnum.Three")]
-        [InlineData("int", "AEnum.Two", "AEnum.Three")]
-        [InlineData("long", "AEnum.Two", "AEnum.Three")]
-        [InlineData("byte", "AEnum.Two", "AEnum.Three")]
-        [InlineData("ushort", "AEnum.Two", "AEnum.Three")]
-        [InlineData("uint", "AEnum.Two", "AEnum.Three")]
-        [InlineData("ulong", "AEnum.Two", "AEnum.Three")]
-        public static async Task TestEnumConstantCompositionAsync(string type, string min, string max)
+        [TestMethod]
+        [DataRow("sbyte", "AEnum.Two", "AEnum.Three")]
+        [DataRow("short", "AEnum.Two", "AEnum.Three")]
+        [DataRow("int", "AEnum.Two", "AEnum.Three")]
+        [DataRow("long", "AEnum.Two", "AEnum.Three")]
+        [DataRow("byte", "AEnum.Two", "AEnum.Three")]
+        [DataRow("ushort", "AEnum.Two", "AEnum.Three")]
+        [DataRow("uint", "AEnum.Two", "AEnum.Three")]
+        [DataRow("ulong", "AEnum.Two", "AEnum.Three")]
+        public async Task TestEnumConstantCompositionAsync(string type, string min, string max)
         {
             string csInput = @$"
 using System;
@@ -954,8 +955,8 @@ public enum AEnum : {type}
             await TestCSAsync(csInput);
         }
 
-        [Fact]
-        public static async Task TestConstantCompositionStringAsync()
+        [TestMethod]
+        public async Task TestConstantCompositionStringAsync()
         {
             string csInput = @"
 using System;
@@ -974,20 +975,20 @@ public class Test
             await TestCSAsync(csInput);
         }
 
-        [Theory]
-        [InlineData("char", "'B'", "'C'", "'D'", 'B', 'C')]
-        [InlineData("sbyte", "3", "4", "5", 3, 4)]
-        [InlineData("short", "3", "4", "5", 3, 4)]
-        [InlineData("int", "3", "4", "5", 3, 4)]
-        [InlineData("long", "3", "4", "5", 3, 4)]
-        [InlineData("byte", "3", "4", "5", 3, 4)]
-        [InlineData("ushort", "3", "4", "5", 3, 4)]
-        [InlineData("uint", "3", "4", "5", 3, 4)]
-        [InlineData("ulong", "3", "4", "5", 3, 4)]
-        [InlineData("float", "3", "4", "5", 3, 4)]
-        [InlineData("double", "3", "4", "5", 3, 4)]
-        [InlineData("bool", "false", "false", "true", false, false)]
-        public static async Task TestConstantCompositionOutOfBoundsAsync(string type, string min, string max, string outOfBoundMax, object minValue, object maxValue)
+        [TestMethod]
+        [DataRow("char", "'B'", "'C'", "'D'", 'B', 'C')]
+        [DataRow("sbyte", "3", "4", "5", 3, 4)]
+        [DataRow("short", "3", "4", "5", 3, 4)]
+        [DataRow("int", "3", "4", "5", 3, 4)]
+        [DataRow("long", "3", "4", "5", 3, 4)]
+        [DataRow("byte", "3", "4", "5", 3, 4)]
+        [DataRow("ushort", "3", "4", "5", 3, 4)]
+        [DataRow("uint", "3", "4", "5", 3, 4)]
+        [DataRow("ulong", "3", "4", "5", 3, 4)]
+        [DataRow("float", "3", "4", "5", 3, 4)]
+        [DataRow("double", "3", "4", "5", 3, 4)]
+        [DataRow("bool", "false", "false", "true", false, false)]
+        public async Task TestConstantCompositionOutOfBoundsAsync(string type, string min, string max, string outOfBoundMax, object minValue, object maxValue)
         {
             string csInput = @$"
 using System;
@@ -1009,16 +1010,16 @@ public class Test
                         .WithArguments(minValue.ToString(), maxValue.ToString()));
         }
 
-        [Theory]
-        [InlineData("sbyte", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        [InlineData("short", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        [InlineData("int", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        [InlineData("long", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        [InlineData("byte", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        [InlineData("ushort", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        [InlineData("uint", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        [InlineData("ulong", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
-        public static async Task TestEnumConstantCompositionOutOfBoundsAsync(string type, string min, string max, string outOfBoundMax, object minValue, object maxValue)
+        [TestMethod]
+        [DataRow("sbyte", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        [DataRow("short", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        [DataRow("int", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        [DataRow("long", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        [DataRow("byte", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        [DataRow("ushort", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        [DataRow("uint", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        [DataRow("ulong", "AEnum.Two", "AEnum.Three", "AEnum.Four", 2, 4)]
+        public async Task TestEnumConstantCompositionOutOfBoundsAsync(string type, string min, string max, string outOfBoundMax, object minValue, object maxValue)
         {
             string csInput = @$"
 using System;
@@ -1050,8 +1051,8 @@ public enum AEnum : {type}
                         .WithArguments(minValue.ToString(), maxValue.ToString()));
         }
 
-        [Fact]
-        public static async Task TestConstantCompositionNotSameTypeAsync()
+        [TestMethod]
+        public async Task TestConstantCompositionNotSameTypeAsync()
         {
             string csInput = @"
 using System;
@@ -1094,7 +1095,7 @@ public class Test
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.Preview,
             };
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private static async Task TestCSMissingAttributeAsync(string source, params DiagnosticResult[] diagnosticResults)
@@ -1107,7 +1108,7 @@ public class Test
             };
             test.TestState.Sources.Add(SimilarAttributeSource);
             test.ExpectedDiagnostics.AddRange(diagnosticResults);
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         private const string SimilarAttributeSource = @"#nullable enable

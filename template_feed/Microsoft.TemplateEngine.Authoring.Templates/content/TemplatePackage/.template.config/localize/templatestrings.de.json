@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Vorlagenpaket",
+  "description": "Ein Projekt für ein Vorlagenpaket, das .NET-Vorlagen enthält.",
+  "postActions/instructions/description": "Manuelle Aktionen erforderlich",
+  "postActions/instructions/manualInstructions/default/text": "Öffnen Sie *.csproj im Editor, und vervollständigen Sie die Konfiguration der Paketmetadaten. Kopieren Sie die Vorlagen in den Ordner „Inhalt“. Füllen Sie README.md aus."
+}

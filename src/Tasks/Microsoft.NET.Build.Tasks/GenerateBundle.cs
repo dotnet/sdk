@@ -6,8 +6,12 @@ using Microsoft.NET.HostModel.Bundle;
 
 namespace Microsoft.NET.Build.Tasks
 {
-    public class GenerateBundle : TaskBase, ICancelableTask
+    [MSBuildMultiThreadableTask]
+    public class GenerateBundle : TaskBase, ICancelableTask, IMultiThreadableTask
     {
+        /// <inheritdoc />
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         private readonly CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
         private readonly Random _jitter =
 #if NET
@@ -45,17 +49,41 @@ namespace Microsoft.NET.Build.Tasks
 
         public void Cancel() => _cancellationTokenSource.Cancel();
 
+        /// <summary>
+        /// Resolves a possibly-relative <paramref name="outputDir"/> to an absolute path,
+        /// anchored at <see cref="TaskEnvironment.ProjectDirectory"/> rather than the process's
+        /// current working directory. Exposed as internal for unit testing; production callers
+        /// reach it through <see cref="ExecuteCore"/>.
+        /// </summary>
+        internal static string ResolveOutputDir(TaskEnvironment taskEnvironment, string outputDir)
+        {
+            AbsolutePath outputPath = string.IsNullOrEmpty(outputDir)
+                ? taskEnvironment.ProjectDirectory
+                : taskEnvironment.GetAbsolutePath(outputDir);
+            return outputPath.Value;
+        }
+
+        private string ResolveFileSpecSourcePath(string sourcePath)
+        {
+            return string.IsNullOrWhiteSpace(sourcePath)
+                ? sourcePath
+                : TaskEnvironment.GetAbsolutePath(sourcePath).Value;
+        }
+
         protected override void ExecuteCore()
         {
             ExecuteWithRetry().GetAwaiter().GetResult();
         }
 
-        private async Task ExecuteWithRetry()
+        private async System.Threading.Tasks.Task ExecuteWithRetry()
         {
             OSPlatform targetOS = RuntimeIdentifier.StartsWith("win") ? OSPlatform.Windows :
                                   RuntimeIdentifier.StartsWith("osx") ? OSPlatform.OSX :
                                   RuntimeIdentifier.StartsWith("freebsd") ? OSPlatform.Create("FREEBSD") :
+                                  RuntimeIdentifier.StartsWith("openbsd") ? OSPlatform.Create("OPENBSD") :
                                   RuntimeIdentifier.StartsWith("illumos") ? OSPlatform.Create("ILLUMOS") :
+                                  RuntimeIdentifier.StartsWith("solaris") ? OSPlatform.Create("SOLARIS") :
+                                  RuntimeIdentifier.StartsWith("haiku") ? OSPlatform.Create("HAIKU") :
                                   OSPlatform.Linux;
 
             Architecture targetArch = RuntimeIdentifier.EndsWith("-x64") || RuntimeIdentifier.Contains("-x64-") ? Architecture.X64 :
@@ -68,16 +96,29 @@ namespace Microsoft.NET.Build.Tasks
 #endif
                                       throw new ArgumentException(nameof(RuntimeIdentifier));
 
+            // Resolve OutputDir to an absolute path using TaskEnvironment so that relative
+            // paths are interpreted against the project directory, not the process CWD.
+            string resolvedOutputDir = ResolveOutputDir(TaskEnvironment, OutputDir);
+
+            Version version = new(TargetFrameworkVersion);
+            await RunBundler(resolvedOutputDir, targetOS, targetArch, version);
+        }
+
+        internal virtual async System.Threading.Tasks.Task RunBundler(
+            string resolvedOutputDir,
+            OSPlatform targetOS,
+            Architecture targetArch,
+            Version version)
+        {
             BundleOptions options = BundleOptions.None;
             options |= IncludeNativeLibraries ? BundleOptions.BundleNativeBinaries : BundleOptions.None;
             options |= IncludeAllContent ? BundleOptions.BundleAllContent : BundleOptions.None;
             options |= IncludeSymbols ? BundleOptions.BundleSymbolFiles : BundleOptions.None;
             options |= EnableCompressionInSingleFile ? BundleOptions.EnableCompression : BundleOptions.None;
 
-            Version version = new(TargetFrameworkVersion);
             var bundler = new Bundler(
                 AppHostName,
-                OutputDir,
+                resolvedOutputDir,
                 options,
                 targetOS,
                 targetArch,
@@ -89,7 +130,7 @@ namespace Microsoft.NET.Build.Tasks
 
             foreach (var item in FilesToBundle)
             {
-                fileSpec.Add(new FileSpec(sourcePath: item.ItemSpec,
+                fileSpec.Add(new FileSpec(sourcePath: ResolveFileSpecSourcePath(item.ItemSpec),
                                           bundleRelativePath: item.GetMetadata(MetadataKeys.RelativePath)));
             }
 
@@ -106,7 +147,7 @@ namespace Microsoft.NET.Build.Tasks
             ExcludedFiles = FilesToBundle.Zip(fileSpec, (item, spec) => (spec.Excluded) ? item : null).Where(x => x != null).ToArray()!;
         }
 
-        public async Task DoWithRetry(Action action)
+        public async System.Threading.Tasks.Task DoWithRetry(Action action)
         {
             bool triedOnce = false;
             while (RetryCount > 0 || !triedOnce)
@@ -124,7 +165,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     Log.LogMessage(MessageImportance.High, $"Unable to access file during bundling. Retrying {RetryCount} more times...");
                     RetryCount--;
-                    await Task.Delay(_jitter.Next(10, 50));
+                    await System.Threading.Tasks.Task.Delay(_jitter.Next(10, 50));
                 }
             }
         }

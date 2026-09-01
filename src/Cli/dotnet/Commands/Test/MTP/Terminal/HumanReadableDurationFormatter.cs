@@ -1,5 +1,5 @@
-﻿// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT license. See LICENSE file in the project root for full license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
 
@@ -16,7 +16,11 @@ internal static class HumanReadableDurationFormatter
             terminal.Append('(');
         }
 
-        // TODO: Do these abbrevations (d for days, h for hours, etc) need to be localized?
+        // Duration abbreviations (d/h/m/s/ms) are intentionally NOT localized:
+        // they use common time unit abbreviations and are kept identical across
+        // cultures to match MSBuild Terminal Logger's behavior and the typical
+        // convention for CLI tools (kubectl, cargo, etc.). This keeps timing
+        // output easy to parse and consistent regardless of the active culture.
         if (duration.Days > 0)
         {
             terminal.Append($"{duration.Days}d");

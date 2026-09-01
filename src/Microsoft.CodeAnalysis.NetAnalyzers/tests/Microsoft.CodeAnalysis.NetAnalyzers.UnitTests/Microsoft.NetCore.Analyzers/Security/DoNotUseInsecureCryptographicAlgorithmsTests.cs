@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseInsecureCryptographicAlgorithmsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,11 +13,12 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseInsecureCryptographicAlgorithmsTests
     {
         #region CA5350
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseMD5CreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -46,7 +47,7 @@ End Module",
                 GetBasicResultAt(6, 29, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestSub", "MD5"));
         }
         //NO VB
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseMD5CreateInPropertyDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -61,7 +62,7 @@ namespace TestNamespace
                 GetCSharpResultAt(7, 30, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_GetMD5", "MD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseMD5CreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -92,7 +93,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_GetAlg", "MD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseMD5CreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -116,7 +117,7 @@ End Namespace",
                 GetBasicResultAt(5, 33, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "Alg", "MD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseMD5CreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -149,7 +150,7 @@ End Namespace",
                 GetBasicResultAt(8, 8, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "MD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseMD5CreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -175,7 +176,7 @@ End Namespace",
                 GetBasicResultAt(6, 28, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "d", "MD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350CreateObjectFromMD5DerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -229,7 +230,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "MD5"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -274,14 +275,14 @@ End Namespace"
                         GetBasicResultAt(7, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "MD5"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         #endregion
 
         #region CA5354
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354UseSHA1CreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -310,7 +311,7 @@ End Module",
                 GetBasicResultAt(6, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestSub", "SHA1"));
         }
         //NO VB
-        [Fact]
+        [TestMethod]
         public async Task CA5354UseSHA1CreateInPropertyDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -325,7 +326,7 @@ namespace TestNamespace
                 GetCSharpResultAt(7, 32, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetSHA1", "SHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354UseSHA1CreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -356,7 +357,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetAlg", "SHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354UseSHA1CreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -380,7 +381,7 @@ End Namespace",
                 GetBasicResultAt(5, 33, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "Alg", "SHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354UseSHA1CreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -413,7 +414,7 @@ End Namespace",
                 GetBasicResultAt(8, 8, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "SHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354UseSHA1CreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -439,7 +440,7 @@ End Namespace",
                 GetBasicResultAt(6, 28, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "SHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateObjectFromSHA1DerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -493,7 +494,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "SHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -537,10 +538,10 @@ End Namespace"
                         GetBasicResultAt(6, 17, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "SHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354UseSHA1CryptoServiceProviderInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -569,7 +570,7 @@ End Module",
                 GetBasicResultAt(6, 24, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "SHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateHMACSHA1ObjectInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -598,7 +599,7 @@ End Module",
                 GetBasicResultAt(6, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestSub", "HMACSHA1"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateHMACSHA1ObjectInPropertyDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -613,7 +614,7 @@ namespace TestNamespace
                 GetCSharpResultAt(7, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMACSHA1", "HMACSHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateHMACSHA1ObjectInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -644,7 +645,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetAlg", "HMACSHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateHMACSHA1ObjectInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -668,7 +669,7 @@ End Namespace",
                 GetBasicResultAt(5, 24, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "Alg", "HMACSHA1"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateHMACSHA1ObjectInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -687,7 +688,7 @@ namespace TestNamespace
                 GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACSHA1"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateHMACSHA1ObjectInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -703,7 +704,7 @@ namespace TestNamespace
                 GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "HMACSHA1"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5354CreateObjectFromHMACSHA1DerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -757,7 +758,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 30, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACSHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -803,11 +804,11 @@ End Namespace
                         GetBasicResultAt(7, 21, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACSHA1"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
         #endregion
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseHMACMD5CreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -838,7 +839,7 @@ End Namespace",
                 GetBasicResultAt(7, 14, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "HMACMD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350CreateObjectFromHMACMD5DerivedClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -874,7 +875,7 @@ End Namespace",
                 GetBasicResultAt(10, 14, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "HMACMD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseHMACMD5CreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -905,7 +906,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_GetHMACMD5", "HMACMD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseHMACMD5InFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -929,7 +930,7 @@ End Namespace",
                 GetBasicResultAt(5, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "privateMd5", "HMACMD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseHMACMD5InLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -961,7 +962,7 @@ End Module",
                 GetBasicResultAt(8, 35, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "HMACMD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350UseHMACMD5InAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -986,7 +987,7 @@ End Module",
                 GetBasicResultAt(6, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "d", "HMACMD5"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1015,7 +1016,7 @@ End Module",
                 GetBasicResultAt(6, 29, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1047,7 +1048,7 @@ End Namespace
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_GetDES", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1071,7 +1072,7 @@ End Namespace",
                 GetBasicResultAt(5, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "privateDES", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1104,7 +1105,7 @@ End Namespace",
                 GetBasicResultAt(8, 4, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1130,7 +1131,7 @@ End Namespace",
                 GetBasicResultAt(6, 28, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "d", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCryptoServiceProviderCreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1160,7 +1161,7 @@ End Namespace",
                 GetBasicResultAt(6, 21, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCryptoServiceProviderCreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1191,7 +1192,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_GetDES", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCryptoServiceProviderCreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1215,7 +1216,7 @@ End Namespace",
                 GetBasicResultAt(5, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "privateDES", "DES"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCryptoServiceProviderInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1234,7 +1235,7 @@ namespace TestNamespace
                 GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5351UseDESCryptoServiceProviderInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1250,7 +1251,7 @@ namespace TestNamespace
                 GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "d", "DES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5351CreateObjectFromDESDerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -1311,7 +1312,7 @@ namespace TestNamespace
                         GetCSharpResultAt(11, 13, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1362,10 +1363,10 @@ End Namespace
                         GetBasicResultAt(7, 4, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5352UseRC2CryptoServiceProviderInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1394,7 +1395,7 @@ End Module",
                 GetBasicResultAt(6, 23, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "RC2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5352UseRC2CryptoServiceProviderInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1425,7 +1426,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_GetRC2", "RC2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5352UseRC2CryptoServiceProviderInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1450,7 +1451,7 @@ End Namespace
                 GetBasicResultAt(5, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "privateRC2", "RC2"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5352UseRC2CryptoServiceProviderInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1469,7 +1470,7 @@ namespace TestNamespace
                 GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "RC2"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5352UseRC2CryptoServiceProviderInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1485,7 +1486,7 @@ namespace TestNamespace
                 GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "d", "RC2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5352CreateObjectFromRC2DerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -1544,7 +1545,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 23, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "RC2"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1593,10 +1594,10 @@ End Namespace
                         GetBasicResultAt(6, 14, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "RC2"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCreateInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1626,7 +1627,7 @@ End Namespace",
                 GetBasicResultAt(6, 23, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCreateInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1657,7 +1658,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetTripleDES", "TripleDES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCreateInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1681,7 +1682,7 @@ End Namespace",
                 GetBasicResultAt(5, 37, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateDES", "TripleDES"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCreateInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1700,7 +1701,7 @@ namespace TestNamespace
                 GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCreateInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1726,7 +1727,7 @@ End Namespace",
                 GetBasicResultAt(6, 28, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "TripleDES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCryptoServiceProviderInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1755,7 +1756,7 @@ End Module",
                 GetBasicResultAt(6, 24, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCryptoServiceProviderInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1786,7 +1787,7 @@ End Namespace",
                 GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetDES", "TripleDES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCryptoServiceProviderInFieldDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1810,7 +1811,7 @@ End Namespace",
                 GetBasicResultAt(5, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateDES", "TripleDES"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCryptoServiceProviderInLambdaExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1829,7 +1830,7 @@ namespace TestNamespace
                 GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"));
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5353TripleDESCryptoServiceProviderInAnonymousMethodExpressionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -1845,7 +1846,7 @@ namespace TestNamespace
                 GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "TripleDES"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5353CreateObjectFromTripleDESDerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -1906,7 +1907,7 @@ namespace TestNamespace
                         GetCSharpResultAt(11, 13, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -1959,10 +1960,10 @@ End Namespace
                         GetBasicResultAt(7, 4, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "TripleDES"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160ManagedInMethodDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -1985,7 +1986,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2002,10 +2003,10 @@ End Module",
                 {
                     GetBasicResultAt(6, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160ManagedInGetDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2027,7 +2028,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2047,10 +2048,10 @@ End Namespace",
                 {
                     GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160ManagedInFieldDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2069,7 +2070,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2086,10 +2087,10 @@ End Namespace
                 {
                     GetBasicResultAt(5, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160ManagedInLambdaExpressionAsync()
         {
             await new VerifyCS.Test
@@ -2112,10 +2113,10 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160ManagedInAnonymousMethodExpressionAsync()
         {
             await new VerifyCS.Test
@@ -2135,10 +2136,10 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160CreateInMethodDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2161,7 +2162,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2179,10 +2180,10 @@ End Namespace",
                 {
                     GetBasicResultAt(6, 29, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160CreateInGetDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2204,7 +2205,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2224,10 +2225,10 @@ End Namespace",
                 {
                     GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160CreateInFieldDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2246,7 +2247,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(7, 38, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2262,10 +2263,10 @@ End Namespace",
                 {
                     GetBasicResultAt(5, 43, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateRIPEMD160", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160CreateInLambdaExpressionAsync()
         {
             await new VerifyCS.Test
@@ -2288,10 +2289,10 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350RIPEMD160CreateInAnonymousMethodExpressionAsync()
         {
             await new VerifyCS.Test
@@ -2311,7 +2312,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2328,10 +2329,10 @@ End Namespace",
                 {
                     GetBasicResultAt(6, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "RIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350HMACRIPEMD160InMethodDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2354,7 +2355,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2372,10 +2373,10 @@ End Namespace",
                 {
                     GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350HMACRIPEMD160InGetDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2397,7 +2398,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(9, 26, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2417,10 +2418,10 @@ End Namespace",
                 {
                     GetBasicResultAt(7, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "get_GetHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350HMACRIPEMD160InFieldDeclarationAsync()
         {
             await new VerifyCS.Test
@@ -2439,7 +2440,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(7, 45, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2455,10 +2456,10 @@ End Namespace",
                 {
                     GetBasicResultAt(5, 34, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "privateHMARIPEMD160", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5350HMACRIPEMD160InLambdaExpressionAsync()
         {
             await new VerifyCS.Test
@@ -2481,10 +2482,10 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(10, 36, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5350HMACRIPEMD160InAnonymousMethodExpressionAsync()
         {
             await new VerifyCS.Test
@@ -2504,10 +2505,10 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(8, 31, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "d", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350CreateObjectFromRIPEMD160DerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -2562,7 +2563,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2608,10 +2609,10 @@ End Namespace"
                         GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350CreateObjectFromRIPEMD160ManagedDerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -2666,7 +2667,7 @@ namespace TestNamespace
                         GetCSharpResultAt(10, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2712,10 +2713,10 @@ End Namespace
                         GetBasicResultAt(6, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "RIPEMD160"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5350CreateObjectFromHMACRIPEMD160DerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -2740,7 +2741,7 @@ namespace TestNamespace
                 {
                     GetCSharpResultAt(12, 25, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -2762,10 +2763,10 @@ End Namespace",
                 {
                     GetBasicResultAt(10, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseWeakCryptographyRule, "TestMethod", "HMACRIPEMD160"),
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5356DSACreateSignatureInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2795,7 +2796,7 @@ End Module",
                 GetBasicResultAt(7, 16, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5356UseDSACreateSignatureInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2830,7 +2831,7 @@ End Class",
                 GetBasicResultAt(9, 11, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_MyProperty", "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5356DSASignatureFormatterInMethodDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2865,7 +2866,7 @@ End Namespace",
                 GetBasicResultAt(8, 23, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5356UseDSACreateSignatureFormatterInGetDeclarationAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -2906,7 +2907,7 @@ End Class",
                 GetBasicResultAt(11, 12, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "get_MyProperty", "DSA"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5356CreateSignatureFromDSADerivedClassAsync()
         {
             await new VerifyCS.Test
@@ -2982,7 +2983,7 @@ namespace TestNamespace
                         GetCSharpResultAt(11, 13, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DSA"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -3044,10 +3045,10 @@ End Namespace"
                         GetBasicResultAt(7, 4, DoNotUseInsecureCryptographicAlgorithmsAnalyzer.DoNotUseBrokenCryptographyRule, "TestMethod", "DSA"),
                     }
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5357RijndaelManagedInMethodDeclarationShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3076,7 +3077,7 @@ End Module"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5357RijndaelManagedInGetDeclarationShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3107,7 +3108,7 @@ End Namespace"
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5357RijndaelManagedInFieldDeclarationShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3131,7 +3132,7 @@ End Namespace"
             );
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5357RijndaelManagedInLambdaExpressionShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3150,7 +3151,7 @@ namespace TestNamespace
             );
         }
         //No VB
-        [Fact]
+        [TestMethod]
         public async Task CA5357RijndaelManagedInAnonymousMethodExpressionShouldNotGenerateDiagnosticsAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(@"
@@ -3166,7 +3167,7 @@ namespace TestNamespace
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA5357CreateObjectFromRijndaelDerivedClassShouldNotGenerateDiagnosticsAsync()
         {
             await new VerifyCS.Test
@@ -3221,7 +3222,7 @@ namespace TestNamespace
 }"
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
 
             await new VerifyVB.Test
             {
@@ -3265,7 +3266,7 @@ Namespace TestNamespace
 End Namespace"
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

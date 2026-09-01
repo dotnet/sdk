@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeAnalysis.Testing.EmptyDiagnosticAnalyzer, // Diagnostic is from the compiler
     Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpOverrideGetHashCodeOnOverridingEqualsFixer>;
@@ -12,9 +12,10 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class OverrideGetHashCodeOnOverridingEqualsFixerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CS0659Async()
         {
             await new VerifyCS.Test
@@ -57,10 +58,10 @@ class C
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CS0659_SimplifiedAsync()
         {
             await new VerifyCS.Test
@@ -107,10 +108,10 @@ class C
                         return solution.WithProjectCompilationOptions(projectId, compilationOptions);
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA2218Async()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -133,7 +134,7 @@ End Class
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Basic_CA2218_SimplifiedAsync()
         {
             await VerifyVB.VerifyCodeFixAsync(@"
@@ -155,6 +156,106 @@ Class C
 
     Public Overrides Function GetHashCode() As Integer
         Throw New NotImplementedException()
+    End Function
+End Class
+");
+        }
+
+        [TestMethod]
+        public async Task CSharp_NestedTypes_FixAllOverridesGetHashCodeOnBothAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources =
+                    {
+                        @"
+class {|CS0659:C|}
+{
+    public override bool Equals(object obj) => true;
+
+    class {|CS0659:Nested|}
+    {
+        public override bool Equals(object obj) => true;
+    }
+}
+",
+                    },
+                },
+                FixedState =
+                {
+                    Sources =
+                    {
+                        @"
+class C
+{
+    public override bool Equals(object obj) => true;
+
+    class Nested
+    {
+        public override bool Equals(object obj) => true;
+
+        public override int GetHashCode()
+        {
+            throw new System.NotImplementedException();
+        }
+    }
+
+    public override int GetHashCode()
+    {
+        throw new System.NotImplementedException();
+    }
+}
+",
+                    },
+                },
+                SolutionTransforms =
+                {
+                    (solution, projectId) =>
+                    {
+                        var compilationOptions = solution.GetProject(projectId).CompilationOptions;
+                        compilationOptions = compilationOptions.WithGeneralDiagnosticOption(ReportDiagnostic.Error);
+                        return solution.WithProjectCompilationOptions(projectId, compilationOptions);
+                    },
+                },
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task Basic_NestedTypes_FixAllOverridesGetHashCodeOnBothAsync()
+        {
+            await VerifyVB.VerifyCodeFixAsync(@"
+Class [|C|]
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
+
+    Class [|Nested|]
+        Public Overrides Function Equals(o As Object) As Boolean
+            Return True
+        End Function
+    End Class
+End Class
+",
+@"
+Class C
+    Public Overrides Function Equals(o As Object) As Boolean
+        Return True
+    End Function
+
+    Class Nested
+        Public Overrides Function Equals(o As Object) As Boolean
+            Return True
+        End Function
+
+        Public Overrides Function GetHashCode() As Integer
+            Throw New System.NotImplementedException()
+        End Function
+    End Class
+
+    Public Overrides Function GetHashCode() As Integer
+        Throw New System.NotImplementedException()
     End Function
 End Class
 ");

@@ -1,8 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
     <TargetFramework>$(NetCurrent)</TargetFramework>
-    <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <Nullable>disable</Nullable>
     <CentralPackageTransitivePinningEnabled>false</CentralPackageTransitivePinningEnabled>
@@ -13,6 +12,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis" VersionOverride="$(MicrosoftCodeAnalysisPackageVersion)" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" VersionOverride="$(MicrosoftCodeAnalysisCSharpPackageVersion)" />
+    <PackageReference Include="Combinatorial.MSTest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Using Include="Combinatorial.MSTest" />
+    <!-- Test.Utilities defines its own WorkItemAttribute(int, string); alias it so the unqualified
+         [WorkItem(...)] usages bind to it instead of MSTest's WorkItemAttribute(int). -->
+    <Using Include="Test.Utilities.WorkItemAttribute" Alias="WorkItemAttribute" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,7 +27,6 @@
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.NetAnalyzers\Microsoft.CodeAnalysis.NetAnalyzers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.CSharp.NetAnalyzers\Microsoft.CodeAnalysis.CSharp.NetAnalyzers.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers\Microsoft.CodeAnalysis.VisualBasic.NetAnalyzers.vbproj" />
-    <ProjectReference Include="$(RepoRoot)test\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
   </ItemGroup>
 
 </Project>
