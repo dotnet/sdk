@@ -33,6 +33,9 @@ public sealed class RunFileTestFixture
 
             RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
 
+            // `dotnet run -` falls back to project-based run when the working directory contains a project.
+            // Use a stable project-free directory because other tests can temporarily change the
+            // process-wide current directory.
             new DotnetCommand(log, "run", "-")
                 .WithWorkingDirectory(RunFileTestBase.OutOfTreeBaseDirectory)
                 .WithStandardInput("""
