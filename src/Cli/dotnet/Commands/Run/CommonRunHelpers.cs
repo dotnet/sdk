@@ -138,7 +138,8 @@ internal static class CommonRunHelpers
         string? launchProfile,
         bool noLaunchProfile,
         bool reportUsingLaunchSettings,
-        Action<string, bool> report)
+        Action<string, bool> report,
+        Func<string, string>? expandMSBuildProperty = null)
     {
         if (noLaunchProfile || projectOrEntryPointFilePath is null)
         {
@@ -159,7 +160,7 @@ internal static class CommonRunHelpers
             report(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath), true);
         }
 
-        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile);
+        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, expandMSBuildProperty);
     }
 
     /// <summary>

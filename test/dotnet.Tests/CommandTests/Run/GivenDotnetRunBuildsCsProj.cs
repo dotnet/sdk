@@ -983,6 +983,19 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
                 .WithSource();
+            string launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            File.WriteAllText(
+                launchSettingsPath,
+                File.ReadAllText(launchSettingsPath).Replace(
+                    "\"applicationUrl\": \"http://localhost:5000\"",
+                    "\"applicationUrl\": \"$(LaunchApplicationUrl)\""));
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchApplicationUrl>http://localhost:5001</LaunchApplicationUrl>
+                  </PropertyGroup>
+                </Project>
+                """);
 
             new DotnetCommand(Log, "run")
                .WithWorkingDirectory(testInstance.Path)
@@ -990,7 +1003,7 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Should()
                .Pass()
                .And
-               .HaveStdOutContaining("env: ASPNETCORE_URLS=http://localhost:5000");
+               .HaveStdOutContaining("env: ASPNETCORE_URLS=http://localhost:5001");
         }
 
         [TestMethod]

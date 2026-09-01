@@ -195,4 +195,74 @@ public class LaunchSettingsParserTests
             ("VAR2", "ENV_VALUE2")
         ], model.EnvironmentVariables.OrderBy(e => e.Key).Select(e => (e.Key, e.Value)));
     }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Executable()
+    {
+        string root = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        string launchSettingsPath = Path.Combine(root, "Properties", "launchSettings.json");
+        var properties = new Dictionary<string, string>
+        {
+            ["$(Executable)"] = "tool",
+            ["$(Argument)"] = "argument",
+            ["$(WorkingDirectory)"] = root,
+            ["$(EnvironmentValue)"] = "environment",
+        };
+
+        var settings = ExecutableLaunchProfileParser.Instance.ParseProfile(
+            launchSettingsPath,
+            "MyProfile",
+            """
+            {
+                "commandName": "Executable",
+                "executablePath": "$(Executable)",
+                "commandLineArgs": "$(Argument)",
+                "workingDirectory": "$(WorkingDirectory)",
+                "environmentVariables": {
+                    "VALUE": "$(EnvironmentValue)"
+                }
+            }
+            """,
+            value => properties[value]);
+
+        var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(settings.Profile);
+        Assert.AreEqual("tool", model.ExecutablePath);
+        Assert.AreEqual("argument", model.CommandLineArgs);
+        Assert.AreEqual(root, model.WorkingDirectory);
+        Assert.AreEqual("environment", model.EnvironmentVariables["VALUE"]);
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project()
+    {
+        var properties = new Dictionary<string, string>
+        {
+            ["$(Argument)"] = "argument",
+            ["$(LaunchUrl)"] = "path",
+            ["$(ApplicationUrl)"] = "https://localhost:5001",
+            ["$(EnvironmentValue)"] = "environment",
+        };
+
+        var settings = ProjectLaunchProfileParser.Instance.ParseProfile(
+            "launchSettings.json",
+            "MyProfile",
+            """
+            {
+                "commandName": "Project",
+                "commandLineArgs": "$(Argument)",
+                "launchUrl": "$(LaunchUrl)",
+                "applicationUrl": "$(ApplicationUrl)",
+                "environmentVariables": {
+                    "VALUE": "$(EnvironmentValue)"
+                }
+            }
+            """,
+            value => properties[value]);
+
+        var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(settings.Profile);
+        Assert.AreEqual("argument", model.CommandLineArgs);
+        Assert.AreEqual("path", model.LaunchUrl);
+        Assert.AreEqual("https://localhost:5001", model.ApplicationUrl);
+        Assert.AreEqual("environment", model.EnvironmentVariables["VALUE"]);
+    }
 }

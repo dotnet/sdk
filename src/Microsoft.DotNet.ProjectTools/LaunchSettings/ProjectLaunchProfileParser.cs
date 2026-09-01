@@ -15,7 +15,11 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
     {
     }
 
-    public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
+    public override LaunchProfileParseResult ParseProfile(
+        string launchSettingsPath,
+        string? launchProfileName,
+        string json,
+        Func<string, string>? expandMSBuildProperty = null)
     {
         var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ProjectLaunchProfile);
         if (profile == null)
@@ -26,12 +30,12 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
         return LaunchProfileParseResult.Success(new ProjectLaunchProfile
         {
             LaunchProfileName = launchProfileName,
-            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, expandMSBuildProperty),
             LaunchBrowser = profile.LaunchBrowser,
-            LaunchUrl = profile.LaunchUrl,
-            ApplicationUrl = profile.ApplicationUrl,
+            LaunchUrl = profile.LaunchUrl is null ? null : ExpandVariables(profile.LaunchUrl, expandMSBuildProperty),
+            ApplicationUrl = profile.ApplicationUrl is null ? null : ExpandVariables(profile.ApplicationUrl, expandMSBuildProperty),
             DotNetRunMessages = profile.DotNetRunMessages,
-            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables),
+            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, expandMSBuildProperty),
         });
     }
 }

@@ -640,7 +640,13 @@ internal static class SolutionAndProjectUtility
         }
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(
+            Path.GetDirectoryName(projectFullPath)!,
+            Path.GetFileNameWithoutExtension(projectFullPath),
+            project.GetPropertyValue(ProjectProperties.AppDesignerFolder),
+            buildOptions,
+            profileName: null,
+            project.ExpandString);
 
         var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
             runProperties.RuntimeIdentifier,
@@ -713,7 +719,13 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static LaunchProfile? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
+    private static LaunchProfile? TryGetLaunchProfileSettings(
+        string projectDirectory,
+        string projectNameWithoutExtension,
+        string appDesignerFolder,
+        BuildOptions buildOptions,
+        string? profileName,
+        Func<string, string> expandMSBuildProperty)
     {
         if (buildOptions.NoLaunchProfile)
         {
@@ -748,7 +760,7 @@ internal static class SolutionAndProjectUtility
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
+        var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName, expandMSBuildProperty);
         if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());

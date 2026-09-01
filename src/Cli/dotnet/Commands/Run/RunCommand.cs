@@ -7,7 +7,6 @@ using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Text.RegularExpressions;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
 using Microsoft.Build.Execution;
@@ -27,8 +26,6 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 [RequiresDynamicCode("Uses MSBuild Object Model types, which are not AOT-safe")]
 public class RunCommand
 {
-    private static readonly Regex s_msBuildPropertyRegex = new(@"\$\((?!\[)(?<token>[^\)]+)\)", RegexOptions.IgnoreCase);
-
     public bool NoBuild { get; }
 
     /// <summary>
@@ -417,12 +414,35 @@ public class RunCommand
     }
 
     internal LaunchProfileParseResult ReadLaunchProfileSettings()
-        => CommonRunHelpers.ReadLaunchProfile(
-            ReadCodeFromStdin ? null : ProjectFileFullPath ?? EntryPointFileFullPath!,
-            LaunchProfile,
-            NoLaunchProfile,
-            reportUsingLaunchSettings: !RunCommandVerbosity.IsQuiet(),
-            static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message));
+    {
+        IDisposable? environmentScope = null;
+        ProjectInstance? project = null;
+        try
+        {
+            return CommonRunHelpers.ReadLaunchProfile(
+                ReadCodeFromStdin ? null : ProjectFileFullPath ?? EntryPointFileFullPath!,
+                LaunchProfile,
+                NoLaunchProfile,
+                reportUsingLaunchSettings: !RunCommandVerbosity.IsQuiet(),
+                static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message),
+                ExpandMSBuildProperty);
+        }
+        finally
+        {
+            environmentScope?.Dispose();
+        }
+
+        string ExpandMSBuildProperty(string property)
+        {
+            environmentScope ??= MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
+            project ??= EvaluateProject(
+                ProjectFileFullPath,
+                EntryPointFileFullPath is null ? null : CreateProjectBuilder().CreateProjectInstance,
+                MSBuildArgs,
+                binaryLogger: null);
+            return project.ExpandString(property);
+        }
+    }
 
     private void EnsureProjectIsBuilt(out Func<ProjectCollection, ProjectInstance>? projectFactory, out RunProperties? cachedRunProperties, out VirtualProjectBuildingCommand? projectBuilder, string? intermediateOutputPath, bool hasRuntimeEnvironmentVariableSupport)
     {
@@ -574,33 +594,10 @@ public class RunCommand
 
         if (!NoLaunchProfileArguments && string.IsNullOrEmpty(command.CommandArgs) && launchSettings?.CommandLineArgs != null)
         {
-            command.SetCommandArgs(
-                project is null
-                    ? launchSettings.CommandLineArgs
-                    : s_msBuildPropertyRegex.Replace(launchSettings.CommandLineArgs, match => project.ExpandString(match.Value)));
+            command.SetCommandArgs(launchSettings.CommandLineArgs);
         }
 
         return command;
-
-        static ProjectInstance EvaluateProject(string? projectFilePath, Func<ProjectCollection, ProjectInstance>? projectFactory, MSBuildArgs msbuildArgs, ILogger? binaryLogger)
-        {
-            var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
-            var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
-
-            if (projectFactory != null)
-            {
-                return projectFactory(collection);
-            }
-
-            try
-            {
-                return collection.LoadProject(projectFilePath).CreateProjectInstance();
-            }
-            catch (InvalidProjectFileException e)
-            {
-                throw new GracefulException(string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, projectFilePath), e);
-            }
-        }
 
         static void ValidatePreconditions(ProjectInstance project)
         {
@@ -684,6 +681,30 @@ public class RunCommand
             }
 
             return hasRuntimeEnvironmentVariableSupport;
+        }
+    }
+
+    private static ProjectInstance EvaluateProject(
+        string? projectFilePath,
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        MSBuildArgs msbuildArgs,
+        ILogger? binaryLogger)
+    {
+        var globalProperties = CommonRunHelpers.GetGlobalPropertiesFromArgs(msbuildArgs);
+        var collection = new ProjectCollection(globalProperties: globalProperties, loggers: binaryLogger is null ? null : [binaryLogger], toolsetDefinitionLocations: ToolsetDefinitionLocations.Default);
+
+        if (projectFactory != null)
+        {
+            return projectFactory(collection);
+        }
+
+        try
+        {
+            return collection.LoadProject(projectFilePath).CreateProjectInstance();
+        }
+        catch (InvalidProjectFileException e)
+        {
+            throw new GracefulException(string.Format(CliCommandStrings.RunCommandSpecifiedFileIsNotAValidProject, projectFilePath), e);
         }
     }
 

@@ -71,7 +71,10 @@ public static class LaunchSettings
         return null;
     }
 
-    internal static LaunchProfileParseResult ReadProfileSettingsFromFile(string launchSettingsPath, string? profileName = null)
+    internal static LaunchProfileParseResult ReadProfileSettingsFromFile(
+        string launchSettingsPath,
+        string? profileName = null,
+        Func<string, string>? expandMSBuildProperty = null)
     {
         try
         {
@@ -160,7 +163,7 @@ public static class LaunchSettings
                     return LaunchProfileParseResult.Failure(string.Format(Resources.LaunchProfileHandlerCannotBeLocated, commandName));
                 }
 
-                return provider.ParseProfile(launchSettingsPath, selectedProfileName, profileObject.GetRawText());
+                return provider.ParseProfile(launchSettingsPath, selectedProfileName, profileObject.GetRawText(), expandMSBuildProperty);
             }
         }
         catch (Exception ex) when (ex is JsonException or IOException)

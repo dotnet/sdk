@@ -16,7 +16,11 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
     {
     }
 
-    public override LaunchProfileParseResult ParseProfile(string launchSettingsPath, string? launchProfileName, string json)
+    public override LaunchProfileParseResult ParseProfile(
+        string launchSettingsPath,
+        string? launchProfileName,
+        string json,
+        Func<string, string>? expandMSBuildProperty = null)
     {
         var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ExecutableLaunchProfile);
         if (profile == null)
@@ -24,7 +28,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
             return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
-        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, out var workingDirectory, out var error))
+        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, expandMSBuildProperty, out var workingDirectory, out var error))
         {
             return LaunchProfileParseResult.Failure(error);
         }
@@ -32,15 +36,20 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
         return LaunchProfileParseResult.Success(new ExecutableLaunchProfile
         {
             LaunchProfileName = launchProfileName,
-            ExecutablePath = ExpandVariables(profile.ExecutablePath),
-            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs),
+            ExecutablePath = ExpandVariables(profile.ExecutablePath, expandMSBuildProperty),
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, expandMSBuildProperty),
             WorkingDirectory = workingDirectory,
             DotNetRunMessages = profile.DotNetRunMessages,
-            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables),
+            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, expandMSBuildProperty),
         });
     }
 
-    private static bool TryParseWorkingDirectory(string launchSettingsPath, string? value, out string? workingDirectory, [NotNullWhen(false)] out string? error)
+    private static bool TryParseWorkingDirectory(
+        string launchSettingsPath,
+        string? value,
+        Func<string, string>? expandMSBuildProperty,
+        out string? workingDirectory,
+        [NotNullWhen(false)] out string? error)
     {
         if (value == null)
         {
@@ -49,7 +58,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
             return true;
         }
 
-        var expandedValue = ExpandVariables(value);
+        var expandedValue = ExpandVariables(value, expandMSBuildProperty);
 
         try
         {
