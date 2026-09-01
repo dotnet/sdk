@@ -37,10 +37,10 @@ public class DigestUtilsTests
     [DataRow("", "does not match expected pattern")]
     [DataRow("md5:5b0bcabd1ed22e9fb1310cf6", "Unsupported digest algorithm 'md5'. Supported algorithms: sha256.")]
     [DataRow("sha256:abc", "encoded value does not match expected pattern for algorithm 'sha256'")]
-    public void ValidateDigestFormat_ThrowsDetailedError(string digest, string expectedMessage)
+    public void ValidateSupportedDigestFormat_ThrowsDetailedError(string digest, string expectedMessage)
     {
         InvalidDigestException exception = Assert.ThrowsExactly<InvalidDigestException>(() =>
-            DigestUtils.ValidateDigestFormat(digest, out _, out _));
+            DigestUtils.ValidateSupportedDigestFormat(digest, out _, out _));
 
         Assert.Contains(expectedMessage, exception.Message);
     }

@@ -749,18 +749,18 @@ public class RegistryTests : IDisposable
     [TestMethod]
     public async Task GetManifestAsync_ThrowsWhenContentDoesNotMatchHeaderDigest()
     {
-        const string reference = "latest";
-        string digest = "sha256:" + new string('a', 64);
+        const string tag = "latest";
+        string dockerContentDigest = "sha256:" + new string('a', 64);
         DefaultManifestOperations manifestOperations = CreateManifestOperations(
             """{"schemaVersion":2}""",
-            digest,
+            dockerContentDigest,
             nameof(GetManifestAsync_ThrowsWhenContentDoesNotMatchHeaderDigest),
             out HttpClient client);
 
         using (client)
         {
             await Assert.ThrowsExactlyAsync<InvalidDigestException>(() =>
-                manifestOperations.GetAsync("testRepo", reference, cancellationToken: default));
+                manifestOperations.GetAsync("testRepo", tag, cancellationToken: default));
         }
     }
 
@@ -783,7 +783,7 @@ public class RegistryTests : IDisposable
     [TestMethod]
     public async Task GetManifestAsync_ThrowsWhenContentDoesNotMatchRequestedDigest()
     {
-        string digest = "sha256:" + new string('b', 64);
+        string requestedDigest = "sha256:" + new string('b', 64);
         DefaultManifestOperations manifestOperations = CreateManifestOperations(
             """{"schemaVersion":2}""",
             null,
@@ -793,7 +793,48 @@ public class RegistryTests : IDisposable
         using (client)
         {
             await Assert.ThrowsExactlyAsync<InvalidDigestException>(() =>
-                manifestOperations.GetAsync("testRepo", digest, cancellationToken: default));
+                manifestOperations.GetAsync("testRepo", requestedDigest, cancellationToken: default));
+        }
+    }
+
+    [TestMethod]
+    public async Task GetManifestAsync_ThrowsWhenHeaderDigestDoesNotMatchContentForDigestRequest()
+    {
+        const string requestedDigest = "sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855";
+        string dockerContentDigest = "sha256:" + new string('a', 64);
+        DefaultManifestOperations manifestOperations = CreateManifestOperations(
+            "",
+            dockerContentDigest,
+            nameof(GetManifestAsync_ThrowsWhenHeaderDigestDoesNotMatchContentForDigestRequest),
+            out HttpClient client);
+
+        using (client)
+        {
+            InvalidDigestException exception = await Assert.ThrowsExactlyAsync<InvalidDigestException>(() =>
+                manifestOperations.GetAsync("testRepo", requestedDigest, cancellationToken: default));
+
+            Assert.Contains(dockerContentDigest, exception.Message);
+        }
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855")]
+    public async Task GetManifestAsync_ThrowsForUnsupportedRequestedDigest(string? dockerContentDigest)
+    {
+        string requestedDigest = "sha512:" + new string('a', 128);
+        DefaultManifestOperations manifestOperations = CreateManifestOperations(
+            "",
+            dockerContentDigest,
+            nameof(GetManifestAsync_ThrowsForUnsupportedRequestedDigest),
+            out HttpClient client);
+
+        using (client)
+        {
+            InvalidDigestException exception = await Assert.ThrowsExactlyAsync<InvalidDigestException>(() =>
+                manifestOperations.GetAsync("testRepo", requestedDigest, cancellationToken: default));
+
+            Assert.Contains("Unsupported digest algorithm 'sha512'", exception.Message);
         }
     }
 
@@ -858,8 +899,8 @@ public class RegistryTests : IDisposable
     }
 
     private DefaultManifestOperations CreateManifestOperations(
-        string content,
-        string? contentDigest,
+        string manifestContent,
+        string? dockerContentDigest,
         string testName,
         out HttpClient client)
     {
@@ -867,12 +908,12 @@ public class RegistryTests : IDisposable
         {
             var response = new HttpResponseMessage(HttpStatusCode.OK)
             {
-                Content = new StringContent(content)
+                Content = new StringContent(manifestContent)
             };
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue(SchemaTypes.DockerManifestV2);
-            if (contentDigest is not null)
+            if (dockerContentDigest is not null)
             {
-                response.Headers.Add("Docker-Content-Digest", contentDigest);
+                response.Headers.Add("Docker-Content-Digest", dockerContentDigest);
             }
             return response;
         });

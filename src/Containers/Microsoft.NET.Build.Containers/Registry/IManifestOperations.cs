@@ -14,10 +14,10 @@ internal interface IManifestOperations
     public Task<bool> ExistsAsync(string repositoryName, string reference, CancellationToken cancellationToken);
 
     /// <summary>
-    /// Fetches the manifest for <paramref name="reference"/>, validating its content against the
-    /// reference when it is a digest or against the Docker-Content-Digest response header.
+    /// Fetches the manifest for <paramref name="tagOrDigest"/>, validating its content against the
+    /// requested digest and the Docker-Content-Digest response header when either is present.
     /// </summary>
-    public Task<ManifestResponse> GetAsync(string repositoryName, string reference, CancellationToken cancellationToken);
+    public Task<ManifestResponse> GetAsync(string repositoryPath, string tagOrDigest, CancellationToken cancellationToken);
 
     public Task PutAsync(string repositoryName, string reference, string manifestListJson, string mediaType, CancellationToken cancellationToken);
 }

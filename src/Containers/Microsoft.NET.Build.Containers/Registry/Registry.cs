@@ -192,21 +192,21 @@ internal sealed class Registry
     {
         cancellationToken.ThrowIfCancellationRequested();
         ManifestResponse initialManifestResponse = await _registryAPI.Manifest.GetAsync(repositoryName, reference, cancellationToken).ConfigureAwait(false);
-        ReadOnlyMemory<byte> content = initialManifestResponse.Content;
-        string? knownDigest = initialManifestResponse.KnownDigest;
+        ReadOnlyMemory<byte> manifestBytes = initialManifestResponse.Content;
+        string? verifiedDigest = initialManifestResponse.VerifiedDigest;
 
         string? mediaType = initialManifestResponse.MediaType;
         return mediaType switch
         {
             SchemaTypes.DockerManifestV2 or SchemaTypes.OciManifestV1 => await ReadSingleImageAsync(
                 repositoryName,
-                ToManifestV2(content, knownDigest, mediaType),
+                ToManifestV2(manifestBytes, verifiedDigest, mediaType),
                 mediaType,
                 cancellationToken).ConfigureAwait(false),
             SchemaTypes.DockerManifestListV2 => await PickBestImageFromManifestListAsync(
                 repositoryName,
                 reference,
-                JsonSerializer.Deserialize<ManifestListV2>(content.Span),
+                JsonSerializer.Deserialize<ManifestListV2>(manifestBytes.Span),
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -214,7 +214,7 @@ internal sealed class Registry
                 await PickBestImageFromImageIndexAsync(
                 repositoryName,
                 reference,
-                JsonSerializer.Deserialize<ImageIndexV1>(content.Span),
+                JsonSerializer.Deserialize<ImageIndexV1>(manifestBytes.Span),
                 runtimeIdentifier,
                 manifestPicker,
                 cancellationToken).ConfigureAwait(false),
@@ -226,12 +226,12 @@ internal sealed class Registry
                 unknownMediaType))
         };
 
-        ManifestV2 ToManifestV2(ReadOnlyMemory<byte> content, string? knownDigest, string mediaType)
+        ManifestV2 ToManifestV2(ReadOnlyMemory<byte> manifestBytes, string? verifiedDigest, string mediaType)
         {
-            var manifest = JsonSerializer.Deserialize<ManifestV2>(content.Span)
+            var manifest = JsonSerializer.Deserialize<ManifestV2>(manifestBytes.Span)
                 ?? throw new InvalidManifestException(
                     $"Could not deserialize manifest for '{repositoryName}:{reference}' from registry '{BaseUri}' as '{mediaType}'.");
-            manifest.KnownDigest = knownDigest;
+            manifest.KnownDigest = verifiedDigest;
             return manifest;
         }
     }

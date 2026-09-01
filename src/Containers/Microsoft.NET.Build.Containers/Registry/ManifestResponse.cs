@@ -3,4 +3,4 @@
 
 namespace Microsoft.NET.Build.Containers;
 
-internal readonly record struct ManifestResponse(ReadOnlyMemory<byte> Content, string? KnownDigest, string? MediaType);
+internal readonly record struct ManifestResponse(ReadOnlyMemory<byte> Content, string? VerifiedDigest, string? MediaType);

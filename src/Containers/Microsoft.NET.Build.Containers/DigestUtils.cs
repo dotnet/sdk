@@ -64,13 +64,13 @@ internal sealed class DigestUtils
     }
 
     /// <summary>
-    /// Validates a digest string against the OCI grammar and registered algorithms.
+    /// Validates a digest string against the OCI grammar and algorithms supported by this implementation.
     /// </summary>
     /// <remarks>
     /// Does not check the digest against any actual content.
     /// </remarks>
     /// <throws cref="InvalidDigestException">Thrown if the digest is invalid.</throws>
-    internal static void ValidateDigestFormat(string digest, out string algorithm, out ReadOnlySpan<byte> encodedValue)
+    internal static void ValidateSupportedDigestFormat(string digest, out string algorithm, out ReadOnlySpan<byte> encodedValue)
     {
         if (TryParseDigest(digest, out algorithm, out encodedValue, out DigestParseFailure parseFailure))
         {
@@ -100,7 +100,7 @@ internal sealed class DigestUtils
     /// </throws>
     internal static void ValidateDigestContent(string digest, ReadOnlySpan<byte> content)
     {
-        ValidateDigestFormat(digest, out _, out _);
+        ValidateSupportedDigestFormat(digest, out _, out _);
         string actualDigest = FormatSha256Digest(ComputeSha256(content));
         if (!string.Equals(actualDigest, digest, StringComparison.Ordinal))
         {
@@ -118,7 +118,7 @@ internal sealed class DigestUtils
     /// </remarks>
     internal static string GetEncoded(string digest)
     {
-        ValidateDigestFormat(digest, out _, out ReadOnlySpan<byte> encoded);
+        ValidateSupportedDigestFormat(digest, out _, out ReadOnlySpan<byte> encoded);
         return Convert.ToHexStringLower(encoded);
     }
 
@@ -131,7 +131,7 @@ internal sealed class DigestUtils
     /// </remarks>
     internal static ReadOnlySpan<byte> GetEncodedValue(string digest)
     {
-        ValidateDigestFormat(digest, out _, out ReadOnlySpan<byte> encodedValue);
+        ValidateSupportedDigestFormat(digest, out _, out ReadOnlySpan<byte> encodedValue);
         return encodedValue;
     }
 
