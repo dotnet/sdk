@@ -21,6 +21,10 @@ internal sealed class RunFileBuildCacheEntry
     /// </summary>
     private static StringComparer FilePathComparer => StringComparer.Ordinal;
 
+    /// <summary>If the user-provided entry point file path is a symlink, this is the link target.</summary>
+    /// <remarks>Should be required and init-only but https://github.com/dotnet/runtime/issues/92877.</remarks>
+    public string? AliasedEntryPointFilePath { get; set; }
+
     /// <summary>Gets the global properties used for the build.</summary>
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
     public Dictionary<string, string> GlobalProperties { get; }

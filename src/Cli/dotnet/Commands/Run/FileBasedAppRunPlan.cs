@@ -318,13 +318,14 @@ internal static class FileBasedAppRunPlan
         {
             foreach (var implicitBuildFile in s_implicitBuildFiles)
             {
-                string implicitBuildFilePath = Path.Join(directory.FullName, implicitBuildFile.Name);
-                if (File.Exists(implicitBuildFilePath))
+                FileSystemInfo implicitBuildFileInfo = new FileInfo(Path.Join(directory.FullName, implicitBuildFile.Name));
+                implicitBuildFileInfo = ResolveLinkTargetOrSelf(implicitBuildFileInfo);
+                if (implicitBuildFileInfo.Exists)
                 {
-                    collectedPaths.Add(implicitBuildFilePath);
+                    collectedPaths.Add(implicitBuildFileInfo.FullName);
                     if (implicitBuildFile.IsMSBuildFile && exampleMSBuildFile is null)
                     {
-                        exampleMSBuildFile = implicitBuildFilePath;
+                        exampleMSBuildFile = implicitBuildFileInfo.FullName;
                     }
                 }
             }
@@ -381,13 +382,15 @@ internal static class FileBasedAppRunPlan
             return null;
         }
 
+        var originalEntryPointFile = new FileInfo(inputs.EntryPointFileFullPath);
+        var entryPointFile = (FileInfo)ResolveLinkTargetOrSelf(originalEntryPointFile);
         var cacheEntry = new RunFileBuildCacheEntry(inputs.GlobalProperties)
         {
+            AliasedEntryPointFilePath = entryPointFile != originalEntryPointFile ? entryPointFile.FullName : null,
             Directives = inputs.Directives,
             SdkVersion = inputs.SdkVersion,
             RuntimeVersion = inputs.RuntimeVersion,
         };
-        var entryPointFile = new FileInfo(inputs.EntryPointFileFullPath);
         DirectoryInfo? entryPointFileDirectory = entryPointFile.Directory;
         Debug.Assert(entryPointFileDirectory != null);
         CollectImplicitBuildFiles(entryPointFileDirectory, cacheEntry.ImplicitBuildFiles, out string? exampleMSBuildFile);
@@ -491,13 +494,19 @@ internal static class FileBasedAppRunPlan
             return true;
         }
 
+        // Check that aliased entry point file path matches.
+        if (previousCacheEntry.AliasedEntryPointFilePath != cacheEntry.AliasedEntryPointFilePath)
+        {
+            Reporter.Verbose.WriteLine($"Building because aliased entry point file path changed from '{previousCacheEntry.AliasedEntryPointFilePath}' to '{cacheEntry.AliasedEntryPointFilePath}': {successCacheFile.FullName}");
+            return true;
+        }
+
         string? reasonToNotReuseCscArguments = GetReasonToNotReuseCscArguments(cache);
-        FileSystemInfo targetFile = ResolveLinkTargetOrSelf(entryPointFile);
         // Check that the source file is not modified.
         // Only do this here if we cannot reuse CSC arguments (then checking this first is faster); otherwise we need to check implicit build files anyway.
-        if (reasonToNotReuseCscArguments != null && targetFile.LastWriteTimeUtc > buildTimeUtc)
+        if (reasonToNotReuseCscArguments != null && entryPointFile.LastWriteTimeUtc > buildTimeUtc)
         {
-            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + entryPointFile.FullName);
             Reporter.Verbose.WriteLine(reasonToNotReuseCscArguments);
             return true;
         }
@@ -505,7 +514,7 @@ internal static class FileBasedAppRunPlan
         // Check that implicit build files are not modified.
         foreach (string implicitBuildFilePath in previousCacheEntry.ImplicitBuildFiles)
         {
-            FileSystemInfo implicitBuildFileInfo = ResolveLinkTargetOrSelf(new FileInfo(implicitBuildFilePath));
+            FileSystemInfo implicitBuildFileInfo = new FileInfo(implicitBuildFilePath);
             if (!implicitBuildFileInfo.Exists || implicitBuildFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
                 Reporter.Verbose.WriteLine("Building because implicit build file is missing or modified: " + implicitBuildFileInfo.FullName);
@@ -529,7 +538,7 @@ internal static class FileBasedAppRunPlan
         //       (as that is used to determine whether we can reuse CSC args, see `GetReasonToNotReuseCscArguments`).
         foreach (string additionalSourcePath in previousCacheEntry.AdditionalSources)
         {
-            FileSystemInfo additionalSourceFileInfo = ResolveLinkTargetOrSelf(new FileInfo(additionalSourcePath));
+            FileSystemInfo additionalSourceFileInfo = new FileInfo(additionalSourcePath);
             if (!additionalSourceFileInfo.Exists || additionalSourceFileInfo.LastWriteTimeUtc > buildTimeUtc)
             {
                 Reporter.Verbose.WriteLine("Building because additional source file is missing or modified: " + additionalSourceFileInfo.FullName);
@@ -538,10 +547,10 @@ internal static class FileBasedAppRunPlan
         }
 
         // This must remain the last stale-input check before enabling replayed CSC arguments.
-        if (reasonToNotReuseCscArguments == null && targetFile.LastWriteTimeUtc > buildTimeUtc)
+        if (reasonToNotReuseCscArguments == null && entryPointFile.LastWriteTimeUtc > buildTimeUtc)
         {
             cache.CanUseCscViaPreviousArguments = true;
-            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + targetFile.FullName);
+            Reporter.Verbose.WriteLine("Compiling because entry point file is modified: " + entryPointFile.FullName);
             return true;
         }
 
