@@ -104,6 +104,14 @@
       <_AspNet110RuntimePackVersion>11.0.0-preview.7.26381.103</_AspNet110RuntimePackVersion>
       <_AspNet110TargetingPackVersion>11.0.0-preview.7.26381.103</_AspNet110TargetingPackVersion>
 
+      <!-- Keep the current TFM aligned with the packs bundled in the SDK until .NET 12 packs flow. -->
+      <_NET110RuntimePackVersion Condition="'$(_NETCoreAppTargetFrameworkVersion)' == '11.0'">$(MicrosoftNETCoreAppRuntimePackageVersion)</_NET110RuntimePackVersion>
+      <_NET110TargetingPackVersion Condition="'$(_NETCoreAppTargetFrameworkVersion)' == '11.0'">$(MicrosoftNETCoreAppRefPackageVersion)</_NET110TargetingPackVersion>
+      <_WindowsDesktop110RuntimePackVersion Condition="'$(_NETCoreAppTargetFrameworkVersion)' == '11.0'">$(MicrosoftWindowsDesktopAppRuntimePackageVersion)</_WindowsDesktop110RuntimePackVersion>
+      <_WindowsDesktop110TargetingPackVersion Condition="'$(_NETCoreAppTargetFrameworkVersion)' == '11.0'">$(MicrosoftWindowsDesktopAppRefPackageVersion)</_WindowsDesktop110TargetingPackVersion>
+      <_AspNet110RuntimePackVersion Condition="'$(_NETCoreAppTargetFrameworkVersion)' == '11.0'">$(MicrosoftAspNetCoreAppRuntimePackageVersion)</_AspNet110RuntimePackVersion>
+      <_AspNet110TargetingPackVersion Condition="'$(_NETCoreAppTargetFrameworkVersion)' == '11.0'">$(MicrosoftAspNetCoreAppRefPackageVersion)</_AspNet110TargetingPackVersion>
+
       <_NET100RuntimePackVersion>10.0.$(VersionFeature100)</_NET100RuntimePackVersion>
       <_NET100TargetingPackVersion>10.0.$(VersionFeature100)</_NET100TargetingPackVersion>
       <_WindowsDesktop100RuntimePackVersion>10.0.$(VersionFeature100)</_WindowsDesktop100RuntimePackVersion>
