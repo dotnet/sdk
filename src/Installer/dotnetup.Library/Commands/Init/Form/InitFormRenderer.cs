@@ -216,7 +216,7 @@ internal static class InitFormRenderer
         {
             //  Collapse choices into a horizontal line if we don't have enough vertical space
             //  to put each on a separate line
-            foreach (IRenderable row in RenderHorizontalChoices(model, state, field,
+            foreach (IRenderable row in RenderHorizontalChoices(state, field,
                 showArrow, theme))
             {
                 yield return row;
@@ -233,7 +233,7 @@ internal static class InitFormRenderer
     }
 
     private static IEnumerable<IRenderable> RenderHorizontalChoices(
-        InitFormModel model, InitFormState state, FormField field,
+        InitFormState state, FormField field,
         bool showArrow, ThemeColors theme)
     {
         var choices = new List<IRenderable>();

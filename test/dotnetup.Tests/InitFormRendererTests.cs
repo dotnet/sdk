@@ -234,46 +234,46 @@ public class InitFormRendererTests
     }
 
     [TestMethod]
-    public void ExpandedEnvironment_ShowsChoiceHelpInlineWhenConstrained()
+    public void ExpandedAccessMode_ShowsChoiceHelpInlineWhenConstrained()
     {
-        const int height = 14;
-        InitFormModel model = CreateExpandedEnvironment(out InitFormState state);
+        // Windows needs more rows to reach the same compression level because it also shows Everywhere.
+        int height = OperatingSystem.IsWindows() ? 12 : 9;
+        InitFormModel model = CreateExpandedAccessMode(out InitFormState state);
 
         string output = RenderForm(model, state, width: 80, height, out int renderedHeight);
         string[] lines = Lines(output);
 
         lines.Should().Contain(line =>
-            line.Contains("Everywhere", StringComparison.Ordinal)
-            && line.Contains("Modify the system PATH", StringComparison.Ordinal));
-        output.Should().Contain("Sets DOTNET_ROOT");
+            line.Contains("Shell", StringComparison.Ordinal)
+            && line.Contains("Configure your shell profile", StringComparison.Ordinal));
+        output.Should().Contain("Only applications launched from the shell");
         renderedHeight.Should().BeLessThanOrEqualTo(height);
     }
 
     [TestMethod]
-    public void ExpandedEnvironment_HidesDerivedChangesWhenMoreConstrained()
+    public void ExpandedAccessMode_HidesDerivedChangesWhenMoreConstrained()
     {
-        const int height = 9;
-        InitFormModel model = CreateExpandedEnvironment(out InitFormState state);
+        int height = OperatingSystem.IsWindows() ? 9 : 7;
+        InitFormModel model = CreateExpandedAccessMode(out InitFormState state);
 
         string output = RenderForm(model, state, width: 80, height, out int renderedHeight);
 
-        output.Should().Contain("Modify the system PATH");
-        output.Should().NotContain("Adds dotnetup's .NET to the system PATH");
-        output.Should().NotContain("Sets DOTNET_ROOT");
+        output.Should().Contain("Configure your shell profile");
+        output.Should().NotContain("Only applications launched from the shell");
         output.Should().NotContain("Microsoft.PowerShell_profile.ps1");
         renderedHeight.Should().BeLessThanOrEqualTo(height);
     }
 
     [TestMethod]
-    public void ExpandedEnvironment_HidesFieldDescriptionWhenMoreConstrained()
+    public void ExpandedAccessMode_HidesFieldDescriptionWhenMoreConstrained()
     {
-        const int height = 8;
-        InitFormModel model = CreateExpandedEnvironment(out InitFormState state);
+        int height = OperatingSystem.IsWindows() ? 8 : 6;
+        InitFormModel model = CreateExpandedAccessMode(out InitFormState state);
 
         string output = RenderForm(model, state, width: 80, height, out int renderedHeight);
 
         output.Should().NotContain("Controls where");
-        output.Should().Contain("Modify the system PATH");
+        output.Should().Contain("Configure your shell profile");
         renderedHeight.Should().BeLessThanOrEqualTo(height);
     }
 
@@ -344,14 +344,14 @@ public class InitFormRendererTests
         return InitFormModel.Create(defaults, shellProvider: null);
     }
 
-    private static InitFormModel CreateExpandedEnvironment(out InitFormState state)
+    private static InitFormModel CreateExpandedAccessMode(out InitFormState state)
     {
         var installRoot = new DotnetInstallRoot(
             Path.GetTempPath(),
             InstallerUtilities.GetDefaultInstallArchitecture());
         var defaults = new InitFormDefaults(
             installRoot,
-            DotnetAccessMode.Everywhere,
+            DotnetAccessMode.Shell,
             MigrateSystemInstalls: true,
             Migrations: [],
             new DefaultChannelDisplay(ChannelVersionResolver.LatestChannel, GlobalJsonPath: null),
