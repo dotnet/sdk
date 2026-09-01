@@ -441,10 +441,7 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             Assert.IsTrue(AtLeastOneRowIsNotEmpty(tableOutput, "Downloads"), "'Downloads' column contains empty values");
         }
 
-#pragma warning disable xUnit1004
         [TestMethod]
-        [Ignore("https://github.com/dotnet/sdk/issues/39772")]
-#pragma warning restore xUnit1004
         [DataRow("console --search")]
         [DataRow("--search console")]
         [DataRow("search console")]
@@ -466,22 +463,32 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
 
             Assert.IsGreaterThan(2, tableOutput.Count, "At least 2 search hits are expected");
 
-            // rows can be shrunk: ML.NET Console App for Training and ML.NET Console App for Train...
-            // in this case ML.NET Console App for Training < ML.NET Console App for Train...
-            // therefore use custom comparer
-            var nameComparer = new ShrinkAwareCurrentCultureStringComparer();
             var downloadCountComparer = new DownloadCountComparer();
 
-            var orderedRows = tableOutput
+            var rows = tableOutput
                 .Skip(1)
                 .Select(x => new { name = x[0], count = x[5] })
-                .OrderByDescending(x => x.count, downloadCountComparer)
-                .ThenBy(x => x.name, nameComparer);
+                .ToList();
 
-            for (int i = 1; i < tableOutput.Count; i++)
+            for (int i = 0; i < rows.Count; i++)
             {
-                Assert.AreEqual(orderedRows.ElementAt(i - 1).name, tableOutput[i][0]);
-                Assert.AreEqual(orderedRows.ElementAt(i - 1).count, tableOutput[i][5]);
+                for (int j = i + 1; j < rows.Count; j++)
+                {
+                    int downloadCountComparison = downloadCountComparer.Compare(rows[i].count, rows[j].count);
+                    Assert.IsGreaterThanOrEqualTo(
+                        0,
+                        downloadCountComparison,
+                        $"Expected download count '{rows[i].count}' at row {i + 1} to be greater than or equal to '{rows[j].count}' at row {j + 1}.");
+
+                    if (downloadCountComparison == 0
+                        && TryCompareRenderedNames(rows[i].name, rows[j].name, out int nameComparison))
+                    {
+                        Assert.IsLessThanOrEqualTo(
+                            0,
+                            nameComparison,
+                            $"Expected template '{rows[i].name}' at row {i + 1} to be ordered before '{rows[j].name}' at row {j + 1}.");
+                    }
+                }
             }
         }
 
@@ -948,44 +955,24 @@ For more information, run:
             }
         }
 
-        private class ShrinkAwareCurrentCultureStringComparer : IComparer<string>
+        private static bool TryCompareRenderedNames(string left, string right, out int comparison)
         {
-            public int Compare(string? left, string? right)
+            bool leftIsShrunk = left.EndsWith("...");
+            bool rightIsShrunk = right.EndsWith("...");
+
+            if (leftIsShrunk ^ rightIsShrunk)
             {
-                if (string.IsNullOrEmpty(left) && string.IsNullOrEmpty(right))
+                string shrunkName = leftIsShrunk ? left : right;
+                string fullName = leftIsShrunk ? right : left;
+                if (fullName.StartsWith(shrunkName[..^3], StringComparison.CurrentCultureIgnoreCase))
                 {
-                    return 0;
+                    comparison = 0;
+                    return false;
                 }
-
-                if (string.IsNullOrEmpty(left))
-                {
-                    return -1;
-                }
-
-                if (string.IsNullOrEmpty(right))
-                {
-                    return 1;
-                }
-
-                bool leftIsShrunk = left.EndsWith("...");
-                bool rightIsShrunk = right.EndsWith("...");
-                if (!(leftIsShrunk ^ rightIsShrunk))
-                {
-                    // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
-                    return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
-                }
-
-                if (rightIsShrunk && left.StartsWith(right.Substring(0, right.Length - 3), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return -1;
-                }
-                if (leftIsShrunk && right.StartsWith(left.Substring(0, left.Length - 3), StringComparison.CurrentCultureIgnoreCase))
-                {
-                    return -1;
-                }
-                // return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
-                return string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
             }
+
+            comparison = string.Compare(left, right, StringComparison.CurrentCultureIgnoreCase);
+            return true;
         }
 
         private class DownloadCountComparer : IComparer<string>
