@@ -1,0 +1,2 @@
+# Override the root .gitignore to NOT ignore the .vscode folder
+!.vscode/

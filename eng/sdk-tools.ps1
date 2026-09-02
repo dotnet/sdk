@@ -8,12 +8,28 @@
 
 # Maps a System.Runtime.InteropServices.Architecture enum value to the lowercase
 # dotnet RID architecture token (e.g. "x64", "arm64"). Unknown values map to "x64".
+#
+# The SYNC section below is verified by a test to keep the dotnetup script + dotnet sdk engineering script logic in sync.
+# (the get-dotnetup script intentionally does not yet exist in `main` and that script must work standalone)
+# BEGIN-SYNC ArchitectureDetection (keep identical with scripts/get-dotnetup.ps1)
 function ConvertTo-RidArchitecture([System.Runtime.InteropServices.Architecture]$Architecture) {
     switch ($Architecture) {
         ([System.Runtime.InteropServices.Architecture]::Arm64) { return "arm64" }
         ([System.Runtime.InteropServices.Architecture]::X86) { return "x86" }
         ([System.Runtime.InteropServices.Architecture]::Arm) { return "arm" }
         default { return "x64" }
+    }
+}
+
+# Maps a Windows PROCESSOR_ARCHITECTURE/PROCESSOR_ARCHITEW6432 env-var value to the
+# lowercase dotnet RID architecture token. Throws when the value is empty or unrecognized.
+function ConvertTo-RidFromProcessorArchitecture([string]$ProcessorArchitecture) {
+    switch ($ProcessorArchitecture) {
+        "ARM64" { return "arm64" }
+        "AMD64" { return "x64" }
+        "ARM" { return "arm" }
+        "x86" { return "x86" }
+        default { throw "Unable to determine the machine architecture from the processor architecture ('$ProcessorArchitecture'); it is empty or unrecognized." }
     }
 }
 
@@ -24,10 +40,15 @@ function Get-NativeMachineArchitecture {
         return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::OSArchitecture)
     }
     catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-        return "x64"
+        # OSArchitecture can throw when a shadowing RuntimeInformation type lacks
+        # the property (PSReadLine's polyfill on Windows PowerShell 5.1 under strict mode).
+        # PROCESSOR_ARCHITEW6432 reports the native arch under emulation (e.g. an x64 process on ARM64 Windows).
+        if ([Environment]::OSVersion.Platform -ne 'Win32NT') { throw }
+        $procArch = if ($env:PROCESSOR_ARCHITEW6432) { $env:PROCESSOR_ARCHITEW6432 } else { $env:PROCESSOR_ARCHITECTURE }
+        return ConvertTo-RidFromProcessorArchitecture $procArch
     }
 }
+# END-SYNC ArchitectureDetection
 
 # Detect the current process architecture, which may differ from the native OS
 # architecture when running under emulation (e.g., an x64 process on ARM64).
@@ -36,7 +57,10 @@ function Get-ProcessMachineArchitecture {
         return ConvertTo-RidArchitecture ([System.Runtime.InteropServices.RuntimeInformation]::ProcessArchitecture)
     }
     catch {
-        # Fallback for environments where RuntimeInformation is unavailable
-        return "x64"
+        # See Get-NativeMachineArchitecture: the shadowing is Windows-only, so
+        # rethrow elsewhere; on Windows fall back to PROCESSOR_ARCHITECTURE, which
+        # reflects the (possibly emulated) process arch and cannot be shadowed.
+        if ([Environment]::OSVersion.Platform -ne 'Win32NT') { throw }
+        return ConvertTo-RidFromProcessorArchitecture $env:PROCESSOR_ARCHITECTURE
     }
 }

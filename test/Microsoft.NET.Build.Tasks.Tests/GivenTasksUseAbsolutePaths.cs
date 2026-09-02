@@ -365,6 +365,7 @@ public class GivenTasksUseAbsolutePaths : IDisposable
 
     #endregion
 
+
     #region ResolveOverlappingItemGroupConflicts
 
     [TestMethod]

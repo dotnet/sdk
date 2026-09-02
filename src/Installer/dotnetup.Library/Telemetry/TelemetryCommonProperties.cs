@@ -1,0 +1,221 @@
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+using System.Security.Cryptography;
+using Microsoft.DotNet.Cli.Telemetry;
+
+namespace Microsoft.DotNet.Tools.Bootstrapper.Telemetry;
+
+/// <summary>
+/// Provides common telemetry properties for dotnetup.
+/// </summary>
+internal static class TelemetryCommonProperties
+{
+    private static readonly Lazy<string> s_deviceId = new(GetDeviceId);
+    private static readonly Lazy<bool> s_isCIEnvironment = new(DetectCIEnvironment);
+    private static readonly Lazy<string?> s_llmEnvironment = new(DetectLLMEnvironment);
+    private static readonly Lazy<bool> s_isDevBuild = new(DetectDevBuild);
+    private static readonly Lazy<string> s_dockerContainer = new(DetectDockerContainer);
+
+    /// <summary>
+    /// True when this process is running in a CI environment, as detected by
+    /// <see cref="CIEnvironmentDetectorForTelemetry"/>. Surfaces the existing
+    /// <see cref="s_isCIEnvironment"/> lazy so callers (e.g.
+    /// <see cref="DotnetupTelemetry.IsOneAndDoneEnvironment"/>) can decide
+    /// CI-specific shutdown behavior without re-running the detector.
+    /// </summary>
+    internal static bool IsCIEnvironment => s_isCIEnvironment.Value;
+
+    /// <summary>
+    /// Environment variable to mark telemetry as coming from a dev build.
+    /// </summary>
+    private const string DevBuildEnvVar = "DOTNETUP_DEV_BUILD";
+
+    /// <summary>
+    /// Environment variable used by the .NET CLI to tag the user's telemetry
+    /// profile (mirrored here so dotnetup runs are correlatable with SDK
+    /// runs in the same environment).
+    /// </summary>
+    private const string TelemetryProfileEnvVar = "DOTNET_CLI_TELEMETRY_PROFILE";
+
+    /// <summary>
+    /// Gets common attributes for the OpenTelemetry resource.
+    /// </summary>
+    public static IEnumerable<KeyValuePair<string, object>> GetCommonAttributes(string sessionId)
+    {
+        var attributes = new Dictionary<string, object>
+        {
+            ["session.id"] = sessionId,
+            ["device.id"] = s_deviceId.Value,
+            ["os.type"] = GetOSType(),
+            ["os.platform"] = RuntimeInformation.OSDescription,
+            ["os.version"] = Environment.OSVersion.VersionString,
+            ["os.arch"] = RuntimeInformation.OSArchitecture.ToString(),
+            ["kernel.version"] = GetKernelVersion(),
+            ["process.arch"] = RuntimeInformation.ProcessArchitecture.ToString(),
+            ["runtime.id"] = RuntimeInformation.RuntimeIdentifier,
+            ["output.redirected"] = Console.IsOutputRedirected,
+            ["docker.container"] = s_dockerContainer.Value,
+            ["ci.detected"] = s_isCIEnvironment.Value,
+            ["dotnetup.version"] = GetVersion(),
+            ["dev.build"] = s_isDevBuild.Value
+        };
+
+        // Mirror the .NET CLI's DOTNET_CLI_TELEMETRY_PROFILE (same env var
+        // the SDK's TelemetryCommonProperties stamps as "Telemetry Profile").
+        var telemetryProfile = Environment.GetEnvironmentVariable(TelemetryProfileEnvVar);
+        if (!string.IsNullOrEmpty(telemetryProfile))
+        {
+            attributes["telemetry.profile"] = telemetryProfile;
+        }
+
+        // Add LLM environment if detected (same detection as .NET SDK)
+        var llmEnv = s_llmEnvironment.Value;
+        if (!string.IsNullOrEmpty(llmEnv))
+        {
+            attributes["llm.agent"] = llmEnv;
+        }
+
+        return attributes;
+    }
+
+    /// <summary>
+    /// Hashes a path for privacy-safe telemetry.
+    /// </summary>
+    public static string HashPath(string? path)
+    {
+        if (string.IsNullOrEmpty(path))
+        {
+            return string.Empty;
+        }
+
+        return Hash(path);
+    }
+
+    /// <summary>
+    /// Computes a SHA256 hash of the input string.
+    /// </summary>
+    public static string Hash(string input)
+    {
+        var bytes = Encoding.UTF8.GetBytes(input);
+        var hashBytes = SHA256.HashData(bytes);
+        return Convert.ToHexString(hashBytes).ToLowerInvariant();
+    }
+
+    private static string GetDeviceId()
+    {
+        try
+        {
+            // Reuse the SDK's device ID getter for consistency
+            return DeviceIdGetter.GetDeviceId();
+        }
+        catch
+        {
+            // Fallback to empty string if device ID retrieval fails (consistent with SDK behavior)
+            return string.Empty;
+        }
+    }
+
+    /// <summary>
+    /// Returns a simplified OS family name: "Windows", "macOS", "Linux", or "Unknown".
+    /// Uses RuntimeInformation.IsOSPlatform() so no string-parsing of distro names is needed.
+    /// </summary>
+    private static string GetOSType()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+        {
+            return "Windows";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return "macOS";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return "Linux";
+        }
+
+        return "Unknown";
+    }
+
+    private static bool DetectCIEnvironment()
+    {
+        try
+        {
+            // Reuse the SDK's CI detection
+            var detector = new CIEnvironmentDetectorForTelemetry();
+            return detector.IsCIEnvironment();
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string? DetectLLMEnvironment()
+    {
+        try
+        {
+            // Reuse the SDK's LLM/agent detection
+            var detector = new LLMEnvironmentDetectorForTelemetry();
+            return detector.GetLLMEnvironment();
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string DetectDockerContainer()
+    {
+        try
+        {
+            var detector = new DockerContainerDetectorForTelemetry();
+            return detector.IsDockerContainer().ToString("G");
+        }
+        catch
+        {
+            return IsDockerContainer.Unknown.ToString("G");
+        }
+    }
+
+    /// <summary>
+    /// Returns the OS kernel version string. Same as the SDK's "Kernel Version" property.
+    /// </summary>
+    private static string GetKernelVersion() => RuntimeInformation.OSDescription;
+
+    private static bool DetectDevBuild()
+    {
+        // Check for DOTNETUP_DEV_BUILD environment variable
+        var devBuildValue = Environment.GetEnvironmentVariable(DevBuildEnvVar);
+        var isEnvSet = string.Equals(devBuildValue, "1", StringComparison.Ordinal) ||
+                       string.Equals(devBuildValue, "true", StringComparison.OrdinalIgnoreCase);
+#if DEBUG
+        // Debug builds are always considered dev builds
+        _ = isEnvSet; // suppress unused warning in debug
+        return true;
+#else
+        return isEnvSet;
+#endif
+    }
+
+    internal static string GetVersion()
+    {
+        var version = BuildInfo.Version;
+
+        // For dev builds, append the commit SHA so we can correlate failures to specific commits.
+        // Prod telemetry stays clean (e.g., "10.0.100-alpha"), while dev shows "10.0.100-alpha@abc1234".
+        if (s_isDevBuild.Value)
+        {
+            var commitSha = BuildInfo.CommitSha;
+            if (commitSha != "unknown")
+            {
+                return $"{version}@{commitSha}";
+            }
+        }
+
+        return version;
+    }
+}
