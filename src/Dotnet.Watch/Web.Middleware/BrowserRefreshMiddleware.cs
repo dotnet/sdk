@@ -21,29 +21,18 @@ public sealed class BrowserRefreshMiddleware
     private static readonly MediaTypeHeaderValue s_applicationJsonMediaType = new("application/json");
     private readonly RequestDelegate _next;
     private readonly ILogger<BrowserRefreshMiddleware> _logger;
-    private readonly bool _useLegacyHtmlInjection;
     private string? _dotnetModifiableAssemblies = GetNonEmptyEnvironmentVariableValue("DOTNET_MODIFIABLE_ASSEMBLIES");
     private string? _aspnetcoreBrowserTools = GetNonEmptyEnvironmentVariableValue("__ASPNETCORE_BROWSER_TOOLS");
 
     public BrowserRefreshMiddleware(RequestDelegate next, ILogger<BrowserRefreshMiddleware> logger)
-        : this(next, logger, BrowserToolsEnvironment.LegacyHtmlInjectionEnabled)
-    {
-    }
-
-    internal BrowserRefreshMiddleware(
-        RequestDelegate next,
-        ILogger<BrowserRefreshMiddleware> logger,
-        bool useLegacyHtmlInjection)
     {
         _next = next;
         _logger = logger;
-        _useLegacyHtmlInjection = useLegacyHtmlInjection;
 
         logger.LogDebug(
-            "Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={ModifiableAssemblies}, __ASPNETCORE_BROWSER_TOOLS={BrowserTools}, Legacy HTML injection={LegacyHtmlInjection}",
+            "Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES={ModifiableAssemblies}, __ASPNETCORE_BROWSER_TOOLS={BrowserTools}",
             _dotnetModifiableAssemblies,
-            _aspnetcoreBrowserTools,
-            _useLegacyHtmlInjection);
+            _aspnetcoreBrowserTools);
     }
 
     private static string? GetNonEmptyEnvironmentVariableValue(string name)
@@ -56,7 +45,7 @@ public sealed class BrowserRefreshMiddleware
             AttachWebAssemblyHeaders(context);
             await _next(context);
         }
-        else if (_useLegacyHtmlInjection && IsBrowserDocumentRequest(context))
+        else if (IsBrowserDocumentRequest(context))
         {
             // Use a custom StreamWrapper to rewrite output on Write/WriteAsync
             using var responseStreamWrapper = new ResponseStreamWrapper(context, _logger);

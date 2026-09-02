@@ -43,8 +43,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         var launchConfigurator = browserRefreshServer != null
             ? CreateBrowserToolsLaunchConfigurator(
                 browserRefreshServer,
-                BrowserToolsLaunchFeatures.BrowserRefresh |
-                (managedClients.IsEmpty ? BrowserToolsLaunchFeatures.None : BrowserToolsLaunchFeatures.ManagedHotReload))
+                enableManagedHotReload: !managedClients.IsEmpty)
             : null;
 
         return new HotReloadClients(
@@ -81,15 +80,15 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
     internal virtual IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
         AbstractBrowserRefreshServer browserRefreshServer,
-        BrowserToolsLaunchFeatures features)
+        bool enableManagedHotReload)
         => UsesBrowserToolsProvider
             ? new ForwardingBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer)
-            : CreateLegacyBrowserToolsLaunchConfigurator(browserRefreshServer, features);
+            : CreateLegacyBrowserToolsLaunchConfigurator(browserRefreshServer, enableManagedHotReload);
 
     protected static IBrowserToolsLaunchConfigurator CreateLegacyBrowserToolsLaunchConfigurator(
         AbstractBrowserRefreshServer browserRefreshServer,
-        BrowserToolsLaunchFeatures features)
-        => new HostingStartupBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer, features);
+        bool enableManagedHotReload)
+        => new HostingStartupBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer, enableManagedHotReload);
 
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {

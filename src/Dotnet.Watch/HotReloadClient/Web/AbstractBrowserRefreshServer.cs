@@ -101,14 +101,6 @@ internal abstract class AbstractBrowserRefreshServer(
         logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.EndPoints));
     }
 
-    public void ConfigureLaunchEnvironment(IDictionary<string, string> builder, bool enableHotReload)
-        => new HostingStartupBrowserToolsLaunchConfigurator(
-            middlewareAssemblyPath,
-            this,
-            BrowserToolsLaunchFeatures.BrowserRefresh |
-            (enableHotReload ? BrowserToolsLaunchFeatures.ManagedHotReload : BrowserToolsLaunchFeatures.None))
-            .ConfigureLaunchEnvironment(builder);
-
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.
     /// </summary>

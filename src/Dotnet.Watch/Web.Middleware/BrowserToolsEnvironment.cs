@@ -11,7 +11,6 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
 internal static class BrowserToolsEnvironment
 {
     public const string WebSocketEndpoint = "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT";
-    public const string UseLegacyHtmlInjection = "ASPNETCORE_AUTO_RELOAD_USE_LEGACY_HTML_INJECTION";
     public const string ProviderAddress = "ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS";
 
     public static bool IsLegacy
@@ -34,12 +33,6 @@ internal static class BrowserToolsEnvironment
 
         return address;
     }
-
-    public static bool LegacyHtmlInjectionEnabled
-        => string.Equals(
-            Environment.GetEnvironmentVariable(UseLegacyHtmlInjection),
-            bool.TrueString,
-            StringComparison.OrdinalIgnoreCase);
 
     private static bool IsLoopbackHost(Uri address)
         => string.Equals(address.Host, "localhost", StringComparison.OrdinalIgnoreCase) ||

@@ -31,7 +31,7 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
 
         var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
             server,
-            BrowserToolsLaunchFeatures.BrowserRefresh | BrowserToolsLaunchFeatures.ManagedHotReload);
+            enableManagedHotReload: true);
 
         Assert.IsInstanceOfType<GatewayProxyBrowserToolsLaunchConfigurator>(configurator);
 
@@ -64,7 +64,7 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
 
         var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
             server,
-            BrowserToolsLaunchFeatures.BrowserRefresh | BrowserToolsLaunchFeatures.ManagedHotReload);
+            enableManagedHotReload: true);
 
         Assert.IsInstanceOfType<HostingStartupBrowserToolsLaunchConfigurator>(configurator);
     }
@@ -84,7 +84,7 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
 
         var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
             browserRefreshServer,
-            BrowserToolsLaunchFeatures.BrowserRefresh);
+            enableManagedHotReload: false);
 
         Assert.IsInstanceOfType(configurator, expectedConfiguratorType);
     }
@@ -111,7 +111,7 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
 
         var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
             browserRefreshServer,
-            BrowserToolsLaunchFeatures.BrowserRefresh | BrowserToolsLaunchFeatures.ManagedHotReload);
+            enableManagedHotReload: true);
 
         Assert.IsInstanceOfType(configurator, expectedConfiguratorType);
     }

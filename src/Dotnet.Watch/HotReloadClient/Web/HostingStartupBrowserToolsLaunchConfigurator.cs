@@ -11,22 +11,20 @@ namespace Microsoft.DotNet.HotReload;
 internal sealed class HostingStartupBrowserToolsLaunchConfigurator(
     string middlewareAssemblyPath,
     AbstractBrowserRefreshServer browserRefreshServer,
-    BrowserToolsLaunchFeatures features) : IBrowserToolsLaunchConfigurator
+    bool enableManagedHotReload) : IBrowserToolsLaunchConfigurator
 {
     public void ConfigureLaunchEnvironment(IDictionary<string, string> environment)
     {
         environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", browserRefreshServer.WebSocketEndpoints);
         environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey] = browserRefreshServer.PublicKey;
         environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadVirtualDirectory] = browserRefreshServer.VirtualDirectory;
-        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadUseLegacyHtmlInjection] = bool.TrueString;
-
         environment.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
         environment.InsertListItem(
             MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies,
             Path.GetFileNameWithoutExtension(middlewareAssemblyPath),
             MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
 
-        if (features.HasFlag(BrowserToolsLaunchFeatures.ManagedHotReload))
+        if (enableManagedHotReload)
         {
             environment[MiddlewareEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
         }
