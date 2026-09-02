@@ -26,7 +26,10 @@ namespace Microsoft.DotNet.HotReload;
 /// Sealed WebSocket server using Kestrel.
 /// Uses a request handler delegate for all WebSocket handling.
 /// </summary>
-internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> serverUrls) : IDisposable
+internal sealed class KestrelWebSocketServer(
+    IHost host,
+    ImmutableArray<string> serverUrls,
+    ImmutableArray<string> httpServerUrls) : IDisposable
 {
     private static bool? s_lazyTlsSupported;
 
@@ -35,6 +38,9 @@ internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> 
 
     public ImmutableArray<string> ServerUrls
         => serverUrls;
+
+    public ImmutableArray<string> HttpServerUrls
+        => httpServerUrls;
 
     /// <summary>
     /// Starts the Kestrel WebSocket server.
@@ -64,7 +70,10 @@ internal sealed class KestrelWebSocketServer(IHost host, ImmutableArray<string> 
             .Get<IServerAddressesFeature>()?
             .Addresses ?? [];
 
-        return new KestrelWebSocketServer(host, serverUrls: [.. addresses.Select(GetWebSocketUrl)]);
+        return new KestrelWebSocketServer(
+            host,
+            serverUrls: [.. addresses.Select(GetWebSocketUrl)],
+            httpServerUrls: [.. addresses]);
     }
 
     /// <summary>
