@@ -106,6 +106,7 @@ internal abstract class AbstractBrowserRefreshServer(
             middlewareAssemblyPath,
             this,
             BrowserToolsLaunchFeatures.BrowserRefresh |
+            BrowserToolsLaunchFeatures.LegacyHtmlInjection |
             (enableHotReload ? BrowserToolsLaunchFeatures.ManagedHotReload : BrowserToolsLaunchFeatures.None))
             .ConfigureLaunchEnvironment(builder);
 

@@ -29,6 +29,12 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
+    protected virtual BrowserToolsLaunchFeatures AdditionalBrowserToolsLaunchFeatures
+        => BrowserToolsLaunchFeatures.None;
+
+    internal BrowserToolsLaunchFeatures GetBrowserToolsLaunchFeatures(BrowserToolsLaunchFeatures features)
+        => features | AdditionalBrowserToolsLaunchFeatures;
+
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
     {
         var browserRefreshServer = await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(LaunchingProject, this, cancellationToken);
@@ -40,8 +46,9 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         var launchConfigurator = browserRefreshServer != null
             ? CreateBrowserToolsLaunchConfigurator(
                 browserRefreshServer,
-                BrowserToolsLaunchFeatures.BrowserRefresh |
-                (managedClients.IsEmpty ? BrowserToolsLaunchFeatures.None : BrowserToolsLaunchFeatures.ManagedHotReload))
+                GetBrowserToolsLaunchFeatures(
+                    BrowserToolsLaunchFeatures.BrowserRefresh |
+                    (managedClients.IsEmpty ? BrowserToolsLaunchFeatures.None : BrowserToolsLaunchFeatures.ManagedHotReload)))
             : null;
 
         return new HotReloadClients(
