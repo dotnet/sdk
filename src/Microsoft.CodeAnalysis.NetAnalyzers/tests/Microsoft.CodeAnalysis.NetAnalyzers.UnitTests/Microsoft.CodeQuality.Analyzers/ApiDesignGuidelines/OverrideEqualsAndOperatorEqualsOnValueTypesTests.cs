@@ -72,6 +72,55 @@ public struct EmptyStruct
 ");
         }
 
+        [TestMethod]
+        public async Task CSharpNoDiagnosticForUnionStructAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = """
+                    namespace System.Runtime.CompilerServices
+                    {
+                        public interface IUnion { }
+
+                        [global::System.AttributeUsage(global::System.AttributeTargets.Struct)]
+                        public sealed class UnionAttribute : global::System.Attribute { }
+                    }
+
+                    public union A(int, string);
+                    """,
+                LanguageVersion = LanguageVersion.Preview
+            }.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task CSharpNoDiagnosticForManualUnionStructAsync()
+        {
+            await new VerifyCS.Test
+            {
+                TestCode = """
+                    #nullable enable
+
+                    namespace System.Runtime.CompilerServices
+                    {
+                        public interface IUnion { }
+
+                        [global::System.AttributeUsage(global::System.AttributeTargets.Struct)]
+                        public sealed class UnionAttribute : global::System.Attribute { }
+                    }
+
+                    [System.Runtime.CompilerServices.Union]
+                    public struct A : System.Runtime.CompilerServices.IUnion
+                    {
+                        public A(int value) => Value = value;
+                        public A(string value) => Value = value;
+
+                        public object? Value { get; }
+                    }
+                    """,
+                LanguageVersion = LanguageVersion.Preview
+            }.RunAsync(CancellationToken.None);
+        }
+
         [WorkItem(899, "https://github.com/dotnet/roslyn-analyzers/issues/899")]
         [TestMethod]
         public async Task CSharpNoDiagnosticForEnumeratorsAsync()
