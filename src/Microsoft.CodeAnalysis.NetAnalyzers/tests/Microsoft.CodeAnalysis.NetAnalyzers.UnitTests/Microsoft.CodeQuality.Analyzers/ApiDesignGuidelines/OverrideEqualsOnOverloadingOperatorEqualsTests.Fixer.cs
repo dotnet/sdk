@@ -24,41 +24,41 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
                 {
                     Sources =
                     {
-                        @"
-class {|CS0660:{|CS0661:C|}|}
-{
-    public static bool operator ==(C c1, C c2) => true;
-    public static bool operator !=(C c1, C c2) => false;
-}
-",
+                        """
+                            class {|CS0660:{|CS0661:C|}|}
+                            {
+                                public static bool operator ==(C c1, C c2) => true;
+                                public static bool operator !=(C c1, C c2) => false;
+                            }
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-class {|CS0659:{|CS0661:C|}|}
-{
-    public static bool operator ==(C c1, C c2) => true;
-    public static bool operator !=(C c1, C c2) => false;
+                        """
+                            class {|CS0659:{|CS0661:C|}|}
+                            {
+                                public static bool operator ==(C c1, C c2) => true;
+                                public static bool operator !=(C c1, C c2) => false;
 
-    public override bool Equals(object obj)
-    {
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
+                                public override bool Equals(object obj)
+                                {
+                                    if (ReferenceEquals(this, obj))
+                                    {
+                                        return true;
+                                    }
 
-        if (ReferenceEquals(obj, null))
-        {
-            return false;
-        }
+                                    if (ReferenceEquals(obj, null))
+                                    {
+                                        return false;
+                                    }
 
-        throw new System.NotImplementedException();
-    }
-}
-",
+                                    throw new System.NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 },
                 SolutionTransforms =
@@ -82,45 +82,45 @@ class {|CS0659:{|CS0661:C|}|}
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
+                            using System;
 
-class {|CS0660:{|CS0661:C|}|}
-{
-    public static bool operator ==(C c1, C c2) => true;
-    public static bool operator !=(C c1, C c2) => false;
-}
-",
+                            class {|CS0660:{|CS0661:C|}|}
+                            {
+                                public static bool operator ==(C c1, C c2) => true;
+                                public static bool operator !=(C c1, C c2) => false;
+                            }
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
+                            using System;
 
-class {|CS0659:{|CS0661:C|}|}
-{
-    public static bool operator ==(C c1, C c2) => true;
-    public static bool operator !=(C c1, C c2) => false;
+                            class {|CS0659:{|CS0661:C|}|}
+                            {
+                                public static bool operator ==(C c1, C c2) => true;
+                                public static bool operator !=(C c1, C c2) => false;
 
-    public override bool Equals(object obj)
-    {
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
+                                public override bool Equals(object obj)
+                                {
+                                    if (ReferenceEquals(this, obj))
+                                    {
+                                        return true;
+                                    }
 
-        if (ReferenceEquals(obj, null))
-        {
-            return false;
-        }
+                                    if (ReferenceEquals(obj, null))
+                                    {
+                                        return false;
+                                    }
 
-        throw new NotImplementedException();
-    }
-}
-",
+                                    throw new NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 },
                 SolutionTransforms =
@@ -140,40 +140,40 @@ class {|CS0659:{|CS0661:C|}|}
         {
             await new VerifyVB.Test
             {
-                TestCode = @"
-Class [|C|]
-    Public Shared Operator =(c1 As C, c2 As C) As Boolean
-        Return True
-    End Operator
+                TestCode = """
+                    Class [|C|]
+                        Public Shared Operator =(c1 As C, c2 As C) As Boolean
+                            Return True
+                        End Operator
 
-    Public Shared Operator <>(c1 As C, c2 As C) As Boolean
-        Return False
-    End Operator
-End Class
-",
-                FixedCode = @"
-Class C
-    Public Shared Operator =(c1 As C, c2 As C) As Boolean
-        Return True
-    End Operator
+                        Public Shared Operator <>(c1 As C, c2 As C) As Boolean
+                            Return False
+                        End Operator
+                    End Class
+                    """,
+                FixedCode = """
+                    Class C
+                        Public Shared Operator =(c1 As C, c2 As C) As Boolean
+                            Return True
+                        End Operator
 
-    Public Shared Operator <>(c1 As C, c2 As C) As Boolean
-        Return False
-    End Operator
+                        Public Shared Operator <>(c1 As C, c2 As C) As Boolean
+                            Return False
+                        End Operator
 
-    Public Overrides Function Equals(obj As Object) As Boolean
-        If ReferenceEquals(Me, obj) Then
-            Return True
-        End If
+                        Public Overrides Function Equals(obj As Object) As Boolean
+                            If ReferenceEquals(Me, obj) Then
+                                Return True
+                            End If
 
-        If ReferenceEquals(obj, Nothing) Then
-            Return False
-        End If
+                            If ReferenceEquals(obj, Nothing) Then
+                                Return False
+                            End If
 
-        Throw New System.NotImplementedException()
-    End Function
-End Class
-",
+                            Throw New System.NotImplementedException()
+                        End Function
+                    End Class
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -182,44 +182,44 @@ End Class
         {
             await new VerifyVB.Test
             {
-                TestCode = @"
-Imports System
+                TestCode = """
+                    Imports System
 
-Class [|C|]
-    Public Shared Operator =(c1 As C, c2 As C) As Boolean
-        Return True
-    End Operator
+                    Class [|C|]
+                        Public Shared Operator =(c1 As C, c2 As C) As Boolean
+                            Return True
+                        End Operator
 
-    Public Shared Operator <>(c1 As C, c2 As C) As Boolean
-        Return False
-    End Operator
-End Class
-",
-                FixedCode = @"
-Imports System
+                        Public Shared Operator <>(c1 As C, c2 As C) As Boolean
+                            Return False
+                        End Operator
+                    End Class
+                    """,
+                FixedCode = """
+                    Imports System
 
-Class C
-    Public Shared Operator =(c1 As C, c2 As C) As Boolean
-        Return True
-    End Operator
+                    Class C
+                        Public Shared Operator =(c1 As C, c2 As C) As Boolean
+                            Return True
+                        End Operator
 
-    Public Shared Operator <>(c1 As C, c2 As C) As Boolean
-        Return False
-    End Operator
+                        Public Shared Operator <>(c1 As C, c2 As C) As Boolean
+                            Return False
+                        End Operator
 
-    Public Overrides Function Equals(obj As Object) As Boolean
-        If ReferenceEquals(Me, obj) Then
-            Return True
-        End If
+                        Public Overrides Function Equals(obj As Object) As Boolean
+                            If ReferenceEquals(Me, obj) Then
+                                Return True
+                            End If
 
-        If ReferenceEquals(obj, Nothing) Then
-            Return False
-        End If
+                            If ReferenceEquals(obj, Nothing) Then
+                                Return False
+                            End If
 
-        Throw New NotImplementedException()
-    End Function
-End Class
-",
+                            Throw New NotImplementedException()
+                        End Function
+                    End Class
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -232,68 +232,68 @@ End Class
                 {
                     Sources =
                     {
-                        @"
-class {|CS0660:{|CS0661:C|}|}
-{
-    public static bool operator ==(C c1, C c2) => true;
-    public static bool operator !=(C c1, C c2) => false;
+                        """
+                            class {|CS0660:{|CS0661:C|}|}
+                            {
+                                public static bool operator ==(C c1, C c2) => true;
+                                public static bool operator !=(C c1, C c2) => false;
 
-    class {|CS0660:{|CS0661:Nested|}|}
-    {
-        public static bool operator ==(Nested n1, Nested n2) => true;
-        public static bool operator !=(Nested n1, Nested n2) => false;
-    }
-}
-",
+                                class {|CS0660:{|CS0661:Nested|}|}
+                                {
+                                    public static bool operator ==(Nested n1, Nested n2) => true;
+                                    public static bool operator !=(Nested n1, Nested n2) => false;
+                                }
+                            }
+                            """,
                     },
                 },
                 FixedState =
                 {
                     Sources =
                     {
-                        @"
-class {|CS0659:{|CS0661:C|}|}
-{
-    public static bool operator ==(C c1, C c2) => true;
-    public static bool operator !=(C c1, C c2) => false;
+                        """
+                            class {|CS0659:{|CS0661:C|}|}
+                            {
+                                public static bool operator ==(C c1, C c2) => true;
+                                public static bool operator !=(C c1, C c2) => false;
 
-    class {|CS0659:{|CS0661:Nested|}|}
-    {
-        public static bool operator ==(Nested n1, Nested n2) => true;
-        public static bool operator !=(Nested n1, Nested n2) => false;
+                                class {|CS0659:{|CS0661:Nested|}|}
+                                {
+                                    public static bool operator ==(Nested n1, Nested n2) => true;
+                                    public static bool operator !=(Nested n1, Nested n2) => false;
 
-        public override bool Equals(object obj)
-        {
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
+                                    public override bool Equals(object obj)
+                                    {
+                                        if (ReferenceEquals(this, obj))
+                                        {
+                                            return true;
+                                        }
 
-            if (ReferenceEquals(obj, null))
-            {
-                return false;
-            }
+                                        if (ReferenceEquals(obj, null))
+                                        {
+                                            return false;
+                                        }
 
-            throw new System.NotImplementedException();
-        }
-    }
+                                        throw new System.NotImplementedException();
+                                    }
+                                }
 
-    public override bool Equals(object obj)
-    {
-        if (ReferenceEquals(this, obj))
-        {
-            return true;
-        }
+                                public override bool Equals(object obj)
+                                {
+                                    if (ReferenceEquals(this, obj))
+                                    {
+                                        return true;
+                                    }
 
-        if (ReferenceEquals(obj, null))
-        {
-            return false;
-        }
+                                    if (ReferenceEquals(obj, null))
+                                    {
+                                        return false;
+                                    }
 
-        throw new System.NotImplementedException();
-    }
-}
-",
+                                    throw new System.NotImplementedException();
+                                }
+                            }
+                            """,
                     },
                 },
                 SolutionTransforms =
@@ -313,76 +313,76 @@ class {|CS0659:{|CS0661:C|}|}
         {
             await new VerifyVB.Test
             {
-                TestCode = @"
-Imports System
+                TestCode = """
+                    Imports System
 
-Class [|C|]
-    Public Shared Operator =(c1 As C, c2 As C) As Boolean
-        Return True
-    End Operator
+                    Class [|C|]
+                        Public Shared Operator =(c1 As C, c2 As C) As Boolean
+                            Return True
+                        End Operator
 
-    Public Shared Operator <>(c1 As C, c2 As C) As Boolean
-        Return False
-    End Operator
+                        Public Shared Operator <>(c1 As C, c2 As C) As Boolean
+                            Return False
+                        End Operator
 
-    Class [|Nested|]
-        Public Shared Operator =(n1 As Nested, n2 As Nested) As Boolean
-            Return True
-        End Operator
+                        Class [|Nested|]
+                            Public Shared Operator =(n1 As Nested, n2 As Nested) As Boolean
+                                Return True
+                            End Operator
 
-        Public Shared Operator <>(n1 As Nested, n2 As Nested) As Boolean
-            Return False
-        End Operator
-    End Class
-End Class
-",
-                FixedCode = @"
-Imports System
+                            Public Shared Operator <>(n1 As Nested, n2 As Nested) As Boolean
+                                Return False
+                            End Operator
+                        End Class
+                    End Class
+                    """,
+                FixedCode = """
+                    Imports System
 
-Class C
-    Public Shared Operator =(c1 As C, c2 As C) As Boolean
-        Return True
-    End Operator
+                    Class C
+                        Public Shared Operator =(c1 As C, c2 As C) As Boolean
+                            Return True
+                        End Operator
 
-    Public Shared Operator <>(c1 As C, c2 As C) As Boolean
-        Return False
-    End Operator
+                        Public Shared Operator <>(c1 As C, c2 As C) As Boolean
+                            Return False
+                        End Operator
 
-    Class Nested
-        Public Shared Operator =(n1 As Nested, n2 As Nested) As Boolean
-            Return True
-        End Operator
+                        Class Nested
+                            Public Shared Operator =(n1 As Nested, n2 As Nested) As Boolean
+                                Return True
+                            End Operator
 
-        Public Shared Operator <>(n1 As Nested, n2 As Nested) As Boolean
-            Return False
-        End Operator
+                            Public Shared Operator <>(n1 As Nested, n2 As Nested) As Boolean
+                                Return False
+                            End Operator
 
-        Public Overrides Function Equals(obj As Object) As Boolean
-            If ReferenceEquals(Me, obj) Then
-                Return True
-            End If
+                            Public Overrides Function Equals(obj As Object) As Boolean
+                                If ReferenceEquals(Me, obj) Then
+                                    Return True
+                                End If
 
-            If ReferenceEquals(obj, Nothing) Then
-                Return False
-            End If
+                                If ReferenceEquals(obj, Nothing) Then
+                                    Return False
+                                End If
 
-            Throw New NotImplementedException()
-        End Function
-    End Class
+                                Throw New NotImplementedException()
+                            End Function
+                        End Class
 
-    Public Overrides Function Equals(obj As Object) As Boolean
-        If ReferenceEquals(Me, obj) Then
-            Return True
-        End If
+                        Public Overrides Function Equals(obj As Object) As Boolean
+                            If ReferenceEquals(Me, obj) Then
+                                Return True
+                            End If
 
-        If ReferenceEquals(obj, Nothing) Then
-            Return False
-        End If
+                            If ReferenceEquals(obj, Nothing) Then
+                                Return False
+                            End If
 
-        Throw New NotImplementedException()
-    End Function
-End Class
-",
+                            Throw New NotImplementedException()
+                        End Function
+                    End Class
+                    """,
             }.RunAsync(CancellationToken.None);
         }
     }
