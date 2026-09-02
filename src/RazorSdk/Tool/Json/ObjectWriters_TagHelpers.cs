@@ -200,6 +200,10 @@ internal static partial class ObjectWriters
                         WriteViewComponentMetadata(writer, (ViewComponentMetadata)value);
                         break;
 
+                    case MetadataKind.AssetPath:
+                        WriteAssetPathMetadata(writer, (AssetPathMetadata)value);
+                        break;
+
                     default:
                         Debug.Fail($"Unsupported metadata kind '{value.Kind}'.");
                         break;
@@ -233,6 +237,12 @@ internal static partial class ObjectWriters
                 writer.WriteIfNotNull(nameof(metadata.TypeAttribute), metadata.TypeAttribute);
                 writer.WriteIfNotFalse(nameof(metadata.IsInvariantCulture), metadata.IsInvariantCulture);
                 writer.WriteIfNotNull(nameof(metadata.Format), metadata.Format);
+            }
+
+            static void WriteAssetPathMetadata(JsonDataWriter writer, AssetPathMetadata metadata)
+            {
+                writer.Write(nameof(metadata.Element), metadata.Element);
+                writer.Write(nameof(metadata.Attribute), metadata.Attribute);
             }
 
             static void WriteComponentMetadata(JsonDataWriter writer, ComponentMetadata metadata)
