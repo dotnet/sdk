@@ -106,6 +106,79 @@ public sealed class RunCommandTests : SdkTest
     }
 
     [TestMethod]
+    public void MSBuildPropertyExpansion_Project_UsesPostComputeRunArgumentsValue()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "Properties", "launchSettings.json"), """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "environmentVariables": {
+                    "TEST_VAR1": "$(LaunchEnvironment)"
+                  }
+                }
+              }
+            }
+            """);
+        File.WriteAllText(Path.Combine(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="SetLaunchEnvironment" BeforeTargets="ComputeRunArguments">
+                <PropertyGroup>
+                  <LaunchEnvironment>post-target</LaunchEnvironment>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("TEST_VAR1=<<<post-target>>>");
+    }
+
+    [TestMethod]
+    public void MSBuildPropertyExpansion_Project_IgnoresCommandLineArgsWhenRunArgumentsAreSet()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "Properties", "launchSettings.json"), """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "commandLineArgs": "$([)",
+                  "environmentVariables": {
+                    "TEST_VAR1": "profile-environment"
+                  }
+                }
+              }
+            }
+            """);
+        File.WriteAllText(Path.Combine(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Target Name="SetRunArguments" AfterTargets="ComputeRunArguments">
+                <PropertyGroup>
+                  <RunArguments>target-argument</RunArguments>
+                </PropertyGroup>
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("ARGS=target-argument")
+            .And.HaveStdOutContaining("TEST_VAR1=<<<profile-environment>>>")
+            .And.NotHaveStdErrContaining("could not be applied");
+    }
+
+    [TestMethod]
     public void InvalidMSBuildExpressionInLaunchSettingsDoesNotPreventRun()
     {
         TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
@@ -237,13 +310,52 @@ public sealed class RunCommandTests : SdkTest
             """);
 
         var runCommand = CreateRunCommand(projectPath);
-        var result = runCommand.ReadLaunchProfileSettings();
+        var result = runCommand.ReadLaunchProfileSettings(
+            projectFactory: null,
+            expandExecutableProfile: true);
 
         var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(result.Profile);
         Assert.AreEqual("executable", model.ExecutablePath);
         Assert.AreEqual("expanded-argument", model.CommandLineArgs);
         Assert.AreEqual(Path.Combine(launchSettingsDirectory, "working"), model.WorkingDirectory);
         Assert.AreEqual("expanded-environment", model.EnvironmentVariables["VALUE"]);
+    }
+
+    [TestMethod]
+    public void Executable_MSBuildPropertyExpansion_UsesPostBuildEvaluation()
+    {
+        TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
+            .WithSource();
+
+        File.WriteAllText(Path.Combine(testInstance.Path, "Properties", "launchSettings.json"), """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Executable",
+                  "executablePath": "dotnet",
+                  "commandLineArgs": "$(GeneratedArgument)"
+                }
+              }
+            }
+            """);
+        File.WriteAllText(Path.Combine(testInstance.Path, "Directory.Build.targets"), """
+            <Project>
+              <Import Project="$(BaseIntermediateOutputPath)launch-profile.props"
+                      Condition="Exists('$(BaseIntermediateOutputPath)launch-profile.props')" />
+              <Target Name="GenerateLaunchProfileProperties" BeforeTargets="Build">
+                <WriteLinesToFile
+                  File="$(BaseIntermediateOutputPath)launch-profile.props"
+                  Lines="&lt;Project&gt;&lt;PropertyGroup&gt;&lt;GeneratedArgument&gt;--version&lt;/GeneratedArgument&gt;&lt;/PropertyGroup&gt;&lt;/Project&gt;"
+                  Overwrite="true" />
+              </Target>
+            </Project>
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
     }
 
     [TestMethod]

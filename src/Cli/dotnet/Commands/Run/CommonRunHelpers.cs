@@ -142,7 +142,7 @@ internal static class CommonRunHelpers
         bool noLaunchProfile,
         bool reportUsingLaunchSettings,
         Action<string, bool> report,
-        Func<string, string>? expandMSBuildProperty = null)
+        LaunchProfileParserOptions parserOptions)
     {
         if (noLaunchProfile || projectOrEntryPointFilePath is null)
         {
@@ -163,20 +163,20 @@ internal static class CommonRunHelpers
             report(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath), true);
         }
 
-        return ReadLaunchProfileFromFile(launchSettingsPath, launchProfile, expandMSBuildProperty);
+        return ReadLaunchProfileFromFile(launchSettingsPath, launchProfile, parserOptions);
     }
 
     internal static LaunchProfileParseResult ReadLaunchProfileFromFile(
         string launchSettingsPath,
         string? launchProfile,
-        Func<string, string>? expandMSBuildProperty)
+        LaunchProfileParserOptions parserOptions)
     {
 #if CLI_AOT
-        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, expandMSBuildProperty);
+        return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, parserOptions);
 #else
         try
         {
-            return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, expandMSBuildProperty);
+            return LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, launchProfile, parserOptions);
         }
         catch (InvalidProjectFileException ex)
         {
