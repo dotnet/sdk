@@ -268,7 +268,7 @@ internal static class AotRunCommand
             reportUsingLaunchSettings: true,
             (message, isError) => messages.Add((message, isError)),
             new LaunchProfileParserOptions(
-                ExpandMSBuildProperty: null,
+                EvaluateExpression: null,
                 ExpandProjectProfile: false,
                 ExpandExecutableProfile: false,
                 ExpandCommandLineArgs: false),

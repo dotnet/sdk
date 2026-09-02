@@ -163,10 +163,10 @@ public static class LaunchSettings
                     return LaunchProfileParseResult.Failure(string.Format(Resources.LaunchProfileHandlerCannotBeLocated, commandName));
                 }
 
-                Func<string, string>? getVariableValue = provider switch
+                Func<string, string>? evaluateExpression = provider switch
                 {
-                    ProjectLaunchProfileParser when parserOptions.ExpandProjectProfile => parserOptions.ExpandMSBuildProperty,
-                    ExecutableLaunchProfileParser when parserOptions.ExpandExecutableProfile => parserOptions.ExpandMSBuildProperty,
+                    ProjectLaunchProfileParser when parserOptions.ExpandProjectProfile => parserOptions.EvaluateExpression,
+                    ExecutableLaunchProfileParser when parserOptions.ExpandExecutableProfile => parserOptions.EvaluateExpression,
                     _ => null,
                 };
 
@@ -174,7 +174,7 @@ public static class LaunchSettings
                     launchSettingsPath,
                     selectedProfileName,
                     profileObject.GetRawText(),
-                    getVariableValue,
+                    evaluateExpression,
                     parserOptions.ExpandCommandLineArgs);
             }
         }

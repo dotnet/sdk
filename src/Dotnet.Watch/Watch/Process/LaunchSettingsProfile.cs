@@ -28,7 +28,7 @@ internal sealed class LaunchSettingsProfile
         ProjectRepresentation project,
         string? launchProfileName,
         ILogger logger,
-        Func<string, string> getVariableValue)
+        Func<string, string> evaluateExpression)
     {
         var launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(project.ProjectOrEntryPointFilePath, launchProfileName, (message, isError) =>
         {
@@ -63,7 +63,7 @@ internal sealed class LaunchSettingsProfile
         if (string.IsNullOrEmpty(launchProfileName))
         {
             // Load the default (first) launch profile
-            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(getVariableValue, logger);
+            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(evaluateExpression, logger);
         }
 
         // Load the specified launch profile
@@ -83,16 +83,16 @@ internal sealed class LaunchSettingsProfile
                 logger.LogWarning("Note: Launch profile names are case-sensitive. Did you mean '{ProfileName}'?", caseInsensitiveNamedProfile);
             }
 
-            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(getVariableValue, logger);
+            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(evaluateExpression, logger);
         }
 
         logger.LogDebug("Found named launch profile '{ProfileName}'.", launchProfileName);
         namedProfile.LaunchProfileName = launchProfileName;
-        return namedProfile.WithExpandedVariables(getVariableValue, logger);
+        return namedProfile.WithExpandedVariables(evaluateExpression, logger);
     }
 
     private LaunchSettingsProfile? WithExpandedVariables(
-        Func<string, string> getVariableValue,
+        Func<string, string> evaluateExpression,
         ILogger logger)
     {
         try
@@ -105,7 +105,7 @@ internal sealed class LaunchSettingsProfile
                 LaunchBrowser = LaunchBrowser,
                 LaunchUrl = LaunchUrl is null
                     ? null
-                    : LaunchProfileParser.ExpandVariables(LaunchUrl, getVariableValue),
+                    : LaunchProfileParser.ExpandVariables(LaunchUrl, evaluateExpression),
             };
         }
         catch (InvalidProjectFileException e)

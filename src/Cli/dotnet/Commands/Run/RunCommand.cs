@@ -490,7 +490,7 @@ public class RunCommand
         try
         {
             return read(new LaunchProfileParserOptions(
-                ExpandMSBuildProperty,
+                EvaluateExpression,
                 ExpandProjectProfile: false,
                 ExpandExecutableProfile: expandExecutableProfile,
                 ExpandCommandLineArgs: !NoLaunchProfileArguments && ApplicationArgs.Length == 0));
@@ -500,7 +500,7 @@ public class RunCommand
             environmentScope?.Dispose();
         }
 
-        string ExpandMSBuildProperty(string property)
+        string EvaluateExpression(string expression)
         {
             environmentScope ??= MSBuildForwardingAppWithoutLogging.SetMSBuildRequiredEnvironmentVariables();
             project ??= EvaluateProject(
@@ -508,7 +508,7 @@ public class RunCommand
                 projectFactory ?? (EntryPointFileFullPath is null ? null : CreateProjectBuilder().CreateProjectInstance),
                 MSBuildArgs,
                 binaryLogger: null);
-            return project.ExpandString(property);
+            return project.ExpandString(expression);
         }
     }
 
