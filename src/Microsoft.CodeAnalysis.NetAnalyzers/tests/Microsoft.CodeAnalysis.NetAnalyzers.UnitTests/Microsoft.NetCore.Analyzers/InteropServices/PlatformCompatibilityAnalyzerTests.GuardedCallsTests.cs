@@ -5429,6 +5429,38 @@ class TestType
             await VerifyAnalyzerCSAsync(source, msBuildPlatforms);
         }
 
+        [TestMethod, WorkItem(7665, "https://github.com/dotnet/roslyn-analyzers/issues/7665")]
+        public async Task MultipleCustomGuardsSuppressedByCallsite()
+        {
+            var source = @"
+using System;
+using System.Runtime.Versioning;
+
+[assembly: SupportedOSPlatform(""macos12.0"")]
+[assembly: SupportedOSPlatform(""tvos12.2"")]
+
+partial class TestType
+{
+    void DoSomething()
+    {
+        if (IsAtLeastXcode11)
+        {
+            Console.WriteLine(PerformanceRating);
+        }
+    }
+
+    [SupportedOSPlatform(""macos11.0"")]
+    [SupportedOSPlatform(""tvos13.0"")]
+    public ulong? PerformanceRating { get; private set; }
+
+    [SupportedOSPlatformGuard(""macos11.0"")]
+    [SupportedOSPlatformGuard(""tvos13.0"")]
+    internal static bool IsAtLeastXcode11 => true;
+}";
+
+            await VerifyAnalyzerCSAsync(source, s_msBuildPlatforms);
+        }
+
         private readonly string TargetTypesForTest = @"
 namespace PlatformCompatDemo.SupportedUnupported
 {
