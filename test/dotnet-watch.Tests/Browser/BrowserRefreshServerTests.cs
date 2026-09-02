@@ -57,4 +57,37 @@ public class BrowserRefreshServerTests
 
         AssertEx.SequenceEqual(expected.Order(), envBuilder.OrderBy(e => e.Key).Select(e => $"{e.Key}={e.Value}"));
     }
+
+    [TestMethod]
+    public async Task ConfigureLaunchEnvironmentAsync_InsertsIntoExistingEnvironment()
+    {
+        var middlewarePath = Path.Combine(Path.GetTempPath(), "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
+        var middlewareAssemblyName = Path.GetFileNameWithoutExtension(middlewarePath);
+
+        using var server = new TestBrowserRefreshServer(middlewarePath)
+        {
+            CreateAndStartHostImpl = () => new WebServerHost(new TestListener(), ["http://test.endpoint"], virtualDirectory: "/test/virt/dir")
+        };
+        ((TestLogger)server.Logger).IsEnabledImpl = _ => false;
+        await server.StartAsync(CancellationToken.None);
+
+        var environment = new Dictionary<string, string>
+        {
+            ["DOTNET_STARTUP_HOOKS"] = "existing-hook",
+            ["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"] = "Existing.HostingStartup",
+            ["UNRELATED_SETTING"] = "preserved",
+        };
+
+        server.ConfigureLaunchEnvironment(environment, enableHotReload: false);
+
+        Assert.IsTrue(environment.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
+        AssertEx.SequenceEqual(
+        [
+            "ASPNETCORE_AUTO_RELOAD_VDIR=/test/virt/dir",
+            "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT=http://test.endpoint",
+            $"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES={middlewareAssemblyName};Existing.HostingStartup",
+            $"DOTNET_STARTUP_HOOKS={middlewarePath}{Path.PathSeparator}existing-hook",
+            "UNRELATED_SETTING=preserved",
+        ], environment.OrderBy(entry => entry.Key).Select(entry => $"{entry.Key}={entry.Value}"));
+    }
 }
