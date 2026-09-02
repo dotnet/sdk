@@ -3,6 +3,7 @@
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
@@ -165,6 +166,33 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Assert
             Assert.AreEqual(StatusCodes.Status226IMUsed, context.Response.StatusCode);
+        }
+
+        [TestMethod]
+        public void ConfigureServices_RegistersTagHelperComponent_WhenBrowserToolsAreActive()
+        {
+            var services = new ServiceCollection();
+
+            new HostingStartup().ConfigureServices(services, browserToolsActive: true);
+
+            var descriptors = services
+                .Where(static descriptor => descriptor.ServiceType == typeof(ITagHelperComponent))
+                .ToArray();
+
+            Assert.HasCount(1, descriptors);
+            Assert.AreEqual(typeof(BrowserRefreshTagHelperComponent), descriptors[0].ImplementationType);
+        }
+
+        [TestMethod]
+        public void ConfigureServices_DoesNotRegisterTagHelperComponent_WhenBrowserToolsAreInactive()
+        {
+            var services = new ServiceCollection();
+
+            new HostingStartup().ConfigureServices(services, browserToolsActive: false);
+
+            Assert.DoesNotContain(
+                static descriptor => descriptor.ServiceType == typeof(ITagHelperComponent),
+                services);
         }
 
         private static RequestDelegate GetRequestDelegate(Action<IApplicationBuilder>? configureBuilder = null)

@@ -606,7 +606,24 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             Assert.DoesNotContain("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", responseContent);
         }
 
-        private async Task<string> TestBrowserRefreshMiddleware(int statusCode, string contentType, string content, bool includeHtmlWrapper = true)
+        [TestMethod]
+        public async Task InvokeAsync_DoesNotRewriteHtml_WhenLegacyInjectionIsDisabled()
+        {
+            var responseContent = await TestBrowserRefreshMiddleware(
+                StatusCodes.Status200OK,
+                "text/html",
+                "Test Content",
+                useLegacyHtmlInjection: false);
+
+            Assert.DoesNotContain("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", responseContent);
+        }
+
+        private async Task<string> TestBrowserRefreshMiddleware(
+            int statusCode,
+            string contentType,
+            string content,
+            bool includeHtmlWrapper = true,
+            bool useLegacyHtmlInjection = true)
         {
             // Arrange
             var stream = new MemoryStream();
@@ -642,7 +659,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 {
                     await context.Response.WriteAsync(content, TestContext.CancellationToken);
                 }
-            }, NullLogger<BrowserRefreshMiddleware>.Instance);
+            }, NullLogger<BrowserRefreshMiddleware>.Instance, useLegacyHtmlInjection);
 
             // Act
             await middleware.InvokeAsync(context);
