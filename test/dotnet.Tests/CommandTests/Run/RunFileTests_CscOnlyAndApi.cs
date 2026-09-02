@@ -343,6 +343,17 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         code = code.Replace("v1", "v2");
         File.WriteAllText(targetPath, code);
 
+        // MSBuild isn't detecting the change on Linux (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "v2/Program.cs/linked.cs" : "v1/Program.cs/linked.cs";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
         Build(testInstance, BuildLevel.All, expectedOutput: "v2/Program.cs/linked.cs");
     }
 
@@ -393,10 +404,11 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         }
         else
         {
-            // MSBuild isn't detecting the change (but we are, hence BuildLevel.All),
+            // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
             // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
-            Build(testInstance, BuildLevel.All, expectedOutput: "x/linked/linked/linked", programFileName: programFileName);
-            Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "x/linked/linked/linked", programFileName: programFileName);
+            string expectedOutput = OperatingSystem.IsWindows() ? "x/linked/linked/linked" : "y/linked/linked/linked";
+            Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput, programFileName: programFileName);
+            Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput, programFileName: programFileName);
 
             new DotnetCommand(Log, "build", "--no-incremental", programFileName)
                 .WithWorkingDirectory(testInstance.Path)
@@ -497,10 +509,11 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.Delete(linkedPath);
         File.CreateSymbolicLink(path: linkedPath, pathToTarget: yPath);
 
-        // MSBuild isn't detecting the change (but we are, hence BuildLevel.All),
+        // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
         // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
-        Build(testInstance, BuildLevel.All, expectedOutput: "X/Program.cs/linked.cs");
-        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "X/Program.cs/linked.cs");
+        string expectedOutput = OperatingSystem.IsWindows() ? "X/Program.cs/linked.cs" : "Y/Program.cs/linked.cs";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
 
         new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
             .WithWorkingDirectory(testInstance.Path)
