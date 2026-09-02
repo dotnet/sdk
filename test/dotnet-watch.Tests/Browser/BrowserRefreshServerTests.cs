@@ -92,4 +92,31 @@ public class BrowserRefreshServerTests
             "UNRELATED_SETTING=preserved",
         ], environment.OrderBy(entry => entry.Key).Select(entry => $"{entry.Key}={entry.Value}"));
     }
+
+    [TestMethod]
+    public async Task ForwardingConfigurator_UsesOnlyProviderAddressAndAssemblyActivation()
+    {
+        var middlewarePath = Path.Combine(Path.GetTempPath(), "Microsoft.AspNetCore.Watch.BrowserRefresh.dll");
+        using var server = new TestBrowserRefreshServer(middlewarePath)
+        {
+            CreateAndStartHostImpl = () => new WebServerHost(
+                new TestListener(),
+                webSocketEndpoints: ["ws://127.0.0.1:1234"],
+                httpEndpoints: ["http://127.0.0.1:1234"],
+                virtualDirectory: "/")
+        };
+        ((TestLogger)server.Logger).IsEnabledImpl = _ => false;
+        await server.StartAsync(CancellationToken.None);
+        var configurator = new ForwardingBrowserToolsLaunchConfigurator(middlewarePath, server);
+        var environment = new Dictionary<string, string>();
+
+        configurator.ConfigureLaunchEnvironment(environment);
+
+        AssertEx.SequenceEqual(
+        [
+            "ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS=http://127.0.0.1:1234/",
+            "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=Microsoft.AspNetCore.Watch.BrowserRefresh",
+            $"DOTNET_STARTUP_HOOKS={middlewarePath}",
+        ], environment.OrderBy(entry => entry.Key).Select(entry => $"{entry.Key}={entry.Value}"));
+    }
 }
