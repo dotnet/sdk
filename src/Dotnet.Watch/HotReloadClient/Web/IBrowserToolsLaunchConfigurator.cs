@@ -18,5 +18,6 @@ internal enum BrowserToolsLaunchFeatures
 {
     None = 0,
     BrowserRefresh = 1,
-    ManagedHotReload = 2
+    ManagedHotReload = 2,
+    LegacyHtmlInjection = 4
 }
