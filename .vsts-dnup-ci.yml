@@ -25,6 +25,10 @@ parameters:
   displayName: Enables the ARM64 job
   type: boolean
   default: false
+- name: enableAkaMsProbe
+  displayName: Enable aka.ms API probe (manual only)
+  type: boolean
+  default: false
 
 variables:
 - template: /eng/pipelines/templates/variables/sdk-defaults.yml
@@ -341,3 +345,113 @@ extends:
               name: $(DncEngInternalBuildPool)
               image: 1es-windows-2022
               os: windows
+
+      - ${{ if eq(parameters.enableAkaMsProbe, true) }}:
+        - stage: aka_ms_probe
+          displayName: 🔗 aka.ms API probe
+          dependsOn: []
+          condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'), ne(variables['Build.Reason'], 'PullRequest'))
+          jobs:
+          - template: /eng/common/templates-official/job/job.yml@self
+            parameters:
+              name: aka_ms_probe
+              displayName: Create, update, verify, and delete a build-unique aka.ms link
+              pool:
+                name: $(DncEngInternalBuildPool)
+                image: 1es-windows-2022
+                os: windows
+              steps:
+              - task: AzureCLI@2
+                displayName: Probe aka.ms Redirection API
+                inputs:
+                  azureSubscription: "Darc: Maestro Production"
+                  scriptType: ps
+                  scriptLocation: inlineScript
+                  inlineScript: |
+                    $ErrorActionPreference = 'Stop'
+
+                    $tenantId = '72f988bf-86f1-41af-91ab-2d7cd011db47'
+                    $redirectionApiResource = 'https://msazurecloud.onmicrosoft.com/RedirectionMgmtApi-Prod'
+                    $apiBaseUrl = "https://redirectionapi-ame.trafficmanager.net/api/aka/1/$tenantId"
+                    $shortUrl = "dotnet/dotnetup-probe/$(Build.BuildId)-$(System.JobAttempt)/dotnetup-win-x64.exe"
+                    $akaMsUrl = "https://aka.ms/$shortUrl"
+                    $firstTargetUrl = 'https://ci.dot.net/public/dotnetup/0.1.4-preview.6.26316.3/dotnetup-win-x64.exe'
+                    $secondTargetUrl = 'https://ci.dot.net/public/dotnetup/0.1.4-preview.4.26303.1/dotnetup-win-x64.exe'
+                    $owners = 'dotnet@microsoft.com'
+                    $createdBy = 'dotnet-dnceng'
+                    $groupOwner = 'dotnet'
+
+                    function New-AkaMsPayload([string] $targetUrl, [bool] $isUpdate) {
+                      $link = @{
+                        shortUrl = $shortUrl
+                        owners = $owners
+                        targetUrl = $targetUrl
+                        lastModifiedBy = $createdBy
+                        description = "Temporary dotnetup aka.ms probe for Azure DevOps build $(Build.BuildId)"
+                        groupOwner = $groupOwner
+                        isAllowParam = $true
+                      }
+
+                      if (-not $isUpdate) {
+                        $link.createdBy = $createdBy
+                        $link.isVanity = $true
+                      }
+
+                      return @($link) | ConvertTo-Json -Depth 4 -Compress
+                    }
+
+                    function Invoke-AkaMsRequest([string] $method, [string] $path, [string] $body) {
+                      $uri = "$apiBaseUrl/$path"
+                      $headers = @{ Authorization = "Bearer $accessToken" }
+                      if ([string]::IsNullOrEmpty($body)) {
+                        return Invoke-WebRequest -UseBasicParsing -Uri $uri -Headers $headers -Method $method
+                      }
+
+                      return Invoke-WebRequest -UseBasicParsing -Uri $uri -Headers $headers -Method $method -ContentType 'application/json' -Body $body
+                    }
+
+                    function Assert-AkaMsTarget([string] $expectedTargetUrl) {
+                      $lastResolvedTargetUrl = ''
+                      for ($attempt = 1; $attempt -le 12; $attempt++) {
+                        $probeUrl = "$akaMsUrl?probe=$(Build.BuildId)-$(System.JobAttempt)-$attempt"
+                        $resolvedTargetUrl = & curl.exe -s -L -I -o NUL -w '%{url_effective}' $probeUrl
+                        if ($LASTEXITCODE -ne 0) {
+                          throw "curl failed while resolving $probeUrl. Exit code: $LASTEXITCODE"
+                        }
+
+                        $lastResolvedTargetUrl = $resolvedTargetUrl
+                        $resolvedTargetWithoutQuery = ([Uri] $resolvedTargetUrl).GetLeftPart([UriPartial]::Path)
+                        if ($resolvedTargetWithoutQuery -eq $expectedTargetUrl) {
+                          return
+                        }
+
+                        Write-Host "Attempt $attempt did not observe the expected redirect yet. Resolved target: $resolvedTargetUrl"
+                        Start-Sleep -Seconds 10
+                      }
+
+                      throw "Expected $akaMsUrl to resolve to $expectedTargetUrl, but the last observed target was $lastResolvedTargetUrl."
+                    }
+
+                    Write-Host "Requesting an access token for the aka.ms Redirection API resource."
+                    $accessToken = & az account get-access-token --resource $redirectionApiResource --query accessToken -o tsv
+                    if ($LASTEXITCODE -ne 0 -or [string]::IsNullOrEmpty($accessToken)) {
+                      throw 'Failed to acquire an access token for the aka.ms Redirection API resource.'
+                    }
+
+                    $created = $false
+                    try {
+                      Write-Host "Creating temporary aka.ms/$shortUrl -> $firstTargetUrl"
+                      Invoke-AkaMsRequest 'Post' 'bulk' (New-AkaMsPayload $firstTargetUrl $false) | Out-Null
+                      $created = $true
+                      Assert-AkaMsTarget $firstTargetUrl
+
+                      Write-Host "Updating temporary aka.ms/$shortUrl -> $secondTargetUrl"
+                      Invoke-AkaMsRequest 'Put' 'bulk' (New-AkaMsPayload $secondTargetUrl $true) | Out-Null
+                      Assert-AkaMsTarget $secondTargetUrl
+                    }
+                    finally {
+                      if ($created) {
+                        Write-Host "Deleting temporary aka.ms/$shortUrl"
+                        Invoke-AkaMsRequest 'Delete' "harddelete/$shortUrl" $null | Out-Null
+                      }
+                    }
