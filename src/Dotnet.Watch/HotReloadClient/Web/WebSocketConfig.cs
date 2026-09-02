@@ -36,4 +36,7 @@ internal readonly struct WebSocketConfig(int port, int? securePort, string? host
 
     public WebSocketConfig WithSecurePort(int? value)
         => new(port, value, hostName);
+
+    public WebSocketConfig WithHostName(string? value)
+        => new(port, securePort, value);
 }

@@ -26,25 +26,35 @@ Reload).
   named-pipe protocol; Blazor WASM uses JSON over WebSocket. Each protocol has its
   own `HotReloadClient` subclass (e.g. `DefaultHotReloadClient`,
   `WebAssemblyHotReloadClient`); a new app model may need its own implementation.
-- **Standalone .NET 11+ Blazor WASM uses a Gateway-native browser-tools path.**
-  [`BlazorWebAssemblyAppModel.cs`](Watch/AppModels/BlazorWebAssemblyAppModel.cs)
-  configures the Gateway's YARP route instead of injecting BrowserRefresh startup
-  hooks. The provider endpoints and generation-scoped replay live under
-  [`HotReloadClient/Web`](HotReloadClient/Web), while the WebAssembly initializer
-  discovers the provider before enabling runtime mutability. Keep the reserved route
-  root-relative (outside the application's Gateway path base), require the encrypted
-  shared-secret WebSocket subprotocol, and include the generation identity in live
-  managed-update messages. Preserve the initializer's injected-script fallback and the
-  legacy hosting-startup configurator for other app models and older target frameworks.
-- **MVC and Razor Pages activate browser tools through the built-in body TagHelper.**
-  [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers
+- **The .NET 11+ browser-tools provider owns the modern browser protocol and replay
+  state.** Its fixed `/_framework/dotnet-browser-tools` HTTP/WebSocket endpoints live
+  under [`HotReloadClient/Web`](HotReloadClient/Web). Standalone Blazor WASM uses the
+  Gateway's existing YARP proxy through
+  [`BlazorWebAssemblyAppModel.cs`](Watch/AppModels/BlazorWebAssemblyAppModel.cs);
+  server-hosted web apps use the shared-framework-only
+  [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs). Keep destinations
+  fixed to the trusted loopback provider address, the route root-relative, and the
+  encrypted shared-secret WebSocket subprotocol intact. Do not add YARP to arbitrary
+  applications.
+- **Activation is app-model-specific, but the browser client is shared.** MVC and Razor
+  Pages use
   [`BrowserRefreshTagHelperComponent`](Web.Middleware/BrowserRefreshTagHelperComponent.cs)
-  only while browser tooling is active. This automatically appends the external client
-  script for pages that execute the built-in `BodyTagHelper`, without rewriting the
-  response stream. Static HTML (including hosted Blazor WASM `index.html`) and custom
-  rendering that bypasses that TagHelper pipeline require explicit activation; hosted
-  Blazor WASM retains the legacy stream-injection fallback. Do not add YARP to MVC apps
-  or introduce a build-time `index.html` rewrite for this path.
+  through the built-in body TagHelper. Standalone and hosted Blazor WASM use the runtime
+  initializer, which discovers the provider before enabling runtime mutability and
+  imports the same provider-hosted browser client. Hosted WASM selects this modern path
+  only when both client and server target .NET 11 or later; mixed and older target
+  frameworks retain legacy response injection and endpoints. Static/custom HTML that
+  has no supported initializer requires user-provided activation; do not add build-time
+  `index.html` rewriting.
+- **Modern server hosting startup is intentionally thin.**
+  [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers only the MVC/Razor
+  TagHelper component and the reserved forwarder for the modern path. The BrowserRefresh
+  assembly still appears in `DOTNET_STARTUP_HOOKS` so the out-of-application hosting
+  startup assembly can be resolved, but its
+  [`StartupHook`](Web.Middleware/StartupHook.cs) is a no-op in modern mode. Managed
+  server updates continue to use the separate `Microsoft.Extensions.DotNetDeltaApplier`
+  startup hook. Preserve the isolated legacy middleware path for .NET 8-10 and
+  compatibility consumers such as `/_framework/blazor-hotreload.js`.
 - **`CompilationHandler` drives Roslyn** via
   `Microsoft.CodeAnalysis.ExternalAccess.HotReload`; unsupported edits fall
   back to a full rebuild + restart.

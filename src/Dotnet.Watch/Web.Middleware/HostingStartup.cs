@@ -19,14 +19,16 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
 {
     public void Configure(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services => ConfigureServices(services, BrowserToolsEnvironment.IsActive));
+        builder.ConfigureServices(services => ConfigureServices(services, BrowserToolsEnvironment.GetProviderAddress()));
     }
 
-    internal void ConfigureServices(IServiceCollection services, bool browserToolsActive)
+    internal void ConfigureServices(IServiceCollection services, Uri? providerAddress)
     {
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this));
-        if (browserToolsActive)
+        if (providerAddress != null)
         {
+            services.TryAddSingleton(new BrowserToolsForwarderOptions(providerAddress));
+            services.TryAddSingleton<BrowserToolsForwarder>();
             services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagHelperComponent, BrowserRefreshTagHelperComponent>());
         }
     }
@@ -35,6 +37,20 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
     {
         return app =>
         {
+            if (BrowserToolsEnvironment.GetProviderAddress() != null)
+            {
+                app.MapWhen(
+                    static context => context.Request.Path.StartsWithSegments(ApplicationPaths.BrowserTools),
+                    static browserTools =>
+                    {
+                        browserTools.UseWebSockets();
+                        browserTools.Run(
+                            context => context.RequestServices.GetRequiredService<BrowserToolsForwarder>().ForwardAsync(context));
+                    });
+                next(app);
+                return;
+            }
+
             app.MapWhen(
                 static (context) =>
                 {

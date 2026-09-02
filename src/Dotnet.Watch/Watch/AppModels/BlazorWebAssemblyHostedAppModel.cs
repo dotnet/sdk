@@ -21,16 +21,29 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
 
-    protected override BrowserToolsLaunchFeatures AdditionalBrowserToolsLaunchFeatures
-        => BrowserToolsLaunchFeatures.LegacyHtmlInjection;
-
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);
         return
         [
-            CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject),
+            CreateWebAssemblyClient(
+                clientLogger,
+                agentLogger,
+                browserRefreshServer,
+                clientProject,
+                enableBrowserToolsReplay: UsesBrowserToolsProvider),
             new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: false, new NamedPipeClientTransport(clientLogger))
         ];
     }
+
+    internal override bool UsesBrowserToolsProvider
+        => clientProject.IsNetCoreApp(Versions.Version11_0) &&
+           serverProject.IsNetCoreApp(Versions.Version11_0);
+
+    internal override IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
+        AbstractBrowserRefreshServer browserRefreshServer,
+        BrowserToolsLaunchFeatures features)
+        => UsesBrowserToolsProvider
+            ? base.CreateBrowserToolsLaunchConfigurator(browserRefreshServer, features)
+            : CreateLegacyBrowserToolsLaunchConfigurator(browserRefreshServer, features);
 }
