@@ -22,7 +22,7 @@ internal sealed class BrowserRefreshTagHelperComponent : ITagHelperComponent
     {
         if (string.Equals(context.TagName, "body", StringComparison.OrdinalIgnoreCase))
         {
-            output.PostContent.AppendHtml(ScriptInjectingStream.InjectedScript);
+            output.PostContent.AppendHtml($"<script type=\"module\" src=\"{ApplicationPaths.BrowserToolsBootstrapJS}\"></script>");
         }
 
         return Task.CompletedTask;

@@ -1,6 +1,58 @@
 const hotReloadActiveKey = '_dotnet_watch_hot_reload_active';
 const scriptInjectedSentinel = '_dotnet_watch_browser_tools_connected';
 
+export async function startBrowserTools(routeBase = new URL('./', import.meta.url)) {
+    try {
+        const response = await fetch(new URL('session.json', routeBase), {
+            cache: 'no-store',
+            headers: { 'Accept': 'application/json' }
+        });
+        if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
+            return;
+        }
+
+        const descriptor = await response.json();
+        if (descriptor?.protocolVersion !== 1 ||
+            typeof descriptor.publicKey !== 'string' ||
+            typeof descriptor.generationId !== 'string') {
+            return;
+        }
+
+        const connection = await connectBrowserTools(descriptor, createDefaultCallbacks(), routeBase);
+        connection?.activate();
+    } catch (error) {
+        console.debug('Unable to discover the browser tools provider.', error);
+    }
+}
+
+function createDefaultCallbacks() {
+    return {
+        getApplyUpdateCapabilities() {
+            return window.Blazor?._internal?.getApplyUpdateCapabilities?.() ?? '';
+        },
+        applyManagedCodeUpdates(deltas, responseLoggingLevel) {
+            const applyDeltas = window.Blazor?._internal?.applyHotReloadDeltas;
+            if (applyDeltas) {
+                return applyDeltas(deltas, responseLoggingLevel);
+            }
+
+            const apply = window.Blazor?._internal?.applyHotReload;
+            if (!apply) {
+                return [];
+            }
+
+            deltas.forEach(delta => {
+                if (apply.length === 5) {
+                    apply(delta.moduleId, delta.metadataDelta, delta.ilDelta, delta.pdbDelta, delta.updatedTypes);
+                } else {
+                    apply(delta.moduleId, delta.metadataDelta, delta.ilDelta, delta.pdbDelta);
+                }
+            });
+            return [];
+        }
+    };
+}
+
 export async function connectBrowserTools(descriptor, callbacks, routeBase) {
     if (window.hasOwnProperty(scriptInjectedSentinel)) {
         return;
@@ -65,6 +117,7 @@ export async function connectBrowserTools(descriptor, callbacks, routeBase) {
     connection.onclose = () => {
         delete window[scriptInjectedSentinel];
         console.debug('dotnet-watch browser tools socket closed.');
+        reloadWhenProviderReturns(routeBase);
     };
     connection.onopen = () => console.debug('dotnet-watch browser tools socket connected.');
 
@@ -74,6 +127,26 @@ export async function connectBrowserTools(descriptor, callbacks, routeBase) {
         } else {
             console.debug(`File change detected to file ${path}. Reloading page...`);
             location.reload();
+        }
+
+    }
+
+    async function reloadWhenProviderReturns(routeBase) {
+        while (true) {
+            await new Promise(resolve => setTimeout(resolve, 100));
+
+            try {
+                const response = await fetch(new URL('session.json', routeBase), {
+                    cache: 'no-store',
+                    headers: { 'Accept': 'application/json' }
+                });
+                if (response.ok) {
+                    location.reload();
+                    return;
+                }
+            } catch (error) {
+                console.debug('Waiting for the browser tools provider to return.', error);
+            }
         }
     }
 

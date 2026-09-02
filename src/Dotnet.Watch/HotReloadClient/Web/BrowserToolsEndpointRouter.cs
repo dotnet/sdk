@@ -6,7 +6,8 @@
 #if NET
 
 using System;
-using System.Net;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -18,6 +19,10 @@ internal sealed class BrowserToolsEndpointRouter(
     IBrowserToolsUpdateStore updateStore,
     AbstractBrowserRefreshServer browserServer)
 {
+    private static readonly ReadOnlyMemory<byte> s_clientModule = ReadClientModule();
+    private static readonly ReadOnlyMemory<byte> s_bootstrapModule = Encoding.UTF8.GetBytes(
+        "import { startBrowserTools } from './browser-tools.js';\nstartBrowserTools();\n");
+
     public async Task HandleAsync(HttpContext context)
     {
         context.Response.Headers.CacheControl = "no-store";
@@ -45,6 +50,18 @@ internal sealed class BrowserToolsEndpointRouter(
         {
             context.Response.Headers.Append("Clear-Site-Data", "\"cache\"");
             context.Response.StatusCode = StatusCodes.Status204NoContent;
+            return;
+        }
+
+        if (path == BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClientModulePath)
+        {
+            await WriteJavaScriptAsync(context, s_clientModule);
+            return;
+        }
+
+        if (path == BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.BootstrapModulePath)
+        {
+            await WriteJavaScriptAsync(context, s_bootstrapModule);
             return;
         }
 
@@ -80,6 +97,23 @@ internal sealed class BrowserToolsEndpointRouter(
         context.Response.ContentType = "application/json";
         context.Response.ContentLength = content.Length;
         await context.Response.Body.WriteAsync(content);
+    }
+
+    private static async Task WriteJavaScriptAsync(HttpContext context, ReadOnlyMemory<byte> content)
+    {
+        context.Response.StatusCode = StatusCodes.Status200OK;
+        context.Response.ContentType = "text/javascript; charset=utf-8";
+        context.Response.ContentLength = content.Length;
+        await context.Response.Body.WriteAsync(content);
+    }
+
+    private static ReadOnlyMemory<byte> ReadClientModule()
+    {
+        using var stream = typeof(BrowserToolsEndpointRouter).Assembly.GetManifestResourceStream("Microsoft.DotNet.HotReload.BrowserTools.js")
+            ?? throw new InvalidOperationException("Browser tools client module resource is missing.");
+        using var content = new MemoryStream();
+        stream.CopyTo(content);
+        return content.ToArray();
     }
 
     private sealed record BrowserToolsSessionDescriptor(

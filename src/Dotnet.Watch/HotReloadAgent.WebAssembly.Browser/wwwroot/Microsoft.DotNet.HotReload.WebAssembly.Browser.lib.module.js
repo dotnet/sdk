@@ -58,7 +58,7 @@ export async function onRuntimeReady({ getAssemblyExports }) {
         return;
     }
 
-    const browserTools = await import('./Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js');
+    const browserTools = await import(new URL('browser-tools.js', browserToolsRouteBase).href);
     const browserToolsConnection = await browserTools.connectBrowserTools(
         browserToolsSession,
         {

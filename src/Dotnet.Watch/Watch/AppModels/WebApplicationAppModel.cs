@@ -27,13 +27,10 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// </summary>
     public abstract ProjectGraphNode LaunchingProject { get; }
 
+    internal virtual bool UsesBrowserToolsProvider
+        => LaunchingProject.IsNetCoreApp(Versions.Version11_0);
+
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
-
-    protected virtual BrowserToolsLaunchFeatures AdditionalBrowserToolsLaunchFeatures
-        => BrowserToolsLaunchFeatures.None;
-
-    internal BrowserToolsLaunchFeatures GetBrowserToolsLaunchFeatures(BrowserToolsLaunchFeatures features)
-        => features | AdditionalBrowserToolsLaunchFeatures;
 
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
     {
@@ -46,9 +43,8 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         var launchConfigurator = browserRefreshServer != null
             ? CreateBrowserToolsLaunchConfigurator(
                 browserRefreshServer,
-                GetBrowserToolsLaunchFeatures(
-                    BrowserToolsLaunchFeatures.BrowserRefresh |
-                    (managedClients.IsEmpty ? BrowserToolsLaunchFeatures.None : BrowserToolsLaunchFeatures.ManagedHotReload)))
+                BrowserToolsLaunchFeatures.BrowserRefresh |
+                (managedClients.IsEmpty ? BrowserToolsLaunchFeatures.None : BrowserToolsLaunchFeatures.ManagedHotReload))
             : null;
 
         return new HotReloadClients(
@@ -86,6 +82,13 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     internal virtual IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
         AbstractBrowserRefreshServer browserRefreshServer,
         BrowserToolsLaunchFeatures features)
+        => UsesBrowserToolsProvider
+            ? new ForwardingBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer)
+            : CreateLegacyBrowserToolsLaunchConfigurator(browserRefreshServer, features);
+
+    protected static IBrowserToolsLaunchConfigurator CreateLegacyBrowserToolsLaunchConfigurator(
+        AbstractBrowserRefreshServer browserRefreshServer,
+        BrowserToolsLaunchFeatures features)
         => new HostingStartupBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer, features);
 
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
@@ -94,13 +97,17 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
         if (IsServerSupported(projectNode, logger))
         {
+            var webSocketConfig = UsesBrowserToolsProvider
+                ? context.EnvironmentOptions.BrowserWebSocketConfig.WithHostName(value: null)
+                : context.EnvironmentOptions.BrowserWebSocketConfig;
+
             return new BrowserRefreshServer(
                 logger,
                 connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
                 connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
                 middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
-                webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
+                webSocketConfig,
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
         }
 

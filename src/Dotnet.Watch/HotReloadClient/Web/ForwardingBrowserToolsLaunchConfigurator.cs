@@ -8,28 +8,21 @@ using System.IO;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class HostingStartupBrowserToolsLaunchConfigurator(
+internal sealed class ForwardingBrowserToolsLaunchConfigurator(
     string middlewareAssemblyPath,
-    AbstractBrowserRefreshServer browserRefreshServer,
-    BrowserToolsLaunchFeatures features) : IBrowserToolsLaunchConfigurator
+    AbstractBrowserRefreshServer browserRefreshServer) : IBrowserToolsLaunchConfigurator
 {
     public void ConfigureLaunchEnvironment(IDictionary<string, string> environment)
     {
-        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", browserRefreshServer.WebSocketEndpoints);
-        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey] = browserRefreshServer.PublicKey;
-        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadVirtualDirectory] = browserRefreshServer.VirtualDirectory;
-        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadUseLegacyHtmlInjection] = bool.TrueString;
+        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadProviderAddress] = browserRefreshServer.ProviderAddress.AbsoluteUri;
 
+        // Loading the assembly as a startup hook makes the out-of-application BrowserRefresh
+        // assembly resolvable when ASP.NET Core activates its hosting startup by simple name.
         environment.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
         environment.InsertListItem(
             MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies,
             Path.GetFileNameWithoutExtension(middlewareAssemblyPath),
             MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
-
-        if (features.HasFlag(BrowserToolsLaunchFeatures.ManagedHotReload))
-        {
-            environment[MiddlewareEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
-        }
 
         if (browserRefreshServer.Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Trace))
         {
