@@ -21,7 +21,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9 # https://github.com/actions/stale/blob/v9/README.md
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9
         with:
           ascending: true # Process the oldest issues first
           stale-issue-message: "Due to lack of recent activity, this issue has been labeled as 'Stale'. It will be closed if no further activity occurs within 14 more days. Any new comment will remove the label."
@@ -40,7 +40,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const CLOSE_KBE_AFTER_DAYS = 7;

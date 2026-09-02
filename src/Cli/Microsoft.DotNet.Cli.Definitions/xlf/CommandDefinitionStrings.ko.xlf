@@ -489,6 +489,11 @@ project.assets.json을 삭제하는 것과 동일합니다.</target>
         <target state="translated">패키지 및 http 요청을 캐시하지 않습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">p2p(프로젝트 간) 참조를 복원하지 않고 지정한 프로젝트만 복원합니다.</target>

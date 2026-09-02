@@ -28,37 +28,47 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             string toString = diagnosticExpected ? "[|value.ToString()|]" : "value.ToString()";
 
-            string original = @"
-                using System;
-                using System.Text;
+            string original = """
+                                using System;
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        " + receiverType + @" value = default;
-                        var sb = new StringBuilder();
-                        sb.Append(" + toString + @");
-                        sb.Insert(42, " + toString + @");
-                    }
-                }
-                ";
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        
+                """ + receiverType + """
+                             value = default;
+                                                    var sb = new StringBuilder();
+                                                    sb.Append(
+                            """ + toString + """
+                            );
+                                                    sb.Insert(42, 
+                            """ + toString + """
+                            );
+                                                }
+                                            }
+                                            
+                            """;
 
-            await VerifyCS.VerifyCodeFixAsync(original, !diagnosticExpected ? original : @"
-                using System;
-                using System.Text;
+            await VerifyCS.VerifyCodeFixAsync(original, !diagnosticExpected ? original : """
+                                using System;
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        " + receiverType + @" value = default;
-                        var sb = new StringBuilder();
-                        sb.Append(value);
-                        sb.Insert(42, value);
-                    }
-                }
-                ");
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        
+                """ + receiverType + """
+                             value = default;
+                                                    var sb = new StringBuilder();
+                                                    sb.Append(value);
+                                                    sb.Insert(42, value);
+                                                }
+                                            }
+                                            
+                            """);
         }
 
         [TestMethod]
@@ -72,31 +82,43 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             string toString = diagnosticExpected ? "[|value.ToString()|]" : "value.ToString()";
 
-            string original = @"
-                Imports System
-                Imports System.Text
+            string original = """
 
-                Class C
-                    Public Sub M()
-                        Dim value As " + receiverType + @"
-                        Dim sb As New StringBuilder()
-                        sb.Append(" + toString + @")
-                        sb.Insert(42, " + toString + @")
-                    End Sub
-                End Class";
+                                Imports System
+                                Imports System.Text
 
-            await VerifyVB.VerifyCodeFixAsync(original, !diagnosticExpected ? original : @"
-                Imports System
-                Imports System.Text
+                                Class C
+                                    Public Sub M()
+                                        Dim value As 
+                """ + receiverType + """
 
-                Class C
-                    Public Sub M()
-                        Dim value As " + receiverType + @"
-                        Dim sb As New StringBuilder()
-                        sb.Append(value)
-                        sb.Insert(42, value)
-                    End Sub
-                End Class");
+                                                    Dim sb As New StringBuilder()
+                                                    sb.Append(
+                            """ + toString + """
+                            )
+                                                    sb.Insert(42, 
+                            """ + toString + """
+                            )
+                                                End Sub
+                                            End Class
+                            """;
+
+            await VerifyVB.VerifyCodeFixAsync(original, !diagnosticExpected ? original : """
+
+                                Imports System
+                                Imports System.Text
+
+                                Class C
+                                    Public Sub M()
+                                        Dim value As 
+                """ + receiverType + """
+
+                                                    Dim sb As New StringBuilder()
+                                                    sb.Append(value)
+                                                    sb.Insert(42, value)
+                                                End Sub
+                                            End Class
+                            """);
         }
 
         [TestMethod]
@@ -113,39 +135,49 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             string toString = diagnosticExpected ? "[|Prop.ToString()|]" : "Prop.ToString()";
 
-            string original = @"
-                using System;
-                using System.Text;
+            string original = """
+                                using System;
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        sb.Append(" + toString + @");
-                        sb.Insert(42, " + toString + @");
-                    }
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        var sb = new StringBuilder();
+                                        sb.Append(
+                """ + toString + """
+                            );
+                                                    sb.Insert(42, 
+                            """ + toString + """
+                            );
+                                                }
 
-                    private static " + receiverType + @" Prop => default;
-                }
-                ";
+                                                private static 
+                            """ + receiverType + """
+                         Prop => default;
+                                        }
+                                        
+                        """;
 
-            await VerifyCS.VerifyCodeFixAsync(original, !diagnosticExpected ? original : @"
-                using System;
-                using System.Text;
+            await VerifyCS.VerifyCodeFixAsync(original, !diagnosticExpected ? original : """
+                                using System;
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        sb.Append(Prop);
-                        sb.Insert(42, Prop);
-                    }
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        var sb = new StringBuilder();
+                                        sb.Append(Prop);
+                                        sb.Insert(42, Prop);
+                                    }
 
-                    private static " + receiverType + @" Prop => default;
-                }
-                ");
+                                    private static 
+                """ + receiverType + """
+                         Prop => default;
+                                        }
+                                        
+                        """);
         }
 
         [TestMethod]
@@ -161,27 +193,37 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 toString = "[|" + toString + "|]";
             }
 
-            string original = @"
-                using System;
-                using System.Text;
+            string original = """
+                                using System;
+                                using System.Text;
 
-                class C
-                {
-                    public void M1() => new StringBuilder().Append(" + toString + @");
-                    public void M2() => new StringBuilder().Insert(42, " + toString + @");
-                }
-                ";
+                                class C
+                                {
+                                    public void M1() => new StringBuilder().Append(
+                """ + toString + """
+                        );
+                                            public void M2() => new StringBuilder().Insert(42,
+                        """ + toString + """
+                        );
+                                        }
 
-            await VerifyCS.VerifyCodeFixAsync(original, !diagnosticExpected ? original : @"
-                using System;
-                using System.Text;
+                        """;
 
-                class C
-                {
-                    public void M1() => new StringBuilder().Append(" + value + @");
-                    public void M2() => new StringBuilder().Insert(42, " + value + @");
-                }
-                ");
+            await VerifyCS.VerifyCodeFixAsync(original, !diagnosticExpected ? original : """
+                                using System;
+                                using System.Text;
+
+                                class C
+                                {
+                                    public void M1() => new StringBuilder().Append(
+                """ + value + """
+                        );
+                                            public void M2() => new StringBuilder().Insert(42,
+                        """ + value + """
+                        );
+                                        }
+
+                        """);
         }
 
         [TestMethod]
@@ -191,15 +233,20 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("DateTime.Now")]
         public async Task NoDiagnostic_NoToStringCallAsync(string value)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                using System;
-                using System.Text;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                using System;
+                                using System.Text;
 
-                class C
-                {
-                    public void M1() => new StringBuilder().Append(" + value + @");
-                    public void M2() => new StringBuilder().Insert(42, " + value + @");
-                }");
+                                class C
+                                {
+                                    public void M1() => new StringBuilder().Append(
+                """ + value + """
+                        );
+                                            public void M2() => new StringBuilder().Insert(42,
+                        """ + value + """
+                        );
+                                        }
+                        """);
         }
 
         [TestMethod]
@@ -208,135 +255,162 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [DataRow("DateTime.Now")]
         public async Task NoDiagnostic_FormattedToStringAsync(string value)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                using System;
-                using System.Globalization;
-                using System.Text;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                using System;
+                                using System.Globalization;
+                                using System.Text;
 
-                class C
-                {
-                    public void M1()
-                    {
-                        new StringBuilder()
-                            .Append(" + value + @".ToString(""X4""))
-                            .Append(" + value + @".ToString(CultureInfo.CurrentCulture))
-                            .Append(" + value + @".ToString(""X4"", CultureInfo.CurrentCulture))
-                            .Append(((IFormattable)" + value + @").ToString(""X4"", CultureInfo.CurrentCulture))
-                            .Append(((IFormattable)" + value + @").ToString());
-                    }
+                                class C
+                                {
+                                    public void M1()
+                                    {
+                                        new StringBuilder()
+                                            .Append(
+                """ + value + """
+                                .ToString("X4"))
+                                                            .Append(
+                                """ + value + """
+                                .ToString(CultureInfo.CurrentCulture))
+                                                            .Append(
+                                """ + value + """
+                                .ToString("X4", CultureInfo.CurrentCulture))
+                                                            .Append(((IFormattable)
+                                """ + value + """
+                                ).ToString("X4", CultureInfo.CurrentCulture))
+                                                            .Append(((IFormattable)
+                                """ + value + """
+                                ).ToString());
+                                                    }
 
-                    public void M2()
-                    {
-                        new StringBuilder()
-                            .Insert(1, " + value + @".ToString(""X4""))
-                            .Insert(1, " + value + @".ToString(CultureInfo.CurrentCulture))
-                            .Insert(1, " + value + @".ToString(""X4"", CultureInfo.CurrentCulture))
-                            .Insert(1, ((IFormattable)" + value + @").ToString(""X4"", CultureInfo.CurrentCulture))
-                            .Insert(1, ((IFormattable)" + value + @").ToString());
-                    }
-                }");
+                                                    public void M2()
+                                                    {
+                                                        new StringBuilder()
+                                                            .Insert(1,
+                                """ + value + """
+                                .ToString("X4"))
+                                                            .Insert(1,
+                                """ + value + """
+                                .ToString(CultureInfo.CurrentCulture))
+                                                            .Insert(1,
+                                """ + value + """
+                                .ToString("X4", CultureInfo.CurrentCulture))
+                                                            .Insert(1, ((IFormattable)
+                                """ + value + """
+                                ).ToString("X4", CultureInfo.CurrentCulture))
+                                                            .Insert(1, ((IFormattable)
+                                """ + value + """
+                                ).ToString());
+                                                    }
+                                                }
+                                """);
         }
 
         [TestMethod]
         public async Task NoDiagnostic_NotRelevantMethodAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                using System;
-                using System.Text;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                using System;
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        sb.AppendLine(42.ToString());
-                        sb.Replace(42.ToString(), ""42"");
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        var sb = new StringBuilder();
+                                        sb.AppendLine(42.ToString());
+                                        sb.Replace(42.ToString(), "42");
 
-                        Console.WriteLine(42.ToString());
+                                        Console.WriteLine(42.ToString());
 
-                        Append(42.ToString());
-                    }
+                                        Append(42.ToString());
+                                    }
 
-                    private static void Append(string value) { }
-                    private static void Append(int value) { }
-                }");
+                                    private static void Append(string value) { }
+                                    private static void Append(int value) { }
+                                }
+                """);
         }
 
         [TestMethod]
         public async Task Diagnostic_StringConstructorInAppend_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-                using System.Text;
+            await VerifyCS.VerifyCodeFixAsync("""
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        sb.Append([|new string('c', 5)|]);
-                    }
-                }
-                ", @"
-                using System.Text;
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        var sb = new StringBuilder();
+                                        sb.Append([|new string('c', 5)|]);
+                                    }
+                                }
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        sb.Append('c', 5);
-                    }
-                }
-                ");
+                """, """
+                                    using System.Text;
+
+                                    class C
+                                    {
+                                        public void M()
+                                        {
+                                            var sb = new StringBuilder();
+                                            sb.Append('c', 5);
+                                        }
+                                    }
+
+                    """);
         }
 
         [TestMethod]
         public async Task Diagnostic_StringConstructorWithVariable_CSharpAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-                using System.Text;
+            await VerifyCS.VerifyCodeFixAsync("""
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        char c = 'a';
-                        int count = 3;
-                        sb.Append([|new string(c, count)|]);
-                    }
-                }
-                ", @"
-                using System.Text;
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        var sb = new StringBuilder();
+                                        char c = 'a';
+                                        int count = 3;
+                                        sb.Append([|new string(c, count)|]);
+                                    }
+                                }
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        char c = 'a';
-                        int count = 3;
-                        sb.Append(c, count);
-                    }
-                }
-                ");
+                """, """
+                                    using System.Text;
+
+                                    class C
+                                    {
+                                        public void M()
+                                        {
+                                            var sb = new StringBuilder();
+                                            char c = 'a';
+                                            int count = 3;
+                                            sb.Append(c, count);
+                                        }
+                                    }
+
+                    """);
         }
 
         [TestMethod]
         public async Task NoDiagnostic_StringConstructorWithCharArray_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                using System.Text;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                using System.Text;
 
-                class C
-                {
-                    public void M()
-                    {
-                        var sb = new StringBuilder();
-                        char[] chars = new char[] { 'a', 'b', 'c' };
-                        sb.Append(new string(chars));
-                    }
-                }");
+                                class C
+                                {
+                                    public void M()
+                                    {
+                                        var sb = new StringBuilder();
+                                        char[] chars = new char[] { 'a', 'b', 'c' };
+                                        sb.Append(new string(chars));
+                                    }
+                                }
+                """);
         }
     }
 }

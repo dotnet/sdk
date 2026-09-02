@@ -6,6 +6,7 @@ using Microsoft.DotNet.Cli.Commands.Format;
 namespace Microsoft.DotNet.Cli.Tests;
 
 [TestClass]
+[ResourceLock(nameof(SdkDirectoryScope))]
 public class FormatForwardingAppTests
 {
     [TestMethod]
