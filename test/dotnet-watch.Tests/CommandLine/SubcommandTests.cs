@@ -14,7 +14,7 @@ public class SubcommandTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("XunitCore")
             .WithSource();
 
-        App.Start(testAsset, ["--verbose", "test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
+        App.Start(testAsset, ["test", "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
@@ -39,7 +39,7 @@ public class SubcommandTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("XunitMulti")
             .WithSource();
 
-        App.Start(testAsset, ["--verbose", "test", "--framework", ToolsetInfo.CurrentTargetFramework, "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
+        App.Start(testAsset, ["test", "--framework", ToolsetInfo.CurrentTargetFramework, "--list-tests", "/p:VSTestUseMSBuildOutput=false"]);
 
         await App.AssertOutputLineEquals("The following Tests are available:");
         await App.AssertOutputLineEquals("    TestNamespace.VSTestXunitTests.VSTestXunitFailTestNetCoreApp");
@@ -51,7 +51,7 @@ public class SubcommandTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["--verbose", "--property", "TestProperty=123", "build", "/t:TestTarget"]);
+        App.Start(testAsset, ["--property", "TestProperty=123", "build", "/t:TestTarget"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("build"));
         await App.WaitUntilOutputContains("warning : The value of property is '123'");
@@ -68,7 +68,7 @@ public class SubcommandTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["--verbose", "/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
+        App.Start(testAsset, ["/p:TestProperty=123", "msbuild", "/t:TestTarget"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("msbuild"));
         await App.WaitUntilOutputContains("warning : The value of property is '123'");
@@ -85,7 +85,7 @@ public class SubcommandTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["--verbose", "pack", "-c", "Release"]);
+        App.Start(testAsset, ["pack", "-c", "Release"]);
 
         var packagePath = Path.Combine(testAsset.Path, "bin", "Release", "WatchNoDepsApp.1.0.0.nupkg");
 
@@ -104,7 +104,7 @@ public class SubcommandTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.Start(testAsset, ["--verbose", "publish", "-c", "Release"]);
+        App.Start(testAsset, ["publish", "-c", "Release"]);
         
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("publish"));
         await App.WaitUntilOutputContains(Path.Combine("Release", ToolsetInfo.CurrentTargetFramework, "publish"));
@@ -122,7 +122,7 @@ public class SubcommandTests : DotNetWatchTestBase
             .WithSource();
 
         App.SuppressVerboseLogging();
-        App.Start(testAsset, ["--verbose", "format", "--verbosity", "detailed"]);
+        App.Start(testAsset, ["format", "--verbosity", "detailed"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("format"));
         await App.WaitUntilOutputContains("format --verbosity detailed");

@@ -26,15 +26,7 @@ internal static class EnvironmentVariables
         public const string SuppressBrowserRefresh = "DOTNET_WATCH_SUPPRESS_BROWSER_REFRESH";
     }
 
-    public static LogLevel? CliLogLevel
-    {
-        get
-        {
-            var value = Environment.GetEnvironmentVariable("DOTNET_CLI_CONTEXT_VERBOSE");
-            return ParseBool(value) ? LogLevel.Debug : null;
-        }
-    }
-
+    public static bool CliContextVerbose => ReadBool("DOTNET_CLI_CONTEXT_VERBOSE");
     public static bool IsPollingEnabled => ReadBool("DOTNET_USE_POLLING_FILE_WATCHER");
     public static bool SuppressEmojis => ReadBool("DOTNET_WATCH_SUPPRESS_EMOJIS");
     public static bool RestartOnRudeEdit => ReadBool("DOTNET_WATCH_RESTART_ON_RUDE_EDIT");
