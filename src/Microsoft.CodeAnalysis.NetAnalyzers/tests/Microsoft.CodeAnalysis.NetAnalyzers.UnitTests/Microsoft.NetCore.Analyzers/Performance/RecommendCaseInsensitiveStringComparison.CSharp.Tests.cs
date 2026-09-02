@@ -20,26 +20,30 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [DynamicData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_Assign(string diagnosedLine, string fixedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    void M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        var result = [|{diagnosedLine}|];
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    void M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        var result = {fixedLine};
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    void M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        var result = [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    void M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        var result = {{fixedLine}};
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -50,26 +54,30 @@ class C
         [DynamicData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_Return(string diagnosedLine, string fixedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    object M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        return [|{diagnosedLine}|];
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    object M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        return {fixedLine};
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    object M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        return [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    object M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        return {{fixedLine}};
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -80,36 +88,40 @@ class C
         [DynamicData(nameof(CSharpDiagnosedAndFixedWithAppendedMethodNamedData))]
         public async Task Diagnostic_If(string diagnosedLine, string fixedLine, string appendedMethod)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    int M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        bool myBoolean = false;
-        if ([|{diagnosedLine}|]{appendedMethod})
-        {{
-            return 5;
-        }}
-        return 4;
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    int M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        bool myBoolean = false;
-        if ({fixedLine}{appendedMethod})
-        {{
-            return 5;
-        }}
-        return 4;
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    int M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        bool myBoolean = false;
+                        if ([|{{diagnosedLine}}|]{{appendedMethod}})
+                        {
+                            return 5;
+                        }
+                        return 4;
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    int M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        bool myBoolean = false;
+                        if ({{fixedLine}}{{appendedMethod}})
+                        {
+                            return 5;
+                        }
+                        return 4;
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -120,26 +132,30 @@ class C
         [DynamicData(nameof(CSharpDiagnosedAndFixedInvertedNamedData))]
         public async Task Diagnostic_IgnoreResult(string diagnosedLine, string fixedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    void M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        [|{diagnosedLine}|];
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    void M()
-    {{
-        string a = ""aBc"";
-        string b = ""bc"";
-        {fixedLine};
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    void M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    void M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        {{fixedLine}};
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -150,16 +166,20 @@ class C
         [DynamicData(nameof(CSharpDiagnosedAndFixedStringLiteralsInvertedNamedData))]
         public async Task Diagnostic_StringLiterals_ReturnExpressionBody(string diagnosedLine, string fixedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    object M() => [|{diagnosedLine}|];
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    object M() => {fixedLine};
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    object M() => [|{{diagnosedLine}}|];
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    object M() => {{fixedLine}};
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -170,26 +190,30 @@ class C
         [DynamicData(nameof(CSharpDiagnosedAndFixedStringReturningMethodsInvertedNamedData))]
         public async Task Diagnostic_StringReturningMethods_Discard(string diagnosedLine, string fixedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    public string GetStringA() => ""aBc"";
-    public string GetStringB() => ""CdE"";
-    void M()
-    {{
-        _ = [|{diagnosedLine}|];
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    public string GetStringA() => ""aBc"";
-    public string GetStringB() => ""CdE"";
-    void M()
-    {{
-        _ = {fixedLine};
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    public string GetStringA() => "aBc";
+                    public string GetStringB() => "CdE";
+                    void M()
+                    {
+                        _ = [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    public string GetStringA() => "aBc";
+                    public string GetStringB() => "CdE";
+                    void M()
+                    {
+                        _ = {{fixedLine}};
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -201,28 +225,32 @@ class C
         [DynamicData(nameof(CSharpDiagnosedAndFixedParenthesizedComplexCasesData))]
         public async Task Diagnostic_Parenthesized_ReturnCastedToString(string diagnosedLine, string fixedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    string GetString() => ""aBc"";
-    string M()
-    {{
-        string a = ""aBc"";
-        string b = ""cDe"";
-        return ([|{diagnosedLine}|]).ToString();
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    string GetString() => ""aBc"";
-    string M()
-    {{
-        string a = ""aBc"";
-        string b = ""cDe"";
-        return ({fixedLine}).ToString();
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    string GetString() => "aBc";
+                    string M()
+                    {
+                        string a = "aBc";
+                        string b = "cDe";
+                        return ([|{{diagnosedLine}}|]).ToString();
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    string GetString() => "aBc";
+                    string M()
+                    {
+                        string a = "aBc";
+                        string b = "cDe";
+                        return ({{fixedLine}}).ToString();
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -230,63 +258,71 @@ class C
         [DynamicData(nameof(CSharpDiagnosedAndFixedEqualityToEqualsData))]
         public async Task Diagnostic_Equality_To_Equals(string diagnosedLine, string fixedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    string GetString() => ""cde"";
-    bool M(string a, string b)
-    {{
-        bool result = [|{diagnosedLine}|];
-        if ([|{diagnosedLine}|]) return result;
-        return [|{diagnosedLine}|];
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    string GetString() => ""cde"";
-    bool M(string a, string b)
-    {{
-        bool result = {fixedLine};
-        if ({fixedLine}) return result;
-        return {fixedLine};
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    string GetString() => "cde";
+                    bool M(string a, string b)
+                    {
+                        bool result = [|{{diagnosedLine}}|];
+                        if ([|{{diagnosedLine}}|]) return result;
+                        return [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    string GetString() => "cde";
+                    bool M(string a, string b)
+                    {
+                        bool result = {{fixedLine}};
+                        if ({{fixedLine}}) return result;
+                        return {{fixedLine}};
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
         [TestMethod]
         public async Task Diagnostic_Equality_To_Equals_Trivia()
         {
-            string originalCode = $@"using System;
-class C
-{{
-    bool M(string a, string b)
-    {{
-        // Trivia
-        bool /* Trivia */ result = /* Trivia */ [|a.ToLowerInvariant() // Trivia
-            == /* Trivia */ b.ToLowerInvariant()|] /* Trivia */; // Trivia
-        if (/* Trivia */ [|a.ToLower() /* Trivia */ != /* Trivia */ b.ToLower()|] /* Trivia */) // Trivia
-            return /* Trivia */ [|b /* Trivia */ != /* Trivia */ a.ToLowerInvariant()|] /* Trivia */; // Trivia
-        return // Trivia
-            [|""abc"" /* Trivia */ == /* Trivia */ a.ToUpperInvariant()|] /* Trivia */; // Trivia
-        // Trivia
-    }}
-}}";
-            string fixedCode = $@"using System;
-class C
-{{
-    bool M(string a, string b)
-    {{
-        // Trivia
-        bool /* Trivia */ result = /* Trivia */ a.Equals(b, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
-        if (/* Trivia */ !a.Equals(b, StringComparison.CurrentCultureIgnoreCase) /* Trivia */) // Trivia
-            return /* Trivia */ !b /* Trivia */ .Equals /* Trivia */ (a, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
-        return // Trivia
-            ""abc"" /* Trivia */ .Equals /* Trivia */ (a, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
-        // Trivia
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    bool M(string a, string b)
+                    {
+                        // Trivia
+                        bool /* Trivia */ result = /* Trivia */ [|a.ToLowerInvariant() // Trivia
+                            == /* Trivia */ b.ToLowerInvariant()|] /* Trivia */; // Trivia
+                        if (/* Trivia */ [|a.ToLower() /* Trivia */ != /* Trivia */ b.ToLower()|] /* Trivia */) // Trivia
+                            return /* Trivia */ [|b /* Trivia */ != /* Trivia */ a.ToLowerInvariant()|] /* Trivia */; // Trivia
+                        return // Trivia
+                            [|"abc" /* Trivia */ == /* Trivia */ a.ToUpperInvariant()|] /* Trivia */; // Trivia
+                        // Trivia
+                    }
+                }
+                """;
+            string fixedCode = $$"""
+                using System;
+                class C
+                {
+                    bool M(string a, string b)
+                    {
+                        // Trivia
+                        bool /* Trivia */ result = /* Trivia */ a.Equals(b, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
+                        if (/* Trivia */ !a.Equals(b, StringComparison.CurrentCultureIgnoreCase) /* Trivia */) // Trivia
+                            return /* Trivia */ !b /* Trivia */ .Equals /* Trivia */ (a, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
+                        return // Trivia
+                            "abc" /* Trivia */ .Equals /* Trivia */ (a, StringComparison.InvariantCultureIgnoreCase) /* Trivia */; // Trivia
+                        // Trivia
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, fixedCode);
         }
 
@@ -298,16 +334,18 @@ class C
         [DataRow("\"aBc\".CompareTo(strB: \"cDe\")")]
         public async Task NoDiagnostic_All(string ignoredLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    object M()
-    {{
-        char ch = 'c';
-        object obj = 3;
-        return {ignoredLine};
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    object M()
+                    {
+                        char ch = 'c';
+                        object obj = 3;
+                        return {{ignoredLine}};
+                    }
+                }
+                """;
 
             await VerifyNoDiagnosticCSharpAsync(originalCode);
         }
@@ -316,18 +354,20 @@ class C
         [DynamicData(nameof(DiagnosticNoFixStartsWithContainsIndexOfData))]
         public async Task Diagnostic_NoFix_StartsWithContainsIndexOf(string diagnosedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    string GetStringA() => ""aBc"";
-    string GetStringB() => ""cDe"";
-    object M()
-    {{
-        string a = ""AbC"";
-        string b = ""CdE"";
-        return [|{diagnosedLine}|];
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    string GetStringA() => "aBc";
+                    string GetStringB() => "cDe";
+                    object M()
+                    {
+                        string a = "AbC";
+                        string b = "CdE";
+                        return [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, originalCode);
         }
 
@@ -338,18 +378,20 @@ class C
         [DynamicData(nameof(CSharpDiagnosticNoFixCompareToInvertedNamedData))]
         public async Task Diagnostic_NoFix_CompareTo(string diagnosedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    string GetStringA() => ""aBc"";
-    string GetStringB() => ""cDe"";
-    int M()
-    {{
-        string a = ""AbC"";
-        string b = ""CdE"";
-        return [|{diagnosedLine}|];
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    string GetStringA() => "aBc";
+                    string GetStringB() => "cDe";
+                    int M()
+                    {
+                        string a = "AbC";
+                        string b = "CdE";
+                        return [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
             await VerifyFixCSharpAsync(originalCode, originalCode);
         }
 
@@ -357,17 +399,19 @@ class C
         [DynamicData(nameof(CSharpDiagnosticNoFixEqualsData))]
         public async Task Diagnostic_NoFix_Equals(string diagnosedLine)
         {
-            string originalCode = $@"using System;
-class C
-{{
-    string GetString() => string.Empty;
-    bool M()
-    {{
-        string a = ""aBc"";
-        string b = ""dEf"";
-        return [|{diagnosedLine}|];
-    }}
-}}";
+            string originalCode = $$"""
+                using System;
+                class C
+                {
+                    string GetString() => string.Empty;
+                    bool M()
+                    {
+                        string a = "aBc";
+                        string b = "dEf";
+                        return [|{{diagnosedLine}}|];
+                    }
+                }
+                """;
 
             await VerifyFixCSharpAsync(originalCode, originalCode);
         }
@@ -435,28 +479,32 @@ class C
         [TestMethod]
         public async Task NestedDiagnostics_CSharp_FixAllRewritesBoth()
         {
-            string originalCode = @"using System;
-class C
-{
-    void M()
-    {
-        string a = ""aBc"";
-        string b = ""bc"";
-        string c = ""c"";
-        var result = a.ToLower().StartsWith(b.ToLower().IndexOf(c) > 0 ? ""x"" : ""y"");
-    }
-}";
-            string fixedCode = @"using System;
-class C
-{
-    void M()
-    {
-        string a = ""aBc"";
-        string b = ""bc"";
-        string c = ""c"";
-        var result = a.StartsWith(b.IndexOf(c, StringComparison.CurrentCultureIgnoreCase) > 0 ? ""x"" : ""y"", StringComparison.CurrentCultureIgnoreCase);
-    }
-}";
+            string originalCode = """
+                using System;
+                class C
+                {
+                    void M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        string c = "c";
+                        var result = a.ToLower().StartsWith(b.ToLower().IndexOf(c) > 0 ? "x" : "y");
+                    }
+                }
+                """;
+            string fixedCode = """
+                using System;
+                class C
+                {
+                    void M()
+                    {
+                        string a = "aBc";
+                        string b = "bc";
+                        string c = "c";
+                        var result = a.StartsWith(b.IndexOf(c, StringComparison.CurrentCultureIgnoreCase) > 0 ? "x" : "y", StringComparison.CurrentCultureIgnoreCase);
+                    }
+                }
+                """;
             await new VerifyCS.Test
             {
                 TestCode = originalCode,
