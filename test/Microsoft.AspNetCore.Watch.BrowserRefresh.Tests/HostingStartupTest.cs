@@ -169,29 +169,33 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
         }
 
         [TestMethod]
-        public void ConfigureServices_RegistersTagHelperComponent_WhenBrowserToolsAreActive()
+        public void ConfigureServices_RegistersModernBrowserToolsServices_WhenProviderIsConfigured()
         {
             var services = new ServiceCollection();
 
-            new HostingStartup().ConfigureServices(services, browserToolsActive: true);
+            new HostingStartup().ConfigureServices(services, new Uri("http://127.0.0.1:5000"));
 
-            var descriptors = services
+            var tagHelperDescriptors = services
                 .Where(static descriptor => descriptor.ServiceType == typeof(ITagHelperComponent))
                 .ToArray();
-
-            Assert.HasCount(1, descriptors);
-            Assert.AreEqual(typeof(BrowserRefreshTagHelperComponent), descriptors[0].ImplementationType);
+            Assert.HasCount(1, tagHelperDescriptors);
+            Assert.AreEqual(typeof(BrowserRefreshTagHelperComponent), tagHelperDescriptors[0].ImplementationType);
+            Assert.Contains(
+                static descriptor => descriptor.ServiceType == typeof(BrowserToolsForwarder),
+                services);
         }
 
         [TestMethod]
-        public void ConfigureServices_DoesNotRegisterTagHelperComponent_WhenBrowserToolsAreInactive()
+        public void ConfigureServices_DoesNotRegisterModernBrowserToolsServices_WhenProviderIsNotConfigured()
         {
             var services = new ServiceCollection();
 
-            new HostingStartup().ConfigureServices(services, browserToolsActive: false);
+            new HostingStartup().ConfigureServices(services, providerAddress: null);
 
             Assert.DoesNotContain(
-                static descriptor => descriptor.ServiceType == typeof(ITagHelperComponent),
+                static descriptor =>
+                    descriptor.ServiceType == typeof(ITagHelperComponent) ||
+                    descriptor.ServiceType == typeof(BrowserToolsForwarder),
                 services);
         }
 
