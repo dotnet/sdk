@@ -4,6 +4,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
+using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -21,13 +22,13 @@ internal static class DotNetWatcher
             context.Logger.LogDebug("MSBuild incremental optimizations suppressed.");
         }
 
-        var environmentBuilder = new Dictionary<string, string>();
-
         ChangedFile? changedFile = null;
         var buildEvaluator = new BuildEvaluator(context);
 
         for (var iteration = 0;;iteration++)
         {
+            var environmentBuilder = new Dictionary<string, string>();
+
             if (await buildEvaluator.EvaluateAsync(changedFile, shutdownCancellationToken) is not { } evaluationResult)
             {
                 context.Logger.LogError("Failed to find a list of files to watch");
@@ -61,11 +62,19 @@ internal static class DotNetWatcher
                 }
             };
 
-            var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
-                ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
+            var webAppModel = projectRootNode != null
+                ? HotReloadAppModel.InferFromProject(context, projectRootNode) as WebApplicationAppModel
+                : null;
+            var browserRefreshServer = webAppModel != null
+                ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode!, webAppModel, shutdownCancellationToken)
                 : null;
 
-            browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder, enableHotReload: false);
+            if (browserRefreshServer != null)
+            {
+                webAppModel!.CreateBrowserToolsLaunchConfigurator(
+                    browserRefreshServer,
+                    BrowserToolsLaunchFeatures.BrowserRefresh).ConfigureLaunchEnvironment(environmentBuilder);
+            }
 
             Action<OutputLine>? outputObserver = null;
             if (projectRootNode != null)

@@ -19,11 +19,16 @@ internal sealed class WebAssemblyHotReloadClient(
     ILogger logger,
     ILogger agentLogger,
     AbstractBrowserRefreshServer browserRefreshServer,
+    Guid generationId,
+    bool enableBrowserToolsReplay,
     ImmutableArray<string> projectHotReloadCapabilities,
     Version projectTargetFrameworkVersion,
     bool suppressBrowserRequestsForTesting)
     : HotReloadClient(logger, agentLogger)
 {
+    public Guid GenerationId
+        => generationId;
+
     private static readonly ImmutableArray<string> s_defaultCapabilities60 =
         ["Baseline"];
 
@@ -101,14 +106,8 @@ internal sealed class WebAssemblyHotReloadClient(
             return Task.FromResult(true);
         }
 
-        // When testing abstract away the browser and pretend all changes have been applied:
-        if (suppressBrowserRequestsForTesting)
-        {
-            return Task.FromResult(true);
-        }
-
         // Make sure to send the same update to all browsers, the only difference is the shared secret.
-        var deltas = updates.Select(static update => new JsonDelta
+        var deltas = applicableUpdates.Select(static update => new JsonDelta
         {
             ModuleId = update.ModuleId,
             MetadataDelta = ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
@@ -119,20 +118,33 @@ internal sealed class WebAssemblyHotReloadClient(
 
         var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
-        // If no browser is connected we assume the changes have been applied.
-        // If at least one browser suceeds we consider the changes successfully applied.
-        // TODO: 
-        // The refresh server should remember the deltas and apply them to browsers connected in future.
-        // Currently the changes are remembered on the dev server and sent over there from the browser.
-        // If no browser is connected the changes are not sent though.
-
         return QueueUpdateBatch(
             sendAndReceive: async batchId =>
             {
+                if (enableBrowserToolsReplay)
+                {
+                    browserRefreshServer.BrowserToolsUpdateStore.Append(new BrowserToolsUpdateBatch(
+                        generationId,
+                        batchId,
+                        [.. deltas.Select(static delta => new BrowserToolsManagedCodeUpdate(
+                            delta.ModuleId,
+                            delta.MetadataDelta,
+                            delta.ILDelta,
+                            delta.PdbDelta,
+                            delta.UpdatedTypes))]));
+                }
+
+                // When testing abstract away the browser and pretend all changes have been applied:
+                if (suppressBrowserRequestsForTesting)
+                {
+                    return true;
+                }
+
                 var result = await browserRefreshServer.SendAndReceiveAsync(
                     request: sharedSecret => new JsonApplyManagedCodeUpdatesRequest
                     {
                         SharedSecret = sharedSecret,
+                        GenerationId = generationId,
                         UpdateId = batchId,
                         Deltas = deltas,
                         ResponseLoggingLevel = (int)loggingLevel
@@ -145,7 +157,7 @@ internal sealed class WebAssemblyHotReloadClient(
                     }),
                     applyOperationCancellationToken);
 
-                return result ?? false;
+                return result ?? enableBrowserToolsReplay;
             },
             applyOperationCancellationToken);
     }
@@ -174,6 +186,7 @@ internal sealed class WebAssemblyHotReloadClient(
         public string Type => "ApplyManagedCodeUpdates";
         public string? SharedSecret { get; init; }
 
+        public Guid GenerationId { get; init; }
         public int UpdateId { get; init; }
         public JsonDelta[] Deltas { get; init; }
         public int ResponseLoggingLevel { get; init; }
