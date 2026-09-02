@@ -42,8 +42,8 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
 
     internal override IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
         AbstractBrowserRefreshServer browserRefreshServer,
-        BrowserToolsLaunchFeatures features)
+        bool enableManagedHotReload)
         => UsesBrowserToolsProvider
-            ? base.CreateBrowserToolsLaunchConfigurator(browserRefreshServer, features)
-            : CreateLegacyBrowserToolsLaunchConfigurator(browserRefreshServer, features);
+            ? base.CreateBrowserToolsLaunchConfigurator(browserRefreshServer, enableManagedHotReload)
+            : CreateLegacyBrowserToolsLaunchConfigurator(browserRefreshServer, enableManagedHotReload);
 }
