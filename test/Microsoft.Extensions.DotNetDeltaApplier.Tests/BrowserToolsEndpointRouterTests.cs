@@ -109,6 +109,26 @@ public class BrowserToolsEndpointRouterTests
     }
 
     [TestMethod]
+    [DataRow(BrowserToolsProtocol.ClientModulePath)]
+    [DataRow(BrowserToolsProtocol.BootstrapModulePath)]
+    public async Task BrowserScript_Get_ReturnsJavaScript(string scriptPath)
+    {
+        var store = new BrowserToolsUpdateStore();
+        using var server = new TestBrowserRefreshServer();
+        var router = CreateRouter(store, server);
+
+        var (context, body) = await InvokeAsync(
+            router,
+            HttpMethods.Get,
+            BrowserToolsProtocol.RoutePrefix + scriptPath);
+
+        AssertResponse(context, StatusCodes.Status200OK);
+        Assert.AreEqual("text/javascript; charset=utf-8", context.Response.ContentType);
+        Assert.AreEqual((long?)body.Length, context.Response.ContentLength);
+        Assert.IsNotEmpty(body);
+    }
+
+    [TestMethod]
     [DataRow("POST")]
     [DataRow("PUT")]
     [DataRow("DELETE")]

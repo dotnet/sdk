@@ -18,7 +18,7 @@ public class BrowserRefreshTagHelperComponentTest
 
         Assert.AreEqual(int.MaxValue, component.Order);
         Assert.AreEqual(
-            "<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>",
+            "<script type=\"module\" src=\"/_framework/dotnet-browser-tools/browser-tools-bootstrap.js\"></script>",
             output.PostContent.GetContent());
     }
 

@@ -4,6 +4,7 @@
 using System.Buffers;
 using System.Net.WebSockets;
 using System.Security.Cryptography;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 if (args is not [var urlArg])
@@ -17,23 +18,36 @@ var origin = Environment.GetEnvironmentVariable("TEST_BROWSER_ORIGIN_HEADER") ??
 
 Log($"Setting Origin header to '{origin}'.");
 
-var (webSocketUrls, publicKey) = await GetWebSocketUrlsAndPublicKey(url);
+var (webSocketUrls, publicKey, reconnectThroughApplication) = await GetWebSocketUrlsAndPublicKey(url);
 
 var secret = RandomNumberGenerator.GetBytes(32);
 var encryptedSecret = GetEncryptedSecret(publicKey, secret);
 
-using var webSocket = await OpenWebSocket(origin, webSocketUrls, encryptedSecret);
-var buffer = new byte[8 * 1024];
-
-while (await TryReceiveMessageAsync(webSocket, message => Log($"Received: {Encoding.UTF8.GetString(message)}")))
+while (true)
 {
-}
+    using var webSocket = await OpenWebSocket(origin, webSocketUrls, encryptedSecret, logFailures: !reconnectThroughApplication);
+    var buffer = new byte[8 * 1024];
 
-Log("WebSocket closed");
+    while (await TryReceiveMessageAsync(
+        webSocket,
+        message => Log($"Received: {Encoding.UTF8.GetString(message)}"),
+        logFailures: !reconnectThroughApplication))
+    {
+    }
+
+    if (!reconnectThroughApplication)
+    {
+        Log("WebSocket closed");
+        break;
+    }
+
+    await WaitForBrowserToolsRouteAsync(url);
+    Log("""Received: {"type":"Reload"}""");
+}
 
 return 0;
 
-static async Task<WebSocket> OpenWebSocket(string origin, string[] urls, string encryptedSecret)
+static async Task<WebSocket> OpenWebSocket(string origin, string[] urls, string encryptedSecret, bool logFailures)
 {
     foreach (var url in urls)
     {
@@ -52,14 +66,20 @@ static async Task<WebSocket> OpenWebSocket(string origin, string[] urls, string 
         }
         catch (Exception e)
         {
-            Log($"Error connecting to '{url}': {e.Message}");
+            if (logFailures)
+            {
+                Log($"Error connecting to '{url}': {e.Message}");
+            }
         }
     }
 
     throw new InvalidOperationException("Unable to establish a connection.");
 }
 
-static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<ReadOnlySpan<byte>> receiver)
+static async ValueTask<bool> TryReceiveMessageAsync(
+    WebSocket socket,
+    Action<ReadOnlySpan<byte>> receiver,
+    bool logFailures)
 {
     var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
 
@@ -73,7 +93,10 @@ static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<Rea
         }
         catch (Exception e) when (e is not OperationCanceledException)
         {
-            Log($"Failed to receive response: {e.Message}");
+            if (logFailures)
+            {
+                Log($"Failed to receive response: {e.Message}");
+            }
             return false;
         }
 
@@ -93,13 +116,38 @@ static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<Rea
     return true;
 }
 
-static async Task<(string[] url, string key)> GetWebSocketUrlsAndPublicKey(Uri baseUrl)
+static async Task<(string[] url, string key, bool reconnectThroughApplication)> GetWebSocketUrlsAndPublicKey(Uri baseUrl)
 {
+    var sessionUrl = new Uri(baseUrl, "/_framework/dotnet-browser-tools/session.json");
+    using var httpClient = new HttpClient();
+    using var sessionResponse = await httpClient.GetAsync(sessionUrl);
+    if (sessionResponse.IsSuccessStatusCode)
+    {
+        Log($"Request for '{sessionUrl}' succeeded");
+        using var session = JsonDocument.Parse(await sessionResponse.Content.ReadAsStreamAsync());
+        var modernWebSocketUrl = new UriBuilder(baseUrl)
+        {
+            Scheme = baseUrl.Scheme == Uri.UriSchemeHttps ? Uri.UriSchemeWss : Uri.UriSchemeWs,
+            Path = "/_framework/dotnet-browser-tools/connect",
+            Query = string.Empty,
+        }.Uri.AbsoluteUri;
+        var publicKey = session.RootElement.GetProperty("publicKey").GetString() ??
+            throw new InvalidOperationException("Browser tools session did not contain a public key.");
+
+        Log($"WebSocket url is '{modernWebSocketUrl}'.");
+        Log($"Key is '{publicKey}'.");
+        return ([modernWebSocketUrl], publicKey, reconnectThroughApplication: true);
+    }
+
+    if (sessionResponse.StatusCode != System.Net.HttpStatusCode.NotFound)
+    {
+        sessionResponse.EnsureSuccessStatusCode();
+    }
+
     var refreshScriptUrl = new Uri(baseUrl, "/_framework/aspnetcore-browser-refresh.js");
 
     Log($"Fetching '{refreshScriptUrl}'");
 
-    using var httpClient = new HttpClient();
     var content = await httpClient.GetStringAsync(refreshScriptUrl);
 
     Log($"Request for '{refreshScriptUrl}' succeeded");
@@ -109,7 +157,31 @@ static async Task<(string[] url, string key)> GetWebSocketUrlsAndPublicKey(Uri b
     Log($"WebSocket urls are '{string.Join(',', webSocketUrl)}'.");
     Log($"Key is '{key}'.");
 
-    return (webSocketUrl, key);
+    return (webSocketUrl, key, reconnectThroughApplication: false);
+}
+
+static async Task WaitForBrowserToolsRouteAsync(Uri baseUrl)
+{
+    var sessionUrl = new Uri(baseUrl, "/_framework/dotnet-browser-tools/session.json");
+    using var httpClient = new HttpClient();
+
+    while (true)
+    {
+        try
+        {
+            using var response = await httpClient.GetAsync(sessionUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                return;
+            }
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"Waiting for browser tools route: {e.Message}");
+        }
+
+        await Task.Delay(100);
+    }
 }
 
 static string[] GetWebSocketUrls(string refreshScript)
