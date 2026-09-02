@@ -69,6 +69,30 @@ End Class
                 .WithArguments("Public Sub ObsoletedOnLinux()", "'Linux' 4.1 and later", "'Linux'"));
         }
 
+        [TestMethod, Test.Utilities.WorkItem(54066, "https://github.com/dotnet/sdk/issues/54066")]
+        public async Task NameOfObsoletedMemberNotWarn()
+        {
+            var csSource = @"
+using System;
+using System.Runtime.Versioning;
+using Mock;
+
+public class Test
+{
+    [SupportedOSPlatform(""Linux"")]
+    public void M1()
+    {
+        Console.WriteLine(nameof(ObsoletedOnLinux4)); // 'nameof' does not read the property
+        Console.WriteLine({|CA1422:ObsoletedOnLinux4|}); // This call site is reachable on: 'Linux'. 'Test.ObsoletedOnLinux4' is obsoleted on: 'Linux' 4.1 and later.
+    }
+
+    [Mock.ObsoletedOSPlatform(""Linux4.1"")]
+    public string ObsoletedOnLinux4 => string.Empty;
+}" + MockObsoletedAttributeCS;
+
+            await VerifyAnalyzerCSAsync(csSource);
+        }
+
         [TestMethod]
         public async Task ObsoletedAndSupportedMixedDiagnostics()
         {
