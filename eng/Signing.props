@@ -46,6 +46,7 @@
     <FileExtensionSignInfo Update=".js" CertificateName="None" />
 
     <FileSignInfo Include="Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" CertificateName="MicrosoftDotNet500" />
+    <FileSignInfo Include="Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js" CertificateName="MicrosoftDotNet500" />
 
     <!-- Skip signing .py files because they are already signed -->
     <FileExtensionSignInfo Update=".py" CertificateName="None" />

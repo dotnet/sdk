@@ -13,6 +13,9 @@ using System.Net.WebSockets;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+#if NET
+using Microsoft.AspNetCore.Http;
+#endif
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
@@ -36,6 +39,7 @@ internal abstract class AbstractBrowserRefreshServer(
     private readonly TaskCompletionSource<None> _browserConnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private readonly SharedSecretProvider _sharedSecretProvider = new();
+    private readonly BrowserToolsUpdateStore _browserToolsUpdateStore = new();
 
     // initialized by StartAsync
     private WebServerHost? _lazyHost;
@@ -64,6 +68,28 @@ internal abstract class AbstractBrowserRefreshServer(
     public ILogger Logger
         => logger;
 
+    internal string MiddlewareAssemblyPath
+        => middlewareAssemblyPath;
+
+    internal ImmutableArray<string> WebSocketEndpoints
+        => (_lazyHost ?? throw new InvalidOperationException("Server not started")).EndPoints;
+
+    internal Uri ProviderAddress
+        => new((_lazyHost ?? throw new InvalidOperationException("Server not started")).HttpEndPoints.First(
+            static endpoint => endpoint.StartsWith("http:", StringComparison.OrdinalIgnoreCase)));
+
+    internal string VirtualDirectory
+        => (_lazyHost ?? throw new InvalidOperationException("Server not started")).VirtualDirectory;
+
+    internal string PublicKey
+        => _sharedSecretProvider.GetPublicKey();
+
+    internal IBrowserToolsUpdateStore BrowserToolsUpdateStore
+        => _browserToolsUpdateStore;
+
+    internal Guid ResetBrowserToolsGeneration()
+        => _browserToolsUpdateStore.Reset();
+
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
         if (_lazyHost != null)
@@ -76,35 +102,12 @@ internal abstract class AbstractBrowserRefreshServer(
     }
 
     public void ConfigureLaunchEnvironment(IDictionary<string, string> builder, bool enableHotReload)
-    {
-        if (_lazyHost == null)
-        {
-            throw new InvalidOperationException("Server not started");
-        }
-
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", _lazyHost.EndPoints);
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey] = _sharedSecretProvider.GetPublicKey();
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadVirtualDirectory] = _lazyHost.VirtualDirectory;
-
-        builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
-        builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
-
-        if (enableHotReload)
-        {
-            // Note:
-            // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions and Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware
-            // expect DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing Hot Reload in this process.
-            // The value is converted to DOTNET-MODIFIABLE-ASSEMBLIES header, which is in turn converted back to environment variable in Mono browser runtime loader:
-            // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
-            builder[MiddlewareEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
-        }
-
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            // enable debug logging from middleware:
-            builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
-        }
-    }
+        => new HostingStartupBrowserToolsLaunchConfigurator(
+            middlewareAssemblyPath,
+            this,
+            BrowserToolsLaunchFeatures.BrowserRefresh |
+            (enableHotReload ? BrowserToolsLaunchFeatures.ManagedHotReload : BrowserToolsLaunchFeatures.None))
+            .ConfigureLaunchEnvironment(builder);
 
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.
@@ -140,6 +143,31 @@ internal abstract class AbstractBrowserRefreshServer(
             }
         }
     }
+
+#if NET
+    internal async Task AcceptBrowserConnectionAsync(HttpContext context, bool requireSharedSecret = false)
+    {
+        if (!context.WebSockets.IsWebSocketRequest)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        var subProtocol = context.WebSockets.WebSocketRequestedProtocols is [var requestedSubProtocol]
+            ? requestedSubProtocol
+            : null;
+        if (requireSharedSecret && subProtocol == null)
+        {
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
+        var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
+
+        var connection = OnBrowserConnected(clientSocket, subProtocol);
+        await connection.Disconnected.Task;
+    }
+#endif
 
     /// <summary>
     /// For testing.

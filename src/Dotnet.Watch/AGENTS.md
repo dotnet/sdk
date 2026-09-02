@@ -10,7 +10,7 @@ Reload).
 | `dotnet-watch` | The tool executable and CLI surface. Its command/options are defined in `CommandLine/DotnetWatchCommandDefinition.cs`. |
 | `Watch` (`Microsoft.DotNet.HotReload.Watch`) | Core watcher library: file-set computation, process launching, Hot Reload, app models. |
 | `DotNetWatchTasks` | MSBuild task bundled into the tool for design-time file collection. |
-| `DotNetDeltaApplier`, `Web.Middleware`, `BrowserRefresh` | Assemblies **injected into the running app** via `DOTNET_STARTUP_HOOKS`. |
+| `DotNetDeltaApplier`, `Web.Middleware`, `BrowserRefresh` | Assemblies injected into compatible non-Gateway app models through the hosting-startup path. |
 | `HotReloadAgent.*`, `HotReloadClient`, `AspireService` | Shared code consumed via `.projitems`.|
 
 ## Conventions & gotchas
@@ -26,6 +26,16 @@ Reload).
   named-pipe protocol; Blazor WASM uses JSON over WebSocket. Each protocol has its
   own `HotReloadClient` subclass (e.g. `DefaultHotReloadClient`,
   `WebAssemblyHotReloadClient`); a new app model may need its own implementation.
+- **Standalone .NET 11+ Blazor WASM uses a Gateway-native browser-tools path.**
+  [`BlazorWebAssemblyAppModel.cs`](Watch/AppModels/BlazorWebAssemblyAppModel.cs)
+  configures the Gateway's YARP route instead of injecting BrowserRefresh startup
+  hooks. The provider endpoints and generation-scoped replay live under
+  [`HotReloadClient/Web`](HotReloadClient/Web), while the WebAssembly initializer
+  discovers the provider before enabling runtime mutability. Keep the reserved route
+  root-relative (outside the application's Gateway path base), require the encrypted
+  shared-secret WebSocket subprotocol, and include the generation identity in live
+  managed-update messages. Preserve the initializer's injected-script fallback and the
+  legacy hosting-startup configurator for other app models and older target frameworks.
 - **`CompilationHandler` drives Roslyn** via
   `Microsoft.CodeAnalysis.ExternalAccess.HotReload`; unsupported edits fall
   back to a full rebuild + restart.
