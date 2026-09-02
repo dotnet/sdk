@@ -222,6 +222,52 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
+        [TestMethod]
+        public void RunTestProjectWithIgnoredInvalidLaunchArguments_AppliesEnvironmentVariables()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
+                .WithSource();
+
+            File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithLaunchSettings": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)",
+                            "applicationUrl": "$([)",
+                            "environmentVariables": {
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
+                            }
+                        }
+                    }
+                }
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchEnvironment>expanded-environment</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(
+                programPath,
+                File.ReadAllText(programPath).Replace(
+                    "if (!args.Contains(\"--from-launch-settings\"))",
+                    "if (args.Contains(\"--from-launch-settings\"))"));
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--no-launch-profile-arguments");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=expanded-environment");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]

@@ -130,7 +130,9 @@ internal abstract class RunApiInput
                 readCodeFromStdin: false,
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
-            var result = runCommand.ReadLaunchProfileSettings();
+            var result = runCommand.ReadLaunchProfileSettings(
+                buildCommand.CreateProjectInstance,
+                expandExecutableProfile: true);
             var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
             return new RunApiOutput.RunCommand

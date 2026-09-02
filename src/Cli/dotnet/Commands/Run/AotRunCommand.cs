@@ -266,7 +266,12 @@ internal static class AotRunCommand
             // Explicit verbosity is not eligible for the AOT path, so every reachable invocation
             // has the managed command's default non-quiet run verbosity.
             reportUsingLaunchSettings: true,
-            (message, isError) => messages.Add((message, isError)));
+            (message, isError) => messages.Add((message, isError)),
+            new LaunchProfileParserOptions(
+                ExpandMSBuildProperty: null,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: false,
+                ExpandCommandLineArgs: false));
         if (result.FailureReason is not null)
         {
             messages.Add((string.Format(

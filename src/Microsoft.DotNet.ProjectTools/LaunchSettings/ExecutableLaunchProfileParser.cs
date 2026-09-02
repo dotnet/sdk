@@ -20,7 +20,8 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
         string launchSettingsPath,
         string? launchProfileName,
         string json,
-        Func<string, string>? expandMSBuildProperty = null)
+        Func<string, string>? expandMSBuildProperty,
+        bool expandCommandLineArgs)
     {
         var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ExecutableLaunchProfile);
         if (profile == null)
@@ -37,12 +38,18 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
         {
             LaunchProfileName = launchProfileName,
             ExecutablePath = ExpandVariables(profile.ExecutablePath, expandMSBuildProperty),
-            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, expandMSBuildProperty),
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, expandMSBuildProperty, expandCommandLineArgs),
             WorkingDirectory = workingDirectory,
             DotNetRunMessages = profile.DotNetRunMessages,
             EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, expandMSBuildProperty),
         });
     }
+
+    internal static bool RequiresMSBuildExpansion(ExecutableLaunchProfile profile, bool includeCommandLineArgs)
+        => LaunchProfileParser.RequiresMSBuildExpansion(profile.ExecutablePath)
+            || LaunchProfileParser.RequiresMSBuildExpansion(profile.WorkingDirectory)
+            || (includeCommandLineArgs && LaunchProfileParser.RequiresMSBuildExpansion(profile.CommandLineArgs))
+            || profile.EnvironmentVariables.Values.Any(LaunchProfileParser.RequiresMSBuildExpansion);
 
     private static bool TryParseWorkingDirectory(
         string launchSettingsPath,

@@ -760,13 +760,40 @@ internal static class SolutionAndProjectUtility
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        LaunchProfileParseResult result = CommonRunHelpers.ReadLaunchProfileFromFile(launchSettingsPath, profileName, expandMSBuildProperty);
+        LaunchProfileParseResult result = CommonRunHelpers.ReadLaunchProfileFromFile(
+            launchSettingsPath,
+            profileName,
+            new LaunchProfileParserOptions(
+                expandMSBuildProperty,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: false,
+                ExpandCommandLineArgs: !buildOptions.NoLaunchProfileArguments));
         if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
             return null;
         }
 
-        return result.Profile;
+        if (result.Profile is not ProjectLaunchProfile projectProfile)
+        {
+            return result.Profile;
+        }
+
+        try
+        {
+            return ProjectLaunchProfileParser.ExpandMSBuildProperties(
+                projectProfile,
+                expandMSBuildProperty,
+                expandCommandLineArgs: !buildOptions.NoLaunchProfileArguments,
+                expandApplicationUrl: false);
+        }
+        catch (Microsoft.Build.Exceptions.InvalidProjectFileException ex)
+        {
+            Reporter.Error.WriteLine(string.Format(
+                CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                profileName,
+                ex.Message).Bold().Red());
+            return null;
+        }
     }
 }
