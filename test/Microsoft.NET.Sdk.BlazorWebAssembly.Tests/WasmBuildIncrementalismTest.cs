@@ -6,11 +6,14 @@
 using System.Text.Json;
 using Microsoft.NET.Sdk.WebAssembly;
 
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
-    public class WasmBuildIncrementalismTest(ITestOutputHelper log) : AspNetSdkTest(log)
+    [TestClass]
+    public class WasmBuildIncrementalismTest : AspNetSdkTest
     {
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_IsIncremental()
         {
             // Arrange
@@ -28,6 +31,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             var filesToIgnore = new[]
             {
                 Path.Combine(buildOutputDirectory, "blazorwasm.runtimeconfig.json"),
+                Path.Combine(buildOutputDirectory, "blazorwasm.runtimeconfig.dev.json"),
                 Path.Combine(buildOutputDirectory, "RazorClassLibrary.staticwebassets.endpoints.json"),
                 Path.Combine(buildOutputDirectory, "blazorwasm.staticwebassets.endpoints.json")
             };
@@ -54,7 +58,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_GzipCompression_IsIncremental()
         {
             // Arrange
@@ -65,7 +70,9 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 {
                     // Since boot config gets modified on each build, we explicitly exclude it from compression so
                     // its compressed asset doesn't fail the thumb print check.
-                    document.Root.Add(XElement.Parse($"<PropertyGroup><CompressionExcludePatterns>$(CompressionExcludePatterns);_framework\\{WasmBootConfigFileName}</CompressionExcludePatterns></PropertyGroup>"));
+                    // blazor.webassembly.js is a grouped framework asset whose content may be regenerated on each build,
+                    // so we exclude it from compression as well.
+                    document.Root.Add(XElement.Parse($"<PropertyGroup><CompressionExcludePatterns>$(CompressionExcludePatterns);_framework\\{WasmBootConfigFileName};_framework\\blazor.webassembly.js</CompressionExcludePatterns></PropertyGroup>"));
                 }
             });
 
@@ -89,7 +96,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                     .Pass();
 
                 var newThumbPrint = FileThumbPrint.CreateFolderThumbprint(projectDirectory, gzipCompressionDirectory);
-                Assert.Equal(thumbPrint.Count, newThumbPrint.Count);
+                newThumbPrint.Should().HaveCount(thumbPrint.Count);
                 for (var j = 0; j < thumbPrint.Count; j++)
                 {
                     thumbPrint[j].Equals(newThumbPrint[j]).Should().BeTrue($"because {thumbPrint[j].Hash} should be the same as {newThumbPrint[j].Hash} for file {thumbPrint[j].Path}");
@@ -97,7 +104,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_SatelliteAssembliesFileIsPreserved()
         {
             // Arrange
@@ -145,7 +153,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 
             void Verify()
             {
-                new FileInfo(satelliteAssemblyFile).Should().Exist();
+                // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+                new FileInfo(satelliteAssemblyFile).Should().NotExist();
 
                 var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
                 var satelliteResources = bootJsonFile.resources.satelliteResources;
@@ -160,7 +169,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             }
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_SatelliteAssembliesFileIsCreated_IfNewFileIsAdded()
         {
             // Arrange
@@ -199,7 +209,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            new FileInfo(satelliteAssemblyFile).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(satelliteAssemblyFile).Should().NotExist();
             bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             satelliteResources = bootJsonFile.resources.satelliteResources;
             satelliteResources.Should().HaveCount(1);
@@ -210,7 +221,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             kvp.Value.Should().ContainKey("blazorwasm.resources.wasm");
         }
 
-        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
         public void Build_SatelliteAssembliesFileIsDeleted_IfAllSatelliteFilesAreRemoved()
         {
             // Arrange
@@ -238,7 +250,8 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .Should()
                 .Pass();
 
-            new FileInfo(satelliteAssemblyFile).Should().Exist();
+            // Framework assets are no longer copied to bin/_framework/ during build (dotnet/runtime#126407)
+            new FileInfo(satelliteAssemblyFile).Should().NotExist();
 
             var bootJsonFile = BootJsonDataLoader.ParseBootData(bootJson);
             var satelliteResources = bootJsonFile.resources.satelliteResources;

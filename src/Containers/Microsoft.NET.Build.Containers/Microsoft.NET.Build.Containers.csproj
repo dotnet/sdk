@@ -1,8 +1,9 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework)</TargetFrameworks>
     <ImplicitUsings>enable</ImplicitUsings>
+    <IsMSBuildTaskProject>true</IsMSBuildTaskProject>
 
     <TargetsForTfmSpecificBuildOutput>
       $(TargetsForTfmSpecificBuildOutput);CopyProjectReferencesToPackage
@@ -56,7 +57,6 @@
 
     <!-- References that are also carried in the SDK itself so don't need to be redistributed -->
     <PackageReference Include="Microsoft.Extensions.Logging" ExcludeAssets="runtime" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" ExcludeAssets="runtime" />
   </ItemGroup>
 
   <ItemGroup>

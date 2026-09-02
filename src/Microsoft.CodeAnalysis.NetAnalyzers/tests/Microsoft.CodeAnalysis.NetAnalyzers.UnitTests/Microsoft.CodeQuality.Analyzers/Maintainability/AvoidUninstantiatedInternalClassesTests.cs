@@ -1,4 +1,5 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
@@ -6,19 +7,19 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
 
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidUninstantiatedInternalClasses,
-    Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpAvoidUninstantiatedInternalClassesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidUninstantiatedInternalClasses,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.Maintainability.BasicAvoidUninstantiatedInternalClassesFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 {
+    [TestClass]
     public class AvoidUninstantiatedInternalClassesTests
     {
-        [Fact, WorkItem(6049, "https://github.com/dotnet/roslyn-analyzers/issues/6049")]
+        [TestMethod, WorkItem(6049, "https://github.com/dotnet/roslyn-analyzers/issues/6049")]
         public async Task CA1812_CSharp_Diagnostic_FileUninstantiatedInternalClassAsync()
         {
             const string source = "file class [|C|] { }";
@@ -27,217 +28,250 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 TestCode = source,
                 FixedCode = source,
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp11,
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal class C { }
-",
+"""
+    internal class C { }
+    """,
                 GetCSharpResultAt(1, 16, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Class C
-End Class",
+"""
+    Friend Class C
+    End Class
+    """,
                 GetBasicResultAt(1, 14, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalStructAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal struct CInternal { }");
+"internal struct CInternal { }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalStructAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Structure CInternal
-End Structure");
+"""
+    Friend Structure CInternal
+    End Structure
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class C { }");
+"public class C { }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_UninstantiatedPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class C
-End Class");
+"""
+    Public Class C
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_InstantiatedInternalClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal class C { }
+"""
+    internal class C { }
 
-public class D
-{
-    private readonly C _c = new C();
-}");
+    public class D
+    {
+        private readonly C _c = new C();
+    }
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_InstantiatedInternalClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Class C
-End Class
+"""
+    Friend Class C
+    End Class
 
-Public Class D
-     Private _c As New C
-End Class");
+    Public Class D
+         Private _c As New C
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class C
-{
-    internal class D { }
-}",
+"""
+    public class C
+    {
+        internal class D { }
+    }
+    """,
                 GetCSharpResultAt(3, 20, "C.D"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class C
-    Friend Class D
+"""
+    Public Class C
+        Friend Class D
+        End Class
     End Class
-End Class",
+    """,
                 GetBasicResultAt(2, 18, "C.D"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_InstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"public class C
-{
-    private readonly D _d = new D();
+"""
+    public class C
+    {
+        private readonly D _d = new D();
 
-    internal class D { }
-}");
+        internal class D { }
+    }
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_InstantiatedInternalClassNestedInPublicClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Public Class C
-    Private ReadOnly _d = New D
+"""
+    Public Class C
+        Private ReadOnly _d = New D
 
-    Friend Class D
+        Friend Class D
+        End Class
     End Class
-End Class");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_InternalModuleAsync()
         {
             // No static classes in VB.
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Module M
-End Module");
+"""
+    Friend Module M
+    End Module
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_InternalAbstractClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal abstract class A { }");
+"internal abstract class A { }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_InternalAbstractClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend MustInherit Class A
-End Class");
+"""
+    Friend MustInherit Class A
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_InternalDelegateAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-namespace N
-{
-    internal delegate void Del();
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                namespace N
+                {
+                    internal delegate void Del();
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_InternalDelegateAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Namespace N
-    Friend Delegate Sub Del()
-End Namespace");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Namespace N
+                    Friend Delegate Sub Del()
+                End Namespace
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_InternalEnumAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"namespace N
-{
-    internal enum E {}  // C# enums don't care if there are any members.
-}");
+"""
+    namespace N
+    {
+        internal enum E {}  // C# enums don't care if there are any members.
+    }
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_InternalEnumAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Namespace N
-    Friend Enum E
-        None            ' VB enums require at least one member.
-    End Enum
-End Namespace");
+"""
+    Namespace N
+        Friend Enum E
+            None            ' VB enums require at least one member.
+        End Enum
+    End Namespace
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_AttributeClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
+"""
+    using System;
 
-internal class MyAttribute: Attribute {}
-internal class MyOtherAttribute: MyAttribute {}");
+    internal class MyAttribute: Attribute {}
+    internal class MyOtherAttribute: MyAttribute {}
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_AttributeClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
+"""
+    Imports System
 
-Friend Class MyAttribute
-    Inherits Attribute
-End Class
+    Friend Class MyAttribute
+        Inherits Attribute
+    End Class
 
-Friend Class MyOtherAttribute
-    Inherits MyAttribute
-End Class");
+    Friend Class MyOtherAttribute
+        Inherits MyAttribute
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningVoidAsync()
         {
             await new VerifyCS.Test
@@ -247,16 +281,18 @@ End Class");
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@"internal class C
-{
-    private static void Main() {}
-}",
+"""
+    internal class C
+    {
+        private static void Main() {}
+    }
+    """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_TypeContainingAssemblyEntryPointReturningVoidAsync()
         {
             await new VerifyVB.Test
@@ -266,16 +302,18 @@ End Class");
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@"Friend Class C
-    Public Shared Sub Main()
-    End Sub
-End Class",
+"""
+    Friend Class C
+        Public Shared Sub Main()
+        End Sub
+    End Class
+    """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningIntAsync()
         {
             await new VerifyCS.Test
@@ -285,16 +323,18 @@ End Class",
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@"internal class C
-{
-    private static int Main() { return 1; }
-}",
+"""
+    internal class C
+    {
+        private static int Main() { return 1; }
+    }
+    """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_TypeContainingAssemblyEntryPointReturningIntAsync()
         {
             await new VerifyVB.Test
@@ -304,17 +344,19 @@ End Class",
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@"Friend Class C
-    Public Shared Function Main() As Integer
-        Return 1
-    End Function
-End Class",
+"""
+    Friend Class C
+        Public Shared Function Main() As Integer
+            Return 1
+        End Function
+    End Class
+    """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningTaskAsync()
         {
             await new VerifyCS.Test
@@ -325,17 +367,19 @@ End Class",
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@" using System.Threading.Tasks;
-internal static class C
-{
-    private static async Task Main() { await Task.Delay(1); }
-}",
+"""
+     using System.Threading.Tasks;
+    internal static class C
+    {
+        private static async Task Main() { await Task.Delay(1); }
+    }
+    """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_TypeContainingAssemblyEntryPointReturningTaskIntAsync()
         {
             await new VerifyCS.Test
@@ -346,39 +390,45 @@ internal static class C
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@" using System.Threading.Tasks;
-internal static class C
-{
-    private static async Task<int> Main() { await Task.Delay(1); return 1; }
-}",
+"""
+     using System.Threading.Tasks;
+    internal static class C
+    {
+        private static async Task<int> Main() { await Task.Delay(1); return 1; }
+    }
+    """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_Diagnostic_MainMethodIsNotStaticAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal class C
-{
-    private void Main() {}
-}",
+"""
+    internal class C
+    {
+        private void Main() {}
+    }
+    """,
                 GetCSharpResultAt(1, 16, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_MainMethodIsNotStaticAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Class C
-    Private Sub Main()
-    End Sub
-End Class",
+"""
+    Friend Class C
+        Private Sub Main()
+        End Sub
+    End Class
+    """,
                 GetBasicResultAt(1, 14, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_MainMethodIsDifferentlyCasedAsync()
         {
             await new VerifyVB.Test
@@ -388,10 +438,12 @@ End Class",
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-@"Friend Class [|C|]
-    Private Shared Sub mAiN()
-    End Sub
-End Class",
+"""
+    Friend Class [|C|]
+        Private Shared Sub mAiN()
+        End Sub
+    End Class
+    """,
                     },
                 },
                 ExpectedDiagnostics =
@@ -399,1096 +451,1186 @@ End Class",
                      // error BC30737: No accessible 'Main' method with an appropriate signature was found in 'TestProject'.
                      DiagnosticResult.CompilerError("BC30737"),
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         // The following tests are just to ensure that the messages are formatted properly
         // for types within namespaces.
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassInNamespaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"namespace N
-{
-    internal class C { }
-}",
+"""
+    namespace N
+    {
+        internal class C { }
+    }
+    """,
                 GetCSharpResultAt(3, 20, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassInNamespaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Namespace N
-    Friend Class C
-    End Class
-End Namespace",
+"""
+    Namespace N
+        Friend Class C
+        End Class
+    End Namespace
+    """,
                 GetBasicResultAt(2, 18, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_Diagnostic_UninstantiatedInternalClassNestedInPublicClassInNamespaceAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"namespace N
-{
-    public class C
+"""
+    namespace N
     {
-        internal class D { }
+        public class C
+        {
+            internal class D { }
+        }
     }
-}",
+    """,
                 GetCSharpResultAt(5, 24, "C.D"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_UninstantiatedInternalClassNestedInPublicClassInNamespaceAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Namespace N
-    Public Class C
-        Friend Class D
+"""
+    Namespace N
+        Public Class C
+            Friend Class D
+            End Class
         End Class
-    End Class
-End Namespace",
+    End Namespace
+    """,
                 GetBasicResultAt(3, 22, "C.D"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalMef1ExportedClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.ComponentModel.Composition;
+"""
+    using System;
+    using System.ComponentModel.Composition;
 
-namespace System.ComponentModel.Composition
-{
-    public class ExportAttribute: Attribute
+    namespace System.ComponentModel.Composition
+    {
+        public class ExportAttribute: Attribute
+        {
+        }
+    }
+
+    [Export]
+    internal class C
     {
     }
-}
-
-[Export]
-internal class C
-{
-}");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalMef1ExportedClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.ComponentModel.Composition
+"""
+    Imports System
+    Imports System.ComponentModel.Composition
 
-Namespace System.ComponentModel.Composition
-    Public Class ExportAttribute
-        Inherits Attribute
+    Namespace System.ComponentModel.Composition
+        Public Class ExportAttribute
+            Inherits Attribute
+        End Class
+    End Namespace
+
+    <Export>
+    Friend Class C
     End Class
-End Namespace
-
-<Export>
-Friend Class C
-End Class");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalMef2ExportedClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.ComponentModel.Composition;
+"""
+    using System;
+    using System.ComponentModel.Composition;
 
-namespace System.ComponentModel.Composition
-{
-    public class ExportAttribute: Attribute
+    namespace System.ComponentModel.Composition
+    {
+        public class ExportAttribute: Attribute
+        {
+        }
+    }
+
+    [Export]
+    internal class C
     {
     }
-}
-
-[Export]
-internal class C
-{
-}");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalMef2ExportedClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.ComponentModel.Composition
+"""
+    Imports System
+    Imports System.ComponentModel.Composition
 
-Namespace System.ComponentModel.Composition
-    Public Class ExportAttribute
-        Inherits Attribute
+    Namespace System.ComponentModel.Composition
+        Public Class ExportAttribute
+            Inherits Attribute
+        End Class
+    End Namespace
+
+    <Export>
+    Friend Class C
     End Class
-End Namespace
-
-<Export>
-Friend Class C
-End Class");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_ImplementsIConfigurationSectionHandlerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Configuration;
-using System.Xml;
+"""
+    using System.Configuration;
+    using System.Xml;
 
-internal class C : IConfigurationSectionHandler
-{
-    public object Create(object parent, object configContext, XmlNode section)
+    internal class C : IConfigurationSectionHandler
     {
-        return null;
+        public object Create(object parent, object configContext, XmlNode section)
+        {
+            return null;
+        }
     }
-}");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_ImplementsIConfigurationSectionHandlerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Configuration
-Imports System.Xml
+"""
+    Imports System.Configuration
+    Imports System.Xml
 
-Friend Class C
-    Implements IConfigurationSectionHandler
-    Private Function IConfigurationSectionHandler_Create(parent As Object, configContext As Object, section As XmlNode) As Object Implements IConfigurationSectionHandler.Create
-        Return Nothing
-    End Function
-End Class");
+    Friend Class C
+        Implements IConfigurationSectionHandler
+        Private Function IConfigurationSectionHandler_Create(parent As Object, configContext As Object, section As XmlNode) As Object Implements IConfigurationSectionHandler.Create
+            Return Nothing
+        End Function
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_DerivesFromConfigurationSectionAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Configuration;
+"""
+    using System.Configuration;
 
-namespace System.Configuration
-{
-    public class ConfigurationSection
+    namespace System.Configuration
+    {
+        public class ConfigurationSection
+        {
+        }
+    }
+
+    internal class C : ConfigurationSection
     {
     }
-}
-
-internal class C : ConfigurationSection
-{
-}");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_DerivesFromConfigurationSectionAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Configuration
+"""
+    Imports System.Configuration
 
-Namespace System.Configuration
-    Public Class ConfigurationSection
+    Namespace System.Configuration
+        Public Class ConfigurationSection
+        End Class
+    End Namespace
+
+    Friend Class C
+        Inherits ConfigurationSection
     End Class
-End Namespace
-
-Friend Class C
-    Inherits ConfigurationSection
-End Class");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_DerivesFromSafeHandleAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
-using System.Runtime.InteropServices;
+"""
+    using System;
+    using System.Runtime.InteropServices;
 
-internal class MySafeHandle : SafeHandle
-{
-    protected MySafeHandle(IntPtr invalidHandleValue, bool ownsHandle)
-        : base(invalidHandleValue, ownsHandle)
+    internal class MySafeHandle : SafeHandle
     {
-    }
-
-    public override bool IsInvalid => true;
-
-    protected override bool ReleaseHandle()
-    {
-        return true;
-    }
-}");
+        protected MySafeHandle(IntPtr invalidHandleValue, bool ownsHandle)
+            : base(invalidHandleValue, ownsHandle)
+        {
         }
 
-        [Fact]
+        public override bool IsInvalid => true;
+
+        protected override bool ReleaseHandle()
+        {
+            return true;
+        }
+    }
+    """);
+        }
+
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_DerivesFromSafeHandleAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System
-Imports System.Runtime.InteropServices
+"""
+    Imports System
+    Imports System.Runtime.InteropServices
 
-Friend Class MySafeHandle
-    Inherits SafeHandle
+    Friend Class MySafeHandle
+        Inherits SafeHandle
 
-    Protected Sub New(invalidHandleValue As IntPtr, ownsHandle As Boolean)
-        MyBase.New(invalidHandleValue, ownsHandle)
-    End Sub
+        Protected Sub New(invalidHandleValue As IntPtr, ownsHandle As Boolean)
+            MyBase.New(invalidHandleValue, ownsHandle)
+        End Sub
 
-    Public Overrides ReadOnly Property IsInvalid As Boolean
-        Get
+        Public Overrides ReadOnly Property IsInvalid As Boolean
+            Get
+                Return True
+            End Get
+        End Property
+
+        Protected Overrides Function ReleaseHandle() As Boolean
             Return True
-        End Get
-    End Property
-
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
-End Class");
+        End Function
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_DerivesFromTraceListenerAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Diagnostics;
+"""
+    using System.Diagnostics;
 
-internal class MyTraceListener : TraceListener
-{
-    public override void Write(string message) { }
-    public override void WriteLine(string message) { }
-}");
+    internal class MyTraceListener : TraceListener
+    {
+        public override void Write(string message) { }
+        public override void WriteLine(string message) { }
+    }
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_DerivesFromTraceListenerAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Diagnostics
+"""
+    Imports System.Diagnostics
 
-Friend Class MyTraceListener
-    Inherits TraceListener
+    Friend Class MyTraceListener
+        Inherits TraceListener
 
-    Public Overrides Sub Write(message As String)
-    End Sub
+        Public Overrides Sub Write(message As String)
+        End Sub
 
-    Public Overrides Sub WriteLine(message As String)
-    End Sub
-End Class");
+        Public Overrides Sub WriteLine(message As String)
+        End Sub
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_InternalNestedTypeIsInstantiatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal class C
-{
-    internal class C2
+"""
+    internal class C
     {
-    } 
-}
+        internal class C2
+        {
+        }
+    }
 
-public class D
-{
-    private readonly C.C2 _c2 = new C.C2();
-}
-");
+    public class D
+    {
+        private readonly C.C2 _c2 = new C.C2();
+    }
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_InternalNestedTypeIsInstantiatedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Class C
-    Friend Class C2
+"""
+    Friend Class C
+        Friend Class C2
+        End Class
     End Class
-End Class
 
-Public Class D
-    Private _c2 As new C.C2
-End Class");
+    Public Class D
+        Private _c2 As new C.C2
+    End Class
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_Diagnostic_InternalNestedTypeIsNotInstantiatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal class C
-{
-    internal class C2
+"""
+    internal class C
     {
-    } 
-}",
+        internal class C2
+        {
+        }
+    }
+    """,
                 GetCSharpResultAt(3, 20, "C.C2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_InternalNestedTypeIsNotInstantiatedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Class C
-    Friend Class C2
+"""
+    Friend Class C
+        Friend Class C2
+        End Class
     End Class
-End Class",
+    """,
                 GetBasicResultAt(2, 18, "C.C2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_Diagnostic_PrivateNestedTypeIsInstantiatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal class C
-{
-    private readonly C2 _c2 = new C2();
-    private class C2
+"""
+    internal class C
     {
-    } 
-}",
+        private readonly C2 _c2 = new C2();
+        private class C2
+        {
+        }
+    }
+    """,
                 GetCSharpResultAt(1, 16, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_Diagnostic_PrivateNestedTypeIsInstantiatedAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Class C
-    Private _c2 As New C2
-    
-    Private Class C2
+"""
+    Friend Class C
+        Private _c2 As New C2
+
+        Private Class C2
+        End Class
     End Class
-End Class",
+    """,
                 GetBasicResultAt(1, 14, "C"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_StaticHolderClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"internal static class C
-{
-    internal static void F() { }
-}");
+"""
+    internal static class C
+    {
+        internal static void F() { }
+    }
+    """);
         }
 
-        [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
+        [TestMethod, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
         public async Task CA1812_CSharp_NoDiagnostic_ImplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-internal class A
-{
-    public A()
+"""
+    internal class A
+    {
+        public A()
+        {
+        }
+    }
+
+    internal class B : A
+    {
+        public B()
+        {
+        }
+    }
+
+    internal class C<T>
     {
     }
-}
 
-internal class B : A
-{
-    public B()
+    internal class D : C<int>
     {
+        static void M()
+        {
+            var x = new B();
+            var y = new D();
+        }
     }
-}
-
-internal class C<T>
-{
-}
-
-internal class D : C<int>
-{
-    static void M()
-    {
-        var x = new B();
-        var y = new D();
-    }
-}");
+    """);
         }
 
-        [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
+        [TestMethod, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
         public async Task CA1812_CSharp_NoDiagnostic_ExplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-internal class A
-{
-    public A(int x)
+"""
+    internal class A
     {
+        public A(int x)
+        {
+        }
     }
-}
 
-internal class B : A
-{
-    public B(int x): base (x)
+    internal class B : A
     {
+        public B(int x): base (x)
+        {
+        }
     }
-}
 
-internal class C<T>
-{
-}
-
-internal class D : C<int>
-{
-    public D(): base()
+    internal class C<T>
     {
     }
 
-    static void M()
+    internal class D : C<int>
     {
-        var x = new B(0);
-        var y = new D();
-    }
-}");
+        public D(): base()
+        {
         }
 
-        [Fact]
+        static void M()
+        {
+            var x = new B(0);
+            var y = new D();
+        }
+    }
+    """);
+        }
+
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_StaticHolderClassAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Friend Module C
-    Friend Sub F()
-    End Sub
-End Module");
+"""
+    Friend Module C
+        Friend Sub F()
+        End Sub
+    End Module
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_EmptyInternalStaticClassAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync("internal static class S { }");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_CSharp_NoDiagnostic_UninstantiatedInternalClassInFriendlyAssemblyAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System.Runtime.CompilerServices;
+"""
+    using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo(""TestProject"")]
+    [assembly: InternalsVisibleTo("TestProject")]
 
-internal class C { }"
+    internal class C { }
+    """
                 );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1812_Basic_NoDiagnostic_UninstantiatedInternalClassInFriendlyAssemblyAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"Imports System.Runtime.CompilerServices
+"""
+    Imports System.Runtime.CompilerServices
 
-<Assembly: InternalsVisibleToAttribute(""TestProject"")>
+    <Assembly: InternalsVisibleToAttribute("TestProject")>
 
-Friend Class C
-End Class"
+    Friend Class C
+    End Class
+    """
                 );
         }
 
-        [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
+        [TestMethod, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
         public async Task CA1812_Basic_NoDiagnostic_ImplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"
-Friend Class A
-    Public Sub New()
-    End Sub
-End Class
+"""
+    Friend Class A
+        Public Sub New()
+        End Sub
+    End Class
 
-Friend Class B
-    Inherits A
-    Public Sub New()
-    End Sub
-End Class
+    Friend Class B
+        Inherits A
+        Public Sub New()
+        End Sub
+    End Class
 
-Friend Class C(Of T)
-End Class
+    Friend Class C(Of T)
+    End Class
 
-Friend Class D
-    Inherits C(Of Integer)
-    Private Shared Sub M()
-        Dim x = New B()
-        Dim y = New D()
-    End Sub
-End Class");
+    Friend Class D
+        Inherits C(Of Integer)
+        Private Shared Sub M()
+            Dim x = New B()
+            Dim y = New D()
+        End Sub
+    End Class
+    """);
         }
 
-        [Fact, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
+        [TestMethod, WorkItem(1370, "https://github.com/dotnet/roslyn-analyzers/issues/1370")]
         public async Task CA1812_Basic_NoDiagnostic_ExplicitlyInstantiatedFromSubTypeConstructorAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"
-Friend Class A
-    Public Sub New(ByVal x As Integer)
-    End Sub
-End Class
+"""
+    Friend Class A
+        Public Sub New(ByVal x As Integer)
+        End Sub
+    End Class
 
-Friend Class B
-    Inherits A
+    Friend Class B
+        Inherits A
 
-    Public Sub New(ByVal x As Integer)
-        MyBase.New(x)
-    End Sub
-End Class
+        Public Sub New(ByVal x As Integer)
+            MyBase.New(x)
+        End Sub
+    End Class
 
-Friend Class C(Of T)
-End Class
+    Friend Class C(Of T)
+    End Class
 
-Friend Class D
-    Inherits C(Of Integer)
-    Public Sub New()
-        MyBase.New()
-    End Sub
-
-    Private Shared Sub M()
-        Dim x = New B(0)
-        Dim y = New D()
-    End Sub
-End Class");
-        }
-
-        [Fact, WorkItem(1154, "https://github.com/dotnet/roslyn-analyzers/issues/1154")]
-        public async Task CA1812_CSharp_GenericInternalClass_InstanciatedNoDiagnosticAsync()
-        {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-public static class X
-{
-    public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> source, Comparison<T> compare)
-    {
-        return source.OrderBy(new ComparisonComparer<T>(compare));
-    }
-
-    public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> source, IComparer<T> comparer)
-    {
-        return source.OrderBy(t => t, comparer);
-    }
-
-    private class ComparisonComparer<T> : Comparer<T>
-    {
-        private readonly Comparison<T> _compare;
-
-        public ComparisonComparer(Comparison<T> compare)
-        {
-            _compare = compare;
-        }
-
-        public override int Compare(T x, T y)
-        {
-            return _compare(x, y);
-        }
-    }
-}
-");
-        }
-
-        [Fact, WorkItem(1154, "https://github.com/dotnet/roslyn-analyzers/issues/1154")]
-        public async Task CA1812_Basic_GenericInternalClass_InstanciatedNoDiagnosticAsync()
-        {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Collections.Generic
-Imports System.Linq
-Imports System.Runtime.CompilerServices
-
-Module M
-    <Extension()>
-    Public Function OrderBy(Of T)(ByVal source As IEnumerable(Of T), compare As Comparison(Of T)) As IEnumerable(Of T)
-        Return source.OrderBy(New ComparisonCompare(Of T)(compare))
-    End Function
-
-    <Extension()>
-    Public Function OrderBy(Of T)(ByVal source As IEnumerable(Of T), comparer As IComparer(Of T)) As IEnumerable(Of T)
-        Return source.OrderBy(Function(i) i, comparer)
-    End Function
-
-    Private Class ComparisonCompare(Of T)
-        Inherits Comparer(Of T)
-
-        Private _compare As Comparison(Of T)
-
-        Public Sub New(compare As Comparison(Of T))
-            _compare = compare
+    Friend Class D
+        Inherits C(Of Integer)
+        Public Sub New()
+            MyBase.New()
         End Sub
 
-        Public Overrides Function Compare(x As T, y As T) As Integer
-            Throw New NotImplementedException()
-        End Function
+        Private Shared Sub M()
+            Dim x = New B(0)
+            Dim y = New D()
+        End Sub
     End Class
-End Module
-");
+    """);
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1154, "https://github.com/dotnet/roslyn-analyzers/issues/1154")]
+        public async Task CA1812_CSharp_GenericInternalClass_InstanciatedNoDiagnosticAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Collections.Generic;
+                using System.Linq;
+
+                public static class X
+                {
+                    public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> source, Comparison<T> compare)
+                    {
+                        return source.OrderBy(new ComparisonComparer<T>(compare));
+                    }
+
+                    public static IEnumerable<T> OrderBy<T>(this IEnumerable<T> source, IComparer<T> comparer)
+                    {
+                        return source.OrderBy(t => t, comparer);
+                    }
+
+                    private class ComparisonComparer<T> : Comparer<T>
+                    {
+                        private readonly Comparison<T> _compare;
+
+                        public ComparisonComparer(Comparison<T> compare)
+                        {
+                            _compare = compare;
+                        }
+
+                        public override int Compare(T x, T y)
+                        {
+                            return _compare(x, y);
+                        }
+                    }
+                }
+                """);
+        }
+
+        [TestMethod, WorkItem(1154, "https://github.com/dotnet/roslyn-analyzers/issues/1154")]
+        public async Task CA1812_Basic_GenericInternalClass_InstanciatedNoDiagnosticAsync()
+        {
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Collections.Generic
+                Imports System.Linq
+                Imports System.Runtime.CompilerServices
+
+                Module M
+                    <Extension()>
+                    Public Function OrderBy(Of T)(ByVal source As IEnumerable(Of T), compare As Comparison(Of T)) As IEnumerable(Of T)
+                        Return source.OrderBy(New ComparisonCompare(Of T)(compare))
+                    End Function
+
+                    <Extension()>
+                    Public Function OrderBy(Of T)(ByVal source As IEnumerable(Of T), comparer As IComparer(Of T)) As IEnumerable(Of T)
+                        Return source.OrderBy(Function(i) i, comparer)
+                    End Function
+
+                    Private Class ComparisonCompare(Of T)
+                        Inherits Comparer(Of T)
+
+                        Private _compare As Comparison(Of T)
+
+                        Public Sub New(compare As Comparison(Of T))
+                            _compare = compare
+                        End Sub
+
+                        Public Overrides Function Compare(x As T, y As T) As Integer
+                            Throw New NotImplementedException()
+                        End Function
+                    End Class
+                End Module
+                """);
+        }
+
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_CSharp_NoDiagnostic_GenericMethodWithNewConstraintAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-internal class InstantiatedType
-{
-}
+                internal class InstantiatedType
+                {
+                }
 
-internal static class Factory
-{
-    internal static T Create<T>()
-        where T : new()
-    {
-        return new T();
-    }
-}
+                internal static class Factory
+                {
+                    internal static T Create<T>()
+                        where T : new()
+                    {
+                        return new T();
+                    }
+                }
 
-internal class Program
-{
-    public static void Main(string[] args)
-    {
-        Console.WriteLine(Factory.Create<InstantiatedType>());
-    }
-}");
+                internal class Program
+                {
+                    public static void Main(string[] args)
+                    {
+                        Console.WriteLine(Factory.Create<InstantiatedType>());
+                    }
+                }
+                """);
         }
 
-        [Fact, WorkItem(1447, "https://github.com/dotnet/roslyn-analyzers/issues/1447")]
+        [TestMethod, WorkItem(1447, "https://github.com/dotnet/roslyn-analyzers/issues/1447")]
         public async Task CA1812_CSharp_NoDiagnostic_GenericMethodWithNewConstraintInvokedFromGenericMethodAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-internal class InstantiatedClass
-{
-    public InstantiatedClass()
-    {
-    }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                internal class InstantiatedClass
+                {
+                    public InstantiatedClass()
+                    {
+                    }
+                }
 
-internal class InstantiatedClass2
-{
-    public InstantiatedClass2()
-    {
-    }
-}
+                internal class InstantiatedClass2
+                {
+                    public InstantiatedClass2()
+                    {
+                    }
+                }
 
-internal class InstantiatedClass3
-{
-    public InstantiatedClass3()
-    {
-    }
-}
+                internal class InstantiatedClass3
+                {
+                    public InstantiatedClass3()
+                    {
+                    }
+                }
 
-internal static class C
-{
-    private static T Create<T>()
-        where T : new()
-    {
-        return new T();
-    }
+                internal static class C
+                {
+                    private static T Create<T>()
+                        where T : new()
+                    {
+                        return new T();
+                    }
 
-    public static void M<T>()
-        where T : InstantiatedClass, new()
-    {
-        Create<T>();
-    }
+                    public static void M<T>()
+                        where T : InstantiatedClass, new()
+                    {
+                        Create<T>();
+                    }
 
-    public static void M2<T, T2>()
-        where T : T2, new()
-        where T2 : InstantiatedClass2
-    {
-        Create<T>();
-    }
+                    public static void M2<T, T2>()
+                        where T : T2, new()
+                        where T2 : InstantiatedClass2
+                    {
+                        Create<T>();
+                    }
 
-    public static void M3<T, T2, T3>()
-        where T : T2, new()
-        where T2 : T3
-        where T3: InstantiatedClass3
-    {
-        Create<T>();
-    }
+                    public static void M3<T, T2, T3>()
+                        where T : T2, new()
+                        where T2 : T3
+                        where T3: InstantiatedClass3
+                    {
+                        Create<T>();
+                    }
 
-    public static void M3()
-    {
-        M<InstantiatedClass>();
-        M2<InstantiatedClass2, InstantiatedClass2>();
-        M3<InstantiatedClass3, InstantiatedClass3, InstantiatedClass3>();
-    }
-}");
+                    public static void M3()
+                    {
+                        M<InstantiatedClass>();
+                        M2<InstantiatedClass2, InstantiatedClass2>();
+                        M3<InstantiatedClass3, InstantiatedClass3, InstantiatedClass3>();
+                    }
+                }
+                """);
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_Basic_NoDiagnostic_GenericMethodWithNewConstraintAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Module Module1
-    Sub Main()
-        Console.WriteLine(Create(Of InstantiatedType)())
-    End Sub
+                Module Module1
+                    Sub Main()
+                        Console.WriteLine(Create(Of InstantiatedType)())
+                    End Sub
 
-    Friend Class InstantiatedType
-    End Class
+                    Friend Class InstantiatedType
+                    End Class
 
-    Friend Function Create(Of T As New)() As T
-        Return New T
-    End Function
-End Module");
+                    Friend Function Create(Of T As New)() As T
+                        Return New T
+                    End Function
+                End Module
+                """);
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_CSharp_NoDiagnostic_GenericTypeWithNewConstraintAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-internal class InstantiatedType
-{
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                internal class InstantiatedType
+                {
+                }
 
-internal class Factory<T> where T : new()
-{
-}
+                internal class Factory<T> where T : new()
+                {
+                }
 
-internal class Program
-{
-    public static void Main(string[] args)
-    {
-        var factory = new Factory<InstantiatedType>();
-    }
-}");
+                internal class Program
+                {
+                    public static void Main(string[] args)
+                    {
+                        var factory = new Factory<InstantiatedType>();
+                    }
+                }
+                """);
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_Basic_NoDiagnostic_GenericTypeWithNewConstraintAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Module Module1
-    Sub Main()
-        Console.WriteLine(New Factory(Of InstantiatedType))
-    End Sub
+                Module Module1
+                    Sub Main()
+                        Console.WriteLine(New Factory(Of InstantiatedType))
+                    End Sub
 
-    Friend Class InstantiatedType
-    End Class
+                    Friend Class InstantiatedType
+                    End Class
 
-    Friend Class Factory(Of T As New)
-    End Class
-End Module");
+                    Friend Class Factory(Of T As New)
+                    End Class
+                End Module
+                """);
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_CSharp_Diagnostic_NestedGenericTypeWithNoNewConstraintAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-internal class InstantiatedType
-{
-}
+                using System.Collections.Generic;
 
-internal class Factory<T> where T : new()
-{
-}
+                internal class InstantiatedType
+                {
+                }
 
-internal class Program
-{
-    public static void Main(string[] args)
-    {
-        var list = new List<Factory<InstantiatedType>>();
-    }
-}",
+                internal class Factory<T> where T : new()
+                {
+                }
+
+                internal class Program
+                {
+                    public static void Main(string[] args)
+                    {
+                        var list = new List<Factory<InstantiatedType>>();
+                    }
+                }
+                """,
                 GetCSharpResultAt(4, 16, "InstantiatedType"),
                 GetCSharpResultAt(8, 16, "Factory<T>"));
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_Basic_Diagnostic_NestedGenericTypeWithNoNewConstraintAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Collections.Generic
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Module Library
-    Friend Class InstantiatedType
-    End Class
+                Imports System.Collections.Generic
 
-    Friend Class Factory(Of T As New)
-    End Class
+                Module Library
+                    Friend Class InstantiatedType
+                    End Class
 
-    Sub Main()
-        Dim a = New List(Of Factory(Of InstantiatedType))
-    End Sub
-End Module",
+                    Friend Class Factory(Of T As New)
+                    End Class
+
+                    Sub Main()
+                        Dim a = New List(Of Factory(Of InstantiatedType))
+                    End Sub
+                End Module
+                """,
                 GetBasicResultAt(5, 18, "Library.InstantiatedType"),
                 GetBasicResultAt(8, 18, "Library.Factory(Of T)"));
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_CSharp_NoDiagnostic_NestedGenericTypeWithNewConstraintAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Generic;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Collections.Generic;
 
-internal class InstantiatedType
-{
-}
+                internal class InstantiatedType
+                {
+                }
 
-internal class Factory1<T> where T : new()
-{
-}
+                internal class Factory1<T> where T : new()
+                {
+                }
 
-internal class Factory2<T> where T : new()
-{
-}
+                internal class Factory2<T> where T : new()
+                {
+                }
 
-internal class Program
-{
-    public static void Main(string[] args)
-    {
-        var factory = new Factory1<Factory2<InstantiatedType>>();
-    }
-}");
+                internal class Program
+                {
+                    public static void Main(string[] args)
+                    {
+                        var factory = new Factory1<Factory2<InstantiatedType>>();
+                    }
+                }
+                """);
         }
 
-        [Fact, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
+        [TestMethod, WorkItem(1158, "https://github.com/dotnet/roslyn-analyzers/issues/1158")]
         public async Task CA1812_Basic_NoDiagnostic_NestedGenericTypeWithNewConstraintAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Collections.Generic
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Collections.Generic
 
-Module Library
-    Friend Class InstantiatedType
-    End Class
+                Module Library
+                    Friend Class InstantiatedType
+                    End Class
 
-    Friend Class Factory1(Of T As New)
-    End Class
+                    Friend Class Factory1(Of T As New)
+                    End Class
 
-    Friend Class Factory2(Of T As New)
-    End Class
+                    Friend Class Factory2(Of T As New)
+                    End Class
 
-    Sub Main()
-        Dim a = New Factory1(Of Factory2(Of InstantiatedType))
-    End Sub
-End Module");
+                    Sub Main()
+                        Dim a = New Factory1(Of Factory2(Of InstantiatedType))
+                    End Sub
+                End Module
+                """);
         }
 
-        [Fact, WorkItem(1739, "https://github.com/dotnet/roslyn-analyzers/issues/1739")]
+        [TestMethod, WorkItem(1739, "https://github.com/dotnet/roslyn-analyzers/issues/1739")]
         public async Task CA1812_CSharp_NoDiagnostic_GenericTypeWithRecursiveConstraintAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public abstract class JobStateBase<TState>
-    where TState : JobStateBase<TState>, new()
-{
-    public void SomeFunction ()
-    {
-        new JobStateChangeHandler<TState>();
-    }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public abstract class JobStateBase<TState>
+                    where TState : JobStateBase<TState>, new()
+                {
+                    public void SomeFunction ()
+                    {
+                        new JobStateChangeHandler<TState>();
+                    }
+                }
 
-public class JobStateChangeHandler<TState>
-    where TState : JobStateBase<TState>, new()
-{
-}
-");
+                public class JobStateChangeHandler<TState>
+                    where TState : JobStateBase<TState>, new()
+                {
+                }
+                """);
         }
 
-        [Fact, WorkItem(2751, "https://github.com/dotnet/roslyn-analyzers/issues/2751")]
+        [TestMethod, WorkItem(2751, "https://github.com/dotnet/roslyn-analyzers/issues/2751")]
         public async Task CA1812_CSharp_NoDiagnostic_TypeDeclaredInCoClassAttributeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Runtime.InteropServices;
 
-[CoClass(typeof(CSomeClass))]
-internal interface ISomeInterface {}
+                [CoClass(typeof(CSomeClass))]
+                internal interface ISomeInterface {}
 
-internal class CSomeClass {}
-");
+                internal class CSomeClass {}
+                """);
         }
 
-        [Fact, WorkItem(2751, "https://github.com/dotnet/roslyn-analyzers/issues/2751")]
+        [TestMethod, WorkItem(2751, "https://github.com/dotnet/roslyn-analyzers/issues/2751")]
         public async Task CA1812_CSharp_DontFailOnInvalidCoClassUsagesAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Runtime.InteropServices;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-[{|CS7036:CoClass|}]
-internal interface ISomeInterface1 {}
+                using System.Runtime.InteropServices;
 
-[CoClass({|CS0119:CSomeClass|})]
-internal interface ISomeInterface2 {}
+                [{|CS7036:CoClass|}]
+                internal interface ISomeInterface1 {}
 
-[{|CS1729:CoClass(typeof(CSomeClass), null)|}]
-internal interface ISomeInterface3 {}
+                [CoClass({|CS0119:CSomeClass|})]
+                internal interface ISomeInterface2 {}
 
-[CoClass(typeof(ISomeInterface3))] // This isn't a class-type
-internal interface ISomeInterface4 {}
+                [{|CS1729:CoClass(typeof(CSomeClass), null)|}]
+                internal interface ISomeInterface3 {}
 
-internal class CSomeClass {}
-",
+                [CoClass(typeof(ISomeInterface3))] // This isn't a class-type
+                internal interface ISomeInterface4 {}
+
+                internal class CSomeClass {}
+
+                """,
                 // Test0.cs(16,16): warning CA1812: CSomeClass is an internal class that is apparently never instantiated. If so, remove the code from the assembly. If this class is intended to contain only static members, make it static (Shared in Visual Basic).
                 GetCSharpResultAt(16, 16, "CSomeClass"));
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
-        [InlineData("System.ComponentModel.DesignerAttribute")]
-        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        [DataRow("System.ComponentModel.DesignerAttribute")]
+        [DataRow("System.Diagnostics.DebuggerTypeProxyAttribute")]
         public async Task CA1812_DesignerAttributeTypeName_NoDiagnosticAsync(string attributeFullName)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace SomeNamespace
-{
-    internal class MyTextBoxDesigner { }
+                namespace SomeNamespace
+                {
+                    internal class MyTextBoxDesigner { }
 
-    [" + attributeFullName + @"(""SomeNamespace.MyTextBoxDesigner, TestProject"")]
-    public class MyTextBox { }
-}");
+                    [
+                """ + attributeFullName + """
+        ("SomeNamespace.MyTextBoxDesigner, TestProject")]
+            public class MyTextBox { }
+        }
+        """);
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
-        [InlineData("System.ComponentModel.DesignerAttribute")]
-        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        [DataRow("System.ComponentModel.DesignerAttribute")]
+        [DataRow("System.Diagnostics.DebuggerTypeProxyAttribute")]
         public async Task CA1812_DesignerAttributeTypeNameWithFullAssemblyName_NoDiagnosticAsync(string attributeFullName)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.ComponentModel;
 
-namespace SomeNamespace
-{
-    internal class MyTextBoxDesigner { }
+                namespace SomeNamespace
+                {
+                    internal class MyTextBoxDesigner { }
 
-    [" + attributeFullName + @"(""SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123"")]
-    public class MyTextBox { }
-}");
+                    [
+                """ + attributeFullName + """
+        ("SomeNamespace.MyTextBoxDesigner, TestProject, Version=1.0.0.0, Culture=neutral, PublicKeyToken=123")]
+            public class MyTextBox { }
+        }
+        """);
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
-        [InlineData("System.ComponentModel.DesignerAttribute")]
-        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        [DataRow("System.ComponentModel.DesignerAttribute")]
+        [DataRow("System.Diagnostics.DebuggerTypeProxyAttribute")]
         public async Task CA1812_DesignerAttributeGlobalTypeName_NoDiagnosticAsync(string attributeFullName)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.ComponentModel;
 
-internal class MyTextBoxDesigner { }
+                internal class MyTextBoxDesigner { }
 
-[" + attributeFullName + @"(""MyTextBoxDesigner, TestProject"")]
-public class MyTextBox { }");
+                [
+                """ + attributeFullName + """
+    ("MyTextBoxDesigner, TestProject")]
+    public class MyTextBox { }
+    """);
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
-        [InlineData("System.ComponentModel.DesignerAttribute")]
-        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        [DataRow("System.ComponentModel.DesignerAttribute")]
+        [DataRow("System.Diagnostics.DebuggerTypeProxyAttribute")]
         public async Task CA1812_DesignerAttributeType_NoDiagnosticAsync(string attributeFullName)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.ComponentModel;
 
-namespace SomeNamespace
-{
-    internal class MyTextBoxDesigner { }
+                namespace SomeNamespace
+                {
+                    internal class MyTextBoxDesigner { }
 
-    [" + attributeFullName + @"(typeof(MyTextBoxDesigner))]
-    public class MyTextBox { }
-}");
+                    [
+                """ + attributeFullName + """
+        (typeof(MyTextBoxDesigner))]
+            public class MyTextBox { }
+        }
+        """);
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [TestMethod, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         public async Task CA1812_DesignerAttributeTypeNameWithBaseTypeName_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.ComponentModel;
 
-namespace SomeNamespace
-{
-    public class SomeBaseType { }
-    internal class MyTextBoxDesigner { }
+                namespace SomeNamespace
+                {
+                    public class SomeBaseType { }
+                    internal class MyTextBoxDesigner { }
 
-    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"", ""SomeNamespace.SomeBaseType"")]
-    public class MyTextBox { }
-}");
+                    [Designer("SomeNamespace.MyTextBoxDesigner, TestProject", "SomeNamespace.SomeBaseType")]
+                    public class MyTextBox { }
+                }
+                """);
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [TestMethod, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         public async Task CA1812_DesignerAttributeTypeNameWithBaseType_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.ComponentModel;
 
-namespace SomeNamespace
-{
-    public class SomeBaseType { }
-    internal class MyTextBoxDesigner { }
+                namespace SomeNamespace
+                {
+                    public class SomeBaseType { }
+                    internal class MyTextBoxDesigner { }
 
-    [Designer(""SomeNamespace.MyTextBoxDesigner, TestProject"", typeof(SomeBaseType))]
-    public class MyTextBox { }
-}");
+                    [Designer("SomeNamespace.MyTextBoxDesigner, TestProject", typeof(SomeBaseType))]
+                    public class MyTextBox { }
+                }
+                """);
         }
 
-        [Fact, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
+        [TestMethod, WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         public async Task CA1812_DesignerAttributeTypeWithBaseType_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.ComponentModel;
 
-namespace SomeNamespace
-{
-    public class SomeBaseType { }
-    internal class MyTextBoxDesigner { }
+                namespace SomeNamespace
+                {
+                    public class SomeBaseType { }
+                    internal class MyTextBoxDesigner { }
 
-    [Designer(typeof(SomeNamespace.MyTextBoxDesigner), typeof(SomeBaseType))]
-    public class MyTextBox { }
-}");
+                    [Designer(typeof(SomeNamespace.MyTextBoxDesigner), typeof(SomeBaseType))]
+                    public class MyTextBox { }
+                }
+                """);
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
-        [InlineData("System.ComponentModel.DesignerAttribute")]
-        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        [DataRow("System.ComponentModel.DesignerAttribute")]
+        [DataRow("System.Diagnostics.DebuggerTypeProxyAttribute")]
         public async Task CA1812_DesignerAttributeNestedTypeName_NoDiagnosticAsync(string attributeFullName)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace SomeNamespace
-{
-    [" + attributeFullName + @"(""SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject"")]
-    public class MyTextBox
-    {
-        internal class MyTextBoxDesigner { }
-    }
-}",
+                using System;
+                using System.ComponentModel;
+
+                namespace SomeNamespace
+                {
+                    [
+                """ + attributeFullName + """
+        ("SomeNamespace.MyTextBox.MyTextBoxDesigner, TestProject")]
+            public class MyTextBox
+            {
+                internal class MyTextBoxDesigner { }
+            }
+        }
+        """,
                 // False-Positive: when evaluating the string of the DesignerAttribute the type symbol doesn't exist yet
                 GetCSharpResultAt(10, 24, "MyTextBox.MyTextBoxDesigner"));
         }
 
-        [Theory]
+        [TestMethod]
         [WorkItem(2957, "https://github.com/dotnet/roslyn-analyzers/issues/2957")]
         [WorkItem(1708, "https://github.com/dotnet/roslyn-analyzers/issues/1708")]
-        [InlineData("System.ComponentModel.DesignerAttribute")]
-        [InlineData("System.Diagnostics.DebuggerTypeProxyAttribute")]
+        [DataRow("System.ComponentModel.DesignerAttribute")]
+        [DataRow("System.Diagnostics.DebuggerTypeProxyAttribute")]
         public async Task CA1812_DesignerAttributeNestedType_NoDiagnosticAsync(string attributeFullName)
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.ComponentModel;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.ComponentModel;
 
-namespace SomeNamespace
-{
-    [" + attributeFullName + @"(typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
-    public class MyTextBox
-    {
-        internal class MyTextBoxDesigner { }
-    }
-}");
+                namespace SomeNamespace
+                {
+                    [
+                """ + attributeFullName + """
+        (typeof(SomeNamespace.MyTextBox.MyTextBoxDesigner))]
+            public class MyTextBox
+            {
+                internal class MyTextBoxDesigner { }
+            }
+        }
+        """);
         }
 
-        [Fact, WorkItem(3199, "https://github.com/dotnet/roslyn-analyzers/issues/3199")]
+        [TestMethod, WorkItem(3199, "https://github.com/dotnet/roslyn-analyzers/issues/3199")]
         public async Task CA1812_AliasingTypeNewConstraint_NoDiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -1497,119 +1639,122 @@ namespace SomeNamespace
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
+                            using System;
 
-namespace SomeNamespace
-{
-    public class MyAliasType<T>
-        where T : class, new()
-    {
-        public static void DoSomething() {}
-    }
+                            namespace SomeNamespace
+                            {
+                                public class MyAliasType<T>
+                                    where T : class, new()
+                                {
+                                    public static void DoSomething() {}
+                                }
 
-    internal class C {}
-}",
-                        @"
-using MyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.C>;
-using MyAliasOfMyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.MyAliasType<SomeNamespace.C>>;
+                                internal class C {}
+                            }
+                            """,
+                        """
+                            using MyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.C>;
+                            using MyAliasOfMyAliasOfC = SomeNamespace.MyAliasType<SomeNamespace.MyAliasType<SomeNamespace.C>>;
 
-public class CC
-{
-    public void M()
-    {
-        MyAliasOfC.DoSomething();
-        MyAliasOfMyAliasOfC.DoSomething();
-    }
-}
-",
+                            public class CC
+                            {
+                                public void M()
+                                {
+                                    MyAliasOfC.DoSomething();
+                                    MyAliasOfMyAliasOfC.DoSomething();
+                                }
+                            }
+                            """,
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
+        [TestMethod, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
         public async Task CA1812_VisualBasic_StaticLikeClass_NoDiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Friend NotInheritable Class C1
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Friend NotInheritable Class C1
 
-    Private Sub New()
-    End Sub
+                    Private Sub New()
+                    End Sub
 
-    Public Shared Function GetSomething(o As Object) As String
-        Return o.ToString()
-    End Function
-End Class
+                    Public Shared Function GetSomething(o As Object) As String
+                        Return o.ToString()
+                    End Function
+                End Class
 
-Public Class Helpers
-    Private NotInheritable Class C2
+                Public Class Helpers
+                    Private NotInheritable Class C2
 
-        Private Sub New()
-        End Sub
+                        Private Sub New()
+                        End Sub
 
-        Public Shared Function GetSomething(o As Object) As String
-            Return o.ToString()
-        End Function
-    End Class
-End Class
+                        Public Shared Function GetSomething(o As Object) As String
+                            Return o.ToString()
+                        End Function
+                    End Class
+                End Class
 
-Friend NotInheritable Class C3
+                Friend NotInheritable Class C3
 
-    Private Const SomeConstant As String = ""Value""
-    Private Shared f As Integer
+                    Private Const SomeConstant As String = "Value"
+                    Private Shared f As Integer
 
-    Private Sub New()
-    End Sub
+                    Private Sub New()
+                    End Sub
 
-    Public Shared Sub M()
-    End Sub
+                    Public Shared Sub M()
+                    End Sub
 
-    Public Shared Property P As Integer
+                    Public Shared Property P As Integer
 
-    Public Shared Event ThresholdReached As EventHandler
-End Class
+                    Public Shared Event ThresholdReached As EventHandler
+                End Class
 
-Friend Class C4
+                Friend Class C4
 
-    Private Sub New()
-    End Sub
+                    Private Sub New()
+                    End Sub
 
-    Public Shared Function GetSomething(o As Object) As String
-        Return o.ToString()
-    End Function
-End Class
+                    Public Shared Function GetSomething(o As Object) As String
+                        Return o.ToString()
+                    End Function
+                End Class
 
-Friend NotInheritable Class C5
+                Friend NotInheritable Class C5
 
-    Public Sub New()
-    End Sub
+                    Public Sub New()
+                    End Sub
 
-    Public Shared Function GetSomething(o As Object) As String
-        Return o.ToString()
-    End Function
-End Class");
+                    Public Shared Function GetSomething(o As Object) As String
+                        Return o.ToString()
+                    End Function
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
+        [TestMethod, WorkItem(1878, "https://github.com/dotnet/roslyn-analyzers/issues/1878")]
         public async Task CA1812_VisualBasic_NotStaticLikeClass_DiagnosticAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
 
-Friend NotInheritable Class [|C1|]
+                Friend NotInheritable Class [|C1|]
 
-    Private Sub New()
-    End Sub
+                    Private Sub New()
+                    End Sub
 
-    Public Function GetSomething(o As Object) As String
-        Return o.ToString()
-    End Function
-End Class");
+                    Public Function GetSomething(o As Object) As String
+                        Return o.ToString()
+                    End Function
+                End Class
+                """);
         }
 
-        [Fact, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
+        [TestMethod, WorkItem(4052, "https://github.com/dotnet/roslyn-analyzers/issues/4052")]
         public async Task CA1812_CSharp_TopLevelStatements_NoDiagnosticAsync()
         {
             await new VerifyCS.Test()
@@ -1620,29 +1765,32 @@ End Class");
                     OutputKind = OutputKind.ConsoleApplication,
                     Sources =
                     {
-                        @"int x = 0;",
+                        "int x = 0;",
                     },
                 },
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
+        [TestMethod]
         [CombinatorialData]
         public async Task InternalsVisibleTo_Diagnostic_WhenOptionsDemandIt(bool ignoreInternalsVisibleTo)
         {
-            string source = @"[assembly: System.Runtime.CompilerServices.InternalsVisibleTo(""TestProject"")]
-                              internal class {|#0:C|} { }";
+            string source = """
+                [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("TestProject")]
+                                              internal class {|#0:C|} { }
+                """;
 
             var test = new VerifyCS.Test
             {
                 TestCode = source,
                 TestState =
                 {
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo}
-") }
+                        [*]
+                        dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo}
+                        """) }
                 }
             };
 
@@ -1654,10 +1802,10 @@ dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
                         .WithArguments("C"));
             }
 
-            await test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
+        [TestMethod, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
         public Task CA1812_CollectionExpressionsInField_NoDiagnostic()
         {
             const string code = """
@@ -1673,10 +1821,10 @@ dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp12
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
+        [TestMethod, WorkItem(7223, "https://github.com/dotnet/roslyn-analyzers/issues/7223")]
         public Task CA1812_CollectionExpressionsInLocalVariable_NoDiagnostic()
         {
             const string code = """
@@ -1695,7 +1843,7 @@ dotnet_code_quality.CA1812.ignore_internalsvisibleto = {ignoreInternalsVisibleTo
             {
                 TestCode = code,
                 LanguageVersion = LanguageVersion.CSharp12
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, string className)

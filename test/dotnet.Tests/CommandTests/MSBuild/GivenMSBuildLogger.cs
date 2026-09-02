@@ -3,15 +3,17 @@
 
 #nullable disable
 
+using System.Diagnostics;
 using Microsoft.Build.Framework;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Cli.MSBuild.Tests
 {
+    [TestClass]
     public class GivenMSBuildLogger
     {
-        [Fact]
+        [TestMethod]
         public void ItBlocksTelemetryThatIsNotInTheList()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -29,7 +31,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Should().BeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotMasksExceptionTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -52,7 +54,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["detail"].Should().Be("Exception detail");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotMaskPublishPropertiesTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -74,7 +76,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["otherProperty"].Should().Be("otherProperty value");
         }
 
-        [Fact]
+        [TestMethod]
         public void ItDoesNotMaskReadyToRunTelemetry()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -97,7 +99,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         // Reproduce https://github.com/dotnet/sdk/issues/3868
-        [Fact]
+        [TestMethod]
         public void ItCanSendProperties()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -119,7 +121,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
         }
 
-        [Fact]
+        [TestMethod]
         public void ItAggregatesEvents()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -186,7 +188,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             tasksEntry.Properties["TaskHostTasksExecutedCount"].Should().Be("2"); // 2 + 0
         }
 
-        [Fact]
+        [TestMethod]
         public void ItIgnoresNonIntegerPropertiesDuringAggregation()
         {
             var fakeTelemetry = new FakeTelemetry();
@@ -213,6 +215,152 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             fakeTelemetry.LogEntry.Properties["AssemblyTaskFactoryTasksExecutedCount"].Should().Be("3");
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty");
             fakeTelemetry.LogEntry.Properties.Should().NotContainKey("InvalidProperty2");
+        }
+
+        [TestMethod]
+        public void ItForwardsTaskDetailsEvent()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.TasksDetailsTelemetryEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "Tasks", "[{\"Name\":\"Copy\",\"ExecutionsCount\":10}]" },
+                    { "TaskCount", "1" },
+                    { "TotalTaskCount", "1" }
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be($"msbuild/{MSBuildLogger.TasksDetailsTelemetryEventName}");
+            fakeTelemetry.LogEntry.Properties.Keys.Count.Should().Be(3);
+            fakeTelemetry.LogEntry.Properties["Tasks"].Should().Be("[{\"Name\":\"Copy\",\"ExecutionsCount\":10}]");
+            fakeTelemetry.LogEntry.Properties["TaskCount"].Should().Be("1");
+            fakeTelemetry.LogEntry.Properties["TotalTaskCount"].Should().Be("1");
+        }
+
+        [TestMethod]
+        public void ItForwardsRoslynCompilerCacheEvent()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.RoslynCompilerCacheEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "cachestatus", "hit" },
+                    { "storeresult", "none" },
+                    { "language", "C#" },
+                    { "keycomputems", "5" },
+                    { "restorems", "6" },
+                    { "storems", "0" }
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be($"msbuild/{MSBuildLogger.RoslynCompilerCacheEventName}");
+            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
+        }
+
+        [TestMethod]
+        public void ItCreatesAnInternalActivityForEachBuild()
+        {
+            ActivitySource activitySource = Activities.Source;
+            Activity stoppedActivity = null;
+            using var listener = new ActivityListener
+            {
+                ShouldListenTo = source => source == activitySource,
+                Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                ActivityStopped = activity => stoppedActivity = activity,
+            };
+            ActivitySource.AddActivityListener(listener);
+
+            using Activity parentActivity = new Activity("parent").Start();
+            var eventSource = new PersistentDispatcher([]);
+            var logger = new MSBuildLogger(new FakeTelemetry());
+            logger.Initialize(eventSource);
+
+            eventSource.Dispatch(new BuildStartedEventArgs("Build started.", helpKeyword: null));
+
+            Activity.Current.Should().NotBeSameAs(parentActivity);
+            Activity.Current.Kind.Should().Be(ActivityKind.Internal);
+            Activity.Current.ParentSpanId.Should().Be(parentActivity.SpanId);
+
+            eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
+
+            Activity.Current.Should().NotBeSameAs(parentActivity);
+            stoppedActivity.Should().BeNull();
+
+            logger.Shutdown();
+
+            Activity.Current.Should().BeSameAs(parentActivity);
+            stoppedActivity.Should().NotBeNull();
+            stoppedActivity.Status.Should().Be(ActivityStatusCode.Ok);
+        }
+
+        [TestMethod]
+        [DoNotParallelize]
+        public void ItUsesTheCurrentParentContextForEachServerBuild()
+        {
+            string originalTraceParent = Environment.GetEnvironmentVariable(Activities.TRACEPARENT);
+            Activity ambientActivity = Activity.Current;
+            Activity.Current = null;
+
+            try
+            {
+                ActivitySource activitySource = Activities.Source;
+                using var listener = new ActivityListener
+                {
+                    ShouldListenTo = source => source == activitySource,
+                    Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                };
+                ActivitySource.AddActivityListener(listener);
+
+                var firstParent = new ActivityContext(
+                    ActivityTraceId.CreateRandom(),
+                    ActivitySpanId.CreateRandom(),
+                    ActivityTraceFlags.Recorded,
+                    isRemote: true);
+                var firstActivity = RunBuildWithParent(firstParent);
+
+                var secondParent = new ActivityContext(
+                    ActivityTraceId.CreateRandom(),
+                    ActivitySpanId.CreateRandom(),
+                    ActivityTraceFlags.Recorded,
+                    isRemote: true);
+                var secondActivity = RunBuildWithParent(secondParent);
+
+                firstActivity.TraceId.Should().Be(firstParent.TraceId);
+                firstActivity.ParentSpanId.Should().Be(firstParent.SpanId);
+                secondActivity.TraceId.Should().Be(secondParent.TraceId);
+                secondActivity.ParentSpanId.Should().Be(secondParent.SpanId);
+            }
+            finally
+            {
+                Environment.SetEnvironmentVariable(Activities.TRACEPARENT, originalTraceParent);
+                Activity.Current = ambientActivity;
+            }
+
+            static Activity RunBuildWithParent(ActivityContext parentContext)
+            {
+                Environment.SetEnvironmentVariable(
+                    Activities.TRACEPARENT,
+                    $"00-{parentContext.TraceId}-{parentContext.SpanId}-01");
+
+                var eventSource = new PersistentDispatcher([]);
+                var logger = new MSBuildLogger(new FakeTelemetry());
+                logger.Initialize(eventSource);
+                eventSource.Dispatch(new BuildStartedEventArgs("Build started.", helpKeyword: null));
+                Activity activity = Activity.Current;
+                eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
+                logger.Shutdown();
+                return activity;
+            }
         }
     }
 }

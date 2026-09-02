@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,6 +12,6 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
     public sealed class CSharpUseLiteralsWhereAppropriate : UseLiteralsWhereAppropriateAnalyzer
     {
         protected override bool IsConstantInterpolatedStringSupported(ParseOptions compilation)
-            => ((CSharpParseOptions)compilation).LanguageVersion > (LanguageVersion)900; // Starting with C# 10 and above.
+            => ((CSharpParseOptions)compilation).LanguageVersion >= LanguageVersion.CSharp10;
     }
 }

@@ -18,7 +18,9 @@ namespace Microsoft.NET.TestFramework
         public const int Success = 0;
         public const int GenericFailure = 1;
         public const int AtLeastOneTestFailed = 2;
+        public const int TestSessionAborted = 3;
         public const int ZeroTests = 8;
         public const int MinimumExpectedTestsPolicyViolation = 9;
+        public const int TestExecutionStoppedForMaxFailedTests = 13;
     }
 }

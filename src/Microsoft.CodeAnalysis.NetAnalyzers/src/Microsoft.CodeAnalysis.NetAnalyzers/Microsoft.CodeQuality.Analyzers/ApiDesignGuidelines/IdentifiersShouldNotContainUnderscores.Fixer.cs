@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Globalization;
@@ -59,7 +60,7 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines
 
             string title = MicrosoftCodeQualityAnalyzersResources.IdentifiersShouldNotContainUnderscoresCodeFixTitle;
             context.RegisterCodeFix(CodeAction.Create(title,
-                                        ct => Renamer.RenameSymbolAsync(context.Document.Project.Solution, symbol, newName, context.Document.Project.Solution.Options, ct),
+                                        ct => Renamer.RenameSymbolAsync(context.Document.Project.Solution, symbol, new SymbolRenameOptions(), newName, ct),
                                         equivalenceKey: title),
                                     context.Diagnostics);
         }

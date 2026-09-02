@@ -6,11 +6,12 @@ using Microsoft.Extensions.EnvironmentAbstractions;
 
 namespace Microsoft.DotNet.Cli.Utils.Tests
 {
+    [TestClass]
     public class MockFileSystemTests
     {
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void DirectoryExistsShouldCountTheSameNameFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -21,9 +22,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.Directory.Exists(nestedFilePath).Should().BeFalse();
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void DifferentDirectorySeparatorShouldBeSameFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -35,9 +37,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.Exists($"{directory}/filename").Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenDirectoryExistsShouldCreateEmptyFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -49,9 +51,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.Exists(nestedFilePath).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenDirectoryDoesNotExistsCreateEmptyFileShouldThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -64,9 +66,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void DirectoryExistsWithRelativePathShouldCountTheSameNameFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -77,9 +79,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.Exists(Path.Combine(directory, "file")).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WithRelativePathShouldCreateDirectory(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -90,9 +92,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.Directory.Exists(Path.Combine(directory, "dir")).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void ShouldCreateDirectory(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -102,9 +104,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.Directory.Exists(directory).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void CreateDirectoryWhenExistsShouldNotThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -115,9 +117,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().NotThrow();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void CreateDirectoryWhenExistsSameNameFileShouldThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -130,9 +132,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<IOException>();
         }
 
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void DirectoryDoesNotExistShouldThrow(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -143,9 +146,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<DirectoryNotFoundException>();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void FileReadAllTextWhenExists(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -157,9 +160,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.ReadAllText(path).Should().Be(content);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void FileThrowsWhenTryToReadNonExistFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -170,9 +173,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void FileThrowsWhenTryToReadADictionary(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -185,9 +188,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<UnauthorizedAccessException>().And.Message.Should().Contain("Access to the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void FileOpenReadWhenExists(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -211,9 +214,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fullString.Should().StartWith(content);
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void MoveFileWhenBothSourceAndDestinationExist(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -228,9 +231,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.Exists(destinationFile).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void MoveFileThrowsWhenSourceDoesNotExist(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -244,9 +247,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void MoveFileThrowsWhenSourceIsADirectory(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -261,9 +264,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void MoveFileThrowsWhenDestinationDirectoryDoesNotExist(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -279,9 +282,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .And.Message.Should().Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void CopyFileWhenBothSourceAndDestinationDirectoryExist(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -295,9 +298,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.ReadAllText(sourceFile).Should().Be(fileSystem.File.ReadAllText(destinationFile));
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void CopyFileThrowsWhenSourceDoesNotExist(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -310,9 +313,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<FileNotFoundException>().And.Message.Should().Contain("Could not find file");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void CopyFileThrowsWhenSourceIsADirectory(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -326,9 +329,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<UnauthorizedAccessException>().And.Message.Should().Contain("Access to the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void CopyFileThrowsWhenDestinationDirectoryDoesNotExist(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -343,9 +346,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .And.Message.Should().Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void CopyFileThrowsWhenDestinationExists(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -361,9 +364,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .And.Message.Should().Contain("already exists");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void DeleteFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -376,9 +379,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.Exists(file).Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void DeleteFileShouldNotThrowWhenFileDoesNotExists(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -393,9 +396,10 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         // https://github.com/dotnet/corefx/issues/32110
         // It behaves differently on Windows Vs Non Windows
         // Use Windows behavior since it is more strict
-        [WindowsOnlyTheory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [OSCondition(OperatingSystems.Windows)]
+        [DataRow(false)]
+        [DataRow(true)]
         public void DeleteFileShouldNotThrowWhenDirectoryDoesNotExists(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -407,9 +411,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<DirectoryNotFoundException>().And.Message.Should().Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void EnumerateAllFilesThrowsWhenDirectoryDoesNotExists(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -422,9 +426,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void EnumerateAllFilesThrowsWhenPathIsAFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -440,9 +444,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<IOException>();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenEmptyEnumerateAllFiles(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -453,9 +457,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.Directory.EnumerateFiles(emptyDirectory).Should().BeEmpty();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenFilesExistEnumerateAllFiles(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -473,9 +477,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void EnumerateFileSystemEntriesThrowsWhenDirectoryDoesNotExists(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -488,9 +492,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void EnumerateFileSystemEntriesThrowsWhenPathIsAFile(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -506,9 +510,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<IOException>();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenEmptyEnumerateFileSystemEntries(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -519,9 +523,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.Directory.EnumerateFileSystemEntries(emptyDirectory).Should().BeEmpty();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenFilesExistEnumerateFileSystemEntries(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -541,11 +545,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.Directory.EnumerateFileSystemEntries(testDirectory).Should().Contain(nestedDirectoryPath);
         }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
         public void WhenDirectoryExistsItDeleteDirectory(bool testMockBehaviorIsInSync, bool recursive)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -557,11 +561,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.Directory.Exists(testDirectory).Should().BeFalse();
         }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
         public void WhenDirectoryDoesNotExistsDirectoryDeleteThrows(bool testMockBehaviorIsInSync, bool recursive)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -573,11 +577,11 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(false, true)]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(false, true)]
+        [DataRow(true, true)]
+        [DataRow(true, false)]
         public void WhenDirectoryPathIsAFileDirectoryDeleteThrows(bool testMockBehaviorIsInSync, bool recursive)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -589,9 +593,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             action.Should().Throw<IOException>();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenDirectoryPathHasAFileAndNonRecursiveDirectoryDeleteThrows(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -608,9 +612,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             action.Should().Throw<IOException>().And.Message.Should().Contain("not empty");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenDirectoryPathHasAFileAndRecursiveItDeletes(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -625,9 +629,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
         }
 
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenItMovesDirectory(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -647,9 +651,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             fileSystem.File.Exists(Path.Combine(testDestinationDirectoryPath, nestedFilePath)).Should().BeTrue();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenSourcePathDoesNotExistsDirectoryMoveThrows(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -663,9 +667,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
                 .Contain("Could not find a part of the path");
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenDestinationDirectoryPathExistsDirectoryMoveThrows(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -680,9 +684,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<IOException>();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenDestinationDirectoryPathIsAFileDirectoryMoveThrows(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);
@@ -697,9 +701,9 @@ namespace Microsoft.DotNet.Cli.Utils.Tests
             a.Should().Throw<IOException>();
         }
 
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
+        [TestMethod]
+        [DataRow(false)]
+        [DataRow(true)]
         public void WhenSourceAndDestinationPathIsTheSameDirectoryMoveThrows(bool testMockBehaviorIsInSync)
         {
             IFileSystem fileSystem = SetupSubjectFileSystem(testMockBehaviorIsInSync);

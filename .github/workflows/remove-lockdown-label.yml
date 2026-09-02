@@ -2,20 +2,28 @@ name: Remove Lockdown Label from PRs
 
 on:
   pull_request_target:
-    types: [closed]
+    branches:
+      - 'release/8.*'
+      - 'release/9.*'
+      - 'release/10.*'
+      - 'main'
 
 permissions:
     actions: write
     pull-requests: write
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
     remove-labels:
-        if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding')
+        # Only run on the main repository, not forks
+        if: github.event.pull_request.merged == true && contains(github.event.pull_request.labels.*.name, 'Branding') && github.repository == 'dotnet/sdk'
         runs-on: ubuntu-latest
         steps:
         -   name: PR's only change is <VersionFeature> in eng/Versions.props
             id: only_version_feature_changed
-            uses: actions/github-script@v4
+            uses: actions/github-script@10b53a9ec6c222bb4ce97aa6bd2b5f739696b536 # v4
             with:
                 script: |
                     const otherChangesMessage = "❌ Changes in eng/Versions.props other than <VersionFeature> found";
@@ -47,7 +55,7 @@ jobs:
 
         -   name: Remove Branch Lockdown label from other PRs targeting this branch
             if: steps.only_version_feature_changed.outputs.only_version_feature_changed == 'true'
-            uses: actions/github-script@v4
+            uses: actions/github-script@10b53a9ec6c222bb4ce97aa6bd2b5f739696b536 # v4
             with:
                 script: |
                     const prs = await github.pulls.list({

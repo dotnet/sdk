@@ -1,0 +1,7 @@
+﻿{
+  "author": "Microsoft",
+  "name": "Paquete de plantillas",
+  "description": "Proyecto para un paquete de plantillas que contiene plantillas .NET.",
+  "postActions/instructions/description": "No se requieren acciones manuales",
+  "postActions/instructions/manualInstructions/default/text": "Abra *.csproj en el editor y complete la configuración de metadatos del paquete. Copie las plantillas en la carpeta \"content\". Rellene en README.md."
+}

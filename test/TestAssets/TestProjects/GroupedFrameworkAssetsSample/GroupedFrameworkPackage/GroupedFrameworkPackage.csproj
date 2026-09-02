@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>$(AspNetTestTfm)</TargetFramework>
+    <AddRazorSupportForMvc>true</AddRazorSupportForMvc>
+    <Copyright>© Microsoft</Copyright>
+    <Product>Grouped Framework Assets Test</Product>
+    <Company>Microsoft</Company>
+    <Description>Package shipping an asset that is both a framework asset and a group member (mirrors blazor.webassembly.js)</Description>
+    <DeterministicSourcePaths>false</DeterministicSourcePaths>
+
+    <!-- Mark all .js assets as Framework. Combined with the conditional group below this produces
+         an asset that is *both* framework and grouped, the shape that regressed blazor.webassembly.js. -->
+    <StaticWebAssetFrameworkPattern>**/*.js</StaticWebAssetFrameworkPattern>
+
+    <PackageOutputPath>$(AspNetTestPackageSource)</PackageOutputPath>
+    <PackageVersion>1.0.0</PackageVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <UseRazorBuildServer>false</UseRazorBuildServer>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <StaticWebAssetGroupDefinition Include="GroupedFramework" Value="enabled" Order="0" SourceId="$(PackageId)" IncludePattern="**" RelativePathPattern="**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <Import Project="StaticWebAssets.Groups.targets" />
+
+</Project>

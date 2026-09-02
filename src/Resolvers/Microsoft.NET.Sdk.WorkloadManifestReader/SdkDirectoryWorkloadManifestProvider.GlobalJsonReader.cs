@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Text;
 using System.Text.Json;
 using Microsoft.NET.Sdk.Localization;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadManifestReader;
@@ -19,15 +20,38 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                     return null;
                 }
 
-                using var fileStream = File.OpenRead(globalJsonPath);
-
                 var readerOptions = new JsonReaderOptions
                 {
                     AllowTrailingCommas = true,
                     CommentHandling = JsonCommentHandling.Skip
                 };
-                var reader = new Utf8JsonStreamReader(fileStream, readerOptions);
 
+                // Use StreamReader with BOM detection to determine the encoding
+                using var streamReader = new StreamReader(globalJsonPath, detectEncodingFromByteOrderMarks: true);
+                streamReader.Peek(); // trigger BOM detection without consuming content
+
+                if (streamReader.CurrentEncoding is UTF8Encoding)
+                {
+                    // UTF-8 (with or without BOM): stream the underlying file directly.
+                    // Utf8JsonStreamReader handles the UTF-8 BOM itself.
+                    streamReader.BaseStream.Seek(0, SeekOrigin.Begin);
+                    var reader = new Utf8JsonStreamReader(streamReader.BaseStream, readerOptions);
+                    return ParseGlobalJson(ref reader, out shouldUseWorkloadSets);
+                }
+                else
+                {
+                    // For other encodings (e.g. UTF-16 LE/BE), transcode to UTF-8 in memory.
+                    // global.json files are small so this is acceptable.
+                    var content = streamReader.ReadToEnd();
+                    using var memStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+                    var reader = new Utf8JsonStreamReader(memStream, readerOptions);
+                    return ParseGlobalJson(ref reader, out shouldUseWorkloadSets);
+                }
+            }
+
+            private static string? ParseGlobalJson(ref Utf8JsonStreamReader reader, out bool? shouldUseWorkloadSets)
+            {
+                shouldUseWorkloadSets = null;
                 string? workloadVersion = null;
 
                 JsonReader.ConsumeToken(ref reader, JsonTokenType.StartObject);

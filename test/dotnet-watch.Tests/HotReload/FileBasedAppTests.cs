@@ -3,9 +3,10 @@
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-public class FileBasedAppTests(ITestOutputHelper output) : DotNetWatchTestBase(output)
+[TestClass]
+public class FileBasedAppTests : DotNetWatchTestBase
 {
-    [Fact]
+    [TestMethod]
     public async Task IncludeDirective()
     {
         var testAsset = TestAssets.CreateTestAsset("FBA");
@@ -52,7 +53,7 @@ public class FileBasedAppTests(ITestOutputHelper output) : DotNetWatchTestBase(o
         await App.WaitUntilOutputContains("<Updated>");
     }
 
-    [Fact]
+    [TestMethod]
     public async Task TargetFrameworks_Selection()
     {
         var testAsset = TestAssets.CreateTestAsset("FBA");
@@ -81,7 +82,7 @@ public class FileBasedAppTests(ITestOutputHelper output) : DotNetWatchTestBase(o
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
     }
 
-    [Fact]
+    [TestMethod]
     public async Task TargetFramework()
     {
         var testAsset = TestAssets.CreateTestAsset("FBA");

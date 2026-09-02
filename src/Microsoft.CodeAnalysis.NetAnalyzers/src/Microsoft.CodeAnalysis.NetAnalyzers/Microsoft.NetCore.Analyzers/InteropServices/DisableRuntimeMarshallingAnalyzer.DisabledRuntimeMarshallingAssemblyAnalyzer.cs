@@ -1,11 +1,11 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Immutable;
 using System.Diagnostics;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -46,7 +46,7 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
                 context.RegisterOperationAction(AnalyzeMethodCall, OperationKind.Invocation);
 
-                context.RegisterOperationAction(AnalyzeFunctionPointerCall, OperationKindEx.FunctionPointerInvocation);
+                context.RegisterOperationAction(AnalyzeFunctionPointerCall, OperationKind.FunctionPointerInvocation);
 
                 context.RegisterSymbolAction(AnalyzeEvent, SymbolKind.Event);
 
@@ -98,14 +98,14 @@ namespace Microsoft.NetCore.Analyzers.InteropServices
 
             public void AnalyzeFunctionPointerCall(OperationAnalysisContext context)
             {
-                var functionPointerInvocation = IFunctionPointerInvocationOperationWrapper.FromOperation(context.Operation);
+                var functionPointerInvocation = (IFunctionPointerInvocationOperation)context.Operation;
 
                 if (functionPointerInvocation.GetFunctionPointerSignature().CallingConvention == System.Reflection.Metadata.SignatureCallingConvention.Default)
                 {
                     return;
                 }
 
-                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, functionPointerInvocation.GetFunctionPointerSignature(), ImmutableArray.Create(functionPointerInvocation.WrappedOperation.Syntax.GetLocation()));
+                AnalyzeMethodSignature(_autoLayoutCache, context.ReportDiagnostic, functionPointerInvocation.GetFunctionPointerSignature(), ImmutableArray.Create(functionPointerInvocation.Syntax.GetLocation()));
             }
 
             public void AnalyzeLocalFunction(OperationAnalysisContext context)

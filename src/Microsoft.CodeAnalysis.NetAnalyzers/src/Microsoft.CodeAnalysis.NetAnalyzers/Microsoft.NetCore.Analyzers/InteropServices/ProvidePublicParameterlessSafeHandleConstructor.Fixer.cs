@@ -1,56 +1,42 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Composition;
 using System.Threading;
 using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.NetCore.Analyzers.InteropServices
 {
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic), Shared]
-    public sealed class ProvidePublicParameterlessSafeHandleConstructorFixer : CodeFixProvider
+    public sealed class ProvidePublicParameterlessSafeHandleConstructorFixer : SyntaxEditorBasedCodeFixProvider
     {
         public override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(ProvidePublicParameterlessSafeHandleConstructorAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
+        public override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
+            RegisterCodeFix(
+                context,
+                MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic,
+                nameof(MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic));
+            return Task.CompletedTask;
         }
 
-        public override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        protected override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            SyntaxGenerator generator = SyntaxGenerator.GetGenerator(context.Document);
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            SyntaxNode enclosingNode = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            SyntaxNode? declaration = editor.Generator.GetDeclaration(enclosingNode);
 
-            SyntaxNode enclosingNode = root.FindNode(context.Span);
-            SyntaxNode declaration = generator.GetDeclaration(enclosingNode);
-            if (declaration == null)
+            if (declaration != null)
             {
-                return;
+                editor.SetAccessibility(declaration, Accessibility.Public);
             }
 
-            foreach (var diagnostic in context.Diagnostics)
-            {
-                context.RegisterCodeFix(
-                    CodeAction.Create(
-                        MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic,
-                        async ct => await MakeParameterlessConstructorPublicAsync(declaration, context.Document, context.CancellationToken).ConfigureAwait(false),
-                        equivalenceKey: nameof(MicrosoftNetCoreAnalyzersResources.MakeParameterlessConstructorPublic)),
-                    diagnostic);
-            }
-        }
-
-        private static async Task<Document> MakeParameterlessConstructorPublicAsync(SyntaxNode declaration, Document document, CancellationToken ct)
-        {
-            var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-            editor.SetAccessibility(declaration, Accessibility.Public);
-            return editor.GetChangedDocument();
+            return Task.CompletedTask;
         }
     }
 }

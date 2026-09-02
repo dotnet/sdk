@@ -10,12 +10,15 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 {
+    [TestClass]
     public class BrowserRefreshMiddlewareTest
     {
-        [Theory]
-        [InlineData("DELETE")]
-        [InlineData("head")]
-        [InlineData("Put")]
+        public TestContext TestContext { get; set; } = null!;
+
+        [TestMethod]
+        [DataRow("DELETE")]
+        [DataRow("head")]
+        [DataRow("Put")]
         public void IsBrowserDocumentRequest_ReturnsFalse_ForNonGetOrPostRequests(string method)
         {
             // Arrange
@@ -35,10 +38,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsBrowserDocumentRequest_ReturnsFalse_IsRequestDoesNotAcceptHtml()
         {
             // Arrange
@@ -58,10 +61,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsBrowserDocumentRequest_ReturnsTrue_ForGetRequestsThatAcceptHtml()
         {
             // Arrange
@@ -81,10 +84,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsBrowserDocumentRequest_ReturnsTrue_ForRequestsThatAcceptAnyHtml()
         {
             // Arrange
@@ -104,10 +107,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsBrowserDocumentRequest_ReturnsTrue_IfRequestDoesNotHaveFetchMetadataRequestHeader()
         {
             // Arrange
@@ -127,10 +130,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsBrowserDocumentRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsEmpty()
         {
             // Arrange
@@ -151,12 +154,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Theory]
-        [InlineData("document")]
-        [InlineData("Document")]
+        [TestMethod]
+        [DataRow("document")]
+        [DataRow("Document")]
         public void IsBrowserDocumentRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsDocument(string headerValue)
         {
             // Arrange
@@ -177,13 +180,37 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Theory]
-        [InlineData("frame")]
-        [InlineData("iframe")]
-        [InlineData("serviceworker")]
+        [TestMethod]
+        [DataRow("frame")]
+        [DataRow("iframe")]
+        public void IsBrowserDocumentRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsFrame(string headerValue)
+        {
+            // Arrange
+            var context = new DefaultHttpContext
+            {
+                Request =
+                {
+                    Method = "Post",
+                    Headers =
+                    {
+                        ["Accept"] = "text/html",
+                        ["Sec-Fetch-Dest"] = headerValue,
+                    },
+                },
+            };
+
+            // Act
+            var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        [TestMethod]
+        [DataRow("serviceworker")]
         public void IsBrowserDocumentRequest_ReturnsFalse_IfRequestFetchMetadataRequestHeaderIsNotDocument(string headerValue)
         {
             // Arrange
@@ -204,14 +231,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsBrowserDocumentRequest(context);
 
             // Assert
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
-        [Theory]
-        [InlineData("DELETE")]
-        [InlineData("POST")]
-        [InlineData("head")]
-        [InlineData("Put")]
+        [TestMethod]
+        [DataRow("DELETE")]
+        [DataRow("POST")]
+        [DataRow("head")]
+        [DataRow("Put")]
         public void IsWebassemblyBootRequest_ReturnsFalse_ForNonGetRequests(string method)
         {
             // Arrange
@@ -232,10 +259,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsWebassemblyBootRequest_ReturnsFalse_IfRequestDoesNotAcceptJson()
         {
             // Arrange
@@ -256,10 +283,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsWebassemblyBootRequest_ReturnsTrue_ForGetRequestsThatAcceptJson()
         {
             // Arrange
@@ -280,10 +307,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsWebassemblyBootRequest_ReturnsTrue_ForGetRequestsThatAcceptAnyContentType()
         {
             // Arrange
@@ -304,12 +331,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Theory]
-        [InlineData("/_framework/blazor.boot.json")]
-        [InlineData("/Blazor.boot.json")]
+        [TestMethod]
+        [DataRow("/_framework/blazor.boot.json")]
+        [DataRow("/Blazor.boot.json")]
         public void IsWebassemblyBootRequest_ReturnsTrue_ForFileNameRequestsToBlazorBootJson(string path)
         {
             // Arrange
@@ -330,13 +357,13 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Theory]
-        [InlineData("/_framework/other.txt")]
-        [InlineData("/other.txt")]
-        [InlineData("/Blazor.boot.json/other.txt")]
+        [TestMethod]
+        [DataRow("/_framework/other.txt")]
+        [DataRow("/other.txt")]
+        [DataRow("/Blazor.boot.json/other.txt")]
         public void IsWebassemblyBootRequest_ReturnsFalse_ForRequestsToOtherPathsThanBlazorBootJson(string path)
         {
             // Arrange
@@ -357,10 +384,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsWebassemblyBootRequest_ReturnsTrue_IfRequestDoesNotHaveFetchMetadataRequestHeader()
         {
             // Arrange
@@ -381,10 +408,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsWebassemblyBootRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsEmpty()
         {
             // Arrange
@@ -406,12 +433,12 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Theory]
-        [InlineData("empty")]
-        [InlineData("Empty")]
+        [TestMethod]
+        [DataRow("empty")]
+        [DataRow("Empty")]
         public void IsWebassemblyBootRequest_ReturnsTrue_IfRequestFetchMetadataRequestHeaderIsEmptyValue(string headerValue)
         {
             // Arrange
@@ -433,14 +460,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.True(result);
+            Assert.IsTrue(result);
         }
 
-        [Theory]
-        [InlineData("frame")]
-        [InlineData("iframe")]
-        [InlineData("serviceworker")]
-        [InlineData("document")]
+        [TestMethod]
+        [DataRow("frame")]
+        [DataRow("iframe")]
+        [DataRow("serviceworker")]
+        [DataRow("document")]
         public void IsWebassemblyBootRequest_ReturnsFalse_IfRequestFetchMetadataRequestHeaderIsEmptyValue(string headerValue)
         {
             // Arrange
@@ -462,10 +489,10 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var result = BrowserRefreshMiddleware.IsWebAssemblyBootRequest(context);
 
             // Assert
-            Assert.False(result);
+            Assert.IsFalse(result);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvokeAsync_AttachesHeadersToResponse()
         {
             var stream = new MemoryStream();
@@ -494,8 +521,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             var middleware = new BrowserRefreshMiddleware(async (context) =>
             {
                 context.Response.ContentType = "application/json";
-                await context.Response.StartAsync();
-                await context.Response.WriteAsync("{ }");
+                await context.Response.StartAsync(TestContext.CancellationToken);
+                await context.Response.WriteAsync("{ }", TestContext.CancellationToken);
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
             middleware.Test_SetEnvironment(dotnetModifiableAssemblies: "true", aspnetcoreBrowserTools: "true");
@@ -504,11 +531,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await middleware.InvokeAsync(context);
 
             // Assert
-            Assert.True(context.Response.Headers.ContainsKey("DOTNET-MODIFIABLE-ASSEMBLIES"));
-            Assert.True(context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"));
+            Assert.IsTrue(context.Response.Headers.ContainsKey("DOTNET-MODIFIABLE-ASSEMBLIES"));
+            Assert.IsTrue(context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task InvokeAsync_DoesNotAttachHeaders_WhenAlreadyAttached()
         {
             var stream = new MemoryStream();
@@ -540,8 +567,8 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
                 context.Response.ContentType = "application/json";
                 context.Response.Headers.Append("DOTNET-MODIFIABLE-ASSEMBLIES", "true");
                 context.Response.Headers.Append("ASPNETCORE-BROWSER-TOOLS", "true");
-                await context.Response.StartAsync();
-                await context.Response.WriteAsync("{ }");
+                await context.Response.StartAsync(TestContext.CancellationToken);
+                await context.Response.WriteAsync("{ }", TestContext.CancellationToken);
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
             middleware.Test_SetEnvironment(dotnetModifiableAssemblies: "true", aspnetcoreBrowserTools: "true");
@@ -550,16 +577,16 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             await middleware.InvokeAsync(context);
 
             // Assert
-            Assert.True(context.Response.Headers.ContainsKey("DOTNET-MODIFIABLE-ASSEMBLIES"));
-            Assert.Equal("true", context.Response.Headers["DOTNET-MODIFIABLE-ASSEMBLIES"]);
-            Assert.True(context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"));
-            Assert.Equal("true", context.Response.Headers["ASPNETCORE-BROWSER-TOOLS"]);
+            Assert.IsTrue(context.Response.Headers.ContainsKey("DOTNET-MODIFIABLE-ASSEMBLIES"));
+            Assert.AreEqual("true", context.Response.Headers["DOTNET-MODIFIABLE-ASSEMBLIES"].ToString());
+            Assert.IsTrue(context.Response.Headers.ContainsKey("ASPNETCORE-BROWSER-TOOLS"));
+            Assert.AreEqual("true", context.Response.Headers["ASPNETCORE-BROWSER-TOOLS"].ToString());
         }
 
-        [Theory]
-        [InlineData(500, "text/html")]
-        [InlineData(404, "text/html")]
-        [InlineData(200, "text/html")]
+        [TestMethod]
+        [DataRow(500, "text/html")]
+        [DataRow(404, "text/html")]
+        [DataRow(200, "text/html")]
         public async Task InvokeAsync_AddsScriptToThePage_ForSupportedStatusCodes(int statusCode, string contentType)
         {
             // Act & Assert
@@ -567,11 +594,11 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
             Assert.Contains("<script src=\"/_framework/aspnetcore-browser-refresh.js\"></script>", responseContent);
         }
 
-        [Theory]
-        [InlineData(400, "text/html")] // Bad Request
-        [InlineData(401, "text/html")] // Unauthorized
-        [InlineData(404, "application/json")] // 404 with wrong content type
-        [InlineData(200, "application/json")] // 200 with wrong content type
+        [TestMethod]
+        [DataRow(400, "text/html")] // Bad Request
+        [DataRow(401, "text/html")] // Unauthorized
+        [DataRow(404, "application/json")] // 404 with wrong content type
+        [DataRow(200, "application/json")] // 200 with wrong content type
         public async Task InvokeAsync_DoesNotAddScript_ForUnsupportedStatusCodesOrContentTypes(int statusCode, string contentType)
         {
             // Act & Assert
@@ -603,17 +630,17 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
                 if (includeHtmlWrapper)
                 {
-                    await context.Response.WriteAsync("<html>");
-                    await context.Response.WriteAsync("<body>");
-                    await context.Response.WriteAsync("<h1>");
-                    await context.Response.WriteAsync(content);
-                    await context.Response.WriteAsync("</h1>");
-                    await context.Response.WriteAsync("</body>");
-                    await context.Response.WriteAsync("</html>");
+                    await context.Response.WriteAsync("<html>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("<body>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("<h1>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync(content, TestContext.CancellationToken);
+                    await context.Response.WriteAsync("</h1>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("</body>", TestContext.CancellationToken);
+                    await context.Response.WriteAsync("</html>", TestContext.CancellationToken);
                 }
                 else
                 {
-                    await context.Response.WriteAsync(content);
+                    await context.Response.WriteAsync(content, TestContext.CancellationToken);
                 }
             }, NullLogger<BrowserRefreshMiddleware>.Instance);
 
@@ -622,7 +649,7 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh
 
             // Return response content and verify status code
             var responseContent = Encoding.UTF8.GetString(stream.ToArray());
-            Assert.Equal(statusCode, context.Response.StatusCode);
+            Assert.AreEqual(statusCode, context.Response.StatusCode);
             return responseContent;
         }
 

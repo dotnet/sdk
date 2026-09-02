@@ -1,0 +1,334 @@
+<Project>
+
+  <!--
+    Shared item list for the AOT CLI bridge.
+    Imported by both dotnet-aot.csproj and dotnet-aot.Tests.csproj so that the test
+    project compiles exactly the same parser/command surface as the AOT binary, keeping
+    the two in sync.
+
+    Items are grouped by ownership to minimize merge conflicts when AOT commands are
+    added in parallel changes:
+      * "Common AOT scaffolding" is required by every AOT command. When enabling a new
+        AOT command, REUSE this group rather than re-adding these items in your own
+        group, otherwise the duplicate <Compile>/<EmbeddedResource> items will fail the
+        build once both changes merge.
+      * Each command contributes its own clearly-labeled group below, referencing only
+        its command-specific sources and resources. Add package and project dependencies
+        to AotDependencies.props so the product and tests consume the same closure.
+
+    NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer because
+    ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper and the test
+    project stubs it.
+
+    All paths are relative to this file ($(MSBuildThisFileDirectory)) so they resolve
+    correctly regardless of the importing project's location.
+  -->
+
+  <!-- Common AOT scaffolding: shared by every AOT command. Reuse, do not duplicate. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliUsage.cs" Link="CliUsage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliSchema.cs" Link="CliSchema.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Parser.cs" Link="Parser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ParserOptionActions.cs" Link="ParserOptionActions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandBase.cs" Link="CommandBase.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandParsingException.cs" Link="CommandParsingException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandNotAvailableInAotException.cs" Link="CommandNotAvailableInAotException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandInvocation.cs" Link="CommandInvocation.cs" />
+    <Compile Include="$(RepoRoot)src\Common\EnvironmentVariableNames.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CompileOptions.cs" LinkBase="Common" />
+    <Compile Include="$(RepoRoot)src\Common\CliFolderPathCalculatorCore.cs" LinkBase="Common" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryClient.cs" Link="TelemetryClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryCommonProperties.cs" Link="TelemetryCommonProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ITelemetryClient.cs" Link="ITelemetryClient.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryDiskLogger.cs" Link="TelemetryDiskLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IDockerContainerDetector.cs" Link="Telemetry\IDockerContainerDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DockerContainerDetectorForTelemetry.cs" Link="Telemetry\DockerContainerDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ILLMEnvironmentDetector.cs" Link="Telemetry\ILLMEnvironmentDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\LLMEnvironmentDetectorForTelemetry.cs" Link="Telemetry\LLMEnvironmentDetectorForTelemetry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\MacAddressGetter.cs" Link="Telemetry\MacAddressGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\DevDeviceIDGetter.cs" Link="Telemetry\DevDeviceIDGetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\ExternalTelemetryProperties.cs" Link="Telemetry\ExternalTelemetryProperties.cs" />
+    <!-- Telemetry filter + parse-result log rules so the AOT bridge can emit the same "classic"
+         toplevelparser/command + sublevelparser/command events the managed CLI does, for commands
+         it handles in-process. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TelemetryFilter.cs" Link="Telemetry\TelemetryFilter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\IParseResultLogRule.cs" Link="Telemetry\IParseResultLogRule.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\AllowListToSendFirstArgument.cs" Link="Telemetry\AllowListToSendFirstArgument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\AllowListToSendFirstAppliedOptions.cs" Link="Telemetry\AllowListToSendFirstAppliedOptions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\AllowListToSendVerbSecondVerbFirstArgument.cs" Link="Telemetry\AllowListToSendVerbSecondVerbFirstArgument.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Telemetry\TopLevelCommandNameAndOptionToLog.cs" Link="Telemetry\TopLevelCommandNameAndOptionToLog.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ActivityExtensions.cs" Link="ActivityExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ParseResultExtensions.cs" Link="ParseResultExtensions.cs" />
+    <!-- Shared first-run experience. The AOT path runs the same DotnetFirstTimeUseConfigurer the managed
+         CLI runs (first-time-use notice, telemetry message, NuGet state migration, global-tools PATH, and
+         the ASP.NET Core developer certificate). It defers to the managed CLI only when workload repair
+         (the NuGet engine) is still pending. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\FirstRunExperience.cs" Link="FirstRunExperience.cs" />
+    <!-- ASP.NET Core HTTPS developer-certificate generator, run in-process by the AOT first-run path.
+         The certificate code (CertificateManager) is NativeAOT-safe: no reflection/dynamic code, only
+         BCL X509/RSA APIs that resolve against the host's already-loaded crypto PAL. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\AspNetCoreCertificateGenerator.cs" Link="AspNetCoreCertificateGenerator.cs" />
+    <!-- Global-tools PATH registration used in-process by the AOT first-run path. These are AOT-safe
+         (file/registry/environment edits only); the registry editor itself lives in Cli.Utils. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\EnvironmentPathFactory.cs" Link="ShellShim\EnvironmentPathFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\WindowsEnvironmentPath.cs" Link="ShellShim\WindowsEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\DoNothingEnvironmentPath.cs" Link="ShellShim\DoNothingEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\LinuxEnvironmentPath.cs" Link="ShellShim\LinuxEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxBashEnvironmentPath.cs" Link="ShellShim\OsxBashEnvironmentPath.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\OsxZshEnvironmentPathInstruction.cs" Link="ShellShim\OsxZshEnvironmentPathInstruction.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ShellShim\ZshDetector.cs" Link="ShellShim\ZshDetector.cs" />
+    <!-- Read-only workload install detection (no NuGet/MSBuild/crypto) used by the AOT first-run path to
+         decide whether the workload integrity repair must be deferred to the managed CLI. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInstallDetector.cs" Link="WorkloadInstallDetector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\FileBasedWorkloadInstallationRecordRepositoryFactory.cs" Link="FileBasedWorkloadInstallationRecordRepositoryFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\IWorkloadInstallationRecordRepository.cs" Link="IWorkloadInstallationRecordRepository.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\FileBasedInstallationRecordInstaller.cs" Link="FileBasedInstallationRecordInstaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\ReadOnlyWindowsWorkloadInstallationRecordRepository.cs" Link="ReadOnlyWindowsWorkloadInstallationRecordRepository.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadInstallRecords\WindowsWorkloadInstallationRecordReader.cs" Link="WindowsWorkloadInstallationRecordReader.cs" />
+    <!-- Background workload advertising and SDK vulnerability updates. -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\IWorkloadManifestInstaller.cs" Link="IWorkloadManifestInstaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadManifestUpdater.cs" Link="WorkloadManifestUpdater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WorkloadAdvertisingManifestUpdater.cs" Link="WorkloadAdvertisingManifestUpdater.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\ManifestUpdateWithWorkloads.cs" Link="ManifestUpdateWithWorkloads.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\NullReporter.cs" Link="NullReporter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\FileBasedManifestInstaller.cs" Link="FileBasedManifestInstaller.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\Install\WindowsMsiManifestInstaller.cs" Link="WindowsMsiManifestInstaller.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadUtilities.cs" Link="WorkloadUtilities.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\SignCheck_Windows.cs" Link="SignCheck_Windows.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\MsiManifest.cs" Link="MsiManifest.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\MsiManifestJsonSerializerContext.cs" Link="MsiManifestJsonSerializerContext.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\MsiPackageData.cs" Link="MsiPackageData.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\RelatedProduct.cs" Link="RelatedProduct.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\UpgradeAttributes.cs" Link="UpgradeAttributes.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\ISetupLogger.cs" Link="ISetupLogger.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Installer\Windows\Security\Signature.cs" Link="Signature.cs" Condition="'$(TargetOS)' == 'windows'" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\INuGetPackageDownloader.cs" Link="INuGetPackageDownloader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\NuGetPackageDownloader.cs" Link="NuGetPackageDownloader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\NuGetPackagePathResolver.cs" Link="NuGetPackagePathResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\NuGetConsoleLogger.cs" Link="NuGetConsoleLogger.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\PackageSourceLocation.cs" Link="PackageSourceLocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\RestoreActionConfig.cs" Link="RestoreActionConfig.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\ToolPackageException.cs" Link="ToolPackageException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\WorkloadUnixFilePermissionsFileList.cs" Link="WorkloadUnixFilePermissionsFileList.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\IFirstPartyNuGetPackageSigningVerifier.cs" Link="IFirstPartyNuGetPackageSigningVerifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetPackageDownloader\FirstPartyNuGetPackageSigningVerifier.cs" Link="FirstPartyNuGetPackageSigningVerifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\IFilePermissionSetter.cs" Link="IFilePermissionSetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\FilePermissionSetter.cs" Link="FilePermissionSetter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandFactory.cs" Link="CommandFactory\CommandFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\ICommandFactory.cs" Link="CommandFactory\ICommandFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\DotNetCommandFactory.cs" Link="Commands\DotNetCommandFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\LoggerUtility.cs" Link="LoggerUtility.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityNotifier.cs" Link="SdkVulnerabilityNotifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkReleaseMetadataCache.cs" Link="SdkReleaseMetadataCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityChecker.cs" Link="SdkVulnerabilityChecker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SdkVulnerability\SdkVulnerabilityInfo.cs" Link="SdkVulnerabilityInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\Microsoft.TemplateEngine.Cli\SymbolExtensions.cs" Link="SymbolExtensions.cs" />
+    <Using Include="System.Collections.Generic.Dictionary%3CMicrosoft.NET.Sdk.WorkloadManifestReader.WorkloadId, Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadDefinition%3E" Alias="WorkloadCollection" />
+  </ItemGroup>
+
+  <!-- Common AOT scaffolding: generated string resources referenced by command sources. -->
+  <ItemGroup>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\CliStrings.resx" Link="CliStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli" />
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\CliCommandStrings.resx" Link="CliCommandStrings.resx" GenerateSource="true" Namespace="Microsoft.DotNet.Cli.Commands" />
+    <EmbeddedResource Include="$(RepoRoot)src\Tasks\Common\Resources\Strings.resx" Link="Resources\Strings.resx" GenerateSource="true" Namespace="Microsoft.NET.Build.Tasks" />
+  </ItemGroup>
+
+  <!-- File-based run cache and launch contracts shared with the managed CLI. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunCommand.cs" Link="Commands\Run\AotRunCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\AotRunInvocation.cs" Link="Commands\Run\AotRunInvocation.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\BuildLevel.cs" Link="Commands\Run\BuildLevel.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppCacheInfo.cs" Link="Commands\Run\FileBasedAppCacheInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppLaunchInfo.cs" Link="Commands\Run\FileBasedAppLaunchInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlan.cs" Link="Commands\Run\FileBasedAppRunPlan.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\FileBasedAppRunPlanInputs.cs" Link="Commands\Run\FileBasedAppRunPlanInputs.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\LaunchProfileReadResult.cs" Link="Commands\Run\LaunchProfileReadResult.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunDecisionReason.cs" Link="Commands\Run\RunDecisionReason.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunFileBuildCacheEntry.cs" Link="Commands\Run\RunFileBuildCacheEntry.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunFileBuildCacheJsonSerializerContext.cs" Link="Commands\Run\RunFileBuildCacheJsonSerializerContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunPlan.cs" Link="Commands\Run\RunPlan.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunProperties.cs" Link="Commands\Run\RunProperties.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunTier.cs" Link="Commands\Run\RunTier.cs" />
+  </ItemGroup>
+
+  <!--
+    Build-free 'dotnet test' support for explicit test modules. Project/solution discovery and build remain
+    managed-only; the linked command implementation shares the MTP orchestration, IPC, terminal,
+    cancellation, results-layout, and artifact post-processing code with the managed CLI.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\AotTestCommand.cs" Link="Commands\Test\AotTestCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\CliConstants.cs" Link="Commands\Test\CliConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\**\*.cs"
+             Exclude="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildHandler.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\SolutionAndProjectUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\ValidationUtility.cs"
+             LinkBase="Commands\Test\MTP" />
+  </ItemGroup>
+
+  <!--
+    Workload reporting for the info command: WorkloadInfoHelper.GetWorkloadsVersion() and
+    ShowWorkloadsInfo(). Under CLI_AOT, WorkloadInfoHelper builds the installation-record repository
+    directly (the registry/file-based record repositories are already in the AOT source set) and does
+    not compile in the workload installer (NuGet/MSI) machinery.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\WorkloadInfoHelper.cs" Link="Commands\Workload\WorkloadInfoHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\InstallStateContents.cs" Link="Commands\Workload\InstallStateContents.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\InstalledWorkloadsCollection.cs" Link="Commands\Workload\List\InstalledWorkloadsCollection.cs" />
+  </ItemGroup>
+
+  <!--
+    Windows-only: 'Visual Studio installed workloads' portion of the info command's workload section.
+    VisualStudioWorkloads queries the VS Setup Configuration COM API. The AOT-safe COM interop helpers
+    (ComClassFactory, ComScope, ComSafeArrayScope, BSTR, HRESULT, IComIID, CLSID) live in
+    Microsoft.DotNet.Cli.Utils and are consumed here via InternalsVisibleTo; only the VS Setup
+    interface definitions and the query itself are compiled in. Gated on TARGET_WINDOWS to match the
+    '#if TARGET_WINDOWS' guard around the call site in WorkloadInfoHelper.AddInstalledVsWorkloads.
+  -->
+  <ItemGroup Condition="'$(TargetOS)' == 'windows'">
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Workload\List\VisualStudioWorkloads.cs" Link="Commands\Workload\List\VisualStudioWorkloads.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\IEnumSetupInstances.cs" Link="VisualStudio\IEnumSetupInstances.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\InstanceState.cs" Link="VisualStudio\InstanceState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupConfiguration.cs" Link="VisualStudio\ISetupConfiguration.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupConfiguration2.cs" Link="VisualStudio\ISetupConfiguration2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupErrorInfo.cs" Link="VisualStudio\ISetupErrorInfo.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupErrorState.cs" Link="VisualStudio\ISetupErrorState.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupFailedPackageReference.cs" Link="VisualStudio\ISetupFailedPackageReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupInstance.cs" Link="VisualStudio\ISetupInstance.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupInstance2.cs" Link="VisualStudio\ISetupInstance2.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupPackageReference.cs" Link="VisualStudio\ISetupPackageReference.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Microsoft\VisualStudio\Setup\Configuration\ISetupPropertyStore.cs" Link="VisualStudio\ISetupPropertyStore.cs" />
+  </ItemGroup>
+
+  <!-- 'dotnet sdk check' command: command-specific sources and helpers. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\SdkCommandParser.cs" Link="Commands\Sdk\SdkCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\PrintableTable.cs" Link="PrintableTable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\SdkCheckCommand.cs" Link="Commands\Sdk\Check\SdkCheckCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\IProductCollectionProvider.cs" Link="Commands\Sdk\Check\IProductCollectionProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\ProductCollectionProvider.cs" Link="Commands\Sdk\Check\ProductCollectionProvider.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\BundleOutputWriter.cs" Link="Commands\Sdk\Check\BundleOutputWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\SdkOutputWriter.cs" Link="Commands\Sdk\Check\SdkOutputWriter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Sdk\Check\RuntimeOutputWriter.cs" Link="Commands\Sdk\Check\RuntimeOutputWriter.cs" />
+  </ItemGroup>
+
+  <!-- 'dotnet sln' command: command-specific sources and helpers. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnFileFactory.cs" Link="SlnFileFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\SlnfFileHelper.cs" Link="SlnfFileHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\MsbuildProject.cs" Link="MsbuildProject.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionCommandParser.cs" Link="Commands\Solution\SolutionCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\SolutionArgumentValidator.cs" Link="Commands\Solution\SolutionArgumentValidator.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\List\SolutionListCommand.cs" Link="Commands\Solution\List\SolutionListCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Migrate\SolutionMigrateCommand.cs" Link="Commands\Solution\Migrate\SolutionMigrateCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Solution\Remove\SolutionRemoveCommand.cs" Link="Commands\Solution\Remove\SolutionRemoveCommand.cs" />
+  </ItemGroup>
+
+  <!-- Project-backed command completions. -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CliCompletion.cs" Link="CliCompletion.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Extensions\ProjectInstanceExtensions.cs" Link="Extensions\ProjectInstanceExtensions.cs" />
+  </ItemGroup>
+
+  <!--
+    Forwarding-app help support: the shared DotnetHelpBuilder renders help for the external-tool
+    commands (msbuild/nuget/vstest/format/fsi) by shelling out to the underlying tool. These sources
+    use AOT-friendly (out-of-process) codepaths under #if CLI_AOT so the help writer needs no
+    conditional compilation of its own.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ForwardingApp.cs" Link="ForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ICommandRunner.cs" Link="ICommandRunner.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NuGetForwardingApp.cs" Link="NuGetForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NuGetSignatureVerificationEnabler.cs" Link="NuGetSignatureVerificationEnabler.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\NuGet\NuGetCommand.cs" Link="Commands\NuGet\NuGetCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\MSBuild\MSBuildForwardingApp.cs" Link="Commands\MSBuild\MSBuildForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\CommonRunHelpers.cs" Link="Commands\Run\CommonRunHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Fsi\FsiForwardingApp.cs" Link="Commands\Fsi\FsiForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Format\FormatForwardingApp.cs" Link="Commands\Format\FormatForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestForwardingApp.cs" Link="Commands\Test\VSTest\VSTestForwardingApp.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\VSTest\VSTestTrace.cs" Link="Commands\Test\VSTest\VSTestTrace.cs" />
+  </ItemGroup>
+
+  <!--
+    External / tool command resolution + invocation: lets the AOT bridge resolve and run external
+    `dotnet-<x>` commands, global tools, local tools, and PATH/app-base commands out of process
+    (mirroring the managed CLI's Program.ExecuteExternalCommand). The MSBuild/NuGet-based legacy
+    project-tools resolver (ProjectToolsCommandResolver) is intentionally excluded - it is gated out
+    of the AOT resolver set in DefaultCommandResolverPolicy.cs via '#if !CLI_AOT', and those (and
+    file-based-app) invocations fall back to the managed CLI.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolver.cs" Link="CommandFactory\CommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandFactoryUsingResolver.cs" Link="CommandFactory\CommandFactoryUsingResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandSpec.cs" Link="CommandFactory\CommandSpec.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\CompositeCommandResolver.cs" Link="CommandFactory\CommandResolution\CompositeCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\ICommandResolver.cs" Link="CommandFactory\CommandResolution\ICommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\ICommandResolverPolicy.cs" Link="CommandFactory\CommandResolution\ICommandResolverPolicy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\CommandResolverArguments.cs" Link="CommandFactory\CommandResolution\CommandResolverArguments.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\DefaultCommandResolverPolicy.cs" Link="CommandFactory\CommandResolution\DefaultCommandResolverPolicy.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\MuxerCommandResolver.cs" Link="CommandFactory\CommandResolution\MuxerCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\MuxerCommandSpecMaker.cs" Link="CommandFactory\CommandResolution\MuxerCommandSpecMaker.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\DotnetToolsCommandResolver.cs" Link="CommandFactory\CommandResolution\DotnetToolsCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\LocalToolsCommandResolver.cs" Link="CommandFactory\CommandResolution\LocalToolsCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\RootedCommandResolver.cs" Link="CommandFactory\CommandResolution\RootedCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\AbstractPathBasedCommandResolver.cs" Link="CommandFactory\CommandResolution\AbstractPathBasedCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\AppBaseCommandResolver.cs" Link="CommandFactory\CommandResolution\AppBaseCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\AppBaseDllCommandResolver.cs" Link="CommandFactory\CommandResolution\AppBaseDllCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\PathCommandResolver.cs" Link="CommandFactory\CommandResolution\PathCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\PublishedPathCommandResolver.cs" Link="CommandFactory\CommandResolution\PublishedPathCommandResolver.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\PublishPathCommandSpecFactory.cs" Link="CommandFactory\CommandResolution\PublishPathCommandSpecFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\IPublishedPathCommandSpecFactory.cs" Link="CommandFactory\CommandResolution\IPublishedPathCommandSpecFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\IPlatformCommandSpecFactory.cs" Link="CommandFactory\CommandResolution\IPlatformCommandSpecFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\WindowsExePreferredCommandSpecFactory.cs" Link="CommandFactory\CommandResolution\WindowsExePreferredCommandSpecFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\GenericPlatformCommandSpecFactory.cs" Link="CommandFactory\CommandResolution\GenericPlatformCommandSpecFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\CommandFactory\CommandResolution\ActivityContextFactory.cs" Link="CommandFactory\CommandResolution\ActivityContextFactory.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\ToolCommandSpecCreator.cs" Link="Commands\Tool\ToolCommandSpecCreator.cs" />
+    <!-- Local tools manifest + resolver cache (used by LocalToolsCommandResolver). -->
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\ToolManifestFinder.cs" Link="ToolManifest\ToolManifestFinder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\ToolManifestEditor.cs" Link="ToolManifest\ToolManifestEditor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\ToolManifestPackage.cs" Link="ToolManifest\ToolManifestPackage.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\ToolManifestException.cs" Link="ToolManifest\ToolManifestException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\ToolManifestCannotBeFoundException.cs" Link="ToolManifest\ToolManifestCannotBeFoundException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\JsonElementExtension.cs" Link="ToolManifest\JsonElementExtension.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\IToolManifestFinder.cs" Link="ToolManifest\IToolManifestFinder.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\IToolManifestInspector.cs" Link="ToolManifest\IToolManifestInspector.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolManifest\IToolManifestEditor.cs" Link="ToolManifest\IToolManifestEditor.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolPackage\LocalToolsResolverCache.cs" Link="ToolPackage\LocalToolsResolverCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolPackage\ILocalToolsResolverCache.cs" Link="ToolPackage\ILocalToolsResolverCache.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolPackage\RestoredCommandIdentifier.cs" Link="ToolPackage\RestoredCommandIdentifier.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolPackage\ToolCommand.cs" Link="ToolPackage\ToolCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolPackage\PackageId.cs" Link="ToolPackage\PackageId.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\ToolPackage\ResolverCacheInconsistentException.cs" Link="ToolPackage\ResolverCacheInconsistentException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\BundledTargetFramework.cs" Link="BundledTargetFramework.cs" />
+  </ItemGroup>
+
+  <!--
+    'dotnet tool' command (AOT-capable subset): the parser plus the real implementations of the
+    local 'tool list'/'tool uninstall', 'tool run', and 'tool search'. The shared manifest/package
+    and command-resolution infrastructure is already linked above (for AOT tool resolution); this
+    group adds only the pieces unique to running these subcommands in-process. The global/tool-path
+    variants and install/update/restore/execute fall back to the managed CLI and are not linked.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\ToolCommandParser.cs" Link="Commands\Tool\ToolCommandParser.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Common\ToolManifestFinderExtensions.cs" Link="Commands\Tool\Common\ToolManifestFinderExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\List\ToolListLocalCommand.cs" Link="Commands\Tool\List\ToolListLocalCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\List\ToolListJsonHelper.cs" Link="Commands\Tool\List\ToolListJsonHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Uninstall\ToolUninstallLocalCommand.cs" Link="Commands\Tool\Uninstall\ToolUninstallLocalCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Run\ToolRunCommand.cs" Link="Commands\Tool\Run\ToolRunCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\ToolSearchCommand.cs" Link="Commands\Tool\Search\ToolSearchCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\SearchResultPrinter.cs" Link="Commands\Tool\Search\SearchResultPrinter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Tool\Search\NugetSearchSerializables.cs" Link="Commands\Tool\Search\NugetSearchSerializables.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\AuthorsConverter.cs" Link="NugetSearch\AuthorsConverter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\INugetToolSearchApiRequest.cs" Link="NugetSearch\INugetToolSearchApiRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiParameter.cs" Link="NugetSearch\NugetSearchApiParameter.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiRequestException.cs" Link="NugetSearch\NugetSearchApiRequestException.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiResultDeserializer.cs" Link="NugetSearch\NugetSearchApiResultDeserializer.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetToolSearchApiRequest.cs" Link="NugetSearch\NugetToolSearchApiRequest.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiAuthorsSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiAuthorsSerializable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiContainerSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiContainerSerializable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiPackageSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiPackageSerializable.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\NugetSearch\NugetSearchApiSerializable\NugetSearchApiVersionSerializable.cs" Link="NugetSearch\NugetSearchApiSerializable\NugetSearchApiVersionSerializable.cs" />
+  </ItemGroup>
+
+</Project>

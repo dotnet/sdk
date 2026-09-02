@@ -1,9 +1,9 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.SslProtocolsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,327 +13,360 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class SslProtocolsAnalyzerTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_ViolationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class ExampleClass
-{
-    public void ExampleMethod()
-    {
-        // CA5397 violation for using Tls11
-        SslProtocols protocols = SslProtocols.Tls11 | SslProtocols.Tls12;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                public class ExampleClass
+                {
+                    public void ExampleMethod()
+                    {
+                        // CA5397 violation for using Tls11
+                        SslProtocols protocols = SslProtocols.Tls11 | SslProtocols.Tls12;
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 34, SslProtocolsAnalyzer.DeprecatedRule, "Tls11"),
             GetCSharpResultAt(10, 55, SslProtocolsAnalyzer.HardcodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_ViolationAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Security.Authentication
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class TestClass
-    Public Sub ExampleMethod()
-        ' CA5397 violation for using Tls11
-        Dim sslProtocols As SslProtocols = SslProtocols.Tls11 Or SslProtocols.Tls12
-    End Sub
-End Class
-",
+                Imports System
+                Imports System.Security.Authentication
+
+                Public Class TestClass
+                    Public Sub ExampleMethod()
+                        ' CA5397 violation for using Tls11
+                        Dim sslProtocols As SslProtocols = SslProtocols.Tls11 Or SslProtocols.Tls12
+                    End Sub
+                End Class
+
+                """,
             GetBasicResultAt(8, 44, SslProtocolsAnalyzer.DeprecatedRule, "Tls11"),
             GetBasicResultAt(8, 66, SslProtocolsAnalyzer.HardcodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_CSharp_ViolationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class ExampleClass
-{
-    public void ExampleMethod()
-    {
-        // CA5397 violation
-        SslProtocols sslProtocols = (SslProtocols) 768;    // TLS 1.1
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                public class ExampleClass
+                {
+                    public void ExampleMethod()
+                    {
+                        // CA5397 violation
+                        SslProtocols sslProtocols = (SslProtocols) 768;    // TLS 1.1
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 37, SslProtocolsAnalyzer.DeprecatedRule, "768"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample2_VB_ViolationAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Security.Authentication
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class TestClass
-    Public Sub ExampleMethod()
-        ' CA5397 violation
-        Dim sslProtocols As SslProtocols = CType(768, SslProtocols)   ' TLS 1.1
-    End Sub
-End Class
-",
+                Imports System
+                Imports System.Security.Authentication
+
+                Public Class TestClass
+                    Public Sub ExampleMethod()
+                        ' CA5397 violation
+                        Dim sslProtocols As SslProtocols = CType(768, SslProtocols)   ' TLS 1.1
+                    End Sub
+                End Class
+
+                """,
             GetBasicResultAt(8, 44, SslProtocolsAnalyzer.DeprecatedRule, "768"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_CSharp_SolutionAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Security.Authentication;
 
-public class TestClass
-{
-    public void Method()
-    {
-        // Let the operating system decide what TLS protocol version to use.
-        // See https://learn.microsoft.com/dotnet/framework/network-programming/tls
-        SslProtocols sslProtocols = SslProtocols.None;
-    }
-}");
+                public class TestClass
+                {
+                    public void Method()
+                    {
+                        // Let the operating system decide what TLS protocol version to use.
+                        // See https://learn.microsoft.com/dotnet/framework/network-programming/tls
+                        SslProtocols sslProtocols = SslProtocols.None;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample1_VB_SolutionAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Security.Authentication
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Security.Authentication
 
-Public Class TestClass
-    Public Sub ExampleMethod()
-        ' Let the operating system decide what TLS protocol version to use.
-        ' See https://learn.microsoft.com/dotnet/framework/network-programming/tls
-        Dim sslProtocols As SslProtocols = SslProtocols.None
-    End Sub
-End Class
-");
+                Public Class TestClass
+                    Public Sub ExampleMethod()
+                        ' Let the operating system decide what TLS protocol version to use.
+                        ' See https://learn.microsoft.com/dotnet/framework/network-programming/tls
+                        Dim sslProtocols As SslProtocols = SslProtocols.None
+                    End Sub
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_CSharp_ViolationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class ExampleClass
-{
-    public void ExampleMethod()
-    {
-        // CA5398 violation
-        SslProtocols sslProtocols = SslProtocols.Tls12;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                public class ExampleClass
+                {
+                    public void ExampleMethod()
+                    {
+                        // CA5398 violation
+                        SslProtocols sslProtocols = SslProtocols.Tls12;
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 37, SslProtocolsAnalyzer.HardcodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample3_VB_ViolationAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Security.Authentication
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class TestClass
-    Public Function ExampleMethod() As SslProtocols
-        ' CA5398 violation
-        Return SslProtocols.Tls12
-    End Function
-End Class
-",
+                Imports System
+                Imports System.Security.Authentication
+
+                Public Class TestClass
+                    Public Function ExampleMethod() As SslProtocols
+                        ' CA5398 violation
+                        Return SslProtocols.Tls12
+                    End Function
+                End Class
+
+                """,
             GetBasicResultAt(8, 16, SslProtocolsAnalyzer.HardcodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample4_CSharp_ViolationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class ExampleClass
-{
-    public SslProtocols ExampleMethod()
-    {
-        // CA5398 violation
-        return (SslProtocols) 3072;    // TLS 1.2
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                public class ExampleClass
+                {
+                    public SslProtocols ExampleMethod()
+                    {
+                        // CA5398 violation
+                        return (SslProtocols) 3072;    // TLS 1.2
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 16, SslProtocolsAnalyzer.HardcodedRule, "3072"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DocSample4_VB_ViolationAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Security.Authentication
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class TestClass
-    Public Function ExampleMethod() As SslProtocols
-        ' CA5398 violation
-        Return CType(3072, SslProtocols)   ' TLS 1.2
-    End Function
-End Class
-",
+                Imports System
+                Imports System.Security.Authentication
+
+                Public Class TestClass
+                    Public Function ExampleMethod() As SslProtocols
+                        ' CA5398 violation
+                        Return CType(3072, SslProtocols)   ' TLS 1.2
+                    End Function
+                End Class
+
+                """,
             GetBasicResultAt(8, 16, SslProtocolsAnalyzer.HardcodedRule, "3072"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Argument_Ssl2_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Net.Security;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method(SslStream sslStream, string targetHost, X509CertificateCollection clientCertificates)
-    {
-        sslStream.AuthenticateAsClient(targetHost, clientCertificates, SslProtocols.Ssl2, false);
-    }
-}",
+                using System;
+                using System.Net.Security;
+                using System.Security.Authentication;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void Method(SslStream sslStream, string targetHost, X509CertificateCollection clientCertificates)
+                    {
+                        sslStream.AuthenticateAsClient(targetHost, clientCertificates, SslProtocols.Ssl2, false);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 72, SslProtocolsAnalyzer.DeprecatedRule, "Ssl2"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Argument_Tls12_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Net.Security;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method(SslStream sslStream, string targetHost, X509CertificateCollection clientCertificates)
-    {
-        sslStream.AuthenticateAsClient(targetHost, clientCertificates, SslProtocols.Tls12, false);
-    }
-}",
+                using System;
+                using System.Net.Security;
+                using System.Security.Authentication;
+                using System.Security.Cryptography.X509Certificates;
+
+                class TestClass
+                {
+                    public void Method(SslStream sslStream, string targetHost, X509CertificateCollection clientCertificates)
+                    {
+                        sslStream.AuthenticateAsClient(targetHost, clientCertificates, SslProtocols.Tls12, false);
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 72, SslProtocolsAnalyzer.HardcodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Argument_None_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Net.Security;
-using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Net.Security;
+                using System.Security.Authentication;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public void Method(SslStream sslStream, string targetHost, X509CertificateCollection clientCertificates)
-    {
-        sslStream.AuthenticateAsClient(targetHost, clientCertificates, SslProtocols.None, false);
-    }
-}");
+                class TestClass
+                {
+                    public void Method(SslStream sslStream, string targetHost, X509CertificateCollection clientCertificates)
+                    {
+                        sslStream.AuthenticateAsClient(targetHost, clientCertificates, SslProtocols.None, false);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseSsl3_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        var a = SslProtocols.Ssl3;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        var a = SslProtocols.Ssl3;
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 17, SslProtocolsAnalyzer.DeprecatedRule, "Ssl3"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseTls_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        var a = SslProtocols.Tls;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        var a = SslProtocols.Tls;
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 17, SslProtocolsAnalyzer.DeprecatedRule, "Tls"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseTls11_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        SslProtocols protocols = SslProtocols.Tls11;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        SslProtocols protocols = SslProtocols.Tls11;
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 34, SslProtocolsAnalyzer.DeprecatedRule, "Tls11"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseSystemDefault_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        var a = SslProtocols.Default;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        var a = SslProtocols.Default;
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 17, SslProtocolsAnalyzer.DeprecatedRule, "Default"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseTls12_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        SslProtocols protocols = SslProtocols.Tls12;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        SslProtocols protocols = SslProtocols.Tls12;
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 34, SslProtocolsAnalyzer.HardcodedRule, "Tls12"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseTls13_DiagnosticAsync()
         {
             await new VerifyCS.Test
@@ -343,210 +376,230 @@ class TestClass
                 {
                     Sources =
                     {
-                        @"
-using System;
-using System.Security.Authentication;
+                        """
 
-class TestClass
-{
-    public void Method()
-    {
-        SslProtocols protocols = SslProtocols.Tls13;
-    }
-}",
+                            using System;
+                            using System.Security.Authentication;
+
+                            class TestClass
+                            {
+                                public void Method()
+                                {
+                                    SslProtocols protocols = SslProtocols.Tls13;
+                                }
+                            }
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(9, 34, SslProtocolsAnalyzer.HardcodedRule, "Tls13"),
                     },
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseTls12OrdTls11_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        SslProtocols protocols = SslProtocols.Tls12 | SslProtocols.Tls11;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        SslProtocols protocols = SslProtocols.Tls12 | SslProtocols.Tls11;
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 34, SslProtocolsAnalyzer.HardcodedRule, "Tls12"),
                 GetCSharpResultAt(9, 55, SslProtocolsAnalyzer.DeprecatedRule, "Tls11"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Use192CompoundAssignment_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public SslProtocols SslProtocols { get; set; }
+                using System;
+                using System.Security.Authentication;
 
-    public void Method()
-    {
-        this.SslProtocols |= (SslProtocols)192;
-    }
-}",
+                class TestClass
+                {
+                    public SslProtocols SslProtocols { get; set; }
+
+                    public void Method()
+                    {
+                        this.SslProtocols |= (SslProtocols)192;
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 30, SslProtocolsAnalyzer.DeprecatedRule, "192"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Use384SimpleAssignment_DiagnosticAsync()
         {
             // 384 = SchProtocols.Tls11Server | SchProtocols.Tls10Client
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public SslProtocols SslProtocols { get; set; }
+                using System;
+                using System.Security.Authentication;
 
-    public void Method()
-    {
-        this.SslProtocols = (SslProtocols)384;
-    }
-}",
+                class TestClass
+                {
+                    public SslProtocols SslProtocols { get; set; }
+
+                    public void Method()
+                    {
+                        this.SslProtocols = (SslProtocols)384;
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 29, SslProtocolsAnalyzer.DeprecatedRule, "384"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Use768SimpleAssignmentOrExpression_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public SslProtocols SslProtocols { get; set; }
+                using System;
+                using System.Security.Authentication;
 
-    public void Method(SslProtocols input)
-    {
-        this.SslProtocols = input | (SslProtocols)768;
-    }
-}",
+                class TestClass
+                {
+                    public SslProtocols SslProtocols { get; set; }
+
+                    public void Method(SslProtocols input)
+                    {
+                        this.SslProtocols = input | (SslProtocols)768;
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 37, SslProtocolsAnalyzer.DeprecatedRule, "768"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Use12288SimpleAssignmentOrExpression_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public SslProtocols SslProtocols { get; set; }
+                using System;
+                using System.Security.Authentication;
 
-    public void Method(SslProtocols input)
-    {
-        this.SslProtocols = input | (SslProtocols)12288;
-    }
-}",
+                class TestClass
+                {
+                    public SslProtocols SslProtocols { get; set; }
+
+                    public void Method(SslProtocols input)
+                    {
+                        this.SslProtocols = input | (SslProtocols)12288;
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 37, SslProtocolsAnalyzer.HardcodedRule, "12288"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseTls12OrTls11Or192_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public SslProtocols SslProtocols { get; set; }
+                using System;
+                using System.Security.Authentication;
 
-    public void Method()
-    {
-        this.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | (SslProtocols)192;
-    }
-}",
+                class TestClass
+                {
+                    public SslProtocols SslProtocols { get; set; }
+
+                    public void Method()
+                    {
+                        this.SslProtocols = SslProtocols.Tls12 | SslProtocols.Tls11 | (SslProtocols)192;
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 29, SslProtocolsAnalyzer.HardcodedRule, "Tls12"),
                 GetCSharpResultAt(11, 50, SslProtocolsAnalyzer.DeprecatedRule, "Tls11"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task UseTls12Or192_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        SslProtocols protocols = SslProtocols.Tls12 | (SslProtocols)192;
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        SslProtocols protocols = SslProtocols.Tls12 | (SslProtocols)192;
+                    }
+                }
+                """,
                 VerifyCS.Diagnostic(SslProtocolsAnalyzer.HardcodedRule).WithSpan(9, 34, 9, 52).WithArguments("Tls12"),
                 VerifyCS.Diagnostic(SslProtocolsAnalyzer.DeprecatedRule).WithSpan(9, 34, 9, 72).WithArguments("3264"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Use768DeconstructionAssignment_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Security.Authentication;
 
-class TestClass
-{
-    public SslProtocols SslProtocols { get; set; }
+                class TestClass
+                {
+                    public SslProtocols SslProtocols { get; set; }
 
-    public void Method()
-    {
-        int i;
-        (this.SslProtocols, i) = ((SslProtocols)384, 384);
-    }
-}");
+                    public void Method()
+                    {
+                        int i;
+                        (this.SslProtocols, i) = ((SslProtocols)384, 384);
+                    }
+                }
+                """);
             // Ideally we'd handle the IDeconstructionAssignment, but this code pattern seems unlikely.
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Use24Plus24SimpleAssignment_DiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void Method()
-    {
-        SslProtocols sslProtocols = (SslProtocols)(24 + 24);
-    }
-}",
+                using System;
+                using System.Security.Authentication;
+
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        SslProtocols sslProtocols = (SslProtocols)(24 + 24);
+                    }
+                }
+                """,
                 GetCSharpResultAt(9, 37, SslProtocolsAnalyzer.DeprecatedRule, "48"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Use768NotSslProtocols_NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Security.Authentication;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Security.Authentication;
 
-class TestClass
-{
-    public void Method()
-    {
-        int i = 384 | 768;
-    }
-}");
+                class TestClass
+                {
+                    public void Method()
+                    {
+                        int i = 384 | 768;
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, DiagnosticDescriptor rule, params string[] arguments)

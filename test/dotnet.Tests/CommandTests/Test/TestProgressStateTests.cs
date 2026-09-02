@@ -8,13 +8,13 @@ using System.IO;
 using Microsoft.DotNet.Cli.Commands.Test;
 using Microsoft.DotNet.Cli.Commands.Test.Terminal;
 using Moq;
-using Xunit;
 
 namespace dotnet.Tests.CommandTests.Test;
 
+[TestClass]
 public class TestProgressStateTests
 {
-    [Fact]
+    [TestMethod]
     public void ReportSkippedTest_MultipleCalls_DifferentInstanceId()
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -25,27 +25,66 @@ public class TestProgressStateTests
         state.NotifyHandshake(instanceA);
         state.NotifyHandshake(instanceB);
 
-        state.ReportSkippedTest(testUid, instanceA);
+        state.ReportSkippedTest(testUid, testUid, instanceA);
         state.SkippedTests.Should().Be(1);
         state.RetriedFailedTests.Should().Be(0);
         state.TotalTests.Should().Be(1);
 
-        state.ReportSkippedTest(testUid, instanceA);
+        state.ReportSkippedTest(testUid, testUid, instanceA);
         state.SkippedTests.Should().Be(2);
         state.RetriedFailedTests.Should().Be(0);
         state.TotalTests.Should().Be(2);
 
-        state.ReportSkippedTest(testUid, instanceB);
+        state.ReportSkippedTest(testUid, testUid, instanceB);
         state.SkippedTests.Should().Be(1);
         state.RetriedFailedTests.Should().Be(0);
         state.TotalTests.Should().Be(1);
     }
 
+    [TestMethod]
+    public void ExplicitAttemptNumber_AllowsMultipleInstancesInSameAttempt()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("shard-a", attemptNumber: 1);
+        state.NotifyHandshake("shard-b", attemptNumber: 1);
+
+        Parallel.For(0, 100, i =>
+        {
+            string instanceId = i % 2 == 0 ? "shard-a" : "shard-b";
+            state.ReportPassingTest($"test-{i}", $"test-{i}", instanceId);
+        });
+
+        state.TryCount.Should().Be(1);
+        state.PassedTests.Should().Be(100);
+        state.TotalTests.Should().Be(100);
+        state.GetAttemptNumber("shard-a").Should().Be(1);
+        state.GetAttemptNumber("shard-b").Should().Be(1);
+    }
+
+    [TestMethod]
+    public void ExplicitAttemptNumber_ReplacesPreviousAttemptResults()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("attempt-1-shard", attemptNumber: 1);
+        state.ReportFailedTest("flaky-test", "flaky-test", "attempt-1-shard");
+        state.NotifyHandshake("attempt-2-shard", attemptNumber: 2);
+        state.ReportPassingTest("flaky-test", "flaky-test", "attempt-2-shard");
+
+        state.TryCount.Should().Be(2);
+        state.RetriedFailedTests.Should().Be(1);
+        state.FailedTests.Should().Be(0);
+        state.PassedTests.Should().Be(1);
+    }
+
     /// <summary>
     /// Tests that reporting a skipped test with a previously seen instance after retry throws.
     /// </summary>
-    [Fact]
-    public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsInvalidOperationException()
+    [TestMethod]
+    public void ReportSkippedTest_RepeatedInstanceAfterRetry_ThrowsUnreachableException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
@@ -53,12 +92,12 @@ public class TestProgressStateTests
         string instanceA = "instanceA";
         string instanceB = "instanceB";
         state.NotifyHandshake("instanceA");
-        state.ReportSkippedTest(testUid, instanceA);
-        state.ReportSkippedTest(testUid, instanceA);
+        state.ReportSkippedTest(testUid, testUid, instanceA);
+        state.ReportSkippedTest(testUid, testUid, instanceA);
         state.NotifyHandshake("instanceB");
-        state.ReportSkippedTest(testUid, instanceB);
+        state.ReportSkippedTest(testUid, testUid, instanceB);
 
-        Action act = () => state.ReportSkippedTest(testUid, instanceA);
+        Action act = () => state.ReportSkippedTest(testUid, testUid, instanceA);
         act.Should().Throw<UnreachableException>()
            .WithMessage("Unexpected test result for attempt '1' while the last attempt is '2'");
     }
@@ -68,10 +107,10 @@ public class TestProgressStateTests
     /// increment FailedTests and TotalTests without affecting RetriedFailedTests.
     /// </summary>
     /// <param name="callCount">The number of times ReportFailedTest is invoked.</param>
-    [Theory]
-    [InlineData(1)]
-    [InlineData(2)]
-    [InlineData(3)]
+    [TestMethod]
+    [DataRow(1)]
+    [DataRow(2)]
+    [DataRow(3)]
     public void ReportFailedTest_RepeatedCalls_IncrementsFailedTests(int callCount)
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -79,7 +118,7 @@ public class TestProgressStateTests
         state.NotifyHandshake("instance1");
         for (int i = 0; i < callCount; i++)
         {
-            state.ReportFailedTest("testUid", "instance1");
+            state.ReportFailedTest("testUid", "testUid", "instance1");
         }
 
         state.FailedTests.Should().Be(callCount);
@@ -91,16 +130,16 @@ public class TestProgressStateTests
     /// Tests that ReportFailedTest with a new instance ID after failures
     /// resets the failure count, increments RetriedFailedTests, and reports one failure.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReportFailedTest_DifferentInstanceId_RetriesFailureAndResetsCount()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         state.NotifyHandshake("id1");
-        state.ReportFailedTest("testUid", "id1");
-        state.ReportFailedTest("testUid", "id1");
+        state.ReportFailedTest("testUid", "testUid", "id1");
+        state.ReportFailedTest("testUid", "testUid", "id1");
         state.NotifyHandshake("id2");
-        state.ReportFailedTest("testUid", "id2");
+        state.ReportFailedTest("testUid", "testUid", "id2");
 
         state.RetriedFailedTests.Should().Be(2);
         state.FailedTests.Should().Be(1);
@@ -108,19 +147,19 @@ public class TestProgressStateTests
     }
 
     /// <summary>
-    /// Tests that reusing an old instance ID after a retry throws an InvalidOperationException.
+    /// Tests that reusing an old instance ID after a retry throws an UnreachableException.
     /// </summary>
-    [Fact]
-    public void ReportFailedTest_ReusingOldInstanceId_ThrowsInvalidOperationException()
+    [TestMethod]
+    public void ReportFailedTest_ReusingOldInstanceId_ThrowsUnreachableException()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         state.NotifyHandshake("id1");
-        state.ReportFailedTest("testUid", "id1");
+        state.ReportFailedTest("testUid", "testUid", "id1");
         state.NotifyHandshake("id2");
-        state.ReportFailedTest("testUid", "id2");
+        state.ReportFailedTest("testUid", "testUid", "id2");
 
-        Action act = () => state.ReportFailedTest("testUid", "id1");
+        Action act = () => state.ReportFailedTest("testUid", "testUid", "id1");
 
         act.Should()
            .Throw<UnreachableException>()
@@ -130,24 +169,24 @@ public class TestProgressStateTests
     /// <summary>
     /// Tests that reporting with a new instance id clears old reports.
     /// </summary>
-    [Fact]
+    [TestMethod]
     public void ReportTest_WithNewInstanceId_ClearsOldReports()
     {
         var stopwatchMock = new Mock<IStopwatch>();
         var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
         state.NotifyHandshake("id1");
-        state.ReportFailedTest("testUid", "id1");
-        state.ReportFailedTest("testUid", "id1");
-        state.ReportFailedTest("testUid", "id1");
-        state.ReportSkippedTest("testUid", "id1");
-        state.ReportSkippedTest("testUid", "id1");
+        state.ReportFailedTest("testUid", "testUid", "id1");
+        state.ReportFailedTest("testUid", "testUid", "id1");
+        state.ReportFailedTest("testUid", "testUid", "id1");
+        state.ReportSkippedTest("testUid", "testUid", "id1");
+        state.ReportSkippedTest("testUid", "testUid", "id1");
 
         state.NotifyHandshake("id2");
-        state.ReportFailedTest("testUid", "id2");
-        state.ReportPassingTest("testUid", "id2");
-        state.ReportPassingTest("testUid", "id2");
-        state.ReportPassingTest("testUid", "id2");
-        state.ReportSkippedTest("testUid", "id2");
+        state.ReportFailedTest("testUid", "testUid", "id2");
+        state.ReportPassingTest("testUid", "testUid", "id2");
+        state.ReportPassingTest("testUid", "testUid", "id2");
+        state.ReportPassingTest("testUid", "testUid", "id2");
+        state.ReportSkippedTest("testUid", "testUid", "id2");
 
         state.PassedTests.Should().Be(3);
         state.FailedTests.Should().Be(1);
@@ -161,11 +200,11 @@ public class TestProgressStateTests
     /// <param name="displayName">The display name of the test, can be null, empty, or whitespace.</param>
     /// <param name="uid">The unique identifier of the test, can be null, empty, or whitespace.</param>
     /// <remarks>After invocation, PassedTests should be 1 and DiscoveredTests should contain a single entry matching the inputs.</remarks>
-    [Theory]
-    [InlineData("testName", "uid123")]
-    [InlineData("", "")]
-    [InlineData(" ", " ")]
-    [InlineData(null, null)]
+    [TestMethod]
+    [DataRow("testName", "uid123")]
+    [DataRow("", "")]
+    [DataRow(" ", " ")]
+    [DataRow(null, null)]
     public void DiscoverTest_DisplayNameAndUid_AddsEntryAndIncrementsPassedTests(string? displayName, string? uid)
     {
         var stopwatchMock = new Mock<IStopwatch>();
@@ -177,15 +216,36 @@ public class TestProgressStateTests
             stopwatch: stopwatchMock.Object,
             isDiscovery: true);
 
-        state.DiscoverTest(displayName, uid);
+        state.DiscoverTest(new DiscoveredTestInfo(displayName, uid, FilePath: null, LineNumber: null, Namespace: null, TypeName: null, MethodName: null, ParameterTypeFullNames: [], Traits: []));
 
         state.DiscoveredTests.Should().Be(1);
         state.DiscoveredTestNames.Count.Should().Be(1);
         state.DiscoveredTestNames[0].DisplayName.Should().Be(displayName);
-        state.DiscoveredTestNames[0].UID.Should().Be(uid);
+        state.DiscoveredTestNames[0].Uid.Should().Be(uid);
+        state.DiscoveredTestNames[0].FilePath.Should().BeNull();
+        state.DiscoveredTestNames[0].LineNumber.Should().BeNull();
     }
 
-    [Fact]
+    [TestMethod]
+    public void DiscoverTest_WithFilePathAndLineNumber_StoresLocation()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(
+            id: 1,
+            assembly: "assembly.dll",
+            targetFramework: null,
+            architecture: null,
+            stopwatch: stopwatchMock.Object,
+            isDiscovery: true);
+
+        state.DiscoverTest(new DiscoveredTestInfo("MyTest", "uid-1", FilePath: "C:/repo/MyTests.cs", LineNumber: 42, Namespace: null, TypeName: null, MethodName: null, ParameterTypeFullNames: [], Traits: []));
+
+        state.DiscoveredTestNames.Count.Should().Be(1);
+        state.DiscoveredTestNames[0].FilePath.Should().Be("C:/repo/MyTests.cs");
+        state.DiscoveredTestNames[0].LineNumber.Should().Be(42);
+    }
+
+    [TestMethod]
     public void FailedTestRetryShouldShouldShowTheSameTotalCountsInEachRetry()
     {
         // Tests are retried, total test count stays 3 to give use comparable counts, no matter how many times we retry.
@@ -194,9 +254,9 @@ public class TestProgressStateTests
 
         // First run
         state.NotifyHandshake("run1");
-        state.ReportFailedTest("failed-test", "run1");
-        state.ReportPassingTest("passed-test", "run1");
-        state.ReportSkippedTest("skipped-test", "run1");
+        state.ReportFailedTest("failed-test", "failed-test", "run1");
+        state.ReportPassingTest("passed-test", "passed-test", "run1");
+        state.ReportSkippedTest("skipped-test", "skipped-test", "run1");
         
         state.RetriedFailedTests.Should().Be(0);
         state.FailedTests.Should().Be(1);
@@ -206,7 +266,7 @@ public class TestProgressStateTests
 
         // Second run (first retry)
         state.NotifyHandshake("run2");
-        state.ReportFailedTest("failed-test", "run2");
+        state.ReportFailedTest("failed-test", "failed-test", "run2");
 
         state.RetriedFailedTests.Should().Be(1);
         state.FailedTests.Should().Be(1);
@@ -216,7 +276,7 @@ public class TestProgressStateTests
 
         // Third run (second retry) - failing test passes
         state.NotifyHandshake("run3");
-        state.ReportPassingTest("failed-test", "run3");
+        state.ReportPassingTest("failed-test", "failed-test", "run3");
         state.RetriedFailedTests.Should().Be(2);
         state.FailedTests.Should().Be(0);
         state.PassedTests.Should().Be(2);
@@ -224,7 +284,7 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(3);
     }
 
-    [Fact]
+    [TestMethod]
     public void FailedTestRetryShouldNotFailTheRunWhenSecondRunProducesLessDynamicTests()
     {
         // This is special test for dynamic tests where we don't know how many tests will be produced in the second run.
@@ -233,11 +293,11 @@ public class TestProgressStateTests
 
         // First run
         state.NotifyHandshake("run1");
-        state.ReportFailedTest("failed-test1", "run1"); // 2 test cases
-        state.ReportFailedTest("failed-test1", "run1");
+        state.ReportFailedTest("failed-test1", "failed-test1", "run1"); // 2 test cases
+        state.ReportFailedTest("failed-test1", "failed-test1", "run1");
 
-        state.ReportPassingTest("passed-test", "run1");
-        state.ReportSkippedTest("skipped-test", "run1");
+        state.ReportPassingTest("passed-test", "passed-test", "run1");
+        state.ReportSkippedTest("skipped-test", "skipped-test", "run1");
 
         state.RetriedFailedTests.Should().Be(0);
         state.FailedTests.Should().Be(2);
@@ -247,7 +307,7 @@ public class TestProgressStateTests
 
         // Second run (first retry)
         state.NotifyHandshake("run2");
-        state.ReportPassingTest("failed-test1", "run2"); // 1 test case, now passes
+        state.ReportPassingTest("failed-test1", "failed-test1", "run2"); // 1 test case, now passes
 
         state.RetriedFailedTests.Should().Be(2);
         state.FailedTests.Should().Be(0);
@@ -256,7 +316,7 @@ public class TestProgressStateTests
         state.TotalTests.Should().Be(3);
     }
 
-    [Fact]
+    [TestMethod]
     public void FailedTestRetryShouldAccountPassedTestsInRetry()
     {
         // This is special test for dynamic tests where we cannot avoid re-running even non-failing tests from dynamic tests.
@@ -265,11 +325,11 @@ public class TestProgressStateTests
 
         // First run
         state.NotifyHandshake("run1");
-        state.ReportFailedTest("failed-test1", "run1"); // 2 test cases, one passes, one fails
-        state.ReportPassingTest("failed-test1", "run1");
+        state.ReportFailedTest("failed-test1", "failed-test1", "run1"); // 2 test cases, one passes, one fails
+        state.ReportPassingTest("failed-test1", "failed-test1", "run1");
 
-        state.ReportPassingTest("passed-test", "run1");
-        state.ReportSkippedTest("skipped-test", "run1");
+        state.ReportPassingTest("passed-test", "passed-test", "run1");
+        state.ReportSkippedTest("skipped-test", "skipped-test", "run1");
 
         state.RetriedFailedTests.Should().Be(0);
         state.FailedTests.Should().Be(1);
@@ -279,13 +339,128 @@ public class TestProgressStateTests
 
         // Second run (first retry)
         state.NotifyHandshake("run2");
-        state.ReportFailedTest("failed-test1", "run2"); // 1 test case still fails, but we also re-run the passing one
-        state.ReportPassingTest("failed-test1", "run2");
+        state.ReportFailedTest("failed-test1", "failed-test1", "run2"); // 1 test case still fails, but we also re-run the passing one
+        state.ReportPassingTest("failed-test1", "failed-test1", "run2");
 
         state.RetriedFailedTests.Should().Be(1);
         state.FailedTests.Should().Be(1);
         state.PassedTests.Should().Be(2);
         state.SkippedTests.Should().Be(1);
         state.TotalTests.Should().Be(4);
+    }
+
+    /// <summary>
+    /// A test that failed on the first attempt and passed on a retry is flaky; the retry accounting reports it as
+    /// one retried test costing one extra run.
+    /// </summary>
+    [TestMethod]
+    public void RetriedTestThatRecovers_IsCountedAsFlaky()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("run1");
+        state.ReportFailedTest("uid-1", "My.Flaky.Test", "run1");
+
+        state.NotifyHandshake("run2");
+        state.ReportPassingTest("uid-1", "My.Flaky.Test", "run2");
+
+        state.FlakyTests.Should().Be(1);
+        state.RetriedTests.Should().Be(1);
+        state.RetriedExecutions.Should().Be(1);
+        state.GetFlakyTests().Should().BeEquivalentTo([("My.Flaky.Test", 2)]);
+    }
+
+    /// <summary>
+    /// A test that is retried but never recovers is retried, not flaky.
+    /// </summary>
+    [TestMethod]
+    public void RetriedTestThatKeepsFailing_IsRetriedButNotFlaky()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("run1");
+        state.ReportFailedTest("uid-1", "My.Broken.Test", "run1");
+
+        state.NotifyHandshake("run2");
+        state.ReportFailedTest("uid-1", "My.Broken.Test", "run2");
+
+        state.FlakyTests.Should().Be(0);
+        state.GetFlakyTests().Should().BeEmpty();
+        state.RetriedTests.Should().Be(1);
+        state.RetriedExecutions.Should().Be(1);
+    }
+
+    /// <summary>
+    /// A test that was never retried is neither flaky nor retried, so a run without retries reports zeroes.
+    /// </summary>
+    [TestMethod]
+    public void TestWithoutRetry_ReportsNoRetryAccounting()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("run1");
+        state.ReportPassingTest("uid-1", "My.Test", "run1");
+        state.ReportFailedTest("uid-2", "My.Other.Test", "run1");
+
+        state.FlakyTests.Should().Be(0);
+        state.RetriedTests.Should().Be(0);
+        state.RetriedExecutions.Should().Be(0);
+        state.GetFlakyTests().Should().BeEmpty();
+    }
+
+    /// <summary>
+    /// A folded (data-driven) test reports one result per row, so every row of a retry attempt counts as an extra
+    /// execution — otherwise the "extra runs" figure would undercount what the retry actually cost. A row of the
+    /// final attempt that is skipped means not every result passed, so the test is not reported as recovered.
+    /// </summary>
+    [TestMethod]
+    public void FoldedTestRetry_CountsEveryRowAsExtraExecution()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.NotifyHandshake("run1");
+        state.ReportFailedTest("uid-1", "My.Data.Test", "run1");
+        state.ReportPassingTest("uid-1", "My.Data.Test", "run1");
+
+        state.NotifyHandshake("run2");
+        state.ReportPassingTest("uid-1", "My.Data.Test", "run2");
+        state.ReportSkippedTest("uid-1", "My.Data.Test", "run2");
+
+        state.RetriedTests.Should().Be(1);
+        state.RetriedExecutions.Should().Be(2);
+        state.FlakyTests.Should().Be(0);
+    }
+
+    /// <summary>
+    /// The slowest-tests ranking is keyed by test node uid so a retry replaces the earlier attempt's timing, and a
+    /// later attempt that reports no timing clears the stale entry instead of keeping it.
+    /// </summary>
+    [TestMethod]
+    public void RecordTestDuration_RanksSlowestTestsAndReplacesRetriedTimings()
+    {
+        var stopwatchMock = new Mock<IStopwatch>();
+        var state = new TestProgressState(1, "assembly.dll", null, null, stopwatchMock.Object, isDiscovery: false);
+
+        state.RecordTestDuration("uid-1", "Slow", TimeSpan.FromSeconds(30));
+        state.RecordTestDuration("uid-2", "Medium", TimeSpan.FromSeconds(5));
+        state.RecordTestDuration("uid-3", "Fast", TimeSpan.FromSeconds(1));
+
+        state.GetSlowestTests(2).Should().BeEquivalentTo(
+            [("Slow", TimeSpan.FromSeconds(30)), ("Medium", TimeSpan.FromSeconds(5))],
+            static options => options.WithStrictOrdering());
+
+        // A retry of 'uid-1' that is much faster replaces the earlier 30s timing.
+        state.RecordTestDuration("uid-1", "Slow", TimeSpan.FromSeconds(2));
+        state.GetSlowestTests(1).Should().BeEquivalentTo([("Medium", TimeSpan.FromSeconds(5))]);
+
+        // A retry that reports no timing at all drops the entry.
+        state.RecordTestDuration("uid-2", "Medium", duration: null);
+        state.GetSlowestTests(5).Should().NotContain(entry => entry.DisplayName == "Medium");
+
+        state.GetSlowestTests(0).Should().BeEmpty();
     }
 }

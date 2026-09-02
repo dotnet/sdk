@@ -2,9 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Reflection;
-#if NET
 using System.Runtime.Loader;
-#endif
 
 namespace Microsoft.DotNet.ApiCompat
 {
@@ -14,52 +12,33 @@ namespace Microsoft.DotNet.ApiCompat
     internal sealed class RoslynResolver
     {
         private readonly string _roslynAssembliesPath;
-#if NET
         private readonly AssemblyLoadContext? _currentContext;
-#endif
 
         private RoslynResolver(string roslynAssembliesPath)
         {
             _roslynAssembliesPath = roslynAssembliesPath;
 
-#if NET
             _currentContext = AssemblyLoadContext.GetLoadContext(Assembly.GetExecutingAssembly());
             if (_currentContext != null)
             {
                 _currentContext.Resolving += Resolve;
             }
-#else
-            AppDomain.CurrentDomain.AssemblyResolve += Resolve;
-#endif
         }
 
         public static RoslynResolver Register(string roslynAssembliesPath) => new(roslynAssembliesPath);
 
         public void Unregister()
         {
-#if NET
             if (_currentContext != null)
             {
                 _currentContext.Resolving -= Resolve;
             }
-
-#else
-            AppDomain.CurrentDomain.AssemblyResolve -= Resolve;
-#endif
         }
 
-#if NET
         private Assembly? Resolve(AssemblyLoadContext context, AssemblyName assemblyName)
         {
             return LoadRoslyn(assemblyName, path => context.LoadFromAssemblyPath(path));
         }
-#else
-        private Assembly? Resolve(object sender, ResolveEventArgs args)
-        {
-            AssemblyName name = new(args.Name);
-            return LoadRoslyn(name, path => Assembly.LoadFrom(path));
-        }
-#endif
 
         private Assembly? LoadRoslyn(AssemblyName name, Func<string, Assembly> loadFromPath)
         {

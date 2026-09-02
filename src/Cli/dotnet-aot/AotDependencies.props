@@ -1,0 +1,61 @@
+<Project>
+
+  <!--
+    Dependencies and runtime configuration shared by the Native AOT product and tests.
+    Keep AotSourceFiles.props limited to source and resource inputs.
+  -->
+
+  <!-- ASP.NET Core HTTPS developer-certificate package, used by the AOT first-run path's in-process
+       dev-cert generation. When IncludeAspNetCoreRuntime is false, EXCLUDE_ASPNETCORE compiles the
+       generator body away, so the package is not needed. -->
+  <ItemGroup Condition="'$(IncludeAspNetCoreRuntime)' != 'false'">
+    <PackageReference Include="Microsoft.AspNetCore.DeveloperCertificates.XPlat" />
+  </ItemGroup>
+
+  <!--
+    MSBuild object-model support. The info command reads ProjectCollection.DisplayVersion, while
+    in-process evaluation needs Microsoft.Build.Utilities.Core for SDK property functions and the
+    NuGet SDK resolver for package-based SDK references.
+    Cli.Utils references Microsoft.Build with ExcludeAssets="runtime" / PrivateAssets="all", so it does
+    not flow transitively; reference it directly here. Microsoft.Build.Framework is also direct so its
+    trim-safe feature-switch defaults can be imported by the AOT consumer.
+  -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build" />
+    <PackageReference Include="Microsoft.Build.Framework" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.Build.NuGetSdkResolver" />
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+    <PackageReference Include="NuGet.Configuration" />
+    <PackageReference Include="NuGet.Credentials" />
+    <PackageReference Include="NuGet.Packaging" />
+    <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <PackageReference Include="NuGet.Frameworks" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\..\Microsoft.Win32.Msi\Microsoft.Win32.Msi.csproj" Condition="'$(TargetOS)' == 'windows'" />
+  </ItemGroup>
+
+  <!-- Use NuGet's source-generated System.Text.Json deserialization path and let ILC remove
+       the legacy Newtonsoft.Json deserialization path. -->
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="NuGet.UseSystemTextJsonDeserialization"
+                                    Value="true"
+                                    Trim="true" />
+  </ItemGroup>
+
+  <!-- The package's current-TFM _._ prevents NuGet from importing its minimum-TFM buildTransitive target.
+       Remove this workaround when https://github.com/dotnet/msbuild/issues/14467 is fixed. -->
+  <Import Project="$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets"
+          Condition="Exists('$(PkgMicrosoft_Build_Framework)\buildTransitive\$(NetMinimum)\Microsoft.Build.Framework.targets')" />
+
+  <!-- 'dotnet sdk check' command dependency. -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Deployment.DotNet.Releases" />
+  </ItemGroup>
+
+  <!-- 'dotnet sln' command dependencies. -->
+  <ItemGroup>
+    <ProjectReference Include="$(MSBuildThisFileDirectory)..\Microsoft.DotNet.Cli.Definitions\Microsoft.DotNet.Cli.Definitions.csproj" GlobalPropertiesToRemove="PublishDir" />
+    <PackageReference Include="Microsoft.VisualStudio.SolutionPersistence" />
+  </ItemGroup>
+
+</Project>

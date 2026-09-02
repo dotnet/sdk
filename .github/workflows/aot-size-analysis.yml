@@ -1,0 +1,332 @@
+# Workflow to report NativeAOT binary size impact on pull requests.
+#
+# This workflow:
+# 1. Downloads the _AotSizeAnalysis artifact for each OS/arch from the PR's AzDO build
+# 2. Downloads the same artifact from the most recent build on the PR's base branch
+# 3. Runs sizoscope-cli to diff the .mstat files and produce a size impact report
+# 4. Posts or updates a PR comment summarizing the size impact per platform
+#
+# Triggers:
+# - workflow_dispatch: for external/automated invocation (e.g., from AzDO pipeline callback)
+# - issue_comment: `/aot-size` slash command on a PR
+#
+# Prerequisites:
+# - The PR pipeline must publish _AotSizeAnalysis artifacts (dotnet-aot.mstat, dotnet-aot.scan.dgml)
+# - The sizoscope-cli dotnet tool must be available on the feeds configured by the nuget.config in this repo
+#
+name: NativeAOT Size Analysis
+
+on:
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'Pull request number to analyze'
+        required: true
+        type: number
+  issue_comment:
+    types: [created]
+  pull_request_review_comment:
+    types: [created]
+
+permissions: read-all
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+  AZDO_ORG: dnceng-public
+  AZDO_PROJECT: public
+  AZDO_PIPELINE_ID: "101"
+
+jobs:
+  authorize:
+    name: Authorize Request
+    # For comment events: only run on PR comments. For workflow_dispatch: always run.
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' && github.event.issue.pull_request) ||
+      github.event_name == 'pull_request_review_comment'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+    outputs:
+      should_run: ${{ steps.resolve.outputs.should_run }}
+      pr_number: ${{ steps.resolve.outputs.pr_number }}
+      head_sha: ${{ steps.resolve.outputs.head_sha }}
+      base_branch: ${{ steps.resolve.outputs.base_branch }}
+
+    steps:
+      - name: Evaluate comment command
+        id: command-filter
+        if: github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          COMMENT_BODY: ${{ github.event.comment.body }}
+        with:
+          script: |
+            const body = (process.env.COMMENT_BODY || '').trim().toLowerCase();
+            const shouldRun = body.startsWith('/aot-size');
+            core.setOutput('should_run', String(shouldRun));
+            if (!shouldRun) {
+              core.info('Comment does not invoke /aot-size. Skipping workflow.');
+            }
+
+      - name: Ensure commenter is trusted
+        if: (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment') && steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const username = context.payload.comment.user.login;
+
+            if (!username) {
+              throw new Error('Unable to resolve commenter username from event payload.');
+            }
+
+            try {
+              const { data: permission } = await github.rest.repos.getCollaboratorPermissionLevel({
+                owner,
+                repo,
+                username,
+              });
+
+              const allowed = ['admin', 'write'];
+              if (!allowed.includes(permission.permission)) {
+                throw new Error(`@${username} has "${permission.permission}" access.`);
+              }
+
+              core.info(`Verified ${username} has ${permission.permission} access.`);
+            } catch (error) {
+              throw new Error(`Only collaborators with write access may trigger this workflow. ${error.message || error}`);
+            }
+
+      - name: React to comment
+        if: (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment') && steps.command-filter.outputs.should_run == 'true'
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        with:
+          github-token: ${{ github.token }}
+          script: |
+            const { owner, repo } = context.repo;
+            const commentId = context.payload.comment?.id;
+            if (!commentId) {
+              core.warning('No comment ID found on payload; skipping reaction.');
+              return;
+            }
+
+            if (context.eventName === 'pull_request_review_comment') {
+              await github.rest.reactions.createForPullRequestReviewComment({
+                owner,
+                repo,
+                comment_id: Number(commentId),
+                content: 'eyes',
+              });
+            } else {
+              await github.rest.reactions.createForIssueComment({
+                owner,
+                repo,
+                comment_id: Number(commentId),
+                content: 'eyes',
+              });
+            }
+
+      - name: Resolve PR metadata
+        id: resolve
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          SHOULD_RUN: ${{ steps.command-filter.outputs.should_run }}
+          DISPATCH_PR_NUMBER: ${{ github.event.inputs.pr_number }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+
+            // Determine if we should run
+            if (context.eventName === 'issue_comment' || context.eventName === 'pull_request_review_comment') {
+              if (process.env.SHOULD_RUN !== 'true') {
+                core.setOutput('should_run', 'false');
+                return;
+              }
+            }
+
+            // Determine PR number
+            let prNumber;
+            if (context.eventName === 'workflow_dispatch') {
+              prNumber = parseInt(process.env.DISPATCH_PR_NUMBER, 10);
+            } else if (context.eventName === 'pull_request_review_comment') {
+              prNumber = context.payload.pull_request.number;
+            } else {
+              prNumber = context.payload.issue.number;
+            }
+
+            // Fetch PR details
+            const { data: pr } = await github.rest.pulls.get({
+              owner,
+              repo,
+              pull_number: prNumber,
+            });
+
+            core.setOutput('should_run', 'true');
+            core.setOutput('pr_number', pr.number.toString());
+            core.setOutput('head_sha', pr.head.sha);
+            core.setOutput('base_branch', pr.base.ref);
+            core.info(`PR #${pr.number} (base: ${pr.base.ref}, head: ${pr.head.sha})`);
+
+  analyze:
+    name: Analyze Size Impact
+    runs-on: ubuntu-latest
+    needs: authorize
+    if: needs.authorize.outputs.should_run == 'true'
+    permissions:
+      contents: read
+    env:
+      # Clear sensitive tokens so analysis tooling cannot exfiltrate them
+      GITHUB_TOKEN: ""
+      GH_TOKEN: ""
+      ACTIONS_ID_TOKEN_REQUEST_URL: ""
+      ACTIONS_ID_TOKEN_REQUEST_TOKEN: ""
+      ACTIONS_RUNTIME_TOKEN: ""
+      # Workflow-specific env vars
+      PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+      PR_HEAD_SHA: ${{ needs.authorize.outputs.head_sha }}
+      BASE_BRANCH: ${{ needs.authorize.outputs.base_branch }}
+    outputs:
+      has_report: ${{ steps.report.outputs.has_report }}
+
+    steps:
+      - name: Check out workflow scripts
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.workflow_sha }}
+          sparse-checkout: |
+            .github/workflows/aot-size-analysis/scripts
+            NuGet.config
+      - name: Find PR and baseline builds
+        id: builds
+        run: >-
+          bash ".github/workflows/aot-size-analysis/scripts/find-builds.sh"
+          --azdo-org "$AZDO_ORG"
+          --azdo-project "$AZDO_PROJECT"
+          --pipeline-id "$AZDO_PIPELINE_ID"
+          --pr-number "$PR_NUMBER"
+          --pr-head-sha "$PR_HEAD_SHA"
+          --base-branch "$BASE_BRANCH"
+          --output-file "$GITHUB_OUTPUT"
+
+      - name: Download size analysis artifacts
+        if: steps.builds.outputs.found == 'true'
+        id: download
+        env:
+          PR_BUILD_ID: ${{ steps.builds.outputs.pr_build_id }}
+          BASE_BUILD_ID: ${{ steps.builds.outputs.base_build_id }}
+        run: >-
+          bash ".github/workflows/aot-size-analysis/scripts/download-artifacts.sh"
+          --azdo-org "$AZDO_ORG"
+          --azdo-project "$AZDO_PROJECT"
+          --pr-build-id "$PR_BUILD_ID"
+          --base-build-id "$BASE_BUILD_ID"
+          --temp-dir "$RUNNER_TEMP"
+          --output-file "$GITHUB_OUTPUT"
+
+      - name: Install sizoscope-cli
+        if: steps.download.outputs.has_artifacts == 'true'
+        run: dotnet tool install --global sizoscope-cli
+
+      - name: Generate size report
+        if: steps.download.outputs.has_artifacts == 'true'
+        id: report
+        env:
+          PLATFORMS: ${{ steps.download.outputs.platforms }}
+          PR_BUILD_ID: ${{ steps.builds.outputs.pr_build_id }}
+          BASE_BUILD_ID: ${{ steps.builds.outputs.base_build_id }}
+        run: >-
+          bash ".github/workflows/aot-size-analysis/scripts/generate-report.sh"
+          --platforms "$PLATFORMS"
+          --pr-build-url "https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${PR_BUILD_ID}"
+          --baseline-build-url "https://dev.azure.com/${AZDO_ORG}/${AZDO_PROJECT}/_build/results?buildId=${BASE_BUILD_ID}"
+          --temp-dir "$RUNNER_TEMP"
+          --output-file "$GITHUB_OUTPUT"
+
+      - name: Upload size report
+        if: steps.report.outputs.has_report == 'true'
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: size-report
+          path: ${{ steps.report.outputs.report_file }}
+          retention-days: 1
+
+  comment:
+    name: Post PR Comment
+    runs-on: ubuntu-latest
+    needs: [authorize, analyze]
+    if: needs.analyze.outputs.has_report == 'true'
+    permissions:
+      pull-requests: write
+      issues: write
+    env:
+      PR_NUMBER: ${{ needs.authorize.outputs.pr_number }}
+
+    steps:
+      - name: Download size report
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: size-report
+          path: ${{ runner.temp }}
+
+      - name: Post or update PR comment
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          REPORT_FILE: ${{ runner.temp }}/size-report.md
+        with:
+          script: |
+            const fs = require('fs');
+            const { owner, repo } = context.repo;
+            const issue_number = parseInt(process.env.PR_NUMBER, 10);
+            const reportBody = fs.readFileSync(process.env.REPORT_FILE, 'utf8');
+
+            const commentIdentifier = '<!-- nativeaot-size-analysis -->';
+            const commentBody = `${commentIdentifier}\n${reportBody}`;
+
+            // Look for an existing comment from this workflow
+            const { data: comments } = await github.rest.issues.listComments({
+              owner,
+              repo,
+              issue_number
+            });
+
+            const existingComment = comments.find(comment =>
+              comment.body && comment.body.includes(commentIdentifier)
+            );
+
+            if (existingComment) {
+              await github.rest.issues.updateComment({
+                owner,
+                repo,
+                comment_id: existingComment.id,
+                body: commentBody
+              });
+              core.info(`Updated existing comment #${existingComment.id}`);
+            } else {
+              await github.rest.issues.createComment({
+                owner,
+                repo,
+                issue_number,
+                body: commentBody
+              });
+              core.info('Created new size analysis comment');
+            }
+
+      - name: Post failure notice
+        if: failure() && (github.event_name == 'issue_comment' || github.event_name == 'pull_request_review_comment')
+        uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
+        env:
+          RUN_URL: ${{ format('https://github.com/{0}/actions/runs/{1}', github.repository, github.run_id) }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.issues.createComment({
+              owner,
+              repo,
+              issue_number: parseInt(process.env.PR_NUMBER, 10),
+              body: `❌ NativeAOT size analysis failed. See [workflow run](${process.env.RUN_URL}) for details.`,
+            });

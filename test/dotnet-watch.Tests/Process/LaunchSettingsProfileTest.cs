@@ -1,5 +1,7 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
+
+extern alias MSTestFramework;
 
 #nullable disable
 
@@ -7,21 +9,21 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
+[TestClass]
 public class LaunchSettingsProfileTest
 {
-    private readonly ILogger _logger;
-    private readonly TestAssetsManager _testAssets;
+    public TestContext TestContext { get; set; } = null!;
+    private DualOutputHelper _output;
+    private DualOutputHelper Output => _output ??= new(new MSTestFramework::Microsoft.NET.TestFramework.TestContextOutputHelper(TestContext));
+    private ILogger _logger;
+    private ILogger Logger => _logger ??= new TestLogger(Output);
+    private TestAssetsManager _testAssets;
+    private TestAssetsManager TestAssets => _testAssets ??= new TestAssetsManager(Output);
 
-    public LaunchSettingsProfileTest(ITestOutputHelper output)
-    {
-        _logger = new TestLogger(output);
-        _testAssets = new TestAssetsManager(output);
-    }
-
-    [Fact]
+    [TestMethod]
     public void LoadsLaunchProfiles()
     {
-        var project = _testAssets.CreateTestProject(new TestProject("Project1")
+        var project = TestAssets.CreateTestProject(new TestProject("Project1")
         {
             TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
         });
@@ -52,22 +54,22 @@ public class LaunchSettingsProfileTest
             projectPath: Path.Combine(project.TestRoot, "Project1", "Project1.csproj"),
             entryPointFilePath: null);
 
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: "http", _logger);
-        Assert.NotNull(expected);
-        Assert.Equal("http://localhost:5000", expected.ApplicationUrl);
+        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: "http", Logger);
+        Assert.IsNotNull(expected);
+        Assert.AreEqual("http://localhost:5000", expected.ApplicationUrl);
 
-        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "https", _logger);
-        Assert.NotNull(expected);
-        Assert.Equal("https://localhost:5001", expected.ApplicationUrl);
+        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "https", Logger);
+        Assert.IsNotNull(expected);
+        Assert.AreEqual("https://localhost:5001", expected.ApplicationUrl);
 
-        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "notfound", _logger);
-        Assert.NotNull(expected);
+        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "notfound", Logger);
+        Assert.IsNotNull(expected);
     }
 
-    [Fact]
+    [TestMethod]
     public void DefaultLaunchProfileWithoutProjectCommand()
     {
-        var project = _testAssets.CreateTestProject(new TestProject("Project1")
+        var project = TestAssets.CreateTestProject(new TestProject("Project1")
         {
             TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
         });
@@ -87,8 +89,8 @@ public class LaunchSettingsProfileTest
             projectPath: Path.Combine(project.Path, "Project1", "Project1.csproj"),
             entryPointFilePath: null);
 
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: null, _logger);
-        Assert.Null(expected);
+        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: null, Logger);
+        Assert.IsNull(expected);
     }
 
     private static string WriteFile(TestAsset testAsset, string name, string contents = "")

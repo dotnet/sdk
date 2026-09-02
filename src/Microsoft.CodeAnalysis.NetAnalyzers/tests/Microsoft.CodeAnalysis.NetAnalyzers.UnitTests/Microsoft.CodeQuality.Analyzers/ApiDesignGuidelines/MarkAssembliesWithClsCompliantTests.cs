@@ -1,113 +1,114 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAssembliesWithAttributesDiagnosticAnalyzer,
-    Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines.CSharpMarkAssembliesWithClsCompliantFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.MarkAssembliesWithAttributesDiagnosticAnalyzer,
-    Microsoft.CodeQuality.VisualBasic.Analyzers.ApiDesignGuidelines.BasicMarkAssembliesWithClsCompliantFixer>;
+    Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class MarkAssembliesWithCLSCompliantAttributeTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1014CA1016BasicTestWithCLSCompliantAttributeNoneAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"
-imports System.Reflection
+"""
+    imports System.Reflection
 
-    class Program
-    
-        Sub Main
-        End Sub
-    End class
-",
+        class Program
+
+            Sub Main
+            End Sub
+        End class
+    """,
             VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule), VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1014BasicTestWithNoVersionAttributeAsync()
         {
             await VerifyVB.VerifyAnalyzerAsync(
-@"
-imports System.Reflection
+"""
+    imports System.Reflection
 
-< Assembly: AssemblyVersionAttribute(""1.1.3.4"")>
-    class Program
+    < Assembly: AssemblyVersionAttribute("1.1.3.4")>
+        class Program
 
-        Sub Main
-        End Sub
-    End class
-",
+            Sub Main
+            End Sub
+        End class
+    """,
                 VerifyVB.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1014CSharpTestWithComplianceAttributeNotFromBCLAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-using System;
-using System.Reflection;
-[assembly:AssemblyVersionAttribute(""1.2.3.4"")]
+"""
+    using System;
+    using System.Reflection;
+    [assembly:AssemblyVersionAttribute("1.2.3.4")]
 
-[assembly:CLSCompliant(true)]
+    [assembly:CLSCompliant(true)]
+        class Program
+        {
+            static void Main(string[] args)
+            {
+            }
+        }
+    class CLSCompliantAttribute : Attribute {
+        public CLSCompliantAttribute(bool s) {}
+    }
+    """,
+                VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
+        }
+
+        [TestMethod]
+        public async Task CA1014CSharpTestWithNoCLSComplianceAttributeAsync()
+        {
+            await VerifyCS.VerifyAnalyzerAsync(
+"""
+    using System.Reflection;
+    [assembly:AssemblyVersionAttribute("1.2.3.4")]
+
     class Program
     {
         static void Main(string[] args)
         {
         }
     }
-class CLSCompliantAttribute : Attribute {
-    public CLSCompliantAttribute(bool s) {}
-}
-",
+    """,
                 VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
-        [Fact]
-        public async Task CA1014CSharpTestWithNoCLSComplianceAttributeAsync()
-        {
-            await VerifyCS.VerifyAnalyzerAsync(
-@"
-using System.Reflection;
-[assembly:AssemblyVersionAttribute(""1.2.3.4"")]
-
-class Program
-{
-    static void Main(string[] args)
-    {
-    }
-}
-",
-                VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task CA1014CSharpTestWithCLSCompliantAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-using System;
-using System.Reflection;
-[assembly:AssemblyVersionAttribute(""1.2.3.4"")]
+"""
+    using System;
+    using System.Reflection;
+    [assembly:AssemblyVersionAttribute("1.2.3.4")]
 
-[assembly:CLSCompliantAttribute(true)]
-class Program
-{
-    static void Main(string[] args)
+    [assembly:CLSCompliantAttribute(true)]
+    class Program
     {
+        static void Main(string[] args)
+        {
+        }
     }
-}
-");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1014CSharpTestWithTwoFilesWithAttributeAsync()
         {
             await new VerifyCS.Test
@@ -116,100 +117,101 @@ class Program
                 {
                     Sources =
                     {
-@"
-using System.Reflection;
-[assembly:AssemblyVersionAttribute(""1.2.3.4"")]
+"""
+    using System.Reflection;
+    [assembly:AssemblyVersionAttribute("1.2.3.4")]
 
-class Program
-{
-    static void Main(string[] args)
+    class Program
     {
+        static void Main(string[] args)
+        {
+        }
     }
-}
-",
-@"
-using System;
-[assembly:CLSCompliantAttribute(true)]
-"
+    """,
+"""
+    using System;
+    [assembly:CLSCompliantAttribute(true)]
+    """
                     }
                 }
-            }.RunAsync();
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1014CSharpTestWithCLSCompliantAttributeTruncatedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-using System;
-using System.Reflection;
-[assembly:AssemblyVersionAttribute(""1.2.3.4"")]
+"""
+    using System;
+    using System.Reflection;
+    [assembly:AssemblyVersionAttribute("1.2.3.4")]
 
-[assembly:CLSCompliant(true)]
-class Program
-{
-    static void Main(string[] args)
+    [assembly:CLSCompliant(true)]
+    class Program
     {
+        static void Main(string[] args)
+        {
+        }
     }
-}
-");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1014CSharpTestWithCLSCompliantAttributeFullyQualifiedAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-using System.Reflection;
-[assembly:AssemblyVersionAttribute(""1.2.3.4"")]
-[assembly:System.CLSCompliantAttribute(true)]
-class Program
-{
-    static void Main(string[] args)
+"""
+    using System.Reflection;
+    [assembly:AssemblyVersionAttribute("1.2.3.4")]
+    [assembly:System.CLSCompliantAttribute(true)]
+    class Program
     {
+        static void Main(string[] args)
+        {
+        }
     }
-}
-");
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1014CSharpTestWithCLSCompliantAttributeNoneAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"
-using System.Reflection;
-class Program
-{
-    static void Main(string[] args)
+"""
+    using System.Reflection;
+    class Program
     {
+        static void Main(string[] args)
+        {
+        }
     }
-}
-",
+    """,
             VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1016Rule), VerifyCS.Diagnostic(MarkAssembliesWithAttributesDiagnosticAnalyzer.CA1014Rule));
         }
 
-        [Fact, WorkItem(2143, "https://github.com/dotnet/roslyn-analyzers/issues/2143")]
+        [TestMethod, WorkItem(2143, "https://github.com/dotnet/roslyn-analyzers/issues/2143")]
         public async Task CA1014CSharpTestWithRazorCompiledItemAttributeAsync()
         {
             await VerifyCS.VerifyAnalyzerAsync(
-@"using System;
+"""
+    using System;
 
-[assembly:Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemAttribute((Type)null, null, null)]
+    [assembly:Microsoft.AspNetCore.Razor.Hosting.RazorCompiledItemAttribute((Type)null, null, null)]
 
-namespace Microsoft.AspNetCore.Razor.Hosting
-{
-    public class RazorCompiledItemAttribute : Attribute
+    namespace Microsoft.AspNetCore.Razor.Hosting
     {
-        public RazorCompiledItemAttribute(Type type, string kind, string identifier)
+        public class RazorCompiledItemAttribute : Attribute
         {
+            public RazorCompiledItemAttribute(Type type, string kind, string identifier)
+            {
+            }
         }
     }
-}
 
-public class C
-{
-}
-");
+    public class C
+    {
+    }
+    """);
         }
     }
 }

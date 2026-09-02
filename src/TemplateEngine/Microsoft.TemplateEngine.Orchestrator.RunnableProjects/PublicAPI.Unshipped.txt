@@ -1,0 +1,15 @@
+﻿Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolConfig
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolConfig.DataType.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolConfig.Parameters.get -> System.Collections.Generic.IReadOnlyDictionary<string!, string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IGeneratedSymbolMacro
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro.EvaluateConfig(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.IVariableCollection! vars, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig! config) -> void
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro<T>
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacro<T>.Evaluate(Microsoft.TemplateEngine.Abstractions.IEngineEnvironmentSettings! environmentSettings, Microsoft.TemplateEngine.Abstractions.IVariableCollection! variables, T config) -> void
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroDependency
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroDependency.ResolveSymbolDependencies(System.Collections.Generic.IReadOnlyList<Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig!>! macroConfigs, System.Collections.Generic.IReadOnlyList<string!>! symbols, Microsoft.TemplateEngine.Orchestrator.RunnableProjects.Abstractions.IMacroConfig! macroConfig) -> void
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.BindSymbol.DataType.get -> string?
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.ConditionedConfigurationElement.EvaluateCondition(Microsoft.Extensions.Logging.ILogger! logger, Microsoft.TemplateEngine.Abstractions.IVariableCollection! variables) -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.ApplyFileRenamesToArgs.get -> System.Collections.Generic.IReadOnlyList<string!>!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.PostActionModel.ApplyFileRenamesToManualInstructions.get -> bool
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.Identity.get -> string!
+Microsoft.TemplateEngine.Orchestrator.RunnableProjects.ConfigModel.TemplateConfigModel.PreferDefaultName.get -> bool

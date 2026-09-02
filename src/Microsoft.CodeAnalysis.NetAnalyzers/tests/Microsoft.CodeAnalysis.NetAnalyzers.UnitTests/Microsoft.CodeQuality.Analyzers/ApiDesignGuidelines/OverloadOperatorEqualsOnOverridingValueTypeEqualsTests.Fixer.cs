@@ -1,7 +1,7 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverloadOperatorEqualsOnOverridingValueTypeEqualsAnalyzer,
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.OverloadOperatorEqualsOnOverridingValueTypeEqualsFixer>;
@@ -11,186 +11,191 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public partial class OverloadOperatorEqualsOnOverridingValueTypeEqualsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA2231CSharpCodeFixNoEqualsOperatorAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-// value type without overriding Equals
-public struct [|A|]
-{    
-    public override bool Equals(Object obj)
-    {
-        return true;
-    }
-}
-",
-@"
-using System;
+                // value type without overriding Equals
+                public struct [|A|]
+                {
+                    public override bool Equals(Object obj)
+                    {
+                        return true;
+                    }
+                }
+                """,
+"""
+    using System;
 
-// value type without overriding Equals
-public struct A
-{    
-    public override bool Equals(Object obj)
+    // value type without overriding Equals
+    public struct A
     {
-        return true;
-    }
-
-    public static bool operator ==(A left, A right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(A left, A right)
-    {
-        return !(left == right);
-    }
-}
-");
+        public override bool Equals(Object obj)
+        {
+            return true;
         }
 
-        [Fact]
+        public static bool operator ==(A left, A right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(A left, A right)
+        {
+            return !(left == right);
+        }
+    }
+    """);
+        }
+
+        [TestMethod]
         public async Task CA2231BasicCodeFixNoEqualsOperatorAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-Public Structure [|A|]
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Structure
-",
-@"
-Imports System
+                Public Structure [|A|]
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Structure
+                """,
+"""
+    Imports System
 
-Public Structure A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
+    Public Structure A
+        Public Overloads Overrides Function Equals(obj As Object) As Boolean
+            Return True
+        End Function
 
-    Public Shared Operator =(left As A, right As A) As Boolean
-        Return left.Equals(right)
-    End Operator
+        Public Shared Operator =(left As A, right As A) As Boolean
+            Return left.Equals(right)
+        End Operator
 
-    Public Shared Operator <>(left As A, right As A) As Boolean
-        Return Not left = right
-    End Operator
-End Structure
-");
+        Public Shared Operator <>(left As A, right As A) As Boolean
+            Return Not left = right
+        End Operator
+    End Structure
+    """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA2231_CSharp_MultipleViolationsAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-public struct [|A|]
-{
-    public override bool Equals(object obj)
-    {
-        return true;
-    }
-}
+                public struct [|A|]
+                {
+                    public override bool Equals(object obj)
+                    {
+                        return true;
+                    }
+                }
 
-public struct [|B|]
-{
-    public override bool Equals(object obj)
-    {
-        return true;
-    }
-}",
-@"
-using System;
+                public struct [|B|]
+                {
+                    public override bool Equals(object obj)
+                    {
+                        return true;
+                    }
+                }
+                """,
+"""
+    using System;
 
-public struct A
-{
-    public override bool Equals(object obj)
+    public struct A
     {
-        return true;
-    }
-
-    public static bool operator ==(A left, A right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(A left, A right)
-    {
-        return !(left == right);
-    }
-}
-
-public struct B
-{
-    public override bool Equals(object obj)
-    {
-        return true;
-    }
-
-    public static bool operator ==(B left, B right)
-    {
-        return left.Equals(right);
-    }
-
-    public static bool operator !=(B left, B right)
-    {
-        return !(left == right);
-    }
-}");
+        public override bool Equals(object obj)
+        {
+            return true;
         }
 
-        [Fact]
+        public static bool operator ==(A left, A right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(A left, A right)
+        {
+            return !(left == right);
+        }
+    }
+
+    public struct B
+    {
+        public override bool Equals(object obj)
+        {
+            return true;
+        }
+
+        public static bool operator ==(B left, B right)
+        {
+            return left.Equals(right);
+        }
+
+        public static bool operator !=(B left, B right)
+        {
+            return !(left == right);
+        }
+    }
+    """);
+        }
+
+        [TestMethod]
         public async Task CA2231_Basic_MultipleViolationsAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-Public Structure [|A|]
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Structure
+                Public Structure [|A|]
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Structure
 
-Public Structure [|B|]
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
-End Structure",
-@"
-Imports System
+                Public Structure [|B|]
+                    Public Overloads Overrides Function Equals(obj As Object) As Boolean
+                        Return True
+                    End Function
+                End Structure
+                """,
+"""
+    Imports System
 
-Public Structure A
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
+    Public Structure A
+        Public Overloads Overrides Function Equals(obj As Object) As Boolean
+            Return True
+        End Function
 
-    Public Shared Operator =(left As A, right As A) As Boolean
-        Return left.Equals(right)
-    End Operator
+        Public Shared Operator =(left As A, right As A) As Boolean
+            Return left.Equals(right)
+        End Operator
 
-    Public Shared Operator <>(left As A, right As A) As Boolean
-        Return Not left = right
-    End Operator
-End Structure
+        Public Shared Operator <>(left As A, right As A) As Boolean
+            Return Not left = right
+        End Operator
+    End Structure
 
-Public Structure B
-    Public Overloads Overrides Function Equals(obj As Object) As Boolean
-        Return True
-    End Function
+    Public Structure B
+        Public Overloads Overrides Function Equals(obj As Object) As Boolean
+            Return True
+        End Function
 
-    Public Shared Operator =(left As B, right As B) As Boolean
-        Return left.Equals(right)
-    End Operator
+        Public Shared Operator =(left As B, right As B) As Boolean
+            Return left.Equals(right)
+        End Operator
 
-    Public Shared Operator <>(left As B, right As B) As Boolean
-        Return Not left = right
-    End Operator
-End Structure");
+        Public Shared Operator <>(left As B, right As B) As Boolean
+            Return Not left = right
+        End Operator
+    End Structure
+    """);
         }
     }
 }

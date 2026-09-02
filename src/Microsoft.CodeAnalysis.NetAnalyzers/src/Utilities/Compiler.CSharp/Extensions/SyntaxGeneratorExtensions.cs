@@ -1,7 +1,6 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
-using System;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -28,19 +27,12 @@ namespace Analyzer.Utilities.Extensions
 
         public static SyntaxNode? UnsignedRightShiftExpression(this SyntaxGenerator generator, SyntaxNode left, SyntaxNode right)
         {
-            const LanguageVersion CSharp11 = (LanguageVersion)1100;
-
-            if (!Enum.IsDefined(typeof(SyntaxKind), SyntaxKindEx.UnsignedRightShiftExpression))
+            if ((left.SyntaxTree.Options is not CSharpParseOptions csharpParseOptions) || (csharpParseOptions.LanguageVersion < LanguageVersion.CSharp11))
             {
                 return null;
             }
 
-            if ((left.SyntaxTree.Options is not CSharpParseOptions csharpParseOptions) || (csharpParseOptions.LanguageVersion < CSharp11))
-            {
-                return null;
-            }
-
-            return generator.CreateBinaryExpression(SyntaxKindEx.UnsignedRightShiftExpression, left, right);
+            return generator.CreateBinaryExpression(SyntaxKind.UnsignedRightShiftExpression, left, right);
         }
 
         public static SyntaxNode Parenthesize(this SyntaxGenerator generator, SyntaxNode expressionOrPattern, bool includeElasticTrivia = true, bool addSimplifierAnnotation = true) => expressionOrPattern switch

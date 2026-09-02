@@ -1,0 +1,6 @@
+﻿Identity: MyApp.1
+Namespace: MyApp._1
+Class name: MyApp__1
+Namespace (lc): myapp._1
+Class name (lc): myapp__1
+Lowercase: myapp.1

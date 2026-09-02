@@ -62,6 +62,11 @@
         <target state="translated">분석기를 실행할 때는 '--folder' 옵션을 지정할 수 없습니다.</target>
         <note />
       </trans-unit>
+      <trans-unit id="Cannot_specify_the_folder_option_with_framework">
+        <source>Cannot specify the '--folder' option with '--framework'.</source>
+        <target state="new">Cannot specify the '--folder' option with '--framework'.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Cannot_specify_the_folder_option_with_no_restore">
         <source>Cannot specify the '--folder' option with '--no-restore'.</source>
         <target state="translated">'--no-restore'와 함께 '--folder' 옵션을 지정할 수 없습니다.</target>
@@ -287,14 +292,14 @@
         <target state="translated">참조된 프로젝트 '{0}'을(를) 건너뜁니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionOrProjectArgumentDescription">
-        <source>The project or solution file to operate on. If a file is not specified, the command will search the current directory for one.</source>
-        <target state="translated">수행할 프로젝트 또는 솔루션 파일입니다. 파일을 지정하지 않으면 명령이 현재 디렉토리에서 파일을 검색합니다.</target>
+      <trans-unit id="SolutionOrProjectOrFileArgumentDescription">
+        <source>The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</source>
+        <target state="new">The project or solution or C# (file-based program) file to operate on. If a file is not specified, the command will search the current directory for a project or solution.</target>
         <note />
       </trans-unit>
-      <trans-unit id="SolutionOrProjectArgumentName">
-        <source>PROJECT | SOLUTION</source>
-        <target state="translated">PROJECT | SOLUTION</target>
+      <trans-unit id="SolutionOrProjectOrFileArgumentName">
+        <source>PROJECT | SOLUTION | FILE</source>
+        <target state="new">PROJECT | SOLUTION | FILE</target>
         <note />
       </trans-unit>
       <trans-unit id="Solution_0_has_ no_projects">
@@ -327,9 +332,9 @@
         <target state="translated">dotnet 런타임 버전은 '{0}'입니다.</target>
         <note />
       </trans-unit>
-      <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_or_solution_file">
-        <source>The file '{0}' does not appear to be a valid project or solution file.</source>
-        <target state="translated">'{0}' 파일은 유효한 프로젝트 또는 솔루션 파일이 아닌 것 같습니다.</target>
+      <trans-unit id="The_file_0_does_not_appear_to_be_a_valid_project_solution_file_or_file_based_app">
+        <source>The file '{0}' does not appear to be a valid project, solution file, or file-based app.</source>
+        <target state="new">The file '{0}' does not appear to be a valid project, solution file, or file-based app.</target>
         <note />
       </trans-unit>
       <trans-unit id="The_project_file_0_does_not_exist">
@@ -350,6 +355,11 @@
       <trans-unit id="Formatted_code_file_0">
         <source>Formatted code file '{0}'.</source>
         <target state="translated">코드 파일 '{0}'의 서식을 지정했습니다.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="The_target_framework_to_use_when_loading_the_workspace">
+        <source>The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</source>
+        <target state="new">The target framework (TFM) to use when loading the workspace. Restricts restore and analysis to the specified framework only.</target>
         <note />
       </trans-unit>
       <trans-unit id="Unable_to_fix_0_Code_fix_1_didnt_return_a_Fix_All_action">

@@ -25,12 +25,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         private Func<string, bool>? _fileExistOverride;
         private Func<string, bool>? _directoryExistOverride;
 
-        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir)
+        public static WorkloadResolver Create(IWorkloadManifestProvider manifestProvider, string dotnetRootPath, string sdkVersion, string? userProfileDir, Func<string, string?>? getEnvironmentVariable = null)
         {
             string runtimeIdentifierChainPath = Path.Combine(dotnetRootPath, "sdk", sdkVersion, "NETCoreSdkRuntimeIdentifierChain.txt");
             string[] currentRuntimeIdentifiers = File.Exists(runtimeIdentifierChainPath) ?
                 File.ReadAllLines(runtimeIdentifierChainPath).Where(l => !string.IsNullOrEmpty(l)).ToArray() :
-                new string[] { };
+                [];
 
             WorkloadRootPath[] workloadRootPaths;
             if (userProfileDir != null && WorkloadFileBasedInstall.IsUserLocal(dotnetRootPath, sdkVersion) && Directory.Exists(userProfileDir))
@@ -42,10 +42,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
                 workloadRootPaths = [ new(dotnetRootPath, true) ];
             }
 
-            var packRootEnvironmentVariable = Environment.GetEnvironmentVariable(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
+            var packRootEnvironmentVariable = (getEnvironmentVariable ?? Environment.GetEnvironmentVariable)(EnvironmentVariableNames.WORKLOAD_PACK_ROOTS);
             if (!string.IsNullOrEmpty(packRootEnvironmentVariable))
             {
-                workloadRootPaths = packRootEnvironmentVariable.Split(Path.PathSeparator).Select(path => new WorkloadRootPath(path, false)).Concat(workloadRootPaths).ToArray();
+                workloadRootPaths = packRootEnvironmentVariable!.Split(Path.PathSeparator).Select(path => new WorkloadRootPath(path, false)).Concat(workloadRootPaths).ToArray();
             }
 
             return new WorkloadResolver(manifestProvider, workloadRootPaths, currentRuntimeIdentifiers);
@@ -674,7 +674,6 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             /// <summary>
             /// The workload pack ID. The NuGet package ID <see cref="ResolvedPackageId"/> may differ from this.
             /// </summary>
-            [JsonConverter(typeof(PackIdJsonConverter))]
             public WorkloadPackId Id { get; }
 
             public string Version { get; }
@@ -746,7 +745,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
             {
                 return value.info.Version;
             }
-            
+
             throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
         }
 
@@ -760,7 +759,7 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
 
             throw new Exception(string.Format(Strings.ManifestDoesNotExist, manifestId));
         }
-            
+
         public IEnumerable<WorkloadManifestInfo> GetInstalledManifests()
         {
             InitializeManifests();

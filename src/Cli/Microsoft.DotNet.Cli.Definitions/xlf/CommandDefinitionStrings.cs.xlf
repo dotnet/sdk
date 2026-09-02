@@ -157,6 +157,21 @@
         <target state="translated">Cílový modul runtime pro vyčištění.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">Umožní shromažďovat výpisy stavu systému při očekávaných i neočekávaných ukončeních hostitele testů.</target>
@@ -244,6 +259,21 @@ Při použití společně s testy řízenými daty závisí chování časového
 Pro MSTest před 2.2.4 se časový limit použije pro všechny testovací případy.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfig">
         <source>CONFIG_FILE</source>
         <target state="translated">CONFIG_FILE</target>
@@ -301,6 +331,11 @@ Pokud není zadaný, soubor se vygeneruje ve výchozím adresáři TestResults.<
         <target state="translated">Zabrání souběžnému obnovení několika projektů.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdDurationName">
+        <source>DURATION</source>
+        <target state="new">DURATION</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
         <source>Sets the value of an environment variable. 
 Creates the variable if it does not exist, overrides if it does. 
@@ -309,7 +344,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Nastavuje hodnotu proměnné prostředí. 
@@ -377,8 +412,8 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">Místo spuštění testů vypíše seznam zjištěných testů.</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">Místo spuštění testů vypíše seznam zjištěných testů.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -419,14 +454,24 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <target state="translated">Maximální počet testovacích modulů, které je možné spustit paralelně.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMaximumFailedTestsDescription">
+        <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
+        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
-        <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="translated">Určuje minimální počet testů, jejichž spuštění se očekává.</target>
+        <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="needs-review-translation">Určuje minimální počet testů, jejichž spuštění se očekává.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
         <source>Disable ANSI output.</source>
         <target state="translated">Zakáže výstup ANSI.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoArtifactPostProcessingDescription">
+        <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
+        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -442,6 +487,11 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
       <trans-unit id="CmdNoCacheOptionDescription">
         <source>Do not cache packages and http requests.</source>
         <target state="translated">Neukládat balíčky a požadavky http do mezipaměti</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
@@ -540,8 +590,8 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Definuje cestu k projektu nebo souboru řešení, který se má otestovat. Použijte cestu k souboru projektu nebo cestu k adresáři obsahujícímu soubor projektu. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Definuje cestu k projektu nebo souboru řešení, který se má otestovat. Použijte cestu k souboru projektu nebo cestu k adresáři obsahujícímu soubor projektu. Pokud se nezadá, použije se výchozí nastavení aktuálního adresáře.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
@@ -559,6 +609,20 @@ Jedná se o ekvivalent odstranění project.assets.json.</target>
 The specified directory will be created if it does not exist.</source>
         <target state="translated">Adresář, do kterého se umístí výsledky testu.
 Pokud zadaný adresář neexistuje, bude vytvořen.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutDescription">
+        <source>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
+        <target state="new">Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutName">
+        <source>LAYOUT</source>
+        <target state="new">LAYOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -652,7 +716,7 @@ This argument can be specified multiple times to provide multiple variables.
 Examples:
 -e VARIABLE=abc
 -e VARIABLE="value with spaces"
--e VARIABLE="value;seperated with;semicolons"
+-e VARIABLE="value;separated with;semicolons"
 -e VAR1=abc -e VAR2=def -e VAR3=ghi
 </source>
         <target state="translated">Nastaví hodnotu proměnné prostředí.
@@ -668,6 +732,11 @@ Příklady:
 </target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestInvalidTimeout">
+        <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
+        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
         <source>Run tests for the specified test modules.</source>
         <target state="translated">Spusťte testy pro zadané testovací moduly.</target>
@@ -681,6 +750,16 @@ Příklady:
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">Podrobnosti výstupu testu</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestPositiveIntegerRequired">
+        <source>The value must be a positive integer.</source>
+        <target state="new">The value must be a positive integer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTimeoutDescription">
+        <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -748,6 +827,11 @@ Příklady:
         <target state="translated">Identifikátor zařízení, který se má použít ke spuštění aplikace</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">ZAŘÍZENÍ</target>
@@ -776,6 +860,11 @@ Příklady:
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="translated">Vypíše dostupná zařízení pro spuštění aplikace.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -1276,6 +1365,11 @@ Pokud je příkaz zadán bez argumentu, zobrazí seznam všech nainstalovaných 
       <trans-unit id="Option_Install_Force">
         <source>Allows installing template packages from the specified sources even if they would override a template package from another source.</source>
         <target state="translated">Umožňuje instalaci balíčků šablon ze zadaných zdrojů i v případě, že by přepsaly balíček šablony z jiného zdroje.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

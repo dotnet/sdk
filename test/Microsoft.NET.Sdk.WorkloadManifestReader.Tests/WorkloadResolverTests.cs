@@ -1,22 +1,20 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using Microsoft.NET.TestFramework;
 using ManifestReaderTests;
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
 {
+    [TestClass]
     public class WorkloadResolverTests : SdkTest
     {
         private const string fakeRootPath = "fakeRootPath";
 
-        public WorkloadResolverTests(ITestOutputHelper log) : base(log)
-        {
-        }
-
-        [Fact]
+        [TestMethod]
         public void GetExtendedWorkloads_SampleDeduplicatedClosureExpected()
         {
-            var manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            var manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             var workloadResolver = WorkloadResolver.CreateForTests(new FakeManifestProvider(manifestPath), fakeRootPath);
 
             var resultWorkloads = workloadResolver.GetExtendedWorkloads(new List<WorkloadId>()
@@ -40,10 +38,10 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
                 "WorkloadResolver should return expected workload infos based on manifest");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetExtendedWorkloads_EmptyInputYieldsEmptyOutput()
         {
-            var manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            var manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             var workloadResolver = WorkloadResolver.CreateForTests(new FakeManifestProvider(manifestPath), fakeRootPath);
 
             var resultWorkloads = workloadResolver.GetExtendedWorkloads(Enumerable.Empty<WorkloadId>()).ToList();
@@ -51,13 +49,13 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader.Tests
             resultWorkloads.Should().BeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void GetExtendedWorkloads_ThrowsOnUnknownWorkload()
         {
-            var manifestPath = Path.Combine(_testAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
+            var manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             var workloadResolver = WorkloadResolver.CreateForTests(new FakeManifestProvider(manifestPath), fakeRootPath);
 
-            Exception exc = Assert.Throws<WorkloadManifestCompositionException>(() =>
+            Exception exc = Assert.ThrowsExactly<WorkloadManifestCompositionException>(() =>
                 workloadResolver.GetExtendedWorkloads(new List<WorkloadId>() { new WorkloadId("BAH"), }).ToList());
 
             exc.Message.Should().StartWith("Could not find workload 'BAH'");

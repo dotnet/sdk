@@ -37,14 +37,64 @@
       "datatype": "string",
       "displayName": "dotnet CLI version"
     },
-    "CombinedVersion": {
+    "CoalescedVersion": {
       "type": "generated",
       "generator": "coalesce",
       "parameters": {
         "sourceVariableName": "SdkVersion",
         "fallbackVariableName": "dotnet-cli-version"
-      },
-      "replaces": "SDK_VERSION"
+      }
+    },
+    "CombinedVersion": {
+      "type": "generated",
+      "generator": "regex",
+      "datatype": "string",
+      "replaces": "SDK_VERSION",
+      "parameters": {
+        "source": "CoalescedVersion",
+        "steps": [
+          {
+            "regex": "^(\\d+)$",
+            "replacement": "$1.0.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)$",
+            "replacement": "$1.100"
+          },
+          {
+            "regex": "^(\\d+\\.\\d+)\\.(\\d|[1-9]\\d)$",
+            "replacement": "$1.100"
+          }
+        ]
+      }
+    },
+    "AllowPrerelease": {
+      "type": "parameter",
+      "description": "Whether prerelease SDK versions should be considered when selecting the SDK version to use.",
+      "displayName": "Allow prerelease",
+      "replaces": "ALLOW_PRERELEASE_VALUE",
+      "defaultValue": "",
+      "defaultIfOptionWithoutValue": "true",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "true",
+          "description": "Consider prerelease SDK versions when selecting the .NET SDK version to use.",
+          "displayName": "Allow prerelease"
+        },
+        {
+          "choice": "false",
+          "description": "Don't consider prerelease SDK versions when selecting the .NET SDK version to use.",
+          "displayName": "Disallow prerelease"
+        }
+      ]
+    },
+    "NoSdkVersion": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": false,
+      "description": "Exclude the SDK version from the generated global.json.",
+      "displayName": "No SDK version"
     },
     "RollForward": {
       "type": "parameter",

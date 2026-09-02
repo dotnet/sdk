@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using Microsoft.CodeAnalysis.Tools.Utilities;
@@ -21,7 +22,8 @@ namespace Microsoft.CodeAnalysis.Tools
             SourceFileMatcher FileMatcher,
             string? ReportPath,
             string? BinaryLogPath,
-            bool IncludeGeneratedFiles)
+            bool IncludeGeneratedFiles,
+            string? TargetFramework)
     {
         public static FormatOptions Instance = new(
             WorkspaceFilePath: null!, // must be supplied
@@ -38,6 +40,7 @@ namespace Microsoft.CodeAnalysis.Tools
             FileMatcher: SourceFileMatcher.CreateMatcher(Array.Empty<string>(), Array.Empty<string>()),
             ReportPath: null,
             BinaryLogPath: null,
-            IncludeGeneratedFiles: false);
+            IncludeGeneratedFiles: false,
+            TargetFramework: null);
     }
 }

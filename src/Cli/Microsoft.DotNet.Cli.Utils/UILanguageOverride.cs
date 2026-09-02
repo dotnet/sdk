@@ -1,7 +1,6 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics;
 using System.Globalization;
 using System.Security;
 using Microsoft.Win32;
@@ -11,6 +10,7 @@ namespace Microsoft.DotNet.Cli.Utils;
 internal static class UILanguageOverride
 {
     internal const string DOTNET_CLI_UI_LANGUAGE = nameof(DOTNET_CLI_UI_LANGUAGE);
+    private const string DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING = nameof(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING);
     private const string VSLANG = nameof(VSLANG);
     private const string PreferredUILang = nameof(PreferredUILang);
     // We choose UTF8 as the default encoding as opposed to specific language encodings because it supports emojis & other chars in .NET.
@@ -25,19 +25,22 @@ internal static class UILanguageOverride
             FlowOverrideToChildProcesses(language);
         }
 
-        if (
-            !CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.InvariantCultureIgnoreCase) &&
-#if NET
-            OperatingSystemSupportsUtf8()
-#else
-            CurrentPlatformIsWindowsAndOfficiallySupportsUTF8Encoding()
-#endif
-            )
+        if (Env.GetEnvironmentVariable(DOTNET_CLI_CONSOLE_USE_DEFAULT_ENCODING) != "1")
         {
-            // Setting both encodings causes a change in the CHCP, making it so we don't need to P-Invoke ourselves.
-            Console.OutputEncoding = s_defaultMultilingualEncoding;
-            Console.InputEncoding = s_defaultMultilingualEncoding;
-            // If the InputEncoding is not set, the encoding will work in CMD but not in Powershell, as the raw CHCP page won't be changed.
+            if (
+                !CultureInfo.CurrentUICulture.TwoLetterISOLanguageName.Equals("en", StringComparison.InvariantCultureIgnoreCase) &&
+#if NET
+                OperatingSystemSupportsUtf8()
+#else
+                CurrentPlatformIsWindowsAndOfficiallySupportsUTF8Encoding()
+#endif
+                )
+            {
+                // Setting both encodings causes a change in the CHCP, making it so we don't need to P-Invoke ourselves.
+                Console.OutputEncoding = s_defaultMultilingualEncoding;
+                Console.InputEncoding = s_defaultMultilingualEncoding;
+                // If the InputEncoding is not set, the encoding will work in CMD but not in Powershell, as the raw CHCP page won't be changed.
+            }
         }
     }
 

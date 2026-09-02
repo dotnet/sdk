@@ -1,14 +1,13 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.VisualBasic;
-using Xunit;
 
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.PreferAsSpanOverSubstring,
@@ -19,19 +18,20 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class PreferAsSpanOverSubstringTests
     {
         public static IEnumerable<object[]> Data_SubstringAsSpanPair_CS
         {
             get
             {
-                yield return new[] { @"Substring(1)", @"AsSpan(1)" };
-                yield return new[] { @"Substring(1, 2)", @"AsSpan(1, 2)" };
-                yield return new[] { @"Substring(startIndex: 1)", @"AsSpan(start: 1)" };
-                yield return new[] { @"Substring(startIndex: 1, 2)", @"AsSpan(start: 1, 2)" };
-                yield return new[] { @"Substring(1, length: 2)", @"AsSpan(1, length: 2)" };
-                yield return new[] { @"Substring(startIndex: 1, length: 2)", @"AsSpan(start: 1, length: 2)" };
-                yield return new[] { @"Substring(length: 2, startIndex: 1)", @"AsSpan(length: 2, start: 1)" };
+                yield return new[] { "Substring(1)", "AsSpan(1)" };
+                yield return new[] { "Substring(1, 2)", "AsSpan(1, 2)" };
+                yield return new[] { "Substring(startIndex: 1)", "AsSpan(start: 1)" };
+                yield return new[] { "Substring(startIndex: 1, 2)", "AsSpan(start: 1, 2)" };
+                yield return new[] { "Substring(1, length: 2)", "AsSpan(1, length: 2)" };
+                yield return new[] { "Substring(startIndex: 1, length: 2)", "AsSpan(start: 1, length: 2)" };
+                yield return new[] { "Substring(length: 2, startIndex: 1)", "AsSpan(length: 2, start: 1)" };
             }
         }
 
@@ -39,28 +39,29 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         {
             get
             {
-                yield return new[] { @"Substring(1)", @"AsSpan(1)" };
-                yield return new[] { @"Substring(1, 2)", @"AsSpan(1, 2)" };
-                yield return new[] { @"Substring(startIndex:=1)", @"AsSpan(start:=1)" };
-                yield return new[] { @"Substring(startIndex:=1, 2)", @"AsSpan(start:=1, 2)" };
-                yield return new[] { @"Substring(1, length:=2)", @"AsSpan(1, length:=2)" };
-                yield return new[] { @"Substring(startIndex:=1, length:=2)", @"AsSpan(start:=1, length:=2)" };
-                yield return new[] { @"Substring(length:=2, startIndex:=1)", @"AsSpan(length:=2, start:=1)" };
+                yield return new[] { "Substring(1)", "AsSpan(1)" };
+                yield return new[] { "Substring(1, 2)", "AsSpan(1, 2)" };
+                yield return new[] { "Substring(startIndex:=1)", "AsSpan(start:=1)" };
+                yield return new[] { "Substring(startIndex:=1, 2)", "AsSpan(start:=1, 2)" };
+                yield return new[] { "Substring(1, length:=2)", "AsSpan(1, length:=2)" };
+                yield return new[] { "Substring(startIndex:=1, length:=2)", "AsSpan(start:=1, length:=2)" };
+                yield return new[] { "Substring(length:=2, startIndex:=1)", "AsSpan(length:=2, start:=1)" };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SubstringAsSpanPair_CS))]
-        public Task SingleArgumentStaticMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
+        [TestMethod]
+        [DynamicData(nameof(Data_SubstringAsSpanPair_CS))]
+        public async Task SingleArgumentStaticMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
         {
-            string thing = @"
-using System;
+            string thing = """
+                using System;
 
-public class Thing
-{
-    public static void Consume(string text) { }
-    public static void Consume(ReadOnlySpan<char> span) { }
-}";
+                public class Thing
+                {
+                    public static void Consume(string text) { }
+                    public static void Consume(ReadOnlySpan<char> span) { }
+                }
+                """;
             string testStatements = WithKey($"Thing.Consume(foo.{substring})", 0) + ';';
             string fixedStatements = $"Thing.Consume(foo.{asSpan});";
 
@@ -77,22 +78,23 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SubstringAsSpanPair_VB))]
-        public Task SingleArgumentStaticMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
+        [TestMethod]
+        [DynamicData(nameof(Data_SubstringAsSpanPair_VB))]
+        public async Task SingleArgumentStaticMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
         {
             //  'Thing' needs to be in a C# project because VB doesn't support spans in exposed APIs.
-            string thing = @"
-using System;
+            string thing = """
+                using System;
 
-public class Thing
-{
-    public static void Consume(string text) { }
-    public static void Consume(ReadOnlySpan<char> span) { }
-}";
+                public class Thing
+                {
+                    public static void Consume(string text) { }
+                    public static void Consume(ReadOnlySpan<char> span) { }
+                }
+                """;
             var thingProject = new ProjectState("ThingProject", LanguageNames.CSharp, "thing", "cs")
             {
                 Sources = { thing }
@@ -117,26 +119,28 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SubstringAsSpanPair_CS))]
-        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
+        [TestMethod]
+        [DynamicData(nameof(Data_SubstringAsSpanPair_CS))]
+        public async Task SingleArgumentInstanceMethod_ReportsDiagnostic_CSAsync(string substring, string asSpan)
         {
-            string thing = @"
-using System;
+            string thing = """
+                using System;
 
-public class Thing
-{
-    public void Consume(string text) { }
-    public void Consume(ReadOnlySpan<char> span) { }
-}";
-            string fields = @"
-public partial class Body
-{
-    private Thing thing = new Thing();
-}";
+                public class Thing
+                {
+                    public void Consume(string text) { }
+                    public void Consume(ReadOnlySpan<char> span) { }
+                }
+                """;
+            string fields = """
+                public partial class Body
+                {
+                    private Thing thing = new Thing();
+                }
+                """;
             string testCode = CS.WithBody(WithKey($"thing.Consume(foo.{substring})", 0) + ';');
             string fixedCode = CS.WithBody($"thing.Consume(foo.{asSpan});");
 
@@ -153,31 +157,33 @@ public partial class Body
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_SubstringAsSpanPair_VB))]
-        public Task SingleArgumentInstanceMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
+        [TestMethod]
+        [DynamicData(nameof(Data_SubstringAsSpanPair_VB))]
+        public async Task SingleArgumentInstanceMethod_ReportsDiagnostic_VBAsync(string substring, string asSpan)
         {
             //  'Thing' needs to be in a C# project besause VB doesn't support spans in exposed APIs.
-            string thing = @"
-using System;
+            string thing = """
+                using System;
 
-public class Thing
-{
-    public void Consume(string text) { }
-    public void Consume(ReadOnlySpan<char> span) { }
-}";
+                public class Thing
+                {
+                    public void Consume(string text) { }
+                    public void Consume(ReadOnlySpan<char> span) { }
+                }
+                """;
             var thingProject = new ProjectState("ThingProject", LanguageNames.CSharp, "thing", "cs")
             {
                 Sources = { thing }
             };
-            string fields = @"
-Partial Public Class Body
-    
-    Private thing As Thing = New Thing()
-End Class";
+            string fields = """
+                Partial Public Class Body
+
+                    Private thing As Thing = New Thing()
+                End Class
+                """;
             string testCode = VB.WithBody(WithKey($"thing.Consume(foo.{substring})", 0));
             string fixedCode = VB.WithBody($"thing.Consume(foo.{asSpan})");
 
@@ -198,52 +204,57 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleArguments_WithAvailableSpanOverloads
         {
             get
             {
-                const string usings = @"
-using System;
-using Roschar = System.ReadOnlySpan<char>;";
-                string thing = usings + @"
-public class Thing
-{
-    public static void Consume(string text, int num) { }
-    public static void Consume(Roschar span, int num) { }
-    public static void Consume(double[] data, string text, int num) { }
-    public static void Consume(double[] data, Roschar text, int num) { }
-    public static void Consume(string text1, string text2, int num) { }
-    public static void Consume(Roschar span1, Roschar span2, int num) { }
-    public static void Consume(Roschar span1, string text2, int num) { }
-    public static void Consume(string text1, Roschar span2, int num) { }
-    public static void Consume(string text1, int num, string text2) { }
-    public static void Consume(string text1, int num, Roschar span2) { }
-    public static void Consume(Roschar span1, int num, string text2) { }
-    public static void Consume(Roschar span1, int num, Roschar span2) { }
-}";
-                yield return new[] { thing, @"foo.Substring(1), 17", @"foo.AsSpan(1), 17" };
-                yield return new[] { thing, @"_data, foo.Substring(1, 2), 17", @"_data, foo.AsSpan(1, 2), 17" };
-                yield return new[] { thing, @"foo.Substring(1), foo.Substring(1, 2), 17", @"foo.AsSpan(1), foo.AsSpan(1, 2), 17" };
-                yield return new[] { thing, @"foo.Substring(1), foo, 17", @"foo.AsSpan(1), foo, 17" };
-                yield return new[] { thing, @"foo, foo.Substring(1), 17", @"foo, foo.AsSpan(1), 17" };
-                yield return new[] { thing, @"foo, 17, foo.Substring(1)", @"foo, 17, foo.AsSpan(1)" };
-                yield return new[] { thing, @"foo.Substring(1), 17, foo", @"foo.AsSpan(1), 17, foo" };
-                yield return new[] { thing, @"foo.Substring(1), 17, foo.Substring(1, 2)", @"foo.AsSpan(1), 17, foo.AsSpan(1, 2)" };
+                const string usings = """
+
+                    using System;
+                    using Roschar = System.ReadOnlySpan<char>;
+                    """;
+                string thing = usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text, int num) { }
+                        public static void Consume(Roschar span, int num) { }
+                        public static void Consume(double[] data, string text, int num) { }
+                        public static void Consume(double[] data, Roschar text, int num) { }
+                        public static void Consume(string text1, string text2, int num) { }
+                        public static void Consume(Roschar span1, Roschar span2, int num) { }
+                        public static void Consume(Roschar span1, string text2, int num) { }
+                        public static void Consume(string text1, Roschar span2, int num) { }
+                        public static void Consume(string text1, int num, string text2) { }
+                        public static void Consume(string text1, int num, Roschar span2) { }
+                        public static void Consume(Roschar span1, int num, string text2) { }
+                        public static void Consume(Roschar span1, int num, Roschar span2) { }
+                    }
+                    """;
+                yield return new[] { thing, "foo.Substring(1), 17", "foo.AsSpan(1), 17" };
+                yield return new[] { thing, "_data, foo.Substring(1, 2), 17", "_data, foo.AsSpan(1, 2), 17" };
+                yield return new[] { thing, "foo.Substring(1), foo.Substring(1, 2), 17", "foo.AsSpan(1), foo.AsSpan(1, 2), 17" };
+                yield return new[] { thing, "foo.Substring(1), foo, 17", "foo.AsSpan(1), foo, 17" };
+                yield return new[] { thing, "foo, foo.Substring(1), 17", "foo, foo.AsSpan(1), 17" };
+                yield return new[] { thing, "foo, 17, foo.Substring(1)", "foo, 17, foo.AsSpan(1)" };
+                yield return new[] { thing, "foo.Substring(1), 17, foo", "foo.AsSpan(1), 17, foo" };
+                yield return new[] { thing, "foo.Substring(1), 17, foo.Substring(1, 2)", "foo.AsSpan(1), 17, foo.AsSpan(1, 2)" };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
-        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_CSAsync(string receiverClass, string testArguments, string fixedArguments)
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
+        public async Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_CSAsync(string receiverClass, string testArguments, string fixedArguments)
         {
-            string fields = @"
-public partial class Body
-{
-    private double[] _data = new[] { 3.14159, 2.71828 };
-}";
+            string fields = """
+                public partial class Body
+                {
+                    private double[] _data = new[] { 3.14159, 2.71828 };
+                }
+                """;
             string testCode = CS.WithBody(WithKey($"Thing.Consume({testArguments})", 0) + ';');
             string fixedCode = CS.WithBody($"Thing.Consume({fixedArguments});");
 
@@ -260,23 +271,24 @@ public partial class Body
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
-        public Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_VBAsync(string receiverClass, string testArguments, string fixedArguments)
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleArguments_WithAvailableSpanOverloads))]
+        public async Task MultipleArguments_WithAvailableSpanOverloads_ReportsDiagnostic_VBAsync(string receiverClass, string testArguments, string fixedArguments)
         {
             //  Use C# project because VB doesn't support spans in APIs.
             var thingProject = new ProjectState("ThingProject", LanguageNames.CSharp, "thing", "cs")
             {
                 Sources = { receiverClass }
             };
-            string fields = @"
-Partial Public Class Body
+            string fields = """
+                Partial Public Class Body
 
-    Private _data As Double() = {3.14159, 2.71828}
-End Class";
+                    Private _data As Double() = {3.14159, 2.71828}
+                End Class
+                """;
             string testCode = VB.WithBody(WithKey($"Thing.Consume({testArguments})", 0));
             string fixedCode = VB.WithBody($"Thing.Consume({fixedArguments})");
 
@@ -297,116 +309,124 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NamedArguments_CS
         {
             get
             {
-                string usings = @"
-using System;
-using Roschar = System.ReadOnlySpan<char>;";
-                string thing = usings + @"
-public class Thing
-{
-    public static void Consume(string text, int n) { }
-    public static void Consume(Roschar span, int c) { }
-}";
+                string usings = """
+
+                    using System;
+                    using Roschar = System.ReadOnlySpan<char>;
+                    """;
+                string thing = usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text, int n) { }
+                        public static void Consume(Roschar span, int c) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text: foo.Substring(1), 7)",
-                    @"Thing.Consume(span: foo.AsSpan(1), 7)"
+                    "Thing.Consume(text: foo.Substring(1), 7)",
+                    "Thing.Consume(span: foo.AsSpan(1), 7)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(foo.Substring(1), n: 7)",
-                    @"Thing.Consume(foo.AsSpan(1), c: 7)"
+                    "Thing.Consume(foo.Substring(1), n: 7)",
+                    "Thing.Consume(foo.AsSpan(1), c: 7)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text: foo.Substring(1), n: 7)",
-                    @"Thing.Consume(span: foo.AsSpan(1), c: 7)"
+                    "Thing.Consume(text: foo.Substring(1), n: 7)",
+                    "Thing.Consume(span: foo.AsSpan(1), c: 7)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(n: 7, text: foo.Substring(1))",
-                    @"Thing.Consume(c: 7, span: foo.AsSpan(1))"
+                    "Thing.Consume(n: 7, text: foo.Substring(1))",
+                    "Thing.Consume(c: 7, span: foo.AsSpan(1))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(n: 7, text: foo.Substring(length: 2, startIndex: 1))",
-                    @"Thing.Consume(c: 7, span: foo.AsSpan(length: 2, start: 1))"
+                    "Thing.Consume(n: 7, text: foo.Substring(length: 2, startIndex: 1))",
+                    "Thing.Consume(c: 7, span: foo.AsSpan(length: 2, start: 1))"
                 };
 
-                thing = usings + @"
-public class Thing
-{
-    public static void Consume(string text1A, string text2A) { }
-    public static void Consume(Roschar span1B, string text2B) { }
-    public static void Consume(string text1C, Roschar span2C) { }
-    public static void Consume(Roschar span1D, Roschar span2D) { }
-}";
+                thing = usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text1A, string text2A) { }
+                        public static void Consume(Roschar span1B, string text2B) { }
+                        public static void Consume(string text1C, Roschar span2C) { }
+                        public static void Consume(Roschar span1D, Roschar span2D) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text1A: foo, text2A: foo.Substring(2))",
-                    @"Thing.Consume(text1C: foo, span2C: foo.AsSpan(2))"
+                    "Thing.Consume(text1A: foo, text2A: foo.Substring(2))",
+                    "Thing.Consume(text1C: foo, span2C: foo.AsSpan(2))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text2A: foo.Substring(2), text1A: foo)",
-                    @"Thing.Consume(span2C: foo.AsSpan(2), text1C: foo)"
+                    "Thing.Consume(text2A: foo.Substring(2), text1A: foo)",
+                    "Thing.Consume(span2C: foo.AsSpan(2), text1C: foo)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text1A: foo.Substring(1), text2A: foo)",
-                    @"Thing.Consume(span1B: foo.AsSpan(1), text2B: foo)"
+                    "Thing.Consume(text1A: foo.Substring(1), text2A: foo)",
+                    "Thing.Consume(span1B: foo.AsSpan(1), text2B: foo)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text2A: foo, text1A: foo.Substring(1))",
-                    @"Thing.Consume(text2B: foo, span1B: foo.AsSpan(1))"
+                    "Thing.Consume(text2A: foo, text1A: foo.Substring(1))",
+                    "Thing.Consume(text2B: foo, span1B: foo.AsSpan(1))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text1A: foo.Substring(1), text2A: foo.Substring(2))",
-                    @"Thing.Consume(span1D: foo.AsSpan(1), span2D: foo.AsSpan(2))"
+                    "Thing.Consume(text1A: foo.Substring(1), text2A: foo.Substring(2))",
+                    "Thing.Consume(span1D: foo.AsSpan(1), span2D: foo.AsSpan(2))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text2A: foo.Substring(2), text1A: foo.Substring(1))",
-                    @"Thing.Consume(span2D: foo.AsSpan(2), span1D: foo.AsSpan(1))"
+                    "Thing.Consume(text2A: foo.Substring(2), text1A: foo.Substring(1))",
+                    "Thing.Consume(span2D: foo.AsSpan(2), span1D: foo.AsSpan(1))"
                 };
 
-                thing = usings + @"
-public class Thing
-{
-    public static void Consume(int n1A, string text2A, string text3A) { }
-    public static void Consume(int n1B, Roschar span2B, Roschar span3B) { }
-}";
+                thing = usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(int n1A, string text2A, string text3A) { }
+                        public static void Consume(int n1B, Roschar span2B, Roschar span3B) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text3A: foo.Substring(3), n1A: 7, text2A: foo.Substring(2))",
-                    @"Thing.Consume(span3B: foo.AsSpan(3), n1B: 7, span2B: foo.AsSpan(2))"
+                    "Thing.Consume(text3A: foo.Substring(3), n1A: 7, text2A: foo.Substring(2))",
+                    "Thing.Consume(span3B: foo.AsSpan(3), n1B: 7, span2B: foo.AsSpan(2))"
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NamedArguments_CS))]
-        public Task NamedArguments_AreHandledCorrectly_CSAsync(string receiverClass, string testExpression, string fixedExpression)
+        [TestMethod]
+        [DynamicData(nameof(Data_NamedArguments_CS))]
+        public async Task NamedArguments_AreHandledCorrectly_CSAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = CS.WithBody(WithKey(testExpression, 0) + ';');
             string fixedCode = CS.WithBody(fixedExpression + ';');
@@ -424,116 +444,124 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NamedArguments_VB
         {
             get
             {
-                string usings = @"
-using System;
-using Roschar = System.ReadOnlySpan<char>;";
-                string thing = usings + @"
-public class Thing
-{
-    public static void Consume(string text, int n) { }
-    public static void Consume(Roschar span, int c) { }
-}";
+                string usings = """
+
+                    using System;
+                    using Roschar = System.ReadOnlySpan<char>;
+                    """;
+                string thing = usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text, int n) { }
+                        public static void Consume(Roschar span, int c) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text:=foo.Substring(1), 7)",
-                    @"Thing.Consume(span:=foo.AsSpan(1), 7)"
+                    "Thing.Consume(text:=foo.Substring(1), 7)",
+                    "Thing.Consume(span:=foo.AsSpan(1), 7)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(foo.Substring(1), n:=7)",
-                    @"Thing.Consume(foo.AsSpan(1), c:=7)"
+                    "Thing.Consume(foo.Substring(1), n:=7)",
+                    "Thing.Consume(foo.AsSpan(1), c:=7)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text:=foo.Substring(1), n:=7)",
-                    @"Thing.Consume(span:=foo.AsSpan(1), c:=7)"
+                    "Thing.Consume(text:=foo.Substring(1), n:=7)",
+                    "Thing.Consume(span:=foo.AsSpan(1), c:=7)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(n:=7, text:=foo.Substring(1))",
-                    @"Thing.Consume(c:=7, span:=foo.AsSpan(1))"
+                    "Thing.Consume(n:=7, text:=foo.Substring(1))",
+                    "Thing.Consume(c:=7, span:=foo.AsSpan(1))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(n:=7, text:=foo.Substring(length:=2, startIndex:=1))",
-                    @"Thing.Consume(c:=7, span:=foo.AsSpan(length:=2, start:=1))"
+                    "Thing.Consume(n:=7, text:=foo.Substring(length:=2, startIndex:=1))",
+                    "Thing.Consume(c:=7, span:=foo.AsSpan(length:=2, start:=1))"
                 };
 
-                thing = usings + @"
-public class Thing
-{
-    public static void Consume(string text1A, string text2A) { }
-    public static void Consume(Roschar span1B, string text2B) { }
-    public static void Consume(string text1C, Roschar span2C) { }
-    public static void Consume(Roschar span1D, Roschar span2D) { }
-}";
+                thing = usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text1A, string text2A) { }
+                        public static void Consume(Roschar span1B, string text2B) { }
+                        public static void Consume(string text1C, Roschar span2C) { }
+                        public static void Consume(Roschar span1D, Roschar span2D) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text1A:=foo, text2A:=foo.Substring(2))",
-                    @"Thing.Consume(text1C:=foo, span2C:=foo.AsSpan(2))"
+                    "Thing.Consume(text1A:=foo, text2A:=foo.Substring(2))",
+                    "Thing.Consume(text1C:=foo, span2C:=foo.AsSpan(2))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text2A:=foo.Substring(2), text1A:=foo)",
-                    @"Thing.Consume(span2C:=foo.AsSpan(2), text1C:=foo)"
+                    "Thing.Consume(text2A:=foo.Substring(2), text1A:=foo)",
+                    "Thing.Consume(span2C:=foo.AsSpan(2), text1C:=foo)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text1A:=foo.Substring(1), text2A:=foo)",
-                    @"Thing.Consume(span1B:=foo.AsSpan(1), text2B:=foo)"
+                    "Thing.Consume(text1A:=foo.Substring(1), text2A:=foo)",
+                    "Thing.Consume(span1B:=foo.AsSpan(1), text2B:=foo)"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text2A:=foo, text1A:=foo.Substring(1))",
-                    @"Thing.Consume(text2B:=foo, span1B:=foo.AsSpan(1))"
+                    "Thing.Consume(text2A:=foo, text1A:=foo.Substring(1))",
+                    "Thing.Consume(text2B:=foo, span1B:=foo.AsSpan(1))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text1A:=foo.Substring(1), text2A:=foo.Substring(2))",
-                    @"Thing.Consume(span1D:=foo.AsSpan(1), span2D:=foo.AsSpan(2))"
+                    "Thing.Consume(text1A:=foo.Substring(1), text2A:=foo.Substring(2))",
+                    "Thing.Consume(span1D:=foo.AsSpan(1), span2D:=foo.AsSpan(2))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text2A:=foo.Substring(2), text1A:=foo.Substring(1))",
-                    @"Thing.Consume(span2D:=foo.AsSpan(2), span1D:=foo.AsSpan(1))"
+                    "Thing.Consume(text2A:=foo.Substring(2), text1A:=foo.Substring(1))",
+                    "Thing.Consume(span2D:=foo.AsSpan(2), span1D:=foo.AsSpan(1))"
                 };
 
-                thing = usings + @"
-public class Thing
-{
-    public static void Consume(int n1A, string text2A, string text3A) { }
-    public static void Consume(int n1B, Roschar span2B, Roschar span3B) { }
-}";
+                thing = usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(int n1A, string text2A, string text3A) { }
+                        public static void Consume(int n1B, Roschar span2B, Roschar span3B) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(text3A:=foo.Substring(3), n1A:=7, text2A:=foo.Substring(2))",
-                    @"Thing.Consume(span3B:=foo.AsSpan(3), n1B:=7, span2B:=foo.AsSpan(2))"
+                    "Thing.Consume(text3A:=foo.Substring(3), n1A:=7, text2A:=foo.Substring(2))",
+                    "Thing.Consume(span3B:=foo.AsSpan(3), n1B:=7, span2B:=foo.AsSpan(2))"
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NamedArguments_VB))]
-        public Task NamedArguments_AreHandledCorrectly_VBAsync(string receiverClass, string testExpression, string fixedExpression)
+        [TestMethod]
+        [DynamicData(nameof(Data_NamedArguments_VB))]
+        public async Task NamedArguments_AreHandledCorrectly_VBAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             string fixedCode = VB.WithBody(fixedExpression);
@@ -559,44 +587,46 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan
         {
             get
             {
-                string thing = CS.Usings + @"
-public class Thing
-{
-    public static void Consume(Roschar span) { }
-    public static void Consume(Roschar span1, Roschar span2) { }
-    public static void Consume(Roschar span1, Roschar span2, Roschar span3) { }
-}";
+                string thing = CS.Usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(Roschar span) { }
+                        public static void Consume(Roschar span1, Roschar span2) { }
+                        public static void Consume(Roschar span1, Roschar span2, Roschar span3) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(foo.Substring(1))",
-                    @"Thing.Consume(foo.AsSpan(1))"
+                    "Thing.Consume(foo.Substring(1))",
+                    "Thing.Consume(foo.AsSpan(1))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(foo.Substring(1), foo.Substring(2))",
-                    @"Thing.Consume(foo.AsSpan(1), foo.AsSpan(2))"
+                    "Thing.Consume(foo.Substring(1), foo.Substring(2))",
+                    "Thing.Consume(foo.AsSpan(1), foo.AsSpan(2))"
                 };
                 yield return new[]
                 {
                     thing,
-                    @"Thing.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))",
-                    @"Thing.Consume(foo.AsSpan(1), foo.AsSpan(2), foo.AsSpan(3))"
+                    "Thing.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))",
+                    "Thing.Consume(foo.AsSpan(1), foo.AsSpan(2), foo.AsSpan(3))"
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
-        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_CSAsync(string receiverClass, string testExpression, string fixedExpression)
+        [TestMethod]
+        [DynamicData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
+        public async Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_CSAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = CS.WithBody(WithKey(testExpression, 0) + ';');
             string fixedCode = CS.WithBody(fixedExpression + ';');
@@ -614,12 +644,12 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
-        public Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_VBAsync(string receiverClass, string testExpression, string fixedExpression)
+        [TestMethod]
+        [DynamicData(nameof(Data_WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan))]
+        public async Task WhenRoscharOverloadAlreadySelected_SubstringConvertedToAsSpan_VBAsync(string receiverClass, string testExpression, string fixedExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             string fixedCode = VB.WithBody(fixedExpression);
@@ -645,56 +675,58 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NestedViolations
         {
             get
             {
-                string receiver = CS.Usings + @"
-public class C
-{
-    public static string Fwd(string text) => throw null;
-    public static string Fwd(Roschar span) => throw null;
-    public static string Fwd(string text1, string text2) => throw null;
-    public static string Fwd(Roschar span1, Roschar span2) => throw null;
+                string receiver = CS.Usings + """
 
-    public static void Consume(string text) { }
-    public static void Consume(Roschar span) { }
-    public static void Consume(string text1, string text2) { }
-    public static void Consume(Roschar span1, Roschar span2) { }
-}";
+                    public class C
+                    {
+                        public static string Fwd(string text) => throw null;
+                        public static string Fwd(Roschar span) => throw null;
+                        public static string Fwd(string text1, string text2) => throw null;
+                        public static string Fwd(Roschar span1, Roschar span2) => throw null;
+
+                        public static void Consume(string text) { }
+                        public static void Consume(Roschar span) { }
+                        public static void Consume(string text1, string text2) { }
+                        public static void Consume(Roschar span1, Roschar span2) { }
+                    }
+                    """;
                 yield return new object[]
                 {
                     receiver,
-                    @"{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1))|}.Substring(2))|}",
-                    @"C.Consume(C.Fwd(foo.AsSpan(1)).AsSpan(2))",
+                    "{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1))|}.Substring(2))|}",
+                    "C.Consume(C.Fwd(foo.AsSpan(1)).AsSpan(2))",
                     new[] { 0, 1 },
                     2
                 };
                 yield return new object[]
                 {
                     receiver,
-                    @"{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1), foo.Substring(2))|}.Substring(3), foo.Substring(4))|}",
-                    @"C.Consume(C.Fwd(foo.AsSpan(1), foo.AsSpan(2)).AsSpan(3), foo.AsSpan(4))",
+                    "{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1), foo.Substring(2))|}.Substring(3), foo.Substring(4))|}",
+                    "C.Consume(C.Fwd(foo.AsSpan(1), foo.AsSpan(2)).AsSpan(3), foo.AsSpan(4))",
                     new[] { 0, 1 },
                     2
                 };
                 yield return new object[]
                 {
                     receiver,
-                    @"{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1), {|#2:C.Fwd(foo.Substring(2))|}.Substring(3))|}.Substring(4))|}",
-                    @"C.Consume(C.Fwd(foo.AsSpan(1), C.Fwd(foo.AsSpan(2)).AsSpan(3)).AsSpan(4))",
+                    "{|#0:C.Consume({|#1:C.Fwd(foo.Substring(1), {|#2:C.Fwd(foo.Substring(2))|}.Substring(3))|}.Substring(4))|}",
+                    "C.Consume(C.Fwd(foo.AsSpan(1), C.Fwd(foo.AsSpan(2)).AsSpan(3)).AsSpan(4))",
                     new[] { 0, 1, 2 },
                     3
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NestedViolations))]
-        public Task NestedViolations_AreAllReportedAndFixed_CSAsync(
+        [TestMethod]
+        [DynamicData(nameof(Data_NestedViolations))]
+        public async Task NestedViolations_AreAllReportedAndFixed_CSAsync(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
             int? incrementalIterations)
         {
@@ -715,12 +747,12 @@ public class C
                 NumberOfIncrementalIterations = incrementalIterations,
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(CS.DiagnosticAt));
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NestedViolations))]
-        public Task NestedViolations_AreAllReportedAndFixed_VBAsync(
+        [TestMethod]
+        [DynamicData(nameof(Data_NestedViolations))]
+        public async Task NestedViolations_AreAllReportedAndFixed_VBAsync(
             string receiverClass, string testExpression, string fixedExpression, int[] locations,
             int? incrementalIterations)
         {
@@ -749,20 +781,21 @@ public class C
                 NumberOfIncrementalIterations = incrementalIterations,
             };
             test.TestState.ExpectedDiagnostics.AddRange(locations.Select(VB.DiagnosticAt));
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task SystemNamespace_IsAdded_WhenMissing_CSAsync()
+        [TestMethod]
+        public async Task SystemNamespace_IsAdded_WhenMissing_CSAsync()
         {
-            string receiver = CS.Usings + @"
-public class C
-{
-    public static void Consume(string text) { }
-    public static void Consume(Roschar span) { }
-}";
-            string testCode = CS.WithBody(WithKey(@"C.Consume(foo.Substring(1))", 0) + ';', includeUsings: false);
-            string fixedCode = CS.WithBody(@"C.Consume(foo.AsSpan(1));", includeUsings: true);
+            string receiver = CS.Usings + """
+                public class C
+                {
+                    public static void Consume(string text) { }
+                    public static void Consume(Roschar span) { }
+                }
+                """;
+            string testCode = CS.WithBody(WithKey("C.Consume(foo.Substring(1))", 0) + ';', includeUsings: false);
+            string fixedCode = CS.WithBody("C.Consume(foo.AsSpan(1));", includeUsings: true);
 
             var test = new VerifyCS.Test
             {
@@ -777,20 +810,21 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task SystemNamespace_IsAdded_WhenNotIncludedGlobally_VBAsync()
+        [TestMethod]
+        public async Task SystemNamespace_IsAdded_WhenNotIncludedGlobally_VBAsync()
         {
-            string receiver = CS.Usings + @"
-public class C
-{
-    public static void Consume(string text) { }
-    public static void Consume(Roschar span) { }
-}";
-            string testCode = VB.WithBody(WithKey(@"C.Consume(foo.Substring(1))", 0), includeImports: false);
-            string fixedCode = VB.WithBody(@"C.Consume(foo.AsSpan(1))", includeImports: true);
+            string receiver = CS.Usings + """
+                public class C
+                {
+                    public static void Consume(string text) { }
+                    public static void Consume(Roschar span) { }
+                }
+                """;
+            string testCode = VB.WithBody(WithKey("C.Consume(foo.Substring(1))", 0), includeImports: false);
+            string fixedCode = VB.WithBody("C.Consume(foo.AsSpan(1))", includeImports: true);
             var project = new ProjectState("Receiver", LanguageNames.CSharp, "receiver", "cs")
             {
                 Sources = { receiver }
@@ -813,20 +847,99 @@ public class C
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VBAsync()
+        [TestMethod]
+        public async Task SystemNamespace_IsAddedOnce_WhenTwoViolationsAreFixed_CSAsync()
         {
-            string receiver = CS.Usings + @"
-public class C
-{
-    public static void Consume(string text) { }
-    public static void Consume(Roschar span) { }
-}";
-            string testCode = VB.WithBody(WithKey(@"C.Consume(foo.Substring(1))", 0), includeImports: false);
-            string fixedCode = VB.WithBody(@"C.Consume(foo.AsSpan(1))", includeImports: false);
+            string receiver = CS.Usings + """
+                public class C
+                {
+                    public static void Consume(string text) { }
+                    public static void Consume(Roschar span) { }
+                }
+                """;
+            string testCode = CS.WithBody(
+                WithKey("C.Consume(foo.Substring(1))", 0) + ';' + Environment.NewLine +
+                WithKey("C.Consume(foo.Substring(2))", 1) + ';',
+                includeUsings: false);
+            string fixedCode = CS.WithBody(
+                "C.Consume(foo.AsSpan(1));" + Environment.NewLine +
+                "C.Consume(foo.AsSpan(2));",
+                includeUsings: true);
+
+            var test = new VerifyCS.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode, receiver },
+                    ExpectedDiagnostics = { CS.DiagnosticAt(0), CS.DiagnosticAt(1) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode, receiver }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            await test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SystemNamespace_IsAddedOnce_WhenTwoViolationsAreFixed_VBAsync()
+        {
+            string receiver = CS.Usings + """
+                public class C
+                {
+                    public static void Consume(string text) { }
+                    public static void Consume(Roschar span) { }
+                }
+                """;
+            string testCode = VB.WithBody(
+                WithKey("C.Consume(foo.Substring(1))", 0) + Environment.NewLine +
+                WithKey("C.Consume(foo.Substring(2))", 1),
+                includeImports: false);
+            string fixedCode = VB.WithBody(
+                "C.Consume(foo.AsSpan(1))" + Environment.NewLine +
+                "C.Consume(foo.AsSpan(2))",
+                includeImports: true);
+            var receiverProject = new ProjectState("Receiver", LanguageNames.CSharp, "receiver", "cs")
+            {
+                Sources = { receiver }
+            };
+
+            var test = new VerifyVB.Test
+            {
+                TestState =
+                {
+                    Sources = { testCode },
+                    AdditionalProjects = { { receiverProject.Name, receiverProject } },
+                    AdditionalProjectReferences = { receiverProject.Name },
+                    ExpectedDiagnostics = { VB.DiagnosticAt(0), VB.DiagnosticAt(1) }
+                },
+                FixedState =
+                {
+                    Sources = { fixedCode },
+                    AdditionalProjects = { { receiverProject.Name, receiverProject } },
+                    AdditionalProjectReferences = { receiverProject.Name }
+                },
+                ReferenceAssemblies = ReferenceAssemblies.Net.Net50
+            };
+            await test.RunAsync(CancellationToken.None);
+        }
+
+        [TestMethod]
+        public async Task SystemNamespace_IsNotAdded_WhenIncludedGlobally_VBAsync()
+        {
+            string receiver = CS.Usings + """
+                public class C
+                {
+                    public static void Consume(string text) { }
+                    public static void Consume(Roschar span) { }
+                }
+                """;
+            string testCode = VB.WithBody(WithKey("C.Consume(foo.Substring(1))", 0), includeImports: false);
+            string fixedCode = VB.WithBody("C.Consume(foo.AsSpan(1))", includeImports: false);
             var receiverProject = new ProjectState("Receiver", LanguageNames.CSharp, "receiver", "cs")
             {
                 Sources = { receiver }
@@ -859,32 +972,33 @@ public class C
                 options = options.WithGlobalImports(globalSystemImport);
                 return solution.WithProjectCompilationOptions(id, options);
             });
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         //  No VB counterpart because imports must precede all declarations in VB.
-        [Fact]
-        public Task SystemNamespace_IsNotAdded_WhenImportedWithinNamespaceDeclaration_CSAsync()
+        [TestMethod]
+        public async Task SystemNamespace_IsNotAdded_WhenImportedWithinNamespaceDeclaration_CSAsync()
         {
-            string format = @"
-using Roschar = System.ReadOnlySpan<char>;
+            static string CreateSource(string statement) => $$"""
+                using Roschar = System.ReadOnlySpan<char>;
 
-namespace Testopolis
-{{
-    using System;
+                namespace Testopolis
+                {
+                    using System;
 
-    public class Body
-    {{
-        public void Consume(string text) {{ }}
-        public void Consume(Roschar span) {{ }}
-        public void Run(string foo)
-        {{
-            {0}
-        }}
-    }}
-}}";
-            string testCode = string.Format(CultureInfo.InvariantCulture, format, @"{|#0:Consume(foo.Substring(1))|};");
-            string fixedCode = string.Format(CultureInfo.InvariantCulture, format, @"Consume(foo.AsSpan(1));");
+                    public class Body
+                    {
+                        public void Consume(string text) { }
+                        public void Consume(Roschar span) { }
+                        public void Run(string foo)
+                        {
+                            {{statement}}
+                        }
+                    }
+                }
+                """;
+            string testCode = CreateSource("{|#0:Consume(foo.Substring(1))|};");
+            string fixedCode = CreateSource("Consume(foo.AsSpan(1));");
 
             var test = new VerifyCS.Test
             {
@@ -893,31 +1007,32 @@ namespace Testopolis
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("System")]
-        [InlineData("System.Widgets")]
-        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_CSAsync(string namespaceDeclaration)
+        [TestMethod]
+        [DataRow("System")]
+        [DataRow("System.Widgets")]
+        public async Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_CSAsync(string namespaceDeclaration)
         {
-            string format = @"
-using Roschar = System.ReadOnlySpan<char>;
+            static string CreateSource(string namespaceDeclaration, string statement) => $$"""
+                using Roschar = System.ReadOnlySpan<char>;
 
-namespace " + namespaceDeclaration + @"
-{{
-    public class Body
-    {{
-        public void Consume(string text) {{ }}
-        public void Consume(Roschar span) {{ }}
-        public void Run(string foo)
-        {{
-            {0}
-        }}
-    }}
-}}";
-            string testCode = string.Format(CultureInfo.InvariantCulture, format, @"{|#0:Consume(foo.Substring(1))|};");
-            string fixedCode = string.Format(CultureInfo.InvariantCulture, format, @"Consume(foo.AsSpan(1));");
+                namespace {{namespaceDeclaration}}
+                {
+                    public class Body
+                    {
+                        public void Consume(string text) { }
+                        public void Consume(Roschar span) { }
+                        public void Run(string foo)
+                        {
+                            {{statement}}
+                        }
+                    }
+                }
+                """;
+            string testCode = CreateSource(namespaceDeclaration, "{|#0:Consume(foo.Substring(1))|};");
+            string fixedCode = CreateSource(namespaceDeclaration, "Consume(foo.AsSpan(1));");
 
             var test = new VerifyCS.Test
             {
@@ -926,40 +1041,42 @@ namespace " + namespaceDeclaration + @"
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("System")]
-        [InlineData("System.Widgets")]
-        public Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_VBAsync(string namespaceDeclaration)
+        [TestMethod]
+        [DataRow("System")]
+        [DataRow("System.Widgets")]
+        public async Task SystemNamespace_IsNotAdded_WhenViolationIsWithinSystemNamespace_VBAsync(string namespaceDeclaration)
         {
-            string helper = @"
-using Roschar = System.ReadOnlySpan<char>;
+            string helper = """
+                using Roschar = System.ReadOnlySpan<char>;
 
-public class Helper
-{
-    public void Consume(string text) { }
-    public void Consume(Roschar span) { }
-}";
+                public class Helper
+                {
+                    public void Consume(string text) { }
+                    public void Consume(Roschar span) { }
+                }
+                """;
             var project = new ProjectState("HelperProject", LanguageNames.CSharp, "helper", "cs")
             {
                 Sources = { helper }
             };
-            string format = @"
-Namespace " + namespaceDeclaration + @"
+            static string CreateSource(string namespaceDeclaration, string statement) => $$"""
+                Namespace {{namespaceDeclaration}}
 
-    Public Class Body
+                    Public Class Body
 
-        Private helper As Helper
-        Public Sub Run(foo As String)
+                        Private helper As Helper
+                        Public Sub Run(foo As String)
 
-            {0}
-        End Sub
-    End Class
-End Namespace";
-            string testCode = string.Format(CultureInfo.InvariantCulture, format, @"{|#0:helper.Consume(foo.Substring(1))|}");
-            string fixedCode = string.Format(CultureInfo.InvariantCulture, format, @"helper.Consume(foo.AsSpan(1))");
+                            {{statement}}
+                        End Sub
+                    End Class
+                End Namespace
+                """;
+            string testCode = CreateSource(namespaceDeclaration, "{|#0:helper.Consume(foo.Substring(1))|}");
+            string fixedCode = CreateSource(namespaceDeclaration, "helper.Consume(foo.AsSpan(1))");
 
             var test = new VerifyVB.Test
             {
@@ -978,39 +1095,43 @@ End Namespace";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_SingleBestCandidate_CS
         {
             get
             {
-                string members = @"
-public void Consume(string a, string b, string c) { }
-public void Consume(Roschar a, string b, string c) { }
-public void Consume(string a, string b, Roschar c) { }
-public void Consume(Roschar a, Roschar b, string c) { }";
+                string members = """
+
+                    public void Consume(string a, string b, string c) { }
+                    public void Consume(Roschar a, string b, string c) { }
+                    public void Consume(string a, string b, Roschar c) { }
+                    public void Consume(Roschar a, Roschar b, string c) { }
+                    """;
                 yield return new[]
                 {
-                    CS.WithBody(WithKey(@"Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0) + ';', members),
-                    CS.WithBody(@"Consume(foo.AsSpan(1), foo.AsSpan(2), foo.Substring(3));", members)
+                    CS.WithBody(WithKey("Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0) + ';', members),
+                    CS.WithBody("Consume(foo.AsSpan(1), foo.AsSpan(2), foo.Substring(3));", members)
                 };
 
-                members = @"
-public void Consume(int n, string b, string c) { }
-public void Consume(double n, Roschar b, Roschar c) { }
-public void Consume(int n, string b, Roschar c) { }";
+                members = """
+
+                    public void Consume(int n, string b, string c) { }
+                    public void Consume(double n, Roschar b, Roschar c) { }
+                    public void Consume(int n, string b, Roschar c) { }
+                    """;
                 yield return new[]
                 {
-                    CS.WithBody(WithKey(@"Consume(7, foo.Substring(2), foo.Substring(3))", 0) + ';', members),
-                    CS.WithBody(@"Consume(7, foo.Substring(2), foo.AsSpan(3));", members)
+                    CS.WithBody(WithKey("Consume(7, foo.Substring(2), foo.Substring(3))", 0) + ';', members),
+                    CS.WithBody("Consume(7, foo.Substring(2), foo.AsSpan(3));", members)
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleCandidateOverloads_SingleBestCandidate_CS))]
-        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_CSAsync(string testCode, string fixedCode)
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleCandidateOverloads_SingleBestCandidate_CS))]
+        public async Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_CSAsync(string testCode, string fixedCode)
         {
             var test = new VerifyCS.Test
             {
@@ -1019,47 +1140,51 @@ public void Consume(int n, string b, Roschar c) { }";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOVerloads_SingleBestCandidate_VB
         {
             get
             {
-                string receiver = CS.Usings + @"
-public class R
-{
-    public static void Consume(string a, string b, string c) { }
-    public static void Consume(Roschar a, string b, string c) { }
-    public static void Consume(string a, string b, Roschar c) { }
-    public static void Consume(Roschar a, Roschar b, string c) { }
-}";
+                string receiver = CS.Usings + """
+
+                    public class R
+                    {
+                        public static void Consume(string a, string b, string c) { }
+                        public static void Consume(Roschar a, string b, string c) { }
+                        public static void Consume(string a, string b, Roschar c) { }
+                        public static void Consume(Roschar a, Roschar b, string c) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     receiver,
-                    VB.WithBody(WithKey(@"R.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0)),
-                    VB.WithBody(@"R.Consume(foo.AsSpan(1), foo.AsSpan(2), foo.Substring(3))")
+                    VB.WithBody(WithKey("R.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0)),
+                    VB.WithBody("R.Consume(foo.AsSpan(1), foo.AsSpan(2), foo.Substring(3))")
                 };
 
-                receiver = CS.Usings + @"
-public class R
-{
-    public static void Consume(int n, string b, string c) { }
-    public static void Consume(double n, Roschar b, Roschar c) { }
-    public static void Consume(int n, string b, Roschar c) { }
-}";
+                receiver = CS.Usings + """
+
+                    public class R
+                    {
+                        public static void Consume(int n, string b, string c) { }
+                        public static void Consume(double n, Roschar b, Roschar c) { }
+                        public static void Consume(int n, string b, Roschar c) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     receiver,
-                    VB.WithBody(WithKey(@"R.Consume(7, foo.Substring(2), foo.Substring(3))", 0)),
-                    VB.WithBody(@"R.Consume(7, foo.Substring(2), foo.AsSpan(3))")
+                    VB.WithBody(WithKey("R.Consume(7, foo.Substring(2), foo.Substring(3))", 0)),
+                    VB.WithBody("R.Consume(7, foo.Substring(2), foo.AsSpan(3))")
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleCandidateOVerloads_SingleBestCandidate_VB))]
-        public Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_VBAsync(string receiverClass, string testCode, string fixedCode)
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleCandidateOVerloads_SingleBestCandidate_VB))]
+        public async Task MultipleCandidateOverloads_SingleBestCandidate_ReportedAndFixed_VBAsync(string receiverClass, string testCode, string fixedCode)
         {
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
             {
@@ -1083,38 +1208,42 @@ public class R
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_CS
         {
             get
             {
-                string members = @"
-public void Consume(string a, string b) { }
-public void Consume(Roschar a, string b) { }
-public void Consume(string a, Roschar b) { }";
+                string members = """
+
+                    public void Consume(string a, string b) { }
+                    public void Consume(Roschar a, string b) { }
+                    public void Consume(string a, Roschar b) { }
+                    """;
                 yield return new[]
                 {
-                    CS.WithBody(WithKey(@"Consume(foo.Substring(1), foo.Substring(2))", 0) + ';', members)
+                    CS.WithBody(WithKey("Consume(foo.Substring(1), foo.Substring(2))", 0) + ';', members)
                 };
 
-                members = @"
-public void Consume(string a, string b, string c) { }
-public void Consume(string a, Roschar b, string c) { }
-public void Consume(Roschar a, string b, Roschar c) { }
-public void Consume(Roschar a, Roschar b, string c) { }
-public void Consume(string a, Roschar b, Roschar c) { }";
+                members = """
+
+                    public void Consume(string a, string b, string c) { }
+                    public void Consume(string a, Roschar b, string c) { }
+                    public void Consume(Roschar a, string b, Roschar c) { }
+                    public void Consume(Roschar a, Roschar b, string c) { }
+                    public void Consume(string a, Roschar b, Roschar c) { }
+                    """;
                 yield return new[]
                 {
-                    CS.WithBody(WithKey(@"Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0) + ';', members)
+                    CS.WithBody(WithKey("Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0) + ';', members)
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleCandidateOverloads_Ambiguous_CS))]
-        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_CSAsync(string testCode)
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleCandidateOverloads_Ambiguous_CS))]
+        public async Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_CSAsync(string testCode)
         {
             var test = new VerifyCS.Test
             {
@@ -1122,46 +1251,50 @@ public void Consume(string a, Roschar b, Roschar c) { }";
                 ExpectedDiagnostics = { CS.DiagnosticAt(0) },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_MultipleCandidateOverloads_Ambiguous_VB
         {
             get
             {
-                string receiver = CS.Usings + @"
-public class R
-{
-    public static void Consume(string a, string b) { }
-    public static void Consume(Roschar a, string b) { }
-    public static void Consume(string a, Roschar b) { }
-}";
+                string receiver = CS.Usings + """
+
+                    public class R
+                    {
+                        public static void Consume(string a, string b) { }
+                        public static void Consume(Roschar a, string b) { }
+                        public static void Consume(string a, Roschar b) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     receiver,
-                    VB.WithBody(WithKey(@"R.Consume(foo.Substring(1), foo.Substring(2))", 0))
+                    VB.WithBody(WithKey("R.Consume(foo.Substring(1), foo.Substring(2))", 0))
                 };
 
-                receiver = CS.Usings + @"
-public class R
-{
-    public static void Consume(string a, string b, string c) { }
-    public static void Consume(string a, Roschar b, string c) { }
-    public static void Consume(Roschar a, string b, Roschar c) { }
-    public static void Consume(Roschar a, Roschar b, string c) { }
-    public static void Consume(string a, Roschar b, Roschar c) { }
-}";
+                receiver = CS.Usings + """
+
+                    public class R
+                    {
+                        public static void Consume(string a, string b, string c) { }
+                        public static void Consume(string a, Roschar b, string c) { }
+                        public static void Consume(Roschar a, string b, Roschar c) { }
+                        public static void Consume(Roschar a, Roschar b, string c) { }
+                        public static void Consume(string a, Roschar b, Roschar c) { }
+                    }
+                    """;
                 yield return new[]
                 {
                     receiver,
-                    VB.WithBody(WithKey(@"R.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0))
+                    VB.WithBody(WithKey("R.Consume(foo.Substring(1), foo.Substring(2), foo.Substring(3))", 0))
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_MultipleCandidateOverloads_Ambiguous_VB))]
-        public Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_VBAsync(string receiverClass, string testCode)
+        [TestMethod]
+        [DynamicData(nameof(Data_MultipleCandidateOverloads_Ambiguous_VB))]
+        public async Task MultipleCandidateOverloads_Ambiguous_ReportedButNotFixed_VBAsync(string receiverClass, string testCode)
         {
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
             {
@@ -1179,43 +1312,49 @@ public class R
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NoRoscharOverload_CS
         {
             get
             {
-                string thing = CS.Usings + @"
-public class Thing
-{
-    public static void Consume(string text) { }
-}";
+                string thing = CS.Usings + """
 
-                yield return new[] { thing, @"Thing.Consume(foo.Substring(1))" };
+                    public class Thing
+                    {
+                        public static void Consume(string text) { }
+                    }
+                    """;
 
-                thing = CS.Usings + @"
-public class Thing
-{
-    public static void Consume(string text) { }
-    public static void Consume(Roschar span1, Roschar span2) { }
-}";
-                yield return new[] { thing, @"Thing.Consume(foo.Substring(1))" };
+                yield return new[] { thing, "Thing.Consume(foo.Substring(1))" };
 
-                thing = CS.Usings + @"
-public class Thing
-{
-    public static void Consume(string text, int n) { }
-    public static void Consume(int n, Roschar span) { }
-}";
-                yield return new[] { thing, @"Thing.Consume(foo.Substring(1), 17)" };
-                yield return new[] { thing, @"Thing.Consume(n: 17, text: foo.Substring(1))" };
+                thing = CS.Usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text) { }
+                        public static void Consume(Roschar span1, Roschar span2) { }
+                    }
+                    """;
+                yield return new[] { thing, "Thing.Consume(foo.Substring(1))" };
+
+                thing = CS.Usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text, int n) { }
+                        public static void Consume(int n, Roschar span) { }
+                    }
+                    """;
+                yield return new[] { thing, "Thing.Consume(foo.Substring(1), 17)" };
+                yield return new[] { thing, "Thing.Consume(n: 17, text: foo.Substring(1))" };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NoRoscharOverload_CS))]
-        public Task NoRoscharOverload_NoDiagnostic_CSAsync(string receiverClass, string testExpression)
+        [TestMethod]
+        [DynamicData(nameof(Data_NoRoscharOverload_CS))]
+        public async Task NoRoscharOverload_NoDiagnostic_CSAsync(string receiverClass, string testExpression)
         {
             string testCode = CS.WithBody(testExpression + ';');
 
@@ -1227,42 +1366,48 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_NoRoscharOverload_VB
         {
             get
             {
-                string thing = CS.Usings + @"
-public class Thing
-{
-    public static void Consume(string text) { }
-}";
-                yield return new[] { thing, @"Thing.Consume(foo.Substring(1))" };
+                string thing = CS.Usings + """
 
-                thing = CS.Usings + @"
-public class Thing
-{
-    public static void Consume(string text) { }
-    public static void Consume(Roschar span1, Roschar span2) { }
-}";
-                yield return new[] { thing, @"Thing.Consume(foo.Substring(1))" };
+                    public class Thing
+                    {
+                        public static void Consume(string text) { }
+                    }
+                    """;
+                yield return new[] { thing, "Thing.Consume(foo.Substring(1))" };
 
-                thing = CS.Usings + @"
-public class Thing
-{
-    public static void Consume(string text, int n) { }
-    public static void Consume(int n, Roschar span) { }
-}";
-                yield return new[] { thing, @"Thing.Consume(foo.Substring(1), 17)" };
-                yield return new[] { thing, @"Thing.Consume(n:=17, text:=foo.Substring(1))" };
+                thing = CS.Usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text) { }
+                        public static void Consume(Roschar span1, Roschar span2) { }
+                    }
+                    """;
+                yield return new[] { thing, "Thing.Consume(foo.Substring(1))" };
+
+                thing = CS.Usings + """
+
+                    public class Thing
+                    {
+                        public static void Consume(string text, int n) { }
+                        public static void Consume(int n, Roschar span) { }
+                    }
+                    """;
+                yield return new[] { thing, "Thing.Consume(foo.Substring(1), 17)" };
+                yield return new[] { thing, "Thing.Consume(n:=17, text:=foo.Substring(1))" };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_NoRoscharOverload_VB))]
-        public Task NoRoscharOverload_NoDiagnostic_VBAsync(string receiverClass, string testExpression)
+        [TestMethod]
+        [DynamicData(nameof(Data_NoRoscharOverload_VB))]
+        public async Task NoRoscharOverload_NoDiagnostic_VBAsync(string receiverClass, string testExpression)
         {
             string testCode = VB.WithBody(WithKey(testExpression, 0));
             var receiverProject = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
@@ -1280,7 +1425,7 @@ public class Thing
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_InvalidOverloads_CS
@@ -1289,47 +1434,55 @@ public class Thing
             {
                 yield return new[]
                 {
-                    CS.Usings + @"
-public class StaticToInstance
-{
-    public static void Consume(string text) { }
-    public void Consume(Roschar span) { }
-}",
-                    @"StaticToInstance.Consume(foo.Substring(1));"
+                    CS.Usings + """
+
+                        public class StaticToInstance
+                        {
+                            public static void Consume(string text) { }
+                            public void Consume(Roschar span) { }
+                        }
+                        """,
+                    "StaticToInstance.Consume(foo.Substring(1));"
                 };
 
                 yield return new[]
                 {
-                    CS.Usings + @"
-public class InstanceToStatic
-{
-    public void Consume(string text) { }
-    public static void Consume(Roschar span) { }
-}",
-                    @"instance.Consume(foo.Substring(1));",
-                    @"
-partial class Body
-{
-    private InstanceToStatic instance = new InstanceToStatic();
-}"
+                    CS.Usings + """
+
+                        public class InstanceToStatic
+                        {
+                            public void Consume(string text) { }
+                            public static void Consume(Roschar span) { }
+                        }
+                        """,
+                    "instance.Consume(foo.Substring(1));",
+                    """
+
+                        partial class Body
+                        {
+                            private InstanceToStatic instance = new InstanceToStatic();
+                        }
+                        """
                 };
 
                 yield return new[]
                 {
-                    CS.Usings + @"
-public class WrongReturnType
-{
-    public static string Make(string text) => throw null;
-    public static int Make(Roschar span) => throw null;
-}",
-                    @"var _ = WrongReturnType.Make(foo.Substring(1));"
+                    CS.Usings + """
+
+                        public class WrongReturnType
+                        {
+                            public static string Make(string text) => throw null;
+                            public static int Make(Roschar span) => throw null;
+                        }
+                        """,
+                    "var _ = WrongReturnType.Make(foo.Substring(1));"
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_InvalidOverloads_CS))]
-        public Task InvalidOverloads_NoDiagnostic_CSAsync(string receiverClass, string testStatements, string extraFields = "")
+        [TestMethod]
+        [DynamicData(nameof(Data_InvalidOverloads_CS))]
+        public async Task InvalidOverloads_NoDiagnostic_CSAsync(string receiverClass, string testStatements, string extraFields = "")
         {
             string testCode = CS.WithBody(testStatements);
 
@@ -1341,7 +1494,7 @@ public class WrongReturnType
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         public static IEnumerable<object[]> Data_InvalidOverloads_VB
@@ -1350,47 +1503,55 @@ public class WrongReturnType
             {
                 yield return new[]
                 {
-                    CS.Usings + @"
-public class StaticToInstance
-{
-    public static void Consume(string text) { }
-    public void Consume(Roschar span) { }
-}",
-                    @"StaticToInstance.Consume(foo.Substring(1))"
+                    CS.Usings + """
+
+                        public class StaticToInstance
+                        {
+                            public static void Consume(string text) { }
+                            public void Consume(Roschar span) { }
+                        }
+                        """,
+                    "StaticToInstance.Consume(foo.Substring(1))"
                 };
 
                 yield return new[]
                 {
-                    CS.Usings + @"
-public class InstanceToStatic
-{
-    public void Consume(string text) { }
-    public static void Consume(Roschar span) { }
-}",
-                    @"instance.Consume(foo.Substring(1))",
-                    @"
-Partial Class Body
+                    CS.Usings + """
 
-    Private instance As InstanceToStatic = New InstanceToStatic()
-End Class"
+                        public class InstanceToStatic
+                        {
+                            public void Consume(string text) { }
+                            public static void Consume(Roschar span) { }
+                        }
+                        """,
+                    "instance.Consume(foo.Substring(1))",
+                    """
+
+                        Partial Class Body
+
+                            Private instance As InstanceToStatic = New InstanceToStatic()
+                        End Class
+                        """
                 };
 
                 yield return new[]
                 {
-                    CS.Usings + @"
-public class WrongReturnType
-{
-    public static string Make(string text) => throw null;
-    public static int Make(Roschar span) => throw null;
-}",
-                    @"Dim m = WrongReturnType.Make(foo.Substring(1))"
+                    CS.Usings + """
+
+                        public class WrongReturnType
+                        {
+                            public static string Make(string text) => throw null;
+                            public static int Make(Roschar span) => throw null;
+                        }
+                        """,
+                    "Dim m = WrongReturnType.Make(foo.Substring(1))"
                 };
             }
         }
 
-        [Theory]
-        [MemberData(nameof(Data_InvalidOverloads_VB))]
-        public Task InvalidOverloads_NoDiagnostic_VBAsync(string receiverClass, string testStatements, string extraFields = "")
+        [TestMethod]
+        [DynamicData(nameof(Data_InvalidOverloads_VB))]
+        public async Task InvalidOverloads_NoDiagnostic_VBAsync(string receiverClass, string testStatements, string extraFields = "")
         {
             string testCode = VB.WithBody(testStatements);
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
@@ -1408,40 +1569,43 @@ public class WrongReturnType
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("parent.Private")]
-        [InlineData("sibling.Private")]
-        [InlineData("base.Private")]
-        [InlineData("this.Private")]
-        [InlineData("Private")]
-        [InlineData("parent.ProtectedAndInternal")]
-        [InlineData("sibling.ProtectedAndInternal")]
-        [InlineData("base.ProtectedAndInternal")]
-        [InlineData("this.ProtectedAndInternal")]
-        [InlineData("ProtectedAndInternal")]
-        [InlineData("parent.Internal")]
-        [InlineData("sibling.Internal")]
-        [InlineData("base.Internal")]
-        [InlineData("this.Internal")]
-        [InlineData("Internal")]
-        [InlineData("parent.Protected")]
-        [InlineData("parent.ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        [TestMethod]
+        [DataRow("parent.Private")]
+        [DataRow("sibling.Private")]
+        [DataRow("base.Private")]
+        [DataRow("this.Private")]
+        [DataRow("Private")]
+        [DataRow("parent.ProtectedAndInternal")]
+        [DataRow("sibling.ProtectedAndInternal")]
+        [DataRow("base.ProtectedAndInternal")]
+        [DataRow("this.ProtectedAndInternal")]
+        [DataRow("ProtectedAndInternal")]
+        [DataRow("parent.Internal")]
+        [DataRow("sibling.Internal")]
+        [DataRow("base.Internal")]
+        [DataRow("this.Internal")]
+        [DataRow("Internal")]
+        [DataRow("parent.Protected")]
+        [DataRow("parent.ProtectedOrInternal")]
+        public async Task Accessibility_ExternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
-            string testCode = CS.Usings + @"
-public class ExternalSubclass : External
-{
-    private string foo;
-    private External parent;
-    private ExternalSubclass sibling;
-    public void NoDiagnostic()
-    {
-        " + methodCallWithoutArgumentList + @"(foo.Substring(1));
-    }
-}";
+            string testCode = CS.Usings + """
+                public class ExternalSubclass : External
+                {
+                    private string foo;
+                    private External parent;
+                    private ExternalSubclass sibling;
+                    public void NoDiagnostic()
+                    {
+
+                """ + methodCallWithoutArgumentList + """
+            (foo.Substring(1));
+                }
+            }
+            """;
             var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
             {
                 Sources = { CS.ExternalBaseClass }
@@ -1457,39 +1621,43 @@ public class ExternalSubclass : External
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("parent.Private")]
-        [InlineData("sibling.Private")]
-        [InlineData("MyBase.Private")]
-        [InlineData("Me.Private")]
-        [InlineData("[Private]")]
-        [InlineData("parent.ProtectedAndInternal")]
-        [InlineData("sibling.ProtectedAndInternal")]
-        [InlineData("MyBase.ProtectedAndInternal")]
-        [InlineData("Me.ProtectedAndInternal")]
-        [InlineData("ProtectedAndInternal")]
-        [InlineData("parent.Internal")]
-        [InlineData("sibling.Internal")]
-        [InlineData("MyBase.Internal")]
-        [InlineData("Me.Internal")]
-        [InlineData("parent.Protected")]
-        [InlineData("parent.ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithoutDiagnostics_VBAsync(string methodCallWithoutArgumentList)
+        [TestMethod]
+        [DataRow("parent.Private")]
+        [DataRow("sibling.Private")]
+        [DataRow("MyBase.Private")]
+        [DataRow("Me.Private")]
+        [DataRow("[Private]")]
+        [DataRow("parent.ProtectedAndInternal")]
+        [DataRow("sibling.ProtectedAndInternal")]
+        [DataRow("MyBase.ProtectedAndInternal")]
+        [DataRow("Me.ProtectedAndInternal")]
+        [DataRow("ProtectedAndInternal")]
+        [DataRow("parent.Internal")]
+        [DataRow("sibling.Internal")]
+        [DataRow("MyBase.Internal")]
+        [DataRow("Me.Internal")]
+        [DataRow("parent.Protected")]
+        [DataRow("parent.ProtectedOrInternal")]
+        public async Task Accessibility_ExternalBaseClass_WithoutDiagnostics_VBAsync(string methodCallWithoutArgumentList)
         {
-            string testCode = VB.Usings + @"
-Public Class ExternalSubclass : Inherits External
+            string testCode = VB.Usings + """
 
-    Private foo As String
-    Private parent As External
-    Private sibling As ExternalSubclass
-    Public Sub NoDiagnostic()
+                Public Class ExternalSubclass : Inherits External
 
-        " + methodCallWithoutArgumentList + @"(foo.Substring(1))
-    End Sub
-End Class";
+                    Private foo As String
+                    Private parent As External
+                    Private sibling As ExternalSubclass
+                    Public Sub NoDiagnostic()
+
+
+                """ + methodCallWithoutArgumentList + """
+            (foo.Substring(1))
+                End Sub
+            End Class
+            """;
             var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
             {
                 Sources = { CS.ExternalBaseClass }
@@ -1505,40 +1673,46 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("sibling.Protected")]
-        [InlineData("base.Protected")]
-        [InlineData("this.Protected")]
-        [InlineData("Protected")]
-        [InlineData("sibling.ProtectedOrInternal")]
-        [InlineData("base.ProtectedOrInternal")]
-        [InlineData("this.ProtectedOrInternal")]
-        [InlineData("ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        [TestMethod]
+        [DataRow("sibling.Protected")]
+        [DataRow("base.Protected")]
+        [DataRow("this.Protected")]
+        [DataRow("Protected")]
+        [DataRow("sibling.ProtectedOrInternal")]
+        [DataRow("base.ProtectedOrInternal")]
+        [DataRow("this.ProtectedOrInternal")]
+        [DataRow("ProtectedOrInternal")]
+        public async Task Accessibility_ExternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
-            string testCode = CS.Usings + @"
-public class ExternalSubclass : External
-{
-    private string foo;
-    private ExternalSubclass sibling;
-    public void Diagnostic()
-    {
-        {|#0:" + methodCallWithoutArgumentList + @"(foo.Substring(1))|};
-    }
-}";
-            string fixedCode = CS.Usings + @"
-public class ExternalSubclass : External
-{
-    private string foo;
-    private ExternalSubclass sibling;
-    public void Diagnostic()
-    {
-        " + methodCallWithoutArgumentList + @"(foo.AsSpan(1));
-    }
-}";
+            string testCode = CS.Usings + """
+                public class ExternalSubclass : External
+                {
+                    private string foo;
+                    private ExternalSubclass sibling;
+                    public void Diagnostic()
+                    {
+                        {|#0:
+                """ + methodCallWithoutArgumentList + """
+            (foo.Substring(1))|};
+                }
+            }
+            """;
+            string fixedCode = CS.Usings + """
+                public class ExternalSubclass : External
+                {
+                    private string foo;
+                    private ExternalSubclass sibling;
+                    public void Diagnostic()
+                    {
+                        
+                """ + methodCallWithoutArgumentList + """
+            (foo.AsSpan(1));
+                }
+            }
+            """;
             var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
             {
                 Sources = { CS.ExternalBaseClass }
@@ -1561,40 +1735,48 @@ public class ExternalSubclass : External
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("sibling.Protected")]
-        [InlineData("MyBase.Protected")]
-        [InlineData("Me.Protected")]
-        [InlineData("[Protected]")]
-        [InlineData("sibling.ProtectedOrInternal")]
-        [InlineData("MyBase.ProtectedOrInternal")]
-        [InlineData("Me.ProtectedOrInternal")]
-        [InlineData("ProtectedOrInternal")]
-        public Task Accessibility_ExternalBaseClass_WithDiagnostics_VBAsync(string methodCallWithoutArgumentList)
+        [TestMethod]
+        [DataRow("sibling.Protected")]
+        [DataRow("MyBase.Protected")]
+        [DataRow("Me.Protected")]
+        [DataRow("[Protected]")]
+        [DataRow("sibling.ProtectedOrInternal")]
+        [DataRow("MyBase.ProtectedOrInternal")]
+        [DataRow("Me.ProtectedOrInternal")]
+        [DataRow("ProtectedOrInternal")]
+        public async Task Accessibility_ExternalBaseClass_WithDiagnostics_VBAsync(string methodCallWithoutArgumentList)
         {
-            string testCode = VB.Usings + @"
-Public Class ExternalSubclass : Inherits External
+            string testCode = VB.Usings + """
 
-    Private foo As String
-    Private sibling As ExternalSubclass
-    Private Sub Diagnostic()
+                Public Class ExternalSubclass : Inherits External
 
-        {|#0:" + methodCallWithoutArgumentList + @"(foo.Substring(1))|}
-    End Sub
-End Class";
-            string fixedCode = VB.Usings + @"
-Public Class ExternalSubclass : Inherits External
+                    Private foo As String
+                    Private sibling As ExternalSubclass
+                    Private Sub Diagnostic()
 
-    Private foo As String
-    Private sibling As ExternalSubclass
-    Private Sub Diagnostic()
+                        {|#0:
+                """ + methodCallWithoutArgumentList + """
+            (foo.Substring(1))|}
+                End Sub
+            End Class
+            """;
+            string fixedCode = VB.Usings + """
 
-        " + methodCallWithoutArgumentList + @"(foo.AsSpan(1))
-    End Sub
-End Class";
+                Public Class ExternalSubclass : Inherits External
+
+                    Private foo As String
+                    Private sibling As ExternalSubclass
+                    Private Sub Diagnostic()
+
+                        
+                """ + methodCallWithoutArgumentList + """
+            (foo.AsSpan(1))
+                End Sub
+            End Class
+            """;
             var project = new ProjectState("ExternalProject", LanguageNames.CSharp, "external", "cs")
             {
                 Sources = { CS.ExternalBaseClass }
@@ -1617,30 +1799,33 @@ End Class";
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         //  No VB counterpart because VB doesn't support ref-like types in APIs.
-        [Theory]
-        [InlineData("parent.Private")]
-        [InlineData("sibling.Private")]
-        [InlineData("base.Private")]
-        [InlineData("this.Private")]
-        [InlineData("Private")]
-        [InlineData("parent.Protected")]
-        public Task Accessibility_InternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        [TestMethod]
+        [DataRow("parent.Private")]
+        [DataRow("sibling.Private")]
+        [DataRow("base.Private")]
+        [DataRow("this.Private")]
+        [DataRow("Private")]
+        [DataRow("parent.Protected")]
+        public async Task Accessibility_InternalBaseClass_WithoutDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
-            string testCode = CS.Usings + @"
-public class InternalSubclass : Internal
-{
-    private string foo;
-    private Internal parent;
-    private InternalSubclass sibling;
-    public void NoDiagnostic()
-    {
-        " + methodCallWithoutArgumentList + @"(foo.Substring(1));
-    }
-}";
+            string testCode = CS.Usings + """
+                public class InternalSubclass : Internal
+                {
+                    private string foo;
+                    private Internal parent;
+                    private InternalSubclass sibling;
+                    public void NoDiagnostic()
+                    {
+
+                """ + methodCallWithoutArgumentList + """
+            (foo.Substring(1));
+                }
+            }
+            """;
 
             var test = new VerifyCS.Test
             {
@@ -1650,37 +1835,43 @@ public class InternalSubclass : Internal
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         //  No VB counterpart because VB doesn't support ref-like types in APIs.
-        [Theory]
-        [InlineData("sibling.Protected")]
-        [InlineData("base.Protected")]
-        [InlineData("this.Protected")]
-        [InlineData("Protected")]
-        public Task Accessibility_InternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
+        [TestMethod]
+        [DataRow("sibling.Protected")]
+        [DataRow("base.Protected")]
+        [DataRow("this.Protected")]
+        [DataRow("Protected")]
+        public async Task Accessibility_InternalBaseClass_WithDiagnostics_CSAsync(string methodCallWithoutArgumentList)
         {
-            string testCode = CS.Usings + @"
-public class InternalSubclass : Internal
-{
-    private string foo;
-    private InternalSubclass sibling;
-    public void Diagnostic()
-    {
-        {|#0:" + methodCallWithoutArgumentList + @"(foo.Substring(1))|};
-    }
-}";
-            string fixedCode = CS.Usings + @"
-public class InternalSubclass : Internal
-{
-    private string foo;
-    private InternalSubclass sibling;
-    public void Diagnostic()
-    {
-        " + methodCallWithoutArgumentList + @"(foo.AsSpan(1));
-    }
-}";
+            string testCode = CS.Usings + """
+                public class InternalSubclass : Internal
+                {
+                    private string foo;
+                    private InternalSubclass sibling;
+                    public void Diagnostic()
+                    {
+                        {|#0:
+                """ + methodCallWithoutArgumentList + """
+            (foo.Substring(1))|};
+                }
+            }
+            """;
+            string fixedCode = CS.Usings + """
+                public class InternalSubclass : Internal
+                {
+                    private string foo;
+                    private InternalSubclass sibling;
+                    public void Diagnostic()
+                    {
+                        
+                """ + methodCallWithoutArgumentList + """
+            (foo.AsSpan(1));
+                }
+            }
+            """;
 
             var test = new VerifyCS.Test
             {
@@ -1695,48 +1886,51 @@ public class InternalSubclass : Internal
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task ConditionalSubstringAccess_NoDiagnostic_CSAsync()
+        [TestMethod]
+        public async Task ConditionalSubstringAccess_NoDiagnostic_CSAsync()
         {
-            string testCode = CS.Usings + @"
-public class Body
-{
-    public void Consume(string text) { }
-    public void Consume(Roschar span) { }
-    public void Run(string foo)
-    {
-        Consume(foo?.Substring(1));
-    }
-}";
+            string testCode = CS.Usings + """
+                public class Body
+                {
+                    public void Consume(string text) { }
+                    public void Consume(Roschar span) { }
+                    public void Run(string foo)
+                    {
+                        Consume(foo?.Substring(1));
+                    }
+                }
+                """;
 
             var test = new VerifyCS.Test
             {
                 TestCode = testCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
-        public Task ConditionalSubstringAccess_NoDiagnostic_VBAsync()
+        [TestMethod]
+        public async Task ConditionalSubstringAccess_NoDiagnostic_VBAsync()
         {
-            string receiver = CS.Usings + @"
-public class Receiver
-{
-    public void Consume(string text) { }
-    public void Consume(Roschar span) { }
-}";
+            string receiver = CS.Usings + """
+                public class Receiver
+                {
+                    public void Consume(string text) { }
+                    public void Consume(Roschar span) { }
+                }
+                """;
             var project = new ProjectState("ReceiverProject", LanguageNames.CSharp, "receiver", "cs")
             {
                 Sources = { receiver }
             };
             string testCode = VB.WithBody(
-                @"
-Dim receiver = New Receiver()
-receiver.Consume(foo?.Substring(1))");
+                """
+                    Dim receiver = New Receiver()
+                    receiver.Consume(foo?.Substring(1))
+                    """);
 
             var test = new VerifyVB.Test
             {
@@ -1748,69 +1942,79 @@ receiver.Consume(foo?.Substring(1))");
                 },
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50
             };
-            return test.RunAsync();
+            await test.RunAsync(CancellationToken.None);
         }
 
         #region Helpers
         private static class CS
         {
-            public const string Usings = @"
-using System;
-using Roschar = System.ReadOnlySpan<char>;";
-            public const string ExternalBaseClass = Usings + @"
-public class External
-{
-    public void ProtectedOrInternal(string text) { }
-    protected internal void ProtectedOrInternal(Roschar span) { }
+            public const string Usings = """
 
-    public void Protected(string text) { }
-    protected void Protected(Roschar span) { }
+                using System;
+                using Roschar = System.ReadOnlySpan<char>;
+                """;
+            public const string ExternalBaseClass = Usings + """
 
-    public void Internal(string text) { }
-    internal void Internal(Roschar span) { }
+                public class External
+                {
+                    public void ProtectedOrInternal(string text) { }
+                    protected internal void ProtectedOrInternal(Roschar span) { }
 
-    public void ProtectedAndInternal(string text) { }
-    private protected void ProtectedAndInternal(Roschar span) { }
+                    public void Protected(string text) { }
+                    protected void Protected(Roschar span) { }
 
-    public void Private(string text) { }
-    private void Private(Roschar span) { }
-}";
-            public const string InternalBaseClass = Usings + @"
-public class Internal
-{
-    public void Private(string text) { }
-    private void Private(Roschar span) { }
+                    public void Internal(string text) { }
+                    internal void Internal(Roschar span) { }
 
-    public void Protected(string text) { }
-    protected void Protected(Roschar span) { }
-}";
+                    public void ProtectedAndInternal(string text) { }
+                    private protected void ProtectedAndInternal(Roschar span) { }
+
+                    public void Private(string text) { }
+                    private void Private(Roschar span) { }
+                }
+                """;
+            public const string InternalBaseClass = Usings + """
+
+                public class Internal
+                {
+                    public void Private(string text) { }
+                    private void Private(Roschar span) { }
+
+                    public void Protected(string text) { }
+                    protected void Protected(Roschar span) { }
+                }
+                """;
 
             public static string WithBody(string statements, bool includeUsings = true)
             {
                 string indentedStatements = IndentLines(statements, "        ");
                 string usings = includeUsings ? $"{Environment.NewLine}using System;{Environment.NewLine}" : string.Empty;
 
-                return $@"
-{usings}
-public partial class Body
-{{
-    private void Run(string foo)
-    {{
-{indentedStatements}
-    }}
-}}";
+                return $$"""
+
+                    {{usings}}
+                    public partial class Body
+                    {
+                        private void Run(string foo)
+                        {
+                    {{indentedStatements}}
+                        }
+                    }
+                    """;
             }
             public static string WithBody(string statements, string members)
             {
-                return Usings + $@"
-public partial class Body
-{{
-{IndentLines(members, "    ")}
-    private void Run(string foo)
-    {{
-{IndentLines(statements, "        ")}
-    }}
-}}";
+                return Usings + $$"""
+
+                    public partial class Body
+                    {
+                    {{IndentLines(members, "    ")}}
+                        private void Run(string foo)
+                        {
+                    {{IndentLines(statements, "        ")}}
+                        }
+                    }
+                    """;
             }
 
             public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyCS.Diagnostic(Rule).WithLocation(markupKey);
@@ -1818,8 +2022,10 @@ public partial class Body
 
         private static class VB
         {
-            public const string Usings = @"
-Imports System";
+            public const string Usings = """
+
+                Imports System
+                """;
 
             public static string WithBody(string statements, bool includeImports = true)
             {
@@ -1827,15 +2033,17 @@ Imports System";
                 string indentedStatements = indent + statements.TrimStart().Replace(Environment.NewLine, Environment.NewLine + indent, StringComparison.Ordinal);
                 string imports = includeImports ? $"{Environment.NewLine}Imports System{Environment.NewLine}" : string.Empty;
 
-                return $@"
-{imports}
-Partial Public Class Body
+                return $"""
 
-    Private Sub Run(foo As String)
+                    {imports}
+                    Partial Public Class Body
 
-{indentedStatements}
-    End Sub
-End Class";
+                        Private Sub Run(foo As String)
+
+                    {indentedStatements}
+                        End Sub
+                    End Class
+                    """;
             }
 
             public static DiagnosticResult DiagnosticAt(int markupKey) => VerifyVB.Diagnostic(Rule).WithLocation(markupKey);

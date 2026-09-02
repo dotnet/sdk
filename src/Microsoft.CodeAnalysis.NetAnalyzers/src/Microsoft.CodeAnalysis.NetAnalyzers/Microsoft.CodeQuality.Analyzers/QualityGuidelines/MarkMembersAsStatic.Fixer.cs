@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
@@ -140,7 +141,7 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
                 var semanticModel = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
 
                 // Compute replacements
-                var editor = new SyntaxEditor(root, solution.Workspace);
+                var editor = new SyntaxEditor(root, solution.Workspace.Services);
                 foreach (var referenceLocation in referenceLocationGroup)
                 {
                     cancellationToken.ThrowIfCancellationRequested();

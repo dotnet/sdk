@@ -1,213 +1,232 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotAddArchiveItemPathToTheTargetFileSystemPathTests : TaintedDataAnalyzerTestBase<DoNotAddArchiveItemPathToTheTargetFileSystemPath, DoNotAddArchiveItemPathToTheTargetFileSystemPath>
     {
         protected override DiagnosticDescriptor Rule => DoNotAddArchiveItemPathToTheTargetFileSystemPath.Rule;
 
         protected override IEnumerable<string> AdditionalCSharpSources => new string[] { zipArchiveEntryAndZipFileExtensionsCSharpSourceCode };
 
-        public const string zipArchiveEntryAndZipFileExtensionsCSharpSourceCode = @"
-namespace System.IO.Compression
-{
-    public class ZipArchiveEntry
-    {
-        public string FullName { get; }
-    }
+        public const string zipArchiveEntryAndZipFileExtensionsCSharpSourceCode = """
 
-    public static class ZipFileExtensions
-    {
-        public static void ExtractToFile (this ZipArchiveEntry source, string destinationFileName)
-        {
-        }
-    }
-}";
+            namespace System.IO.Compression
+            {
+                public class ZipArchiveEntry
+                {
+                    public string FullName { get; }
+                }
 
-        [Fact]
+                public static class ZipFileExtensions
+                {
+                    public static void ExtractToFile (this ZipArchiveEntry source, string destinationFileName)
+                    {
+                    }
+                }
+            }
+            """;
+
+        [TestMethod]
         public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
-    {
-        zipArchiveEntry.ExtractToFile(zipArchiveEntry.FullName);
-    }
-}",
+                using System.IO.Compression;
+
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
+                    {
+                        zipArchiveEntry.ExtractToFile(zipArchiveEntry.FullName);
+                    }
+                }
+                """,
             GetCSharpResultAt(8, 9, 8, 39, "void ZipFileExtensions.ExtractToFile(ZipArchiveEntry source, string destinationFileName)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_File_Open_WithStringAndFileModeParameters_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)
-    {
-        File.Open(zipArchiveEntry.FullName, mode);
-    }
-}",
+                using System.IO;
+                using System.IO.Compression;
+
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)
+                    {
+                        File.Open(zipArchiveEntry.FullName, mode);
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, 9, 19, "FileStream File.Open(string path, FileMode mode)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessParameters_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access)
-    {
-        File.Open(zipArchiveEntry.FullName, mode, access);
-    }
-}",
+                using System.IO;
+                using System.IO.Compression;
+
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access)
+                    {
+                        File.Open(zipArchiveEntry.FullName, mode, access);
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, 9, 19, "FileStream File.Open(string path, FileMode mode, FileAccess access)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_File_Open_WithStringAndFileModeAndFileAccessAndFileShareParamters_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access, FileShare share)
-    {
-        File.Open(zipArchiveEntry.FullName, mode, access, share);
-    }
-}",
+                using System.IO;
+                using System.IO.Compression;
+
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access, FileShare share)
+                    {
+                        File.Open(zipArchiveEntry.FullName, mode, access, share);
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9, 9, 19, "FileStream File.Open(string path, FileMode mode, FileAccess access, FileShare share)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access, FileShare share)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode, FileAccess access, FileShare share)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_FileStream_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)
-    {
-        var fileStream = new FileStream(zipArchiveEntry.FullName, mode);
-    }
-}",
+                using System.IO;
+                using System.IO.Compression;
+
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)
+                    {
+                        var fileStream = new FileStream(zipArchiveEntry.FullName, mode);
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 26, 9, 41, "FileStream.FileStream(string path, FileMode mode)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry, FileMode mode)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_FileInfo_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
-    {
-        var fileInfo = new FileInfo(zipArchiveEntry.FullName);
-    }
-}",
+                using System.IO;
+                using System.IO.Compression;
+
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
+                    {
+                        var fileInfo = new FileInfo(zipArchiveEntry.FullName);
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 24, 9, 37, "FileInfo.FileInfo(string fileName)", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)", "string ZipArchiveEntry.FullName", "void TestClass.TestMethod(ZipArchiveEntry zipArchiveEntry)"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sanitizer_String_StartsWith_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System;
+                using System.IO.Compression;
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
-    {
-        var destinationFileName = zipArchiveEntry.FullName;
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
+                    {
+                        var destinationFileName = zipArchiveEntry.FullName;
 
-        if(destinationFileName.StartsWith(""Start""))
-        {
-            zipArchiveEntry.ExtractToFile(destinationFileName);
+                        if(destinationFileName.StartsWith("Start"))
+                        {
+                            zipArchiveEntry.ExtractToFile(destinationFileName);
+                        }
+                    }
+                }
+                """);
         }
-    }
-}");
-        }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sink_ZipArchiveEntry_ExtractToFile_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System.IO.Compression;
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry, string destinationFileName)
-    {
-        zipArchiveEntry.ExtractToFile(destinationFileName);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry, string destinationFileName)
+                    {
+                        zipArchiveEntry.ExtractToFile(destinationFileName);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sanitizer_Path_GetFileName_NoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System.IO;
+                using System.IO.Compression;
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
-    {
-        var destinationFileName = Path.GetFileName(zipArchiveEntry.FullName);
-        zipArchiveEntry.ExtractToFile(destinationFileName);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
+                    {
+                        var destinationFileName = Path.GetFileName(zipArchiveEntry.FullName);
+                        zipArchiveEntry.ExtractToFile(destinationFileName);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Test_Sanitizer_String_Substring_DiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System;
+                using System.IO.Compression;
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
-    {
-        var destinationFileName = zipArchiveEntry.FullName;
-        zipArchiveEntry.ExtractToFile(destinationFileName.Substring(1));
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
+                    {
+                        var destinationFileName = zipArchiveEntry.FullName;
+                        zipArchiveEntry.ExtractToFile(destinationFileName.Substring(1));
+                    }
+                }
+                """);
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5389.excluded_symbol_names = TestMethod")]
-        [InlineData("dotnet_code_quality.CA5389.excluded_symbol_names = TestMet*")]
-        [InlineData("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5389.excluded_symbol_names = TestMethod")]
+        [DataRow("dotnet_code_quality.CA5389.excluded_symbol_names = TestMet*")]
+        [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = TestMethod")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var expected = Array.Empty<DiagnosticResult>();
@@ -219,20 +238,24 @@ class TestClass
                 };
             }
 
-            await VerifyCSharpWithDependenciesAsync(@"
-using System.IO.Compression;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
-    {
-        zipArchiveEntry.ExtractToFile(zipArchiveEntry.FullName);
-    }
-}", ("/.editorconfig", $@"root = true
+                using System.IO.Compression;
 
-[*]
-{editorConfigText}
-"), expected);
+                class TestClass
+                {
+                    public void TestMethod(ZipArchiveEntry zipArchiveEntry)
+                    {
+                        zipArchiveEntry.ExtractToFile(zipArchiveEntry.FullName);
+                    }
+                }
+                """, ("/.editorconfig", $"""
+    root = true
+
+    [*]
+    {editorConfigText}
+
+    """), expected);
         }
     }
 }

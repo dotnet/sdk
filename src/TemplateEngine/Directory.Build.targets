@@ -1,0 +1,10 @@
+<Project>
+
+  <Import Project="$([MSBuild]::GetPathOfFileAbove('Directory.Build.targets', '$(MSBuildThisFileDirectory)..'))" />
+
+  <ItemGroup>
+    <None Include="$(RepoRoot)LICENSE.TXT" PackagePath="LICENSE.txt" Pack="true" />
+    <None Include="$(RepoRoot)THIRD-PARTY-NOTICES.TXT" PackagePath="THIRD-PARTY-NOTICES.txt" Pack="true" />
+  </ItemGroup>
+
+</Project>

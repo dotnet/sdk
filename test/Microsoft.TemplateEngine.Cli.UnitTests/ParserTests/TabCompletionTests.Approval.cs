@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
@@ -9,7 +9,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
 {
     public partial class TabCompletionTests : BaseTest
     {
-        [Fact]
+        [TestMethod]
         public Task RootCommand_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -21,7 +21,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task RootCommand_GetStartsWtihSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -33,7 +33,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Install_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -45,7 +45,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Uninstall_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -57,7 +57,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Update_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -69,7 +69,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task List_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -81,7 +81,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Search_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -93,7 +93,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task Create_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -105,7 +105,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task TemplateCommand_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
@@ -117,7 +117,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
             return Verify(result);
         }
 
-        [Fact]
+        [TestMethod]
         public Task DetailsCommand_GetAllSuggestions()
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));

@@ -1,9 +1,9 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.NonConstantFieldsShouldNotBeVisibleAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,136 +13,149 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class NonConstantFieldsShouldNotBeVisibleTests
     {
-        [Fact]
+        [TestMethod]
         public async Task DefaultVisibilityCSAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class A
-{
-    string field; 
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class A
+                {
+                    string field;
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DefaultVisibilityVBAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class A
-    Dim field As System.String
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class A
+                    Dim field As System.String
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicVariableCSAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class A
-{
-    public string field; 
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class A
+                {
+                    public string field;
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicVariableVBAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class A
-    Public field As System.String
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class A
+                    Public field As System.String
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExternallyVisibleStaticVariableCSAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class A
-{
-    public static string field; 
-}", GetCSharpResultAt(4, 26));
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class A
+                {
+                    public static string field;
+                }
+                """, GetCSharpResultAt(4, 26));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task PublicNotExternallyVisibleStaticVariableCSAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class A
-{
-    public static string field;
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class A
+                {
+                    public static string field;
+                }
 
-public class B
-{
-    private class C
-    {
-        public static string field;
-    }
-}
-");
+                public class B
+                {
+                    private class C
+                    {
+                        public static string field;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExternallyVisibleStaticVariableVBAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class A
-    Public Shared field as System.String
-End Class", GetBasicResultAt(3, 19));
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Class A
+                    Public Shared field as System.String
+                End Class
+                """, GetBasicResultAt(3, 19));
         }
 
-        [Fact, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
+        [TestMethod, WorkItem(1432, "https://github.com/dotnet/roslyn-analyzers/issues/1432")]
         public async Task PublicNotExternallyVisibleStaticVariableVBAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class A
-    Public Shared field as System.String
-End Class
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class A
+                    Public Shared field as System.String
+                End Class
 
-Public Class B
-    Private Class C
-        Public Shared field as System.String
-    End Class
-End Class
-");
+                Public Class B
+                    Private Class C
+                        Public Shared field as System.String
+                    End Class
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicStaticReadonlyVariableCSAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class A
-{
-    public static readonly string field; 
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class A
+                {
+                    public static readonly string field;
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicStaticReadonlyVariableVBAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class A
-    Public Shared ReadOnly field as System.String
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class A
+                    Public Shared ReadOnly field as System.String
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicConstVariableCSAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class A
-{
-    public const string field = ""X"";
-}");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class A
+                {
+                    public const string field = "X";
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task PublicConstVariableVBAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class A
-    Public Const field as System.String = ""X""
-End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class A
+                    Public Const field as System.String = "X"
+                End Class
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

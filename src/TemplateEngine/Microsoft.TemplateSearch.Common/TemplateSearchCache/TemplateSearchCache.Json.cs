@@ -1,0 +1,134 @@
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+
+#if NET7_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
+using System.Text.Json.Nodes;
+using Microsoft.Extensions.Logging;
+using Microsoft.TemplateEngine;
+
+namespace Microsoft.TemplateSearch.Common
+{
+    internal partial class TemplateSearchCache
+    {
+        private static readonly string[] SupportedVersions = new[] { "1.0.0.0", "1.0.0.3", "2.0" };
+
+        internal static TemplateSearchCache FromJObject(
+            JsonObject cacheObject,
+            ILogger logger,
+            IReadOnlyDictionary<string, Func<object, object>>? additionalDataReaders = null)
+        {
+            if (cacheObject is null)
+            {
+                throw new ArgumentNullException(nameof(cacheObject));
+            }
+
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            if (!TryReadVersion(logger, cacheObject, out string? version) || string.IsNullOrWhiteSpace(version))
+            {
+                throw new NotSupportedException(LocalizableStrings.TemplateSearchCache_Exception_NotSupported);
+            }
+            if (version!.StartsWith("1"))
+            {
+#pragma warning disable CS0612, CS0618 // Type or member is obsolete
+                if (LegacySearchCacheReader.TryReadDiscoveryMetadata(cacheObject, logger, additionalDataReaders, out TemplateDiscoveryMetadata? discoveryMetadata))
+                {
+                    return LegacySearchCacheReader.ConvertTemplateDiscoveryMetadata(discoveryMetadata!, additionalDataReaders);
+                }
+                else
+                {
+                    logger.LogDebug($"Failed to read template search cache, version: {version}.");
+                    throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
+                }
+#pragma warning restore CS0612, CS0618 // Type or member is obsolete
+
+            }
+
+            JsonArray? data = cacheObject.Get<JsonArray>(nameof(TemplatePackages))
+                ?? throw new Exception(LocalizableStrings.TemplateSearchCache_Exception_NotValid);
+            List<TemplatePackageSearchData> templatePackages = new();
+            foreach (JsonNode? templatePackage in data)
+            {
+                try
+                {
+                    if (templatePackage is not JsonObject templatePackageObj)
+                    {
+                        throw new Exception($"Unexpected data in template search cache data, property: {nameof(TemplatePackages)}, value: {templatePackage}");
+                    }
+                    templatePackages.Add(new TemplatePackageSearchData(templatePackageObj, logger, additionalDataReaders));
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug($"Failed to read template package data {templatePackage}, details: {ex}");
+                }
+            }
+            return new TemplateSearchCache(templatePackages, version!);
+        }
+
+        internal static IDictionary<string, object> ReadAdditionalData(
+            JsonObject cacheObject,
+            IReadOnlyDictionary<string, Func<object, object>> additionalDataReaders,
+            ILogger logger)
+        {
+            Dictionary<string, object> additionalData = new(StringComparer.OrdinalIgnoreCase);
+            foreach (KeyValuePair<string, Func<object, object>> dataReadInfo in additionalDataReaders)
+            {
+                JsonNode? dataNode = JExtensions.GetPropertyCaseInsensitive(cacheObject, dataReadInfo.Key);
+                if (dataNode is not JsonObject dataObject)
+                {
+                    // this piece of data wasn't found, or wasn't valid. Ignore it.
+                    continue;
+                }
+                try
+                {
+                    // get the entry for this piece of additional data
+                    additionalData[dataReadInfo.Key] = dataReadInfo.Value(dataObject);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug($"Failed to read additional info entries. Details: {ex}");
+                    // Do nothing.
+                    // This piece of data failed to read, but isn't strictly necessary.
+                }
+            }
+            return additionalData;
+        }
+
+#if NET7_0_OR_GREATER
+        [UnconditionalSuppressMessage("AOT", "IL2026:RequiresUnreferencedCode", Justification = "Serializes a known internal type (TemplateSearchCache).")]
+        [UnconditionalSuppressMessage("AOT", "IL3050:RequiresDynamicCode", Justification = "Serializes a known internal type (TemplateSearchCache).")]
+#endif
+        internal JsonObject ToJObject()
+        {
+            return JExtensions.FromObject(this);
+        }
+
+        private static bool TryReadVersion(ILogger logger, JsonObject cacheObject, out string? version)
+        {
+            logger.LogDebug($"Reading template search cache version");
+            version = cacheObject.ToString(nameof(Version));
+            if (!string.IsNullOrWhiteSpace(version))
+            {
+                logger.LogDebug($"Version: {version}.");
+                if (SupportedVersions.Contains(version))
+                {
+                    return true;
+                }
+                else
+                {
+                    logger.LogDebug($"Unsupported template search cache version.");
+                    version = null;
+                    return false;
+                }
+            }
+            logger.LogDebug($"Failed to read template search cache version.");
+            version = null;
+            return false;
+        }
+    }
+}

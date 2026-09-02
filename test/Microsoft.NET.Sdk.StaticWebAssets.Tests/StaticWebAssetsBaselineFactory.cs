@@ -1,8 +1,12 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 #nullable disable
 
+using Microsoft.NET.TestFramework;
+using Microsoft.NET.TestFramework.Commands;
+using Microsoft.NET.TestFramework.Assertions;
+using Microsoft.NET.TestFramework.Utilities;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.StaticWebAssets.Tasks;
@@ -30,12 +34,16 @@ public partial class StaticWebAssetsBaselineFactory
     [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.modules\.json)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
     private static partial Regex JSModuleManifestRegex();
 
+    [GeneratedRegex("""(.*\.)([0123456789abcdefghijklmnopqrstuvwxyz]{10})(\.map)((?:\.gz)|(?:\.br))?$""", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+    private static partial Regex SourceMapFileRegex();
+
     private static readonly IList<(Regex expression, string replacement)> WellKnownFileNamePatternsAndReplacements =
     [
         (ScopedProjectBundleRegex(),"$1__fingerprint__$3$4"),
         (ScopedAppBundleRegex(),"$1__fingerprint__$3$4"),
         (JSInitializerRegex(), "$1__fingerprint__$3$4"),
         (JSModuleManifestRegex(), "$1__fingerprint__$3$4"),
+        (SourceMapFileRegex(), "$1__fingerprint__$3$4"),
         (EmbeddedFingerprintExpression(), "#[.{fingerprint=__fingerprint__}]$1"),
         (FingerprintedSiteCssRegex(), "fingerprint-site$1__fingerprint__$3$4"),
     ];

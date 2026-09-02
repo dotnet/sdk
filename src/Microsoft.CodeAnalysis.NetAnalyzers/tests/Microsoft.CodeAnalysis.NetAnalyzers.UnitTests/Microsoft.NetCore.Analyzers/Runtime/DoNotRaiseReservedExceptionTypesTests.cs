@@ -1,8 +1,8 @@
-// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Runtime.DoNotRaiseReservedExceptionTypesAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,96 +12,107 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class DoNotRaiseReservedExceptionTypesTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CreateSystemNotImplementedExceptionAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            throw new NotImplementedException();
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static void TestMethod()
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                }
+                """);
+
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+
+                Namespace TestNamespace
+                	Class TestClass
+                		Private Shared Sub TestMethod()
+                            Throw New NotImplementedException()
+                		End Sub
+                	End Class
+                End Namespace
+                """);
         }
-    }
-}");
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-
-Namespace TestNamespace
-	Class TestClass
-		Private Shared Sub TestMethod()
-            Throw New NotImplementedException()
-		End Sub
-	End Class
-End Namespace");
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task CreateSystemExceptionAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            throw new Exception();
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static void TestMethod()
+                        {
+                            throw new Exception();
+                        }
+                    }
+                }
+                """,
             GetTooGenericCSharpResultAt(10, 19, "System.Exception"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-	Class TestClass
-		Private Shared Sub TestMethod()
-            Throw New Exception()
-		End Sub
-	End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                	Class TestClass
+                		Private Shared Sub TestMethod()
+                            Throw New Exception()
+                		End Sub
+                	End Class
+                End Namespace
+                """,
             GetTooGenericBasicResultAt(7, 19, "System.Exception"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateSystemStackOverflowExceptionAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass
-    {
-        private static void TestMethod()
-        {
-            throw new StackOverflowException();
-        }
-    }
-}",
+                using System;
+
+                namespace TestNamespace
+                {
+                    class TestClass
+                    {
+                        private static void TestMethod()
+                        {
+                            throw new StackOverflowException();
+                        }
+                    }
+                }
+                """,
             GetReservedCSharpResultAt(10, 19, "System.StackOverflowException"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-	Class TestClass
-		Private Shared Sub TestMethod()
-            Throw New StackOverflowException()
-		End Sub
-	End Class
-End Namespace",
+                Imports System
+
+                Namespace TestNamespace
+                	Class TestClass
+                		Private Shared Sub TestMethod()
+                            Throw New StackOverflowException()
+                		End Sub
+                	End Class
+                End Namespace
+                """,
             GetReservedBasicResultAt(7, 19, "System.StackOverflowException"));
         }
 

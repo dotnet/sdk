@@ -1,3 +1,9 @@
+# This workflow creates a "backport" pull request by cherry-picking changes
+# from the source pull request to the target branch when /backport to <branch>
+# is commented on a pull request.
+# Action: https://github.com/dotnet/sdk/actions/workflows/backport.yml
+# Keep documentation/project-docs/developer-guide.md up to date with changes in
+# this workflow.
 name: Backport PR to branch
 on:
   issue_comment:
@@ -9,10 +15,14 @@ permissions:
   pull-requests: write
   actions: write
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   backport:
-    uses: dotnet/arcade/.github/workflows/backport-base.yml@main
+    uses: dotnet/arcade/.github/workflows/backport-base.yml@306225d7029934938d109e18df390f04e366a68d # main
     with:
+        pr_labels: backport
         pr_description_template: |
           Backport of #%source_pr_number% to %target_branch%
 

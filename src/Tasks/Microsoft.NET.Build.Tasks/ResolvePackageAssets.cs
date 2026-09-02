@@ -23,8 +23,11 @@ namespace Microsoft.NET.Build.Tasks
     /// TFM/RID/etc. and written in a format that is easily decoded to ITaskItem
     /// arrays without undue allocation.
     /// </summary>
-    public sealed class ResolvePackageAssets : TaskBase
+    [MSBuildMultiThreadableTask]
+    public sealed class ResolvePackageAssets : TaskBase, IMultiThreadableTask
     {
+        public TaskEnvironment TaskEnvironment { get; set; } = TaskEnvironment.Fallback;
+
         #region Input Items
 
         /// <summary>
@@ -567,7 +570,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (IsCacheFileUpToDate())
                     {
-                        reader = OpenCacheFile(task.ProjectAssetsCacheFile, settingsHash);
+                        reader = OpenCacheFile(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsCacheFile), settingsHash);
                     }
                 }
                 catch (IOException) { }
@@ -581,7 +584,7 @@ namespace Microsoft.NET.Build.Tasks
                         if (writer.CanWriteToCacheFile)
                         {
                             writer.WriteToCacheFile();
-                            reader = OpenCacheFile(task.ProjectAssetsCacheFile, settingsHash);
+                            reader = OpenCacheFile(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsCacheFile), settingsHash);
                         }
                         else
                         {
@@ -593,7 +596,7 @@ namespace Microsoft.NET.Build.Tasks
 
                 return reader;
 
-                bool IsCacheFileUpToDate() => File.GetLastWriteTimeUtc(task.ProjectAssetsCacheFile) > File.GetLastWriteTimeUtc(task.ProjectAssetsFile);
+                bool IsCacheFileUpToDate() => File.GetLastWriteTimeUtc(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsCacheFile)) > File.GetLastWriteTimeUtc(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsFile));
             }
 
             private static BinaryReader OpenCacheStream(Stream stream, byte[] settingsHash)
@@ -724,7 +727,7 @@ namespace Microsoft.NET.Build.Tasks
                 _targetFramework = task.TargetFramework;
 
                 _task = task;
-                _lockFile = new LockFileCache(task).GetLockFile(task.ProjectAssetsFile);
+                _lockFile = new LockFileCache(task).GetLockFile(task.TaskEnvironment.GetAbsolutePath(task.ProjectAssetsFile));
                 _packageResolver = NuGetPackageResolver.CreateResolver(_lockFile);
 
                 //  If we are doing a design-time build, we do not want to fail the build if we can't find the
@@ -771,8 +774,8 @@ namespace Microsoft.NET.Build.Tasks
 
             public void WriteToCacheFile()
             {
-                Directory.CreateDirectory(Path.GetDirectoryName(_task.ProjectAssetsCacheFile));
-                var stream = File.Open(_task.ProjectAssetsCacheFile, FileMode.Create, FileAccess.ReadWrite, FileShare.None);
+                Directory.CreateDirectory(Path.GetDirectoryName(_task.TaskEnvironment.GetAbsolutePath(_task.ProjectAssetsCacheFile)));
+                var stream = File.Open(_task.TaskEnvironment.GetAbsolutePath(_task.ProjectAssetsCacheFile), FileMode.Create, FileAccess.ReadWrite, FileShare.None);
                 using (_writer = new BinaryWriter(stream, TextEncoding, leaveOpen: false))
                 {
                     Write();
@@ -925,6 +928,39 @@ namespace Microsoft.NET.Build.Tasks
 
             private void WriteAnalyzers()
             {
+                // Use the decision persisted by restore so build consumes the corresponding lock-file shape.
+                if (_lockFile.PackageSpec?.RestoreMetadata?.RestoreEnableAnalyzerAssets == true)
+                {
+                    WriteAnalyzerAssets();
+                }
+                else
+                {
+                    WriteAnalyzerPackageFiles();
+                }
+            }
+
+            private void WriteAnalyzerAssets()
+            {
+                AnalyzerResolver resolver = new(this);
+
+                foreach (LockFileTargetLibrary library in _compileTimeTarget.Libraries)
+                {
+                    if (!library.IsPackage())
+                    {
+                        continue;
+                    }
+
+                    foreach (LockFileItem asset in library.AnalyzerAssets)
+                    {
+                        resolver.AddAsset(asset, library);
+                    }
+
+                    resolver.CompleteLibraryAnalyzers();
+                }
+            }
+
+            private void WriteAnalyzerPackageFiles()
+            {
                 AnalyzerResolver resolver = new(this);
 
                 foreach (var library in _lockFile.Libraries)
@@ -965,10 +1001,12 @@ namespace Microsoft.NET.Build.Tasks
             private class AnalyzerResolver
             {
                 private readonly CacheWriter _cacheWriter;
+                private readonly string _compilerName;
                 private readonly string _compilerNameSearchString;
                 private readonly Version _compilerVersion;
+                private readonly string _projectCodeLanguage;
                 private Dictionary<(string, NuGetVersion), LockFileTargetLibrary> _targetLibraries;
-                private List<(string, LockFileLibrary, Version)> _potentialAnalyzers;
+                private List<(string, LockFileTargetLibrary, Version)> _potentialAnalyzers;
                 private Version _maxApplicableVersion;
 
                 private Dictionary<(string, NuGetVersion), LockFileTargetLibrary> TargetLibraries =>
@@ -978,9 +1016,11 @@ namespace Microsoft.NET.Build.Tasks
                 public AnalyzerResolver(CacheWriter cacheWriter)
                 {
                     _cacheWriter = cacheWriter;
+                    _projectCodeLanguage = NuGetUtils.GetLockFileLanguageName(_cacheWriter._task.ProjectLanguage);
 
                     if (ParseCompilerApiVersion(_cacheWriter._task.CompilerApiVersion, out ReadOnlyMemory<char> compilerName, out Version compilerVersion))
                     {
+                        _compilerName = compilerName.ToString();
 #if NET
                         _compilerNameSearchString = string.Concat("/".AsSpan(), compilerName.Span);
 #else
@@ -992,30 +1032,78 @@ namespace Microsoft.NET.Build.Tasks
 
                 public void AddFile(string file, LockFileLibrary library)
                 {
-                    if (NuGetUtils.IsApplicableAnalyzer(file, _cacheWriter._task.ProjectLanguage))
+                    if (!NuGetUtils.IsApplicableAnalyzer(file, _cacheWriter._task.ProjectLanguage)
+                        || !TargetLibraries.TryGetValue((library.Name, library.Version), out LockFileTargetLibrary targetLibrary))
                     {
-                        if (IsFileCompilerVersionSpecific(file, out Version fileCompilerVersion))
-                        {
-                            if (fileCompilerVersion > _compilerVersion)
-                            {
-                                // version is too high - skip this file
-                                return;
-                            }
-
-                            _potentialAnalyzers ??= new List<(string, LockFileLibrary, Version)>();
-                            _potentialAnalyzers.Add((file, library, fileCompilerVersion));
-
-                            if (_maxApplicableVersion == null || fileCompilerVersion > _maxApplicableVersion)
-                            {
-                                _maxApplicableVersion = fileCompilerVersion;
-                            }
-                        }
-                        else
-                        {
-                            // if this file isn't specific to a compiler version, just write it directly
-                            WriteAnalyzer(file, library);
-                        }
+                        return;
                     }
+
+                    AddAnalyzer(
+                        file,
+                        targetLibrary,
+                        IsFileCompilerVersionSpecific(file, out Version fileCompilerVersion) ? fileCompilerVersion : null);
+                }
+
+                public void AddAsset(LockFileItem asset, LockFileTargetLibrary library)
+                {
+                    if (asset.IsPlaceholderFile() || !IsApplicableAnalyzerLanguage(asset))
+                    {
+                        return;
+                    }
+
+                    AddAnalyzer(asset.Path, library, GetAssetCompilerVersion(asset));
+                }
+
+                private Version GetAssetCompilerVersion(LockFileItem asset)
+                {
+                    if (_compilerName == null
+                        || !asset.Properties.TryGetValue(LockFileItem.CompilerApiVersionProperty, out string compilerApiVersion)
+                        || !ParseCompilerApiVersion(compilerApiVersion, out ReadOnlyMemory<char> compilerName, out Version compilerVersion)
+#if NET
+                        || !compilerName.Span.Equals(_compilerName.AsSpan(), StringComparison.Ordinal))
+#else
+                        || !string.Equals(_compilerName, compilerName.ToString(), StringComparison.Ordinal))
+#endif
+                    {
+                        return null;
+                    }
+
+                    return compilerVersion;
+                }
+
+                private void AddAnalyzer(string file, LockFileTargetLibrary library, Version compilerVersion)
+                {
+                    if (compilerVersion == null)
+                    {
+                        WriteAnalyzer(file, library);
+                        return;
+                    }
+
+                    if (compilerVersion > _compilerVersion)
+                    {
+                        return;
+                    }
+
+                    _potentialAnalyzers ??= new List<(string, LockFileTargetLibrary, Version)>();
+                    _potentialAnalyzers.Add((file, library, compilerVersion));
+
+                    if (_maxApplicableVersion == null || compilerVersion > _maxApplicableVersion)
+                    {
+                        _maxApplicableVersion = compilerVersion;
+                    }
+                }
+
+                private bool IsApplicableAnalyzerLanguage(LockFileItem asset)
+                {
+                    if (!asset.Properties.TryGetValue(LockFileContentFile.CodeLanguageProperty, out string codeLanguage)
+                        || string.IsNullOrEmpty(codeLanguage)
+                        || string.Equals(codeLanguage, "any", StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+
+                    return _projectCodeLanguage != null
+                        && string.Equals(codeLanguage, _projectCodeLanguage, StringComparison.OrdinalIgnoreCase);
                 }
 
                 private bool IsFileCompilerVersionSpecific(string file, out Version fileCompilerVersion)
@@ -1048,7 +1136,7 @@ namespace Microsoft.NET.Build.Tasks
                 {
                     if (_maxApplicableVersion != null && _potentialAnalyzers?.Count > 0)
                     {
-                        foreach (var (file, library, version) in _potentialAnalyzers)
+                        foreach ((string file, LockFileTargetLibrary library, Version version) in _potentialAnalyzers)
                         {
                             if (version == _maxApplicableVersion)
                             {
@@ -1062,12 +1150,9 @@ namespace Microsoft.NET.Build.Tasks
                     _potentialAnalyzers?.Clear();
                 }
 
-                private void WriteAnalyzer(string file, LockFileLibrary library)
+                private void WriteAnalyzer(string file, LockFileTargetLibrary library)
                 {
-                    if (TargetLibraries.TryGetValue((library.Name, library.Version), out var targetLibrary))
-                    {
-                        _cacheWriter.WriteItem(_cacheWriter._packageResolver.ResolvePackageAssetPath(targetLibrary, file), targetLibrary);
-                    }
+                    _cacheWriter.WriteItem(_cacheWriter._packageResolver.ResolvePackageAssetPath(library, file), library);
                 }
 
                 /// <summary>

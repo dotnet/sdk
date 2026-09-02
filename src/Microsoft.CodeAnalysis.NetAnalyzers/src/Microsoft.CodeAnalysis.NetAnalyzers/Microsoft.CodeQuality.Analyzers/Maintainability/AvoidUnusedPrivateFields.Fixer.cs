@@ -1,4 +1,5 @@
-﻿// Copyright (c) Microsoft.  All Rights Reserved.  Licensed under the MIT license.  See License.txt in the project root for license information.
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Collections.Immutable;
 using System.Composition;
@@ -7,8 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
-using Microsoft.CodeAnalysis.CodeActions;
-using Analyzer.Utilities;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.Maintainability
 {
@@ -16,43 +16,26 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
     /// CA1823: Avoid unused private fields
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = AvoidUnusedPrivateFieldsAnalyzer.RuleId), Shared]
-    public sealed class AvoidUnusedPrivateFieldsFixer : CodeFixProvider
+    public sealed class AvoidUnusedPrivateFieldsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(AvoidUnusedPrivateFieldsAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
+        public sealed override Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers
-            return WellKnownFixAllProviders.BatchFixer;
+            string title = MicrosoftCodeQualityAnalyzersResources.AvoidUnusedPrivateFieldsTitle;
+            RegisterCodeFix(context, title, title);
+            return Task.CompletedTask;
         }
 
-        public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
+        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            SyntaxNode node = root.FindNode(context.Span);
-
-            if (node == null)
+            SyntaxNode node = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            if (editor.Generator.GetDeclaration(node) is SyntaxNode declaration)
             {
-                return;
+                editor.RemoveNode(declaration);
             }
 
-            string title = MicrosoftCodeQualityAnalyzersResources.AvoidUnusedPrivateFieldsTitle;
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title,
-                    async ct => await RemoveFieldAsync(context.Document, node, ct).ConfigureAwait(false),
-                    equivalenceKey: title),
-                context.Diagnostics);
-
-            return;
-        }
-
-        private static async Task<Document> RemoveFieldAsync(Document document, SyntaxNode node, CancellationToken cancellationToken)
-        {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, cancellationToken).ConfigureAwait(false);
-            node = editor.Generator.GetDeclaration(node);
-            editor.RemoveNode(node);
-            return editor.GetChangedDocument();
+            return Task.CompletedTask;
         }
     }
 }

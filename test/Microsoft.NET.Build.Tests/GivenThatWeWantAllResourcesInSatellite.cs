@@ -7,16 +7,15 @@ using System.Runtime.CompilerServices;
 
 namespace Microsoft.NET.Build.Tests
 {
+    [TestClass]
     public class GivenThatWeWantAllResourcesInSatellite : SdkTest
     {
-        public GivenThatWeWantAllResourcesInSatellite(ITestOutputHelper log) : base(log)
-        {
-        }
 
-        [RequiresMSBuildVersionFact("17.1.0.60101")]
+        [TestMethod]
+        [RequiresMSBuildVersion("17.1.0.60101")]
         public void It_retrieves_strings_successfully()
         {
-            TestSatelliteResources(Log, _testAssetsManager);
+            TestSatelliteResources(Log, TestAssetsManager);
         }
 
         internal static void TestSatelliteResources(
@@ -83,6 +82,7 @@ namespace Microsoft.NET.Build.Tests
                     outputFiles.Add("AllResourcesInSatellite.dll");
                     outputFiles.Add("AllResourcesInSatellite.deps.json");
                     outputFiles.Add("AllResourcesInSatellite.runtimeconfig.json");
+                    outputFiles.Add("AllResourcesInSatellite.runtimeconfig.dev.json");
                     command = new DotnetCommand(log, Path.Combine(outputDirectory.FullName, "AllResourcesInSatellite.dll"));
                 }
 
