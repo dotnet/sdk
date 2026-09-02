@@ -38,7 +38,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
             PackageAvailabilityChecker checker = new(
                 sources: new[] { source },
                 reportFeedFailure: failures.Add,
-                repositoryFactory: _ => throw new InvalidOperationException("Should not query any feed when there are no candidates."));
+                resourceFactory: (_, _) => throw new InvalidOperationException("Should not query any feed when there are no candidates."));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 Array.Empty<PackageAvailabilityCandidate>(),
@@ -50,37 +50,22 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
         }
 
         [TestMethod]
-        public async Task GetAvailablePackagesAsync_SingleFeed_PackageFound_IsAvailable()
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task GetAvailablePackagesAsync_SingleFeed_SucceedsWhetherOrNotPackageIsFound(bool packageFound)
         {
-            FindPackageByIdResource resource = CreateResource("1.0.0");
+            FindPackageByIdResource resource = CreateResource(packageFound ? ["1.0.0"] : []);
             PackageSource source = new("https://example.test/index.json", "feed1");
             PackageAvailabilityChecker checker = new(
                 sources: new[] { source },
-                repositoryFactory: _ => CreateRepository(source, resource));
+                resourceFactory: CreateResourceFactory(resource));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 new[] { s_candidate },
                 CancellationToken.None);
 
             Assert.IsTrue(result.AnyFeedSucceeded);
-            Assert.Contains(s_candidate, result.AvailablePackages);
-        }
-
-        [TestMethod]
-        public async Task GetAvailablePackagesAsync_SingleFeed_PackageNotFound_FeedStillSucceeds()
-        {
-            FindPackageByIdResource resource = CreateResource();
-            PackageSource source = new("https://example.test/index.json", "feed1");
-            PackageAvailabilityChecker checker = new(
-                sources: new[] { source },
-                repositoryFactory: _ => CreateRepository(source, resource));
-
-            PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
-                new[] { s_candidate },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.AnyFeedSucceeded);
-            Assert.IsEmpty(result.AvailablePackages);
+            Assert.AreEqual(packageFound, result.AvailablePackages.Contains(s_candidate));
         }
 
         [TestMethod]
@@ -91,7 +76,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
             PackageSource source = new("https://example.test/index.json", "feed1");
             PackageAvailabilityChecker checker = new(
                 sources: new[] { source },
-                repositoryFactory: _ => CreateRepository(source, resource));
+                resourceFactory: CreateResourceFactory(resource));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 new[] { candidate },
@@ -102,23 +87,29 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
         }
 
         [TestMethod]
-        public async Task GetAvailablePackagesAsync_FeedResourceUnavailable_IsReportedAndOtherFeedsStillTried()
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task GetAvailablePackagesAsync_FeedFailure_IsReportedAndOtherFeedsStillTried(bool resourceUnavailable)
         {
             List<string> failures = new();
             PackageSource unavailableSource = new("https://example.test/unavailable.json", "unavailable-feed");
             PackageSource workingSource = new("https://example.test/index.json", "working-feed");
+            FindPackageByIdResource unavailableResource = A.Fake<FindPackageByIdResource>();
+            A.CallTo(() => unavailableResource.GetAllVersionsAsync(
+                    A<string>._, A<SourceCacheContext>._, A<ILogger>._, A<CancellationToken>._))
+                .Throws(new InvalidOperationException("simulated package endpoint failure"));
             FindPackageByIdResource workingResource = CreateResource("1.0.0");
 
-            Dictionary<string, SourceRepository> repositories = new()
+            Dictionary<string, FindPackageByIdResource?> resources = new()
             {
-                [unavailableSource.Source] = CreateRepository(unavailableSource, resource: null),
-                [workingSource.Source] = CreateRepository(workingSource, workingResource),
+                [unavailableSource.Source] = resourceUnavailable ? null : unavailableResource,
+                [workingSource.Source] = workingResource,
             };
 
             PackageAvailabilityChecker checker = new(
                 sources: new[] { unavailableSource, workingSource },
                 reportFeedFailure: failures.Add,
-                repositoryFactory: source => repositories[source.Source]);
+                resourceFactory: (source, _) => Task.FromResult(resources[source.Source]));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 new[] { s_candidate },
@@ -130,67 +121,9 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
         }
 
         [TestMethod]
-        public async Task GetAvailablePackagesAsync_FeedQueryThrows_IsReportedAndOtherFeedsStillTried()
-        {
-            List<string> failures = new();
-            FindPackageByIdResource throwingResource = A.Fake<FindPackageByIdResource>();
-            A.CallTo(() => throwingResource.GetAllVersionsAsync(
-                    A<string>._, A<SourceCacheContext>._, A<ILogger>._, A<CancellationToken>._))
-                .Throws(new InvalidOperationException("simulated feed failure"));
-
-            PackageSource throwingSource = new("https://example.test/throws.json", "throwing-feed");
-            PackageSource workingSource = new("https://example.test/index.json", "working-feed");
-            FindPackageByIdResource workingResource = CreateResource("1.0.0");
-
-            Dictionary<string, SourceRepository> repositories = new()
-            {
-                [throwingSource.Source] = CreateRepository(throwingSource, throwingResource),
-                [workingSource.Source] = CreateRepository(workingSource, workingResource),
-            };
-
-            PackageAvailabilityChecker checker = new(
-                sources: new[] { throwingSource, workingSource },
-                reportFeedFailure: failures.Add,
-                repositoryFactory: source => repositories[source.Source]);
-
-            PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
-                new[] { s_candidate },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.AnyFeedSucceeded);
-            Assert.Contains(s_candidate, result.AvailablePackages);
-            Assert.ContainsSingle(failure => failure.Contains("simulated feed failure", StringComparison.Ordinal), failures);
-        }
-
-        [TestMethod]
-        public async Task GetAvailablePackagesAsync_AllFeedsFail_ReturnsFailure()
-        {
-            List<string> failures = new();
-            PackageSource sourceOne = new("https://example.test/one.json", "feed-one");
-            PackageSource sourceTwo = new("https://example.test/two.json", "feed-two");
-
-            Dictionary<string, SourceRepository> repositories = new()
-            {
-                [sourceOne.Source] = CreateRepository(sourceOne, resource: null),
-                [sourceTwo.Source] = CreateRepository(sourceTwo, resource: null),
-            };
-
-            PackageAvailabilityChecker checker = new(
-                sources: new[] { sourceOne, sourceTwo },
-                reportFeedFailure: failures.Add,
-                repositoryFactory: source => repositories[source.Source]);
-
-            PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
-                new[] { s_candidate },
-                CancellationToken.None);
-
-            Assert.IsFalse(result.AnyFeedSucceeded);
-            Assert.IsEmpty(result.AvailablePackages);
-            Assert.HasCount(2, failures);
-        }
-
-        [TestMethod]
-        public async Task GetAvailablePackagesAsync_AllPackageQueriesFail_ReturnsFailure()
+        [DataRow(false)]
+        [DataRow(true)]
+        public async Task GetAvailablePackagesAsync_AllQueriesFail_ReturnsFailureAndReportsFeedOnce(bool resourceUnavailable)
         {
             List<string> failures = new();
             FindPackageByIdResource resource = A.Fake<FindPackageByIdResource>();
@@ -201,30 +134,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
             PackageAvailabilityChecker checker = new(
                 sources: new[] { source },
                 reportFeedFailure: failures.Add,
-                repositoryFactory: _ => CreateRepository(source, resource));
-
-            PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
-                new[] { s_candidate },
-                CancellationToken.None);
-
-            Assert.IsFalse(result.AnyFeedSucceeded);
-            Assert.IsEmpty(result.AvailablePackages);
-            Assert.ContainsSingle(failure => failure.Contains("simulated package endpoint failure", StringComparison.Ordinal), failures);
-        }
-
-        [TestMethod]
-        public async Task GetAvailablePackagesAsync_ReportsEachFailingFeedOnce()
-        {
-            List<string> failures = new();
-            FindPackageByIdResource resource = A.Fake<FindPackageByIdResource>();
-            A.CallTo(() => resource.GetAllVersionsAsync(
-                    A<string>._, A<SourceCacheContext>._, A<ILogger>._, A<CancellationToken>._))
-                .Throws(new InvalidOperationException("simulated package endpoint failure"));
-            PackageSource source = new("https://example.test/index.json", "feed");
-            PackageAvailabilityChecker checker = new(
-                sources: new[] { source },
-                reportFeedFailure: failures.Add,
-                repositoryFactory: _ => CreateRepository(source, resource));
+                resourceFactory: CreateResourceFactory(resourceUnavailable ? null : resource));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 new[]
@@ -236,49 +146,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
                 CancellationToken.None);
 
             Assert.IsFalse(result.AnyFeedSucceeded);
+            Assert.IsEmpty(result.AvailablePackages);
             Assert.HasCount(1, failures);
-        }
-
-        [TestMethod]
-        public async Task GetAvailablePackagesAsync_ManyVersionsQueryEachFeedAndPackageIdOnce()
-        {
-            PackageSource[] sources =
-            [
-                new("https://example.test/one.json", "feed-one"),
-                new("https://example.test/two.json", "feed-two"),
-                new("https://example.test/three.json", "feed-three"),
-            ];
-            FindPackageByIdResource[] resources =
-            [
-                CreateResource("1.0.0"),
-                CreateResource("1.0.0"),
-                CreateResource("1.0.0"),
-            ];
-            Dictionary<string, SourceRepository> repositories = sources
-                .Select((source, index) => (source, repository: CreateRepository(source, resources[index])))
-                .ToDictionary(item => item.source.Source, item => item.repository);
-            PackageAvailabilityCandidate[] candidates = Enumerable.Range(1, 100)
-                .SelectMany(version => new[]
-                {
-                    new PackageAvailabilityCandidate("Pack.One", $"1.0.{version}"),
-                    new PackageAvailabilityCandidate("Pack.Two", $"1.0.{version}"),
-                })
-                .ToArray();
-            PackageAvailabilityChecker checker = new(
-                sources,
-                repositoryFactory: source => repositories[source.Source]);
-
-            PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
-                candidates,
-                CancellationToken.None);
-
-            Assert.IsTrue(result.AnyFeedSucceeded);
-            foreach (FindPackageByIdResource resource in resources)
-            {
-                A.CallTo(() => resource.GetAllVersionsAsync(
-                        A<string>._, A<SourceCacheContext>._, A<ILogger>._, A<CancellationToken>._))
-                    .MustHaveHappened(2, Times.Exactly);
-            }
         }
 
         [TestMethod]
@@ -292,7 +161,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
                 .ReturnsLazily(() => blockingResource.GetVersionsAsync());
             PackageAvailabilityChecker checker = new(
                 sources: new[] { source },
-                repositoryFactory: _ => CreateRepository(source, resource));
+                resourceFactory: CreateResourceFactory(resource));
             PackageAvailabilityCandidate[] candidates = Enumerable.Range(1, 6)
                 .Select(index => new PackageAvailabilityCandidate($"Pack.{index}", "1.0.0"))
                 .ToArray();
@@ -326,7 +195,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
 
             PackageAvailabilityChecker checker = new(
                 sources: new[] { source },
-                repositoryFactory: _ => CreateRepository(source, resource));
+                resourceFactory: CreateResourceFactory(resource));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 new[] { s_candidate, secondVersion },
@@ -341,79 +210,46 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
         }
 
         [TestMethod]
-        public async Task GetAvailablePackagesAsync_PackageSourceMapping_ExcludesCandidateWithNoMatchingPattern()
+        [DataRow("Some.Other.*", false)]
+        [DataRow("Pack.*", true)]
+        public async Task GetAvailablePackagesAsync_HonorsPackageSourceMapping(string pattern, bool expectedAvailable)
         {
-            string directory = TestUtils.CreateTemporaryFolder("packageSourceMapping");
-            File.WriteAllText(
-                Path.Combine(directory, "NuGet.Config"),
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <add key="mapped-feed" value="https://example.test/mapped.json" />
-                  </packageSources>
-                  <packageSourceMapping>
-                    <packageSource key="mapped-feed">
-                      <package pattern="Some.Other.*" />
-                    </packageSource>
-                  </packageSourceMapping>
-                </configuration>
-                """);
-            ISettings settings = Settings.LoadSpecificSettings(directory, "NuGet.Config");
-
-            FindPackageByIdResource resource = A.Fake<FindPackageByIdResource>();
-            A.CallTo(() => resource.GetAllVersionsAsync(
-                    A<string>._, A<SourceCacheContext>._, A<ILogger>._, A<CancellationToken>._))
-                .Throws(new InvalidOperationException("The mapped feed does not own this package id and should not be queried."));
-
-            PackageSource mappedSource = new("https://example.test/mapped.json", "mapped-feed");
-            PackageAvailabilityChecker checker = new(
-                sources: new[] { mappedSource },
-                sourceMapping: PackageSourceMapping.GetPackageSourceMapping(settings),
-                repositoryFactory: _ => CreateRepository(mappedSource, resource));
-
-            PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
-                new[] { s_candidate },
-                CancellationToken.None);
-
-            Assert.IsTrue(result.AnyFeedSucceeded);
-            Assert.IsEmpty(result.AvailablePackages);
-        }
-
-        [TestMethod]
-        public async Task GetAvailablePackagesAsync_PackageSourceMapping_IncludesCandidateWithMatchingPattern()
-        {
-            string directory = TestUtils.CreateTemporaryFolder("packageSourceMapping");
-            File.WriteAllText(
-                Path.Combine(directory, "NuGet.Config"),
-                """
-                <?xml version="1.0" encoding="utf-8"?>
-                <configuration>
-                  <packageSources>
-                    <add key="mapped-feed" value="https://example.test/mapped.json" />
-                  </packageSources>
-                  <packageSourceMapping>
-                    <packageSource key="mapped-feed">
-                      <package pattern="Pack.*" />
-                    </packageSource>
-                  </packageSourceMapping>
-                </configuration>
-                """);
-            ISettings settings = Settings.LoadSpecificSettings(directory, "NuGet.Config");
-
             FindPackageByIdResource resource = CreateResource("1.0.0");
             PackageSource mappedSource = new("https://example.test/mapped.json", "mapped-feed");
             PackageAvailabilityChecker checker = new(
                 sources: new[] { mappedSource },
-                sourceMapping: PackageSourceMapping.GetPackageSourceMapping(settings),
-                repositoryFactory: _ => CreateRepository(mappedSource, resource));
+                sourceMapping: PackageSourceMapping.GetPackageSourceMapping(CreateSourceMappingSettings(pattern)),
+                resourceFactory: CreateResourceFactory(resource));
 
             PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
                 new[] { s_candidate },
                 CancellationToken.None);
 
             Assert.IsTrue(result.AnyFeedSucceeded);
-            Assert.Contains(s_candidate, result.AvailablePackages);
+            Assert.AreEqual(expectedAvailable, result.AvailablePackages.Contains(s_candidate));
+        }
+
+        [TestMethod]
+        public async Task GetAvailablePackagesAsync_UnmappedFeedDoesNotMaskMappedFeedFailure()
+        {
+            FindPackageByIdResource resource = A.Fake<FindPackageByIdResource>();
+            A.CallTo(() => resource.GetAllVersionsAsync(
+                    A<string>._, A<SourceCacheContext>._, A<ILogger>._, A<CancellationToken>._))
+                .Throws(new InvalidOperationException("simulated package endpoint failure"));
+            PackageAvailabilityChecker checker = new(
+                sources:
+                [
+                    new("https://example.test/mapped.json", "mapped-feed"),
+                    new("https://example.test/unmapped.json", "unmapped-feed"),
+                ],
+                sourceMapping: PackageSourceMapping.GetPackageSourceMapping(CreateSourceMappingSettings()),
+                resourceFactory: CreateResourceFactory(resource));
+
+            PackageAvailabilityResult result = await checker.GetAvailablePackagesAsync(
+                new[] { s_candidate },
+                CancellationToken.None);
+
+            Assert.IsFalse(result.AnyFeedSucceeded);
         }
 
         [TestMethod]
@@ -443,12 +279,12 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
             Assert.Contains("--add-source", exception.Message);
         }
 
-        private static ISettings CreateSourceMappingSettings()
+        private static ISettings CreateSourceMappingSettings(string pattern = "Pack.*")
         {
             string directory = TestUtils.CreateTemporaryFolder("packageSourceMapping");
             File.WriteAllText(
                 Path.Combine(directory, "NuGet.Config"),
-                """
+                $"""
                 <?xml version="1.0" encoding="utf-8"?>
                 <configuration>
                   <packageSources>
@@ -456,7 +292,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
                   </packageSources>
                   <packageSourceMapping>
                     <packageSource key="mapped-feed">
-                      <package pattern="Pack.*" />
+                      <package pattern="{pattern}" />
                     </packageSource>
                   </packageSourceMapping>
                 </configuration>
@@ -473,33 +309,8 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.NuGet
             return resource;
         }
 
-        private static SourceRepository CreateRepository(PackageSource source, FindPackageByIdResource? resource)
-        {
-            return new SourceRepository(source, new[] { new Lazy<INuGetResourceProvider>(() => new StubResourceProvider(resource)) });
-        }
-
-        private sealed class StubResourceProvider : INuGetResourceProvider
-        {
-            private readonly FindPackageByIdResource? _resource;
-
-            internal StubResourceProvider(FindPackageByIdResource? resource)
-            {
-                _resource = resource;
-            }
-
-            public Type ResourceType => typeof(FindPackageByIdResource);
-
-            public string Name => nameof(StubResourceProvider);
-
-            public IEnumerable<string> Before => Array.Empty<string>();
-
-            public IEnumerable<string> After => Array.Empty<string>();
-
-            public Task<Tuple<bool, INuGetResource?>> TryCreate(SourceRepository source, CancellationToken token)
-            {
-                return Task.FromResult(new Tuple<bool, INuGetResource?>(_resource != null, _resource));
-            }
-        }
+        private static Func<PackageSource, CancellationToken, Task<FindPackageByIdResource?>> CreateResourceFactory(
+            FindPackageByIdResource? resource) => (_, _) => Task.FromResult(resource);
 
         private sealed class BlockingVersionResource(int expectedFirstBatchSize)
         {

@@ -35,14 +35,19 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
-        public void ToolSearchParserCanGetConfigFileOption()
+        public void ToolSearchParserCanGetSourceSelectionOptions()
         {
             string configFile = typeof(ToolSearchParserTests).Assembly.Location;
-            var result = Parser.Parse($"dotnet tool search mytool --configfile \"{configFile}\"");
+            var result = Parser.Parse(
+                $"dotnet tool search mytool --configfile \"{configFile}\" " +
+                "--source source1 --source source2 --add-source additional1 --add-source additional2 --interactive");
 
             var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
             result.Errors.Should().BeEmpty();
             result.GetRequiredValue(definition.ConfigOption).FullName.Should().Be(configFile);
+            result.GetRequiredValue(definition.SourceOption).Should().Equal("source1", "source2");
+            result.GetRequiredValue(definition.AddSourceOption).Should().Equal("additional1", "additional2");
+            result.GetValue(definition.InteractiveOption).Should().BeTrue();
         }
 
         [TestMethod]
@@ -56,86 +61,5 @@ namespace Microsoft.DotNet.Tests.ParserTests
             result.Errors[0].Message.Should().Contain(configFile);
         }
 
-        [TestMethod]
-        public void ToolSearchParserCanParseSourceOption()
-        {
-            const string expectedSourceValue = "TestSourceValue";
-
-            var result = Parser.Parse($"dotnet tool search mytool --source {expectedSourceValue}");
-
-            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.SourceOption).First().Should().Be(expectedSourceValue);
-        }
-
-        [TestMethod]
-        public void ToolSearchParserCanParseMultipleSourceOption()
-        {
-            const string expectedSourceValue1 = "TestSourceValue1";
-            const string expectedSourceValue2 = "TestSourceValue2";
-
-            var result =
-                Parser.Parse(
-                    $"dotnet tool search mytool " +
-                    $"--source {expectedSourceValue1} " +
-                    $"--source {expectedSourceValue2}");
-
-            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.SourceOption)[0].Should().Be(expectedSourceValue1);
-            result.GetRequiredValue(definition.SourceOption)[1].Should().Be(expectedSourceValue2);
-        }
-
-        [TestMethod]
-        public void ToolSearchParserCanParseAddSourceOption()
-        {
-            const string expectedSourceValue = "TestSourceValue";
-
-            var result = Parser.Parse($"dotnet tool search mytool --add-source {expectedSourceValue}");
-
-            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.AddSourceOption).First().Should().Be(expectedSourceValue);
-        }
-
-        [TestMethod]
-        public void ToolSearchParserCanParseMultipleAddSourceOption()
-        {
-            const string expectedSourceValue1 = "TestSourceValue1";
-            const string expectedSourceValue2 = "TestSourceValue2";
-
-            var result =
-                Parser.Parse(
-                    $"dotnet tool search mytool " +
-                    $"--add-source {expectedSourceValue1} " +
-                    $"--add-source {expectedSourceValue2}");
-
-            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.AddSourceOption)[0].Should().Be(expectedSourceValue1);
-            result.GetRequiredValue(definition.AddSourceOption)[1].Should().Be(expectedSourceValue2);
-        }
-
-        [TestMethod]
-        public void ToolSearchParserCanParseSourceAndAddSourceTogether()
-        {
-            const string expectedSourceValue = "TestSourceValue";
-            const string expectedAddSourceValue = "TestAddSourceValue";
-
-            var result =
-                Parser.Parse(
-                    $"dotnet tool search mytool " +
-                    $"--source {expectedSourceValue} " +
-                    $"--add-source {expectedAddSourceValue}");
-
-            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
-            result.GetRequiredValue(definition.SourceOption).First().Should().Be(expectedSourceValue);
-            result.GetRequiredValue(definition.AddSourceOption).First().Should().Be(expectedAddSourceValue);
-        }
-
-        [TestMethod]
-        public void ToolSearchParserCanParseInteractiveOption()
-        {
-            var result = Parser.Parse("dotnet tool search mytool --interactive");
-
-            var definition = Assert.IsExactInstanceOfType<ToolSearchCommandDefinition>(result.CommandResult.Command);
-            result.GetValue(definition.InteractiveOption).Should().BeTrue();
-        }
     }
 }

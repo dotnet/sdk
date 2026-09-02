@@ -294,23 +294,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        [DataRow("new search --add-source https://add1.test/index.json --add-source https://add2.test/index.json console")]
-        public void Search_AddSourceOption_SupportsRepeatedFlag(string command)
-        {
-            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            var myCommand = CliTestHostFactory.CreateNewCommand(host);
-
-            ParseResult parseResult = myCommand.Parse(command);
-            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
-
-            Assert.IsNotNull(args.AddSources);
-            Assert.HasCount(2, args.AddSources!);
-            Assert.Contains("https://add1.test/index.json", args.AddSources!);
-            Assert.Contains("https://add2.test/index.json", args.AddSources!);
-            Assert.AreEqual("console", args.SearchNameCriteria);
-        }
-
-        [TestMethod]
         [DataRow("new search source -s https://one.test/index.json")]
         public void Search_CanParseSourceOptionShortAlias(string command)
         {
@@ -340,23 +323,6 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         }
 
         [TestMethod]
-        [DataRow("new search source")]
-        [DataRow("new --search source")]
-        public void Search_SourceSelectionOptionsDefaultToUnset(string command)
-        {
-            ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
-            var myCommand = CliTestHostFactory.CreateNewCommand(host);
-
-            ParseResult parseResult = myCommand.Parse(command);
-            SearchCommandArgs args = new((BaseSearchCommand)parseResult.CommandResult.Command, parseResult);
-
-            Assert.IsNull(args.ConfigFile);
-            Assert.IsTrue(args.Sources is null || args.Sources.Count == 0);
-            Assert.IsTrue(args.AddSources is null || args.AddSources.Count == 0);
-            Assert.IsFalse(args.Interactive);
-        }
-
-        [TestMethod]
         [DataRow("new --search source --source https://one.test/index.json")]
         [DataRow("new --search source --configfile my-nuget.config")]
         [DataRow("new --search source --add-source https://add1.test/index.json")]
@@ -365,6 +331,7 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.ParserTests
         {
             ICliTemplateEngineHost host = CliTestHostFactory.GetVirtualHost(additionalComponents: BuiltInTemplatePackagesProviderFactory.GetComponents(RepoTemplatePackages));
             var myCommand = CliTestHostFactory.CreateNewCommand(host);
+            command = command.Replace("my-nuget.config", typeof(SearchTests).Assembly.Location);
 
             ParseResult parseResult = myCommand.Parse(command);
 
