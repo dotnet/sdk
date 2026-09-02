@@ -36,6 +36,15 @@ Reload).
   shared-secret WebSocket subprotocol, and include the generation identity in live
   managed-update messages. Preserve the initializer's injected-script fallback and the
   legacy hosting-startup configurator for other app models and older target frameworks.
+- **MVC and Razor Pages activate browser tools through the built-in body TagHelper.**
+  [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers
+  [`BrowserRefreshTagHelperComponent`](Web.Middleware/BrowserRefreshTagHelperComponent.cs)
+  only while browser tooling is active. This automatically appends the external client
+  script for pages that execute the built-in `BodyTagHelper`, without rewriting the
+  response stream. Static HTML (including hosted Blazor WASM `index.html`) and custom
+  rendering that bypasses that TagHelper pipeline require explicit activation; hosted
+  Blazor WASM retains the legacy stream-injection fallback. Do not add YARP to MVC apps
+  or introduce a build-time `index.html` rewrite for this path.
 - **`CompilationHandler` drives Roslyn** via
   `Microsoft.CodeAnalysis.ExternalAccess.HotReload`; unsupported edits fall
   back to a full rebuild + restart.

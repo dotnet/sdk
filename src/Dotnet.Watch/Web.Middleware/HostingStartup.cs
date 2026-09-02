@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 
@@ -18,7 +19,16 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
 {
     public void Configure(IWebHostBuilder builder)
     {
-        builder.ConfigureServices(services => services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this)));
+        builder.ConfigureServices(services => ConfigureServices(services, BrowserToolsEnvironment.IsActive));
+    }
+
+    internal void ConfigureServices(IServiceCollection services, bool browserToolsActive)
+    {
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this));
+        if (browserToolsActive)
+        {
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagHelperComponent, BrowserRefreshTagHelperComponent>());
+        }
     }
 
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
