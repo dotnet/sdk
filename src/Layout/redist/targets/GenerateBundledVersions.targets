@@ -179,6 +179,14 @@
       <_NETCoreSdkBeingBuiltIsPreview Condition=" '$(DotNetFinalVersionKind)' == 'release' ">false</_NETCoreSdkBeingBuiltIsPreview>
     </PropertyGroup>
 
+    <!-- TODO: Remove these source-build overrides once stable .NET 11 targeting packs are available in SBRP. -->
+    <PropertyGroup Condition="'$(DotNetBuildSourceOnly)' == 'true'">
+      <_NET110RuntimePackVersion>$(MicrosoftNETCoreAppRuntimePackageVersion)</_NET110RuntimePackVersion>
+      <_NET110TargetingPackVersion>$(MicrosoftNETCoreAppRefPackageVersion)</_NET110TargetingPackVersion>
+      <_AspNet110RuntimePackVersion>$(MicrosoftAspNetCoreAppRuntimePackageVersion)</_AspNet110RuntimePackVersion>
+      <_AspNet110TargetingPackVersion>$(MicrosoftAspNetCoreAppRefPackageVersion)</_AspNet110TargetingPackVersion>
+    </PropertyGroup>
+
     <ItemGroup>
       <NetCore30RuntimePackRids Include="
         linux-arm;
@@ -309,6 +317,15 @@
         openbsd-arm64;
         browser-wasm;
         " />
+
+      <!-- TODO: Remove these .NET 11 RID additions once source-build can consume stable .NET 11 targeting packs from SBRP. -->
+      <Net110AppHostRids
+        Condition="'$(DotNetBuildSourceOnly)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
+      <Net110RuntimePackRids
+        Condition="'$(BundleRuntimePacks)' == 'true'"
+        Include="$(ProductMonikerRid)" />
 
       <Net120AppHostRids Include="@(Net110AppHostRids)" />
 
@@ -449,15 +466,19 @@
         openbsd-arm64;
         " />
 
+      <Net110Crossgen2SupportedPortableRids Include="@(Net110Crossgen2SupportedRids)" />
+
+      <Net110Crossgen2SupportedRids
+        Condition="'$(BundleCrossgen2)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net120Crossgen2SupportedRids Include="@(Net110Crossgen2SupportedRids)" />
 
       <Crossgen2SupportedRids Include="@(Net120Crossgen2SupportedRids);" />
 
       <Net100Crossgen2SupportedPortableRids Include="@(Net100Crossgen2SupportedRids)" />
 
-      <Net110Crossgen2SupportedPortableRids Include="@(Net110Crossgen2SupportedRids)" />
-
-      <Net120Crossgen2SupportedPortableRids Include="@(Net120Crossgen2SupportedRids)" />
+      <Net120Crossgen2SupportedPortableRids Include="@(Net110Crossgen2SupportedPortableRids)" />
 
       <Crossgen2SupportedPortableRids Include="@(Net120Crossgen2SupportedPortableRids)" />
 
@@ -506,6 +527,12 @@
         openbsd-arm64;
         " />
 
+      <Net110ILCompilerSupportedPortableRids Include="@(Net110ILCompilerSupportedRids)" />
+
+      <Net110ILCompilerSupportedRids
+        Condition="'$(BundleNativeAotCompiler)' == 'true'"
+        Include="$(ProductMonikerRid)" />
+
       <Net120ILCompilerSupportedRids Include="@(Net110ILCompilerSupportedRids)" />
 
       <!-- ILCompiler target RIDs that are officially supported, plus the architecture we are building the product for (TargetRid). See:
@@ -516,9 +543,7 @@
 
       <Net100ILCompilerSupportedPortableRids Include="@(Net100ILCompilerSupportedRids)" />
 
-      <Net110ILCompilerSupportedPortableRids Include="@(Net110ILCompilerSupportedRids)" />
-
-      <Net120ILCompilerSupportedPortableRids Include="@(Net120ILCompilerSupportedRids)" />
+      <Net120ILCompilerSupportedPortableRids Include="@(Net110ILCompilerSupportedPortableRids)" />
 
       <ILCompilerSupportedPortableRids Include="@(Net120ILCompilerSupportedPortableRids)" />
 
@@ -594,6 +619,9 @@
       <AspNetCore90RuntimePackRids Include="@(AspNetCore80RuntimePackRids);linux-riscv64;linux-musl-riscv64;linux-loongarch64;linux-musl-loongarch64;" />
       <AspNetCore100RuntimePackRids Include="@(AspNetCore90RuntimePackRids)" />
       <AspNetCore110RuntimePackRids Include="@(AspNetCore100RuntimePackRids)" />
+      <AspNetCore110RuntimePackRids
+        Condition="'$(BundleRuntimePacks)' == 'true'"
+        Include="$(ProductMonikerRid)" />
       <AspNetCore120RuntimePackRids Include="@(AspNetCore110RuntimePackRids)" />
       <AspNetCoreRuntimePackRids Include="@(AspNetCore120RuntimePackRids)" />
 
