@@ -168,7 +168,8 @@ public class RunCommand
 
             var launchProfileParseResult = ReadLaunchProfileSettings(
                 projectFactory: null,
-                expandExecutableProfile: false);
+                expandExecutableProfile: false,
+                out string? launchSettingsPath);
             ReportLaunchProfileFailure(launchProfileParseResult);
 
             bool requiresProjectExpansion = launchProfileParseResult.Profile is ProjectLaunchProfile projectProfile
@@ -230,6 +231,7 @@ public class RunCommand
             if (requiresExecutableExpansion)
             {
                 launchProfileParseResult = ReadLaunchProfileSettings(
+                    launchSettingsPath ?? throw new InvalidOperationException(),
                     projectFactory,
                     expandExecutableProfile: true);
                 ReportLaunchProfileFailure(launchProfileParseResult);
@@ -450,23 +452,48 @@ public class RunCommand
 
     internal LaunchProfileParseResult ReadLaunchProfileSettings(
         Func<ProjectCollection, ProjectInstance>? projectFactory,
-        bool expandExecutableProfile)
+        bool expandExecutableProfile,
+        out string? launchSettingsPath)
     {
-        IDisposable? environmentScope = null;
-        ProjectInstance? project = null;
-        try
-        {
-            return CommonRunHelpers.ReadLaunchProfile(
+        string? discoveredPath = null;
+        LaunchProfileParseResult result = ReadLaunchProfileSettingsCore(
+            projectFactory,
+            expandExecutableProfile,
+            options => CommonRunHelpers.ReadLaunchProfile(
                 ReadCodeFromStdin ? null : ProjectFileFullPath ?? EntryPointFileFullPath!,
                 LaunchProfile,
                 NoLaunchProfile,
                 reportUsingLaunchSettings: !RunCommandVerbosity.IsQuiet(),
                 static (message, isError) => (isError ? Reporter.Error : Reporter.Output).WriteLine(message),
-                new LaunchProfileParserOptions(
-                    ExpandMSBuildProperty,
-                    ExpandProjectProfile: false,
-                    ExpandExecutableProfile: expandExecutableProfile,
-                    ExpandCommandLineArgs: !NoLaunchProfileArguments && ApplicationArgs.Length == 0));
+                options,
+                out discoveredPath));
+        launchSettingsPath = discoveredPath;
+        return result;
+    }
+
+    private LaunchProfileParseResult ReadLaunchProfileSettings(
+        string launchSettingsPath,
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        bool expandExecutableProfile)
+        => ReadLaunchProfileSettingsCore(
+            projectFactory,
+            expandExecutableProfile,
+            options => CommonRunHelpers.ReadLaunchProfileFromFile(launchSettingsPath, LaunchProfile, options));
+
+    private LaunchProfileParseResult ReadLaunchProfileSettingsCore(
+        Func<ProjectCollection, ProjectInstance>? projectFactory,
+        bool expandExecutableProfile,
+        Func<LaunchProfileParserOptions, LaunchProfileParseResult> read)
+    {
+        IDisposable? environmentScope = null;
+        ProjectInstance? project = null;
+        try
+        {
+            return read(new LaunchProfileParserOptions(
+                ExpandMSBuildProperty,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: expandExecutableProfile,
+                ExpandCommandLineArgs: !NoLaunchProfileArguments && ApplicationArgs.Length == 0));
         }
         finally
         {

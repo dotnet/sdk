@@ -312,7 +312,8 @@ public sealed class RunCommandTests : SdkTest
         var runCommand = CreateRunCommand(projectPath);
         var result = runCommand.ReadLaunchProfileSettings(
             projectFactory: null,
-            expandExecutableProfile: true);
+            expandExecutableProfile: true,
+            out _);
 
         var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(result.Profile);
         Assert.AreEqual("executable", model.ExecutablePath);
@@ -327,7 +328,8 @@ public sealed class RunCommandTests : SdkTest
         TestAsset testInstance = TestAssetsManager.CopyTestAsset("AppThatOutputsDotnetLaunchProfile")
             .WithSource();
 
-        File.WriteAllText(Path.Combine(testInstance.Path, "Properties", "launchSettings.json"), """
+        string launchSettingsPath = Path.Combine(testInstance.Path, "Properties", "launchSettings.json");
+        File.WriteAllText(launchSettingsPath, """
             {
               "profiles": {
                 "First": {
@@ -338,6 +340,9 @@ public sealed class RunCommandTests : SdkTest
               }
             }
             """);
+        string projectPath = Directory.GetFiles(testInstance.Path, "*.csproj").Single();
+        string runJsonPath = Path.ChangeExtension(projectPath, ".run.json");
+        File.WriteAllText(runJsonPath, "{}");
         File.WriteAllText(Path.Combine(testInstance.Path, "Directory.Build.targets"), """
             <Project>
               <Import Project="$(BaseIntermediateOutputPath)launch-profile.props"
@@ -351,11 +356,23 @@ public sealed class RunCommandTests : SdkTest
             </Project>
             """);
 
-        new DotnetCommand(Log, "run")
+        CommandResult result = new DotnetCommand(Log, "run")
             .WithWorkingDirectory(testInstance.Path)
-            .Execute()
-            .Should().Pass()
-            .And.HaveStdOut(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
+            .Execute();
+
+        result.Should().Pass()
+            .And.HaveStdOutContaining(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
+        string usingLaunchSettingsMessage = string.Format(
+            CliCommandStrings.UsingLaunchSettingsFromMessage,
+            launchSettingsPath);
+        string ignoredRunJsonWarning = string.Format(
+            CliCommandStrings.RunCommandWarningRunJsonNotUsed,
+            runJsonPath,
+            launchSettingsPath);
+        Assert.IsNotNull(result.StdErr);
+        Assert.IsNotNull(result.StdOut);
+        Assert.AreEqual(1, result.StdErr.Split(usingLaunchSettingsMessage, StringSplitOptions.None).Length - 1);
+        Assert.AreEqual(1, result.StdOut.Split(ignoredRunJsonWarning, StringSplitOptions.None).Length - 1);
     }
 
     [TestMethod]

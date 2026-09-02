@@ -34,7 +34,7 @@ public class LaunchSettingsParserTests
             {
                 "commandName": "Executable"
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true));
+            """,             getVariableValue: null, expandCommandLineArgs: true));
     }
 
     [TestMethod]
@@ -50,7 +50,7 @@ public class LaunchSettingsParserTests
                 "executablePath": "executable",
                 "dotnetRunMessages": {{value}}
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true);
+            """,             getVariableValue: null, expandCommandLineArgs: true);
 
         Assert.IsTrue(result.Successful);
         Assert.IsNotNull(result.Profile);
@@ -68,7 +68,7 @@ public class LaunchSettingsParserTests
                 "executablePath": "executable",
                 "dotnetRunMessages": "true"
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true));
+            """,             getVariableValue: null, expandCommandLineArgs: true));
     }
 
     [TestMethod]
@@ -81,7 +81,7 @@ public class LaunchSettingsParserTests
                 "commandName": "Project",
                 "dotnetRunMessages": "true"
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true));
+            """,             getVariableValue: null, expandCommandLineArgs: true));
     }
 
     [TestMethod]
@@ -98,7 +98,7 @@ public class LaunchSettingsParserTests
                     "VAR1": "VALUE1", // trailing comma below
                 },
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true);
+            """,             getVariableValue: null, expandCommandLineArgs: true);
 
         Assert.IsTrue(result.Successful);
         var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(result.Profile);
@@ -120,7 +120,7 @@ public class LaunchSettingsParserTests
                     "VAR1": "VALUE1", // trailing comma below
                 },
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true);
+            """,             getVariableValue: null, expandCommandLineArgs: true);
 
         Assert.IsTrue(result.Successful);
         var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(result.Profile);
@@ -149,7 +149,7 @@ public class LaunchSettingsParserTests
                     "VAR2": "ENV_VALUE2"
                 }
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true);
+            """,             getVariableValue: null, expandCommandLineArgs: true);
 
         var model = Assert.IsExactInstanceOfType<ExecutableLaunchProfile>(settings.Profile);
 
@@ -183,7 +183,7 @@ public class LaunchSettingsParserTests
                     "VAR2": "ENV_VALUE2"
                 }
             }
-            """, expandMSBuildProperty: null, expandCommandLineArgs: true);
+            """,             getVariableValue: null, expandCommandLineArgs: true);
 
         var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(settings.Profile);
 

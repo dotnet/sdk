@@ -19,7 +19,7 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
         string launchSettingsPath,
         string? launchProfileName,
         string json,
-        Func<string, string>? expandMSBuildProperty,
+        Func<string, string>? getVariableValue,
         bool expandCommandLineArgs)
     {
         var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ProjectLaunchProfile);
@@ -31,12 +31,12 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
         return LaunchProfileParseResult.Success(new ProjectLaunchProfile
         {
             LaunchProfileName = launchProfileName,
-            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, expandMSBuildProperty, expandCommandLineArgs),
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, getVariableValue, expandCommandLineArgs),
             LaunchBrowser = profile.LaunchBrowser,
-            LaunchUrl = profile.LaunchUrl is null ? null : ExpandVariables(profile.LaunchUrl, expandMSBuildProperty: null),
-            ApplicationUrl = profile.ApplicationUrl is null ? null : ExpandVariables(profile.ApplicationUrl, expandMSBuildProperty),
+            LaunchUrl = profile.LaunchUrl is null ? null : ExpandVariables(profile.LaunchUrl, getVariableValue: null),
+            ApplicationUrl = profile.ApplicationUrl is null ? null : ExpandVariables(profile.ApplicationUrl, getVariableValue),
             DotNetRunMessages = profile.DotNetRunMessages,
-            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, expandMSBuildProperty),
+            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, getVariableValue),
         });
     }
 
@@ -47,21 +47,21 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
 
     internal static ProjectLaunchProfile ExpandMSBuildProperties(
         ProjectLaunchProfile profile,
-        Func<string, string> expandMSBuildProperty,
+        Func<string, string> getVariableValue,
         bool expandCommandLineArgs,
         bool expandApplicationUrl)
         => new()
         {
             LaunchProfileName = profile.LaunchProfileName,
             CommandLineArgs = expandCommandLineArgs && profile.CommandLineArgs is not null
-                ? ExpandMSBuildProperties(profile.CommandLineArgs, expandMSBuildProperty)
+                ? ExpandMSBuildProperties(profile.CommandLineArgs, getVariableValue)
                 : profile.CommandLineArgs,
             LaunchBrowser = profile.LaunchBrowser,
             LaunchUrl = profile.LaunchUrl,
             ApplicationUrl = !expandApplicationUrl || profile.ApplicationUrl is null
                 ? profile.ApplicationUrl
-                : ExpandMSBuildProperties(profile.ApplicationUrl, expandMSBuildProperty),
+                : ExpandMSBuildProperties(profile.ApplicationUrl, getVariableValue),
             DotNetRunMessages = profile.DotNetRunMessages,
-            EnvironmentVariables = ExpandMSBuildProperties(profile.EnvironmentVariables, expandMSBuildProperty),
+            EnvironmentVariables = ExpandMSBuildProperties(profile.EnvironmentVariables, getVariableValue),
         };
 }
