@@ -69,6 +69,21 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
         Assert.IsInstanceOfType<HostingStartupBrowserToolsLaunchConfigurator>(configurator);
     }
 
+    [TestMethod]
+    public void GetBrowserToolsLaunchFeatures_HostedWasm_EnablesLegacyHtmlInjection()
+    {
+        var appModel = new BlazorWebAssemblyHostedAppModel(
+            context: null!,
+            clientProject: null!,
+            serverProject: null!);
+
+        var features = appModel.GetBrowserToolsLaunchFeatures(BrowserToolsLaunchFeatures.BrowserRefresh);
+
+        Assert.AreEqual(
+            BrowserToolsLaunchFeatures.BrowserRefresh | BrowserToolsLaunchFeatures.LegacyHtmlInjection,
+            features);
+    }
+
     private BlazorWebAssemblyAppModel CreateAppModel(string targetFramework)
     {
         var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: targetFramework)

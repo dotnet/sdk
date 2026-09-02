@@ -21,6 +21,9 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
 
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
 
+    protected override BrowserToolsLaunchFeatures AdditionalBrowserToolsLaunchFeatures
+        => BrowserToolsLaunchFeatures.LegacyHtmlInjection;
+
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);

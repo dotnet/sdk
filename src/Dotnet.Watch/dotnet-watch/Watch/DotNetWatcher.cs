@@ -73,7 +73,7 @@ internal static class DotNetWatcher
             {
                 webAppModel!.CreateBrowserToolsLaunchConfigurator(
                     browserRefreshServer,
-                    BrowserToolsLaunchFeatures.BrowserRefresh).ConfigureLaunchEnvironment(environmentBuilder);
+                    webAppModel.GetBrowserToolsLaunchFeatures(BrowserToolsLaunchFeatures.BrowserRefresh)).ConfigureLaunchEnvironment(environmentBuilder);
             }
 
             Action<OutputLine>? outputObserver = null;

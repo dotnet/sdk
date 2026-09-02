@@ -30,6 +30,11 @@ internal sealed class HostingStartupBrowserToolsLaunchConfigurator(
             environment[MiddlewareEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
         }
 
+        if (features.HasFlag(BrowserToolsLaunchFeatures.LegacyHtmlInjection))
+        {
+            environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadUseLegacyHtmlInjection] = bool.TrueString;
+        }
+
         if (browserRefreshServer.Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Trace))
         {
             environment[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
