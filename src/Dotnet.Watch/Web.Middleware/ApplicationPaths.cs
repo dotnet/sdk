@@ -39,4 +39,8 @@ internal static class ApplicationPaths
     /// </summary>
     /// <value>/_framework/blazor-hotreload.js</value>
     public static PathString BlazorHotReloadJS { get; } = FrameworkRoot + "/blazor-hotreload.js";
+
+    public static PathString BrowserTools { get; } = FrameworkRoot + "/dotnet-browser-tools";
+
+    public static PathString BrowserToolsBootstrapJS { get; } = BrowserTools + "/browser-tools-bootstrap.js";
 }

@@ -38,6 +38,8 @@ internal static class MiddlewareEnvironmentVariables
 
     public const string AspNetCoreAutoReloadUseLegacyHtmlInjection = "ASPNETCORE_AUTO_RELOAD_USE_LEGACY_HTML_INJECTION";
 
+    public const string AspNetCoreAutoReloadProviderAddress = "ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS";
+
     /// <summary>
     /// Variable used to set the logging level of the middleware logger.
     /// </summary>

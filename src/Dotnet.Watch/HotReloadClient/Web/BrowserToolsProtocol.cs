@@ -13,4 +13,6 @@ internal static class BrowserToolsProtocol
     public const string UpdatesPath = "/updates";
     public const string ClearCachePath = "/clear-cache";
     public const string ConnectPath = "/connect";
+    public const string ClientModulePath = "/browser-tools.js";
+    public const string BootstrapModulePath = "/browser-tools-bootstrap.js";
 }
