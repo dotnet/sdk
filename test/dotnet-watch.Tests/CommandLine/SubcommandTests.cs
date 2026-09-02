@@ -121,7 +121,8 @@ public class SubcommandTests : DotNetWatchTestBase
         var testAsset = TestAssets.CopyTestAsset("WatchNoDepsApp")
             .WithSource();
 
-        App.SuppressVerboseLogging();
+        App.WatchArgs.Clear();
+
         App.Start(testAsset, ["format", "--verbosity", "detailed"]);
 
         await App.WaitUntilOutputContains(MessageDescriptor.CommandDoesNotSupportHotReload.GetMessage("format"));
