@@ -489,6 +489,11 @@ project.assets.json öğesini silmeyle eşdeğerdir.</target>
         <target state="translated">Paketleri ve http isteklerini önbelleğe almayın.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Projeden projeye başvuruları geri yüklemez ve yalnızca belirtilen projeyi geri yükler.</target>
