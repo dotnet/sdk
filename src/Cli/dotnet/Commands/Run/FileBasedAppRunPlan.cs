@@ -297,7 +297,7 @@ internal static class FileBasedAppRunPlan
         }
         catch (Exception exception)
         {
-            Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({path}): {exception.GetType().FullName}: {exception.Message}");
+            Reporter.Verbose.WriteLine($"Failed to deserialize cache entry ({path}): {exception}");
             return null;
         }
     }
@@ -319,7 +319,7 @@ internal static class FileBasedAppRunPlan
             foreach (var implicitBuildFile in s_implicitBuildFiles)
             {
                 FileSystemInfo implicitBuildFileInfo = new FileInfo(Path.Join(directory.FullName, implicitBuildFile.Name));
-                implicitBuildFileInfo = ResolveLinkTargetOrSelf(implicitBuildFileInfo);
+                implicitBuildFileInfo = PathUtility.ResolveLinkTargetOrSelf(implicitBuildFileInfo);
                 if (implicitBuildFileInfo.Exists)
                 {
                     collectedPaths.Add(implicitBuildFileInfo.FullName);
@@ -383,10 +383,10 @@ internal static class FileBasedAppRunPlan
         }
 
         var originalEntryPointFile = new FileInfo(inputs.EntryPointFileFullPath);
-        var entryPointFile = (FileInfo)ResolveLinkTargetOrSelf(originalEntryPointFile);
+        var entryPointFile = (FileInfo)PathUtility.ResolveLinkTargetOrSelf(originalEntryPointFile);
         var cacheEntry = new RunFileBuildCacheEntry(inputs.GlobalProperties)
         {
-            AliasedEntryPointFilePath = entryPointFile != originalEntryPointFile ? entryPointFile.FullName : null,
+            ResolvedEntryPointFilePath = entryPointFile != originalEntryPointFile ? entryPointFile.FullName : null,
             Directives = inputs.Directives,
             SdkVersion = inputs.SdkVersion,
             RuntimeVersion = inputs.RuntimeVersion,
@@ -495,10 +495,10 @@ internal static class FileBasedAppRunPlan
             return true;
         }
 
-        // Check that aliased entry point file path matches.
-        if (previousCacheEntry.AliasedEntryPointFilePath != cacheEntry.AliasedEntryPointFilePath)
+        // Check that resolved entry point file path matches.
+        if (!RunFileBuildCacheEntry.FilePathComparer.Equals(previousCacheEntry.ResolvedEntryPointFilePath, cacheEntry.ResolvedEntryPointFilePath))
         {
-            Reporter.Verbose.WriteLine($"Building because aliased entry point file path changed from '{previousCacheEntry.AliasedEntryPointFilePath}' to '{cacheEntry.AliasedEntryPointFilePath}': {successCacheFile.FullName}");
+            Reporter.Verbose.WriteLine($"Building because resolved entry point file path changed from '{previousCacheEntry.ResolvedEntryPointFilePath}' to '{cacheEntry.ResolvedEntryPointFilePath}': {successCacheFile.FullName}");
             return true;
         }
 
@@ -537,12 +537,20 @@ internal static class FileBasedAppRunPlan
         // NOTE: We currently don't support the CSC-arg-reuse optimization through additional sources (i.e., we don't set `CanUseCscViaPreviousArguments=true` here).
         //       If that changes, we will also need to make sure `RunFileBuildCacheEntry.Directives` contains directives from other files
         //       (as that is used to determine whether we can reuse CSC args, see `GetReasonToNotReuseCscArguments`).
-        foreach (string additionalSourcePath in previousCacheEntry.AdditionalSources)
+        foreach (var additionalSource in previousCacheEntry.AdditionalSources)
         {
-            FileSystemInfo additionalSourceFileInfo = new FileInfo(additionalSourcePath);
-            if (!additionalSourceFileInfo.Exists || additionalSourceFileInfo.LastWriteTimeUtc > buildTimeUtc)
+            var originalFileInfo = new FileInfo(additionalSource.Original);
+            var resolvedFileInfo = PathUtility.ResolveLinkTargetOrSelf(originalFileInfo);
+
+            if (!RunFileBuildCacheEntry.FilePathComparer.Equals(additionalSource.Resolved, resolvedFileInfo.FullName))
             {
-                Reporter.Verbose.WriteLine("Building because additional source file is missing or modified: " + additionalSourceFileInfo.FullName);
+                Reporter.Verbose.WriteLine($"Building because additional source file '{additionalSource.Original}' resolved path changed from '{additionalSource.Resolved}' to '{resolvedFileInfo.FullName}': {successCacheFile.FullName}");
+                return true;
+            }
+
+            if (!resolvedFileInfo.Exists || resolvedFileInfo.LastWriteTimeUtc > buildTimeUtc)
+            {
+                Reporter.Verbose.WriteLine("Building because additional source file is missing or modified: " + resolvedFileInfo.FullName);
                 return true;
             }
         }
@@ -556,16 +564,6 @@ internal static class FileBasedAppRunPlan
         }
 
         return false;
-    }
-
-    private static FileSystemInfo ResolveLinkTargetOrSelf(FileSystemInfo fileSystemInfo)
-    {
-        if (!fileSystemInfo.Exists)
-        {
-            return fileSystemInfo;
-        }
-
-        return fileSystemInfo.ResolveLinkTarget(returnFinalTarget: true) ?? fileSystemInfo;
     }
 
     private static string? GetReasonToNotReuseCscArguments(FileBasedAppCacheInfo cache)

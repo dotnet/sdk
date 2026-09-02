@@ -4,6 +4,7 @@
 using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Text.Json.Serialization;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
 
 namespace Microsoft.DotNet.Cli.Commands.Run;
@@ -19,11 +20,14 @@ internal sealed class RunFileBuildCacheEntry
     /// We can't know which parts of the path are case insensitive, so we are conservative
     /// to avoid false positives in the cache (saying we are up to date even if we are not).
     /// </summary>
-    private static StringComparer FilePathComparer => StringComparer.Ordinal;
+    /// <remarks>
+    /// If this is changed to be something else than <see cref="StringComparer.Ordinal"/>, update <see cref="AdditionalSource"/> to use this.
+    /// </remarks>
+    internal static StringComparer FilePathComparer => StringComparer.Ordinal;
 
     /// <summary>If the user-provided entry point file path is a symlink, this is the link target.</summary>
     /// <remarks>Should be required and init-only but https://github.com/dotnet/runtime/issues/92877.</remarks>
-    public string? AliasedEntryPointFilePath { get; set; }
+    public string? ResolvedEntryPointFilePath { get; set; }
 
     /// <summary>Gets the global properties used for the build.</summary>
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
@@ -43,7 +47,7 @@ internal sealed class RunFileBuildCacheEntry
     /// (e.g., default items like <c>.resx</c> and C# source files from <c>#:include</c> directives).
     /// </summary>
     [JsonObjectCreationHandling(JsonObjectCreationHandling.Populate)]
-    public HashSet<string> AdditionalSources { get; }
+    public HashSet<AdditionalSource> AdditionalSources { get; }
 
     /// <summary>Gets or sets the build level used to produce this entry.</summary>
     public BuildLevel BuildLevel { get; set; }
@@ -77,7 +81,7 @@ internal sealed class RunFileBuildCacheEntry
     {
         GlobalProperties = new(GlobalPropertiesComparer);
         ImplicitBuildFiles = new(FilePathComparer);
-        AdditionalSources = new(FilePathComparer);
+        AdditionalSources = new();
     }
 
     /// <summary>
@@ -89,6 +93,30 @@ internal sealed class RunFileBuildCacheEntry
         Debug.Assert(globalProperties.Comparer == GlobalPropertiesComparer);
         GlobalProperties = globalProperties;
         ImplicitBuildFiles = new(FilePathComparer);
-        AdditionalSources = new(FilePathComparer);
+        AdditionalSources = new();
     }
+
+    public readonly union AdditionalSource(string, AdditionalSourceLink)
+    {
+        public string Original => this switch
+        {
+            string s => s,
+            AdditionalSourceLink l => l.Original,
+        };
+
+        public string Resolved => this switch
+        {
+            string s => s,
+            AdditionalSourceLink l => l.Resolved,
+        };
+
+        public static AdditionalSource Create(string path)
+        {
+            var fileInfo = new FileInfo(path);
+            var resolved = PathUtility.ResolveLinkTargetOrSelf(fileInfo);
+            return resolved == fileInfo ? path : new RunFileBuildCacheEntry.AdditionalSourceLink(path, resolved.FullName);
+        }
+    }
+
+    public readonly record struct AdditionalSourceLink(string Original, string Resolved);
 }

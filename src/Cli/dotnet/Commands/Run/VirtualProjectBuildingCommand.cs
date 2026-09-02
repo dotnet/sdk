@@ -502,11 +502,11 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                         path: item.GetMetadataValue("FullPath"),
                         basePath: entryPointFileDirectory);
 
-                    cache.CurrentEntry.AdditionalSources.Add(fullPath);
+                    cache.CurrentEntry.AdditionalSources.Add(RunFileBuildCacheEntry.AdditionalSource.Create(fullPath));
                 }
             }
 
-            cache.CurrentEntry.AdditionalSources.Remove(Builder.EntryPointFileFullPath);
+            cache.CurrentEntry.AdditionalSources.Remove(RunFileBuildCacheEntry.AdditionalSource.Create(Builder.EntryPointFileFullPath));
         }
 
         void PrintBuildInformation(ProjectCollection projectCollection, ProjectInstance projectInstance, BuildResult? buildOrRestoreResult)
