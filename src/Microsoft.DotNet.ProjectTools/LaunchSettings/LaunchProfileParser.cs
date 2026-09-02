@@ -22,15 +22,15 @@ internal abstract partial class LaunchProfileParser
         string launchSettingsPath,
         string? launchProfileName,
         string json,
-        Func<string, string>? expandMSBuildProperty,
+        Func<string, string>? getVariableValue,
         bool expandCommandLineArgs);
 
     protected static string? ParseCommandLineArgs(
         string? value,
-        Func<string, string>? expandMSBuildProperty,
+        Func<string, string>? getVariableValue,
         bool expandCommandLineArgs)
         => value is not null
-            ? ExpandVariables(value, expandCommandLineArgs ? expandMSBuildProperty : null)
+            ? ExpandVariables(value, expandCommandLineArgs ? getVariableValue : null)
             : null;
 
     public static string GetLaunchProfileDisplayName(string? launchProfile)
@@ -41,7 +41,7 @@ internal abstract partial class LaunchProfileParser
 
     protected static ImmutableDictionary<string, string> ParseEnvironmentVariables(
         ImmutableDictionary<string, string> values,
-        Func<string, string>? expandMSBuildProperty)
+        Func<string, string>? getVariableValue)
     {
         if (values.Count == 0)
         {
@@ -52,7 +52,7 @@ internal abstract partial class LaunchProfileParser
         foreach (var (key, value) in values)
         {
             // override previously set variables:
-            builder[key] = ExpandVariables(value, expandMSBuildProperty);
+            builder[key] = ExpandVariables(value, getVariableValue);
         }
 
         return builder.ToImmutable();
@@ -60,7 +60,7 @@ internal abstract partial class LaunchProfileParser
 
     protected static ImmutableDictionary<string, string> ExpandMSBuildProperties(
         ImmutableDictionary<string, string> values,
-        Func<string, string> expandMSBuildProperty)
+        Func<string, string> getVariableValue)
     {
         if (values.Count == 0)
         {
@@ -70,20 +70,20 @@ internal abstract partial class LaunchProfileParser
         var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
         foreach (var (key, value) in values)
         {
-            builder[key] = ExpandMSBuildProperties(value, expandMSBuildProperty);
+            builder[key] = ExpandMSBuildProperties(value, getVariableValue);
         }
 
         return builder.ToImmutable();
     }
 
-    protected static string ExpandMSBuildProperties(string value, Func<string, string> expandMSBuildProperty)
-        => MSBuildPropertyRegex().Replace(value, match => expandMSBuildProperty(match.Value));
+    protected static string ExpandMSBuildProperties(string value, Func<string, string> getVariableValue)
+        => MSBuildPropertyRegex().Replace(value, match => getVariableValue(match.Value));
 
-    internal static string ExpandVariables(string value, Func<string, string>? expandMSBuildProperty)
+    internal static string ExpandVariables(string value, Func<string, string>? getVariableValue)
     {
         string expandedValue = Environment.ExpandEnvironmentVariables(value);
-        return expandMSBuildProperty is null
+        return getVariableValue is null
             ? expandedValue
-            : ExpandMSBuildProperties(expandedValue, expandMSBuildProperty);
+            : ExpandMSBuildProperties(expandedValue, getVariableValue);
     }
 }

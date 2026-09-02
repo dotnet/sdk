@@ -142,14 +142,16 @@ internal static class CommonRunHelpers
         bool noLaunchProfile,
         bool reportUsingLaunchSettings,
         Action<string, bool> report,
-        LaunchProfileParserOptions parserOptions)
+        LaunchProfileParserOptions parserOptions,
+        out string? launchSettingsPath)
     {
+        launchSettingsPath = null;
         if (noLaunchProfile || projectOrEntryPointFilePath is null)
         {
             return LaunchProfileParseResult.Success(model: null);
         }
 
-        string? launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
+        launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
             projectOrEntryPointFilePath,
             launchProfile,
             report);

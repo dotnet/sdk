@@ -28,7 +28,7 @@ internal sealed class LaunchSettingsProfile
         ProjectRepresentation project,
         string? launchProfileName,
         ILogger logger,
-        Func<string, string> expandMSBuildProperty)
+        Func<string, string> getVariableValue)
     {
         var launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(project.ProjectOrEntryPointFilePath, launchProfileName, (message, isError) =>
         {
@@ -63,7 +63,7 @@ internal sealed class LaunchSettingsProfile
         if (string.IsNullOrEmpty(launchProfileName))
         {
             // Load the default (first) launch profile
-            return ExpandMSBuildProperties(ReadDefaultLaunchProfile(launchSettings, logger), expandMSBuildProperty, logger);
+            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(getVariableValue, logger);
         }
 
         // Load the specified launch profile
@@ -83,35 +83,29 @@ internal sealed class LaunchSettingsProfile
                 logger.LogWarning("Note: Launch profile names are case-sensitive. Did you mean '{ProfileName}'?", caseInsensitiveNamedProfile);
             }
 
-            return ExpandMSBuildProperties(ReadDefaultLaunchProfile(launchSettings, logger), expandMSBuildProperty, logger);
+            return ReadDefaultLaunchProfile(launchSettings, logger)?.WithExpandedVariables(getVariableValue, logger);
         }
 
         logger.LogDebug("Found named launch profile '{ProfileName}'.", launchProfileName);
         namedProfile.LaunchProfileName = launchProfileName;
-        return ExpandMSBuildProperties(namedProfile, expandMSBuildProperty, logger);
+        return namedProfile.WithExpandedVariables(getVariableValue, logger);
     }
 
-    private static LaunchSettingsProfile? ExpandMSBuildProperties(
-        LaunchSettingsProfile? profile,
-        Func<string, string> expandMSBuildProperty,
+    private LaunchSettingsProfile? WithExpandedVariables(
+        Func<string, string> getVariableValue,
         ILogger logger)
     {
-        if (profile is null)
-        {
-            return null;
-        }
-
         try
         {
             return new LaunchSettingsProfile
             {
-                LaunchProfileName = profile.LaunchProfileName,
-                ApplicationUrl = profile.ApplicationUrl,
-                CommandName = profile.CommandName,
-                LaunchBrowser = profile.LaunchBrowser,
-                LaunchUrl = profile.LaunchUrl is null
+                LaunchProfileName = LaunchProfileName,
+                ApplicationUrl = ApplicationUrl,
+                CommandName = CommandName,
+                LaunchBrowser = LaunchBrowser,
+                LaunchUrl = LaunchUrl is null
                     ? null
-                    : LaunchProfileParser.ExpandVariables(profile.LaunchUrl, expandMSBuildProperty),
+                    : LaunchProfileParser.ExpandVariables(LaunchUrl, getVariableValue),
             };
         }
         catch (InvalidProjectFileException e)

@@ -132,7 +132,8 @@ internal abstract class RunApiInput
 
             var result = runCommand.ReadLaunchProfileSettings(
                 buildCommand.CreateProjectInstance,
-                expandExecutableProfile: true);
+                expandExecutableProfile: true,
+                out _);
             var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
             return new RunApiOutput.RunCommand

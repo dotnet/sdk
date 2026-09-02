@@ -271,7 +271,8 @@ internal static class AotRunCommand
                 ExpandMSBuildProperty: null,
                 ExpandProjectProfile: false,
                 ExpandExecutableProfile: false,
-                ExpandCommandLineArgs: false));
+                ExpandCommandLineArgs: false),
+            out _);
         if (result.FailureReason is not null)
         {
             messages.Add((string.Format(
