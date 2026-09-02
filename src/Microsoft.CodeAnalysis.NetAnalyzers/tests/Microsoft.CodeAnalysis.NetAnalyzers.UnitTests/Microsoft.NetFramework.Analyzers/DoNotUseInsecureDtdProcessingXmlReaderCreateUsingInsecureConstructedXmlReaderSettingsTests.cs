@@ -17,104 +17,107 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task DefaultXmlReaderSettingsInStaticFieldShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        private static readonly XmlReaderSettings Settings = new XmlReaderSettings();
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        private static readonly XmlReaderSettings Settings = new XmlReaderSettings();
 
-        public void TestMethod(string path)
-        {
-            XmlReader reader = XmlReader.Create(path, Settings);
-        }
-    }
-}
-"
+                        public void TestMethod(string path)
+                        {
+                            XmlReader reader = XmlReader.Create(path, Settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Private Shared ReadOnly Settings As New XmlReaderSettings()
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Private Shared ReadOnly Settings As New XmlReaderSettings()
 
-        Public Sub TestMethod(path As String)
-            Dim reader As XmlReader = XmlReader.Create(path, Settings)
-        End Sub
-    End Class
-End Namespace");
+                        Public Sub TestMethod(path As String)
+                            Dim reader As XmlReader = XmlReader.Create(path, Settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task DefaultXmlReaderSettingsShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings();
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings()
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings()
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInInitializerShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings() With { _
-                .DtdProcessing = DtdProcessing.Parse _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings() With { _
+                                .DtdProcessing = DtdProcessing.Parse _
+                            }
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
@@ -122,482 +125,494 @@ End Namespace");
         {
             await VerifyCSharpAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-using System;
-using System.Reflection;               
-using System.Xml;   
+                """
+                    using System;
+                    using System.Reflection;
+                    using System.Xml;
 
-[assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework,Version=v4.5.2"", FrameworkDisplayName = "".NET Framework 4.5.2"")]
+                    [assembly: global::System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework,Version=v4.5.2", FrameworkDisplayName = ".NET Framework 4.5.2")]
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                    namespace TestNamespace
+                    {
+                        public class TestClass
+                        {
+                            public void TestMethod(string path)
+                            {
+                                XmlReaderSettings settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };
+                                XmlReader reader = XmlReader.Create(path, settings);
+                            }
+                        }
+                    }
+                    """
             );
 
             await VerifyVisualBasicAnalyzerAsync(
                 ReferenceAssemblies.NetFramework.Net452.Default,
-                @"
-Imports System.Reflection
-Imports System.Xml
+                """
+                    Imports System.Reflection
+                    Imports System.Xml
 
-<Assembly: System.Runtime.Versioning.TargetFrameworkAttribute("".NETFramework, Version = v4.5.2"", FrameworkDisplayName := "".NET Framework 4.5.2"")>
+                    <Assembly: System.Runtime.Versioning.TargetFrameworkAttribute(".NETFramework, Version = v4.5.2", FrameworkDisplayName := ".NET Framework 4.5.2")>
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings() With {
-                .DtdProcessing = DtdProcessing.Parse _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                    Namespace TestNamespace
+                        Public Class TestClass
+                            Public Sub TestMethod(path As String)
+                                Dim settings As New XmlReaderSettings() With {
+                                    .DtdProcessing = DtdProcessing.Parse _
+                                }
+                                Dim reader As XmlReader = XmlReader.Create(path, settings)
+                            End Sub
+                        End Class
+                    End Namespace
+                    """);
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsOnlySetMaxCharRoZeroInInitializerShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings(){ MaxCharactersFromEntities = 0 };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings(){ MaxCharactersFromEntities = 0 };
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings() With { _
-                .MaxCharactersFromEntities = 0 _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings() With { _
+                                .MaxCharactersFromEntities = 0 _
+                            }
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetSecureResolverInInitializerShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path, XmlSecureResolver resolver)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings(){ XmlResolver = resolver };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path, XmlSecureResolver resolver)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings(){ XmlResolver = resolver };
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String, resolver As XmlSecureResolver)
-            Dim settings As New XmlReaderSettings() With { _
-                .XmlResolver = resolver _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String, resolver As XmlSecureResolver)
+                            Dim settings As New XmlReaderSettings() With { _
+                                .XmlResolver = resolver _
+                            }
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseAndMaxCharToNonZeroInInitializerShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings()
-                                        {
-                                            DtdProcessing = DtdProcessing.Parse,
-                                            MaxCharactersFromEntities = (long)1e7
-                                        };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings()
+                                                        {
+                                                            DtdProcessing = DtdProcessing.Parse,
+                                                            MaxCharactersFromEntities = (long)1e7
+                                                        };
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings() With { _
-                .DtdProcessing = DtdProcessing.Parse, _
-                .MaxCharactersFromEntities = CLng(10000000.0) _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings() With { _
+                                .DtdProcessing = DtdProcessing.Parse, _
+                                .MaxCharactersFromEntities = CLng(10000000.0) _
+                            }
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseAndSecureResolverInInitializerShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path, XmlSecureResolver resolver)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings()
-                                        {
-                                            DtdProcessing = DtdProcessing.Parse,
-                                            XmlResolver = resolver
-                                        };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path, XmlSecureResolver resolver)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings()
+                                                        {
+                                                            DtdProcessing = DtdProcessing.Parse,
+                                                            XmlResolver = resolver
+                                                        };
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String, resolver As XmlSecureResolver)
-            Dim settings As New XmlReaderSettings() With { _
-                .DtdProcessing = DtdProcessing.Parse, _
-                .XmlResolver = resolver _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace"
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String, resolver As XmlSecureResolver)
+                            Dim settings As New XmlReaderSettings() With { _
+                                .DtdProcessing = DtdProcessing.Parse, _
+                                .XmlResolver = resolver _
+                            }
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """
             );
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseWithOtherValuesSecureInInitializerShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings()
-                                        {
-                                            DtdProcessing = DtdProcessing.Parse,
-                                            MaxCharactersFromEntities = (long)1e7,
-                                            XmlResolver = null
-                                        };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings()
+                                                        {
+                                                            DtdProcessing = DtdProcessing.Parse,
+                                                            MaxCharactersFromEntities = (long)1e7,
+                                                            XmlResolver = null
+                                                        };
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings() With { _
-                .DtdProcessing = DtdProcessing.Parse, _
-                .MaxCharactersFromEntities = CLng(10000000.0), _
-                .XmlResolver = Nothing _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings() With { _
+                                .DtdProcessing = DtdProcessing.Parse, _
+                                .MaxCharactersFromEntities = CLng(10000000.0), _
+                                .XmlResolver = Nothing _
+                            }
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.DtdProcessing = DtdProcessing.Parse;
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            settings.DtdProcessing = DtdProcessing.Parse;
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings()
-            settings.DtdProcessing = DtdProcessing.Parse
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace"
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings()
+                            settings.DtdProcessing = DtdProcessing.Parse
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """
             );
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInTryBlockShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
-using System;
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.DtdProcessing = DtdProcessing.Parse;
-            XmlReader reader = XmlReader.Create(path, settings);
-            }
-            catch (Exception) { throw; }
-            finally { }
-        }
-    }
-}
-"
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
+                using System;
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            try {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            settings.DtdProcessing = DtdProcessing.Parse;
+                            XmlReader reader = XmlReader.Create(path, settings);
+                            }
+                            catch (Exception) { throw; }
+                            finally { }
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Xml
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-                Dim settings As New XmlReaderSettings()
-                settings.DtdProcessing = DtdProcessing.Parse
-                Dim reader As XmlReader = XmlReader.Create(path, settings)
-            Catch generatedExceptionName As Exception
-                Throw
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace"
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Xml
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Try
+                                Dim settings As New XmlReaderSettings()
+                                settings.DtdProcessing = DtdProcessing.Parse
+                                Dim reader As XmlReader = XmlReader.Create(path, settings)
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                End Namespace
+                """
             );
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInCatchBlockShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
-using System;
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try { }
-            catch (Exception) { 
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.DtdProcessing = DtdProcessing.Parse;
-            XmlReader reader = XmlReader.Create(path, settings);
-            }
-            finally { }
-        }
-    }
-}
-"
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
+                using System;
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            try { }
+                            catch (Exception) {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            settings.DtdProcessing = DtdProcessing.Parse;
+                            XmlReader reader = XmlReader.Create(path, settings);
+                            }
+                            finally { }
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Xml
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch generatedExceptionName As Exception
-                Dim settings As New XmlReaderSettings()
-                settings.DtdProcessing = DtdProcessing.Parse
-                Dim reader As XmlReader = XmlReader.Create(path, settings)
-            Finally
-            End Try
-        End Sub
-    End Class
-End Namespace"
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Xml
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Dim settings As New XmlReaderSettings()
+                                settings.DtdProcessing = DtdProcessing.Parse
+                                Dim reader As XmlReader = XmlReader.Create(path, settings)
+                            Finally
+                            End Try
+                        End Sub
+                    End Class
+                End Namespace
+                """
             );
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInFinallyBlockShouldGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
-using System;
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            try {   }
-            catch (Exception) { throw; }
-            finally { 
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings.DtdProcessing = DtdProcessing.Parse;
-            XmlReader reader = XmlReader.Create(path, settings);
-            }
-        }
-    }
-}
-"
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
+                using System;
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            try {   }
+                            catch (Exception) { throw; }
+                            finally {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            settings.DtdProcessing = DtdProcessing.Parse;
+                            XmlReader reader = XmlReader.Create(path, settings);
+                            }
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System
-Imports System.Xml
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Try
-            Catch generatedExceptionName As Exception
-                Throw
-            Finally
-                Dim settings As New XmlReaderSettings()
-                settings.DtdProcessing = DtdProcessing.Parse
-                Dim reader As XmlReader = XmlReader.Create(path, settings)
-            End Try
-        End Sub
-    End Class
-End Namespace"
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System
+                Imports System.Xml
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Try
+                            Catch generatedExceptionName As Exception
+                                Throw
+                            Finally
+                                Dim settings As New XmlReaderSettings()
+                                settings.DtdProcessing = DtdProcessing.Parse
+                                Dim reader As XmlReader = XmlReader.Create(path, settings)
+                            End Try
+                        End Sub
+                    End Class
+                End Namespace
+                """
             );
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInUnusedOneShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };   
-            settings = new XmlReaderSettings();
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };
+                            settings = new XmlReaderSettings();
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings() With { _
-                .DtdProcessing = DtdProcessing.Parse _
-            }
-            settings = New XmlReaderSettings()
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings() With { _
+                                .DtdProcessing = DtdProcessing.Parse _
+                            }
+                            settings = New XmlReaderSettings()
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task XmlReaderSettingsSetDtdProcessingToParseInUsedOneShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Xml;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Xml;
 
-namespace TestNamespace
-{
-    public class TestClass
-    {
-        public void TestMethod(string path)
-        {
-            XmlReaderSettings settings = new XmlReaderSettings();
-            settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };
-            XmlReader reader = XmlReader.Create(path, settings);
-        }
-    }
-}
-"
+                namespace TestNamespace
+                {
+                    public class TestClass
+                    {
+                        public void TestMethod(string path)
+                        {
+                            XmlReaderSettings settings = new XmlReaderSettings();
+                            settings = new XmlReaderSettings(){ DtdProcessing = DtdProcessing.Parse };
+                            XmlReader reader = XmlReader.Create(path, settings);
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Xml
 
-Namespace TestNamespace
-    Public Class TestClass
-        Public Sub TestMethod(path As String)
-            Dim settings As New XmlReaderSettings()
-            settings = New XmlReaderSettings() With { _
-                .DtdProcessing = DtdProcessing.Parse _
-            }
-            Dim reader As XmlReader = XmlReader.Create(path, settings)
-        End Sub
-    End Class
-End Namespace"
+                Namespace TestNamespace
+                    Public Class TestClass
+                        Public Sub TestMethod(path As String)
+                            Dim settings As New XmlReaderSettings()
+                            settings = New XmlReaderSettings() With { _
+                                .DtdProcessing = DtdProcessing.Parse _
+                            }
+                            Dim reader As XmlReader = XmlReader.Create(path, settings)
+                        End Sub
+                    End Class
+                End Namespace
+                """
             );
         }
     }

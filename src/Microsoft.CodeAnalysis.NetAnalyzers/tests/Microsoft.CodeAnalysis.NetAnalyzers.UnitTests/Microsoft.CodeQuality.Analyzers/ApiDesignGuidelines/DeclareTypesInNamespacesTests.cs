@@ -18,90 +18,95 @@ namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
         [TestMethod]
         public async Task OuterTypeInGlobalNamespace_Warns()
         {
-            var csCode = @"
-public class [|Class|]
-{
-}
-";
+            var csCode = """
+                public class [|Class|]
+                {
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            var vbCode = @"
-Public Class [|[MyClass]|]
-End Class";
+            var vbCode = """
+                Public Class [|[MyClass]|]
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [TestMethod]
         public async Task NestedTypeInGlobalNamespace_WarnsOnlyOnce()
         {
-            var csCode = @"
-public class [|Class|]
-{
-    public class Nested {}
-}
-";
+            var csCode = """
+                public class [|Class|]
+                {
+                    public class Nested {}
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            var vbCode = @"
-Public Class [|[MyClass]|]
-    Public Class Nested
-    End Class
-End Class
-";
+            var vbCode = """
+                Public Class [|[MyClass]|]
+                    Public Class Nested
+                    End Class
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [TestMethod]
         public async Task InternalClassInGlobalNamespace_DoesNotWarn()
         {
-            var csCode = @"
-internal class Class
-{
-    public class Nested {}
-}";
+            var csCode = """
+                internal class Class
+                {
+                    public class Nested {}
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            var vbCode = @"
-Friend Class [MyClass]
-    Public Class Nested
-    End Class
-End Class";
+            var vbCode = """
+                Friend Class [MyClass]
+                    Public Class Nested
+                    End Class
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [TestMethod]
         public async Task PublicClassInNonGlobalNamespace_DoesNotWarn()
         {
-            var csCode = @"
-namespace NS
-{
-    public class Class
-    {
-        public class Nested {}
-    }
-}";
+            var csCode = """
+                namespace NS
+                {
+                    public class Class
+                    {
+                        public class Nested {}
+                    }
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(csCode, csCode);
 
-            var vbCode = @"
-Namespace NS
-    Public Class [MyClass]
-        Public Class Nested
-        End Class
-    End Class
-End Namespace";
+            var vbCode = """
+                Namespace NS
+                    Public Class [MyClass]
+                        Public Class Nested
+                        End Class
+                    End Class
+                End Namespace
+                """;
             await VerifyVB.VerifyCodeFixAsync(vbCode, vbCode);
         }
 
         [TestMethod]
         public async Task TopLevelProgramClass_DoesNotWarn()
         {
-            var csCode = @"
-System.Console.WriteLine();
+            var csCode = """
+                System.Console.WriteLine();
 
-public partial class Program
-{
-}
-";
+                public partial class Program
+                {
+                }
+                """;
             await new VerifyCS.Test
             {
                 TestState =

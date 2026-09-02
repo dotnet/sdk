@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository code
-        uses: actions/checkout@v6
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
         with:
           ref: release/10.0.1xx
           persist-credentials: false
@@ -44,6 +44,7 @@ jobs:
             branch=update-man-page-$date
             git checkout -b $branch
             git commit -m "$title"
+            gh auth setup-git
             git push -u origin $branch --force
             gh pr create --base release/10.0.1xx --head $branch --title "$title" --body "$body"
           fi

@@ -18,58 +18,62 @@ namespace Microsoft.NetCore.Analyzers.InteropServices.UnitTests
         [TestMethod]
         public async Task NonSafeHandleDerivedType_NoDiagnostics_CSAsync()
         {
-            string source = @"
-class Foo
-{
-    private Foo()
-    {
-    }
-}";
+            string source = """
+                class Foo
+                {
+                    private Foo()
+                    {
+                    }
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task NonSafeHandleDerivedType_NoDiagnostics_VBAsync()
         {
-            string source = @"
-Class Foo
-    Private Sub New()
-    End Sub
-End Class";
+            string source = """
+                Class Foo
+                    Private Sub New()
+                    End Sub
+                End Class
+                """;
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_CSAsync()
         {
-            string source = @"
-using Microsoft.Win32.SafeHandles;
+            string source = """
+                using Microsoft.Win32.SafeHandles;
 
-class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    public FooHandle() : base(true)
-    {
-    }
+                class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    public FooHandle() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [TestMethod]
         public async Task SafeHandleDerivedType_WithParameterlessConstructor_NoDiagnostics_VBAsync()
         {
-            string source = @"
-Imports Microsoft.Win32.SafeHandles
-Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
-    Public Sub New()
-        MyBase.New(True)
-    End Sub
-    
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
-End Class";
+            string source = """
+                Imports Microsoft.Win32.SafeHandles
+                Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+                    Public Sub New()
+                        MyBase.New(True)
+                    End Sub
+
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
+                End Class
+                """;
 
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
@@ -77,28 +81,30 @@ End Class";
         [TestMethod]
         public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_CSAsync()
         {
-            string source = @"
-using Microsoft.Win32.SafeHandles;
+            string source = """
+                using Microsoft.Win32.SafeHandles;
 
-class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    private [|FooHandle|]() : base(true)
-    {
-    }
+                class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    private [|FooHandle|]() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
-            string fixedSource = @"
-using Microsoft.Win32.SafeHandles;
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
+            string fixedSource = """
+                using Microsoft.Win32.SafeHandles;
 
-class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    public FooHandle() : base(true)
-    {
-    }
+                class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    public FooHandle() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
@@ -106,32 +112,34 @@ class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
         [TestMethod]
         public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_CodeFix_VBAsync()
         {
-            string source = @"
-Imports Microsoft.Win32.SafeHandles
-Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+            string source = """
+                Imports Microsoft.Win32.SafeHandles
+                Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-    Private Sub [|New|]()
-        MyBase.New(True)
-    End Sub
-    
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
+                    Private Sub [|New|]()
+                        MyBase.New(True)
+                    End Sub
 
-End Class";
-            string fixedSource = @"
-Imports Microsoft.Win32.SafeHandles
-Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
 
-    Public Sub New()
-        MyBase.New(True)
-    End Sub
-    
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
+                End Class
+                """;
+            string fixedSource = """
+                Imports Microsoft.Win32.SafeHandles
+                Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-End Class";
+                    Public Sub New()
+                        MyBase.New(True)
+                    End Sub
+
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
+
+                End Class
+                """;
 
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }
@@ -139,18 +147,19 @@ End Class";
         [TestMethod]
         public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_CS()
         {
-            string source = @"
-using System;
-using Microsoft.Win32.SafeHandles;
+            string source = """
+                using System;
+                using Microsoft.Win32.SafeHandles;
 
-abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    protected FooHandle() : base(true)
-    {
-    }
+                abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    protected FooHandle() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
 
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
@@ -158,20 +167,21 @@ abstract class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
         [TestMethod]
         public async Task SafeHandleDerived_Abstract_NoPublicConstructor_NoDiagnostic_VBAsync()
         {
-            string source = @"
-Imports System
-Imports Microsoft.Win32.SafeHandles
-Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+            string source = """
+                Imports System
+                Imports Microsoft.Win32.SafeHandles
+                Public MustInherit Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-    Protected Sub New()
-        MyBase.New(True)
-    End Sub
-    
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
+                    Protected Sub New()
+                        MyBase.New(True)
+                    End Sub
 
-End Class";
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
+
+                End Class
+                """;
 
             await VerifyVB.VerifyAnalyzerAsync(source);
         }
@@ -180,19 +190,20 @@ End Class";
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
         public async Task SafeHandleDerived_WithInternalParameterlessConstructor_InternalType_NoDiagnostic_CSAsync()
         {
-            string source = @"
-using System;
-using Microsoft.Win32.SafeHandles;
+            string source = """
+                using System;
+                using Microsoft.Win32.SafeHandles;
 
-internal class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    internal BarHandle()
-        : base(true)
-    {
-    }
+                internal class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    internal BarHandle()
+                        : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
@@ -201,19 +212,20 @@ internal class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
         public async Task SafeHandleDerived_WithInternalParameterlessConstructor_DefaultAccessibilityType_NoDiagnostic_CSAsync()
         {
-            string source = @"
-using System;
-using Microsoft.Win32.SafeHandles;
+            string source = """
+                using System;
+                using Microsoft.Win32.SafeHandles;
 
-class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    internal BarHandle()
-        : base(true)
-    {
-    }
+                class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    internal BarHandle()
+                        : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
@@ -222,22 +234,23 @@ class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
         [WorkItem(5231, "https://github.com/dotnet/roslyn-analyzers/issues/5231")]
         public async Task SafeHandleDerived_WithPrivateProtectedParameterlessConstructor_PrivateProtectedType_NoDiagnostic_CSAsync()
         {
-            string source = @"
-using System;
-using Microsoft.Win32.SafeHandles;
+            string source = """
+                using System;
+                using Microsoft.Win32.SafeHandles;
 
-class Containing
-{
-    private protected class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
-    {
-        private protected BarHandle()
-            : base(true)
-        {
-        }
+                class Containing
+                {
+                    private protected class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+                    {
+                        private protected BarHandle()
+                            : base(true)
+                        {
+                        }
 
-        protected override bool ReleaseHandle() => true;
-    }
-}";
+                        protected override bool ReleaseHandle() => true;
+                    }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
@@ -245,46 +258,48 @@ class Containing
         [TestMethod]
         public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_FixAll_CSAsync()
         {
-            string source = @"
-using Microsoft.Win32.SafeHandles;
+            string source = """
+                using Microsoft.Win32.SafeHandles;
 
-class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    private [|FooHandle|]() : base(true)
-    {
-    }
+                class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    private [|FooHandle|]() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}
+                    protected override bool ReleaseHandle() => true;
+                }
 
-class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    private [|BarHandle|]() : base(true)
-    {
-    }
+                class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    private [|BarHandle|]() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
-            string fixedSource = @"
-using Microsoft.Win32.SafeHandles;
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
+            string fixedSource = """
+                using Microsoft.Win32.SafeHandles;
 
-class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    public FooHandle() : base(true)
-    {
-    }
+                class FooHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    public FooHandle() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}
+                    protected override bool ReleaseHandle() => true;
+                }
 
-class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
-{
-    public BarHandle() : base(true)
-    {
-    }
+                class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
+                {
+                    public BarHandle() : base(true)
+                    {
+                    }
 
-    protected override bool ReleaseHandle() => true;
-}";
+                    protected override bool ReleaseHandle() => true;
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(source, fixedSource);
         }
@@ -292,52 +307,54 @@ class BarHandle : SafeHandleZeroOrMinusOneIsInvalid
         [TestMethod]
         public async Task SafeHandleDerived_WithNonPublicParameterlessConstructor_FixAll_VBAsync()
         {
-            string source = @"
-Imports Microsoft.Win32.SafeHandles
-Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+            string source = """
+                Imports Microsoft.Win32.SafeHandles
+                Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-    Private Sub [|New|]()
-        MyBase.New(True)
-    End Sub
+                    Private Sub [|New|]()
+                        MyBase.New(True)
+                    End Sub
 
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
-End Class
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
+                End Class
 
-Public Class BarHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+                Public Class BarHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-    Private Sub [|New|]()
-        MyBase.New(True)
-    End Sub
+                    Private Sub [|New|]()
+                        MyBase.New(True)
+                    End Sub
 
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
-End Class";
-            string fixedSource = @"
-Imports Microsoft.Win32.SafeHandles
-Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
+                End Class
+                """;
+            string fixedSource = """
+                Imports Microsoft.Win32.SafeHandles
+                Public Class FooHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-    Public Sub New()
-        MyBase.New(True)
-    End Sub
+                    Public Sub New()
+                        MyBase.New(True)
+                    End Sub
 
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
-End Class
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
+                End Class
 
-Public Class BarHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
+                Public Class BarHandle : Inherits SafeHandleZeroOrMinusOneIsInvalid
 
-    Public Sub New()
-        MyBase.New(True)
-    End Sub
+                    Public Sub New()
+                        MyBase.New(True)
+                    End Sub
 
-    Protected Overrides Function ReleaseHandle() As Boolean
-        Return True
-    End Function
-End Class";
+                    Protected Overrides Function ReleaseHandle() As Boolean
+                        Return True
+                    End Function
+                End Class
+                """;
 
             await VerifyVB.VerifyCodeFixAsync(source, fixedSource);
         }

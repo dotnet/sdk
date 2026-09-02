@@ -19,81 +19,89 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
         [TestMethod]
         public async Task CA1813CSharpCodeFixProviderTestFiredAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-public class [|AttributeClass|] : Attribute
-{
-}", @"
-using System;
+                public class [|AttributeClass|] : Attribute
+                {
+                }
+                """, """
+    using System;
 
-public sealed class AttributeClass : Attribute
-{
-}");
+    public sealed class AttributeClass : Attribute
+    {
+    }
+    """);
         }
 
         [TestMethod]
         public async Task CA1813VisualBasicCodeFixProviderTestFiredAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-Public Class [|AttributeClass|]
-    Inherits Attribute
-End Class", @"
-Imports System
+                Public Class [|AttributeClass|]
+                    Inherits Attribute
+                End Class
+                """, """
+    Imports System
 
-Public NotInheritable Class AttributeClass
-    Inherits Attribute
-End Class");
+    Public NotInheritable Class AttributeClass
+        Inherits Attribute
+    End Class
+    """);
         }
 
         [TestMethod]
         public async Task CA1813CSharpCodeFixAllAsync()
         {
-            await VerifyCS.VerifyCodeFixAsync(@"
-using System;
+            await VerifyCS.VerifyCodeFixAsync("""
+                using System;
 
-public class [|FirstAttribute|] : Attribute
-{
-}
+                public class [|FirstAttribute|] : Attribute
+                {
+                }
 
-public class [|SecondAttribute|] : Attribute
-{
-}", @"
-using System;
+                public class [|SecondAttribute|] : Attribute
+                {
+                }
+                """, """
+    using System;
 
-public sealed class FirstAttribute : Attribute
-{
-}
+    public sealed class FirstAttribute : Attribute
+    {
+    }
 
-public sealed class SecondAttribute : Attribute
-{
-}");
+    public sealed class SecondAttribute : Attribute
+    {
+    }
+    """);
         }
 
         [TestMethod]
         public async Task CA1813VisualBasicCodeFixAllAsync()
         {
-            await VerifyVB.VerifyCodeFixAsync(@"
-Imports System
+            await VerifyVB.VerifyCodeFixAsync("""
+                Imports System
 
-Public Class [|FirstAttribute|]
-    Inherits Attribute
-End Class
+                Public Class [|FirstAttribute|]
+                    Inherits Attribute
+                End Class
 
-Public Class [|SecondAttribute|]
-    Inherits Attribute
-End Class", @"
-Imports System
+                Public Class [|SecondAttribute|]
+                    Inherits Attribute
+                End Class
+                """, """
+    Imports System
 
-Public NotInheritable Class FirstAttribute
-    Inherits Attribute
-End Class
+    Public NotInheritable Class FirstAttribute
+        Inherits Attribute
+    End Class
 
-Public NotInheritable Class SecondAttribute
-    Inherits Attribute
-End Class");
+    Public NotInheritable Class SecondAttribute
+        Inherits Attribute
+    End Class
+    """);
         }
 
         #endregion

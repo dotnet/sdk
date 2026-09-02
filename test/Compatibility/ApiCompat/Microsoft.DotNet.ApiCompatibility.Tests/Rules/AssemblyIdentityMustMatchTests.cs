@@ -14,8 +14,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
     [TestClass]
     public class AssemblyIdentityMustMatchTests
     {
-        private static readonly SuppressibleTestLog s_log = new();
-        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(s_log, settings, context));
+        private const string EmitAssemblyFromSyntaxResource = nameof(SymbolFactory.EmitAssemblyFromSyntax);
+        private static readonly TestRuleFactory s_ruleFactory = new((settings, context) => new AssemblyIdentityMustMatch(new SuppressibleTestLog(), settings, context));
 
         private static readonly byte[] _publicKey = new byte[]
         {
@@ -185,6 +185,7 @@ namespace Microsoft.DotNet.ApiCompatibility.Rules.Tests
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
+        [ResourceLock(EmitAssemblyFromSyntaxResource)]
         public void RetargetableFlagSet(bool strictMode)
         {
             string syntax = @"
@@ -198,8 +199,9 @@ using System.Reflection;
             string leftAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax, publicKey: _publicKey);
             string rightAssembly = SymbolFactory.EmitAssemblyFromSyntax(syntax);
 
-            IAssemblySymbol leftSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(leftAssembly);
-            IAssemblySymbol rightSymbol = new AssemblySymbolLoader(s_log).LoadAssembly(rightAssembly);
+            SuppressibleTestLog log = new();
+            IAssemblySymbol leftSymbol = new AssemblySymbolLoader(log).LoadAssembly(leftAssembly);
+            IAssemblySymbol rightSymbol = new AssemblySymbolLoader(log).LoadAssembly(rightAssembly);
 
             Assert.IsTrue(leftSymbol.Identity.IsRetargetable);
             Assert.IsTrue(rightSymbol.Identity.IsRetargetable);

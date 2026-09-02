@@ -13,7 +13,8 @@
         group, otherwise the duplicate <Compile>/<EmbeddedResource> items will fail the
         build once both changes merge.
       * Each command contributes its own clearly-labeled group below, referencing only
-        its command-specific sources and dependencies.
+        its command-specific sources and resources. Add package and project dependencies
+        to AotDependencies.props so the product and tests consume the same closure.
 
     NativeEntryPoint.cs and ManagedHost.cs are added separately by each consumer because
     ManagedHost.cs requires InternalsVisibleTo access to NativeWrapper and the test
@@ -148,6 +149,19 @@
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunPlan.cs" Link="Commands\Run\RunPlan.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunProperties.cs" Link="Commands\Run\RunProperties.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Run\RunTier.cs" Link="Commands\Run\RunTier.cs" />
+  </ItemGroup>
+
+  <!--
+    Build-free 'dotnet test' support for explicit test modules. Project/solution discovery and build remain
+    managed-only; the linked command implementation shares the MTP orchestration, IPC, terminal,
+    cancellation, results-layout, and artifact post-processing code with the managed CLI.
+  -->
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\AotTestCommand.cs" Link="Commands\Test\AotTestCommand.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\CliConstants.cs" Link="Commands\Test\CliConstants.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\**\*.cs"
+             Exclude="$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildHandler.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\MSBuildUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\SolutionAndProjectUtility.cs;$(MSBuildThisFileDirectory)..\dotnet\Commands\Test\MTP\ValidationUtility.cs"
+             LinkBase="Commands\Test\MTP" />
   </ItemGroup>
 
   <!--
