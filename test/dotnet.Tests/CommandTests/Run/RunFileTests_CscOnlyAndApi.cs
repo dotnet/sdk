@@ -16,6 +16,23 @@ namespace Microsoft.DotNet.Cli.Run.Tests;
 [TestClass]
 public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 {
+    private const string OptimizationReportingProgram = """
+        #!/usr/bin/env dotnet
+        using System.Diagnostics;
+        using System.Reflection;
+
+        var attribute = Assembly.GetExecutingAssembly().GetCustomAttribute<DebuggableAttribute>();
+        Console.WriteLine(attribute?.IsJITOptimizerDisabled == true ? "not optimized" : "optimized");
+        """;
+
+    private static string GetOptimizationProps(bool optimize) => $$"""
+        <Project>
+          <PropertyGroup>
+            <Optimize>{{optimize}}</Optimize>
+          </PropertyGroup>
+        </Project>
+        """;
+
     /// <summary>Verifies incremental build-level selection as source and implicit build inputs change.</summary>
     [TestMethod]
     public void UpToDate()
@@ -270,36 +287,35 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
         var targetPath = Path.Join(testInstance.Path, "LinkTarget.props");
-        var code = """
-            <Project>
-              <PropertyGroup>
-                <AssemblyName>v1</AssemblyName>
-              </PropertyGroup>
-            </Project>
-            """;
-        File.WriteAllText(targetPath, code);
+        File.WriteAllText(targetPath, GetOptimizationProps(optimize: false));
 
         var linkedPath = Path.Join(testInstance.Path, "Directory.Build.props");
         File.CreateSymbolicLink(path: linkedPath, pathToTarget: targetPath);
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, """
-            #!/usr/bin/env dotnet
-            Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
-            """);
+        File.WriteAllText(programPath, OptimizationReportingProgram);
 
         // Remove artifacts from possible previous runs of this test.
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
-        Build(testInstance, BuildLevel.All, expectedOutput: "v1");
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
 
-        Build(testInstance, BuildLevel.None, expectedOutput: "v1");
+        Build(testInstance, BuildLevel.None, expectedOutput: "not optimized");
 
-        code = code.Replace("v1", "v2");
-        File.WriteAllText(targetPath, code);
+        File.WriteAllText(targetPath, GetOptimizationProps(optimize: true));
 
-        Build(testInstance, BuildLevel.All, expectedOutput: "v2");
+        // MSBuild isn't detecting the change (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: "not optimized");
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "optimized");
     }
 
     /// <summary>
@@ -343,7 +359,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         code = code.Replace("v1", "v2");
         File.WriteAllText(targetPath, code);
 
-        // MSBuild isn't detecting the change on Linux (but we are, hence BuildLevel.All),
+        // MSBuild isn't detecting the change on Unix (but we are, hence BuildLevel.All),
         // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
         string expectedOutput = OperatingSystem.IsWindows() ? "v2/Program.cs/linked.cs" : "v1/Program.cs/linked.cs";
         Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
@@ -427,41 +443,41 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
 
-        static string GetFileContent(string name) => $"""
-            <Project>
-              <PropertyGroup>
-                <AssemblyName>{name}</AssemblyName>
-              </PropertyGroup>
-            </Project>
-            """;
-
         var xPath = Path.Join(testInstance.Path, "x.props");
-        File.WriteAllText(xPath, GetFileContent("X"));
+        File.WriteAllText(xPath, GetOptimizationProps(optimize: false));
 
         var yPath = Path.Join(testInstance.Path, "y.props");
-        File.WriteAllText(yPath, GetFileContent("Y"));
+        File.WriteAllText(yPath, GetOptimizationProps(optimize: true));
 
         var linkedPath = Path.Join(testInstance.Path, "Directory.Build.props");
         File.CreateSymbolicLink(path: linkedPath, pathToTarget: xPath);
 
         var programPath = Path.Join(testInstance.Path, "Program.cs");
-        File.WriteAllText(programPath, """
-            #!/usr/bin/env dotnet
-            Console.WriteLine(System.Reflection.Assembly.GetExecutingAssembly().GetName().Name);
-            """);
+        File.WriteAllText(programPath, OptimizationReportingProgram);
 
         // Remove artifacts from possible previous runs of this test.
         var artifactsDir = VirtualProjectBuilder.GetArtifactsPath(programPath);
         if (Directory.Exists(artifactsDir)) Directory.Delete(artifactsDir, recursive: true);
 
-        Build(testInstance, BuildLevel.All, expectedOutput: "X");
+        Build(testInstance, BuildLevel.All, expectedOutput: "not optimized");
 
-        Build(testInstance, BuildLevel.None, expectedOutput: "X");
+        Build(testInstance, BuildLevel.None, expectedOutput: "not optimized");
 
         File.Delete(linkedPath);
         File.CreateSymbolicLink(path: linkedPath, pathToTarget: yPath);
 
-        Build(testInstance, BuildLevel.All, expectedOutput: "Y");
+        // MSBuild isn't detecting the change on Windows (but we are, hence BuildLevel.All),
+        // so an explicit rebuild is needed. See https://github.com/dotnet/msbuild/issues/13465.
+        string expectedOutput = OperatingSystem.IsWindows() ? "not optimized" : "optimized";
+        Build(testInstance, BuildLevel.All, expectedOutput: expectedOutput);
+        Build(testInstance, BuildLevel.All, ["--no-cache"], expectedOutput: expectedOutput);
+
+        new DotnetCommand(Log, "build", "--no-incremental", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass();
+
+        Build(testInstance, BuildLevel.All, expectedOutput: "optimized");
     }
 
     /// <summary>
