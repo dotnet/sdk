@@ -675,7 +675,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     <PrunePackageDataRoot Condition="'%24(PrunePackageDataRoot)' == ''">%24([MSBuild]::EnsureTrailingSlash('%24(MSBuildThisFileDirectory)'))PrunePackageData</PrunePackageDataRoot>
 
     <_NetFrameworkHostedCompilersVersion>$(MicrosoftNetCompilersToolsetFrameworkPackageVersion)</_NetFrameworkHostedCompilersVersion>
-    <NETCoreAppMaximumVersion>$(_NETCoreAppTargetFrameworkVersion)</NETCoreAppMaximumVersion>
+    <!-- NetTFMUpdate: Remove these overrides when runtime branding and prune package data advance to net12.0. -->
+    <NETCoreAppMaximumVersion>12.0</NETCoreAppMaximumVersion>
+    <AllowMissingPrunePackageData>true</AllowMissingPrunePackageData>
     <BundledNETCoreAppTargetFrameworkVersion>$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFrameworkVersion>
     <BundledNETCoreAppTargetFramework>net$(_NETCoreAppTargetFrameworkVersion)</BundledNETCoreAppTargetFramework>
     <BundledNETCoreAppPackageVersion>$(_NETCoreAppPackageVersion)</BundledNETCoreAppPackageVersion>
