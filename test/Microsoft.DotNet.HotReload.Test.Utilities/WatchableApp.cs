@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         : IAsyncDisposable
     {
         public static WatchableApp CreateDotnetWatchApp(ITestOutputHelper logger)
-            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["--trace", "-bl"]);
+            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["--verbosity:diagnostic", "-bl"]);
 
         public DebugTestOutputLogger Logger { get; } = new DebugTestOutputLogger(logger);
 
@@ -37,7 +37,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void SuppressVerboseLogging()
         {
-            // remove default --trace and -bl args
+            // remove default --verbosity:diagnostic and -bl args
             WatchArgs.Clear();
 
             // override the default used for testing ("true"):

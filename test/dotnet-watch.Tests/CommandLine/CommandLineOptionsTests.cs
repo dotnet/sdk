@@ -99,11 +99,31 @@ public class CommandLineOptionsTests
     [TestMethod]
     [CombinatorialData]
     public void WatchOptions_NotPassedThrough(
-        [CombinatorialValues("--quiet", "--verbose", "--trace", "--no-hot-reload", "--non-interactive")] string option,
+        [CombinatorialValues("--no-hot-reload", "--non-interactive")] string option,
         bool beforeCommand)
     {
         var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
         Assert.AreEqual("test", options.Command.Name);
+        AssertEx.SequenceEqual([], options.CommandArguments);
+    }
+
+    [TestMethod]
+    [CombinatorialData]
+    public void QuietAndVerbose_ForwardedAsVerbosity(
+        [CombinatorialValues("--quiet", "--verbose")] string option,
+        bool beforeCommand)
+    {
+        var options = VerifyOptions(beforeCommand ? [option, "test"] : ["test", option]);
+        Assert.AreEqual("test", options.Command.Name);
+        AssertEx.SequenceEqual([option == "--quiet" ? "--verbosity:quiet" : "--verbosity:detailed"], options.CommandArguments);
+    }
+
+    [TestMethod]
+    public void Verbosity_NotForwardedWhenCommandDoesNotSupportIt()
+    {
+        var options = VerifyOptions(["--verbosity:diagnostic", "format"]);
+        Assert.AreEqual("format", options.Command.Name);
+        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
         AssertEx.SequenceEqual([], options.CommandArguments);
     }
 
@@ -117,17 +137,32 @@ public class CommandLineOptionsTests
     [TestMethod]
     [DataRow("--quiet")]
     [DataRow("--verbose")]
-    public void TraceAndOtherLogLevel(string option)
+    public void VerbosityAndOtherLogLevel(string option)
     {
-        VerifyErrors([option, "--trace"],
-            expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, option, "--trace")}"]);
+        VerifyErrors([option, "--verbosity", "diagnostic"],
+            expectedErrors: [$"[Error] {string.Format(Resources.Cannot_specify_both_0_and_1_options, option, "--verbosity")}"]);
     }
 
     [TestMethod]
-    public void Trace()
+    [DataRow(new[] { "--verbosity", "quiet" }, LogLevel.Warning)]
+    [DataRow(new[] { "--verbosity", "q" }, LogLevel.Warning)]
+    [DataRow(new[] { "--verbosity:quiet" }, LogLevel.Warning)]
+    [DataRow(new[] { "--quiet" }, LogLevel.Warning)]
+    [DataRow(new[] { "--verbosity", "minimal" }, LogLevel.Information)]
+    [DataRow(new[] { "--verbosity", "normal" }, LogLevel.Information)]
+    [DataRow(new[] { "--verbosity", "n" }, LogLevel.Information)]
+    [DataRow(new[] { "--verbose" }, LogLevel.Debug)]
+    [DataRow(new[] { "--verbosity", "detailed" }, LogLevel.Debug)]
+    [DataRow(new[] { "--verbosity", "d" }, LogLevel.Debug)]
+    [DataRow(new[] { "-v", "detailed" }, LogLevel.Debug)]
+    [DataRow(new[] { "--verbosity", "diagnostic" }, LogLevel.Trace)]
+    [DataRow(new[] { "--verbosity", "diag" }, LogLevel.Trace)]
+    [DataRow(new[] { "--verbosity:diagnostic" }, LogLevel.Trace)]
+    [DataRow(new[] { "-v", "diag" }, LogLevel.Trace)]
+    public void LogLevelOptions(string[] args, LogLevel expected)
     {
-        var options = VerifyOptions(["--trace"]);
-        Assert.AreEqual(LogLevel.Trace, options.GlobalOptions.LogLevel);
+        var options = VerifyOptions(args);
+        Assert.AreEqual(expected, options.GlobalOptions.LogLevel);
     }
 
     [TestMethod]
@@ -192,7 +227,7 @@ public class CommandLineOptionsTests
 
         Assert.AreEqual(LogLevel.Debug, options.GlobalOptions.LogLevel);
         Assert.AreEqual("run", options.Command.Name);
-        AssertEx.SequenceEqual(["-watchArg", "-runArg"], options.CommandArguments);
+        AssertEx.SequenceEqual(["--verbosity:detailed", "-watchArg", "-runArg"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -202,7 +237,7 @@ public class CommandLineOptionsTests
 
         Assert.AreEqual("p", options.ProjectPath);
         Assert.AreEqual("run", options.Command.Name);
-        AssertEx.SequenceEqual(["--project", "p", "--unknown", "x", "y"], options.CommandArguments);
+        AssertEx.SequenceEqual(["--verbosity:detailed", "--project", "p", "--unknown", "x", "y"], options.CommandArguments);
     }
 
     [TestMethod]
@@ -413,11 +448,11 @@ public class CommandLineOptionsTests
     [DataRow(new[] { "--unrecognized-arg" }, new[] { "--unrecognized-arg" })]
     [DataRow(new[] { "run" }, new string[] { })]
     [DataRow(new[] { "run", "--", "runarg" }, new[] {  "--", "runarg" })]
-    [DataRow(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] {  "runarg1", "-runarg2" })]
+    [DataRow(new[] { "--verbose", "run", "runarg1", "-runarg2" }, new[] { "--verbosity:detailed", "runarg1", "-runarg2" })]
     // run is after -- and therefore not parsed as a command:
-    [DataRow(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] {  "--", "run", "--", "runarg" })]
+    [DataRow(new[] { "--verbose", "--", "run", "--", "runarg" }, new[] { "--verbosity:detailed", "--", "run", "--", "runarg" })]
     // run is before -- and therefore parsed as a command:
-    [DataRow(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] {  "--", "--", "runarg" })]
+    [DataRow(new[] { "--verbose", "run", "--", "--", "runarg" }, new[] { "--verbosity:detailed", "--", "--", "runarg" })]
     public void ParsesRemainingArgs(string[] args, string[] expected)
     {
         var options = VerifyOptions(args);
@@ -497,8 +532,10 @@ public class CommandLineOptionsTests
     [DataRow(new[] { "--sc" }, new[] { NugetInteractiveProperty, "--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true" })]
     [DataRow(new[] { "--self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=true", "--property:_CommandLineDefinedSelfContained=true" })]
     [DataRow(new[] { "--no-self-contained" }, new[] { NugetInteractiveProperty, "--property:SelfContained=false", "--property:_CommandLineDefinedSelfContained=true" })]
-    [DataRow(new[] { "--verbose" }, new[] { NugetInteractiveProperty }, new string[0])]
+    [DataRow(new[] { "--verbose" }, new[] { NugetInteractiveProperty, "--verbosity:detailed" }, new[] { "--verbosity:detailed" })]
+    [DataRow(new[] { "--quiet" }, new[] { NugetInteractiveProperty, "--verbosity:quiet" }, new[] { "--verbosity:quiet" })]
     [DataRow(new[] { "--verbosity", "q" }, new[] { NugetInteractiveProperty, "--verbosity:q" })]
+    [DataRow(new[] { "--verbosity:diagnostic" }, new[] { NugetInteractiveProperty, "--verbosity:diagnostic" }, new[] { "--verbosity", "diagnostic" })]
     [DataRow(new[] { "--arch", "arm", "--os", "win" }, new[] { NugetInteractiveProperty, "--property:RuntimeIdentifier=win-arm" })]
     [DataRow(new[] { "--disable-build-servers" }, new[] { NugetInteractiveProperty, "--property:UseRazorBuildServer=false", "--property:UseSharedCompilation=false", "/nodeReuse:false" })]
     [DataRow(new[] { "-bl" }, new[] { NugetInteractiveProperty, "-bl" })]
@@ -529,7 +566,9 @@ public class CommandLineOptionsTests
     [DataRow(new[] { "--launch-profile", "x" }, new string[0])]
     [DataRow(new[] { "--no-launch-profile" }, new string[0])]
     [DataRow(new[] { "--project", "x.csproj" }, new string[0], new[] { "x.csproj" })]
-    [DataRow(new[] { "--verbose" }, new string[0])]
+    [DataRow(new[] { "--verbose" }, new[] { "--verbosity:detailed" }, new[] { "--verbosity:detailed" })]
+    [DataRow(new[] { "--quiet" }, new[] { "--verbosity:quiet" }, new[] { "--verbosity:quiet" })]
+    [DataRow(new[] { "--verbosity", "detailed" }, new[] { "--verbosity:detailed" }, new[] { "--verbosity", "detailed" })]
     public void ForwardedOptionsAndArguments_Test(string[] args, string[] buildArgs, string[] commandArgs = null)
     {
         var runOptions = VerifyOptions(["test", .. args]);
@@ -556,7 +595,9 @@ public class CommandLineOptionsTests
     [DataRow(new[] { "--launch-profile", "x" }, new[] { "--property:NuGetInteractive=false", "--nologo" })]
     [DataRow(new[] { "--no-launch-profile" }, new[] { "--property:NuGetInteractive=false", "--nologo" })]
     [DataRow(new[] { "--project", "x.csproj" }, new[] { "--property:NuGetInteractive=false", "--nologo" }, new[] { "x.csproj" })]
-    [DataRow(new[] { "--verbose" }, new[] { "--property:NuGetInteractive=false", "--nologo" })]
+    [DataRow(new[] { "--verbose" }, new[] { "--property:NuGetInteractive=false", "--verbosity:detailed", "--nologo" }, new[] { "--verbosity:detailed" })]
+    [DataRow(new[] { "--quiet" }, new[] { "--property:NuGetInteractive=false", "--verbosity:quiet", "--nologo" }, new[] { "--verbosity:quiet" })]
+    [DataRow(new[] { "--verbosity", "q" }, new[] { "--property:NuGetInteractive=false", "--verbosity:q", "--nologo" }, new[] { "--verbosity", "q" })]
     public void ForwardedOptionsAndArguments_Build(string[] args, string[] buildArgs, string[] commandArgs = null)
     {
         var runOptions = VerifyOptions(["build", .. args]);
