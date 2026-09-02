@@ -36,8 +36,6 @@ internal static class MiddlewareEnvironmentVariables
     /// </summary>
     public const string AspNetCoreAutoReloadWSKey = "ASPNETCORE_AUTO_RELOAD_WS_KEY";
 
-    public const string AspNetCoreAutoReloadUseLegacyHtmlInjection = "ASPNETCORE_AUTO_RELOAD_USE_LEGACY_HTML_INJECTION";
-
     public const string AspNetCoreAutoReloadProviderAddress = "ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS";
 
     /// <summary>

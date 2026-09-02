@@ -33,14 +33,14 @@ public class BrowserRefreshServerTests
         await server.StartAsync(CancellationToken.None);
 
         var envBuilder = new Dictionary<string, string>();
-        server.ConfigureLaunchEnvironment(envBuilder, enableHotReload);
+        new HostingStartupBrowserToolsLaunchConfigurator(middlewarePath, server, enableHotReload)
+            .ConfigureLaunchEnvironment(envBuilder);
 
         Assert.IsTrue(envBuilder.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
 
         var expected = new List<string>()
         {
             "ASPNETCORE_AUTO_RELOAD_VDIR=/test/virt/dir",
-            "ASPNETCORE_AUTO_RELOAD_USE_LEGACY_HTML_INJECTION=True",
             "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT=http://test.endpoint",
             "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES=" + middlewareFileName,
             "DOTNET_STARTUP_HOOKS=" + middlewarePath,
@@ -79,12 +79,12 @@ public class BrowserRefreshServerTests
             ["UNRELATED_SETTING"] = "preserved",
         };
 
-        server.ConfigureLaunchEnvironment(environment, enableHotReload: false);
+        new HostingStartupBrowserToolsLaunchConfigurator(middlewarePath, server, enableManagedHotReload: false)
+            .ConfigureLaunchEnvironment(environment);
 
         Assert.IsTrue(environment.Remove("ASPNETCORE_AUTO_RELOAD_WS_KEY"));
         AssertEx.SequenceEqual(
         [
-            "ASPNETCORE_AUTO_RELOAD_USE_LEGACY_HTML_INJECTION=True",
             "ASPNETCORE_AUTO_RELOAD_VDIR=/test/virt/dir",
             "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT=http://test.endpoint",
             $"ASPNETCORE_HOSTINGSTARTUPASSEMBLIES={middlewareAssemblyName};Existing.HostingStartup",

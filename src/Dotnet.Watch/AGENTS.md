@@ -45,7 +45,9 @@ Reload).
   only when both client and server target .NET 11 or later; mixed and older target
   frameworks retain legacy response injection and endpoints. Static/custom HTML that
   has no supported initializer requires user-provided activation; do not add build-time
-  `index.html` rewriting.
+  `index.html` rewriting. The WASM SDK ships only the runtime initializer as a build
+  asset; the browser client is embedded in and served by the provider, so do not add it
+  back to the application's static asset graph.
 - **Modern server hosting startup is intentionally thin.**
   [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers only the MVC/Razor
   TagHelper component and the reserved forwarder for the modern path. The BrowserRefresh

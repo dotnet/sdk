@@ -30,7 +30,7 @@ Copyright (c) .NET Foundation. All rights reserved.
 
     <!-- Copy the JS module and DLL to intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
     <Copy
-      SourceFiles="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js;$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js"
+      SourceFiles="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
       DestinationFolder="$(_WasmHotReloadIntermediatePath)"
       SkipUnchangedFiles="true"
       Condition="'$(_WasmHotReloadPath)' != ''" />
@@ -48,14 +48,10 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
         <RelativePath>_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</RelativePath>
       </_WasmHotReloadModule>
-      <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js">
-        <RelativePath>_framework/Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js</RelativePath>
-      </_WasmHotReloadModule>
       <_WasmHotReloadModule Update="@(_WasmHotReloadModule)">
         <OriginalItemSpec>%(Identity)</OriginalItemSpec>
       </_WasmHotReloadModule>
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" />
-      <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js" />
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll" />
     </ItemGroup>
 
