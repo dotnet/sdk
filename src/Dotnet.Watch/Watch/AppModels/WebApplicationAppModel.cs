@@ -37,19 +37,49 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             ? CreateManagedClients(clientLogger, agentLogger, browserRefreshServer)
             : [];
 
-        return new HotReloadClients(managedClients, browserRefreshServer, useRefreshServerToApplyStaticAssets: true);
+        var launchConfigurator = browserRefreshServer != null
+            ? CreateBrowserToolsLaunchConfigurator(
+                browserRefreshServer,
+                BrowserToolsLaunchFeatures.BrowserRefresh |
+                (managedClients.IsEmpty ? BrowserToolsLaunchFeatures.None : BrowserToolsLaunchFeatures.ManagedHotReload))
+            : null;
+
+        return new HotReloadClients(
+            managedClients,
+            browserRefreshServer,
+            useRefreshServerToApplyStaticAssets: true,
+            launchConfigurator);
     }
 
-    protected WebAssemblyHotReloadClient CreateWebAssemblyClient(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject)
+    protected WebAssemblyHotReloadClient CreateWebAssemblyClient(
+        ILogger clientLogger,
+        ILogger agentLogger,
+        BrowserRefreshServer browserRefreshServer,
+        ProjectGraphNode clientProject,
+        bool enableBrowserToolsReplay = false)
     {
         var capabilities = clientProject.GetWebAssemblyCapabilities().ToImmutableArray();
         var targetFramework = clientProject.GetTargetFrameworkVersion() ?? throw new InvalidOperationException($"Project doesn't define {PropertyNames.TargetFrameworkMoniker}");
+        var generationId = browserRefreshServer.ResetBrowserToolsGeneration();
 
-        return new WebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, capabilities, targetFramework, context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
+        return new WebAssemblyHotReloadClient(
+            clientLogger,
+            agentLogger,
+            browserRefreshServer,
+            generationId,
+            enableBrowserToolsReplay,
+            capabilities,
+            targetFramework,
+            context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
     }
 
     private static string GetMiddlewareAssemblyPath()
         => GetInjectedAssemblyPath(MiddlewareTargetFramework, "Microsoft.AspNetCore.Watch.BrowserRefresh");
+
+    internal virtual IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
+        AbstractBrowserRefreshServer browserRefreshServer,
+        BrowserToolsLaunchFeatures features)
+        => new HostingStartupBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer, features);
 
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {

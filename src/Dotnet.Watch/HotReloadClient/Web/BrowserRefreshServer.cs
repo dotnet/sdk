@@ -7,9 +7,6 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -31,6 +28,8 @@ internal sealed class BrowserRefreshServer(
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
+    private BrowserToolsEndpointRouter? _browserToolsEndpointRouter;
+
     protected override bool SuppressTimeouts
         => suppressTimeouts;
 
@@ -42,30 +41,29 @@ internal sealed class BrowserRefreshServer(
             webSocketConfig = webSocketConfig.WithSecurePort(null);
         }
 
-        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig, WebSocketRequestAsync, cancellationToken);
+        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig, HandleRequestAsync, cancellationToken);
+        _browserToolsEndpointRouter = new BrowserToolsEndpointRouter(
+            Guid.NewGuid(),
+            PublicKey,
+            BrowserToolsUpdateStore,
+            this);
 
         // URLs are only available after the server has started.
-        return new WebServerHost(server, server.ServerUrls, virtualDirectory: "/");
+        return new WebServerHost(
+            server,
+            webSocketEndpoints: server.ServerUrls,
+            httpEndpoints: server.HttpServerUrls,
+            virtualDirectory: "/");
     }
 
-    private async Task WebSocketRequestAsync(HttpContext context)
+    private Task HandleRequestAsync(HttpContext context)
     {
-        if (!context.WebSockets.IsWebSocketRequest)
+        if (context.Request.Path.StartsWithSegments(BrowserToolsProtocol.RoutePrefix))
         {
-            context.Response.StatusCode = 400;
-            return;
+            return (_browserToolsEndpointRouter ?? throw new InvalidOperationException("Server not started")).HandleAsync(context);
         }
 
-        if (context.WebSockets.WebSocketRequestedProtocols is not [var subProtocol])
-        {
-            subProtocol = null;
-        }
-
-        var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
-
-        // client socket ownership is transferred to the connection:
-        var connection = OnBrowserConnected(clientSocket, subProtocol);
-        await connection.Disconnected.Task;
+        return AcceptBrowserConnectionAsync(context);
     }
 }
 
