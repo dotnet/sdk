@@ -31,7 +31,7 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
 
         var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
             server,
-            BrowserToolsLaunchFeatures.BrowserRefresh | BrowserToolsLaunchFeatures.ManagedHotReload);
+            enableManagedHotReload: true);
 
         Assert.IsInstanceOfType<GatewayProxyBrowserToolsLaunchConfigurator>(configurator);
 
@@ -64,29 +64,62 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
 
         var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
             server,
-            BrowserToolsLaunchFeatures.BrowserRefresh | BrowserToolsLaunchFeatures.ManagedHotReload);
+            enableManagedHotReload: true);
 
         Assert.IsInstanceOfType<HostingStartupBrowserToolsLaunchConfigurator>(configurator);
     }
 
     [TestMethod]
-    public void GetBrowserToolsLaunchFeatures_HostedWasm_EnablesLegacyHtmlInjection()
+    [DataRow("net8.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net9.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net10.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net11.0", typeof(ForwardingBrowserToolsLaunchConfigurator))]
+    public void WebServer_SelectsBrowserToolsLaunchStrategy(
+        string targetFramework,
+        Type expectedConfiguratorType)
     {
-        var appModel = new BlazorWebAssemblyHostedAppModel(
-            context: null!,
-            clientProject: null!,
-            serverProject: null!);
+        var wasmAppModel = CreateAppModel(targetFramework);
+        var appModel = new WebServerAppModel(wasmAppModel.Context, wasmAppModel.LaunchingProject);
+        using var browserRefreshServer = new TestBrowserRefreshServer(middlewareAssemblyPath: "middleware.dll");
 
-        var features = appModel.GetBrowserToolsLaunchFeatures(BrowserToolsLaunchFeatures.BrowserRefresh);
+        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
+            browserRefreshServer,
+            enableManagedHotReload: false);
 
-        Assert.AreEqual(
-            BrowserToolsLaunchFeatures.BrowserRefresh | BrowserToolsLaunchFeatures.LegacyHtmlInjection,
-            features);
+        Assert.IsInstanceOfType(configurator, expectedConfiguratorType);
     }
 
-    private BlazorWebAssemblyAppModel CreateAppModel(string targetFramework)
+    [TestMethod]
+    [DataRow("net8.0", "net8.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net9.0", "net9.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net10.0", "net10.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net11.0", "net10.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net10.0", "net11.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
+    [DataRow("net11.0", "net11.0", typeof(ForwardingBrowserToolsLaunchConfigurator))]
+    public void HostedWasm_SelectsBrowserToolsLaunchStrategy(
+        string clientTargetFramework,
+        string serverTargetFramework,
+        Type expectedConfiguratorType)
     {
-        var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier: targetFramework)
+        var clientAppModel = CreateAppModel(clientTargetFramework, identifierSuffix: "client");
+        var serverAppModel = CreateAppModel(serverTargetFramework, identifierSuffix: "server");
+        var appModel = new BlazorWebAssemblyHostedAppModel(
+            clientAppModel.Context,
+            clientAppModel.LaunchingProject,
+            serverAppModel.LaunchingProject);
+        using var browserRefreshServer = new TestBrowserRefreshServer(middlewareAssemblyPath: "middleware.dll");
+
+        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
+            browserRefreshServer,
+            enableManagedHotReload: true);
+
+        Assert.IsInstanceOfType(configurator, expectedConfiguratorType);
+    }
+
+    private BlazorWebAssemblyAppModel CreateAppModel(string targetFramework, string? identifierSuffix = null)
+    {
+        var identifier = identifierSuffix is null ? targetFramework : $"{targetFramework}-{identifierSuffix}";
+        var testAsset = TestAssets.CopyTestAsset("WatchBlazorWasm", identifier)
             .WithSource(targetFramework: targetFramework);
         var projectPath = Path.Combine(testAsset.Path, "blazorwasm.csproj");
         var projectRepresentation = new ProjectRepresentation(projectPath, entryPointFilePath: null);

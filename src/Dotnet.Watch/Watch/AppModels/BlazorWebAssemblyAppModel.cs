@@ -32,8 +32,8 @@ internal sealed class BlazorWebAssemblyAppModel(DotNetWatchContext context, Proj
 
     internal override IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
         AbstractBrowserRefreshServer browserRefreshServer,
-        BrowserToolsLaunchFeatures features)
+        bool enableManagedHotReload)
         => clientProject.IsNetCoreApp(Versions.Version11_0)
             ? new GatewayProxyBrowserToolsLaunchConfigurator(browserRefreshServer.ProviderAddress)
-            : base.CreateBrowserToolsLaunchConfigurator(browserRefreshServer, features);
+            : base.CreateBrowserToolsLaunchConfigurator(browserRefreshServer, enableManagedHotReload);
 }
