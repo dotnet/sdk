@@ -20,7 +20,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
         string launchSettingsPath,
         string? launchProfileName,
         string json,
-        Func<string, string>? getVariableValue,
+        Func<string, string>? evaluateExpression,
         bool expandCommandLineArgs)
     {
         var profile = JsonSerializer.Deserialize(json, LaunchProfileJsonSerializerContext.Default.ExecutableLaunchProfile);
@@ -29,7 +29,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
             return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
-        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, getVariableValue, out var workingDirectory, out var error))
+        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, evaluateExpression, out var workingDirectory, out var error))
         {
             return LaunchProfileParseResult.Failure(error);
         }
@@ -37,11 +37,11 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
         return LaunchProfileParseResult.Success(new ExecutableLaunchProfile
         {
             LaunchProfileName = launchProfileName,
-            ExecutablePath = ExpandVariables(profile.ExecutablePath, getVariableValue),
-            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, getVariableValue, expandCommandLineArgs),
+            ExecutablePath = ExpandVariables(profile.ExecutablePath, evaluateExpression),
+            CommandLineArgs = ParseCommandLineArgs(profile.CommandLineArgs, evaluateExpression, expandCommandLineArgs),
             WorkingDirectory = workingDirectory,
             DotNetRunMessages = profile.DotNetRunMessages,
-            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, getVariableValue),
+            EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables, evaluateExpression),
         });
     }
 
@@ -54,7 +54,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
     private static bool TryParseWorkingDirectory(
         string launchSettingsPath,
         string? value,
-        Func<string, string>? getVariableValue,
+        Func<string, string>? evaluateExpression,
         out string? workingDirectory,
         [NotNullWhen(false)] out string? error)
     {
@@ -65,7 +65,7 @@ internal sealed class ExecutableLaunchProfileParser : LaunchProfileParser
             return true;
         }
 
-        var expandedValue = ExpandVariables(value, getVariableValue);
+        var expandedValue = ExpandVariables(value, evaluateExpression);
 
         try
         {

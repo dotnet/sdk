@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace Microsoft.DotNet.ProjectTools;
 
 internal readonly record struct LaunchProfileParserOptions(
-    Func<string, string>? ExpandMSBuildProperty,
+    Func<string, string>? EvaluateExpression,
     bool ExpandProjectProfile,
     bool ExpandExecutableProfile,
     bool ExpandCommandLineArgs);
@@ -22,15 +22,15 @@ internal abstract partial class LaunchProfileParser
         string launchSettingsPath,
         string? launchProfileName,
         string json,
-        Func<string, string>? getVariableValue,
+        Func<string, string>? evaluateExpression,
         bool expandCommandLineArgs);
 
     protected static string? ParseCommandLineArgs(
         string? value,
-        Func<string, string>? getVariableValue,
+        Func<string, string>? evaluateExpression,
         bool expandCommandLineArgs)
         => value is not null
-            ? ExpandVariables(value, expandCommandLineArgs ? getVariableValue : null)
+            ? ExpandVariables(value, expandCommandLineArgs ? evaluateExpression : null)
             : null;
 
     public static string GetLaunchProfileDisplayName(string? launchProfile)
@@ -41,7 +41,7 @@ internal abstract partial class LaunchProfileParser
 
     protected static ImmutableDictionary<string, string> ParseEnvironmentVariables(
         ImmutableDictionary<string, string> values,
-        Func<string, string>? getVariableValue)
+        Func<string, string>? evaluateExpression)
     {
         if (values.Count == 0)
         {
@@ -52,7 +52,7 @@ internal abstract partial class LaunchProfileParser
         foreach (var (key, value) in values)
         {
             // override previously set variables:
-            builder[key] = ExpandVariables(value, getVariableValue);
+            builder[key] = ExpandVariables(value, evaluateExpression);
         }
 
         return builder.ToImmutable();
@@ -60,7 +60,7 @@ internal abstract partial class LaunchProfileParser
 
     protected static ImmutableDictionary<string, string> ExpandMSBuildProperties(
         ImmutableDictionary<string, string> values,
-        Func<string, string> getVariableValue)
+        Func<string, string> evaluateExpression)
     {
         if (values.Count == 0)
         {
@@ -70,20 +70,20 @@ internal abstract partial class LaunchProfileParser
         var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
         foreach (var (key, value) in values)
         {
-            builder[key] = ExpandMSBuildProperties(value, getVariableValue);
+            builder[key] = ExpandMSBuildProperties(value, evaluateExpression);
         }
 
         return builder.ToImmutable();
     }
 
-    protected static string ExpandMSBuildProperties(string value, Func<string, string> getVariableValue)
-        => MSBuildPropertyRegex().Replace(value, match => getVariableValue(match.Value));
+    protected static string ExpandMSBuildProperties(string value, Func<string, string> evaluateExpression)
+        => MSBuildPropertyRegex().Replace(value, match => evaluateExpression(match.Value));
 
-    internal static string ExpandVariables(string value, Func<string, string>? getVariableValue)
+    internal static string ExpandVariables(string value, Func<string, string>? evaluateExpression)
     {
         string expandedValue = Environment.ExpandEnvironmentVariables(value);
-        return getVariableValue is null
+        return evaluateExpression is null
             ? expandedValue
-            : ExpandMSBuildProperties(expandedValue, getVariableValue);
+            : ExpandMSBuildProperties(expandedValue, evaluateExpression);
     }
 }

@@ -725,7 +725,7 @@ internal static class SolutionAndProjectUtility
         string appDesignerFolder,
         BuildOptions buildOptions,
         string? profileName,
-        Func<string, string> expandMSBuildProperty)
+        Func<string, string> evaluateExpression)
     {
         if (buildOptions.NoLaunchProfile)
         {
@@ -764,7 +764,7 @@ internal static class SolutionAndProjectUtility
             launchSettingsPath,
             profileName,
             new LaunchProfileParserOptions(
-                expandMSBuildProperty,
+                evaluateExpression,
                 ExpandProjectProfile: false,
                 ExpandExecutableProfile: false,
                 ExpandCommandLineArgs: !buildOptions.NoLaunchProfileArguments));
@@ -783,7 +783,7 @@ internal static class SolutionAndProjectUtility
         {
             return ProjectLaunchProfileParser.ExpandMSBuildProperties(
                 projectProfile,
-                expandMSBuildProperty,
+                evaluateExpression,
                 expandCommandLineArgs: !buildOptions.NoLaunchProfileArguments,
                 expandApplicationUrl: false);
         }
