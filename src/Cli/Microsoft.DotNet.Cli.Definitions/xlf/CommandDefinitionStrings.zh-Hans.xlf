@@ -2132,11 +2132,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">运行本地工具。请注意，此命令不能用于运行全局工具。 </target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolSearchAddSourceOptionDescription">
-        <source>Add an additional NuGet package source to search.</source>
-        <target state="new">Add an additional NuGet package source to search.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
         <target state="needs-review-translation">在 nuget.org 中搜索 dotnet 工具</target>
@@ -2165,11 +2160,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">用于分页的要跳过的结果数。</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSourceOptionDescription">
-        <source>Replace all NuGet package sources to search with these.</source>
-        <target state="new">Replace all NuGet package sources to search with these.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

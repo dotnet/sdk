@@ -2132,11 +2132,6 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
         <target state="translated">Eseguire uno strumento locale. Si noti che questo comando non può essere utilizzato per eseguire uno strumento globale. </target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolSearchAddSourceOptionDescription">
-        <source>Add an additional NuGet package source to search.</source>
-        <target state="new">Add an additional NuGet package source to search.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
         <target state="needs-review-translation">Cerca negli strumenti dotnet in nuget.org</target>
@@ -2165,11 +2160,6 @@ Il valore predefinito è 'false'. Tuttavia, quando la destinazione è .NET 7 o u
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">Numero di risultati da ignorare per l'impaginazione.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSourceOptionDescription">
-        <source>Replace all NuGet package sources to search with these.</source>
-        <target state="new">Replace all NuGet package sources to search with these.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

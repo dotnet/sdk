@@ -12,18 +12,9 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
 {
     internal readonly record struct PackageAvailabilityCandidate(string PackageId, string PackageVersion);
 
-    internal sealed class PackageAvailabilityResult
-    {
-        internal PackageAvailabilityResult(IReadOnlySet<PackageAvailabilityCandidate> availablePackages, bool anyFeedSucceeded)
-        {
-            AvailablePackages = availablePackages;
-            AnyFeedSucceeded = anyFeedSucceeded;
-        }
-
-        internal IReadOnlySet<PackageAvailabilityCandidate> AvailablePackages { get; }
-
-        internal bool AnyFeedSucceeded { get; }
-    }
+    internal sealed record PackageAvailabilityResult(
+        IReadOnlySet<PackageAvailabilityCandidate> AvailablePackages,
+        bool AnyFeedSucceeded);
 
     internal sealed class PackageAvailabilityChecker
     {
@@ -35,20 +26,21 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
         private readonly PackageSourceMapping? _sourceMapping;
         private readonly ILogger _logger;
         private readonly Action<string> _reportFeedFailure;
-        private readonly Func<PackageSource, SourceRepository> _repositoryFactory;
+        private readonly Func<PackageSource, CancellationToken, Task<FindPackageByIdResource?>> _resourceFactory;
 
         internal PackageAvailabilityChecker(
             IReadOnlyList<PackageSource> sources,
             PackageSourceMapping? sourceMapping = null,
             ILogger? logger = null,
             Action<string>? reportFeedFailure = null,
-            Func<PackageSource, SourceRepository>? repositoryFactory = null)
+            Func<PackageSource, CancellationToken, Task<FindPackageByIdResource?>>? resourceFactory = null)
         {
             _sources = sources ?? throw new ArgumentNullException(nameof(sources));
             _sourceMapping = sourceMapping;
             _logger = logger ?? NullLogger.Instance;
             _reportFeedFailure = reportFeedFailure ?? (message => Reporter.Error.WriteLine(message));
-            _repositoryFactory = repositoryFactory ?? ((PackageSource source) => Repository.Factory.GetCoreV3(source));
+            _resourceFactory = resourceFactory ?? ((source, token) =>
+                Repository.Factory.GetCoreV3(source).GetResourceAsync<FindPackageByIdResource>(token));
         }
 
         internal static PackageSourceMapping? GetEffectivePackageSourceMapping(
@@ -81,43 +73,30 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
         {
             if (_sources.Count == 0)
             {
-                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: false);
+                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), AnyFeedSucceeded: false);
             }
 
             Dictionary<string, List<ParsedCandidate>> candidatesByPackageId = ParseAndGroupCandidates(candidates);
             if (candidatesByPackageId.Count == 0)
             {
-                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: true);
-            }
-
-            List<FeedWork> feedWork = CreateFeedWork(candidatesByPackageId);
-            if (feedWork.Count == 0)
-            {
-                // Package source mapping excluded every candidate, so no feed query was required.
-                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: true);
+                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), AnyFeedSucceeded: true);
             }
 
             using SemaphoreSlim throttle = new(MaxConcurrentPackageChecks, MaxConcurrentPackageChecks);
-            FeedResourceResult[] feedResources = await Task.WhenAll(
-                feedWork.Select(work => ResolveResourceAsync(work, throttle, cancellationToken))).ConfigureAwait(false);
-
-            QueryResult[] queryResults = await Task.WhenAll(
-                feedResources
-                    .Where(result => result.Resource != null)
-                    .SelectMany(result => result.Work.CandidatesByPackageId.Select(package =>
-                        QueryPackageAsync(result.Work.Source, result.Resource!, package.Key, package.Value, throttle, cancellationToken))))
+            FeedResult?[] results = await Task.WhenAll(
+                _sources.Select(source => CheckFeedAsync(source, candidatesByPackageId, throttle, cancellationToken)))
                 .ConfigureAwait(false);
+            FeedResult[] queriedResults = results.OfType<FeedResult>().ToArray();
+            if (queriedResults.Length == 0)
+            {
+                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), AnyFeedSucceeded: true);
+            }
 
-            ReportFeedFailures(feedResources, queryResults);
-
-            HashSet<PackageAvailabilityCandidate> availablePackages = queryResults
-                .Where(result => result.AvailableCandidates != null)
-                .SelectMany(result => result.AvailableCandidates!)
-                .ToHashSet();
+            ReportFeedFailures(queriedResults);
 
             return new PackageAvailabilityResult(
-                availablePackages,
-                anyFeedSucceeded: queryResults.Any(result => result.Succeeded));
+                queriedResults.SelectMany(result => result.AvailablePackages).ToHashSet(),
+                queriedResults.Any(result => result.Succeeded));
         }
 
         private static Dictionary<string, List<ParsedCandidate>> ParseAndGroupCandidates(
@@ -144,76 +123,95 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             return candidatesByPackageId;
         }
 
-        private List<FeedWork> CreateFeedWork(Dictionary<string, List<ParsedCandidate>> candidatesByPackageId)
-        {
-            List<FeedWork> work = [];
-            foreach (PackageSource source in _sources)
-            {
-                IReadOnlyDictionary<string, List<ParsedCandidate>> eligibleCandidates = _sourceMapping == null
-                    ? candidatesByPackageId
-                    : candidatesByPackageId
-                        .Where(package => _sourceMapping
-                            .GetConfiguredPackageSources(package.Key)
-                            .Contains(source.Name, StringComparer.OrdinalIgnoreCase))
-                        .ToDictionary(package => package.Key, package => package.Value, StringComparer.OrdinalIgnoreCase);
-
-                if (eligibleCandidates.Count > 0)
-                {
-                    work.Add(new FeedWork(source, eligibleCandidates));
-                }
-            }
-
-            return work;
-        }
-
-        private async Task<FeedResourceResult> ResolveResourceAsync(
-            FeedWork work,
+        private async Task<FeedResult?> CheckFeedAsync(
+            PackageSource source,
+            Dictionary<string, List<ParsedCandidate>> candidatesByPackageId,
             SemaphoreSlim throttle,
             CancellationToken cancellationToken)
         {
-            await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
+            Dictionary<string, List<ParsedCandidate>> eligibleCandidates = candidatesByPackageId
+                .Where(package => _sourceMapping == null || _sourceMapping
+                    .GetConfiguredPackageSources(package.Key)
+                    .Contains(source.Name, StringComparer.OrdinalIgnoreCase))
+                .ToDictionary(package => package.Key, package => package.Value, StringComparer.OrdinalIgnoreCase);
+
+            if (eligibleCandidates.Count == 0)
+            {
+                return null;
+            }
+
+            FindPackageByIdResource? resource;
             try
             {
-                SourceRepository repository = _repositoryFactory(work.Source);
-                FindPackageByIdResource? resource =
-                    await repository.GetResourceAsync<FindPackageByIdResource>(cancellationToken).ConfigureAwait(false);
-                return new FeedResourceResult(work, resource, ResourceUnavailable: resource == null, Exception: null);
+                resource = await RunThrottledAsync(
+                    throttle,
+                    () => _resourceFactory(source, cancellationToken),
+                    cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                return new FeedResourceResult(work, Resource: null, ResourceUnavailable: false, ex);
+                return new FeedResult(source, [], Succeeded: false, ex, ResourceUnavailable: false);
             }
-            finally
+
+            if (resource == null)
             {
-                throttle.Release();
+                return new FeedResult(source, [], Succeeded: false, Exception: null, ResourceUnavailable: true);
             }
+
+            QueryResult[] results = await Task.WhenAll(
+                eligibleCandidates.Select(package =>
+                    QueryPackageAsync(resource, package.Key, package.Value, throttle, cancellationToken)))
+                .ConfigureAwait(false);
+
+            return new FeedResult(
+                source,
+                results.SelectMany(result => result.AvailablePackages),
+                results.Any(result => result.Succeeded),
+                results.FirstOrDefault(result => result.Exception != null)?.Exception,
+                ResourceUnavailable: false);
         }
 
         private async Task<QueryResult> QueryPackageAsync(
-            PackageSource source,
             FindPackageByIdResource resource,
             string packageId,
             IReadOnlyList<ParsedCandidate> packageCandidates,
             SemaphoreSlim throttle,
             CancellationToken cancellationToken)
         {
-            await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
             try
             {
-                using SourceCacheContext cacheContext = new();
-                IEnumerable<NuGetVersion> versions = await resource
-                    .GetAllVersionsAsync(packageId, cacheContext, _logger, cancellationToken)
-                    .ConfigureAwait(false);
+                IEnumerable<NuGetVersion> versions = await RunThrottledAsync(
+                    throttle,
+                    async () =>
+                    {
+                        using SourceCacheContext cacheContext = new();
+                        return await resource.GetAllVersionsAsync(packageId, cacheContext, _logger, cancellationToken)
+                            .ConfigureAwait(false);
+                    },
+                    cancellationToken).ConfigureAwait(false);
                 HashSet<NuGetVersion> availableVersions = new(versions, VersionComparer.VersionRelease);
-                IReadOnlyList<PackageAvailabilityCandidate> availableCandidates = packageCandidates
-                    .Where(candidate => availableVersions.Contains(candidate.Version))
-                    .Select(candidate => candidate.Candidate)
-                    .ToList();
-                return new QueryResult(source, Succeeded: true, availableCandidates, Exception: null);
+                return new QueryResult(
+                    packageCandidates
+                        .Where(candidate => availableVersions.Contains(candidate.Version))
+                        .Select(candidate => candidate.Candidate),
+                    Succeeded: true,
+                    Exception: null);
             }
             catch (Exception ex) when (ex is not OperationCanceledException)
             {
-                return new QueryResult(source, Succeeded: false, AvailableCandidates: null, ex);
+                return new QueryResult([], Succeeded: false, ex);
+            }
+        }
+
+        private static async Task<T> RunThrottledAsync<T>(
+            SemaphoreSlim throttle,
+            Func<Task<T>> action,
+            CancellationToken cancellationToken)
+        {
+            await throttle.WaitAsync(cancellationToken).ConfigureAwait(false);
+            try
+            {
+                return await action().ConfigureAwait(false);
             }
             finally
             {
@@ -221,30 +219,19 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
             }
         }
 
-        private void ReportFeedFailures(
-            IReadOnlyList<FeedResourceResult> feedResources,
-            IReadOnlyList<QueryResult> queryResults)
+        private void ReportFeedFailures(IEnumerable<FeedResult> results)
         {
-            foreach (PackageSource source in _sources)
+            foreach (FeedResult result in results)
             {
-                FeedResourceResult? feedResource = feedResources.FirstOrDefault(result => ReferenceEquals(result.Work.Source, source));
-                if (feedResource == null)
+                string source = GetSourceDisplayName(result.Source);
+                if (result.ResourceUnavailable)
                 {
-                    continue;
+                    _reportFeedFailure(string.Format(FeedResourceUnavailableMessage, source));
                 }
-
-                if (feedResource.ResourceUnavailable)
+                else if (result.Exception != null)
                 {
-                    _reportFeedFailure(string.Format(FeedResourceUnavailableMessage, GetSourceDisplayName(source)));
-                    continue;
-                }
-
-                Exception? exception = feedResource.Exception
-                    ?? queryResults.FirstOrDefault(result => ReferenceEquals(result.Source, source) && result.Exception != null)?.Exception;
-                if (exception != null)
-                {
-                    _reportFeedFailure(string.Format(FeedQueryFailedMessageFormat, GetSourceDisplayName(source), exception.Message));
-                    Reporter.Verbose.WriteLine(exception.ToString());
+                    _reportFeedFailure(string.Format(FeedQueryFailedMessageFormat, source, result.Exception.Message));
+                    Reporter.Verbose.WriteLine(result.Exception.ToString());
                 }
             }
         }
@@ -254,20 +241,16 @@ namespace Microsoft.TemplateEngine.Cli.NuGet
 
         private sealed record ParsedCandidate(PackageAvailabilityCandidate Candidate, NuGetVersion Version);
 
-        private sealed record FeedWork(
-            PackageSource Source,
-            IReadOnlyDictionary<string, List<ParsedCandidate>> CandidatesByPackageId);
-
-        private sealed record FeedResourceResult(
-            FeedWork Work,
-            FindPackageByIdResource? Resource,
-            bool ResourceUnavailable,
-            Exception? Exception);
-
         private sealed record QueryResult(
-            PackageSource Source,
+            IEnumerable<PackageAvailabilityCandidate> AvailablePackages,
             bool Succeeded,
-            IReadOnlyList<PackageAvailabilityCandidate>? AvailableCandidates,
             Exception? Exception);
+
+        private sealed record FeedResult(
+            PackageSource Source,
+            IEnumerable<PackageAvailabilityCandidate> AvailablePackages,
+            bool Succeeded,
+            Exception? Exception,
+            bool ResourceUnavailable);
     }
 }

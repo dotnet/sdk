@@ -2132,11 +2132,6 @@ O padrão é "false." No entanto, ao direcionar para .NET 7 ou inferior, o padr�
         <target state="translated">Execute uma ferramenta local. Observe que este comando não pode ser usado para executar uma ferramenta global. </target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolSearchAddSourceOptionDescription">
-        <source>Add an additional NuGet package source to search.</source>
-        <target state="new">Add an additional NuGet package source to search.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
         <target state="needs-review-translation">Pesquisar as ferramentas do dotnet em nuget.org</target>
@@ -2165,11 +2160,6 @@ O padrão é "false." No entanto, ao direcionar para .NET 7 ou inferior, o padr�
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">O número de resultados a serem ignorados para paginação.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSourceOptionDescription">
-        <source>Replace all NuGet package sources to search with these.</source>
-        <target state="new">Replace all NuGet package sources to search with these.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

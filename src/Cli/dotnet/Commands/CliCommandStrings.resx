@@ -2171,7 +2171,7 @@ Tool '{1}' (version '{2}') was successfully installed.</value>
     <value>Arguments forwarded to the tool</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
-    <value>Search .NET tools in configured NuGet package sources.</value>
+    <value>Search dotnet tools in nuget.org</value>
   </data>
   <data name="ToolSearchNoSourcesConfigured" xml:space="preserve">
     <value>No NuGet package sources are configured or enabled.</value>

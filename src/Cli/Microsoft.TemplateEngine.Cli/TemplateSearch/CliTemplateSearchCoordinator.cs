@@ -143,7 +143,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
             if (sourceConfiguration.PackageSources.Count == 0)
             {
                 Reporter.Error.WriteLine(LocalizableStrings.DetailsCommand_NoNuGetSources.Bold().Red());
-                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), anyFeedSucceeded: false);
+                return new PackageAvailabilityResult(new HashSet<PackageAvailabilityCandidate>(), AnyFeedSucceeded: false);
             }
 
             PackageSourceMapping? sourceMapping = PackageAvailabilityChecker.GetEffectivePackageSourceMapping(
@@ -160,8 +160,7 @@ namespace Microsoft.TemplateEngine.Cli.TemplateSearch
 
             if (candidates.Count == 0)
             {
-                // No versioned candidates means no feed query is required.
-                return new PackageAvailabilityResult(candidates, anyFeedSucceeded: true);
+                return new PackageAvailabilityResult(candidates, AnyFeedSucceeded: true);
             }
 
             PackageAvailabilityChecker checker = new(sourceConfiguration.PackageSources, sourceMapping);

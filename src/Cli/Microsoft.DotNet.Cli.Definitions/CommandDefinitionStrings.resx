@@ -1217,9 +1217,6 @@ The default is to publish a framework-dependent application.</value>
   <data name="ToolRunArgumentsDescription" xml:space="preserve">
     <value>Arguments forwarded to the tool</value>
   </data>
-  <data name="ToolSearchAddSourceOptionDescription" xml:space="preserve">
-    <value>Add an additional NuGet package source to search.</value>
-  </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
     <value>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</value>
   </data>
@@ -1237,9 +1234,6 @@ The default is to publish a framework-dependent application.</value>
   </data>
   <data name="ToolSearchSkipDescription" xml:space="preserve">
     <value>The number of results to skip, for pagination.</value>
-  </data>
-  <data name="ToolSearchSourceOptionDescription" xml:space="preserve">
-    <value>Replace all NuGet package sources to search with these.</value>
   </data>
   <data name="ToolSearchTakeArgumentName" xml:space="preserve">
     <value>Take</value>

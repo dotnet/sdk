@@ -2132,11 +2132,6 @@ Wartość domyślna to „false”. Jednak w przypadku, gdy docelową jest platf
         <target state="translated">Uruchom narzędzie lokalne. Pamiętaj, że tego polecenia nie można używać do uruchamiania narzędzia globalnego. </target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolSearchAddSourceOptionDescription">
-        <source>Add an additional NuGet package source to search.</source>
-        <target state="new">Add an additional NuGet package source to search.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
         <target state="needs-review-translation">Wyszukaj narzędzia dotnet w witrynie nuget.org</target>
@@ -2165,11 +2160,6 @@ Wartość domyślna to „false”. Jednak w przypadku, gdy docelową jest platf
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">Liczba wyników do pominięcia na potrzeby dzielenia na strony.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSourceOptionDescription">
-        <source>Replace all NuGet package sources to search with these.</source>
-        <target state="new">Replace all NuGet package sources to search with these.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">

@@ -12,78 +12,27 @@ namespace Microsoft.TemplateEngine.Cli.UnitTests.TemplateSearch
     public class CliTemplateSearchCoordinatorTests : BaseTest
     {
         [TestMethod]
-        public void IsConfirmedAvailable_ExactIdAndVersionMatch_ReturnsTrue()
+        [DataRow("1.0.0", "PackOne", "1.0.0", true)]
+        [DataRow("1.0.0", "PackOne", "2.0.0", false)]
+        [DataRow("1.0.0", "PackTwo", "1.0.0", false)]
+        [DataRow("1.0.0", null, null, false)]
+        [DataRow(null, null, null, true)]
+        [DataRow("", null, null, true)]
+        [DataRow("1.0.0", "packone", "1.0.0", false)]
+        public void IsConfirmedAvailable_MatchesExactPackageIdentity(
+            string? packageVersion,
+            string? availablePackageId,
+            string? availablePackageVersion,
+            bool expected)
         {
-            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", "1.0.0");
-            IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>
+            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", packageVersion);
+            HashSet<PackageAvailabilityCandidate> availablePackages = [];
+            if (availablePackageId != null)
             {
-                new("PackOne", "1.0.0"),
-            };
+                availablePackages.Add(new(availablePackageId, availablePackageVersion!));
+            }
 
-            Assert.IsTrue(CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
-        }
-
-        [TestMethod]
-        public void IsConfirmedAvailable_VersionMismatch_ReturnsFalse()
-        {
-            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", "1.0.0");
-            IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>
-            {
-                new("PackOne", "2.0.0"),
-            };
-
-            Assert.IsFalse(CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
-        }
-
-        [TestMethod]
-        public void IsConfirmedAvailable_DifferentPackageId_ReturnsFalse()
-        {
-            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", "1.0.0");
-            IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>
-            {
-                new("PackTwo", "1.0.0"),
-            };
-
-            Assert.IsFalse(CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
-        }
-
-        [TestMethod]
-        public void IsConfirmedAvailable_EmptyAvailableSet_ReturnsFalse()
-        {
-            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", "1.0.0");
-            IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>();
-
-            Assert.IsFalse(CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
-        }
-
-        [TestMethod]
-        public void IsConfirmedAvailable_NullVersionOnCatalogHit_PassesThroughAsAvailable()
-        {
-            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", version: null);
-            IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>();
-
-            Assert.IsTrue(CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
-        }
-
-        [TestMethod]
-        public void IsConfirmedAvailable_EmptyVersionOnCatalogHit_PassesThroughAsAvailable()
-        {
-            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", version: string.Empty);
-            IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>();
-
-            Assert.IsTrue(CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
-        }
-
-        [TestMethod]
-        public void IsConfirmedAvailable_PackageIdComparisonIsCaseSensitive()
-        {
-            ITemplatePackageInfo packageInfo = new MockTemplatePackageInfo("PackOne", "1.0.0");
-            IReadOnlySet<PackageAvailabilityCandidate> availablePackages = new HashSet<PackageAvailabilityCandidate>
-            {
-                new("packone", "1.0.0"),
-            };
-
-            Assert.IsFalse(CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
+            Assert.AreEqual(expected, CliTemplateSearchCoordinator.IsConfirmedAvailable(packageInfo, availablePackages));
         }
     }
 }

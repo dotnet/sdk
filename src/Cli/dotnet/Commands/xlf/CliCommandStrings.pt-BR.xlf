@@ -3559,7 +3559,7 @@ A ferramenta '{1}' (versão '{2}') foi instalada com êxito.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search .NET tools in configured NuGet package sources.</source>
+        <source>Search dotnet tools in nuget.org</source>
         <target state="needs-review-translation">Pesquisar as ferramentas do dotnet em nuget.org</target>
         <note />
       </trans-unit>

@@ -2132,11 +2132,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
         <target state="translated">Запуск локального инструмента. Обратите внимание, что с помощью этой команды невозможно запустить глобальный инструмент. </target>
         <note />
       </trans-unit>
-      <trans-unit id="ToolSearchAddSourceOptionDescription">
-        <source>Add an additional NuGet package source to search.</source>
-        <target state="new">Add an additional NuGet package source to search.</target>
-        <note />
-      </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
         <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
         <target state="needs-review-translation">Поиск инструментов .NET на сайте nuget.org</target>
@@ -2165,11 +2160,6 @@ The default is 'false.' However, when targeting .NET 7 or lower, the default is 
       <trans-unit id="ToolSearchSkipDescription">
         <source>The number of results to skip, for pagination.</source>
         <target state="translated">Число пропускаемых результатов для разбивки на страницы.</target>
-        <note />
-      </trans-unit>
-      <trans-unit id="ToolSearchSourceOptionDescription">
-        <source>Replace all NuGet package sources to search with these.</source>
-        <target state="new">Replace all NuGet package sources to search with these.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchTakeArgumentName">
