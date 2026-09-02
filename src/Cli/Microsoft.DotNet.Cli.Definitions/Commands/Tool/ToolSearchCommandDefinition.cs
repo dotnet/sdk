@@ -35,9 +35,9 @@ internal sealed class ToolSearchCommandDefinition : Command
 
     public readonly Option<FileInfo> ConfigOption = ToolAppliedOption.CreateConfigOption();
 
-    public readonly Option<string[]> SourceOption = ToolAppliedOption.CreateSourceOption(CommandDefinitionStrings.ToolSearchSourceOptionDescription);
+    public readonly Option<string[]> SourceOption = ToolAppliedOption.CreateSourceOption(CommandDefinitionStrings.SourceDescription);
 
-    public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption(CommandDefinitionStrings.ToolSearchAddSourceOptionDescription);
+    public readonly Option<string[]> AddSourceOption = ToolAppliedOption.CreateAddSourceOption(CommandDefinitionStrings.Option_AddSource);
 
     public readonly Option<bool> InteractiveOption = CommonOptions.CreateInteractiveOption();
 
