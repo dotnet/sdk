@@ -41,7 +41,7 @@ public class NoRestoreTests
         var context = CreateContext();
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run"], evaluator.GetProcessArguments(iteration: 0));
     }
 
     [TestMethod]
@@ -50,11 +50,11 @@ public class NoRestoreTests
         var context = CreateContext();
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run"], evaluator.GetProcessArguments(iteration: 0));
 
         evaluator.RequiresRevaluation = true;
 
-        AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["run"], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
@@ -63,8 +63,8 @@ public class NoRestoreTests
         var context = CreateContext([], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["run"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run"], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
@@ -73,8 +73,8 @@ public class NoRestoreTests
         var context = CreateContext(["--no-restore"], TestOptions.GetEnvironmentOptions() with { SuppressMSBuildIncrementalism = true });
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
@@ -83,8 +83,8 @@ public class NoRestoreTests
         var context = CreateContext(["--", "--no-restore"]);
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["run", "--no-restore", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["run", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run", "--no-restore", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
@@ -93,8 +93,8 @@ public class NoRestoreTests
         var context = CreateContext(["--", "--", "--no-restore"]);
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["run", "--no-restore", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["run", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run", "--no-restore", "--", "--", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
@@ -103,8 +103,8 @@ public class NoRestoreTests
         var context = CreateContext();
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run"], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["run"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run", "--no-restore"], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
@@ -113,8 +113,8 @@ public class NoRestoreTests
         var context = CreateContext(["run", "-f", ToolsetInfo.CurrentTargetFramework]);
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["run", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["run", "--no-restore", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["run", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["run", "--no-restore", "--framework", ToolsetInfo.CurrentTargetFramework], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
@@ -123,17 +123,55 @@ public class NoRestoreTests
         var context = CreateContext(["test", "--filter SomeFilter"]);
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["test", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["test", "--no-restore", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["test", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["test", "--no-restore", "--filter SomeFilter"], evaluator.GetProcessArguments(iteration: 1));
     }
 
     [TestMethod]
-    public void DoesNotModifyArgumentsForUnknownCommands()
+    public void PreservesArgumentsForPackCommand()
     {
         var context = CreateContext(["pack"]);
         var evaluator = new BuildEvaluator(context);
 
-        AssertEx.SequenceEqual(["pack"], evaluator.GetProcessArguments(iteration: 0));
-        AssertEx.SequenceEqual(["pack"], evaluator.GetProcessArguments(iteration: 1));
+        AssertProcessArguments(["pack"], evaluator.GetProcessArguments(iteration: 0));
+        AssertProcessArguments(["pack"], evaluator.GetProcessArguments(iteration: 1));
+    }
+
+    [TestMethod]
+    public void DoesNotAddReservedPropertiesToFormatCommand()
+    {
+        var context = CreateContext(["format", "--verbosity", "detailed"]);
+        var evaluator = new BuildEvaluator(context);
+
+        AssertEx.SequenceEqual(
+            ["format", "--verbosity", "detailed"],
+            evaluator.GetProcessArguments(iteration: 0));
+    }
+
+    [TestMethod]
+    public void AddsReservedPropertiesBeforeApplicationArguments()
+    {
+        var environmentOptions = TestOptions.GetEnvironmentOptions() with { SuppressBrowserRefresh = true };
+        var context = CreateContext(["--", "application-argument"], environmentOptions);
+        var evaluator = new BuildEvaluator(context);
+
+        AssertProcessArguments(
+            ["run", "--", "application-argument"],
+            evaluator.GetProcessArguments(iteration: 0),
+            browserToolsEnabled: false);
+    }
+
+    private static void AssertProcessArguments(
+        IEnumerable<string> expectedArgumentsWithoutReservedProperties,
+        IReadOnlyList<string> actualArguments,
+        bool browserToolsEnabled = true)
+    {
+        var expectedArguments = expectedArgumentsWithoutReservedProperties.ToList();
+        var applicationArgumentsSeparator = expectedArguments.IndexOf("--");
+        var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : expectedArguments.Count;
+        expectedArguments.Insert(reservedPropertiesIndex++, "-p:DotNetWatchBuild=true");
+        expectedArguments.Insert(reservedPropertiesIndex, $"-p:DotNetWatchBrowserTools={browserToolsEnabled}");
+
+        AssertEx.SequenceEqual(expectedArguments, actualArguments);
     }
 }

@@ -97,6 +97,14 @@ internal class BuildEvaluator
 
         arguments.AddRange(MainProjectOptions.CommandArguments);
 
+        if (MainProjectOptions.Command is "build" or "clean" or "msbuild" or "pack" or "publish" or "restore" or "run" or "test")
+        {
+            var applicationArgumentsSeparator = arguments.IndexOf("--");
+            var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : arguments.Count;
+            arguments.Insert(reservedPropertiesIndex++, $"-p:{PropertyNames.DotNetWatchBuild}=true");
+            arguments.Insert(reservedPropertiesIndex, $"-p:{PropertyNames.DotNetWatchBrowserTools}={!_context.EnvironmentOptions.SuppressBrowserRefresh}");
+        }
+
         return arguments;
     }
 
