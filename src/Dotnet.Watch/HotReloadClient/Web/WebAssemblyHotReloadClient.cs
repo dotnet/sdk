@@ -20,7 +20,6 @@ internal sealed class WebAssemblyHotReloadClient(
     ILogger agentLogger,
     AbstractBrowserRefreshServer browserRefreshServer,
     Guid generationId,
-    bool enableBrowserToolsReplay,
     ImmutableArray<string> projectHotReloadCapabilities,
     Version projectTargetFrameworkVersion,
     bool suppressBrowserRequestsForTesting)
@@ -121,18 +120,15 @@ internal sealed class WebAssemblyHotReloadClient(
         return QueueUpdateBatch(
             sendAndReceive: async batchId =>
             {
-                if (enableBrowserToolsReplay)
-                {
-                    browserRefreshServer.BrowserToolsUpdateStore.Append(new BrowserToolsUpdateBatch(
-                        generationId,
-                        batchId,
-                        [.. deltas.Select(static delta => new BrowserToolsManagedCodeUpdate(
-                            delta.ModuleId,
-                            delta.MetadataDelta,
-                            delta.ILDelta,
-                            delta.PdbDelta,
-                            delta.UpdatedTypes))]));
-                }
+                browserRefreshServer.BrowserToolsUpdateStore.Append(new BrowserToolsUpdateBatch(
+                    generationId,
+                    batchId,
+                    [.. deltas.Select(static delta => new BrowserToolsManagedCodeUpdate(
+                        delta.ModuleId,
+                        delta.MetadataDelta,
+                        delta.ILDelta,
+                        delta.PdbDelta,
+                        delta.UpdatedTypes))]));
 
                 // When testing abstract away the browser and pretend all changes have been applied:
                 if (suppressBrowserRequestsForTesting)
@@ -157,7 +153,7 @@ internal sealed class WebAssemblyHotReloadClient(
                     }),
                     applyOperationCancellationToken);
 
-                return result ?? enableBrowserToolsReplay;
+                return result ?? true;
             },
             applyOperationCancellationToken);
     }

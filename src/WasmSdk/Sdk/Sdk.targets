@@ -28,7 +28,7 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmHotReloadIntermediatePath>$(IntermediateOutputPath)hotreload\</_WasmHotReloadIntermediatePath>
       <_WasmHotReloadModuleFileName>Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</_WasmHotReloadModuleFileName>
       <_WasmHotReloadModuleFileName
-        Condition="'$(DotNetWatchBrowserTools)' == 'true' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.lib.module.js</_WasmHotReloadModuleFileName>
+        Condition="'$(DotNetWatchBrowserTools)' == 'true'">Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.lib.module.js</_WasmHotReloadModuleFileName>
     </PropertyGroup>
 
     <!-- Copy the JS module and DLL to intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->

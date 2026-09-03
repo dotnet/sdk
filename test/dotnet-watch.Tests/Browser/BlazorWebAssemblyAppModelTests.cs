@@ -16,22 +16,19 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    public async Task CreateBrowserToolsLaunchConfigurator_Net11StandaloneWasm_UsesOnlyGatewayEnvironment()
+    public async Task CreateBrowserToolsLaunchConfigurator_StandaloneWasm_UsesOnlyGatewayEnvironment()
     {
         var appModel = CreateAppModel("net11.0");
-        using var server = new TestBrowserRefreshServer(middlewareAssemblyPath: "unused")
+        using var server = new TestBrowserRefreshServer()
         {
             CreateAndStartHostImpl = () => new WebServerHost(
                 new TestListener(),
                 webSocketEndpoints: ["ws://127.0.0.1:1234"],
-                httpEndpoints: ["http://127.0.0.1:1234"],
-                virtualDirectory: "/")
+                httpEndpoints: ["http://127.0.0.1:1234"])
         };
         await server.StartAsync(TestContext.CancellationToken);
 
-        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
-            server,
-            enableManagedHotReload: true);
+        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(server);
 
         Assert.IsInstanceOfType<GatewayProxyBrowserToolsLaunchConfigurator>(configurator);
 
@@ -49,7 +46,6 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
 
         Assert.IsFalse(environment.ContainsKey(MiddlewareEnvironmentVariables.DotNetStartupHooks));
         Assert.IsFalse(environment.ContainsKey(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies));
-        Assert.IsFalse(environment.ContainsKey(MiddlewareEnvironmentVariables.DotNetModifiableAssemblies));
         Assert.IsFalse(environment.ContainsKey(MiddlewareEnvironmentVariables.LoggingLevel));
         Assert.DoesNotContain(
             key => key.StartsWith("ASPNETCORE_AUTO_RELOAD_", StringComparison.Ordinal),
@@ -57,49 +53,42 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
     }
 
     [TestMethod]
-    public void CreateBrowserToolsLaunchConfigurator_PreNet11StandaloneWasm_UsesHostingStartup()
+    public void CreateBrowserToolsLaunchConfigurator_PreNet11StandaloneWasm_UsesGateway()
     {
         var appModel = CreateAppModel("net10.0");
-        using var server = new TestBrowserRefreshServer(middlewareAssemblyPath: "middleware.dll");
+        using var server = new TestBrowserRefreshServer();
 
-        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
-            server,
-            enableManagedHotReload: true);
+        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(server);
 
-        Assert.IsInstanceOfType<HostingStartupBrowserToolsLaunchConfigurator>(configurator);
+        Assert.IsInstanceOfType<GatewayProxyBrowserToolsLaunchConfigurator>(configurator);
     }
 
     [TestMethod]
-    [DataRow("net8.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net9.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net10.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net11.0", typeof(ForwardingBrowserToolsLaunchConfigurator))]
-    public void WebServer_SelectsBrowserToolsLaunchStrategy(
-        string targetFramework,
-        Type expectedConfiguratorType)
+    [DataRow("net8.0")]
+    [DataRow("net9.0")]
+    [DataRow("net10.0")]
+    [DataRow("net11.0")]
+    public void WebServer_UsesForwardingBrowserToolsLaunchStrategy(string targetFramework)
     {
         var wasmAppModel = CreateAppModel(targetFramework);
         var appModel = new WebServerAppModel(wasmAppModel.Context, wasmAppModel.LaunchingProject);
-        using var browserRefreshServer = new TestBrowserRefreshServer(middlewareAssemblyPath: "middleware.dll");
+        using var browserRefreshServer = new TestBrowserRefreshServer();
 
-        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
-            browserRefreshServer,
-            enableManagedHotReload: false);
+        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(browserRefreshServer);
 
-        Assert.IsInstanceOfType(configurator, expectedConfiguratorType);
+        Assert.IsInstanceOfType<ForwardingBrowserToolsLaunchConfigurator>(configurator);
     }
 
     [TestMethod]
-    [DataRow("net8.0", "net8.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net9.0", "net9.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net10.0", "net10.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net11.0", "net10.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net10.0", "net11.0", typeof(HostingStartupBrowserToolsLaunchConfigurator))]
-    [DataRow("net11.0", "net11.0", typeof(ForwardingBrowserToolsLaunchConfigurator))]
-    public void HostedWasm_SelectsBrowserToolsLaunchStrategy(
+    [DataRow("net8.0", "net8.0")]
+    [DataRow("net9.0", "net9.0")]
+    [DataRow("net10.0", "net10.0")]
+    [DataRow("net11.0", "net10.0")]
+    [DataRow("net10.0", "net11.0")]
+    [DataRow("net11.0", "net11.0")]
+    public void HostedWasm_UsesForwardingBrowserToolsLaunchStrategy(
         string clientTargetFramework,
-        string serverTargetFramework,
-        Type expectedConfiguratorType)
+        string serverTargetFramework)
     {
         var clientAppModel = CreateAppModel(clientTargetFramework, identifierSuffix: "client");
         var serverAppModel = CreateAppModel(serverTargetFramework, identifierSuffix: "server");
@@ -107,13 +96,11 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
             clientAppModel.Context,
             clientAppModel.LaunchingProject,
             serverAppModel.LaunchingProject);
-        using var browserRefreshServer = new TestBrowserRefreshServer(middlewareAssemblyPath: "middleware.dll");
+        using var browserRefreshServer = new TestBrowserRefreshServer();
 
-        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(
-            browserRefreshServer,
-            enableManagedHotReload: true);
+        var configurator = appModel.CreateBrowserToolsLaunchConfigurator(browserRefreshServer);
 
-        Assert.IsInstanceOfType(configurator, expectedConfiguratorType);
+        Assert.IsInstanceOfType<ForwardingBrowserToolsLaunchConfigurator>(configurator);
     }
 
     private BlazorWebAssemblyAppModel CreateAppModel(string targetFramework, string? identifierSuffix = null)

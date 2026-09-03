@@ -22,11 +22,10 @@ internal sealed class BrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
-    string middlewareAssemblyPath,
     string dotnetPath,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    : AbstractBrowserRefreshServer(logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     private BrowserToolsEndpointRouter? _browserToolsEndpointRouter;
 
@@ -52,18 +51,12 @@ internal sealed class BrowserRefreshServer(
         return new WebServerHost(
             server,
             webSocketEndpoints: server.ServerUrls,
-            httpEndpoints: server.HttpServerUrls,
-            virtualDirectory: "/");
+            httpEndpoints: server.HttpServerUrls);
     }
 
     private Task HandleRequestAsync(HttpContext context)
     {
-        if (context.Request.Path.StartsWithSegments(BrowserToolsProtocol.RoutePrefix))
-        {
-            return (_browserToolsEndpointRouter ?? throw new InvalidOperationException("Server not started")).HandleAsync(context);
-        }
-
-        return AcceptBrowserConnectionAsync(context);
+        return (_browserToolsEndpointRouter ?? throw new InvalidOperationException("Server not started")).HandleAsync(context);
     }
 }
 

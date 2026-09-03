@@ -67,7 +67,7 @@ internal sealed class BrowserToolsEndpointRouter(
 
         if (path == BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath)
         {
-            await browserServer.AcceptBrowserConnectionAsync(context, requireSharedSecret: true);
+            await browserServer.AcceptBrowserConnectionAsync(context);
             return;
         }
 

@@ -13,21 +13,19 @@ internal sealed class WebServerHost : IDisposable
 {
     private readonly IDisposable _listener;
 
-    public WebServerHost(IDisposable listener, ImmutableArray<string> endPoints, string virtualDirectory)
-        : this(listener, endPoints, [.. endPoints.Select(GetHttpEndpoint)], virtualDirectory)
+    public WebServerHost(IDisposable listener, ImmutableArray<string> endPoints)
+        : this(listener, endPoints, [.. endPoints.Select(GetHttpEndpoint)])
     {
     }
 
     public WebServerHost(
         IDisposable listener,
         ImmutableArray<string> webSocketEndpoints,
-        ImmutableArray<string> httpEndpoints,
-        string virtualDirectory)
+        ImmutableArray<string> httpEndpoints)
     {
         _listener = listener;
         EndPoints = webSocketEndpoints;
         HttpEndPoints = httpEndpoints;
-        VirtualDirectory = virtualDirectory;
     }
 
     public ImmutableArray<string> EndPoints
@@ -36,11 +34,6 @@ internal sealed class WebServerHost : IDisposable
     }
 
     public ImmutableArray<string> HttpEndPoints
-    {
-        get;
-    }
-
-    public string VirtualDirectory
     {
         get;
     }

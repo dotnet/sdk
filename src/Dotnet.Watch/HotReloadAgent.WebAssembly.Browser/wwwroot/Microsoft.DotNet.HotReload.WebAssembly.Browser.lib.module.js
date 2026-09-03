@@ -5,18 +5,14 @@ const useBrowserToolsProvider = moduleFileName.startsWith(
     'Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.');
 let browserToolsSession;
 let browserToolsRouteBase;
-let useLegacyBrowserTools = false;
 
 export async function onRuntimeConfigLoaded(config) {
-    if (config.debugLevel !== 0 && globalThis.window?.document) {
-        useLegacyBrowserTools = !!document.querySelector("script[src*='aspnetcore-browser-refresh']");
-        if (useBrowserToolsProvider) {
-            // The Gateway reserves this same-origin route outside the application's path base.
-            browserToolsRouteBase = new URL('/_framework/dotnet-browser-tools/', document.baseURI);
-            browserToolsSession = await discoverBrowserToolsSession(browserToolsRouteBase);
-        }
+    if (config.debugLevel !== 0 && globalThis.window?.document && useBrowserToolsProvider) {
+        // The Gateway reserves this same-origin route outside the application's path base.
+        browserToolsRouteBase = new URL('/_framework/dotnet-browser-tools/', document.baseURI);
+        browserToolsSession = await discoverBrowserToolsSession(browserToolsRouteBase);
 
-        if (browserToolsSession || useLegacyBrowserTools) {
+        if (browserToolsSession) {
             config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] ??= "debug";
             config.environmentVariables["__ASPNETCORE_BROWSER_TOOLS"] ??= "true";
         }
@@ -27,17 +23,13 @@ export async function onRuntimeConfigLoaded(config) {
 }
 
 export async function onRuntimeReady({ getAssemblyExports }) {
-    if (!browserToolsSession && !useLegacyBrowserTools) {
+    if (!browserToolsSession) {
         return;
     }
 
     const exports = await getAssemblyExports("Microsoft.DotNet.HotReload.WebAssembly.Browser");
     const hotReload = exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload;
-    if (browserToolsSession) {
-        await hotReload.InitializeBrowserToolsAsync(document.baseURI);
-    } else {
-        await hotReload.InitializeAsync(document.baseURI);
-    }
+    hotReload.Initialize();
 
     if (!window.Blazor) {
         window.Blazor = {};
@@ -57,10 +49,6 @@ export async function onRuntimeReady({ getAssemblyExports }) {
 
     window.Blazor._internal.applyHotReloadDeltas = applyManagedCodeUpdates;
     window.Blazor._internal.getApplyUpdateCapabilities = getApplyUpdateCapabilities;
-
-    if (!browserToolsSession) {
-        return;
-    }
 
     const browserTools = await import(new URL('browser-tools.js', browserToolsRouteBase).href);
     const browserToolsConnection = await browserTools.connectBrowserTools(
