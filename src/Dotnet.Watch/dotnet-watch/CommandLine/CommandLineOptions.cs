@@ -21,6 +21,8 @@ internal sealed class CommandLineOptions
 {
     private static readonly ImmutableArray<string> s_binaryLogOptionNames = ["-bl", "/bl", "-binaryLogger", "--binaryLogger", "/binaryLogger"];
 
+    private static readonly ImmutableArray<string> s_multiThreadedOptionNames = ["-mt", "/mt", "--mt", "-multiThreaded", "/multiThreaded", "--multiThreaded"];
+
     public static readonly ParserConfiguration ParserConfiguration = new()
     {
         // To match dotnet command line parsing (see https://github.com/dotnet/sdk/blob/4712b35b94f2ad672e69ec35097cf86fc16c2e5e/src/Cli/dotnet/Parser.cs#L169):
@@ -123,7 +125,8 @@ internal sealed class CommandLineOptions
             isExplicitCommand,
             out var binLogToken,
             out var binLogPath,
-            out var commandArgumentsWithoutBinLog);
+            out var commandArgumentsWithoutBinLog,
+            out var multiThreadedTokens);
 
         // We assume that forwarded options, if any, are intended for `dotnet build`.
         // Exclude --target option since we need to control the targets being built.
@@ -139,6 +142,9 @@ internal sealed class CommandLineOptions
         {
             buildArguments.Add(binLogToken);
         }
+
+        // -mt configures the MSBuild engine used by the builds watch runs on every change.
+        buildArguments.AddRange(multiThreadedTokens);
 
         var logLevel = parseResult.GetValue(definition.VerboseOption)
             ? LogLevel.Debug
@@ -198,7 +204,8 @@ internal sealed class CommandLineOptions
         bool isExplicitCommand,
         out string? binLogToken,
         out string? binLogPath,
-        out IReadOnlyList<string> argumentsWithoutBinLog)
+        out IReadOnlyList<string> argumentsWithoutBinLog,
+        out IReadOnlyList<string> multiThreadedTokens)
     {
         var definition = (DotnetWatchCommandDefinition)parseResult.CommandResult.Command;
 
@@ -268,6 +275,8 @@ internal sealed class CommandLineOptions
         var argumentsWithoutBinLogBuilder = new List<string>();
         argumentsWithoutBinLogBuilder.AddRange(arguments);
 
+        var multiThreadedTokensBuilder = new List<string>();
+
         for (int i = 0; i < parseResult.UnmatchedTokens.Count; i++)
         {
             var token = parseResult.UnmatchedTokens[i];
@@ -302,6 +311,35 @@ internal sealed class CommandLineOptions
                         break;
                     }
                 }
+
+                // Watch runs `dotnet build` itself, so MSBuild engine switches have to be copied into the
+                // build arguments; commands do not model -mt as a forwarding option either.
+                foreach (var name in s_multiThreadedOptionNames)
+                {
+                    if (!token.StartsWith(name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        continue;
+                    }
+
+                    if (token.Length == name.Length)
+                    {
+                        multiThreadedTokensBuilder.Add(token);
+                        break;
+                    }
+
+                    // MSBuild parses the value with bool.Parse, so only true/false are meaningful.
+                    if (token.Length > name.Length + 1 && token[name.Length] == ':')
+                    {
+                        var value = token[(name.Length + 1)..];
+                        if (value.Equals("true", StringComparison.OrdinalIgnoreCase) ||
+                            value.Equals("false", StringComparison.OrdinalIgnoreCase))
+                        {
+                            multiThreadedTokensBuilder.Add(token);
+                        }
+
+                        break;
+                    }
+                }
             }
 
             if (!dashDashInserted && i >= unmatchedTokensBeforeDashDash)
@@ -320,6 +358,7 @@ internal sealed class CommandLineOptions
         }
 
         argumentsWithoutBinLog = argumentsWithoutBinLogBuilder;
+        multiThreadedTokens = multiThreadedTokensBuilder;
         return arguments;
     }
 
