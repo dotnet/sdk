@@ -24,18 +24,4 @@ internal sealed class BlazorWebAssemblyAppModel(DotNetWatchContext context, Proj
         Debug.Assert(browserRefreshServer != null);
         return [CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject)];
     }
-
-    /// <summary>
-    /// The Gateway (blazor-devserver) already hosts a YARP proxy. Reserve a route on it that forwards
-    /// <see cref="BrowserToolsProtocol.RoutePrefix"/> to the provider instead of injecting a hosting startup.
-    /// </summary>
-    internal override void ConfigureBrowserToolsLaunchEnvironment(IDictionary<string, string> environment, AbstractBrowserRefreshServer browserRefreshServer)
-    {
-        const string routeAndClusterName = "dotnet-browser-tools";
-
-        environment[$"ReverseProxy__Routes__{routeAndClusterName}__ClusterId"] = routeAndClusterName;
-        environment[$"ReverseProxy__Routes__{routeAndClusterName}__Order"] = "-1000";
-        environment[$"ReverseProxy__Routes__{routeAndClusterName}__Match__Path"] = BrowserToolsProtocol.RoutePrefix + "/{**catch-all}";
-        environment[$"ReverseProxy__Clusters__{routeAndClusterName}__Destinations__provider__Address"] = browserRefreshServer.ProviderAddress.AbsoluteUri;
-    }
 }
