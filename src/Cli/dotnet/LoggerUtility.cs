@@ -63,6 +63,12 @@ internal static class LoggerUtility
         return new FacadeLogger(dispatcher);
     }
 
+    /// <summary>
+    /// Splits tokens the SDK parser didn't model into those that configure MSBuild itself and those that
+    /// belong to whatever the verb ultimately launches (a test application for <c>dotnet test</c>, the
+    /// built app for <c>dotnet run</c>). Besides logger switches this also covers build-engine switches
+    /// such as <c>-mt</c>, which are meaningless to a launched process.
+    /// </summary>
     internal static void SeparateLoggerArguments(IEnumerable<string>? args, out ImmutableArray<string> loggerArgs, out ImmutableArray<string> nonLoggerArgs)
     {
         var loggerArgsBuilder = ImmutableArray.CreateBuilder<string>();
@@ -139,6 +145,26 @@ internal static class LoggerUtility
             }
 
             return true;
+        }
+
+        // -mt/-multiThreaded configures the MSBuild engine, so it has to reach MSBuild rather than being
+        // handed to the launched process as an unrecognized argument. MSBuild parses the value with
+        // bool.Parse and treats a bare switch as true, so only true/false are accepted here.
+        if (switchName.Equals("mt", comp) || switchName.Equals("multiThreaded", comp))
+        {
+            if (!hasValue)
+            {
+                return true;
+            }
+
+            if (!string.IsNullOrEmpty(switchValue) &&
+                (switchValue.Equals("true", comp) || switchValue.Equals("false", comp)))
+            {
+                return true;
+            }
+
+            loggerArg = null;
+            return false;
         }
 
         if (switchName.Equals("tlp", comp) || switchName.Equals("terminalLoggerParameters", comp) ||

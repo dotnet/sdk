@@ -42,6 +42,20 @@ namespace dotnet.Tests
         [DataRow("-noconsolelogger", "-noconsolelogger")]
         [DataRow("-noConsoleLogger", "-noConsoleLogger")]
         [DataRow("/noconsolelogger", "/noconsolelogger")]
+        [DataRow("-mt", "-mt")]
+        [DataRow("--mt", "--mt")]
+        [DataRow("/mt", "/mt")]
+        [DataRow("-MT", "-MT")]
+        [DataRow("-mt:true", "-mt:true")]
+        [DataRow("-mt:false", "-mt:false")]
+        [DataRow("-MT:False", "-MT:False")]
+        [DataRow("--mt:true", "--mt:true")]
+        [DataRow("/mt:false", "/mt:false")]
+        [DataRow("-multithreaded", "-multithreaded")]
+        [DataRow("--multiThreaded", "--multiThreaded")]
+        [DataRow("/multithreaded", "/multithreaded")]
+        [DataRow("-multithreaded:true", "-multithreaded:true")]
+        [DataRow("--multiThreaded:false", "--multiThreaded:false")]
         public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
         {
             LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
@@ -64,6 +78,11 @@ namespace dotnet.Tests
         [DataRow("-llextra")]
         [DataRow("foo.csproj")]
         [DataRow("")]
+        [DataRow("-mt:auto")]
+        [DataRow("-mt:on")]
+        [DataRow("-mt:")]
+        [DataRow("-mtx")]
+        [DataRow("--multithreadedextra")]
         public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
         {
             LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
@@ -93,6 +112,29 @@ namespace dotnet.Tests
                 "terminal logger arguments must be forwarded to the underlying MSBuild build invocation (https://github.com/dotnet/sdk/issues/52229).");
             buildOptions.TestApplicationArguments.Should().NotContain(terminalLoggerArg,
                 "terminal logger arguments must not be passed to the test application, which doesn't recognize them.");
+        }
+
+        [TestMethod]
+        [DataRow("-mt")]
+        [DataRow("--mt")]
+        [DataRow("-mt:true")]
+        [DataRow("-mt:false")]
+        [DataRow("--multiThreaded")]
+        [DataRow("/mt")]
+        public void GetBuildOptions_ForwardsMultiThreadedArgToMSBuild_NotToTestApplication(string multiThreadedArg)
+        {
+            // -mt configures the MSBuild engine used for the build that precedes the test run, so it has
+            // to reach MSBuild. Before this was handled it fell through to the test application, which
+            // rejects it as an unknown option.
+            var mtpCommand = new TestCommandDefinition.MicrosoftTestingPlatform();
+            var parseResult = mtpCommand.Parse([multiThreadedArg]);
+
+            var buildOptions = MSBuildUtility.GetBuildOptions(parseResult);
+
+            buildOptions.MSBuildArgs.Should().Contain(multiThreadedArg,
+                "-mt configures the MSBuild engine and must be forwarded to the underlying build invocation.");
+            buildOptions.TestApplicationArguments.Should().NotContain(multiThreadedArg,
+                "-mt must not be passed to the test application, which doesn't recognize it.");
         }
 
         [TestMethod]
