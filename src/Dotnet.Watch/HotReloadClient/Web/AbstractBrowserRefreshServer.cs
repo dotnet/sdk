@@ -26,7 +26,7 @@ namespace Microsoft.DotNet.HotReload;
 /// Associated with a project instance.
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
-    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
+    string middlewareAssemblyPath,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
@@ -88,10 +88,24 @@ internal abstract class AbstractBrowserRefreshServer(
     }
 
     /// <summary>
-    /// Configures the application process to expose the browser tools provider on its own origin.
+    /// Configures the application process to forward <see cref="BrowserToolsProtocol.RoutePrefix"/>
+    /// to the provider from a hosting startup.
     /// </summary>
     public void ConfigureLaunchEnvironment(IDictionary<string, string> builder)
-        => configureLaunchEnvironment(builder, this);
+    {
+        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadProviderAddress] = ProviderAddress.AbsoluteUri;
+
+        // Loading the assembly as a startup hook makes the out-of-application BrowserRefresh
+        // assembly resolvable when ASP.NET Core activates its hosting startup by simple name.
+        builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
+        builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
+
+        if (logger.IsEnabled(LogLevel.Trace))
+        {
+            // enable debug logging from the hosting startup:
+            builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
+        }
+    }
 
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.

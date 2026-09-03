@@ -37,10 +37,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             ? CreateManagedClients(clientLogger, agentLogger, browserRefreshServer)
             : [];
 
-        return new HotReloadClients(
-            managedClients,
-            browserRefreshServer,
-            useRefreshServerToApplyStaticAssets: true);
+        return new HotReloadClients(managedClients, browserRefreshServer, useRefreshServerToApplyStaticAssets: true);
     }
 
     protected WebAssemblyHotReloadClient CreateWebAssemblyClient(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject)
@@ -55,30 +52,9 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         => GetInjectedAssemblyPath(MiddlewareTargetFramework, "Microsoft.AspNetCore.Watch.BrowserRefresh");
 
     /// <summary>
-    /// Configures the application process to expose the browser tools provider on its own origin.
-    /// The default forwards <see cref="BrowserToolsProtocol.RoutePrefix"/> to the provider from a hosting startup.
+    /// Creates the browser tools provider for the project, forwarding
+    /// <see cref="BrowserToolsProtocol.RoutePrefix"/> to it from a hosting startup injected into the app.
     /// </summary>
-    internal virtual void ConfigureBrowserToolsLaunchEnvironment(IDictionary<string, string> environment, AbstractBrowserRefreshServer browserRefreshServer)
-    {
-        var middlewareAssemblyPath = GetMiddlewareAssemblyPath();
-
-        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadProviderAddress] = browserRefreshServer.ProviderAddress.AbsoluteUri;
-
-        // Loading the assembly as a startup hook makes the out-of-application BrowserRefresh
-        // assembly resolvable when ASP.NET Core activates its hosting startup by simple name.
-        environment.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
-        environment.InsertListItem(
-            MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies,
-            Path.GetFileNameWithoutExtension(middlewareAssemblyPath),
-            MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
-
-        if (browserRefreshServer.Logger.IsEnabled(LogLevel.Trace))
-        {
-            // enable debug logging from the hosting startup:
-            environment[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
-        }
-    }
-
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {
         var logger = context.LoggerFactory.CreateLogger(ServerLogComponentName, projectNode.GetDisplayName());
@@ -89,7 +65,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
                 logger,
                 connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
                 connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
-                configureLaunchEnvironment: ConfigureBrowserToolsLaunchEnvironment,
+                middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
                 webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
