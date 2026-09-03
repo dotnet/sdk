@@ -32,8 +32,7 @@ namespace Microsoft.DotNet.HotReload;
 internal sealed class HotReloadClients(
     ImmutableArray<HotReloadClient> clients,
     AbstractBrowserRefreshServer? browserRefreshServer,
-    bool useRefreshServerToApplyStaticAssets,
-    Action<IDictionary<string, string>>? configureBrowserToolsLaunchEnvironment = null) : IDisposable
+    bool useRefreshServerToApplyStaticAssets) : IDisposable
 {
     /// <summary>
     /// Disposes all clients. Can occur unexpectedly whenever the process exits.
@@ -91,7 +90,7 @@ internal sealed class HotReloadClients(
             client.ConfigureLaunchEnvironment(environmentBuilder);
         }
 
-        configureBrowserToolsLaunchEnvironment?.Invoke(environmentBuilder);
+        browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
     }
 
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>

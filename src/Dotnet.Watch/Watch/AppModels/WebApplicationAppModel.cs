@@ -40,8 +40,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         return new HotReloadClients(
             managedClients,
             browserRefreshServer,
-            useRefreshServerToApplyStaticAssets: true,
-            browserRefreshServer != null ? environment => ConfigureBrowserToolsLaunchEnvironment(environment, browserRefreshServer) : null);
+            useRefreshServerToApplyStaticAssets: true);
     }
 
     protected WebAssemblyHotReloadClient CreateWebAssemblyClient(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer browserRefreshServer, ProjectGraphNode clientProject)
@@ -90,6 +89,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
                 logger,
                 connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
                 connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
+                configureLaunchEnvironment: ConfigureBrowserToolsLaunchEnvironment,
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
                 webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);

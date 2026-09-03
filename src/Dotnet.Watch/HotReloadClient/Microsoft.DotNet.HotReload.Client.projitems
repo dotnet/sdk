@@ -10,8 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Web\BrowserToolsClient.js">
-      <LogicalName>Microsoft.DotNet.HotReload.BrowserToolsClient.js</LogicalName>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Web\WebSocketScriptInjection.js">
+      <LogicalName>Microsoft.DotNet.HotReload.WebSocketScriptInjection.js</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

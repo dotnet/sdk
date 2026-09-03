@@ -6,6 +6,7 @@
 #if NET
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,10 +22,11 @@ internal sealed class BrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
+    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     string dotnetPath,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    : AbstractBrowserRefreshServer(configureLaunchEnvironment, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
