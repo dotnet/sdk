@@ -25,7 +25,7 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         public ReplacementTests()
         {
-            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: this.GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = CreateEnvironment(s_environmentSettingsHelper, GetType().Name);
         }
 
         [TestMethod]

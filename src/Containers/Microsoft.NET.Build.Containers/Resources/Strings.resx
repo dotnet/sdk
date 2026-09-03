@@ -453,6 +453,10 @@
     <value>Uploaded manifest to '{0}'.</value>
     <comment>{0} is the registry name</comment>
   </data>
+  <data name="Registry_ManifestExists" xml:space="preserve">
+    <value>Manifest '{0}' already exists in repository '{1}'. Skipping layer and configuration uploads.</value>
+    <comment>{0} is the manifest digest, {1} is the repository name</comment>
+  </data>
   <data name="Registry_ManifestUploadStarted" xml:space="preserve">
     <value>Uploading manifest to registry '{0}' as blob '{1}'.</value>
     <comment>{0} is the registry name</comment>

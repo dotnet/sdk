@@ -243,6 +243,31 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        public void ItForwardsRoslynCompilerCacheEvent()
+        {
+            var fakeTelemetry = new FakeTelemetry();
+            var telemetryEventArgs = new TelemetryEventArgs
+            {
+                EventName = MSBuildLogger.RoslynCompilerCacheEventName,
+                Properties = new Dictionary<string, string>
+                {
+                    { "cachestatus", "hit" },
+                    { "storeresult", "none" },
+                    { "language", "C#" },
+                    { "keycomputems", "5" },
+                    { "restorems", "6" },
+                    { "storems", "0" }
+                }
+            };
+
+            MSBuildLogger.FormatAndSend(fakeTelemetry, telemetryEventArgs);
+
+            fakeTelemetry.LogEntry.Should().NotBeNull();
+            fakeTelemetry.LogEntry.EventName.Should().Be($"msbuild/{MSBuildLogger.RoslynCompilerCacheEventName}");
+            fakeTelemetry.LogEntry.Properties.Should().BeEquivalentTo(telemetryEventArgs.Properties);
+        }
+
+        [TestMethod]
         public void ItCreatesAnInternalActivityForEachBuild()
         {
             ActivitySource activitySource = Activities.Source;
@@ -267,6 +292,11 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             Activity.Current.ParentSpanId.Should().Be(parentActivity.SpanId);
 
             eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
+
+            Activity.Current.Should().NotBeSameAs(parentActivity);
+            stoppedActivity.Should().BeNull();
+
+            logger.Shutdown();
 
             Activity.Current.Should().BeSameAs(parentActivity);
             stoppedActivity.Should().NotBeNull();
@@ -328,6 +358,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 eventSource.Dispatch(new BuildStartedEventArgs("Build started.", helpKeyword: null));
                 Activity activity = Activity.Current;
                 eventSource.Dispatch(new BuildFinishedEventArgs("Build finished.", helpKeyword: null, succeeded: true));
+                logger.Shutdown();
                 return activity;
             }
         }

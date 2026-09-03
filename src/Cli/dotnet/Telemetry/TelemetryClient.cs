@@ -27,6 +27,7 @@ public class TelemetryClient : ITelemetryClient
     private static readonly TracerProviderBuilder s_tracerProviderBuilder;
     private static TracerProvider? s_tracerProvider;
     private static readonly List<Activity> s_activities = [];
+    private static int s_providerShutdownRegistered;
 
 #if MICROSOFT_ENABLE_TELEMETRY_AZURE_MONITOR
     private static readonly string s_connectionString = "InstrumentationKey=74cc1c9e-3e6e-4d05-b3fc-dde9101d0254;IngestionEndpoint=https://southcentralus-0.in.applicationinsights.azure.com/;LiveEndpoint=https://southcentralus.livediagnostics.monitor.azure.com/;ApplicationId=c5108c2c-b0c5-43c6-a703-424eae223a75";
@@ -258,11 +259,12 @@ public class TelemetryClient : ITelemetryClient
 
     public static void FlushProviders()
     {
-        if (s_isCIEnvironment)
+        if (s_isCIEnvironment || s_enableOtlpExporter)
         {
             // Shutdown drains the full export pipeline (BatchExportProcessor → Exporter.OnShutdown)
             // and waits for inflight HTTP POSTs to complete, bounded by the configured timeout.
-            // This is necessary in CI because there is no subsequent invocation to drain.
+            // This is necessary in CI because there is no subsequent invocation to drain, and
+            // for OTLP because the exporter does not use the local persistent-storage pipeline.
             s_tracerProvider?.Shutdown(s_shutdownTimeoutMs);
             s_metricsProvider?.Shutdown(s_shutdownTimeoutMs);
         }
@@ -274,6 +276,33 @@ public class TelemetryClient : ITelemetryClient
             s_tracerProvider?.Shutdown(timeoutMilliseconds: 10);
             s_metricsProvider?.Shutdown(timeoutMilliseconds: 10);
         }
+    }
+
+    internal static void ForceFlushProviders()
+    {
+        int timeout = s_isCIEnvironment || s_enableOtlpExporter ? s_shutdownTimeoutMs : 10;
+        s_tracerProvider?.ForceFlush(timeout);
+        s_metricsProvider?.ForceFlush(timeout);
+    }
+
+    internal static void RegisterProviderShutdownOnProcessExit()
+    {
+        if (Interlocked.Exchange(ref s_providerShutdownRegistered, 1) != 0)
+        {
+            return;
+        }
+
+        AppDomain.CurrentDomain.ProcessExit += (_, _) =>
+        {
+            try
+            {
+                FlushProviders();
+            }
+            catch
+            {
+                // Telemetry failures must not interfere with process shutdown.
+            }
+        };
     }
 
     public static void WriteLogIfNecessary()

@@ -181,13 +181,14 @@ For an incomplete or nearly empty bug report:
 Choose only labels returned by the repository label list. Never invent a label.
 
 1. Apply exactly one `Area-*` label. `CODEOWNERS` section headings (`# Area-<Name>`) are the source of truth for area names.
-2. Apply one type label when clear: `Bug`, `enhancement`, `Feature Request`, `question`, `documentation`, or `Task`.
+2. Apply one type label when clear: `Bug`, `enhancement`, `Feature Request`, `question`, `documentation`, or `Task`. Use `Bug` for defects and `documentation` for documentation-only work. For a behavior-preserving refactor or cleanup, use `enhancement` as the type label and also apply `fit-n-finish`.
 3. Apply any clearly justified special labels:
 
   Label | Apply when
   ---|---
   `cookie` | Apply generously to concrete, bounded, low-risk work with a clear outcome and no apparent product or architectural decision. This includes localized bug fixes, documentation, test, build-target, or configuration fixes. For issues that can be fixed with a minimal subset of changes: good first issues; minor performance improvements; well-defined refactors; or technical debt fixes are also good candidates. Apply it alongside the normal area and type labels; when uncertain whether a complete issue is a cookie, apply it.
   `Test Debt` | Test gaps, disabled tests, flaky tests, or testing debt
+  `fit-n-finish` | Bounded cleanup, polish, or behavior-preserving refactoring
   `performance` | Speed, memory, startup, or throughput is central
   `breaking-change` | Existing users would experience a behavioral break
   `good first issue`, `help wanted` | Suitable for new or community contributors

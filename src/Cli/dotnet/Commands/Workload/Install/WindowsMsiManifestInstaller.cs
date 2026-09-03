@@ -129,14 +129,7 @@ internal class WindowsMsiManifestInstaller(
                     }
                 }
 
-                var manifestsFolder = Path.Combine(msiExtractionPath, "dotnet", "sdk-manifests");
-
-                string? manifestFolder = null;
-                string? manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
-                if (manifestsFeatureBandFolder != null)
-                {
-                    manifestFolder = Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
-                }
+                string? manifestFolder = FindExtractedManifestFolder(msiExtractionPath);
 
                 if (manifestFolder == null)
                 {
@@ -152,6 +145,54 @@ internal class WindowsMsiManifestInstaller(
             {
                 Directory.Delete(extractionPath, true);
             }
+        }
+    }
+
+    /// <summary>
+    ///  Locates the extracted manifest directory in the layout produced by the administrative install of a
+    ///  manifest or workload set MSI.
+    ///
+    ///  <para>
+    ///  The MSI lays its content down under <c>&lt;Program Files&gt;\dotnet\sdk-manifests\&lt;feature band&gt;\...</c>,
+    ///  but the name of the Program Files directory in the administrative image depends on the WiX version that
+    ///  built the MSI: WiX v3 collapsed it into the target directory (<c>&lt;target&gt;\dotnet\sdk-manifests</c>),
+    ///  while WiX v4+ emits a named directory for it (for example <c>&lt;target&gt;\PFiles64\dotnet\sdk-manifests</c>).
+    ///  Probe both layouts without recursively traversing the administrative image.
+    ///  </para>
+    /// </summary>
+    /// <param name="msiExtractionPath">The directory the MSI was administratively installed to.</param>
+    /// <returns>The extracted manifest directory, or <see langword="null"/> if it could not be located.</returns>
+    internal static string? FindExtractedManifestFolder(string msiExtractionPath)
+    {
+        if (!Directory.Exists(msiExtractionPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            string directManifestsFolder = Path.Combine(msiExtractionPath, "dotnet", "sdk-manifests");
+            string? manifestsFolder = Directory.Exists(directManifestsFolder)
+                ? directManifestsFolder
+                : Directory.EnumerateDirectories(msiExtractionPath)
+                    .Select(directory => Path.Combine(directory, "dotnet", "sdk-manifests"))
+                    .FirstOrDefault(Directory.Exists);
+            if (manifestsFolder == null)
+            {
+                return null;
+            }
+
+            string? manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
+            if (manifestsFeatureBandFolder == null)
+            {
+                return null;
+            }
+
+            return Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            return null;
         }
     }
 

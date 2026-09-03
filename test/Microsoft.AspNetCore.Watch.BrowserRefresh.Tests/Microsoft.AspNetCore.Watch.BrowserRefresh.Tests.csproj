@@ -4,6 +4,7 @@
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
     <RootNamespace>Microsoft.AspNetCore.Watch.BrowserRefresh</RootNamespace>
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

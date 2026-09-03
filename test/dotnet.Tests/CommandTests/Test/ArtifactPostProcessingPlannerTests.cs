@@ -262,12 +262,74 @@ public class ArtifactPostProcessingPlannerTests
         plannedPaths.Should().BeEquivalentTo("A.trx", "B.trx", "C.trx");
     }
 
+    [TestMethod]
+    [DataRow((int)TestRunCancellationReason.MaximumFailedTests)]
+    [DataRow((int)TestRunCancellationReason.Timeout)]
+    public void Plan_PolicyTruncatedRun_OnlyIncludesOptedInKinds(int cancellationReason)
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            ["microsoft.testing.trx", "example.summary"],
+            [],
+            truncatedRunKinds: ["example.summary"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A.trx", "microsoft.testing.trx", "A.dll", "x64"),
+            CreateArtifact("B.trx", "microsoft.testing.trx", "B.dll", "x64"),
+            CreateArtifact("A.summary", "example.summary", "A.dll", "x64"),
+            CreateArtifact("B.summary", "example.summary", "B.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [application],
+            artifacts,
+            (TestRunCancellationReason)cancellationReason);
+
+        plan.Jobs.Should().ContainSingle();
+        plan.Jobs[0].Groups.Should().ContainSingle();
+        plan.Jobs[0].Groups[0].Key.Should().Be("example.summary");
+    }
+
+    [TestMethod]
+    [DataRow((int)TestRunCancellationReason.MaximumFailedTests)]
+    [DataRow((int)TestRunCancellationReason.Timeout)]
+    public void Plan_PolicyTruncatedRun_OnlyIncludesOptedInExtensions(int cancellationReason)
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            [],
+            [".trx", ".summary"],
+            truncatedRunExtensions: [".summary"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A.trx", kind: null, "A.dll", "x64"),
+            CreateArtifact("B.trx", kind: null, "B.dll", "x64"),
+            CreateArtifact("A.summary", kind: null, "A.dll", "x64"),
+            CreateArtifact("B.summary", kind: null, "B.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [application],
+            artifacts,
+            (TestRunCancellationReason)cancellationReason);
+
+        plan.Jobs.Should().ContainSingle();
+        plan.Jobs[0].Groups.Should().ContainSingle();
+        plan.Jobs[0].Groups[0].Key.Should().Be(".summary");
+    }
+
     private static ArtifactPostProcessingApplication CreateApplication(
         string targetPath,
         string targetFramework,
         string architecture,
         string[] kinds,
-        string[] extensions)
+        string[] extensions,
+        string[]? truncatedRunKinds = null,
+        string[]? truncatedRunExtensions = null)
         => new(
             new TestModule(
                 new RunProperties("dotnet", targetPath, null),
@@ -281,7 +343,9 @@ public class ArtifactPostProcessingPlannerTests
             targetFramework,
             architecture,
             new HashSet<string>(kinds, StringComparer.Ordinal),
-            new HashSet<string>(extensions, StringComparer.Ordinal));
+            new HashSet<string>(extensions, StringComparer.Ordinal),
+            new HashSet<string>(truncatedRunKinds ?? [], StringComparer.Ordinal),
+            new HashSet<string>(truncatedRunExtensions ?? [], StringComparer.Ordinal));
 
     private static ArtifactPostProcessingArtifact CreateArtifact(
         string path,
