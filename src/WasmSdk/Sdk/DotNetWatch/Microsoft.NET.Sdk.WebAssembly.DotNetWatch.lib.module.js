@@ -6,8 +6,10 @@ export function onRuntimeConfigLoaded(config) {
     }
 
     // Signals to Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js that the app is watched.
+    // Do not use __ASPNETCORE_BROWSER_TOOLS here: older runtimes interpret it as a request
+    // to load the legacy application-hosted blazor-hotreload.js module.
     config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] ??= "debug";
-    config.environmentVariables["__ASPNETCORE_BROWSER_TOOLS"] ??= "true";
+    config.environmentVariables["__DOTNET_WATCH_BROWSER_TOOLS"] ??= "true";
 }
 
 export async function onRuntimeReady() {
