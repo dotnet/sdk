@@ -1,76 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using BenchmarkDotNet.Configs;
-using BenchmarkDotNet.Engines;
-using BenchmarkDotNet.Jobs;
 using BenchmarkDotNet.Running;
-using BenchmarkDotNet.Toolchains.InProcess.Emit;
 
 namespace Benchmark;
 
 internal class Program
 {
-    private static void Main(string[] args)
+    static void Main(string[] args)
     {
-        string? command = args.Length > 0 ? args[0] : null;
-        if (args.Length > 0 &&
-            command is "--pack" or "--publish" or "--pack-smoke" or "--publish-smoke")
-        {
-            SetCommandRunId();
-            OrchardCoreCommandBenchmark.Configure(CommandBenchmarkOptions.Parse(args[1..]));
-        }
-
-        if (args.Length == 0)
-        {
-            BenchmarkRunner.Run<InfoTests>();
-        }
-        else if (command == "--pack")
-        {
-            RunBenchmark<PackBenchmark>();
-        }
-        else if (command == "--publish")
-        {
-            RunBenchmark<PublishBenchmark>();
-        }
-        else if (command == "--pack-smoke")
-        {
-            new PackBenchmark().RunSmokeAsync().GetAwaiter().GetResult();
-        }
-        else if (command == "--publish-smoke")
-        {
-            new PublishBenchmark().RunSmokeAsync().GetAwaiter().GetResult();
-        }
-        else
-        {
-            throw new ArgumentException(
-                "Supported arguments are --pack, --publish, --pack-smoke, and --publish-smoke.");
-        }
-
-        static void RunBenchmark<T>()
-            where T : OrchardCoreCommandBenchmark
-        {
-            Job job = Job.Default
-                .WithToolchain(new InProcessEmitToolchain(TimeSpan.FromHours(2), true))
-                .WithStrategy(RunStrategy.Monitoring)
-                .WithLaunchCount(1)
-                .WithWarmupCount(OrchardCoreCommandBenchmark.WarmupCount)
-                .WithIterationCount(OrchardCoreCommandBenchmark.IterationCount)
-                .WithInvocationCount(1)
-                .WithUnrollFactor(1);
-            ManualConfig config = ManualConfig.Create(DefaultConfig.Instance).AddJob(job);
-            BenchmarkRunner.Run<T>(config);
-        }
-
-        static void SetCommandRunId()
-        {
-            if (Environment.GetEnvironmentVariable("DOTNET_SDK_PACK_PUBLISH_BENCHMARK_RUN_ID") is null)
-            {
-                Environment.SetEnvironmentVariable(
-                    "DOTNET_SDK_PACK_PUBLISH_BENCHMARK_RUN_ID",
-                    Guid.NewGuid().ToString("N"));
-            }
-        }
+        BenchmarkRunner.Run(typeof(Program).Assembly);
 
         // BenchmarkDotNet bakes a fair amount of assumptions into the way it generates
         // projects for running its benchmarks. One of the key problems we run into is how

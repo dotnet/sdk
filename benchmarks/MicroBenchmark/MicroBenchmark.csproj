@@ -17,9 +17,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Remove="PackPublishMetricsStartupHook\**\*.cs" />
     <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
-    <ProjectReference Include="PackPublishMetricsStartupHook\PackPublishMetricsStartupHook.csproj" />
   </ItemGroup>
 
   <ItemGroup>
