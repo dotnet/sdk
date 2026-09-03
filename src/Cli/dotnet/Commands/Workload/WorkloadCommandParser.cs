@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Commands.Workload.Clean;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Elevate;
@@ -24,13 +25,27 @@ namespace Microsoft.DotNet.Cli.Commands.Workload;
 internal static class WorkloadCommandParser
 {
     public static void ConfigureCommand(WorkloadCommandDefinition def)
+        => ConfigureCommand(
+            def,
+            parseResult => new WorkloadUpdateCommand(parseResult).Execute(),
+            new MSBuildServer());
+
+    internal static void ConfigureCommand(
+        WorkloadCommandDefinition def,
+        Func<ParseResult, int> executeUpdate,
+        IBuildServer msbuildServer)
     {
         def.SetAction(parseResult => parseResult.HandleMissingCommand());
         def.InfoOption.Action = new ShowWorkloadsInfoAction();
         def.VersionOption.Action = new ShowWorkloadsVersionOption();
 
         def.InstallCommand.SetAction(parseResult => new WorkloadInstallCommand(parseResult).Execute());
-        def.UpdateCommand.SetAction(parseResult => new WorkloadUpdateCommand(parseResult).Execute());
+        def.UpdateCommand.SetAction(parseResult =>
+        {
+            int exitCode = executeUpdate(parseResult);
+            msbuildServer.Shutdown();
+            return exitCode;
+        });
         def.ListCommand.SetAction(parseResult => new WorkloadListCommand(parseResult).Execute());
         def.SearchCommand.SetAction(parseResult => new WorkloadSearchCommand(parseResult).Execute());
         def.SearchCommand.VersionCommand.SetAction(parseResult => new WorkloadSearchVersionsCommand(parseResult).Execute());

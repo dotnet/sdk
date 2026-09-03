@@ -4,6 +4,7 @@
 #nullable disable
 
 using System.CommandLine;
+using System.CommandLine.Invocation;
 using System.Runtime.CompilerServices;
 using ManifestReaderTests;
 using Microsoft.DotNet.Cli.NuGetPackageDownloader;
@@ -12,6 +13,7 @@ using Microsoft.DotNet.Cli.Workload.Install.Tests;
 using Microsoft.NET.Sdk.WorkloadManifestReader;
 using static Microsoft.NET.Sdk.WorkloadManifestReader.WorkloadResolver;
 using System.Text.Json;
+using Microsoft.DotNet.Cli.BuildServer;
 using Microsoft.DotNet.Cli.Workload.Search.Tests;
 using NuGet.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload;
@@ -19,6 +21,7 @@ using Microsoft.DotNet.Cli.Commands.Workload.Install;
 using Microsoft.DotNet.Cli.Commands.Workload.Config;
 using Microsoft.DotNet.Cli.Commands.Workload.Update;
 using Microsoft.DotNet.Cli.Commands;
+using Moq;
 
 namespace Microsoft.DotNet.Cli.Workload.Update.Tests
 {
@@ -34,6 +37,33 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             _reporter = new BufferedReporter();
             _manifestPath = Path.Combine(TestAssetsManager.GetAndValidateTestProjectDirectory("SampleManifest"), "Sample.json");
             _parseResult = Parser.Parse(new string[] { "dotnet", "workload", "update" });
+        }
+
+        [TestMethod]
+        public void GivenWorkloadUpdateItShutsDownMSBuildServerAfterTheUpdateFinishes()
+        {
+            bool updateFinished = false;
+            var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
+            msbuildServer
+                .Setup(server => server.Shutdown())
+                .Callback(() => updateFinished.Should().BeTrue());
+
+            var workloadCommand = new WorkloadCommandDefinition();
+            WorkloadCommandParser.ConfigureCommand(
+                workloadCommand,
+                _ =>
+                {
+                    updateFinished = true;
+                    return 42;
+                },
+                msbuildServer.Object);
+
+            var rootCommand = new RootCommand();
+            rootCommand.Subcommands.Add(workloadCommand);
+            int exitCode = rootCommand.Parse(["workload", "update"]).Invoke(new InvocationConfiguration());
+
+            exitCode.Should().Be(42);
+            msbuildServer.Verify(server => server.Shutdown(), Times.Once);
         }
 
         [TestMethod]
