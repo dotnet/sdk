@@ -1,16 +1,20 @@
 const protocolVersion = 1;
 const discoveryTimeoutMilliseconds = 1000;
+const moduleFileName = new URL(import.meta.url).pathname.split('/').pop();
+const useBrowserToolsProvider = moduleFileName.startsWith(
+    'Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.');
 let browserToolsSession;
 let browserToolsRouteBase;
 let useLegacyBrowserTools = false;
 
 export async function onRuntimeConfigLoaded(config) {
     if (config.debugLevel !== 0 && globalThis.window?.document) {
-        // The Gateway reserves this same-origin route outside the application's path base.
-        browserToolsRouteBase = new URL('/_framework/dotnet-browser-tools/', document.baseURI);
-        browserToolsSession = await discoverBrowserToolsSession(browserToolsRouteBase);
-        useLegacyBrowserTools = !browserToolsSession &&
-            !!document.querySelector("script[src*='aspnetcore-browser-refresh']");
+        useLegacyBrowserTools = !!document.querySelector("script[src*='aspnetcore-browser-refresh']");
+        if (useBrowserToolsProvider) {
+            // The Gateway reserves this same-origin route outside the application's path base.
+            browserToolsRouteBase = new URL('/_framework/dotnet-browser-tools/', document.baseURI);
+            browserToolsSession = await discoverBrowserToolsSession(browserToolsRouteBase);
+        }
 
         if (browserToolsSession || useLegacyBrowserTools) {
             config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] ??= "debug";

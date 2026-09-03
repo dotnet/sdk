@@ -1258,6 +1258,8 @@ internal sealed class HotReloadDotNetWatcher
         };
 
         arguments.AddRange(_context.BuildArguments);
+        arguments.Add($"-p:{PropertyNames.DotNetWatchBuild}=true");
+        arguments.Add($"-p:{PropertyNames.DotNetWatchBrowserTools}={!_context.EnvironmentOptions.SuppressBrowserRefresh}");
 
         if (action != BuildAction.RestoreOnly && targetFramework != null)
         {
@@ -1304,7 +1306,7 @@ internal sealed class HotReloadDotNetWatcher
                 }
                 : null,
 
-            // pass user-specified build arguments last to override defaults:
+            // dotnet-watch reserved properties are added after user-specified build arguments:
             Arguments = arguments
         };
 
