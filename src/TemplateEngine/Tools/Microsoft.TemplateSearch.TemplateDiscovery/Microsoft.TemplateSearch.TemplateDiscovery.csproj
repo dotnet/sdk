@@ -5,6 +5,7 @@
     <OutputType>Exe</OutputType>
     <IsPackable>true</IsPackable>
     <IsShipping>false</IsShipping>
+    <IsShippingPackage>false</IsShippingPackage>
     <PackAsTool>true</PackAsTool>
     <RollForward>Major</RollForward>
   </PropertyGroup>

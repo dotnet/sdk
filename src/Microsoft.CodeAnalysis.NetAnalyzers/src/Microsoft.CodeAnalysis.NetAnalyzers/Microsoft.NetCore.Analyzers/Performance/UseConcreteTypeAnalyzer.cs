@@ -110,7 +110,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
             isPortedFxCopRule: false,
             isDataflowRule: false);
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(
+        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } = ImmutableArray.Create(
             UseConcreteTypeForField,
             UseConcreteTypeForLocal,
             UseConcreteTypeForMethodReturn,

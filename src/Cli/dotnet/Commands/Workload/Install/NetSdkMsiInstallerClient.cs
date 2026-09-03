@@ -37,6 +37,8 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
 
     private readonly string _dependent;
 
+    private readonly WindowsMsiManifestInstaller _manifestInstaller;
+
     public int ExitCode => Restart ? unchecked((int)Error.SUCCESS_REBOOT_REQUIRED) : unchecked((int)Error.SUCCESS);
 
     /// <summary>
@@ -59,6 +61,7 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
         _sdkFeatureBand = sdkFeatureBand;
         _workloadResolver = workloadResolver;
         _dependent = $"{DependentPrefix},{sdkFeatureBand},{HostArchitecture}";
+        _manifestInstaller = new WindowsMsiManifestInstaller(_nugetPackageDownloader, Log, LogError);
 
         AppDomain.CurrentDomain.ProcessExit += OnProcessExit;
 
@@ -736,92 +739,10 @@ internal partial class NetSdkMsiInstallerClient : MsiInstallerBase, IInstaller
     }
 
     public PackageId GetManifestPackageId(ManifestId manifestId, SdkFeatureBand featureBand)
-    {
-        if (manifestId.ToString().Equals("Microsoft.NET.Workloads", StringComparison.OrdinalIgnoreCase))
-        {
-            return new PackageId($"{manifestId}.{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
-        }
-        else
-        {
-            return new PackageId($"{manifestId}.Manifest-{featureBand}.Msi.{RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant()}");
-        }
-    }
+        => _manifestInstaller.GetManifestPackageId(manifestId, featureBand);
 
-    private static readonly object _msiAdminInstallLock = new();
-
-    public async Task ExtractManifestAsync(string nupkgPath, string targetPath)
-    {
-        Log?.LogMessage($"ExtractManifestAsync: Extracting '{nupkgPath}' to '{targetPath}'");
-        string extractionPath = TemporaryDirectory.CreateSubdirectory();
-
-        try
-        {
-            Log?.LogMessage($"ExtractManifestAsync: Temporary extraction path: '{extractionPath}'");
-            await _nugetPackageDownloader.ExtractPackageAsync(nupkgPath, new DirectoryPath(extractionPath));
-            if (Directory.Exists(targetPath))
-            {
-                Directory.Delete(targetPath, true);
-            }
-
-            string extractedManifestPath = Path.Combine(extractionPath, "data", "extractedManifest");
-            if (Directory.Exists(extractedManifestPath))
-            {
-                Log?.LogMessage($"ExtractManifestAsync: Copying manifest from '{extractionPath}' to '{targetPath}'");
-                Directory.CreateDirectory(Path.GetDirectoryName(targetPath));
-                FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(extractedManifestPath, targetPath));
-            }
-            else
-            {
-                string packageDataPath = Path.Combine(extractionPath, "data");
-                if (!Cache.TryGetMsiPathFromPackageData(packageDataPath, out string msiPath, out _))
-                {
-                    throw new FileNotFoundException(string.Format(CliCommandStrings.ManifestMsiNotFoundInNuGetPackage, extractionPath));
-                }
-                string msiExtractionPath = Path.Combine(extractionPath, "msi");
-
-
-                lock (_msiAdminInstallLock)
-                {
-                    string adminInstallLog = GetMsiLogNameForAdminInstall(msiPath);
-
-                    Log?.LogMessage($"ExtractManifestAsync: Running admin install for '{msiExtractionPath}'.  Log file: '{adminInstallLog}'");
-
-                    ConfigureInstall(adminInstallLog);
-
-                    var result = WindowsInstaller.InstallProduct(msiPath, $"TARGETDIR={msiExtractionPath} ACTION=ADMIN");
-
-                    if (result != Error.SUCCESS)
-                    {
-                        Log?.LogMessage($"ExtractManifestAsync: Admin install failed: {result}");
-                        throw new GracefulException(string.Format(CliCommandStrings.FailedToExtractMsi, msiPath));
-                    }
-                }
-
-                var manifestsFolder = Path.Combine(msiExtractionPath, "dotnet", "sdk-manifests");
-
-                string manifestFolder = null;
-                string manifestsFeatureBandFolder = Directory.GetDirectories(manifestsFolder).SingleOrDefault();
-                if (manifestsFeatureBandFolder != null)
-                {
-                    manifestFolder = Directory.GetDirectories(manifestsFeatureBandFolder).SingleOrDefault();
-                }
-
-                if (manifestFolder == null)
-                {
-                    throw new GracefulException(string.Format(CliCommandStrings.ExpectedSingleManifest, nupkgPath));
-                }
-
-                FileAccessRetrier.RetryOnMoveAccessFailure(() => DirectoryPath.MoveDirectory(manifestFolder, targetPath));
-            }
-        }
-        finally
-        {
-            if (!string.IsNullOrEmpty(extractionPath) && Directory.Exists(extractionPath))
-            {
-                Directory.Delete(extractionPath, true);
-            }
-        }
-    }
+    public Task ExtractManifestAsync(string nupkgPath, string targetPath)
+        => _manifestInstaller.ExtractManifestAsync(nupkgPath, targetPath);
 
     private void LogPackInfo(PackInfo packInfo)
     {

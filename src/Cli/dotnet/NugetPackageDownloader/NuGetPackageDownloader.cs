@@ -4,11 +4,9 @@
 #nullable disable
 
 using System.Collections.Concurrent;
-using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.NugetPackageDownloader;
 using Microsoft.DotNet.Cli.ToolPackage;
 using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Common;
 using NuGet.Configuration;
@@ -351,9 +349,19 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
                 var permissionList = FileList.Deserialize(workloadUnixFilePermissions);
                 foreach (var fileAndPermission in permissionList.File)
                 {
+                    string fullPath = Path.GetFullPath(Path.Combine(targetFolder.Value, fileAndPermission.Path));
+
+                    // Because packages are assumed fully trusted, this check exists to prevent improperly authored packages
+                    // from accidentally modifying files they may not have intended to modify. It is not intended to police
+                    // the set of capabilities available to the package.
+                    if (!fullPath.StartsWith(Path.GetFullPath(targetFolder.Value) + Path.DirectorySeparatorChar))
+                    {
+                        throw new GracefulException(string.Format(CliStrings.ResolvedPathEscapesTargetDirectory, fullPath, targetFolder.Value));
+                    }
+
                     _filePermissionSetter
                         .SetPermission(
-                            Path.Combine(targetFolder.Value, fileAndPermission.Path),
+                            fullPath,
                             fileAndPermission.Permission);
                 }
             }
@@ -772,14 +780,17 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
             if (stableVersions.Any())
             {
                 var results = stableVersions.OrderByDescending(r => r.package.Identity.Version);
-                return numberOfResults > 0 /* 0 indicates 'all' */ ? results.Take(numberOfResults) : results;
+                return TakeRequestedResults(results, numberOfResults);
             }
         }
 
         IEnumerable<(PackageSource, IPackageSearchMetadata)> latestVersions = accumulativeSearchResults
             .OrderByDescending(r => r.package.Identity.Version);
-        return latestVersions.Take(numberOfResults);
+        return TakeRequestedResults(latestVersions, numberOfResults);
     }
+
+    private static IEnumerable<T> TakeRequestedResults<T>(IEnumerable<T> results, int numberOfResults)
+        => numberOfResults > 0 ? results.Take(numberOfResults) : results;
 
     public async Task<NuGetVersion> GetBestPackageVersionAsync(PackageId packageId,
         VersionRange versionRange,
@@ -925,6 +936,10 @@ internal class NuGetPackageDownloader : INuGetPackageDownloader
         {
             _verboseLogger.LogWarning(e.ToString());
             foundPackages = Enumerable.Empty<PackageSearchMetadata>();
+        }
+        catch (FatalProtocolException e)
+        {
+            throw new NuGetPackageInstallerException($"{string.Format(CliStrings.FailedToLoadNuGetSource, source.Source)}: {e.Message}", e);
         }
 
         return (source, foundPackages);

@@ -10,8 +10,4 @@
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-  </ItemGroup>
-
 </Project>

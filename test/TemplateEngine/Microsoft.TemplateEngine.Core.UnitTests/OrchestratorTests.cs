@@ -9,7 +9,7 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Core.UnitTests
 {
     [TestClass]
-    public class OrchestratorTests
+    public class OrchestratorTests : TestBase
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;
@@ -17,14 +17,14 @@ namespace Microsoft.TemplateEngine.Core.UnitTests
 
         [ClassInitialize]
         public static void ClassInitialize(TestContext _)
-            => s_environmentSettingsHelper = new EnvironmentSettingsHelper(NullMessageSink.Instance);
+            => s_environmentSettingsHelper = new EnvironmentSettingsHelper();
 
         [ClassCleanup]
         public static void ClassCleanup() => s_environmentSettingsHelper?.Dispose();
 
         public OrchestratorTests()
         {
-            _engineEnvironmentSettings = s_environmentSettingsHelper.CreateEnvironment(hostIdentifier: GetType().Name, virtualize: true);
+            _engineEnvironmentSettings = CreateEnvironment(s_environmentSettingsHelper, GetType().Name);
             _logger = _engineEnvironmentSettings.Host.Logger;
         }
 

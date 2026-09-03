@@ -331,7 +331,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
                     }
                 }
 
-                var firstChildOperation = operation?.Children.FirstOrDefault();
+                var firstChildOperation = operation?.ChildOperations.FirstOrDefault();
 
                 switch (firstChildOperation)
                 {
@@ -345,7 +345,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
 
                     case ISimpleAssignmentOperation:
                     case IExpressionStatementOperation:
-                        var firstChildAddOrRemove = firstChildOperation.Children
+                        var firstChildAddOrRemove = firstChildOperation.ChildOperations
                             .OfType<IInvocationOperation>()
                             .FirstOrDefault(i => IsAnyGuardedMethod(i.TargetMethod, conditionNegated));
 

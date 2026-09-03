@@ -452,7 +452,25 @@ This is equivalent to deleting project.assets.json.</value>
     <value>Include packages with symbols in addition to regular packages in output directory.</value>
   </data>
   <data name="CmdListTestsDescription" xml:space="preserve">
-    <value>List the discovered tests instead of running the tests.</value>
+    <value>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</value>
+  </data>
+  <data name="CmdAffectedTestsFeatureDisabled" xml:space="preserve">
+    <value>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</value>
+  </data>
+  <data name="CmdAffectedTestsOptionsMutuallyExclusive" xml:space="preserve">
+    <value>The options '--collect-test-map' and '--affected-tests' cannot be used together.</value>
+  </data>
+  <data name="CmdCollectTestMapDescription" xml:space="preserve">
+    <value>Run tests and write the source-to-test map used by affected-test selection.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRunModulesInParallel" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRequireMinimumTests" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</value>
+  </data>
+  <data name="CmdAffectedTestsDescription" xml:space="preserve">
+    <value>Run only tests linked in the test map to sources changed in Git.</value>
   </data>
   <data name="CmdLockedModeOptionDescription" xml:space="preserve">
     <value>Don't allow updating project lock file.</value>
@@ -488,11 +506,17 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdNoCacheOptionDescription" xml:space="preserve">
     <value>Do not cache packages and http requests.</value>
   </data>
+  <data name="CmdNoDefaultExcludesDescription" xml:space="preserve">
+    <value>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</value>
+  </data>
   <data name="CmdNoDependenciesOptionDescription" xml:space="preserve">
     <value>Do not restore project-to-project references and only restore the specified project.</value>
   </data>
   <data name="CmdNoHttpCacheOptionDescription" xml:space="preserve">
     <value>Disable Http Caching for packages.</value>
+  </data>
+  <data name="CmdNoArtifactPostProcessingDescription" xml:space="preserve">
+    <value>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</value>
   </data>
   <data name="CmdNoProgressDescription" xml:space="preserve">
     <value>Disable progress reporting.</value>
@@ -543,7 +567,7 @@ This is equivalent to deleting project.assets.json.</value>
     <value>Defines the path of the project file to run. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdProjectOrSolutionDescriptionFormat" xml:space="preserve">
-    <value>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</value>
+    <value>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</value>
   </data>
   <data name="CmdProjectOrSolutionPathName" xml:space="preserve">
     <value>PROJECT_OR_SOLUTION_PATH</value>
@@ -554,6 +578,14 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdResultsDirectoryDescription" xml:space="preserve">
     <value>The directory where the test results will be placed.
 The specified directory will be created if it does not exist.</value>
+  </data>
+  <data name="CmdResultsDirectoryLayoutDescription" xml:space="preserve">
+    <value>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</value>
+  </data>
+  <data name="CmdResultsDirectoryLayoutName" xml:space="preserve">
+    <value>LAYOUT</value>
   </data>
   <data name="CmdConfigFileDescription" xml:space="preserve">
     <value>Specifies a testconfig.json file.</value>
@@ -683,6 +715,12 @@ If not specified the file will be generated inside the default 'TestResults' dir
   </data>
   <data name="CommandOptionListDevicesDescription" xml:space="preserve">
     <value>List available devices for running the application.</value>
+  </data>
+  <data name="CommandOptionListDevicesDescriptionForTest" xml:space="preserve">
+    <value>List available devices for running tests.</value>
+  </data>
+  <data name="CommandOptionDeviceDescriptionForTest" xml:space="preserve">
+    <value>The device identifier to use for running tests.</value>
   </data>
   <data name="CommandOptionProjectHelpName" xml:space="preserve">
     <value>PROJECT_PATH</value>
@@ -1338,7 +1376,22 @@ To display a value, specify the corresponding command-line option without provid
     <value>VERSION</value>
   </data>
   <data name="CmdMinimumExpectedTestsDescription" xml:space="preserve">
-    <value>Specifies the minimum number of tests that are expected to run.</value>
+    <value>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</value>
+  </data>
+  <data name="CmdMaximumFailedTestsDescription" xml:space="preserve">
+    <value>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</value>
+  </data>
+  <data name="CmdTimeoutDescription" xml:space="preserve">
+    <value>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</value>
+  </data>
+  <data name="CmdDurationName" xml:space="preserve">
+    <value>DURATION</value>
+  </data>
+  <data name="CmdTestPositiveIntegerRequired" xml:space="preserve">
+    <value>The value must be a positive integer.</value>
+  </data>
+  <data name="CmdTestInvalidTimeout" xml:space="preserve">
+    <value>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</value>
   </data>
   <data name="Option_Output" xml:space="preserve">
     <value>Location to place the generated output.</value>
@@ -1444,6 +1497,9 @@ If command is specified without the argument, it lists all the template packages
   </data>
   <data name="Option_Install_Force" xml:space="preserve">
     <value>Allows installing template packages from the specified sources even if they would override a template package from another source.</value>
+  </data>
+  <data name="Option_Install_Prerelease" xml:space="preserve">
+    <value>Allows prerelease template packages to be installed when no version is specified.</value>
   </data>
   <data name="Option_Interactive" xml:space="preserve">
     <value>Allows the command to stop and wait for user input or action (for example to complete authentication).</value>

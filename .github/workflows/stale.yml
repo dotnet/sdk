@@ -5,6 +5,7 @@ on:
   workflow_dispatch: # Allow manual trigger for testing
 
 env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
   KBE_LABEL: 'Known Build Error'
   STALE_LABEL: 'stale'
   KEEP_OPEN_LABEL: 'keep-open'
@@ -20,7 +21,7 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9 # https://github.com/actions/stale/blob/v9/README.md
+      - uses: actions/stale@5bef64f19d7facfb25b37b414482c7164d639639 # v9
         with:
           ascending: true # Process the oldest issues first
           stale-issue-message: "Due to lack of recent activity, this issue has been labeled as 'Stale'. It will be closed if no further activity occurs within 14 more days. Any new comment will remove the label."
@@ -39,10 +40,11 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/github-script@v7
+      - uses: actions/github-script@f28e40c7f34bde8b3046d885e986cb6290c5673b # v7
         with:
           script: |
             const CLOSE_KBE_AFTER_DAYS = 7;
+            const NEW_ISSUE_GRACE_DAYS = 7;
             const MS_PER_DAY = 1000 * 60 * 60 * 24;
 
             const issues = await github.paginate(
@@ -56,12 +58,23 @@ jobs:
               if (issue.pull_request) continue;
               if (issue.labels.some(l => l.name === process.env.KEEP_OPEN_LABEL)) continue;
 
+              // Skip issues within the grace period so newly-opened KBEs
+              // aren't immediately marked stale before they can accumulate hits.
+              const issueAgeDays = (Date.now() - new Date(issue.created_at).getTime()) / MS_PER_DAY;
+              if (issueAgeDays < NEW_ISSUE_GRACE_DAYS) {
+                console.log(`  #${issue.number}: skipping (created ${issueAgeDays.toFixed(1)} days ago, within ${NEW_ISSUE_GRACE_DAYS}-day grace period)`);
+                continue;
+              }
+
               // Parse the hit count summary table from the issue body.
               // Format: |24-Hour Hit Count|7-Day Hit Count|1-Month Count|
               //         |---|---|---|
               //         |N|N|N|
-              const match = issue.body?.match(
-                /\|24-Hour Hit Count\|.*\r?\n\|[-| ]+\r?\n\|(\d+)\|(\d+)\|(\d+)\|/);
+              // Use the *last* table because infrastructure appends/updates the
+              // final occurrence when there are multiple tables in the body.
+              const matches = [...(issue.body?.matchAll(
+                /\|24-Hour Hit Count\|.*\r?\n\|[-| ]+\r?\n\|(\d+)\|(\d+)\|(\d+)\|/g) ?? [])];
+              const match = matches.length ? matches[matches.length - 1] : null;
               if (!match) {
                 console.log(`  #${issue.number}: no hit count table found`);
                 continue;

@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.RegularExpressions;
@@ -64,10 +64,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .Should().Contain("(try 2)")
                     .And.NotContain("(try 3)")
                     .And.NotContain("(try 4)")
-                    .And.Contain("total: 1 (+1 retried)")
+                    .And.Contain("total: 1")
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")
-                    .And.Contain("skipped: 0");
+                    .And.Contain("skipped: 0")
+                    // The test failed on the first attempt and passed on the retry, so it is reported as flaky and
+                    // accounted for by the retry lines that replaced the old 'total: 1 (+1 retried)' suffix.
+                    .And.Contain("flaky: 1 (passed after retry)")
+                    .And.Contain("retried: 1 test(s), 1 extra run(s)")
+                    .And.Contain("Flaky tests:");
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
@@ -287,10 +292,135 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        [TestMethod]
+        public void RunMultipleTestProjectsWithPerModuleResultsDirectoryLayout_ShouldCreateSeparateDirectories()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+
+            // Mirrors the artifacts output layout: <results>/<project>/<pivot>.
+            Directory.GetDirectories(resultsDirectory).Select(Path.GetFileName)
+                .Should().BeEquivalentTo(["TestProject", "OtherTestProject"]);
+            foreach (string projectDirectory in Directory.GetDirectories(resultsDirectory))
+            {
+                Directory.GetDirectories(projectDirectory).Select(Path.GetFileName)
+                    .Should().ContainSingle().Which.Should().MatchRegex(@"^net\d+\.\d+_[a-z0-9\-\.]+$");
+            }
+        }
+
+        [TestMethod]
+        public void RunMultipleTestProjectsWritingTheSameReportName_ShouldOverwriteWithFlatLayout()
+        {
+            // Regression coverage for https://github.com/microsoft/codecoverage/issues/226: both
+            // projects write the same relative report file name into the shared results directory,
+            // so only one report survives. This documents the behavior 'per-module' exists to fix.
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    // Serialize the modules so the two processes cannot race on the same file:
+                    // the point of this test is which file survives, not concurrent write behavior.
+                    "--max-parallel-test-modules", "1");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+            Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories)
+                .Should().ContainSingle("both projects write into the same directory with the flat layout");
+        }
+
+        [TestMethod]
+        public void RunMultipleTestProjectsWritingTheSameReportName_ShouldKeepBothWithPerModuleLayout()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2, "each project writes its report into its own directory");
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["TestProjectA", "TestProjectB"]);
+        }
+
+        [TestMethod]
+        public void RunMultipleTestProjectsWithArtifactsOutput_ShouldKeepReportsUnderArtifacts()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Combine(testInstance.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <UseArtifactsOutput>true</UseArtifactsOutput>
+                  </PropertyGroup>
+                </Project>
+                """);
+            string resultsDirectory = Path.Combine(testInstance.Path, "artifacts", "test");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2, "artifacts output defaults to a collision-safe per-module layout");
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["TestProjectA", "TestProjectB"]);
+            Directory.Exists(Path.Combine(testInstance.Path, "TestResults")).Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void RunTestProjectsWithTheSameNameAndPerModuleLayout_ShouldDisambiguateAndKeepBothReports()
+        {
+            // Two distinct projects both named 'Tests' would share a project folder, so the layout
+            // appends an identity hash. Also covers the default results directory (no
+            // --results-directory), which is the shape most users will hit first.
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDuplicateProjectNames", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            Directory.GetDirectories(resultsDirectory).Select(Path.GetFileName)
+                .Should().HaveCount(2).And.AllSatisfy(name => name.Should().MatchRegex("^Tests_[0-9a-f]{16}$"));
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2);
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["src", "samples"]);
+        }
+
         [DataRow(TestingConstants.Debug)]
         [DataRow(TestingConstants.Release)]
         [TestMethod]
-        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeGenericFailure(string configuration)
+        public void RunMultipleTestProjectsWithDifferentFailures_ShouldReturnExitCodeAtLeastOneTestFailed(string configuration)
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
                 .WithSource();
@@ -328,7 +458,41 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("skipped: 1");
             }
 
-            result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+            // The empty module (TestProject) reports exit code 8 (ZeroTests) but is normalized to success at
+            // the aggregate level (microsoft/testfx#7457), so it no longer collides with the failing module's
+            // exit code 2 to produce GenericFailure (1). The run's verdict is now AtLeastOneTestFailed (2).
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunMultipleTestProjectsWhereOneRanZeroTests_ShouldReturnExitCodeSuccess(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithZeroTestsAndPassingTests", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // One module matched no tests (its process returns exit code 8) while the other ran a passing
+                // test, so the whole run still executed one test and its verdict is a pass.
+                result.StdOut
+                    .Should().Contain("Exit code: 8")
+                    .And.Contain("Test run summary: Passed!")
+                    .And.Contain("total: 1")
+                    .And.Contain("succeeded: 1")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            // The empty module reports exit code 8 (ZeroTests) but is normalized to success at the aggregate
+            // level, and because the whole run executed at least one test the run-level zero-tests verdict does
+            // not apply either. The overall verdict is Success (microsoft/testfx#7457).
+            result.ExitCode.Should().Be(ExitCodes.Success);
         }
 
         [DataRow(TestingConstants.Debug)]
@@ -409,6 +573,95 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.GenericFailure);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunTraversalProject_ShouldRunReferencedTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjects", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                // The traversal project itself is not a test project. It should expand to its referenced
+                // test projects, both of which run (and report zero tests via the dummy adapter).
+                result.StdOut
+                    .Should().Contain("Test run summary: Zero tests ran")
+                    .And.Contain("total: 0")
+                    .And.Contain("succeeded: 0")
+                    .And.Contain("failed: 0")
+                    .And.Contain("skipped: 0");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunNestedTraversalProjectWithDiamond_ShouldRunSharedProjectOnce(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran (robust to terminal progress re-rendering).
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // SharedTestProject is referenced by both the top-level dirs.proj and the nested sub\dirs.proj
+            // (a diamond). Cross-recursion de-duplication must ensure it is only run once, while the leaf
+            // project reachable only through the nested traversal must also run (proving recursion works).
+            int sharedRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "SharedTestProject-*.marker").Length : 0;
+            int leafRuns = Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, "LeafTestProject-*.marker").Length : 0;
+
+            sharedRuns.Should().Be(1);
+            leafRuns.Should().Be(1);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
+        }
+
+        [DataRow(TestingConstants.Debug)]
+        [DataRow(TestingConstants.Release)]
+        [TestMethod]
+        public void RunDeeplyNestedTraversalProject_ShouldRunEveryReferencedTestProjectAndSkipNonTestProjects(string configuration)
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TraversalTestProjectsDeepNested", Guid.NewGuid().ToString())
+                .WithSource();
+
+            // Each test-host launch drops a uniquely-named marker file, giving a deterministic count of
+            // how many times each referenced project actually ran.
+            string markerDir = Path.Combine(testInstance.Path, "run-markers");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("TRAVERSAL_MARKER_DIR", markerDir)
+                                    .Execute("dirs.proj", "-c", configuration);
+
+            // The graph is three levels deep: dirs.proj -> level2\dirs.proj -> level2\level3\dirs.proj.
+            // A test project is referenced at each level; all must run exactly once (proving deep recursion).
+            int MarkerCount(string project) => Directory.Exists(markerDir) ? Directory.GetFiles(markerDir, $"{project}-*.marker").Length : 0;
+
+            MarkerCount("Level1TestProject").Should().Be(1);
+            MarkerCount("Level2TestProject").Should().Be(1);
+            MarkerCount("DeepLeafTestProject").Should().Be(1);
+
+            // NonTestLibrary is a plain class library referenced by the level-2 traversal. It is neither a
+            // test project nor an MTP application, so it must be silently skipped: it never runs and does not
+            // cause an error.
+            MarkerCount("NonTestLibrary").Should().Be(0);
+
+            result.ExitCode.Should().Be(ExitCodes.ZeroTests);
         }
 
         [DataRow(TestingConstants.Debug)]
@@ -525,6 +778,32 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        public void RunMTPSolutionWithMaximumFailedTestsReturnsPolicyExitCode()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDifferentFailures", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--maximum-failed-tests", "1");
+
+            result.ExitCode.Should().Be(ExitCodes.TestExecutionStoppedForMaxFailedTests);
+        }
+
+        [TestMethod]
+        public void RunMTPProjectWithGlobalTimeoutReturnsTestSessionAborted()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
+                .WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("--timeout", "100ms");
+
+            result.ExitCode.Should().Be(ExitCodes.TestSessionAborted);
+        }
+
+        [TestMethod]
         public void RunMTPProjectThatCrashesWithExitCodeZero_ShouldFail()
         {
             TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectMTPCrash", Guid.NewGuid().ToString())
@@ -549,9 +828,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdErr.Should().Contain("System.InvalidOperationException: A test session start event was received without a corresponding test session end.");
 
-                // TODO: It's much better to introduce a new kind of "summary" indicating
-                // that the test app exited with zero exit code before sending test session end event
-                result.StdOut.Should().Contain("Test run summary: Passed!")
+                result.StdOut.Should().Contain("Test run summary: Failed!")
                     .And.Contain("total: 1")
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")

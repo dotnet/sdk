@@ -16,7 +16,7 @@ namespace Microsoft.NET.Build.Tasks
     /// assets specified in the lock file.
     /// </summary>
     /// <remarks>
-    /// Only called for backwards compatability, when <c>ResolvePackageDependencies</c> is true.
+    /// Only called for backwards compatibility, when <c>ResolvePackageDependencies</c> is true.
     /// </remarks>
     [MSBuildMultiThreadableTask]
     public sealed class ResolvePackageDependencies : TaskBase, IMultiThreadableTask

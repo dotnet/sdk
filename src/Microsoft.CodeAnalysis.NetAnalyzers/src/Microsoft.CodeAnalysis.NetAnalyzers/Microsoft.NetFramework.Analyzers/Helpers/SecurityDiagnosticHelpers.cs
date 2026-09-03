@@ -281,7 +281,7 @@ namespace Microsoft.NetFramework.Analyzers.Helpers
         /// This method returns the assembly version of mscorlib for .NET Framework prior version 4.0.
         /// It is using API diff tool to compare new classes in different versions and decide which version it is referencing
         /// i.e. for .NET framework 3.5, the returned version would be 2.0.0.0.
-        /// For .NET Framework 4.X, this method returns the actual framework version instead of assembly verison of mscorlib,
+        /// For .NET Framework 4.X, this method returns the actual framework version instead of assembly version of mscorlib,
         /// i.e. for .NET framework 4.5.2, this method return 4.5.2 instead of 4.0.0.0.
         /// </remarks>
         public static Version? GetDotNetFrameworkVersion([NotNullWhen(returnValue: true)] Compilation? compilation)

@@ -26,7 +26,7 @@ namespace Microsoft.TemplateEngine.Edge.UnitTests.Mocks
             _packageToPack = packageToPack;
         }
 
-        public Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, CancellationToken cancellationToken = default)
+        public Task<NuGetPackageInfo> DownloadPackageAsync(string downloadPath, string identifier, string? version = null, IEnumerable<string>? additionalSources = null, bool force = false, bool includePrerelease = false, CancellationToken cancellationToken = default)
         {
             // names of exceptions throw them for test purposes
             switch (identifier)

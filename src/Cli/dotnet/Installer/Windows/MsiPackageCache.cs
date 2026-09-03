@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Versioning;
 using Microsoft.DotNet.Cli.Commands.Workload;
 using Microsoft.DotNet.Cli.Installer.Windows.Security;
@@ -51,10 +50,33 @@ internal class MsiPackageCache(
     /// <param name="manifestPath">The JSON manifest associated with the workload pack MSI.</param>
     public void CachePayload(string packageId, string packageVersion, string manifestPath)
     {
-        if (!File.Exists(manifestPath))
+        // Validate that packageId and packageVersion do not contain path traversal characters
+        // to prevent an IPC client from constructing paths outside the package cache.
+        if (!WindowsUtils.ValidatePathComponent(packageId))
         {
-            throw new FileNotFoundException($"CachePayload: Manifest file not found: {manifestPath}");
+            throw new ArgumentException($"Invalid package ID: {packageId}");
         }
+
+        if (!WindowsUtils.ValidatePathComponent(packageVersion))
+        {
+            throw new ArgumentException($"Invalid package version: {packageVersion}");
+        }
+
+            // Validate that the manifest path resolves to a location under the elevated server's temp
+            // directory or the unelevated client's temp directory (when supplied at server launch via
+            // --client-temp). This prevents an IPC client from coercing the elevated server into reading
+            // or moving arbitrary files.
+            string fullManifestPath = Path.GetFullPath(manifestPath);
+
+            if (!WindowsUtils.ValidateManifestPath(fullManifestPath))
+            {
+                throw new ArgumentException($"CachePayload: Manifest path is not under an allowed temp directory: {manifestPath}");
+            }
+
+            if (!File.Exists(fullManifestPath))
+            {
+                throw new FileNotFoundException($"CachePayload: Manifest file not found: {fullManifestPath}");
+            }
 
         Elevate();
 
@@ -73,14 +95,14 @@ internal class MsiPackageCache(
 
             // We cannot assume that the MSI adjacent to the manifest is the one to cache. We'll trust
             // the manifest to provide the MSI filename.
-            MsiManifest? msiManifest = JsonSerializer.Deserialize(File.ReadAllText(manifestPath), InstallerJsonSerializerContext.Default.MsiManifest);
+            MsiManifest? msiManifest = JsonSerializer.Deserialize(File.ReadAllText(fullManifestPath), MsiManifestJsonSerializerContext.Default.MsiManifest);
             // Only use the filename+extension of the payload property in case the manifest has been altered.
-            string msiPath = Path.Combine(Path.GetDirectoryName(manifestPath)!, Path.GetFileName(msiManifest?.Payload ?? string.Empty));
+            string msiPath = Path.Combine(Path.GetDirectoryName(fullManifestPath)!, Path.GetFileName(msiManifest?.Payload ?? string.Empty));
 
             string cachedMsiPath = Path.Combine(packageDirectory, Path.GetFileName(msiPath));
-            string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(manifestPath));
+            string cachedManifestPath = Path.Combine(packageDirectory, Path.GetFileName(fullManifestPath));
 
-            SecurityUtils.MoveAndSecureFile(manifestPath, cachedManifestPath, Log);
+            SecurityUtils.MoveAndSecureFile(fullManifestPath, cachedManifestPath, Log);
             SecurityUtils.MoveAndSecureFile(msiPath, cachedMsiPath, Log);
         }
         else if (IsClient)
@@ -119,43 +141,15 @@ internal class MsiPackageCache(
         string packageCacheDirectory = GetPackageDirectory(packageId, packageVersion);
         payload = default;
 
-        if (!TryGetMsiPathFromPackageData(packageCacheDirectory, out string? msiPath, out string manifestPath))
+        if (!MsiPackageData.TryGetMsiPath(packageCacheDirectory, out string? msiPath, out string manifestPath, message => Log?.LogMessage(message)))
         {
             return false;
         }
 
-        VerifyPackageSignature(msiPath);
+        VerifyPackageSignature(msiPath!);
 
-        payload = new MsiPayload(manifestPath, msiPath);
+        payload = new MsiPayload(manifestPath, msiPath!);
 
-        return true;
-    }
-
-    public bool TryGetMsiPathFromPackageData(string packageDataPath, [NotNullWhen(true)] out string? msiPath, out string manifestPath)
-    {
-        msiPath = default;
-        manifestPath = Path.GetFullPath(Path.Combine(packageDataPath, "msi.json"));
-
-        // It's possible that the MSI is cached, but without the JSON manifest we cannot
-        // trust that the MSI in the cache directory is the correct file.
-        if (!File.Exists(manifestPath))
-        {
-            Log?.LogMessage($"MSI manifest file does not exist, '{manifestPath}'");
-            return false;
-        }
-
-        // The msi.json manifest contains the name of the actual MSI. The filename does not necessarily match the package
-        // ID as it may have been shortened to support VS caching.
-        MsiManifest? msiManifest = JsonSerializer.Deserialize(File.ReadAllText(manifestPath), InstallerJsonSerializerContext.Default.MsiManifest);
-        string possibleMsiPath = Path.Combine(Path.GetDirectoryName(manifestPath)!, msiManifest?.Payload ?? string.Empty);
-
-        if (!File.Exists(possibleMsiPath))
-        {
-            Log?.LogMessage($"MSI package not found, '{possibleMsiPath}'");
-            return false;
-        }
-
-        msiPath = possibleMsiPath;
         return true;
     }
 

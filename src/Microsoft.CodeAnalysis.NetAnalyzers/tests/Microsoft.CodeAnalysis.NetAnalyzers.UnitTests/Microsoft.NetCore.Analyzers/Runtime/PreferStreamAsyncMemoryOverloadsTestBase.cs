@@ -58,7 +58,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             test.ExpectedDiagnostics.AddRange(expected);
 
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            return test.RunAsync(CancellationToken.None);
         }
 
         // Verifies that the analyzer generates the specified VB diagnostic results, if any, for the specified originalSource.
@@ -78,7 +78,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
             test.ExpectedDiagnostics.AddRange(expected);
 
-            return test.RunAsync(TestContext.Current.CancellationToken);
+            return test.RunAsync(CancellationToken.None);
         }
 
         // Retrieves the C# diagnostic for the specified rule, lines, columns, method and preferred method.
@@ -93,17 +93,17 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
                 .WithSpan(startLine, startColumn, endLine, endColumn)
                 .WithArguments(methodName, methodPreferredName);
 
-        protected string GetByteArrayWithDataCSharp(bool isEmpty) => isEmpty ? "" : @"byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };";
+        protected string GetByteArrayWithDataCSharp(bool isEmpty) => isEmpty ? "" : "byte[] buffer = { 0xBA, 0x5E, 0xBA, 0x11, 0xF0, 0x07, 0xBA, 0x11 };";
 
-        protected string GetByteArrayWithDataVisualBasic(bool isEmpty) => isEmpty ? "" : @"Dim buffer As Byte() = {&HBA, &H5E, &HBA, &H11, &HF0, &H07, &HBA, &H11}";
+        protected string GetByteArrayWithDataVisualBasic(bool isEmpty) => isEmpty ? "" : "Dim buffer As Byte() = {&HBA, &H5E, &HBA, &H11, &HF0, &H07, &HBA, &H11}";
 
-        protected string GetByteArrayWithoutDataCSharp(bool isEmpty) => isEmpty ? "" : @"byte[] buffer = new byte[s.Length];";
+        protected string GetByteArrayWithoutDataCSharp(bool isEmpty) => isEmpty ? "" : "byte[] buffer = new byte[s.Length];";
 
-        protected string GetByteArrayWithoutDataVisualBasic(bool isEmpty) => isEmpty ? "" : @"Dim buffer As Byte() = New Byte(s.Length - 1) {}";
+        protected string GetByteArrayWithoutDataVisualBasic(bool isEmpty) => isEmpty ? "" : "Dim buffer As Byte() = New Byte(s.Length - 1) {}";
 
-        protected string GetConfigureAwaitCSharp(bool isEmpty) => isEmpty ? "" : @".ConfigureAwait(false)";
+        protected string GetConfigureAwaitCSharp(bool isEmpty) => isEmpty ? "" : ".ConfigureAwait(false)";
 
-        protected string GetConfigureAwaitVisualBasic(bool isEmpty) => isEmpty ? "" : @".ConfigureAwait(False)";
+        protected string GetConfigureAwaitVisualBasic(bool isEmpty) => isEmpty ? "" : ".ConfigureAwait(False)";
 
         public static IEnumerable<object[]> UnnamedArgumentsFullBufferTestData()
         {

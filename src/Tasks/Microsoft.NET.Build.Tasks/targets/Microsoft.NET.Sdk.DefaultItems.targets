@@ -38,8 +38,11 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!-- Exclude PublishDir to prevent published artifacts from being included in subsequent builds/publishes. 
          While in most cases PublishDir is contained within BaseOutputPath or BaseIntermediateOutputPath,
          this is by no means required, so we should protect against this happening here.
-         Guard against PublishDir being the project directory (e.g. 'dotnet publish -o .') which would exclude all source files. -->
-    <DefaultItemExcludes Condition="'$(PublishDir)' != '' And '$([MSBuild]::NormalizePath($(MSBuildProjectDirectory), $(PublishDir)))' != '$([MSBuild]::NormalizePath($(MSBuildProjectDirectory)))'">$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
+         Guard against PublishDir being the project directory (e.g. 'dotnet publish -o .') which would exclude all source files.
+         Use NormalizeDirectory (not NormalizePath) on both operands so the comparison is trailing-slash insensitive: the CLI
+         forwards PublishDir as an absolute path with a trailing separator, and NormalizePath preserves the input's trailing
+         slash, so NormalizePath would treat 'C:\proj\' and 'C:\proj' as different and re-introduce the exclusion. -->
+    <DefaultItemExcludes Condition="'$(PublishDir)' != '' And '$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory), $(PublishDir)))' != '$([MSBuild]::NormalizeDirectory($(MSBuildProjectDirectory)))'">$(DefaultItemExcludes);$(PublishDir)/**</DefaultItemExcludes>
 
     <!-- Various files that should generally always be ignored -->
     <DefaultItemExcludes>$(DefaultItemExcludes);**/*.user</DefaultItemExcludes>

@@ -1,7 +1,7 @@
 ﻿apicontroller
 blazor
-blazor-wasm-servicedefaults
 blazorwasm
+blazorwasm-servicedefaults
 blazorwebworker
 buildprops
 buildtargets

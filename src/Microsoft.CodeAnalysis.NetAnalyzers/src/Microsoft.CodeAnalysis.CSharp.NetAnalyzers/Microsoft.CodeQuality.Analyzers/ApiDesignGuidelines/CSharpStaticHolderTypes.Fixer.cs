@@ -6,60 +6,51 @@ using System.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Analyzer.Utilities;
 using Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Editing;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 using Microsoft.CodeQuality.Analyzers;
-using Microsoft.CodeAnalysis.CodeActions;
-using Analyzer.Utilities;
 
 namespace Microsoft.CodeQuality.CSharp.Analyzers.ApiDesignGuidelines
 {
     [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
-    public class CSharpStaticHolderTypesFixer : CodeFixProvider
+    public class CSharpStaticHolderTypesFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } =
             ImmutableArray.Create(StaticHolderTypesAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider() =>
-            WellKnownFixAllProviders.BatchFixer;
-
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
-            Document document = context.Document;
-            CodeAnalysis.Text.TextSpan span = context.Span;
-            CancellationToken cancellationToken = context.CancellationToken;
-
-            cancellationToken.ThrowIfCancellationRequested();
-            SyntaxNode root = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            ClassDeclarationSyntax? classDeclaration = root.FindToken(span.Start).Parent?.FirstAncestorOrSelf<ClassDeclarationSyntax>();
-            if (classDeclaration != null)
+            SyntaxNode root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
+            if (root.FindToken(context.Span.Start).Parent?.FirstAncestorOrSelf<ClassDeclarationSyntax>() is not null)
             {
                 string title = MicrosoftCodeQualityAnalyzersResources.MakeClassStatic;
-                var codeAction = CodeAction.Create(title,
-                                                  async ct => await MakeClassStaticAsync(document, classDeclaration, ct).ConfigureAwait(false),
-                                                  equivalenceKey: title);
-                context.RegisterCodeFix(codeAction, context.Diagnostics);
+                RegisterCodeFix(context, title, title);
             }
         }
 
-        private static async Task<Document> MakeClassStaticAsync(Document document, ClassDeclarationSyntax classDeclaration, CancellationToken ct)
+        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            DocumentEditor editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
+            if (editor.OriginalRoot.FindToken(diagnostic.Location.SourceSpan.Start).Parent?.FirstAncestorOrSelf<ClassDeclarationSyntax>() is not ClassDeclarationSyntax classDeclaration)
+            {
+                return Task.CompletedTask;
+            }
+
             DeclarationModifiers modifiers = editor.Generator.GetModifiers(classDeclaration);
             editor.SetModifiers(classDeclaration, modifiers - DeclarationModifiers.Sealed + DeclarationModifiers.Static);
 
-            SyntaxList<MemberDeclarationSyntax> members = classDeclaration.Members;
-            MemberDeclarationSyntax defaultConstructor = members.FirstOrDefault(m => m.IsDefaultConstructor());
+            MemberDeclarationSyntax defaultConstructor = classDeclaration.Members.FirstOrDefault(m => m.IsDefaultConstructor());
             if (defaultConstructor != null)
             {
                 editor.RemoveNode(defaultConstructor);
             }
 
-            return editor.GetChangedDocument();
+            return Task.CompletedTask;
         }
     }
 

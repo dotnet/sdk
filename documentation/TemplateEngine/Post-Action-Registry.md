@@ -54,7 +54,7 @@ Used to restore NuGet packages after project create.
    - `dotnet new3`
    - `dotnet new` (2.0.0 or higher)
  - **Ignored in**:
-   - `Visual Studio` - Visual Studio restores all projects automatically, so post action will be be ignored.
+   - `Visual Studio` - Visual Studio restores all projects automatically, so post action will be ignored.
 
 Note: when using `files` argument it should contain the path to the file in source template definition, and ignore all the path and filename changes that can happen when instantiating template. For more details, see [the article](Using-Primary-Outputs-for-Post-Actions.md).
 

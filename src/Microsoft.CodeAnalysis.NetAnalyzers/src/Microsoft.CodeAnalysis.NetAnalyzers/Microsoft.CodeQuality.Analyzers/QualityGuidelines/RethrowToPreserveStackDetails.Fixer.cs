@@ -7,10 +7,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.Editing;
 using Microsoft.CodeAnalysis.Formatting;
+using Microsoft.CodeAnalysis.NetAnalyzers;
 
 namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
 {
@@ -18,45 +18,42 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines
     /// CA2200: Rethrow to preserve stack details
     /// </summary>
     [ExportCodeFixProvider(LanguageNames.CSharp, LanguageNames.VisualBasic, Name = RethrowToPreserveStackDetailsAnalyzer.RuleId), Shared]
-    public sealed class RethrowToPreserveStackDetailsFixer : CodeFixProvider
+    public sealed class RethrowToPreserveStackDetailsFixer : SyntaxEditorBasedCodeFixProvider
     {
         public sealed override ImmutableArray<string> FixableDiagnosticIds { get; } = ImmutableArray.Create(RethrowToPreserveStackDetailsAnalyzer.RuleId);
 
-        public sealed override FixAllProvider GetFixAllProvider()
-        {
-            // See https://github.com/dotnet/roslyn/blob/main/docs/analyzers/FixAllProvider.md for more information on Fix All Providers'
-            return WellKnownFixAllProviders.BatchFixer;
-        }
         public sealed override async Task RegisterCodeFixesAsync(CodeFixContext context)
         {
             var root = await context.Document.GetRequiredSyntaxRootAsync(context.CancellationToken).ConfigureAwait(false);
-            var diagnostics = context.Diagnostics;
 
-            var nodeToReplace = root.FindNode(context.Span);
-            if (nodeToReplace == null)
+            if (root.FindNode(context.Span) == null)
             {
                 return;
             }
-            // Register a code action that will invoke the fix.
-            context.RegisterCodeFix(
-                CodeAction.Create(
-                    title: MicrosoftCodeQualityAnalyzersResources.RethrowToPreserveStackDetailsTitle,
-                    createChangedDocument: c => MakeThrowAsync(context.Document, nodeToReplace, c),
-                    equivalenceKey: nameof(RethrowToPreserveStackDetailsFixer)),
-                diagnostics);
+
+            RegisterCodeFix(
+                context,
+                MicrosoftCodeQualityAnalyzersResources.RethrowToPreserveStackDetailsTitle,
+                nameof(RethrowToPreserveStackDetailsFixer));
         }
 
-        private static async Task<Document> MakeThrowAsync(Document document, SyntaxNode nodeToReplace, CancellationToken cancellationToken)
+        protected sealed override Task ApplyFixAsync(Document document, Diagnostic diagnostic, SyntaxEditor editor, CancellationToken cancellationToken)
         {
-            var formattednewLocal = SyntaxGenerator.GetGenerator(document).ThrowStatement()
+            var nodeToReplace = editor.OriginalRoot.FindNode(diagnostic.Location.SourceSpan);
+            if (nodeToReplace == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            var rethrow = editor.Generator.ThrowStatement()
                 .WithLeadingTrivia(nodeToReplace.GetLeadingTrivia())
                 .WithTrailingTrivia(nodeToReplace.GetTrailingTrivia())
                 .WithAdditionalAnnotations(Formatter.Annotation);
 
-            var oldRoot = await document.GetRequiredSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
-            var newRoot = oldRoot.ReplaceNode(nodeToReplace, formattednewLocal);
-
-            return document.WithSyntaxRoot(newRoot);
+            // The replacement is a bare rethrow, so it carries nothing over from the statement it replaces
+            // and a nested diagnostic cannot survive into it.
+            editor.ReplaceNode(nodeToReplace, rethrow);
+            return Task.CompletedTask;
         }
     }
 }

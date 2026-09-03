@@ -29,7 +29,14 @@ public static class ActivityContextFactory
 #if TARGET_WINDOWS
         var propagationContext = new PropagationContext(activityContext, Baggage.Current);
         Propagators.DefaultTextMapPropagator.Inject(propagationContext, environment, WriteTraceStateIntoEnvironment);
+#else
+        environment[Activities.TRACEPARENT] = $"00-{activityContext.TraceId}-{activityContext.SpanId}-{(byte)activityContext.TraceFlags:x2}";
+        if (!string.IsNullOrEmpty(activityContext.TraceState))
+        {
+            environment[Activities.TRACESTATE] = activityContext.TraceState;
+        }
 #endif
+
         return environment;
     }
 

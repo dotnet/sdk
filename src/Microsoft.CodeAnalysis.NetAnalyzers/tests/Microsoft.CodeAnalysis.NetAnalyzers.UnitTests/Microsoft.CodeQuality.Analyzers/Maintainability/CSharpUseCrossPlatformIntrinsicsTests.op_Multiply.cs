@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsAnalyzer,
     Microsoft.CodeQuality.CSharp.Analyzers.Maintainability.CSharpUseCrossPlatformIntrinsicsFixer>;
@@ -14,15 +13,15 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
 
     public partial class CSharpUseCrossPlatformIntrinsicsTests
     {
-        [Theory]
-        [InlineData("byte", "AdvSimd.Multiply")]
-        [InlineData("sbyte", "AdvSimd.Multiply")]
-        [InlineData("short", "AdvSimd.Multiply")]
-        [InlineData("ushort", "AdvSimd.Multiply")]
-        [InlineData("int", "AdvSimd.Multiply")]
-        [InlineData("uint", "AdvSimd.Multiply")]
-        [InlineData("float", "AdvSimd.Multiply")]
-        [InlineData("double", "AdvSimd.MultiplyScalar")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Multiply")]
+        [DataRow("sbyte", "AdvSimd.Multiply")]
+        [DataRow("short", "AdvSimd.Multiply")]
+        [DataRow("ushort", "AdvSimd.Multiply")]
+        [DataRow("int", "AdvSimd.Multiply")]
+        [DataRow("uint", "AdvSimd.Multiply")]
+        [DataRow("float", "AdvSimd.Multiply")]
+        [DataRow("double", "AdvSimd.MultiplyScalar")]
         public async Task Fixer_opMultiplyArmV64Async(string type, string method)
         {
             // lang=C#-test
@@ -57,11 +56,11 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("float", "AdvSimd.MultiplyScalar")]
+        [TestMethod]
+        [DataRow("float", "AdvSimd.MultiplyScalar")]
         public async Task Fixer_opMultiplyArmV64Async_NoReplacement(string type, string method)
         {
             // lang=C#-test
@@ -85,18 +84,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 ExpectedDiagnostics = { },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("byte", "AdvSimd.Multiply")]
-        [InlineData("sbyte", "AdvSimd.Multiply")]
-        [InlineData("short", "AdvSimd.Multiply")]
-        [InlineData("ushort", "AdvSimd.Multiply")]
-        [InlineData("int", "AdvSimd.Multiply")]
-        [InlineData("uint", "AdvSimd.Multiply")]
-        [InlineData("float", "AdvSimd.Multiply")]
-        [InlineData("double", "AdvSimd.Arm64.Multiply")]
+        [TestMethod]
+        [DataRow("byte", "AdvSimd.Multiply")]
+        [DataRow("sbyte", "AdvSimd.Multiply")]
+        [DataRow("short", "AdvSimd.Multiply")]
+        [DataRow("ushort", "AdvSimd.Multiply")]
+        [DataRow("int", "AdvSimd.Multiply")]
+        [DataRow("uint", "AdvSimd.Multiply")]
+        [DataRow("float", "AdvSimd.Multiply")]
+        [DataRow("double", "AdvSimd.Arm64.Multiply")]
         public async Task Fixer_opMultiplyArmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -131,18 +130,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("short", "PackedSimd.Multiply")]
-        [InlineData("ushort", "PackedSimd.Multiply")]
-        [InlineData("int", "PackedSimd.Multiply")]
-        [InlineData("uint", "PackedSimd.Multiply")]
-        [InlineData("long", "PackedSimd.Multiply")]
-        [InlineData("ulong", "PackedSimd.Multiply")]
-        [InlineData("float", "PackedSimd.Multiply")]
-        [InlineData("double", "PackedSimd.Multiply")]
+        [TestMethod]
+        [DataRow("short", "PackedSimd.Multiply")]
+        [DataRow("ushort", "PackedSimd.Multiply")]
+        [DataRow("int", "PackedSimd.Multiply")]
+        [DataRow("uint", "PackedSimd.Multiply")]
+        [DataRow("long", "PackedSimd.Multiply")]
+        [DataRow("ulong", "PackedSimd.Multiply")]
+        [DataRow("float", "PackedSimd.Multiply")]
+        [DataRow("double", "PackedSimd.Multiply")]
         public async Task Fixer_opMultiplyWasmV128Async(string type, string method)
         {
             // lang=C#-test
@@ -177,18 +176,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("short", "Sse2.MultiplyLow")]
-        [InlineData("ushort", "Sse2.MultiplyLow")]
-        [InlineData("int", "Sse41.MultiplyLow")]
-        [InlineData("uint", "Sse41.MultiplyLow")]
-        [InlineData("long", "Avx512DQ.VL.MultiplyLow")]
-        [InlineData("ulong", "Avx512DQ.VL.MultiplyLow")]
-        [InlineData("float", "Sse.Multiply")]
-        [InlineData("double", "Sse2.Multiply")]
+        [TestMethod]
+        [DataRow("short", "Sse2.MultiplyLow")]
+        [DataRow("ushort", "Sse2.MultiplyLow")]
+        [DataRow("int", "Sse41.MultiplyLow")]
+        [DataRow("uint", "Sse41.MultiplyLow")]
+        [DataRow("long", "Avx512DQ.VL.MultiplyLow")]
+        [DataRow("ulong", "Avx512DQ.VL.MultiplyLow")]
+        [DataRow("float", "Sse.Multiply")]
+        [DataRow("double", "Sse2.Multiply")]
         public async Task Fixer_opMultiplyx86V128Async(string type, string method)
         {
             // lang=C#-test
@@ -223,12 +222,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int", "long", "Sse41.Multiply")]
-        [InlineData("uint", "ulong", "Sse2.Multiply")]
+        [TestMethod]
+        [DataRow("int", "long", "Sse41.Multiply")]
+        [DataRow("uint", "ulong", "Sse2.Multiply")]
         public async Task Fixer_opMultiplyx86V128Async_NoReplacement(string type, string retType, string method)
         {
             // lang=C#-test
@@ -252,18 +251,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 ExpectedDiagnostics = { },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("short", "Avx2.MultiplyLow")]
-        [InlineData("ushort", "Avx2.MultiplyLow")]
-        [InlineData("int", "Avx2.MultiplyLow")]
-        [InlineData("uint", "Avx2.MultiplyLow")]
-        [InlineData("long", "Avx512DQ.VL.MultiplyLow")]
-        [InlineData("ulong", "Avx512DQ.VL.MultiplyLow")]
-        [InlineData("float", "Avx.Multiply")]
-        [InlineData("double", "Avx.Multiply")]
+        [TestMethod]
+        [DataRow("short", "Avx2.MultiplyLow")]
+        [DataRow("ushort", "Avx2.MultiplyLow")]
+        [DataRow("int", "Avx2.MultiplyLow")]
+        [DataRow("uint", "Avx2.MultiplyLow")]
+        [DataRow("long", "Avx512DQ.VL.MultiplyLow")]
+        [DataRow("ulong", "Avx512DQ.VL.MultiplyLow")]
+        [DataRow("float", "Avx.Multiply")]
+        [DataRow("double", "Avx.Multiply")]
         public async Task Fixer_opMultiplyx86V256Async(string type, string method)
         {
             // lang=C#-test
@@ -298,12 +297,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int", "long", "Avx2.Multiply")]
-        [InlineData("uint", "ulong", "Avx2.Multiply")]
+        [TestMethod]
+        [DataRow("int", "long", "Avx2.Multiply")]
+        [DataRow("uint", "ulong", "Avx2.Multiply")]
         public async Task Fixer_opMultiplyx86V256Async_NoReplacement(string type, string retType, string method)
         {
             // lang=C#-test
@@ -327,18 +326,18 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 ExpectedDiagnostics = { },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("short", "Avx512BW.MultiplyLow")]
-        [InlineData("ushort", "Avx512BW.MultiplyLow")]
-        [InlineData("int", "Avx512F.MultiplyLow")]
-        [InlineData("uint", "Avx512F.MultiplyLow")]
-        [InlineData("long", "Avx512DQ.MultiplyLow")]
-        [InlineData("ulong", "Avx512DQ.MultiplyLow")]
-        [InlineData("float", "Avx512F.Multiply")]
-        [InlineData("double", "Avx512F.Multiply")]
+        [TestMethod]
+        [DataRow("short", "Avx512BW.MultiplyLow")]
+        [DataRow("ushort", "Avx512BW.MultiplyLow")]
+        [DataRow("int", "Avx512F.MultiplyLow")]
+        [DataRow("uint", "Avx512F.MultiplyLow")]
+        [DataRow("long", "Avx512DQ.MultiplyLow")]
+        [DataRow("ulong", "Avx512DQ.MultiplyLow")]
+        [DataRow("float", "Avx512F.Multiply")]
+        [DataRow("double", "Avx512F.Multiply")]
         public async Task Fixer_opMultiplyx86V512Async(string type, string method)
         {
             // lang=C#-test
@@ -373,12 +372,12 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Theory]
-        [InlineData("int", "long", "Avx512F.Multiply")]
-        [InlineData("uint", "ulong", "Avx512F.Multiply")]
+        [TestMethod]
+        [DataRow("int", "long", "Avx512F.Multiply")]
+        [DataRow("uint", "ulong", "Avx512F.Multiply")]
         public async Task Fixer_opMultiplyx86V512Async_NoReplacement(string type, string retType, string method)
         {
             // lang=C#-test
@@ -402,7 +401,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.UnitTests
                 ExpectedDiagnostics = { },
                 FixedCode = fixedCode,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net80
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

@@ -3,6 +3,8 @@
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Test asset paths are isolated across classes, but data-driven methods within a class can share paths. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -34,14 +36,6 @@
     <None Include="..\..\src\Tasks\Common\Resources\xlf\**\*" LinkBase="Resources\xlf" />
     <PackageReference Include="Microsoft.DotNet.XliffTasks" Version="$(MicrosoftDotNetXliffTasksPackageVersion)" PrivateAssets="all" IsImplicitlyDefined="true" />
     <EmbeddedResource Include="**\*.resx" Exclude="$(GlobalExclude)" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
   </ItemGroup>
 
 </Project>

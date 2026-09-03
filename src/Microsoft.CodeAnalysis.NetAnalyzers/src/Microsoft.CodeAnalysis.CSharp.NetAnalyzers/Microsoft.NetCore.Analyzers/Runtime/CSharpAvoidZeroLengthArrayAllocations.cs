@@ -2,8 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.NetCore.Analyzers.Runtime;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 
@@ -22,7 +22,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
 
         protected override bool IsCollectionExpressionSyntax(SyntaxNode node)
         {
-            return node.IsKind(SyntaxKindEx.CollectionExpression);
+            return node.IsKind(SyntaxKind.CollectionExpression);
         }
     }
 }

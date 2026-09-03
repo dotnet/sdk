@@ -35,7 +35,6 @@ public class DigestUtilsTests
         Assert.ThrowsExactly<InvalidDigestException>(() =>
             DigestUtils.GetEncoded(digest));
     }
-
     [TestMethod]
     public void ComputeSha256Digest_ReturnsCorrectDigest()
     {
@@ -57,7 +56,6 @@ public class DigestUtilsTests
         string digest = DigestUtils.FormatSha256Digest("abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890");
         Assert.AreEqual("sha256:abcdef1234567890abcdef1234567890abcdef1234567890abcdef1234567890", digest);
     }
-
     [TestMethod]
     public void ComputeSha256Digest_RoundTrips_Through_GetEncoded()
     {

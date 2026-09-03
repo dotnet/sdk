@@ -11,13 +11,12 @@
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />
 
   <PropertyGroup>
+    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+
     <Description>The MSBuild targets and tasks which extend MSBuild's common targets.</Description>
     <OutputType>Library</OutputType>
     <RootNamespace>Microsoft.NET.Build.Tasks</RootNamespace>
-    <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
-  </PropertyGroup>
 
-  <PropertyGroup>
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
     <EnableDefaultItems>false</EnableDefaultItems>
     <GenerateDependencyFile>false</GenerateDependencyFile>
@@ -26,11 +25,9 @@
     <NoPackageAnalysis>true</NoPackageAnalysis>
     <!-- MSBuild Task DLLs need to be versioned with every build -->
     <AutoGenerateAssemblyVersion>true</AutoGenerateAssemblyVersion>
-  </PropertyGroup>
 
-  <PropertyGroup>
     <OutputPath>$(BaseOutputPath)</OutputPath>
-    <DefineConstants>$(DefineConstants);EXTENSIONS</DefineConstants>
+    <DefineConstants>$(DefineConstants);EXTENSIONS;MSBUILD_BUILD_TASKS</DefineConstants>
     <IsPackable>true</IsPackable>
     <PackageLayoutOutputPath>$(ArtifactsBinDir)$(Configuration)\Sdks\$(PackageId)\</PackageLayoutOutputPath>
   </PropertyGroup>
@@ -45,14 +42,14 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.Build.Framework" ExcludeAssets="Runtime" />
     <PackageReference Include="Microsoft.Build.Utilities.Core" ExcludeAssets="Runtime" />
-    <PackageReference Include="NETStandard.Library.NETFramework" ExcludeAssets="All" NoWarn="NU1701" />
-    <!-- Lift dependency of NETStandard.Library.NETFramework to version produced in SBA. -->
-    <PackageReference Include="NETStandard.Library" VersionOverride="$(NETStandardLibraryVersion)" ExcludeAssets="All" />
+    <PackageDownload Include="NETStandard.Library.NETFramework" Version="[$(NETStandardLibraryNETFrameworkVersion)]" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile Include="..\Common\**\*.cs" LinkBase="Common" />
+    <!-- MSBuildUtilities.cs is shared with the Microsoft.DotNet.FileBasedPrograms source package; MSBUILD_BUILD_TASKS
+         (defined above) selects the Microsoft.DotNet.Cli namespace for this build-tasks copy. See https://github.com/dotnet/sdk/issues/51487. -->
     <Compile Include="$(RepoRoot)src\Common\MSBuildUtilities.cs" LinkBase="Common" />
   </ItemGroup>
 

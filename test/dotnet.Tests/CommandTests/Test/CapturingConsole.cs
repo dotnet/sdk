@@ -50,6 +50,8 @@ internal sealed class CapturingConsole : IConsole
 
     public void Write(string? value) => _output.Append(value);
 
+    public void Write(StringBuilder value) => _output.Append(value);
+
     public void Write(char value) => _output.Append(value);
 
     public void Clear() => _output.Clear();

@@ -36,6 +36,7 @@ on:
         default: "ACTIVE"
 
 env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
   # Do not allow failure for jobs triggered automatically (this can block PR merge)
   ALLOW_FAILURE: ${{ github.event_name == 'workflow_dispatch' }}
 

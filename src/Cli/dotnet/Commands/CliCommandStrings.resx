@@ -453,6 +453,18 @@ This is equivalent to deleting project.assets.json.</value>
   <data name="CmdMultipleBuildPathOptionsErrorDescription" xml:space="preserve">
     <value>Specify either the project, solution, directory, or test modules option.</value>
   </data>
+  <data name="CmdListDevicesAndListTestsMutuallyExclusive" xml:space="preserve">
+    <value>The '--list-devices' and '--list-tests' options cannot be used together.</value>
+  </data>
+  <data name="CmdListDevicesAndAffectedTestsMutuallyExclusive" xml:space="preserve">
+    <value>The '--list-devices' option cannot be combined with '--collect-test-map' or '--affected-tests'.</value>
+  </data>
+  <data name="CmdDeviceOptionsRequireProject" xml:space="preserve">
+    <value>The '--device' and '--list-devices' options require a project and cannot be used with '--test-modules'.</value>
+  </data>
+  <data name="CmdDeviceOptionsNotSupportedForFileBasedApps" xml:space="preserve">
+    <value>The '--device' and '--list-devices' options are not supported for C# file-based apps.</value>
+  </data>
   <data name="CmdMultipleProjectOrSolutionFilesErrorDescription" xml:space="preserve">
     <value>Specify which project or solution file to use because this folder contains more than one project or solution file.</value>
   </data>
@@ -1713,18 +1725,22 @@ The default is to publish a framework-dependent application.</value>
     <comment>{0} is the .cs file path argument. {1} is the project file path.{Locked="dotnet run --"}</comment>
   </data>
   <data name="WarningFileArgumentPassedToMSBuild" xml:space="preserve">
-    <value>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}'.</value>
-    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish).{Locked="dotnet"}</comment>
+    <value>Warning: '{0}' appears to be a file-based app but was treated as an MSBuild argument. To treat it as a file-based app, use 'dotnet {1} {0}' and remove unsupported arguments {2}.</value>
+    <comment>{0} is the file path argument. {1} is the command name (e.g. build, clean, publish). {2} is the list of unsupported arguments.{Locked="dotnet"}</comment>
   </data>
   <data name="WarningCsFileArgumentPassedToMSBuild" xml:space="preserve">
-    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument.</value>
-    <comment>{0} is the .cs file path argument.</comment>
+    <value>Warning: '{0}' looks like a file-based app but the file was not found, and it was treated as an MSBuild argument. Unrecognized arguments: {1}.</value>
+    <comment>{0} is the .cs file path argument. {1} is the list of unrecognized arguments.</comment>
   </data>
   <data name="RunCommandExceptionMultipleProjects" xml:space="preserve">
     <value>Specify which project file to use because {0} contains more than one project file.</value>
   </data>
   <data name="RunCommandExceptionNoProjects" xml:space="preserve">
     <value>Couldn't find a project to run. Ensure a project exists in {0}, or pass the path to the project using {1}.</value>
+  </data>
+  <data name="RunCommandWarningUnableToDetermineLoggerArguments" xml:space="preserve">
+    <value>Warning: Could not determine which application arguments appeared after '--'. All application arguments will be passed to the application without treating logger arguments specially.</value>
+    <comment>{Locked="--"}</comment>
   </data>
   <data name="RunCommandExceptionUnableToRun" xml:space="preserve">
     <value>Unable to proceed with project '{0}'.
@@ -1951,6 +1967,10 @@ Your project targets multiple frameworks. Specify which framework to run using '
   </data>
   <data name="StandardOutput" xml:space="preserve">
     <value>Standard output</value>
+  </data>
+  <data name="TestApplicationOutputTruncated" xml:space="preserve">
+    <value>... output truncated, {0} lines omitted ...</value>
+    <comment>{0} is the number of output lines that were omitted from the summary.</comment>
   </data>
   <data name="StatusColumnHeader" xml:space="preserve">
     <value>Status</value>
@@ -2655,6 +2675,21 @@ Proceed?</value>
     <value>The test host reported execution mode '{0}', but 'dotnet test' expected '{1}'. This typically happens when an option such as '--help', '-?' or '--list-tests' was injected into the test host through a non-CLI channel (e.g. the 'TestingPlatformCommandLineArguments' or 'RunArguments' MSBuild properties, or 'launchSettings.json' commandLineArgs). Pass these options directly to 'dotnet test' instead.</value>
     <comment>{Locked="dotnet test"}{Locked="--help"}{Locked="-?"}{Locked="--list-tests"}{Locked="TestingPlatformCommandLineArguments"}{Locked="RunArguments"}{Locked="launchSettings.json"}{Locked="commandLineArgs"}</comment>
   </data>
+  <data name="MismatchingHandshakeHostType" xml:space="preserve">
+    <value>The test host reported host type '{0}', but 'dotnet test' expected '{1}'.</value>
+    <comment>{Locked="dotnet test"}</comment>
+  </data>
+  <data name="ArtifactPostProcessingFailed" xml:space="preserve">
+    <value>Artifact post-processing with '{0}' failed: {1} Original artifacts will be reported.</value>
+    <comment>{0} is the test application path. {1} is the failure reason.</comment>
+  </data>
+  <data name="ArtifactPostProcessingProcessFailed" xml:space="preserve">
+    <value>Artifact post-processing with '{0}' exited with code {1}. Any artifacts that were not merged will be reported individually.</value>
+    <comment>{0} is the test application path. {1} is the process exit code.</comment>
+  </data>
+  <data name="ArtifactPostProcessingStarted" xml:space="preserve">
+    <value>Merging compatible artifacts produced by different test applications...</value>
+  </data>
   <data name="UnexpectedMessageInHelpMode" xml:space="preserve">
     <value>A message of type '{0}' was received in help mode, which is not expected.</value>
   </data>
@@ -2690,8 +2725,33 @@ Proceed?</value>
   <data name="TotalColon" xml:space="preserve">
     <value>total:</value>
   </data>
-  <data name="Retried" xml:space="preserve">
-    <value>retried</value>
+  <data name="RetriedColon" xml:space="preserve">
+    <value>retried:</value>
+    <comment>Label of the run summary line counting distinct tests that ran more than once because of a retry, e.g. 'retried: 2 test(s), 4 extra run(s)'. Keep parallel to the 'failed:'/'succeeded:'/'skipped:' labels. The colon is part of the string so locales can punctuate it appropriately.</comment>
+  </data>
+  <data name="RetriedTestsAndRuns" xml:space="preserve">
+    <value>{0} test(s), {1} extra run(s)</value>
+    <comment>{0} is the number of distinct tests that were retried. {1} is the number of additional executions those retries caused. Rendered after the 'retried:' label.</comment>
+  </data>
+  <data name="FlakyLowercase" xml:space="preserve">
+    <value>flaky: {0} (passed after retry)</value>
+    <comment>{0} is the number of tests that failed at least once but eventually passed. Rendered in the run summary after the 'skipped:' line. The parenthetical is important: it states that these tests are already included in the 'succeeded:' count rather than forming a fourth outcome category alongside failed/succeeded/skipped.</comment>
+  </data>
+  <data name="FlakyTests" xml:space="preserve">
+    <value>Flaky tests:</value>
+    <comment>Header of the run summary section that lists tests which failed at least once but eventually passed after a retry.</comment>
+  </data>
+  <data name="FlakyTransition" xml:space="preserve">
+    <value>failed -&gt; passed</value>
+    <comment>Describes the outcome change of a flaky test, shown next to its name in the 'Flaky tests:' section. The arrow reads left (first outcome) to right (final outcome).</comment>
+  </data>
+  <data name="FlakyAttempts" xml:space="preserve">
+    <value>{0} attempts</value>
+    <comment>{0} is the total number of times the test ran (first run plus retries), shown next to a flaky test's name.</comment>
+  </data>
+  <data name="SlowestTests" xml:space="preserve">
+    <value>Slowest tests:</value>
+    <comment>Header of the run summary section that lists the longest-running tests.</comment>
   </data>
   <data name="FailedColon" xml:space="preserve">
     <value>failed:</value>
@@ -2715,5 +2775,28 @@ Proceed?</value>
   </data>
   <data name="CmdTestNoTestProjectsFound" xml:space="preserve">
     <value>No test projects were found.</value>
+  </data>
+  <data name="WorkloadSetVersionInPackageVersionFormat" xml:space="preserve">
+    <value>'{0}' is not a valid workload set version. The workload set version should have '0' as the minor component (for example, '10.0.105' or '10.0.103.1'). Did you mean '{1}'?{2}</value>
+    <comment>{0} is the version the user provided. {1} is the suggested corrected version. {2} is an optional suffix indicating where the version was specified (e.g. global.json), or empty.</comment>
+  </data>
+  <data name="WorkloadSetVersionSpecifiedInGlobalJson" xml:space="preserve">
+    <value> (Specified in '{0}')</value>
+    <comment>{0} is the path to the global.json file.</comment>
+  </data>
+  <data name="CmdAffectedTestsFeatureDisabled" xml:space="preserve">
+    <value>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</value>
+  </data>
+  <data name="CmdAffectedTestsOptionsMutuallyExclusive" xml:space="preserve">
+    <value>The options '--collect-test-map' and '--affected-tests' cannot be used together.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRunModulesInParallel" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</value>
+  </data>
+  <data name="CmdCollectTestMapCannotRequireMinimumTests" xml:space="preserve">
+    <value>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</value>
+  </data>
+  <data name="CmdAffectedTestsResponseFilesMustBeConsistent" xml:space="preserve">
+    <value>Forwarded response files must select the same affected-test operation for every test application. Specify '--collect-test-map' or '--affected-tests' directly on 'dotnet test' instead.</value>
   </data>
 </root>

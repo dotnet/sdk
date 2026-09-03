@@ -12,6 +12,6 @@ namespace Microsoft.CodeQuality.CSharp.Analyzers.QualityGuidelines
     public sealed class CSharpUseLiteralsWhereAppropriate : UseLiteralsWhereAppropriateAnalyzer
     {
         protected override bool IsConstantInterpolatedStringSupported(ParseOptions compilation)
-            => ((CSharpParseOptions)compilation).LanguageVersion > (LanguageVersion)900; // Starting with C# 10 and above.
+            => ((CSharpParseOptions)compilation).LanguageVersion >= LanguageVersion.CSharp10;
     }
 }

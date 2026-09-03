@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.CommandLine;
 using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Run;
@@ -15,12 +16,16 @@ internal sealed class TestModulesFilterHandler : ITestHandler
     private readonly string _testModules;
     private readonly string? _testModulesRoot;
     private readonly List<string> _testModulePaths;
+    private readonly IReadOnlyDictionary<string, string> _environmentVariables;
+    private List<ParallelizableTestModuleGroupWithSequentialInnerModules> _testApplications = [];
 
     public TestModulesFilterHandler(string testModules, ParseResult parseResult)
     {
         _testModules = testModules;
 
         var definition = (TestCommandDefinition.MicrosoftTestingPlatform)parseResult.CommandResult.Command;
+        _environmentVariables = parseResult.GetValue(definition.EnvOption)
+            ?? ImmutableDictionary<string, string>.Empty;
 
         // If the module path pattern(s) was provided, we will use that to filter the test modules
         // If the root directory was provided, we will use that to search for the test modules
@@ -51,12 +56,29 @@ internal sealed class TestModulesFilterHandler : ITestHandler
             return false;
         }
 
+        _testApplications = BuildTestApplications();
         return true;
     }
 
+    public IEnumerable<TestModule> EnumerateTestModules()
+        => _testApplications.SelectMany(static moduleGroup => moduleGroup);
+
     public int RunTestApplications(TestApplicationActionQueue actionQueue)
     {
+        foreach (var testApp in _testApplications)
+        {
+            // Write the test application to the channel
+            actionQueue.Enqueue(testApp);
+        }
+
+        return actionQueue.CompleteEnqueueAndWait();
+    }
+
+    private List<ParallelizableTestModuleGroupWithSequentialInnerModules> BuildTestApplications()
+    {
         var muxerPath = new Muxer().MuxerPath;
+        var testApplications = new List<ParallelizableTestModuleGroupWithSequentialInnerModules>(_testModulePaths.Count);
+
         foreach (string testModule in _testModulePaths)
         {
             // We want to produce the right RunCommand and RunArguments for TestApplication implementation to consume directly.
@@ -66,12 +88,23 @@ internal sealed class TestModulesFilterHandler : ITestHandler
                 ? new RunProperties(muxerPath, $@"exec ""{testModule}""", null)
                 : new RunProperties(testModule, null, null);
 
-            var testApp = new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(runProperties, null, null, true, null, testModule, DotnetRootArchVariableName: null));
-            // Write the test application to the channel
-            actionQueue.Enqueue(testApp);
+            testApplications.Add(new ParallelizableTestModuleGroupWithSequentialInnerModules(new TestModule(
+                runProperties,
+                null,
+                null,
+                true,
+                null,
+                testModule,
+                DotnetRootArchVariableName: null,
+                EnvironmentVariables: _environmentVariables)));
         }
 
-        return actionQueue.CompleteEnqueueAndWait();
+        return testApplications;
+    }
+
+    public IEnumerable<string?> GetTestApplicationWorkingDirectories()
+    {
+        yield return null;
     }
 
     internal static List<string> GetMatchedModulePaths(string testModules, string? rootDirectory)

@@ -2,18 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.TemplateEngine.Abstractions;
-using Xunit.Sdk;
 
 namespace Microsoft.TemplateEngine.Mocks
 {
-    public class MockFileChange : IFileChange, IFileChange2, IXunitSerializable
+    public class MockFileChange : IFileChange, IFileChange2
     {
         private string? _sourcePath;
         private string? _targetPath;
 
-        /// <summary>
-        /// This is deserialization constructor only, do not use it. Requirement of <see cref="IXunitSerializable"/>.
-        /// </summary>
         public MockFileChange()
         {
         }
@@ -48,20 +44,6 @@ namespace Microsoft.TemplateEngine.Mocks
         public ChangeKind ChangeKind { get; private set; }
 
         public byte[] Contents => [];
-
-        public void Deserialize(IXunitSerializationInfo info)
-        {
-            _sourcePath = info.GetValue<string>("sourcePath");
-            _targetPath = info.GetValue<string>("targetPath");
-            ChangeKind = (ChangeKind)info.GetValue<int>("kind");
-        }
-
-        public void Serialize(IXunitSerializationInfo info)
-        {
-            info.AddValue("sourcePath", SourceRelativePath, typeof(string));
-            info.AddValue("targetPath", TargetRelativePath, typeof(string));
-            info.AddValue("kind", (int)ChangeKind, typeof(int));
-        }
 
         public override string ToString()
         {

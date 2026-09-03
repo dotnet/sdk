@@ -3,7 +3,6 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotDisableCertificateValidation,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -13,187 +12,203 @@ using VerifyVB = Test.Utilities.VisualBasicSecurityCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotDisableCertificateValidationTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => { return true; };
-    }
-}",
+                using System.Net;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => { return true; };
+                    }
+                }
+                """,
             GetCSharpResultAt(8, 68));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaWithLiteralValueDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
-    }
-}",
+                using System.Net;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => true;
+                    }
+                }
+                """,
             GetCSharpResultAt(8, 68));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAnonymousMethodDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback += delegate { return true; };
-    }
-}",
+                using System.Net;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback += delegate { return true; };
+                    }
+                }
+                """,
             GetCSharpResultAt(8, 68));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationLocalFunctionDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-        bool AcceptAllCertifications(
-                  object sender,
-                  X509Certificate certificate,
-                  X509Chain chain,
-                  SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
-        }
-    }
-}",
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+
+                        bool AcceptAllCertifications(
+                                  object sender,
+                                  X509Certificate certificate,
+                                  X509Chain chain,
+                                  SslPolicyErrors sslPolicyErrors)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 67));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        return true;
-    }
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
-    }
-}",
+                class TestClass
+                {
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        return true;
+                    }
+
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    }
+                }
+                """,
             GetCSharpResultAt(19, 67));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Net
-Imports System.Net.Security
-Imports System.Security.Cryptography.X509Certificates
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Sub TestMethod()
-            System.Net.ServicePointManager.ServerCertificateValidationCallback = New System.Net.Security.RemoteCertificateValidationCallback(AddressOf AcceptAllCertifications)
-        End Sub
+                Imports System.Net
+                Imports System.Net.Security
+                Imports System.Security.Cryptography.X509Certificates
 
-        Function AcceptAllCertifications(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
-            Return True
-        End Function
-    End Class
-End Namespace",
+                Namespace TestNamespace
+                    Class TestClass
+                        Sub TestMethod()
+                            System.Net.ServicePointManager.ServerCertificateValidationCallback = New System.Net.Security.RemoteCertificateValidationCallback(AddressOf AcceptAllCertifications)
+                        End Sub
+
+                        Function AcceptAllCertifications(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
+                            Return True
+                        End Function
+                    End Class
+                End Namespace
+                """,
             GetBasicResultAt(9, 82));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors) => true;
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
-    }
-}",
+                class TestClass
+                {
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors) => true;
+
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    }
+                }
+                """,
             GetCSharpResultAt(16, 67));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegatedMethodFromDifferentAssemblyNoDiagnosticAsync()
         {
-            string source1 = @"
+            string source1 = """
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+                namespace AcceptAllCertificationsNamespace
+                {
+                    public class AcceptAllCertificationsClass
+                    {
+                        public static bool AcceptAllCertifications(
+                            object sender,
+                            X509Certificate certificate,
+                            X509Chain chain,
+                            SslPolicyErrors sslPolicyErrors)
+                        {
+                            return true;
+                        }
+                    }
+                }
+                """;
 
-namespace AcceptAllCertificationsNamespace
-{
-    public class AcceptAllCertificationsClass
-    {
-        public static bool AcceptAllCertifications(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
-        }
-    }
-}";
+            var source2 = """
+                using System.Net;
+                using System.Net.Security;
+                using AcceptAllCertificationsNamespace;
 
-            var source2 = @"
-using System.Net;
-using System.Net.Security;
-using AcceptAllCertificationsNamespace;
-
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertificationsClass.AcceptAllCertifications);
-    }
-}";
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertificationsClass.AcceptAllCertifications);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -209,55 +224,56 @@ class TestClass
                     },
                     AdditionalProjectReferences = { "DependencyProject" },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegatedMethodFromLocalFromDifferentAssemblyNoDiagnosticAsync()
         {
-            string source1 = @"
+            string source1 = """
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+                namespace AcceptAllCertificationsNamespace
+                {
+                    public class AcceptAllCertificationsClass
+                    {
+                        public static bool AcceptAllCertifications2(
+                            object sender,
+                            X509Certificate certificate,
+                            X509Chain chain,
+                            SslPolicyErrors sslPolicyErrors)
+                        {
+                            return true;
+                        }
+                    }
 
-namespace AcceptAllCertificationsNamespace
-{
-    public class AcceptAllCertificationsClass
-    {
-        public static bool AcceptAllCertifications2(
-            object sender,
-            X509Certificate certificate,
-            X509Chain chain,
-            SslPolicyErrors sslPolicyErrors)
-        {
-            return true;
-        }
-    }
+                }
+                """;
 
-}";
+            var source2 = """
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
+                using AcceptAllCertificationsNamespace;
 
-            var source2 = @"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
-using AcceptAllCertificationsNamespace;
+                class TestClass
+                {
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        return AcceptAllCertificationsClass.AcceptAllCertifications2(sender, certificate, chain, sslPolicyErrors);
+                    }
 
-class TestClass
-{
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        return AcceptAllCertificationsClass.AcceptAllCertifications2(sender, certificate, chain, sslPolicyErrors);
-    }
-
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
-    }
-}";
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    }
+                }
+                """;
 
             await new VerifyCS.Test
             {
@@ -273,285 +289,296 @@ class TestClass
                     },
                     AdditionalProjectReferences = { "DependencyProject" },
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => { if(a != null) {return true;} return false;};
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => { if(a != null) {return true;} return false;};
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestLambdaWithLiteralValueNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => false;
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback += (a, b, c, d) => false;
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestAnonymousMethodNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback += delegate { return false; };
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback += delegate { return false; };
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationLocalFunctionNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
 
-        bool AcceptAllCertifications(
-                  object sender,
-                  X509Certificate certificate,
-                  X509Chain chain,
-                  SslPolicyErrors sslPolicyErrors)
-        {
-            if(sender != null)
-            {
-                return true;
-            }
+                        bool AcceptAllCertifications(
+                                  object sender,
+                                  X509Certificate certificate,
+                                  X509Chain chain,
+                                  SslPolicyErrors sslPolicyErrors)
+                        {
+                            if(sender != null)
+                            {
+                                return true;
+                            }
 
-            return false;
+                            return false;
+                        }
+                    }
+                }
+                """);
         }
-    }
-}");
-        }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        if(sender != null)
-        {
-            return true;
+                class TestClass
+                {
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        if(sender != null)
+                        {
+                            return true;
+                        }
+                        return false;
+                    }
+
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    }
+                }
+                """);
+
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Net
+                Imports System.Net.Security
+                Imports System.Security.Cryptography.X509Certificates
+
+                Public Module TestModule
+                    Sub TestMethod()
+                        System.Net.ServicePointManager.ServerCertificateValidationCallback = New System.Net.Security.RemoteCertificateValidationCallback(AddressOf AcceptAllCertifications)
+                    End Sub
+
+                    Function AcceptAllCertifications(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
+                        If sender IsNot Nothing
+                            Return True
+                        Else
+                            Return False
+                        End If
+                    End Function
+                End Module
+                """);
         }
-        return false;
-    }
 
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
-    }
-}");
-
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Net
-Imports System.Net.Security
-Imports System.Security.Cryptography.X509Certificates
-
-Public Module TestModule
-    Sub TestMethod()
-        System.Net.ServicePointManager.ServerCertificateValidationCallback = New System.Net.Security.RemoteCertificateValidationCallback(AddressOf AcceptAllCertifications)
-    End Sub
-
-    Function AcceptAllCertifications(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
-        If sender IsNot Nothing
-            Return True
-        Else
-            Return False
-        End If
-    End Function
-End Module");
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNoDiagnostic2Async()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        return true;
-    }
+                class TestClass
+                {
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        return true;
+                    }
 
-    public void TestMethod()
-    {
-    }
-}");
+                    public void TestMethod()
+                    {
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationNormalMethodWithLambdaNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors) => false;
+                class TestClass
+                {
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors) => false;
 
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
-    }
-}");
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationFromLocalFromLocalNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public bool AcceptAllCertifications2(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        return true;
-    }
+                class TestClass
+                {
+                    public bool AcceptAllCertifications2(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        return true;
+                    }
 
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        return AcceptAllCertifications2(
-          sender,
-          certificate,
-          chain,
-          sslPolicyErrors);
-    }
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        return AcceptAllCertifications2(
+                          sender,
+                          certificate,
+                          chain,
+                          sslPolicyErrors);
+                    }
 
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
-    }
-}");
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    }
+                }
+                """);
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Net
-Imports System.Net.Security
-Imports System.Security.Cryptography.X509Certificates
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Net
+                Imports System.Net.Security
+                Imports System.Security.Cryptography.X509Certificates
 
-Public Module TestModule
-    Sub TestMethod()
-        System.Net.ServicePointManager.ServerCertificateValidationCallback = New System.Net.Security.RemoteCertificateValidationCallback(AddressOf AcceptAllCertifications)
-    End Sub
+                Public Module TestModule
+                    Sub TestMethod()
+                        System.Net.ServicePointManager.ServerCertificateValidationCallback = New System.Net.Security.RemoteCertificateValidationCallback(AddressOf AcceptAllCertifications)
+                    End Sub
 
-    Function AcceptAllCertifications(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
-        Return AcceptAllCertifications2(sender, certification, chain, sslPolicyErrors)
-    End Function
+                    Function AcceptAllCertifications(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
+                        Return AcceptAllCertifications2(sender, certification, chain, sslPolicyErrors)
+                    End Function
 
-    Function AcceptAllCertifications2(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
-        Return True
-    End Function
-End Module");
+                    Function AcceptAllCertifications2(ByVal sender As Object, ByVal certification As System.Security.Cryptography.X509Certificates.X509Certificate, ByVal chain As System.Security.Cryptography.X509Certificates.X509Chain, ByVal sslPolicyErrors As System.Net.Security.SslPolicyErrors) As Boolean
+                        Return True
+                    End Function
+                End Module
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestDelegateCreationFromLocalFromLocal2NoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Net;
-using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Net;
+                using System.Net.Security;
+                using System.Security.Cryptography.X509Certificates;
 
-class TestClass
-{
-    public bool AcceptAllCertifications2(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        return true;
-    }
+                class TestClass
+                {
+                    public bool AcceptAllCertifications2(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        return true;
+                    }
 
-    public bool AcceptAllCertifications(
-          object sender,
-          X509Certificate certificate,
-          X509Chain chain,
-          SslPolicyErrors sslPolicyErrors)
-    {
-        var a = 5;
-        if(a > 1)
-        {
-            return true;
-        }
-        else
-        {
-            return AcceptAllCertifications2(
-              sender,
-              certificate,
-              chain,
-              sslPolicyErrors);
-        }
-    }
+                    public bool AcceptAllCertifications(
+                          object sender,
+                          X509Certificate certificate,
+                          X509Chain chain,
+                          SslPolicyErrors sslPolicyErrors)
+                    {
+                        var a = 5;
+                        if(a > 1)
+                        {
+                            return true;
+                        }
+                        else
+                        {
+                            return AcceptAllCertifications2(
+                              sender,
+                              certificate,
+                              chain,
+                              sslPolicyErrors);
+                        }
+                    }
 
-    public void TestMethod()
-    {
-        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
-    }
-}");
+                    public void TestMethod()
+                    {
+                        ServicePointManager.ServerCertificateValidationCallback = new RemoteCertificateValidationCallback(AcceptAllCertifications);
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

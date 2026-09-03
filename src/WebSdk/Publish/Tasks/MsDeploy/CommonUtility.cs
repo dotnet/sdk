@@ -1455,7 +1455,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.MsDeploy
                                         Utilities.TaskItem newItem = new(item);
                                         newItem.SetMetadata(PropertyName, itemData);
                                         optimizedValueList[currentItemIndex] = newItem;
-                                        FoundDictionary[itemSpec] = true; // mark that we already fond teh item;
+                                        FoundDictionary[itemSpec] = true; // mark that we already found the item;
                                         found = true;
                                         break;
                                     }

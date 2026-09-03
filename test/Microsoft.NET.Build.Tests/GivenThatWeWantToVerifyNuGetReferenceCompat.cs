@@ -160,7 +160,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var testProjectName = targetFramework.Replace(".", "_") + "implicit_atf";
 
-            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461", identifer: targetFramework);
+            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461", identifier: targetFramework);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
 
@@ -181,7 +181,7 @@ namespace Microsoft.NET.Build.Tests
         {
             var testProjectName = targetFramework.Replace(".", "_") + "non_implicit_atf";
 
-            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461", identifer: targetFramework);
+            var (testProjectTestAsset, testPackageReference) = CreateTestAsset(testProjectName, targetFramework, "net461", identifier: targetFramework);
 
             var restoreCommand = testProjectTestAsset.GetRestoreCommand(Log, relativePath: testProjectName);
             NuGetConfigWriter.Write(testProjectTestAsset.TestRoot, Path.GetDirectoryName(testPackageReference.NupkgPath));
@@ -238,9 +238,9 @@ namespace Microsoft.NET.Build.Tests
             string calleeTargetFrameworks,
             Dictionary<string, string> additionalProperties = null,
             [CallerMemberName] string testName = null,
-            string identifer = null)
+            string identifier = null)
         {
-            var testPackageReference = CreateTestPackage(calleeTargetFrameworks, testName, identifer);
+            var testPackageReference = CreateTestPackage(calleeTargetFrameworks, testName, identifier);
 
             var testProject =
                 new TestProject

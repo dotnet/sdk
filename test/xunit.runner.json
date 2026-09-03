@@ -1,9 +1,0 @@
-{
-  "$schema": "https://xunit.net/schema/v3.1/xunit.runner.schema.json",
-  "diagnosticMessages": false,
-  "longRunningTestSeconds": 20,
-  "showLiveOutput": false,
-  "shadowCopy": false,
-  "parallelizeAssembly": false,
-  "parallelizeTestCollections": false
-}

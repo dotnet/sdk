@@ -5,6 +5,7 @@
 
 using System.Text.Json;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Components;
 using Microsoft.NET.Sdk.Razor.Tool.Json;
 
 namespace Microsoft.NET.Sdk.Razor.Tool
@@ -56,6 +57,35 @@ namespace Microsoft.NET.Sdk.Razor.Tool
             Assert.AreEqual("TestNamespace.TestTagHelper", roundTripped[0].TypeName);
             Assert.ContainsSingle(roundTripped[0].TagMatchingRules);
             Assert.AreEqual("test-tag", roundTripped[0].TagMatchingRules[0].TagName);
+        }
+
+        [TestMethod]
+        public void RoundTrip_AssetPathMetadata_PreservesData()
+        {
+            var json = """
+                [
+                    {
+                        "Flags": 1,
+                        "Name": "AssetPathTagHelper",
+                        "AssemblyName": "TestAssembly",
+                        "TypeName": "TestNamespace.AssetPathTagHelper",
+                        "MetadataKind": 8,
+                        "Metadata": {
+                            "Element": "img",
+                            "Attribute": "src"
+                        }
+                    }
+                ]
+                """;
+
+            var deserialized = Deserialize(json);
+            var reserialized = Serialize(deserialized);
+            var roundTripped = Deserialize(reserialized);
+
+            Assert.ContainsSingle(roundTripped);
+            var metadata = (AssetPathMetadata)roundTripped[0].Metadata;
+            Assert.AreEqual("img", metadata.Element);
+            Assert.AreEqual("src", metadata.Attribute);
         }
 
         [TestMethod]

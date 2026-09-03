@@ -30,6 +30,20 @@ namespace Microsoft.CodeAnalysis.Tools.Tests.MSBuild
         }
 
         [TestMethod]
+        public void ThrowsException_CannotFindFileBasedApp()
+        {
+            var testInstance = TestAssetsManager
+                .CopyTestAsset(testProjectName: "for_workspace_finder/no_project_or_solution", testAssetSubdirectory: "dotnet-format")
+                .WithSource();
+            var filePath = Path.Combine(testInstance.Path, "nonexistent.cs");
+            var exceptionMessageStart = string.Format(
+                Resources.The_project_file_0_does_not_exist,
+                filePath).Replace('/', Path.DirectorySeparatorChar);
+            var exception = Assert.ThrowsExactly<FileNotFoundException>(() => MSBuildWorkspaceFinder.FindWorkspace(filePath, filePath));
+            Assert.StartsWith(exceptionMessageStart, exception.Message);
+        }
+
+        [TestMethod]
         public void ThrowsException_MultipleMSBuildProjectFiles()
         {
             var testInstance = TestAssetsManager

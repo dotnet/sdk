@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.Extensions.Logging;
-using Xunit.Sdk;
 
 namespace Microsoft.TemplateEngine.TestHelper
 {
@@ -12,13 +11,12 @@ namespace Microsoft.TemplateEngine.TestHelper
 
         private readonly List<ILoggerFactory> _factories = new List<ILoggerFactory>();
 
-        public TestLoggerFactory(IMessageSink? messageSink = null)
+        public TestLoggerFactory(Action<string>? logAction = null)
         {
-            if (messageSink != null)
+            if (logAction != null)
             {
-                SharedTestOutputHelper testOutputHelper = new SharedTestOutputHelper(messageSink);
                 _loggerProviders =
-                    new List<ILoggerProvider>() { new XunitLoggerProvider(testOutputHelper) };
+                    new List<ILoggerProvider>() { new TestLoggerProvider(logAction) };
             }
         }
 

@@ -6,6 +6,8 @@
     <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
     <IsUnitTestProject>true</IsUnitTestProject>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <!-- Several classes intentionally share a custom hive or output root through class fixtures. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
@@ -30,11 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-    <Using Include="Microsoft.NET.TestFramework.Assertions" />
-    <Using Include="Microsoft.NET.TestFramework.Commands" />
-    <Using Include="Microsoft.NET.TestFramework.Utilities" />
-    <Using Include="Microsoft.NET.TestFramework.ProjectConstruction" />
     <!-- Remove xUnit global usings injected transitively via Verify.XunitV3 / xunit packages -->
     <Using Remove="Xunit" />
     <Using Remove="VerifyXunit" />

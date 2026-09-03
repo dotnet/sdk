@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpSpecifyCultureForToLowerAndToUpperAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -12,142 +11,143 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class SpecifyCultureForToLowerAndToUpperTests
     {
         #region Diagnostic tests
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToLowerTest_CSharp()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class C
-{
-    void Method()
-    {
-        string a = ""test"";
-        a.[|ToLower|]();
-        a?.[|ToLower|]();
-    }
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class C
+                {
+                    void Method()
+                    {
+                        string a = "test";
+                        a.[|ToLower|]();
+                        a?.[|ToLower|]();
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToLowerTest_Basic()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class C
-    Sub Method()
-        Dim a As String = ""test""
-        a.[|ToLower|]()
-        a?.[|ToLower|]()
-    End Sub
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                    Sub Method()
+                        Dim a As String = "test"
+                        a.[|ToLower|]()
+                        a?.[|ToLower|]()
+                    End Sub
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToUpperTest_CSharp()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-class C
-{
-    void Method()
-    {
-        string a = ""test"";
-        a.[|ToUpper|]();
-        a?.[|ToUpper|]();
-    }
-}
-");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                class C
+                {
+                    void Method()
+                    {
+                        string a = "test";
+                        a.[|ToUpper|]();
+                        a?.[|ToUpper|]();
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToUpperTest_Basic()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Class C
-    Sub Method()
-        Dim a As String = ""test""
-        a.[|ToUpper|]()
-        a?.[|ToUpper|]()
-    End Sub
-End Class
-");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Class C
+                    Sub Method()
+                        Dim a As String = "test"
+                        a.[|ToUpper|]()
+                        a?.[|ToUpper|]()
+                    End Sub
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToLower_WithExplicitCultureTest_CSharp()
         {
 
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Globalization;
 
-class C
-{
-    void Method()
-    {
-        string a = ""test"";
-        CultureInfo culture = CultureInfo.CreateSpecificCulture(""ka-GE"");
-        a.ToLower(culture);
-        a?.ToLower(culture);
-    }
-}
-");
+                class C
+                {
+                    void Method()
+                    {
+                        string a = "test";
+                        CultureInfo culture = CultureInfo.CreateSpecificCulture("ka-GE");
+                        a.ToLower(culture);
+                        a?.ToLower(culture);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToLower_WithExplicitCultureTest_Basic()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Globalization
 
-Class C
-    Sub Method()
-        Dim a As String = ""test""
-        Dim culture As CultureInfo = CultureInfo.CreateSpecificCulture(""ka-GE"")
-        a.ToLower(culture)
-        a?.ToLower(culture)
-    End Sub
-End Class
-");
+                Class C
+                    Sub Method()
+                        Dim a As String = "test"
+                        Dim culture As CultureInfo = CultureInfo.CreateSpecificCulture("ka-GE")
+                        a.ToLower(culture)
+                        a?.ToLower(culture)
+                    End Sub
+                End Class
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToUpper_WithExplicitCultureTest_CSharp()
         {
 
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Globalization;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Globalization;
 
-class C
-{
-    void Method()
-    {
-        string a = ""test"";
-        CultureInfo culture = CultureInfo.CreateSpecificCulture(""ka-GE"");
-        a.ToUpper(culture);
-        a?.ToUpper(culture);
-    }
-}
-");
+                class C
+                {
+                    void Method()
+                    {
+                        string a = "test";
+                        CultureInfo culture = CultureInfo.CreateSpecificCulture("ka-GE");
+                        a.ToUpper(culture);
+                        a?.ToUpper(culture);
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1311_ToUpper_WithExplicitCultureTest_Basic()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Imports System.Globalization
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Imports System.Globalization
 
-Class C
-    Sub Method()
-        Dim a As String = ""test""
-        Dim culture As CultureInfo = CultureInfo.CreateSpecificCulture(""ka-GE"")
-        a.ToUpper(culture)
-        a?.ToUpper(culture)
-    End Sub
-End Class
-");
+                Class C
+                    Sub Method()
+                        Dim a As String = "test"
+                        Dim culture As CultureInfo = CultureInfo.CreateSpecificCulture("ka-GE")
+                        a.ToUpper(culture)
+                        a?.ToUpper(culture)
+                    End Sub
+                End Class
+                """);
         }
 
         #endregion

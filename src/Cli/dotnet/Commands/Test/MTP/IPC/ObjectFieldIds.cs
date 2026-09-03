@@ -2,6 +2,8 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 // WARNING: Please note this file needs to be kept aligned with the one in the testfx repo.
+// It is vendored from microsoft/testfx and tracked in eng/vendored-files.json (see eng/vendored-files.md);
+// a scheduled workflow opens an issue when the upstream file changes.
 // The protocol follows the concept of optional properties.
 // The id is used to identify the property in the stream and it will be skipped if it's not recognized.
 // We can add new properties with new ids, but we CANNOT change the existing ids (to support backwards compatibility).
@@ -103,6 +105,14 @@ internal static class FailedTestResultMessageFieldsId
     public const ushort StandardOutput = 7;
     public const ushort ErrorOutput = 8;
     public const ushort SessionUid = 9;
+
+    // Optional assertion diff fields. They carry the structured expected/actual values captured by
+    // assertion libraries (e.g. MSTest's Assert stores them on Exception.Data["assert.expected"] /
+    // ["assert.actual"]) so the SDK's TerminalTestReporter can render the same expected-vs-actual diff
+    // for multi-assembly `dotnet test` runs that it already renders for single-assembly runs. Added
+    // after SessionUid; older readers skip unrecognized field ids, so this stays backwards compatible.
+    public const ushort Expected = 10;
+    public const ushort Actual = 11;
 }
 
 internal static class ExceptionMessageFieldsId
@@ -129,6 +139,8 @@ internal static class FileArtifactMessageFieldsId
     public const ushort TestUid = 4;
     public const ushort TestDisplayName = 5;
     public const ushort SessionUid = 6;
+    public const ushort Kind = 7;
+    public const ushort InputArtifactPaths = 8;
 }
 
 internal static class TestSessionEventFieldsId
@@ -158,4 +170,35 @@ internal static class TestInProgressMessageFieldsId
 {
     public const ushort Uid = 1;
     public const ushort DisplayName = 2;
+}
+
+internal static class AzureDevOpsLogMessageFieldsId
+{
+    public const int MessagesSerializerId = 11;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort LogText = 3;
+}
+
+internal static class DisplayMessageFieldsId
+{
+    public const int MessagesSerializerId = 12;
+
+    public const ushort ExecutionId = 1;
+    public const ushort InstanceId = 2;
+    public const ushort Level = 3;
+    public const ushort Text = 4;
+}
+
+internal static class WaitForServerControlRequestFieldsId
+{
+    public const int MessagesSerializerId = 13;
+}
+
+internal static class ServerControlMessageFieldsId
+{
+    public const int MessagesSerializerId = 14;
+
+    public const ushort Kind = 1;
 }

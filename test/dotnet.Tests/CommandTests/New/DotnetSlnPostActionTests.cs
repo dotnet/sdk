@@ -32,13 +32,9 @@ namespace Microsoft.DotNet.Cli.New.Tests
         }
 
         [TestMethod]
-        [OSCondition(ConditionMode.Exclude, OperatingSystems.Linux)] // https://github.com/dotnet/sdk/issues/49923
         public void AddProjectToSolutionPostActionFindSlnxFileAtOutputPath()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            EnsureParentDirectoriesExist(targetBasePath);
-            
             string solutionFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(solutionFileFullPath, string.Empty);
 
@@ -51,9 +47,6 @@ namespace Microsoft.DotNet.Cli.New.Tests
         public void AddProjectToSolutionPostActionPrefersSlnOverSlnx()
         {
             string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
-            _engineEnvironmentSettings.Host.VirtualizeDirectory(targetBasePath);
-            EnsureParentDirectoriesExist(targetBasePath);
-            
             string slnFileFullPath = Path.Combine(targetBasePath, "MySln.sln");
             string slnxFileFullPath = Path.Combine(targetBasePath, "MySln.slnx");
             _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnFileFullPath, string.Empty);
@@ -62,6 +55,27 @@ namespace Microsoft.DotNet.Cli.New.Tests
             IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, targetBasePath);
             Assert.ContainsSingle(solutionFiles);
             Assert.AreEqual(slnFileFullPath, solutionFiles[0]);
+        }
+
+        [TestMethod]
+        public void AddProjectToSolutionPostActionPrefersNearbySlnxOverDistantSln()
+        {
+            string targetBasePath = _engineEnvironmentSettings.GetTempVirtualizedPath();
+
+            // Place a .sln in targetBasePath (acts as "parent" directory)
+            string parentSlnPath = Path.Combine(targetBasePath, "Parent.sln");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(parentSlnPath, string.Empty);
+
+            // Create a subdirectory and place .slnx there (the "output" directory)
+            string outputDir = Path.Combine(targetBasePath, "output");
+            _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(outputDir);
+            string slnxFileFullPath = Path.Combine(outputDir, "MySln.slnx");
+            _engineEnvironmentSettings.Host.FileSystem.WriteAllText(slnxFileFullPath, string.Empty);
+
+            // Should find the .slnx in the output directory, not the .sln in the parent
+            IReadOnlyList<string> solutionFiles = DotnetSlnPostActionProcessor.FindSolutionFilesAtOrAbovePath(_engineEnvironmentSettings.Host.FileSystem, outputDir);
+            Assert.ContainsSingle(solutionFiles);
+            Assert.AreEqual(slnxFileFullPath, solutionFiles[0]);
         }
 
         [TestMethod]
@@ -345,20 +359,6 @@ namespace Microsoft.DotNet.Cli.New.Tests
                 targetBasePath);
 
             Assert.IsFalse(result);
-        }
-
-        private void EnsureParentDirectoriesExist(string targetBasePath)
-        {
-            // Ensure parent directories exist to avoid DirectoryNotFoundException during traversal
-            string? currentPath = targetBasePath;
-            while (!string.IsNullOrEmpty(currentPath) && currentPath != Path.GetPathRoot(currentPath))
-            {
-                if (!_engineEnvironmentSettings.Host.FileSystem.DirectoryExists(currentPath))
-                {
-                    _engineEnvironmentSettings.Host.FileSystem.CreateDirectory(currentPath);
-                }
-                currentPath = Path.GetDirectoryName(currentPath);
-            }
         }
 
         private class MockAddProjectToSolutionCallback

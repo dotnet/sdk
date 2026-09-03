@@ -13,10 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Using Include="Microsoft.NET.TestFramework" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="reflector_cmd.cmd"
              CopyToOutputDirectory="PreserveNewest"
              CopyToPublishDirectory="PreserveNewest" />

@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.CommandLine;
-using Microsoft.DotNet.Cli.CommandLine;
 using Microsoft.DotNet.Cli.Commands.Reference;
 using Microsoft.DotNet.Cli.Commands.Reference.Add;
 
@@ -12,18 +11,21 @@ internal sealed class AddReferenceCommandDefinition : ReferenceAddCommandDefinit
 {
     public new const string Name = "reference";
 
-    public readonly Option<string> ProjectOption = ReferenceCommandDefinition.CreateProjectOption();
+    public readonly Option<string?> ProjectOption = ReferenceCommandDefinition.CreateProjectOption();
+    public readonly Option<string?> FileOption = ReferenceCommandDefinition.CreateFileOption();
 
     public AddReferenceCommandDefinition()
         : base(Name)
     {
         Options.Add(ProjectOption);
+        Options.Add(FileOption);
     }
 
-    public override string? GetFileOrDirectory(ParseResult parseResult)
-        => parseResult.HasOption(ProjectOption)
-        ? parseResult.GetValue(ProjectOption)
-        : parseResult.GetValue(Parent.ProjectOrFileArgument);
+    public override Option<string?>? GetFileOption() => FileOption;
+
+    public override Option<string?>? GetProjectOption() => ProjectOption;
+
+    public override Argument<string>? GetProjectOrFileArgument() => Parent.ProjectOrFileArgument;
 
     public AddCommandDefinition Parent => (AddCommandDefinition)Parents.Single();
 }

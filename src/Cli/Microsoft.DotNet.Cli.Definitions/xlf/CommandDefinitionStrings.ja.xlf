@@ -157,6 +157,21 @@
         <target state="translated">クリーンする対象のターゲット ランタイム。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdAffectedTestsDescription">
+        <source>Run only tests linked in the test map to sources changed in Git.</source>
+        <target state="new">Run only tests linked in the test map to sources changed in Git.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsFeatureDisabled">
+        <source>Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</source>
+        <target state="new">Affected-test selection is experimental. Set the '{0}' environment variable to '1' to enable it.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdAffectedTestsOptionsMutuallyExclusive">
+        <source>The options '--collect-test-map' and '--affected-tests' cannot be used together.</source>
+        <target state="new">The options '--collect-test-map' and '--affected-tests' cannot be used together.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdBlameCrashCollectAlwaysDescription">
         <source>Enables collecting crash dump on expected as well as unexpected testhost exit.</source>
         <target state="translated">TestHost の予期されるおよび予期されない終了時にクラッシュ ダンプを収集することを有効にします。</target>
@@ -244,6 +259,21 @@ For MSTest before 2.2.4, the timeout is used for all testcases.</source>
 2.2.4 より前の MSTest の場合、タイムアウトはすべてのテストケースで使用されます。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRequireMinimumTests">
+        <source>The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--minimum-expected-tests'. Collection batches do not report test totals to the parent process.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapCannotRunModulesInParallel">
+        <source>The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</source>
+        <target state="new">The option '--collect-test-map' cannot be combined with '--max-parallel-test-modules'. Test maps are collected one module at a time.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdCollectTestMapDescription">
+        <source>Run tests and write the source-to-test map used by affected-test selection.</source>
+        <target state="new">Run tests and write the source-to-test map used by affected-test selection.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdConfig">
         <source>CONFIG_FILE</source>
         <target state="translated">CONFIG_FILE</target>
@@ -299,6 +329,11 @@ If not specified the file will be generated inside the default 'TestResults' dir
       <trans-unit id="CmdDisableParallelOptionDescription">
         <source>Prevent restoring multiple projects in parallel.</source>
         <target state="translated">複数のプロジェクトを並行して復元できないようにします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdDurationName">
+        <source>DURATION</source>
+        <target state="new">DURATION</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdEnvironmentVariableDescription">
@@ -377,8 +412,8 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdListTestsDescription">
-        <source>List the discovered tests instead of running the tests.</source>
-        <target state="translated">テストを実行する代わりに、検出されたテストを一覧表示します。</target>
+        <source>List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.</source>
+        <target state="needs-review-translation">テストを実行する代わりに、検出されたテストを一覧表示します。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdLockFilePathOption">
@@ -419,14 +454,24 @@ This is equivalent to deleting project.assets.json.</source>
         <target state="translated">並列で実行できるテスト モジュールの最大数。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdMaximumFailedTestsDescription">
+        <source>Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</source>
+        <target state="new">Stops test execution when the specified number of failures is reached across all test applications. Pass after '--' to apply per test application when supported.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdMinimumExpectedTestsDescription">
-        <source>Specifies the minimum number of tests that are expected to run.</source>
-        <target state="translated">実行する必要があるテストの最小数を指定します。</target>
+        <source>Specifies the minimum number of tests that are expected to run across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="needs-review-translation">実行する必要があるテストの最小数を指定します。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoAnsiDescription">
         <source>Disable ANSI output.</source>
         <target state="translated">ANSI 出力を無効にします。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoArtifactPostProcessingDescription">
+        <source>Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</source>
+        <target state="new">Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoBuildDescription">
@@ -442,6 +487,11 @@ This is equivalent to deleting project.assets.json.</source>
       <trans-unit id="CmdNoCacheOptionDescription">
         <source>Do not cache packages and http requests.</source>
         <target state="translated">パッケージと HTTP 要求はキャッシュしません。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
@@ -540,8 +590,8 @@ This is equivalent to deleting project.assets.json.</source>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">テストするプロジェクト ファイルまたはソリューション ファイルのパスを定義します。プロジェクト ファイルへのパス、またはプロジェクト ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">テストするプロジェクト ファイルまたはソリューション ファイルのパスを定義します。プロジェクト ファイルへのパス、またはプロジェクト ファイルを含むディレクトリへのパスを使用します。指定しない場合は、既定で現在のディレクトリに設定されます。</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">
@@ -559,6 +609,20 @@ This is equivalent to deleting project.assets.json.</source>
 The specified directory will be created if it does not exist.</source>
         <target state="translated">テスト結果が配置されるディレクトリ。
 指定したディレクトリが存在しない場合は、作成されます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutDescription">
+        <source>Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</source>
+        <target state="new">Specifies how test results are organized within the results directory.
+'flat' (the default) places the results of every test project directly in the results directory.
+'per-module' gives every test project its own '&lt;project&gt;/&lt;target-framework&gt;_&lt;runtime&gt;' subdirectory, so reports with the same file name cannot overwrite each other.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdResultsDirectoryLayoutName">
+        <source>LAYOUT</source>
+        <target state="new">LAYOUT</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdRootPathName">
@@ -668,6 +732,11 @@ Examples:
 </target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdTestInvalidTimeout">
+        <source>The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</source>
+        <target state="new">The timeout must be a positive duration with an explicit unit suffix such as ms, s, m, h, or d (longer forms like 'seconds', 'minutes', 'hours', and 'days' are also accepted).</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdTestModulesDescription">
         <source>Run tests for the specified test modules.</source>
         <target state="translated">指定されたテスト モジュールのテストを実行します。</target>
@@ -681,6 +750,16 @@ Examples:
       <trans-unit id="CmdTestOutputDescription">
         <source>Verbosity of test output.</source>
         <target state="translated">テスト出力の詳細。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTestPositiveIntegerRequired">
+        <source>The value must be a positive integer.</source>
+        <target state="new">The value must be a positive integer.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CmdTimeoutDescription">
+        <source>Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</source>
+        <target state="new">Stops test execution when the specified test execution time is reached across all test applications. Pass after '--' to apply per test application.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdTransitiveDescription">
@@ -748,6 +827,11 @@ Examples:
         <target state="translated">アプリケーション実行のために使用するデバイスの識別子です。</target>
         <note />
       </trans-unit>
+      <trans-unit id="CommandOptionDeviceDescriptionForTest">
+        <source>The device identifier to use for running tests.</source>
+        <target state="new">The device identifier to use for running tests.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandOptionDeviceHelpName">
         <source>DEVICE</source>
         <target state="translated">デバイス</target>
@@ -776,6 +860,11 @@ Examples:
       <trans-unit id="CommandOptionListDevicesDescription">
         <source>List available devices for running the application.</source>
         <target state="translated">アプリケーションの実行について使用可能なデバイスを一覧表示します。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CommandOptionListDevicesDescriptionForTest">
+        <source>List available devices for running tests.</source>
+        <target state="new">List available devices for running tests.</target>
         <note />
       </trans-unit>
       <trans-unit id="CommandOptionNoBuildDescription">
@@ -1276,6 +1365,11 @@ If command is specified without the argument, it lists all the template packages
       <trans-unit id="Option_Install_Force">
         <source>Allows installing template packages from the specified sources even if they would override a template package from another source.</source>
         <target state="translated">指定されたソースからテンプレート パッケージが、別のソースからのテンプレート パッケージをオーバーライドする場合でも、インストールできます。</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="Option_Install_Prerelease">
+        <source>Allows prerelease template packages to be installed when no version is specified.</source>
+        <target state="new">Allows prerelease template packages to be installed when no version is specified.</target>
         <note />
       </trans-unit>
       <trans-unit id="Option_Interactive">

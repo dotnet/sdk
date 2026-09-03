@@ -2,7 +2,6 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpDetectPreviewFeatureAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -11,104 +10,110 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
     public partial class DetectPreviewFeatureUnitTests
     {
-        [Fact]
+        [TestMethod]
         public async Task TestEnumValue()
         {
-            var csInput = @" 
-        using System.Runtime.Versioning; using System;
-        namespace Preview_Feature_Scratch
-        {
+            var csInput = """
 
-            enum AnEnum
-            {
-                [RequiresPreviewFeatures(""Lib is in preview."", Url = ""https://aka.ms/aspnet/kestrel/http3reqs"")]
-                Foo,
-                Bar
-            }
+                        using System.Runtime.Versioning; using System;
+                        namespace Preview_Feature_Scratch
+                        {
 
-            class Program
-            {
-                public Program()
-                {
-                }
+                            enum AnEnum
+                            {
+                                [RequiresPreviewFeatures("Lib is in preview.", Url = "https://aka.ms/aspnet/kestrel/http3reqs")]
+                                Foo,
+                                Bar
+                            }
 
-                static void Main(string[] args)
-                {
-                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
-                }
-            }
-        }";
+                            class Program
+                            {
+                                public Program()
+                                {
+                                }
+
+                                static void Main(string[] args)
+                                {
+                                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
+                                }
+                            }
+                        }
+                """;
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRuleWithCustomMessage).WithLocation(0).WithArguments("Foo", "https://aka.ms/aspnet/kestrel/http3reqs", "Lib is in preview."));
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnumValue_NoDiagnostic()
         {
-            var csInput = @" 
-        using System.Runtime.Versioning; using System;
-        namespace Preview_Feature_Scratch
-        {
+            var csInput = """
 
-            enum AnEnum
-            {
-                Foo,
-                [RequiresPreviewFeatures]
-                Bar
-            }
+                        using System.Runtime.Versioning; using System;
+                        namespace Preview_Feature_Scratch
+                        {
 
-            class Program
-            {
-                public Program()
-                {
-                }
+                            enum AnEnum
+                            {
+                                Foo,
+                                [RequiresPreviewFeatures]
+                                Bar
+                            }
 
-                static void Main(string[] args)
-                {
-                    AnEnum fooEnum = AnEnum.Foo;
-                }
-            }
-        }";
+                            class Program
+                            {
+                                public Program()
+                                {
+                                }
+
+                                static void Main(string[] args)
+                                {
+                                    AnEnum fooEnum = AnEnum.Foo;
+                                }
+                            }
+                        }
+                """;
 
             var test = TestCS(csInput);
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestEnum()
         {
-            var csInput = @" 
-        using System.Runtime.Versioning; using System;
-        namespace Preview_Feature_Scratch
-        {
+            var csInput = """
 
-            [RequiresPreviewFeatures]
-            enum AnEnum
-            {
-                Foo,
-                Bar
-            }
+                        using System.Runtime.Versioning; using System;
+                        namespace Preview_Feature_Scratch
+                        {
 
-            class Program
-            {
-                public Program()
-                {
-                }
+                            [RequiresPreviewFeatures]
+                            enum AnEnum
+                            {
+                                Foo,
+                                Bar
+                            }
 
-                static void Main(string[] args)
-                {
-                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
-                    AnEnum barEnum = {|#1:AnEnum.Bar|};
-                }
-            }
-        }";
+                            class Program
+                            {
+                                public Program()
+                                {
+                                }
+
+                                static void Main(string[] args)
+                                {
+                                    AnEnum fooEnum = {|#0:AnEnum.Foo|};
+                                    AnEnum barEnum = {|#1:AnEnum.Bar|};
+                                }
+                            }
+                        }
+                """;
 
             var test = TestCS(csInput);
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(0).WithArguments("Foo", DetectPreviewFeatureAnalyzer.DefaultURL));
             test.ExpectedDiagnostics.Add(VerifyCS.Diagnostic(DetectPreviewFeatureAnalyzer.GeneralPreviewFeatureAttributeRule).WithLocation(1).WithArguments("Bar", DetectPreviewFeatureAnalyzer.DefaultURL));
-            await test.RunAsync(TestContext.Current.CancellationToken);
+            await test.RunAsync(CancellationToken.None);
         }
     }
 }

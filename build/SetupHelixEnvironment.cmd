@@ -41,12 +41,19 @@ REM call dotnet new so the first run message doesn't interfere with the first te
 dotnet new --debug:ephemeral-hive
 
 dotnet nuget list source --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget add source %DOTNET_ROOT%\.nuget --configfile %TestExecutionDirectory%\nuget.config
 if exist %TestExecutionDirectory%\Testpackages dotnet nuget add source %TestExecutionDirectory%\Testpackages --name testpackages --configfile %TestExecutionDirectory%\nuget.config
 
 dotnet nuget remove source dotnet6-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet6-internal-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet7-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet7-internal-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet8-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet8-internal-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet9-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet9-internal-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet10-transport --configfile %TestExecutionDirectory%\nuget.config
+dotnet nuget remove source dotnet10-internal-transport --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source richnav --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source vs-impl --configfile %TestExecutionDirectory%\nuget.config
 dotnet nuget remove source dotnet-libraries-transport --configfile %TestExecutionDirectory%\nuget.config

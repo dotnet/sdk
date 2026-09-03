@@ -1045,6 +1045,51 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
         string originalItemSpec,
         long fileLength,
         DateTimeOffset lastWriteTime)
+        => FromProperties(
+            identity,
+            sourceId,
+            sourceType,
+            basePath,
+            relativePath,
+            contentRoot,
+            assetKind,
+            assetMode,
+            assetRole,
+            assetMergeSource,
+            relatedAsset,
+            assetTraitName,
+            assetTraitValue,
+            fingerprint,
+            integrity,
+            copyToOutputDirectory,
+            copyToPublishDirectory,
+            originalItemSpec,
+            fileLength,
+            lastWriteTime,
+            TaskEnvironment.Fallback);
+
+    internal static StaticWebAsset FromProperties(
+        string identity,
+        string sourceId,
+        string sourceType,
+        string basePath,
+        string relativePath,
+        string contentRoot,
+        string assetKind,
+        string assetMode,
+        string assetRole,
+        string assetMergeSource,
+        string relatedAsset,
+        string assetTraitName,
+        string assetTraitValue,
+        string fingerprint,
+        string integrity,
+        string copyToOutputDirectory,
+        string copyToPublishDirectory,
+        string originalItemSpec,
+        long fileLength,
+        DateTimeOffset lastWriteTime,
+        TaskEnvironment env)
     {
         var result = new StaticWebAsset
         {
@@ -1070,9 +1115,9 @@ public sealed class StaticWebAsset : IEquatable<StaticWebAsset>, IComparable<Sta
             LastWriteTime = lastWriteTime,
         };
 
-        result.ApplyDefaults();
+        result.ApplyDefaults(env);
 
-        result.Normalize();
+        result.Normalize(env);
         result.Validate();
 
         return result;

@@ -24,7 +24,7 @@ public class StaticWebAssetsGeneratePackagePropsFile : Task, IMultiThreadableTas
 
     public override bool Execute()
     {
-        var buildTargetPath = string.IsNullOrWhiteSpace(BuildTargetPath) ? BuildTargetPath : TaskEnvironment.GetAbsolutePath(BuildTargetPath).Value;
+        var buildTargetPath = string.IsNullOrEmpty(BuildTargetPath) ? BuildTargetPath : TaskEnvironment.GetAbsolutePath(BuildTargetPath).Value;
 
         var document = new XDocument(new XDeclaration("1.0", "utf-8", "yes"));
         var elements = (AdditionalImports ?? []).Select(e => e.ItemSpec).Prepend(PropsFileImport)

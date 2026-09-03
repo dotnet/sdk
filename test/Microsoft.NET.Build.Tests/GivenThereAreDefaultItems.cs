@@ -897,8 +897,12 @@ public class Class1
 
                 var propertyGroup = new XElement(ns + "PropertyGroup");
                 project.Root.Add(propertyGroup);
-                // PublishDir set to the project directory itself (simulates 'dotnet publish -o .')
-                propertyGroup.Add(new XElement(ns + "PublishDir", ".\\"));
+                // PublishDir set to the absolute project directory with an OS-appropriate trailing separator.
+                // This is exactly what the CLI forwards for 'dotnet publish -o .' (see
+                // OptionExtensions.ForwardAsOutputPath, which calls GetFullPath and appends a
+                // directory separator), and is the value that regressed in dotnet/sdk#55295.
+                // EnsureTrailingSlash yields the platform-correct separator so the test matches CLI behavior on all platforms.
+                propertyGroup.Add(new XElement(ns + "PublishDir", "$([MSBuild]::EnsureTrailingSlash($(MSBuildProjectDirectory)))"));
             };
 
             var compileItems = GivenThatWeWantToBuildALibrary.GetValuesFromTestLibrary(Log, TestAssetsManager, "Compile", setup, projectChanges: projectChanges);

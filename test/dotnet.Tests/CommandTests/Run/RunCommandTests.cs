@@ -74,6 +74,34 @@ public sealed class RunCommandTests : SdkTest
     }
 
     [TestMethod]
+    public void MSBuildPropertyExpansion_Project()
+    {
+        var testAppName = "AppThatOutputsDotnetLaunchProfile";
+        var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
+            .WithSource();
+
+        var testProjectDirectory = testInstance.Path;
+        var launchSettingsPath = Path.Combine(testProjectDirectory, "Properties", "launchSettings.json");
+
+        File.WriteAllText(launchSettingsPath, """
+            {
+              "profiles": {
+                "First": {
+                  "commandName": "Project",
+                  "commandLineArgs": "\"$(MSBuildProjectDirectory)\" \"$([System.IO.Path]::DirectorySeparatorChar)\" \"@(Items)\" \"%(Identity)\""
+                }
+              }
+            }
+            """);
+
+        new DotnetCommand(Log, "run")
+            .WithWorkingDirectory(testProjectDirectory)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($"ARGS={testProjectDirectory},$([System.IO.Path]::DirectorySeparatorChar),@(Items),%(Identity)");
+    }
+
+    [TestMethod]
     public void Executable_DefaultWorkingDirectory()
     {
         var root = TestAssetsManager.CreateTestDirectory().Path;
@@ -90,7 +118,7 @@ public sealed class RunCommandTests : SdkTest
         };
 
         var runCommand = CreateRunCommand(projectPath);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
         Assert.AreEqual("executable", command.StartInfo.FileName);
         Assert.AreEqual(dir, command.StartInfo.WorkingDirectory);
@@ -115,7 +143,7 @@ public sealed class RunCommandTests : SdkTest
         };
 
         var runCommand = CreateRunCommand(projectPath, noLaunchProfileArguments: true);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
         Assert.AreEqual("", command.StartInfo.Arguments);
     }
@@ -138,8 +166,34 @@ public sealed class RunCommandTests : SdkTest
         };
 
         var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app 1", "app 2"]);
-        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, logger: null);
+        var command = (Command)runCommand.GetTargetCommand(model, projectFactory: null, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
         Assert.AreEqual("\"app 1\" \"app 2\"", command.StartInfo.Arguments);
+    }
+
+    [TestMethod]
+    [DataRow("cached-argument", "cached-argument \"app arg\"")]
+    [DataRow(null, "\"app arg\"")]
+    public void Project_CachedRunPropertiesApplicationArguments(string? cachedArguments, string expectedArguments)
+    {
+        string root = TestAssetsManager.CreateTestDirectory().Path;
+        string projectPath = Path.Combine(root, "myproj.csproj");
+        var runCommand = CreateRunCommand(projectPath, applicationArgs: ["app arg"]);
+        var runProperties = new RunProperties(
+            Command: "executable",
+            Arguments: cachedArguments,
+            WorkingDirectory: root,
+            RuntimeIdentifier: string.Empty,
+            DefaultAppHostRuntimeIdentifier: string.Empty,
+            TargetFrameworkVersion: string.Empty);
+
+        var command = (Command)runCommand.GetTargetCommand(
+            launchSettings: null,
+            projectFactory: null,
+            cachedRunProperties: runProperties,
+            runPropertiesFromEvaluation: false,
+            logger: null);
+
+        Assert.AreEqual(expectedArguments, command.StartInfo.Arguments);
     }
 }

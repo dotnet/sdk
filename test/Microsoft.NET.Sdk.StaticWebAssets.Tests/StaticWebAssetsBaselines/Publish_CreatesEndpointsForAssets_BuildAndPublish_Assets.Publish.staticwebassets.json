@@ -161,30 +161,6 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\app.js.gz",
-      "SourceId": "ComponentApp",
-      "SourceType": "Discovered",
-      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\",
-      "BasePath": "/",
-      "RelativePath": "app.js.gz",
-      "AssetKind": "Publish",
-      "AssetMode": "All",
-      "AssetRole": "Alternative",
-      "AssetMergeBehavior": "",
-      "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\wwwroot\\app.publish.js",
-      "AssetTraitName": "Content-Encoding",
-      "AssetTraitValue": "gzip",
-      "AssetGroups": "",
-      "Fingerprint": "__fingerprint__",
-      "Integrity": "__integrity__",
-      "CopyToOutputDirectory": "Never",
-      "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\app.js.gz",
-      "FileLength": -1,
-      "LastWriteTime": "0001-01-01T00:00:00+00:00"
-    },
-    {
       "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\ComponentApp#[.{fingerprint=__fingerprint__}]!.bundle.scp.css.br",
       "SourceId": "ComponentApp",
       "SourceType": "Computed",
@@ -349,6 +325,30 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "${ProjectPath}\\wwwroot\\app.js.br",
+      "FileLength": -1,
+      "LastWriteTime": "0001-01-01T00:00:00+00:00"
+    },
+    {
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.gz",
+      "SourceId": "ComponentApp",
+      "SourceType": "Discovered",
+      "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
+      "BasePath": "/",
+      "RelativePath": "app.js.gz",
+      "AssetKind": "Publish",
+      "AssetMode": "All",
+      "AssetRole": "Alternative",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "${ProjectPath}\\wwwroot\\app.publish.js",
+      "AssetTraitName": "Content-Encoding",
+      "AssetTraitValue": "gzip",
+      "AssetGroups": "",
+      "Fingerprint": "__fingerprint__",
+      "Integrity": "__integrity__",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\app.js.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -964,7 +964,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map.gz",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1064,7 +1064,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [
         {
@@ -1564,7 +1564,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map.gz",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map.gz",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [],
       "ResponseHeaders": [
@@ -1664,7 +1664,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.gz",
       "Selectors": [
         {
@@ -1715,98 +1715,6 @@
         {
           "Name": "label",
           "Value": "_framework/blazor.web.js.map"
-        },
-        {
-          "Name": "original-resource",
-          "Value": "__original-resource__"
-        }
-      ]
-    },
-    {
-      "Route": "app.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\app.js.gz",
-      "Selectors": [],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
-        }
-      ]
-    },
-    {
-      "Route": "app.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\app.js.gz",
-      "Selectors": [
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip",
-          "Quality": "__quality__"
-        }
-      ],
-      "ResponseHeaders": [
-        {
-          "Name": "Cache-Control",
-          "Value": "no-cache"
-        },
-        {
-          "Name": "Content-Encoding",
-          "Value": "gzip"
-        },
-        {
-          "Name": "Content-Length",
-          "Value": "__content-length__"
-        },
-        {
-          "Name": "Content-Type",
-          "Value": "text/javascript"
-        },
-        {
-          "Name": "ETag",
-          "Value": "__etag__"
-        },
-        {
-          "Name": "Last-Modified",
-          "Value": "__last-modified__"
-        },
-        {
-          "Name": "Vary",
-          "Value": "Accept-Encoding"
-        }
-      ],
-      "EndpointProperties": [
-        {
-          "Name": "integrity",
-          "Value": "__integrity__"
         },
         {
           "Name": "original-resource",
@@ -2256,7 +2164,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map.br",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map.br",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2356,7 +2264,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.server.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [
         {
@@ -2856,7 +2764,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map.br",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map.br",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [],
       "ResponseHeaders": [
@@ -2956,7 +2864,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map",
       "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\_framework\\blazor.web.js#[.{fingerprint=__fingerprint__}]?.map.br",
       "Selectors": [
         {
@@ -3073,6 +2981,98 @@
         {
           "Name": "Content-Encoding",
           "Value": "br"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        },
+        {
+          "Name": "original-resource",
+          "Value": "__original-resource__"
+        }
+      ]
+    },
+    {
+      "Route": "app.js.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.gz",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "__content-length__"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "text/javascript"
+        },
+        {
+          "Name": "ETag",
+          "Value": "__etag__"
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "__last-modified__"
+        },
+        {
+          "Name": "Vary",
+          "Value": "Accept-Encoding"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "__integrity__"
+        }
+      ]
+    },
+    {
+      "Route": "app.js",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.gz",
+      "Selectors": [
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip",
+          "Quality": "__quality__"
+        }
+      ],
+      "ResponseHeaders": [
+        {
+          "Name": "Cache-Control",
+          "Value": "no-cache"
+        },
+        {
+          "Name": "Content-Encoding",
+          "Value": "gzip"
         },
         {
           "Name": "Content-Length",
@@ -3509,7 +3509,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.server.js.h2tgqmaf5j.map",
+      "Route": "_framework/blazor.server.js.__fingerprint__.map",
       "AssetFile": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\staticwebassets\\_framework\\blazor.server.js.map",
       "Selectors": [],
       "ResponseHeaders": [
@@ -3591,7 +3591,7 @@
       ]
     },
     {
-      "Route": "_framework/blazor.web.js.gon0ccxxql.map",
+      "Route": "_framework/blazor.web.js.__fingerprint__.map",
       "AssetFile": "${RestorePath}\\microsoft.aspnetcore.app.internal.assets\\${PackageVersion}\\staticwebassets\\_framework\\blazor.web.js.map",
       "Selectors": [],
       "ResponseHeaders": [

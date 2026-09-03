@@ -9,13 +9,13 @@ using Microsoft.DotNet.Cli.Commands.NuGet;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
 [TestClass]
 public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 {
+    /// <summary>Verifies incremental build-level selection as source and implicit build inputs change.</summary>
     [TestMethod]
     public void UpToDate()
     {
@@ -138,17 +138,50 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         Build(testInstance, BuildLevel.Csc);
     }
 
-    [TestMethod]
-    public void UpToDate_InvalidOptions()
+    /// <summary>
+    /// See <see href="https://github.com/dotnet/sdk/issues/55056"/>.
+    /// </summary>
+    [TestMethod, OSCondition(ConditionMode.Exclude, OperatingSystems.OSX)]
+    public void UpToDate_ArtifactsRelocated()
     {
-        var testInstance = TestAssetsManager.CreateTestDirectory();
-        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: OutOfTreeBaseDirectory);
 
-        new DotnetCommand(Log, "run", "Program.cs", "--no-cache", "--no-build")
-            .WithWorkingDirectory(testInstance.Path)
+        var srcDir = Path.Join(testInstance.Path, "src");
+        var tmpDir1 = Path.Join(testInstance.Path, "tmp1");
+        var tmpDir2 = Path.Join(testInstance.Path, "tmp2");
+
+        Directory.CreateDirectory(srcDir);
+
+        var programFile = Path.Join(srcDir, "Program.cs");
+        File.WriteAllText(programFile, """
+            #:property ImplicitUsings=disable
+            #:property GenerateAssemblyInfo=false
+            #:property GenerateTargetFrameworkAttribute=false
+            System.Console.WriteLine("hello");
+            """);
+
+        var expectedStdOut = "hello";
+
+        Directory.CreateDirectory(tmpDir1);
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir1)
+            .WithEnvironmentVariable("TMPDIR", tmpDir1)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir1)
+            .WithWorkingDirectory(srcDir)
             .Execute()
-            .Should().Fail()
-            .And.HaveStdErrContaining(string.Format(CliCommandStrings.CannotCombineOptions, "--no-cache", "--no-build"));
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
+
+        Directory.Move(tmpDir1, tmpDir2);
+
+        new DotnetCommand(Log, "run", "Program.cs", "-bl")
+            .WithEnvironmentVariable("TMP", tmpDir2)
+            .WithEnvironmentVariable("TMPDIR", tmpDir2)
+            .WithEnvironmentVariable("XDG_DATA_HOME", tmpDir2)
+            .WithWorkingDirectory(srcDir)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(expectedStdOut);
     }
 
     /// <summary>
@@ -307,6 +340,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -1059,6 +1093,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         File.WriteAllText(libPath, libCode);
 
         var programCode = """
+            #!/usr/bin/env dotnet
             #:ref lib.cs
             Console.WriteLine("Hello " + MyLib.Greeter.Greet());
             """;
@@ -1355,12 +1390,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1440,12 +1472,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>A</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1516,12 +1545,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1591,12 +1617,9 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
                     <Project>
 
                       <PropertyGroup>
-                        <IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>
-                        <ArtifactsPath>/artifacts</ArtifactsPath>
+                        <FileBasedAppArtifactsPath>/artifacts</FileBasedAppArtifactsPath>
                         <AssemblyName>Program</AssemblyName>
                         <RootNamespace>$(AssemblyName)</RootNamespace>
-                        <PublishDir>artifacts/$(AssemblyName)</PublishDir>
-                        <PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>
                         <FileBasedProgram>true</FileBasedProgram>
                         <EntryPointFilePath>{programPath}</EntryPointFilePath>
                         <FileBasedProgramsItemMapping>.cs=Compile;.resx=EmbeddedResource;.json=None;.razor=Content;.dll=Reference</FileBasedProgramsItemMapping>
@@ -1737,6 +1760,63 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             .And.Contain($"<TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>");
 
         projectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
+    }
+
+    [TestMethod]
+    public async Task Api_VirtualProjectBuilder_CreateProjectRootElement_TargetFrameworkUnspecified()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        var libDir = Path.Join(testInstance.Path, "Lib");
+        Directory.CreateDirectory(libDir);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.csproj"), $"""
+            <Project Sdk="Microsoft.NET.Sdk">
+              <PropertyGroup>
+                <TargetFramework>{ToolsetInfo.CurrentTargetFramework}</TargetFramework>
+              </PropertyGroup>
+            </Project>
+            """);
+
+        File.WriteAllText(Path.Join(libDir, "Lib.cs"), """
+            namespace Lib;
+            public class LibClass
+            {
+                public static string GetMessage() => "Hello from Lib";
+            }
+            """);
+
+        var appDir = Path.Join(testInstance.Path, "App");
+        Directory.CreateDirectory(appDir);
+
+        var appPath = Path.Join(appDir, "Program.cs");
+        File.WriteAllText(appPath, """
+            #:project ../$(LibProjectName)
+            #:property LibProjectName=Lib
+            Console.WriteLine(Lib.LibClass.GetMessage());
+            """);
+
+        using var projectCollection = new ProjectCollection();
+        var virtualProjectBuilder = new VirtualProjectBuilder(BuildService.Instance, appPath, targetFramework: null);
+        var result = await virtualProjectBuilder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            VirtualProjectBuildingCommand.ThrowingReporter);
+
+        var xml = result.ProjectRootElement.GetRawXml();
+        Log.WriteLine(xml);
+
+        xml.Should()
+            // directives are evaluated
+            .Contain("""<ProjectReference Include="..\Lib\Lib.csproj" />""".Replace('\\', Path.DirectorySeparatorChar))
+            // it's the virtual project
+            .And.Contain("<FileBasedProgram>true</FileBasedProgram>")
+            // correct target framework is used
+            .And.Contain("<TargetFramework>net$(BundledNETCoreAppTargetFrameworkVersion)</TargetFramework>");
+
+        result.ProjectRootElement.FullPath.Should().Be(VirtualProjectBuilder.GetVirtualProjectPath(appPath));
+
+        // TargetFramework can be evaluated.
+        (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
     }
 
     [TestMethod, CombinatorialData]
@@ -2036,6 +2116,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             """);
 
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #!/usr/bin/env dotnet
             #:ref Lib.cs
             Console.WriteLine(MyLib.Greeter.Greet());
             """);
@@ -2102,9 +2183,8 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
+        CSharpCompilerCommand.SdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        CSharpCompilerCommand.NuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
@@ -2112,7 +2192,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var nuGetPackageFilePaths = new List<string>();
         bool referenceSpreadInserted = false;
         bool analyzerSpreadInserted = false;
-        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
+        const string NetCoreAppRefPackPath = "/microsoft.netcore.app.ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
@@ -2170,23 +2250,23 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             string msbuildArgToVerify = rewritten;
 
             // Use variable SDK path.
-            if (rewritten.Contains(sdkPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.SdkPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(sdkPath, "{SdkPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.SdkPath, "{" + nameof(CSharpCompilerCommand.SdkPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable .NET root path.
-            if (rewritten.Contains(dotNetRootPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.DotNetRootPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(dotNetRootPath, "{DotNetRootPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.DotNetRootPath, "{" + nameof(CSharpCompilerCommand.DotNetRootPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable NuGet cache path.
-            if (rewritten.Contains(nuGetCachePath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.NuGetCachePath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(nuGetCachePath, "{NuGetCachePath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.NuGetCachePath, "{" + nameof(CSharpCompilerCommand.NuGetCachePath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
                 fromNuGetPackage = true;
             }

@@ -161,6 +161,21 @@ internal abstract class InstallingWorkloadCommand : WorkloadCommandBase<Installi
             throw new GracefulException(CliCommandStrings.SpecifiedNoWorkloadVersionAndSpecificWorkloadVersion, isUserError: true);
         }
 
+        if (SpecifiedWorkloadSetVersionOnCommandLine)
+        {
+            foreach (var version in _workloadSetVersionFromCommandLine!)
+            {
+                if (!version.Contains('@') && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(version, out var suggestedVersion))
+                {
+                    throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, version, suggestedVersion, string.Empty), isUserError: true);
+                }
+            }
+        }
+        else if (SpecifiedWorkloadSetVersionInGlobalJson && WorkloadSetVersion.IsWorkloadSetVersionInPackageVersionFormat(_workloadSetVersionFromGlobalJson!, out var suggestedGlobalJsonVersion))
+        {
+            throw new GracefulException(string.Format(CliCommandStrings.WorkloadSetVersionInPackageVersionFormat, _workloadSetVersionFromGlobalJson, suggestedGlobalJsonVersion, string.Format(CliCommandStrings.WorkloadSetVersionSpecifiedInGlobalJson, _globalJsonPath)), isUserError: true);
+        }
+
         //  At this point, at most one of SpecifiedWorkloadSetVersionOnCommandLine, UseRollback, FromHistory, and SpecifiedWorkloadSetVersionInGlobalJson is true
     }
 

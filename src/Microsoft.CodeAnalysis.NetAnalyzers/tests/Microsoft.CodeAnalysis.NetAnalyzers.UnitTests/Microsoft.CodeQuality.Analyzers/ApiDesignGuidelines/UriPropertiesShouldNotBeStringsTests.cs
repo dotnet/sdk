@@ -1,10 +1,9 @@
-// Licensed to the .NET Foundation under one or more agreements.
+﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UriPropertiesShouldNotBeStringsAnalyzer,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
@@ -14,157 +13,168 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.CodeQuality.Analyzers.ApiDesignGuidelines.UnitTests
 {
+    [TestClass]
     public class UriPropertiesShouldNotBeStringsTests
     {
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningWithUrlAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        public Uri SampleUri { get; set; }
-    }
-");
+                    public class A
+                    {
+                        public Uri SampleUri { get; set; }
+                    }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningWithUrlNotStringTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        public int SampleUri { get; set; }
-    }
-");
+                    public class A
+                    {
+                        public int SampleUri { get; set; }
+                    }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056WarningWithUrlAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public class A
-    {
-        public string SampleUri { get; set; }
-    }
-", GetCA1056CSharpResultAt(6, 23, "A.SampleUri"));
+                    using System;
+
+                    public class A
+                    {
+                        public string SampleUri { get; set; }
+                    }
+
+                """, GetCA1056CSharpResultAt(6, 23, "A.SampleUri"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningWithNoUrlAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        public string Sample { get; set; }
-    }
-");
+                    public class A
+                    {
+                        public string Sample { get; set; }
+                    }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningNotPublicAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A
-    {
-        private string SampleUrl { get; set; }
+                    public class A
+                    {
+                        private string SampleUrl { get; set; }
 
-        public int CompareTo(object obj) { throw new NotImplementedException(); }
-    }
-");
+                        public int CompareTo(object obj) { throw new NotImplementedException(); }
+                    }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningDerivedFromAttributeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                    using System;
 
-    public class A : Attribute
-    {
-        private string SampleUrl { get; set; }
-    }
-");
+                    public class A : Attribute
+                    {
+                        private string SampleUrl { get; set; }
+                    }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056NoWarningOverrideAsync()
         {
             // warning is from base type not overriden one
-            await VerifyCS.VerifyAnalyzerAsync(@"
-    using System;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-    public class Base
-    {
-        protected virtual string SampleUrl { get; set; }
-    }
+                    using System;
 
-    public class A : Base
-    {
-        protected override string SampleUrl { get; set; }
-    }
-", GetCA1056CSharpResultAt(6, 34, "Base.SampleUrl"));
+                    public class Base
+                    {
+                        protected virtual string SampleUrl { get; set; }
+                    }
+
+                    public class A : Base
+                    {
+                        protected override string SampleUrl { get; set; }
+                    }
+
+                """, GetCA1056CSharpResultAt(6, 34, "Base.SampleUrl"));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CA1056WarningVBAsync()
         {
             // C# and VB shares same implementation. so just one vb test
-            await VerifyVB.VerifyAnalyzerAsync(@"
-    Imports System
-    
-    Public Module A
-        Public ReadOnly Property SampleUrl As String
-                Get
-                    Return Nothing
-                End Get
-            End Property
-    End Module
-", GetCA1056BasicResultAt(5, 34, "A.SampleUrl"));
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                    Imports System
+
+                    Public Module A
+                        Public ReadOnly Property SampleUrl As String
+                                Get
+                                    Return Nothing
+                                End Get
+                            End Property
+                    End Module
+
+                """, GetCA1056BasicResultAt(5, 34, "A.SampleUrl"));
         }
 
-        [Fact, WorkItem(3146, "https://github.com/dotnet/roslyn-analyzers/issues/3146")]
+        [TestMethod, WorkItem(3146, "https://github.com/dotnet/roslyn-analyzers/issues/3146")]
         public async Task DoNotReportOnInterfaceImplementationAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public interface IPath
-{
-    string UrlPathSegment { get; }
-}
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-public class SomeClass : IPath
-{
-    public string UrlPathSegment { get; }
-}",
+                public interface IPath
+                {
+                    string UrlPathSegment { get; }
+                }
+
+                public class SomeClass : IPath
+                {
+                    public string UrlPathSegment { get; }
+                }
+                """,
                 GetCA1056CSharpResultAt(4, 12, "IPath.UrlPathSegment"));
 
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Interface IPath
-    Property UrlPathSegment As String
-End Interface
+            await VerifyVB.VerifyAnalyzerAsync("""
 
-Public Class SomeClass
-    Implements IPath
+                Public Interface IPath
+                    Property UrlPathSegment As String
+                End Interface
 
-    Public Property UrlPathSegment As String Implements IPath.UrlPathSegment
-End Class",
+                Public Class SomeClass
+                    Implements IPath
+
+                    Public Property UrlPathSegment As String Implements IPath.UrlPathSegment
+                End Class
+                """,
                 GetCA1056BasicResultAt(3, 14, "IPath.UrlPathSegment"));
         }
 
-        [Theory, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
-        [InlineData("")]
-        [InlineData("dotnet_code_quality.excluded_symbol_names = SampleUri")]
-        [InlineData("dotnet_code_quality.CA1056.excluded_symbol_names = SampleUri")]
-        [InlineData("dotnet_code_quality.CA1056.excluded_symbol_names = Sample*")]
+        [TestMethod, WorkItem(6005, "https://github.com/dotnet/roslyn-analyzers/issues/6005")]
+        [DataRow("")]
+        [DataRow("dotnet_code_quality.excluded_symbol_names = SampleUri")]
+        [DataRow("dotnet_code_quality.CA1056.excluded_symbol_names = SampleUri")]
+        [DataRow("dotnet_code_quality.CA1056.excluded_symbol_names = Sample*")]
         public async Task CA1056_EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
             var csharpTest = new VerifyCS.Test
@@ -173,19 +183,23 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
-using System;
+                        """
 
-public class A
-{
-    public string SampleUri { get; set; }
-}
-"                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                            using System;
 
-[*]
-{editorConfigText}
-") }
+                            public class A
+                            {
+                                public string SampleUri { get; set; }
+                            }
+
+                            """                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) }
                 }
             };
 
@@ -194,7 +208,7 @@ public class A
                 csharpTest.ExpectedDiagnostics.Add(GetCA1056CSharpResultAt(6, 19, "A.SampleUri"));
             }
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
 
             var basicTest = new VerifyVB.Test
             {
@@ -202,22 +216,26 @@ public class A
                 {
                     Sources =
                     {
-                        @"
-Imports System
+                        """
 
-Public Module A
-    Public ReadOnly Property SampleUri As String
-        Get
-            Return Nothing
-        End Get
-    End Property
-End Module"
+                            Imports System
+
+                            Public Module A
+                                Public ReadOnly Property SampleUri As String
+                                    Get
+                                        Return Nothing
+                                    End Get
+                                End Property
+                            End Module
+                            """
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") }
+                        [*]
+                        {editorConfigText}
+
+                        """) }
                 }
             };
 
@@ -226,7 +244,7 @@ End Module"
                 basicTest.ExpectedDiagnostics.Add(GetCA1056BasicResultAt(5, 30, "A.SampleUri"));
             }
 
-            await basicTest.RunAsync(TestContext.Current.CancellationToken);
+            await basicTest.RunAsync(CancellationToken.None);
         }
 
         private static DiagnosticResult GetCA1056CSharpResultAt(int line, int column, params string[] args)

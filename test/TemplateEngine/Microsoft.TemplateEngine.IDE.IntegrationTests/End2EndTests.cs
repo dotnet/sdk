@@ -11,7 +11,6 @@ using WellKnownSearchFilters = Microsoft.TemplateEngine.Utils.WellKnownSearchFil
 namespace Microsoft.TemplateEngine.IDE.IntegrationTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class End2EndTests : BootstrapperTestBase
     {
         private TestContext _testContext = null!;

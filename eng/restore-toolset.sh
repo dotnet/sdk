@@ -31,30 +31,39 @@ function InitializeCustomSDKToolset {
   # The following shared frameworks are only needed for testing.
   # Set DOTNET_INSTALL_TEST_RUNTIMES=false to skip (e.g. cross-build containers with limited disk).
   if [[ "${DOTNET_INSTALL_TEST_RUNTIMES:-true}" != "false" ]]; then
-    local install_script_arch=""
+    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
+    # Also install the exact runtime versions that arcade's toolset requires
+    # (from Version.Details.props) so tests can target those specific versions.
+    local runtime_version
+    runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
+    local aspnetcore_version
+    aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
+    if [[ -n "$runtime_version" ]]; then
+      runtime_specs+=("$runtime_version")
+    fi
+    if [[ -n "$aspnetcore_version" ]]; then
+      runtime_specs+=("aspnetcore@$aspnetcore_version")
+    fi
+
     local native_arch
     native_arch=$(GetNativeMachineArchitecture)
     if [[ -n "${TARGET_ARCHITECTURE:-}" && "$TARGET_ARCHITECTURE" != "$native_arch" ]]; then
-      install_script_arch="$TARGET_ARCHITECTURE"
+      # Cross-build (e.g. an x64 host producing an arm64 test payload). The host cannot execute
+      # target-architecture runtimes, so installing them into the host .dotnet would break host
+      # tools that must load a shared framework there (e.g. the NuGet credential provider, whose
+      # libhostpolicy load fails on an architecture mismatch). Instead, download the
+      # target-architecture test runtimes into a sidecar folder under artifacts. The matching
+      # OverlayCrossArchTestRuntimes target in src/Layout/redist/targets/OverlaySdkOnLKG.targets
+      # copies these into the test host that ships to Helix, where they run on target-architecture
+      # hardware. The host .dotnet keeps only host-architecture runtimes; host tools roll forward
+      # to the host SDK runtime.
+      local sidecar_dir="$artifacts_dir/test-runtimes/$TARGET_ARCHITECTURE"
+      echo "Cross-build detected (host '$native_arch', target '$TARGET_ARCHITECTURE'). Installing target-architecture test runtimes into sidecar '$sidecar_dir' for the Helix test payload."
+      mkdir -p "$sidecar_dir"
+      InstallDotNetSharedFrameworks "$sidecar_dir" "$TARGET_ARCHITECTURE" "${runtime_specs[@]}"
+    else
+      InstallDotNetSharedFrameworks "$DOTNET_INSTALL_DIR" "" "${runtime_specs[@]}"
     fi
-
-    local runtime_specs=("6.0" "7.0" "8.0" "9.0" "10.0")
-    if [[ -z "$install_script_arch" ]]; then
-      # Also install the exact runtime versions that arcade's toolset requires
-      # (from Version.Details.props) so tests can target those specific versions.
-      local runtime_version
-      runtime_version=$(ReadVersionDetailsProperty "MicrosoftNETCoreAppRefPackageVersion")
-      local aspnetcore_version
-      aspnetcore_version=$(ReadVersionDetailsProperty "MicrosoftAspNetCoreAppRefPackageVersion")
-      if [[ -n "$runtime_version" ]]; then
-        runtime_specs+=("$runtime_version")
-      fi
-      if [[ -n "$aspnetcore_version" ]]; then
-        runtime_specs+=("aspnetcore@$aspnetcore_version")
-      fi
-    fi
-
-    InstallDotNetSharedFrameworks "$install_script_arch" "${runtime_specs[@]}"
   fi
 
   CreateBuildEnvScript
@@ -105,9 +114,9 @@ function IsSharedFrameworkInstalled {
 
 # Installs additional shared frameworks for testing purposes.
 function InstallDotNetSharedFrameworks {
-  local arch=$1
-  shift
-  local dotnet_root=$DOTNET_INSTALL_DIR
+  local dotnet_root=$1
+  local arch=$2
+  shift 2
   local specs_to_install=()
 
   for spec in "$@"; do
@@ -155,16 +164,8 @@ function InstallDotNetSharedFrameworks {
     fi
   fi
 
-  local restore_errexit=false
-  if [[ $- == *e* ]]; then
-    restore_errexit=true
-    set +e
-  fi
-  "$dotnetup_exe" runtime install "${specs_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
-  local lastexitcode=$?
-  if [[ "$restore_errexit" == true ]]; then
-    set -e
-  fi
+  RunWithoutErrexit "$dotnetup_exe" runtime install "${specs_to_install[@]}" --install-path "$dotnet_root" --set-default-install false --untracked --interactive false
+  local lastexitcode=$_RunWithoutErrexit
 
   if [[ $lastexitcode != 0 ]]; then
     Write-PipelineTelemetryError -category 'InitializeToolset' "Failed to install shared frameworks (${specs_to_install[*]}) to '$dotnet_root' using dotnetup (exit code '$lastexitcode'); falling back to dotnet install script."
@@ -200,16 +201,8 @@ function InstallDotNetSharedFrameworksWithInstallScript {
     fi
 
     # Disable errexit around the install-script call so the exit-code and filesystem checks below always run.
-    local restore_errexit=false
-    if [[ $- == *e* ]]; then
-      restore_errexit=true
-      set +e
-    fi
-    bash "$install_script" "${install_args[@]}"
-    local lastexitcode=$?
-    if [[ "$restore_errexit" == true ]]; then
-      set -e
-    fi
+    RunWithoutErrexit bash "$install_script" "${install_args[@]}"
+    local lastexitcode=$_RunWithoutErrexit
 
     # Ensure the download was actually successful to some degree.
     local framework_installed=false

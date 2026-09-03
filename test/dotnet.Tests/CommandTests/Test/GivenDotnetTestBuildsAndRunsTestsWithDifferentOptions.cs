@@ -55,6 +55,21 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        [TestMethod]
+        public void RunWithSolutionPath_ShouldUseConfigurationEnvironmentVariable()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString()).WithSource();
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                                    .WithWorkingDirectory(testInstance.Path)
+                                    .WithEnvironmentVariable("Configuration", TestingConstants.Release)
+                                    .Execute("--solution", "MultiTestProjectSolutionWithTests.sln");
+
+            Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("TestProject", TestingConstants.Failed, true, TestingConstants.Release), result.StdOut);
+            Assert.MatchesRegex(RegexPatternHelper.GenerateProjectRegexPattern("OtherTestProject", TestingConstants.Passed, true, TestingConstants.Release), result.StdOut);
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
         [TestMethod, CombinatorialData]
         public void RunWithSolutionFilterPathWithFailingTests_ShouldReturnExitCodeGenericFailure(
             [CombinatorialValues(TestingConstants.Debug, TestingConstants.Release)] string configuration,

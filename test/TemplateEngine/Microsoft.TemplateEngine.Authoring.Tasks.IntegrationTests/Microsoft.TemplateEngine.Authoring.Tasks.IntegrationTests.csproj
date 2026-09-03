@@ -12,6 +12,7 @@
   <ItemGroup>
     <ProjectReference Include="$(TemplateEngSrcDir)Tools/Microsoft.TemplateEngine.Authoring.Tasks\Microsoft.TemplateEngine.Authoring.Tasks.csproj" />
     <ProjectReference Include="$(TemplateEngTestDir)Microsoft.TemplateEngine.TestHelper\Microsoft.TemplateEngine.TestHelper.csproj" />
+    <ProjectReference Include="..\..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
   </ItemGroup>
 
   <ItemGroup>

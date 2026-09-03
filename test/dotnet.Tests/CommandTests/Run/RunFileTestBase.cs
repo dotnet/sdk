@@ -11,40 +11,6 @@ using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Run.Tests;
 
-public sealed class RunFileTestFixture
-{
-    private static bool s_initialized;
-    private static readonly object s_lock = new();
-
-    public static void EnsureInitialized(ITestOutputHelper log)
-    {
-        if (s_initialized)
-        {
-            return;
-        }
-
-        lock (s_lock)
-        {
-            if (s_initialized)
-            {
-                return;
-            }
-
-            RunFileTestBase.CopyNuGetConfigToRunfileDirectory();
-
-            new DotnetCommand(log, "run", "-")
-                .WithStandardInput("""
-                    Console.WriteLine("Hello");
-                    """)
-                .Execute()
-                .Should().Pass()
-                .And.HaveStdOut("Hello");
-
-            s_initialized = true;
-        }
-    }
-}
-
 public abstract class RunFileTestBase : SdkTest
 {
     [TestInitialize]
@@ -167,7 +133,7 @@ public abstract class RunFileTestBase : SdkTest
         File.Copy(sourceNuGetConfig, targetNuGetConfig, overwrite: true);
 
         // Check there are no implicit build files that would prevent testing optimizations.
-        VirtualProjectBuildingCommand.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
+        FileBasedAppRunPlan.CollectImplicitBuildFiles(new DirectoryInfo(outOfTreeBaseDirectory), [], out var exampleMSBuildFile);
         exampleMSBuildFile.Should().BeNull(because: "there should not be any implicit build files in the temp directory or its parents " +
             "so we can test optimizations that would be disabled with implicit build files present");
 

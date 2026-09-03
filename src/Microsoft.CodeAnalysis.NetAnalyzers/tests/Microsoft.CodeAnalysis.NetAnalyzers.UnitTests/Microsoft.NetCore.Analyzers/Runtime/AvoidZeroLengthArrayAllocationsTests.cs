@@ -5,7 +5,6 @@ using System;
 using System.Reflection;
 using System.Threading.Tasks;
 using Test.Utilities;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpCodeFixVerifier<
     Microsoft.NetCore.CSharp.Analyzers.Runtime.CSharpAvoidZeroLengthArrayAllocationsAnalyzer,
     Microsoft.NetCore.Analyzers.Runtime.AvoidZeroLengthArrayAllocationsFixer>;
@@ -15,6 +14,7 @@ using VerifyVB = Test.Utilities.VisualBasicCodeFixVerifier<
 
 namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 {
+    [TestClass]
     public class AvoidZeroLengthArrayAllocationsAnalyzerTests
     {
         /// <summary>
@@ -30,85 +30,93 @@ namespace Microsoft.NetCore.Analyzers.Runtime.UnitTests
 
         private static string GetArrayEmptySourceBasic()
         {
-            const string arrayEmptySourceRaw = @"
-Namespace System
-    Public Class Array
-       Public Shared Function Empty(Of T)() As T()
-           Return Nothing
-       End Function
-    End Class
-End Namespace
-";
+            const string arrayEmptySourceRaw = """
+
+                Namespace System
+                    Public Class Array
+                       Public Shared Function Empty(Of T)() As T()
+                           Return Nothing
+                       End Function
+                    End Class
+                End Namespace
+
+                """;
             return IsArrayEmptyDefined() ? string.Empty : arrayEmptySourceRaw;
         }
 
         private static string GetArrayEmptySourceCSharp()
         {
-            const string arrayEmptySourceRaw = @"
-namespace System
-{
-    public class Array
-    {
-        public static T[] Empty<T>()
-        {
-            return null;
-        }
-    }
-}
-";
+            const string arrayEmptySourceRaw = """
+
+                namespace System
+                {
+                    public class Array
+                    {
+                        public static T[] Empty<T>()
+                        {
+                            return null;
+                        }
+                    }
+                }
+
+                """;
             return IsArrayEmptyDefined() ? string.Empty : arrayEmptySourceRaw;
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharpAsync()
         {
-            const string badSource = @"
-using System.Collections.Generic;
+            const string badSource = """
 
-class C
-{
-    unsafe void M1()
-    {
-        int[] arr1 = new int[0];                       // yes
-        byte[] arr2 = { };                             // yes
-        C[] arr3 = new C[] { };                        // yes
-        string[] arr4 = new string[] { null };         // no
-        double[] arr5 = new double[1];                 // no
-        int[] arr6 = new[] { 1 };                      // no
-        int[][] arr7 = new int[0][];                   // yes
-        int[][][][] arr8 = new int[0][][][];           // yes
-        int[,] arr9 = new int[0,0];                    // no
-        int[][,] arr10 = new int[0][,];                // yes
-        int[][,] arr11 = new int[1][,];                // no
-        int[,][] arr12 = new int[0,0][];               // no
-        int*[] arr13 = new int*[0];                    // no
-        List<int> list1 = new List<int>() { };         // no
-    }
-}";
+                using System.Collections.Generic;
 
-            const string fixedSource = @"
-using System.Collections.Generic;
+                class C
+                {
+                    unsafe void M1()
+                    {
+                        int[] arr1 = new int[0];                       // yes
+                        byte[] arr2 = { };                             // yes
+                        C[] arr3 = new C[] { };                        // yes
+                        string[] arr4 = new string[] { null };         // no
+                        double[] arr5 = new double[1];                 // no
+                        int[] arr6 = new[] { 1 };                      // no
+                        int[][] arr7 = new int[0][];                   // yes
+                        int[][][][] arr8 = new int[0][][][];           // yes
+                        int[,] arr9 = new int[0,0];                    // no
+                        int[][,] arr10 = new int[0][,];                // yes
+                        int[][,] arr11 = new int[1][,];                // no
+                        int[,][] arr12 = new int[0,0][];               // no
+                        int*[] arr13 = new int*[0];                    // no
+                        List<int> list1 = new List<int>() { };         // no
+                    }
+                }
+                """;
 
-class C
-{
-    unsafe void M1()
-    {
-        int[] arr1 = System.Array.Empty<int>();                       // yes
-        byte[] arr2 = System.Array.Empty<byte>();                             // yes
-        C[] arr3 = System.Array.Empty<C>();                        // yes
-        string[] arr4 = new string[] { null };         // no
-        double[] arr5 = new double[1];                 // no
-        int[] arr6 = new[] { 1 };                      // no
-        int[][] arr7 = System.Array.Empty<int[]>();                   // yes
-        int[][][][] arr8 = System.Array.Empty<int[][][]>();           // yes
-        int[,] arr9 = new int[0,0];                    // no
-        int[][,] arr10 = System.Array.Empty<int[,]>();                // yes
-        int[][,] arr11 = new int[1][,];                // no
-        int[,][] arr12 = new int[0,0][];               // no
-        int*[] arr13 = new int*[0];                    // no
-        List<int> list1 = new List<int>() { };         // no
-    }
-}";
+            const string fixedSource = """
+
+                using System.Collections.Generic;
+
+                class C
+                {
+                    unsafe void M1()
+                    {
+                        int[] arr1 = System.Array.Empty<int>();                       // yes
+                        byte[] arr2 = System.Array.Empty<byte>();                             // yes
+                        C[] arr3 = System.Array.Empty<C>();                        // yes
+                        string[] arr4 = new string[] { null };         // no
+                        double[] arr5 = new double[1];                 // no
+                        int[] arr6 = new[] { 1 };                      // no
+                        int[][] arr7 = System.Array.Empty<int[]>();                   // yes
+                        int[][][][] arr8 = System.Array.Empty<int[][][]>();           // yes
+                        int[,] arr9 = new int[0,0];                    // no
+                        int[][,] arr10 = System.Array.Empty<int[,]>();                // yes
+                        int[][,] arr11 = new int[1][,];                // no
+                        int[,][] arr12 = new int[0,0][];               // no
+                        int*[] arr13 = new int*[0];                    // no
+                        List<int> list1 = new List<int>() { };         // no
+                    }
+                }
+                """;
             string arrayEmptySource = GetArrayEmptySourceCSharp();
 
             await VerifyCS.VerifyCodeFixAsync(
@@ -162,65 +170,69 @@ class C
                 "using System;\r\n" + fixedSource.Replace("System.Array.Empty", "Array.Empty", StringComparison.Ordinal) + arrayEmptySource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharpErrorAsync()
         {
-            const string badSource = @"
-// This is a compile error but we want to ensure analyzer doesn't complain for it.
-[System.Runtime.CompilerServices.Dynamic(new bool[0]){|CS0116:]|}
-";
+            const string badSource = """
+                // This is a compile error but we want to ensure analyzer doesn't complain for it.
+                [System.Runtime.CompilerServices.Dynamic(new bool[0]){|CS0116:]|}
+                """;
 
             await VerifyCS.VerifyAnalyzerAsync(badSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayVisualBasicAsync()
         {
-            const string badSource = @"
-Imports System.Collections.Generic
+            const string badSource = """
 
-<System.Runtime.CompilerServices.Dynamic(new Boolean(-1) {})> _
-Class C
-    Sub M1()
-        Dim arr1 As Integer() = New Integer(-1) { }               ' yes
-        Dim arr2 As Byte() = { }                                  ' yes
-        Dim arr3 As C() = New C(-1) { }                           ' yes
-        Dim arr4 As String() = New String() { Nothing }           ' no
-        Dim arr5 As Double() = New Double(1) { }                  ' no
-        Dim arr6 As Integer() = { -1 }                            ' no
-        Dim arr7 as Integer()() = New Integer(-1)() { }           ' yes
-        Dim arr8 as Integer()()()() = New Integer(  -1)()()() { } ' yes
-        Dim arr9 as Integer(,) = New Integer(-1,-1) { }           ' no
-        Dim arr10 as Integer()(,) = New Integer(-1)(,) { }        ' yes
-        Dim arr11 as Integer()(,) = New Integer(1)(,) { }         ' no
-        Dim arr12 as Integer(,)() = New Integer(-1,-1)() { }      ' no
-        Dim arr13 as Integer() = New Integer(0) { }               ' no
-        Dim list1 as List(Of Integer) = New List(Of Integer) From { }  ' no
-    End Sub
-End Class";
+                Imports System.Collections.Generic
 
-            const string fixedSource = @"
-Imports System.Collections.Generic
+                <System.Runtime.CompilerServices.Dynamic(new Boolean(-1) {})> _
+                Class C
+                    Sub M1()
+                        Dim arr1 As Integer() = New Integer(-1) { }               ' yes
+                        Dim arr2 As Byte() = { }                                  ' yes
+                        Dim arr3 As C() = New C(-1) { }                           ' yes
+                        Dim arr4 As String() = New String() { Nothing }           ' no
+                        Dim arr5 As Double() = New Double(1) { }                  ' no
+                        Dim arr6 As Integer() = { -1 }                            ' no
+                        Dim arr7 as Integer()() = New Integer(-1)() { }           ' yes
+                        Dim arr8 as Integer()()()() = New Integer(  -1)()()() { } ' yes
+                        Dim arr9 as Integer(,) = New Integer(-1,-1) { }           ' no
+                        Dim arr10 as Integer()(,) = New Integer(-1)(,) { }        ' yes
+                        Dim arr11 as Integer()(,) = New Integer(1)(,) { }         ' no
+                        Dim arr12 as Integer(,)() = New Integer(-1,-1)() { }      ' no
+                        Dim arr13 as Integer() = New Integer(0) { }               ' no
+                        Dim list1 as List(Of Integer) = New List(Of Integer) From { }  ' no
+                    End Sub
+                End Class
+                """;
 
-<System.Runtime.CompilerServices.Dynamic(new Boolean(-1) {})> _
-Class C
-    Sub M1()
-        Dim arr1 As Integer() = System.Array.Empty(Of Integer)()               ' yes
-        Dim arr2 As Byte() = System.Array.Empty(Of Byte)()                                  ' yes
-        Dim arr3 As C() = System.Array.Empty(Of C)()                           ' yes
-        Dim arr4 As String() = New String() { Nothing }           ' no
-        Dim arr5 As Double() = New Double(1) { }                  ' no
-        Dim arr6 As Integer() = { -1 }                            ' no
-        Dim arr7 as Integer()() = System.Array.Empty(Of Integer())()           ' yes
-        Dim arr8 as Integer()()()() = System.Array.Empty(Of Integer()()())() ' yes
-        Dim arr9 as Integer(,) = New Integer(-1,-1) { }           ' no
-        Dim arr10 as Integer()(,) = System.Array.Empty(Of Integer(,))()        ' yes
-        Dim arr11 as Integer()(,) = New Integer(1)(,) { }         ' no
-        Dim arr12 as Integer(,)() = New Integer(-1,-1)() { }      ' no
-        Dim arr13 as Integer() = New Integer(0) { }               ' no
-        Dim list1 as List(Of Integer) = New List(Of Integer) From { }  ' no
-    End Sub
-End Class";
+            const string fixedSource = """
+
+                Imports System.Collections.Generic
+
+                <System.Runtime.CompilerServices.Dynamic(new Boolean(-1) {})> _
+                Class C
+                    Sub M1()
+                        Dim arr1 As Integer() = System.Array.Empty(Of Integer)()               ' yes
+                        Dim arr2 As Byte() = System.Array.Empty(Of Byte)()                                  ' yes
+                        Dim arr3 As C() = System.Array.Empty(Of C)()                           ' yes
+                        Dim arr4 As String() = New String() { Nothing }           ' no
+                        Dim arr5 As Double() = New Double(1) { }                  ' no
+                        Dim arr6 As Integer() = { -1 }                            ' no
+                        Dim arr7 as Integer()() = System.Array.Empty(Of Integer())()           ' yes
+                        Dim arr8 as Integer()()()() = System.Array.Empty(Of Integer()()())() ' yes
+                        Dim arr9 as Integer(,) = New Integer(-1,-1) { }           ' no
+                        Dim arr10 as Integer()(,) = System.Array.Empty(Of Integer(,))()        ' yes
+                        Dim arr11 as Integer()(,) = New Integer(1)(,) { }         ' no
+                        Dim arr12 as Integer(,)() = New Integer(-1,-1)() { }      ' no
+                        Dim arr13 as Integer() = New Integer(0) { }               ' no
+                        Dim list1 as List(Of Integer) = New List(Of Integer) From { }  ' no
+                    End Sub
+                End Class
+                """;
 
             string arrayEmptySource = GetArrayEmptySourceBasic();
 
@@ -275,30 +287,34 @@ End Class";
                 "Imports System\r\n" + fixedSource.Replace("System.Array.Empty", "Array.Empty", StringComparison.Ordinal) + arrayEmptySource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_DifferentTypeKindAsync()
         {
-            const string badSource = @"
-class C
-{
-    void M1()
-    {
-        int[] arr1 = new int[(long)0];                 // yes
-        double[] arr2 = new double[(ulong)0];         // yes
-        double[] arr3 = new double[(long)1];         // no
-    }
-}";
+            const string badSource = """
 
-            const string fixedSource = @"
-class C
-{
-    void M1()
-    {
-        int[] arr1 = System.Array.Empty<int>();                 // yes
-        double[] arr2 = System.Array.Empty<double>();         // yes
-        double[] arr3 = new double[(long)1];         // no
-    }
-}";
+                class C
+                {
+                    void M1()
+                    {
+                        int[] arr1 = new int[(long)0];                 // yes
+                        double[] arr2 = new double[(ulong)0];         // yes
+                        double[] arr3 = new double[(long)1];         // no
+                    }
+                }
+                """;
+
+            const string fixedSource = """
+
+                class C
+                {
+                    void M1()
+                    {
+                        int[] arr1 = System.Array.Empty<int>();                 // yes
+                        double[] arr2 = System.Array.Empty<double>();         // yes
+                        double[] arr3 = new double[(long)1];         // no
+                    }
+                }
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(
                 badSource,
@@ -328,19 +344,19 @@ class C
         }
 
         [WorkItem(10214, "https://github.com/dotnet/roslyn/issues/10214")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayVisualBasic_CompilerGeneratedArrayCreationAsync()
         {
-            const string source = @"
-Class C
-    Private Sub F(ParamArray args As String())
-    End Sub
+            const string source = """
+                Class C
+                    Private Sub F(ParamArray args As String())
+                    End Sub
 
-Private Sub G()
-        F()     ' Compiler seems to generate a param array with size 0 for the invocation.
-    End Sub
-End Class
-";
+                Private Sub G()
+                        F()     ' Compiler seems to generate a param array with size 0 for the invocation.
+                    End Sub
+                End Class
+                """;
 
             string arrayEmptySource = GetArrayEmptySourceBasic();
 
@@ -350,26 +366,26 @@ End Class
         }
 
         [WorkItem(1209, "https://github.com/dotnet/roslyn-analyzers/issues/1209")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInObjectCreationAsync()
         {
-            const string source = @"
-namespace N
-{
-    using Microsoft.CodeAnalysis;
-    class C
-    {
-        public static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
-            ""RuleId"",
-            ""Title"",
-            ""MessageFormat"",
-            ""Dummy"",
-            DiagnosticSeverity.Warning,
-            isEnabledByDefault: true,
-            description: ""Description"");
-    }
-}
-";
+            const string source = """
+                namespace N
+                {
+                    using Microsoft.CodeAnalysis;
+                    class C
+                    {
+                        public static readonly DiagnosticDescriptor Rule = new DiagnosticDescriptor(
+                            "RuleId",
+                            "Title",
+                            "MessageFormat",
+                            "Dummy",
+                            DiagnosticSeverity.Warning,
+                            isEnabledByDefault: true,
+                            description: "Description");
+                    }
+                }
+                """;
 
             string arrayEmptySource = GetArrayEmptySourceCSharp();
 
@@ -379,19 +395,19 @@ namespace N
         }
 
         [WorkItem(1209, "https://github.com/dotnet/roslyn-analyzers/issues/1209")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_CompilerGeneratedArrayCreationInIndexerAccessAsync()
         {
-            const string source = @"
-public abstract class C
-{
-    protected abstract int this[int p1, params int[] p2] {get; set;}
-    public void M()
-    {
-        var x = this[0];
-    }
-}
-";
+            const string source = """
+                public abstract class C
+                {
+                    protected abstract int this[int p1, params int[] p2] {get; set;}
+                    public void M()
+                    {
+                        var x = this[0];
+                    }
+                }
+                """;
 
             string arrayEmptySource = GetArrayEmptySourceCSharp();
 
@@ -400,74 +416,78 @@ public abstract class C
             await VerifyCS.VerifyAnalyzerAsync(source + arrayEmptySource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedInAttribute_NoDiagnosticsAsync()
         {
-            const string source = @"
-using System;
+            const string source = """
+                using System;
 
-[AttributeUsage(AttributeTargets.All, AllowMultiple = true)]  
-class CustomAttribute : Attribute
-{
-    public CustomAttribute(object o)
-    {
-    }
-}
+                [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+                class CustomAttribute : Attribute
+                {
+                    public CustomAttribute(object o)
+                    {
+                    }
+                }
 
-[Custom(new int[0])]
-[Custom(new string[] { })]
-class C
-{
-}
-";
+                [Custom(new int[0])]
+                [Custom(new string[] { })]
+                class C
+                {
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedInAttributeParams_NoDiagnosticsAsync()
         {
-            const string source = @"
-using System;
+            const string source = """
+                using System;
 
-[AttributeUsage(AttributeTargets.All, AllowMultiple = true)]  
-class CustomAttribute : Attribute
-{
-    public CustomAttribute(params int[] i)
-    {
-    }
-}
+                [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
+                class CustomAttribute : Attribute
+                {
+                    public CustomAttribute(params int[] i)
+                    {
+                    }
+                }
 
-[Custom(new int[0])]
-[Custom]
-class C
-{
-}
-";
+                [Custom(new int[0])]
+                [Custom]
+                class C
+                {
+                }
+                """;
             await VerifyCS.VerifyAnalyzerAsync(source);
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_FieldOrPropertyInitializerAsync()
         {
-            const string badSource = @"
-using System;
+            const string badSource = """
 
-class C
-{
-    public int[] f1 = new int[] { };
-    public int[] p1 { get; set; } = new int[] { };
-}
-";
-            const string fixedSource = @"
-using System;
+                using System;
 
-class C
-{
-    public int[] f1 = Array.Empty<int>();
-    public int[] p1 { get; set; } = Array.Empty<int>();
-}
-";
+                class C
+                {
+                    public int[] f1 = new int[] { };
+                    public int[] p1 { get; set; } = new int[] { };
+                }
+
+                """;
+            const string fixedSource = """
+
+                using System;
+
+                class C
+                {
+                    public int[] f1 = Array.Empty<int>();
+                    public int[] p1 { get; set; } = Array.Empty<int>();
+                }
+
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(
                 badSource,
@@ -484,35 +504,39 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedInAssignmentAsync()
         {
-            const string badSource = @"
-using System;
+            const string badSource = """
 
-class C
-{
-    void M()
-    {
-        int[] l1;
-        l1 = new int[0];
-        l1 = new int[] { };
-    }
-}
-";
-            const string fixedSource = @"
-using System;
+                using System;
 
-class C
-{
-    void M()
-    {
-        int[] l1;
-        l1 = Array.Empty<int>();
-        l1 = Array.Empty<int>();
-    }
-}
-";
+                class C
+                {
+                    void M()
+                    {
+                        int[] l1;
+                        l1 = new int[0];
+                        l1 = new int[] { };
+                    }
+                }
+
+                """;
+            const string fixedSource = """
+
+                using System;
+
+                class C
+                {
+                    void M()
+                    {
+                        int[] l1;
+                        l1 = Array.Empty<int>();
+                        l1 = Array.Empty<int>();
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyCodeFixAsync(
                 badSource,
                 new[]
@@ -528,47 +552,51 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_NotArrayAsync()
         {
-            const string badSource = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+            const string badSource = """
 
-class C
-{
-    public IEnumerable<int> f1 = new int[0];
-    public ICollection<int> f2 = new int[0];
-    public IReadOnlyCollection<int> f3 = new int[0];
-    public IList<int> f4 = new int[0];
-    public IReadOnlyList<int> f5 = new int[0];
+                using System;
+                using System.Collections;
+                using System.Collections.Generic;
+                using System.Collections.ObjectModel;
 
-    public IEnumerable f6 = new int[0];
-    public ICollection f7 = new int[0];
-    public IList f8 = new int[0];
-}
-";
-            const string fixedSource = @"
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
+                class C
+                {
+                    public IEnumerable<int> f1 = new int[0];
+                    public ICollection<int> f2 = new int[0];
+                    public IReadOnlyCollection<int> f3 = new int[0];
+                    public IList<int> f4 = new int[0];
+                    public IReadOnlyList<int> f5 = new int[0];
 
-class C
-{
-    public IEnumerable<int> f1 = Array.Empty<int>();
-    public ICollection<int> f2 = Array.Empty<int>();
-    public IReadOnlyCollection<int> f3 = Array.Empty<int>();
-    public IList<int> f4 = Array.Empty<int>();
-    public IReadOnlyList<int> f5 = Array.Empty<int>();
+                    public IEnumerable f6 = new int[0];
+                    public ICollection f7 = new int[0];
+                    public IList f8 = new int[0];
+                }
 
-    public IEnumerable f6 = Array.Empty<int>();
-    public ICollection f7 = Array.Empty<int>();
-    public IList f8 = Array.Empty<int>();
-}
-";
+                """;
+            const string fixedSource = """
+
+                using System;
+                using System.Collections;
+                using System.Collections.Generic;
+                using System.Collections.ObjectModel;
+
+                class C
+                {
+                    public IEnumerable<int> f1 = Array.Empty<int>();
+                    public ICollection<int> f2 = Array.Empty<int>();
+                    public IReadOnlyCollection<int> f3 = Array.Empty<int>();
+                    public IList<int> f4 = Array.Empty<int>();
+                    public IReadOnlyList<int> f5 = Array.Empty<int>();
+
+                    public IEnumerable f6 = Array.Empty<int>();
+                    public ICollection f7 = Array.Empty<int>();
+                    public IList f8 = Array.Empty<int>();
+                }
+
+                """;
             await VerifyCS.VerifyCodeFixAsync(
                 badSource,
                 new[]
@@ -602,25 +630,29 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_DeclarationTypeDoesNotMatch_DifferentElementTypeAsync()
         {
-            const string badSource = @"
-using System;
+            const string badSource = """
 
-class C
-{
-    public object[] f1 = new string[0];
-}
-";
-            const string fixedSource = @"
-using System;
+                using System;
 
-class C
-{
-    public object[] f1 = Array.Empty<string>();
-}
-";
+                class C
+                {
+                    public object[] f1 = new string[0];
+                }
+
+                """;
+            const string fixedSource = """
+
+                using System;
+
+                class C
+                {
+                    public object[] f1 = Array.Empty<string>();
+                }
+
+                """;
 
             await VerifyCS.VerifyCodeFixAsync(
                 badSource,
@@ -631,65 +663,69 @@ class C
         }
 
         [WorkItem(1298, "https://github.com/dotnet/roslyn-analyzers/issues/1298")]
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_UsedAsExpressionAsync()
         {
-            const string badSource = @"
-using System;
+            const string badSource = """
 
-class C
-{
-    void M1(object[] array)
-    {
-    }
+                using System;
 
-    // Tests handling of implicit conversion. Do not change to 'object[] obj'.
-    void M2(object obj)
-    {
-    }
+                class C
+                {
+                    void M1(object[] array)
+                    {
+                    }
 
-    void M3()
-    {
-        M1(new object[0]);
-        M2(new object[0]);
-    }
+                    // Tests handling of implicit conversion. Do not change to 'object[] obj'.
+                    void M2(object obj)
+                    {
+                    }
 
-    object M4() => new object[0];
+                    void M3()
+                    {
+                        M1(new object[0]);
+                        M2(new object[0]);
+                    }
 
-    object M5()
-    {
-        return new object[0];
-    }
-}
-";
-            const string fixedSource = @"
-using System;
+                    object M4() => new object[0];
 
-class C
-{
-    void M1(object[] array)
-    {
-    }
+                    object M5()
+                    {
+                        return new object[0];
+                    }
+                }
 
-    // Tests handling of implicit conversion. Do not change to 'object[] obj'.
-    void M2(object obj)
-    {
-    }
+                """;
+            const string fixedSource = """
 
-    void M3()
-    {
-        M1(Array.Empty<object>());
-        M2(Array.Empty<object>());
-    }
+                using System;
 
-    object M4() => Array.Empty<object>();
+                class C
+                {
+                    void M1(object[] array)
+                    {
+                    }
 
-    object M5()
-    {
-        return Array.Empty<object>();
-    }
-}
-";
+                    // Tests handling of implicit conversion. Do not change to 'object[] obj'.
+                    void M2(object obj)
+                    {
+                    }
+
+                    void M3()
+                    {
+                        M1(Array.Empty<object>());
+                        M2(Array.Empty<object>());
+                    }
+
+                    object M4() => Array.Empty<object>();
+
+                    object M5()
+                    {
+                        return Array.Empty<object>();
+                    }
+                }
+
+                """;
             await VerifyCS.VerifyCodeFixAsync(
                 badSource,
                 new[]
@@ -710,21 +746,25 @@ class C
                 fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task EmptyArrayCSharp_SystemNotImportedAsync()
         {
-            const string badSource = @"
-class C
-{
-    public object[] f1 = new object[0];
-}
-";
-            const string fixedSource = @"
-class C
-{
-    public object[] f1 = System.Array.Empty<object>();
-}
-";
+            const string badSource = """
+
+                class C
+                {
+                    public object[] f1 = new object[0];
+                }
+
+                """;
+            const string fixedSource = """
+
+                class C
+                {
+                    public object[] f1 = System.Array.Empty<object>();
+                }
+
+                """;
             await VerifyCS.VerifyCodeFixAsync(
                 badSource,
 #pragma warning disable RS0030 // Do not use banned APIs
@@ -733,99 +773,103 @@ class C
                 fixedSource);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
         public async Task NoDiagnosticInExpressionTree_CSharpAsync()
         {
-            const string source = @"
-using System;
-using System.Linq.Expressions;
+            const string source = """
+                using System;
+                using System.Linq.Expressions;
 
-class C
-{
-    Expression<Func<int[]>> f = () => new int[0];
-}
-";
+                class C
+                {
+                    Expression<Func<int[]>> f = () => new int[0];
+                }
+                """;
             await VerifyCS.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(4665, "https://github.com/dotnet/roslyn-analyzers/issues/4665")]
         public async Task NoDiagnosticInExpressionTree_VisualBasicAsync()
         {
-            const string source = @"
-Imports System
-Imports System.Linq.Expressions
+            const string source = """
+                Imports System
+                Imports System.Linq.Expressions
 
-Class C
-    Private f1 As Expression(Of Func(Of Integer())) = Function() New Integer(-1) {}
-    Private f2 As Expression(Of Func(Of Integer())) = Function() New Integer() {}
-End Class
-";
+                Class C
+                    Private f1 As Expression(Of Func(Of Integer())) = Function() New Integer(-1) {}
+                    Private f2 As Expression(Of Func(Of Integer())) = Function() New Integer() {}
+                End Class
+                """;
             await VerifyVB.VerifyCodeFixAsync(source, source);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
         public async Task NoDiagnosticForCollectionExpression_NonArrayTargetType_CSharpAsync()
         {
-            const string source = @"
-using System.Collections.Generic;
+            const string source = """
+                using System.Collections.Generic;
 
-class C
-{
-    List<string> l1 = [""a"", ""b"", ""c""];
-    List<int> l2 = [];
-    IEnumerable<int> l3 = [1, 2, 3];
-}
-";
+                class C
+                {
+                    List<string> l1 = ["a", "b", "c"];
+                    List<int> l2 = [];
+                    IEnumerable<int> l3 = [1, 2, 3];
+                }
+                """;
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
         public async Task NoDiagnosticForCollectionExpression_EmptyArrayTargetType_CSharpAsync()
         {
 
-            const string source = @"
-class C
-{
-    int[] arr = [];
-}
-";
+            const string source = """
+                class C
+                {
+                    int[] arr = [];
+                }
+                """;
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
                 TestCode = source,
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         [WorkItem(82484, "https://github.com/dotnet/roslyn/issues/82484")]
         public async Task DiagnosticForZeroLengthArrayInsideCollectionExpression_CSharpAsync()
         {
-            const string badSource = @"
-using System;
-using System.Collections.Generic;
+            const string badSource = """
 
-class C
-{
-    List<int[]> l1 = [new int[0]];
-}
-";
-            const string fixedSource = @"
-using System;
-using System.Collections.Generic;
+                using System;
+                using System.Collections.Generic;
 
-class C
-{
-    List<int[]> l1 = [Array.Empty<int>()];
-}
-";
+                class C
+                {
+                    List<int[]> l1 = [new int[0]];
+                }
+
+                """;
+            const string fixedSource = """
+
+                using System;
+                using System.Collections.Generic;
+
+                class C
+                {
+                    List<int[]> l1 = [Array.Empty<int>()];
+                }
+
+                """;
             await new VerifyCS.Test
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp12,
@@ -837,7 +881,7 @@ class C
                     VerifyCS.Diagnostic(AvoidZeroLengthArrayAllocationsAnalyzer.UseArrayEmptyDescriptor).WithLocation(7, 23).WithArguments("Array.Empty<int>()"),
 #pragma warning restore RS0030 // Do not use banned APIs
                 },
-            }.RunAsync(TestContext.Current.CancellationToken);
+            }.RunAsync(CancellationToken.None);
         }
     }
 }

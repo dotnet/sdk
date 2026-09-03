@@ -42,6 +42,10 @@ Copyright (c) .NET Foundation. All rights reserved.
     <_RazorSdkDotNetHostFileName Condition="'$(OS)' == 'Windows_NT'">dotnet.exe</_RazorSdkDotNetHostFileName>
   </PropertyGroup>
 
+  <PropertyGroup Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '10.0')) ">
+    <_TargetingNET100Exactly>true</_TargetingNET100Exactly>
+  </PropertyGroup>
+
   <!-- Resolve the TFM-specific attributes conditionally. -->
   <Choose>
     <When Condition=" '$(TargetFrameworkIdentifier)' == '.NETCoreApp' AND $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0')) ">
@@ -608,7 +612,9 @@ Copyright (c) .NET Foundation. All rights reserved.
     This target runs after component items are resolved to ensure accurate detection
   -->
   <Target Name="_AddEmbeddedValidationAttribute" BeforeTargets="GenerateGlobalUsings" DependsOnTargets="ResolveRazorComponentInputs;ResolveRazorGenerateInputs">
-    <PropertyGroup Condition="'$(_TargetingNET100OrLater)' == 'true'">
+    <!-- We only generate the embedded validation attribute under net10.0 specifically. -->
+    <!-- This is done for backcompat concerns (users get to use .NET 11+ SDK but still target net10.0) -->
+    <PropertyGroup Condition="'$(_TargetingNET100Exactly)' == 'true' ">
       <_HasRazorFiles Condition="'@(RazorComponent)' != '' OR '@(RazorGenerate->WithMetadataValue('Extension', '.razor'))' != '' OR '@(Content->WithMetadataValue('Extension', '.razor'))' != ''">true</_HasRazorFiles>
       
       <!-- Set embedded attribute generation property based on .razor file detection -->
@@ -620,13 +626,13 @@ Copyright (c) .NET Foundation. All rights reserved.
       <IncludeEmbeddedValidationGlobalUsing Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == ''">false</IncludeEmbeddedValidationGlobalUsing>
     </PropertyGroup>
     
-    <PropertyGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+    <PropertyGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'">
       <_EmbeddedAttributeFile>$(IntermediateOutputPath)EmbeddedAttribute.cs</_EmbeddedAttributeFile>
       <_ValidatableTypeAttributeFile>$(IntermediateOutputPath)ValidatableTypeAttribute.cs</_ValidatableTypeAttributeFile>
     </PropertyGroup>
 
     <!-- Generate EmbeddedAttribute source file -->
-    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'">
       <_EmbeddedAttributeLines Include="// &lt;auto-generated/&gt;" />
       <_EmbeddedAttributeLines Include="namespace Microsoft.CodeAnalysis" />
       <_EmbeddedAttributeLines Include="{" />
@@ -637,14 +643,14 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
     
     <WriteLinesToFile 
-      Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'"
+      Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'"
       File="$(_EmbeddedAttributeFile)"
       Lines="@(_EmbeddedAttributeLines)"
       Overwrite="true"
       WriteOnlyWhenDifferent="true" />
 
     <!-- Generate ValidatableTypeAttribute source file -->
-    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'">
       <_ValidatableTypeAttributeLines Include="// &lt;auto-generated/&gt;" />
       <_ValidatableTypeAttributeLines Include="namespace Microsoft.Extensions.Validation.Embedded" />
       <_ValidatableTypeAttributeLines Include="{" />
@@ -657,16 +663,16 @@ Copyright (c) .NET Foundation. All rights reserved.
     </ItemGroup>
     
     <WriteLinesToFile 
-      Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'"
+      Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'"
       File="$(_ValidatableTypeAttributeFile)"
       Lines="@(_ValidatableTypeAttributeLines)"
       Overwrite="true"
       WriteOnlyWhenDifferent="true" />
     
     <!--
-      Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0+
+      Conditional inclusion of embedded ValidatableTypeAttribute source files for .NET 10.0
     -->
-    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+    <ItemGroup Condition="'$(GenerateEmbeddedValidatableTypeAttribute)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'">
       <Compile Include="$(_EmbeddedAttributeFile)" />
       <Compile Include="$(_ValidatableTypeAttributeFile)" />
       <FileWrites Include="$(_EmbeddedAttributeFile)" />
@@ -676,7 +682,7 @@ Copyright (c) .NET Foundation. All rights reserved.
     <!--
       Conditional global using for embedded validation namespace
     -->
-    <ItemGroup Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == 'true' AND '$(_TargetingNET100OrLater)' == 'true'">
+    <ItemGroup Condition="'$(IncludeEmbeddedValidationGlobalUsing)' == 'true' AND '$(_TargetingNET100Exactly)' == 'true'">
       <Using Include="Microsoft.Extensions.Validation.Embedded" />
     </ItemGroup>
   </Target>

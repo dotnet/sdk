@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using FakeItEasy;
@@ -6,21 +6,18 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier.Commands;
 using Microsoft.TemplateEngine.CommandUtils;
-using Microsoft.TemplateEngine.TestHelper;
 using Microsoft.TemplateEngine.Tests;
+using VerifyMSTest;
 
 namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
 {
-    public class VerificationEngineTests
+    [TestClass]
+    [UsesVerify]
+    public partial class VerificationEngineTests
     {
-        private readonly ILogger _log;
+        private ILogger Log => new TestContextLogger(TestContext);
 
-        public VerificationEngineTests(ITestOutputHelper log)
-        {
-            _log = new XunitLoggerProvider(log).CreateLogger("TestRun");
-        }
-
-        [Fact]
+        [TestMethod]
         public async Task DefaultExcludePatternsFilterNestedObjAndBinFiles()
         {
             string verifyLocation = "foo/bar/baz";
@@ -73,7 +70,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             resultContents.Keys.Should().BeEquivalentTo(new[] { "Program.cs" });
         }
 
-        [Fact]
+        [TestMethod]
         public async Task CreateVerificationTaskWithCustomScrubbersAndVerifier()
         {
             string verifyLocation = "foo\\bar\\baz";
@@ -133,7 +130,7 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
             resultContents["Subfolder\\Class.cs"].Should().BeEquivalentTo("123 456 789 zz");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExecuteFailsOnInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -153,15 +150,15 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                 UniqueFor = UniqueForOption.OsPlatform | UniqueForOption.OsPlatform,
             };
 
-            VerificationEngine engine = new VerificationEngine(_log);
-            Func<Task> executeTask = () => engine.Execute(options);
+            VerificationEngine engine = new VerificationEngine(Log);
+            Func<Task> executeTask = () => engine.Execute(options, TestContext.CancellationToken);
             await executeTask
                 .Should()
                 .ThrowAsync<TemplateVerificationException>()
                 .Where(e => e.TemplateVerificationErrorCode == TemplateVerificationErrorCode.InstantiationFailed);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExecuteSucceedsOnExpectedInstantiationFailure()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -180,11 +177,11 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                 VerifyCommandOutput = true,
             };
 
-            VerificationEngine engine = new VerificationEngine(commandRunner, _log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(commandRunner, Log);
+            await engine.Execute(options, TestContext.CancellationToken);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ExecuteSucceedsOnExpectedInstantiationSuccess()
         {
             string workingDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName().Replace(".", string.Empty));
@@ -203,8 +200,8 @@ namespace Microsoft.TemplateEngine.Authoring.TemplateVerifier.UnitTests
                 VerifyCommandOutput = true,
             };
 
-            VerificationEngine engine = new VerificationEngine(commandRunner, _log);
-            await engine.Execute(options, TestContext.Current.CancellationToken);
+            VerificationEngine engine = new VerificationEngine(commandRunner, Log);
+            await engine.Execute(options, TestContext.CancellationToken);
         }
     }
 }

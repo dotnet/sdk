@@ -35,7 +35,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Execute()
                 .Should().Pass();
 
-            var result = new DotnetTestCommand(Log, disableNewOutput: true, "-r", runtime)
+            // Run the two target frameworks' tests sequentially so their VSTest console output can't
+            // interleave mid-line and break the contiguous substring assertions below. See dotnet/sdk#55194.
+            var result = new DotnetTestCommand(Log, disableNewOutput: true, "-r", runtime, "--property:TestTfmsInParallel=false")
                 .WithWorkingDirectory(testProjectDirectory)
                 .Execute(ConsoleLoggerOutputNormal);
 
@@ -72,8 +74,9 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                 .Should()
                 .Pass();
 
-            // Call test
-            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true)
+            // Call test. Run the two target frameworks' tests sequentially so their VSTest console output
+            // can't interleave mid-line and break the contiguous substring assertions below. See dotnet/sdk#55194.
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: true, "--property:TestTfmsInParallel=false")
                                        .WithWorkingDirectory(testProjectDirectory)
                                        .Execute(ConsoleLoggerOutputNormal);
 
@@ -128,6 +131,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         }
 
         [TestMethod]
+        [Ignore("https://github.com/dotnet/sdk/issues/55263")]
         public void ItCanTestAMultiTFMProjectWithImplicitRestore()
         {
             var testInstance = TestAssetsManager.CopyTestAsset(

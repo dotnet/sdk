@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using Microsoft.DotNet.Cli.Commands;
@@ -44,6 +44,23 @@ public sealed class RunFileTests_General : RunFileTestBase
                     testInstance.Path,
                     "--project"));
         }
+    }
+
+    [TestMethod]
+    public void FilePath_DuplicateFilePathArgument()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+
+        new DotnetCommand(Log, "run", "Program.cs", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:Program.cs
+                Hello from Program
+                """)
+            .And.NotHaveStdErr();
     }
 
     /// <summary>
@@ -485,6 +502,7 @@ public sealed class RunFileTests_General : RunFileTestBase
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref $(MSBuildStartupDirectory)/../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)
@@ -494,7 +512,7 @@ public sealed class RunFileTests_General : RunFileTestBase
 
         // Relative paths are resolved from the isolated temp directory, hence they don't work.
 
-        var errorParts = DirectiveError("app.cs", 1, FileBasedProgramsResources.InvalidRefDirective,
+        var errorParts = DirectiveError("app.cs", 2, FileBasedProgramsResources.InvalidRefDirective,
             string.Format(FileBasedProgramsResources.CouldNotFindRefFile, "{}")).Split("{}");
         errorParts.Should().HaveCount(2);
 
@@ -502,6 +520,7 @@ public sealed class RunFileTests_General : RunFileTestBase
             .WithWorkingDirectory(appDir)
             .WithEnvironmentVariable(CSharpDirective.Ref.ExperimentalFileBasedProgramEnableRefDirective, "true")
             .WithStandardInput("""
+                #!/usr/bin/env dotnet
                 #:ref ../lib/mylib.cs
                 Console.WriteLine(MyLib.Greeter.Greet());
                 """)
@@ -643,6 +662,26 @@ public sealed class RunFileTests_General : RunFileTestBase
             .Should().Pass()
             .And.NotHaveStdErr()
             .And.HaveStdOut("Hello from Program");
+    }
+
+    [TestMethod]
+    public void ProjectInCurrentDirectory_RunFromStdin()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        File.WriteAllText(Path.Join(testInstance.Path, "App.csproj"), s_consoleProject);
+
+        new DotnetCommand(Log, "run", "-")
+            .WithWorkingDirectory(testInstance.Path)
+            .WithStandardInput("""
+                Console.WriteLine("Hello from stdin");
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("""
+                echo args:-
+                Hello from App
+                """);
     }
 
     /// <summary>
@@ -840,11 +879,13 @@ public sealed class RunFileTests_General : RunFileTestBase
     /// but additional positional arguments cause it to fall back to MSBuild.
     /// </summary>
     [TestMethod]
-    [DataRow("build", "someArg", "Program.cs")]
-    [DataRow("clean", "someArg", "Program.cs")]
-    [DataRow("publish", "someArg", "Program.cs")]
-    [DataRow("build", "Program.cs", "-consoleLoggerParameters:NoSummary")]
-    public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2)
+    [DataRow("build", "someArg", "Program.cs", "'someArg'")]
+    [DataRow("clean", "someArg", "Program.cs", "'someArg'")]
+    [DataRow("publish", "someArg", "Program.cs", "'someArg'")]
+    [DataRow("build", "Program.cs", "-fl", "'-fl'")]
+    [DataRow("build", "Program.cs", "-notALogger:NoSummary", "'-notALogger:NoSummary'")]
+    [DataRow("build", "Program.cs", "Program.cs", "'Program.cs'")]
+    public void ExtraArgWithFileEntryPoint_Warns(string command, string arg1, string arg2, string unsupportedArgs)
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
         File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
@@ -856,7 +897,8 @@ public sealed class RunFileTests_General : RunFileTestBase
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.WarningFileArgumentPassedToMSBuild,
                 "Program.cs",
-                command));
+                command,
+                unsupportedArgs));
     }
 
     /// <summary>
@@ -877,7 +919,7 @@ public sealed class RunFileTests_General : RunFileTestBase
             .And.HaveStdErrContaining(string.Format(
                 CliCommandStrings.WarningCsFileArgumentPassedToMSBuild,
                 "nonexistent.cs",
-                command));
+                "'nonexistent.cs'"));
     }
 
     /// <summary>

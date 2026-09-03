@@ -77,4 +77,4 @@
 ###############################################################################
 /template_feed/Microsoft.DotNet.Common.ItemTemplates/content/Gitattributes/.gitattributes -export-ignore
 
-.github/workflows/*.lock.yml linguist-generated=true merge=ours
+.github/workflows/*.lock.yml linguist-generated=true

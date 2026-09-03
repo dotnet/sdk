@@ -1,13 +1,11 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using EmptyFiles;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
 
 namespace Microsoft.DotNet.Cli.New.IntegrationTests
 {
-    [DoNotParallelize]
     [TestClass]
     public class TemplateEngineSamplesTest : BaseIntegrationTest
     {
@@ -53,7 +51,6 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             _log.LogInformation($"Template with {caseDescription}");
             Dictionary<string, string?> environmentUnderTest = new() { ["DOTNET_NOLOGO"] = false.ToString() };
             SdkTestContext.Current.AddTestEnvironmentVariables(environmentUnderTest);
-            FileExtensions.AddTextExtension(".cshtml");
 
             TemplateVerifierOptions options = new TemplateVerifierOptions(templateName: shortName)
             {

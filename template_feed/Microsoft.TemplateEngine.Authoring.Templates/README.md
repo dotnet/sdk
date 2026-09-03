@@ -7,4 +7,4 @@ The package contains the templates useful for the template authoring:
 |`template.json` configuration file|`template.json`|A template for template.json configuration file for .NET template.|
 
 The package is available for download from nuget.org.
-Please feel to contribute or provide the feedback in discussions or via opening the issue in dotnet/templating repo.
+Please feel free to contribute or provide feedback in discussions or by opening an issue in the dotnet/sdk repo.

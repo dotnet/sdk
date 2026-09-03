@@ -52,6 +52,130 @@ public class RegistryTests : IDisposable
         Assert.AreEqual("registry-1.docker.io", registry.BaseUri.Host);
     }
 
+    [DataRow(HttpStatusCode.OK, true)]
+    [DataRow(HttpStatusCode.NotFound, false)]
+    [DataRow(HttpStatusCode.Unauthorized, false)]
+    [DataRow(HttpStatusCode.Forbidden, false)]
+    [DataRow(HttpStatusCode.MethodNotAllowed, false)]
+    [TestMethod]
+    public async Task ManifestExistsAsync_ReturnsExpectedResult(HttpStatusCode statusCode, bool expected)
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(ManifestExistsAsync_ReturnsExpectedResult));
+        Mock<HttpClient> client = new(MockBehavior.Loose);
+        HttpRequestMessage? request = null;
+        client.Setup(c => c.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+            .Callback<HttpRequestMessage, CancellationToken>((message, _) => request = message)
+            .ReturnsAsync(new HttpResponseMessage(statusCode));
+        DefaultManifestOperations operations = new(new Uri("https://example.com"), "example.com", client.Object, logger);
+
+        bool actual = await operations.ExistsAsync("test/repository", "sha256:1234", CancellationToken.None);
+
+        Assert.AreEqual(expected, actual);
+        Assert.IsNotNull(request);
+        Assert.AreEqual(HttpMethod.Head, request.Method);
+        Assert.AreEqual("https://example.com/v2/test/repository/manifests/sha256:1234", request.RequestUri!.AbsoluteUri);
+        Assert.IsNotEmpty(request.Headers.Accept);
+    }
+
+    [TestMethod]
+    public async Task ManifestExistsAsync_PropagatesServerErrors()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(ManifestExistsAsync_PropagatesServerErrors));
+        Mock<HttpClient> client = new(MockBehavior.Loose);
+        client.Setup(c => c.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.InternalServerError));
+        DefaultManifestOperations operations = new(new Uri("https://example.com"), "example.com", client.Object, logger);
+
+        await Assert.ThrowsAsync<ContainerHttpException>(() => operations.ExistsAsync("test/repository", "sha256:1234", CancellationToken.None));
+    }
+
+    [TestMethod]
+    public async Task PushAsync_SkipsBlobUploadsByDefaultWhenManifestAlreadyExists()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_SkipsBlobUploadsByDefaultWhenManifestAlreadyExists));
+        const string repository = "test/repository";
+        const string manifestDigest = "sha256:manifest";
+        string[] tags = ["latest", "stable"];
+
+        Mock<IManifestOperations> manifestOperations = new(MockBehavior.Strict);
+        manifestOperations
+            .Setup(m => m.ExistsAsync(repository, manifestDigest, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        foreach (string tag in tags)
+        {
+            manifestOperations
+                .Setup(m => m.PutAsync(repository, tag, "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
+                .Returns(Task.CompletedTask);
+        }
+
+        Mock<IRegistryAPI> api = new(MockBehavior.Strict);
+        api.SetupGet(a => a.Manifest).Returns(manifestOperations.Object);
+        Registry registry = new("example.com", logger, api.Object);
+        BuiltImage image = new()
+        {
+            Config = "{}",
+            ImageDigest = "sha256:config",
+            Manifest = "{}",
+            ManifestDigest = manifestDigest,
+            ManifestMediaType = SchemaTypes.OciManifestV1,
+            Layers = [new ManifestLayer(SchemaTypes.OciLayerGzipV1, 123, "sha256:layer", null)],
+            OS = "linux",
+            Architecture = "amd64",
+        };
+        SourceImageReference source = new(registry, "base/image", "latest", null);
+        DestinationImageReference destination = new(registry, repository, tags);
+
+        await registry.PushAsync(image, source, destination, CancellationToken.None);
+
+        manifestOperations.Verify(m => m.ExistsAsync(repository, manifestDigest, It.IsAny<CancellationToken>()), Times.Once);
+        foreach (string tag in tags)
+        {
+            manifestOperations.Verify(m => m.PutAsync(repository, tag, "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
+        }
+        api.VerifyGet(a => a.Blob, Times.Never);
+    }
+
+    [TestMethod]
+    public async Task PushAsync_DoesNotCheckManifestWhenNoCacheIsEnabled()
+    {
+        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_DoesNotCheckManifestWhenNoCacheIsEnabled));
+        const string repository = "test/repository";
+        const string configDigest = "sha256:config";
+
+        Mock<IBlobOperations> blobOperations = new(MockBehavior.Strict);
+        blobOperations
+            .Setup(b => b.ExistsAsync(repository, configDigest, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+        Mock<IManifestOperations> manifestOperations = new(MockBehavior.Strict);
+        manifestOperations
+            .Setup(m => m.PutAsync(repository, "latest", "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+        Mock<IRegistryAPI> api = new(MockBehavior.Strict);
+        api.SetupGet(a => a.Blob).Returns(blobOperations.Object);
+        api.SetupGet(a => a.Manifest).Returns(manifestOperations.Object);
+
+        Registry registry = new("example.com", logger, api.Object);
+        BuiltImage image = new()
+        {
+            Config = "{}",
+            ImageDigest = configDigest,
+            Manifest = "{}",
+            ManifestDigest = "sha256:manifest",
+            ManifestMediaType = SchemaTypes.OciManifestV1,
+            Layers = [],
+            OS = "linux",
+            Architecture = "amd64",
+        };
+        SourceImageReference source = new(registry, "base/image", "latest", null);
+        DestinationImageReference destination = new(registry, repository, ["latest"]);
+
+        await registry.PushAsync(image, source, destination, noCache: true, CancellationToken.None);
+
+        manifestOperations.Verify(m => m.ExistsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        blobOperations.Verify(b => b.ExistsAsync(repository, configDigest, It.IsAny<CancellationToken>()), Times.Once);
+        manifestOperations.Verify(m => m.PutAsync(repository, "latest", "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
     [TestMethod]
     public async Task RegistriesThatProvideNoUploadSizeAttemptFullUpload()
     {
@@ -555,7 +679,10 @@ public class RegistryTests : IDisposable
         var logger = _loggerFactory.CreateLogger(nameof(DownloadBlobAsync_RetriesOnFailure));
 
         var repoName = "testRepo";
-        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:c5098cc7c2a2ad9bfc66e4c4cb242683a578e9d8f25fd8730b289dd5667916ad", 1234);
+        // The digest must be the actual SHA-256 of the response bytes so that the internal
+        // branch's CopyToAndVerifyAsync digest validation passes after the download succeeds.
+        var responseBytes = new byte[] { 1, 2, 3 };
+        var descriptor = new Descriptor(SchemaTypes.OciLayerGzipV1, "sha256:039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81", 1234);
         var cancellationToken = CancellationToken.None;
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
@@ -563,7 +690,7 @@ public class RegistryTests : IDisposable
             .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken))
             .ThrowsAsync(new Exception("Simulated failure 1")) // First attempt fails
             .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
-            .ReturnsAsync(new MemoryStream(new byte[] { 1, 2, 3 })); // Third attempt succeeds
+            .ReturnsAsync(new MemoryStream(responseBytes)); // Third attempt succeeds
 
         Registry registry = new(repoName, logger, mockRegistryAPI.Object, null, () => TimeSpan.Zero);
 

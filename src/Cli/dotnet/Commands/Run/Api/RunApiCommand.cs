@@ -10,7 +10,6 @@ using System.Text.Json.Serialization;
 using Microsoft.Build.Evaluation;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.FileBasedPrograms;
-using Microsoft.DotNet.ProjectTools;
 
 namespace Microsoft.DotNet.Cli.Commands.Run.Api;
 
@@ -70,24 +69,22 @@ internal abstract class RunApiInput
         public override RunApiOutput Execute()
         {
             var builder = new VirtualProjectBuilder(
+                BuildService.Instance,
                 entryPointFileFullPath: EntryPointFileFullPath,
                 targetFramework: VirtualProjectBuildingCommand.TargetFramework,
                 artifactsPath: ArtifactsPath);
 
             var errorReporter = ErrorReporters.CreateCollectingReporter(out var diagnostics);
 
-            builder.CreateProjectInstance(
-                new ProjectCollection(),
+            var result = builder.CreateProjectInstanceAsync(
+                new ProjectCollection().Wrap(),
                 errorReporter,
-                project: out _,
-                out var projectRootElement,
-                out var evaluatedDirectives,
-                validateAllDirectives: true);
+                validateAllDirectives: true).AsTask().GetAwaiter().GetResult();
 
             var csprojWriter = new StringWriter();
             VirtualProjectBuilder.WriteProjectFile(
                 csprojWriter,
-                evaluatedDirectives,
+                result.EvaluatedDirectives,
                 VirtualProjectBuilder.GetDefaultProperties(VirtualProjectBuildingCommand.TargetFramework),
                 isVirtualProject: true,
                 entryPointFilePath: EntryPointFileFullPath,
@@ -96,7 +93,7 @@ internal abstract class RunApiInput
             return new RunApiOutput.Project
             {
                 Content = csprojWriter.ToString(),
-                ProjectPath = projectRootElement.FullPath,
+                ProjectPath = result.ProjectRootElement.FullPath!,
                 Diagnostics = diagnostics.ToImmutableArray(),
             };
         }
@@ -134,7 +131,7 @@ internal abstract class RunApiInput
                 environmentVariables: ReadOnlyDictionary<string, string>.Empty);
 
             var result = runCommand.ReadLaunchProfileSettings();
-            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, logger: null);
+            var targetCommand = (Utils.Command)runCommand.GetTargetCommand(result.Profile, buildCommand.CreateProjectInstance, cachedRunProperties: null, runPropertiesFromEvaluation: false, logger: null);
 
             return new RunApiOutput.RunCommand
             {

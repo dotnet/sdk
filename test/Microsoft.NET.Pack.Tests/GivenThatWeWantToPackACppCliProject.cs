@@ -11,7 +11,6 @@ namespace Microsoft.NET.Build.Tests
 
         [TestMethod]
         [FullMSBuildOnly]
-        [Ignore("https://github.com/dotnet/sdk/issues/53789")]
         public void It_cannot_pack_the_cppcliproject()
         {
             var testAsset = TestAssetsManager

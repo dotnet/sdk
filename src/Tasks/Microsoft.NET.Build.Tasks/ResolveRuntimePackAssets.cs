@@ -79,8 +79,8 @@ namespace Microsoft.NET.Build.Tasks
                 // For example, A WinForms app that uses useWindowsForms (and useWPF will be set to false) has the following values that will result in a match of the below RuntimeFramework
                 // matchingRTReference.GetMetadata("Profile") will be "WindowsForms". 'Profile' will be an empty string if no matching RuntimeFramework is found
                 HashSet<string> profiles = matchingRuntimeFrameworks?
-                    .Where(matchingRTReference => runtimePack.GetMetadata("FrameworkName").Equals(matchingRTReference.ItemSpec))
-                    .Select(matchingRTReference => matchingRTReference.GetMetadata("Profile")).ToHashSet() ?? [];
+                    .Where(matchingRTReference => runtimePack.GetMetadata(MetadataKeys.FrameworkName).Equals(matchingRTReference.ItemSpec))
+                    .Select(matchingRTReference => matchingRTReference.GetMetadata(MetadataKeys.Profile)).ToHashSet() ?? [];
 
                 // Special case the Windows SDK projections. Normally the Profile information flows through the RuntimeFramework items,
                 // but those aren't created for RuntimePackAlwaysCopyLocal references. This logic could be revisited later to be generalized in some way.

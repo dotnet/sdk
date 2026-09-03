@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Composition;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,7 +14,7 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Performance
     /// Implements the <see cref="CodeFixProvider" />
     /// </summary>
     /// <seealso cref="UseSpanClearInsteadOfFillFixer"/>
-    [ExportCodeFixProvider(LanguageNames.CSharp)]
+    [ExportCodeFixProvider(LanguageNames.CSharp), Shared]
     public sealed class CSharpUseSpanClearInsteadOfFillFixer : UseSpanClearInsteadOfFillFixer
     {
         protected override SyntaxNode? GetInvocationTarget(SyntaxNode? node)

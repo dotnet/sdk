@@ -3,8 +3,6 @@
 
 using System.Composition;
 using System.Threading;
-using System.Threading.Tasks;
-using Analyzer.Utilities;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
@@ -24,45 +22,46 @@ namespace Microsoft.NetCore.CSharp.Analyzers.Runtime
                 (node.Parent?.IsKind(SyntaxKind.SimpleMemberAccessExpression) == true || node.Parent?.IsKind(SyntaxKind.MemberBindingExpression) == true);
         }
 
-        protected override async Task<Document> SpecifyCurrentCultureAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode node, CancellationToken cancellationToken)
+        protected override SyntaxNode? GetNodeToSpecifyCurrentCultureOn(SyntaxNode node, SemanticModel model, CancellationToken cancellationToken)
         {
-            if (node.IsKind(SyntaxKind.IdentifierName) && node.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() is InvocationExpressionSyntax invocation)
+            if (node is not IdentifierNameSyntax identifier ||
+                identifier.Parent?.FirstAncestorOrSelf<InvocationExpressionSyntax>() is not InvocationExpressionSyntax invocation ||
+                model.GetSymbolInfo(identifier, cancellationToken).Symbol is not IMethodSymbol { Parameters.Length: 0 })
             {
-                var model = await document.GetRequiredSemanticModelAsync(cancellationToken).ConfigureAwait(false);
-                if (model.GetSymbolInfo((IdentifierNameSyntax)node, cancellationToken).Symbol is IMethodSymbol methodSymbol && methodSymbol.Parameters.Length == 0)
-                {
-                    var newArg = generator.Argument(CreateCurrentCultureMemberAccess(generator, model)).WithAdditionalAnnotations(Formatter.Annotation);
-                    var newInvocation = invocation.AddArgumentListArguments((ArgumentSyntax)newArg).WithAdditionalAnnotations(Formatter.Annotation);
-                    var newRoot = root.ReplaceNode(invocation, newInvocation);
-                    return document.WithSyntaxRoot(newRoot);
-                }
+                return null;
             }
 
-            return document;
+            return invocation;
         }
 
-        protected override Task<Document> UseInvariantVersionAsync(Document document, SyntaxGenerator generator, SyntaxNode root, SyntaxNode node)
+        protected override SyntaxNode SpecifyCurrentCulture(SyntaxNode currentNode, SyntaxNode currentCultureArgument, SyntaxGenerator generator)
         {
-            if (node.IsKind(SyntaxKind.IdentifierName))
-            {
-                if (node.Parent is MemberAccessExpressionSyntax memberAccess)
-                {
-                    var replacementMethodName = GetReplacementMethodName(memberAccess.Name.Identifier.Text);
-                    var newMemberAccess = memberAccess.WithName((SimpleNameSyntax)generator.IdentifierName(replacementMethodName)).WithAdditionalAnnotations(Formatter.Annotation);
-                    var newRoot = root.ReplaceNode(memberAccess, newMemberAccess);
-                    return Task.FromResult(document.WithSyntaxRoot(newRoot));
-                }
+            return ((InvocationExpressionSyntax)currentNode)
+                .AddArgumentListArguments((ArgumentSyntax)currentCultureArgument.WithAdditionalAnnotations(Formatter.Annotation))
+                .WithAdditionalAnnotations(Formatter.Annotation);
+        }
 
-                if (node.Parent is MemberBindingExpressionSyntax memberBinding)
-                {
-                    var replacementMethodName = GetReplacementMethodName(memberBinding.Name.Identifier.Text);
-                    var newMemberBinding = memberBinding.WithName((SimpleNameSyntax)generator.IdentifierName(replacementMethodName)).WithAdditionalAnnotations(Formatter.Annotation);
-                    var newRoot = root.ReplaceNode(memberBinding, newMemberBinding);
-                    return Task.FromResult(document.WithSyntaxRoot(newRoot));
-                }
+        protected override SyntaxNode? GetMemberAccessToMakeInvariant(SyntaxNode node)
+        {
+            if (!node.IsKind(SyntaxKind.IdentifierName))
+            {
+                return null;
             }
 
-            return Task.FromResult(document);
+            return node.Parent is MemberAccessExpressionSyntax or MemberBindingExpressionSyntax ? node.Parent : null;
+        }
+
+        protected override SyntaxNode UseInvariantVersion(SyntaxNode currentMemberAccess, SyntaxGenerator generator)
+        {
+            if (currentMemberAccess is MemberAccessExpressionSyntax memberAccess)
+            {
+                var replacementMethodName = GetReplacementMethodName(memberAccess.Name.Identifier.Text);
+                return memberAccess.WithName((SimpleNameSyntax)generator.IdentifierName(replacementMethodName)).WithAdditionalAnnotations(Formatter.Annotation);
+            }
+
+            var memberBinding = (MemberBindingExpressionSyntax)currentMemberAccess;
+            var bindingReplacementMethodName = GetReplacementMethodName(memberBinding.Name.Identifier.Text);
+            return memberBinding.WithName((SimpleNameSyntax)generator.IdentifierName(bindingReplacementMethodName)).WithAdditionalAnnotations(Formatter.Annotation);
         }
     }
 }

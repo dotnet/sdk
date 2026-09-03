@@ -3,53 +3,55 @@
 
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Testing;
-using Xunit;
 using VerifyCS = Test.Utilities.CSharpSecurityCodeFixVerifier<
     Microsoft.NetCore.Analyzers.Security.DoNotUseAccountSAS,
     Microsoft.CodeAnalysis.Testing.EmptyCodeFixProvider>;
 
 namespace Microsoft.NetCore.Analyzers.Security.UnitTests
 {
+    [TestClass]
     public class DoNotUseAccountSASTests
     {
         protected async Task VerifyCSharpWithDependenciesAsync(string source, params DiagnosticResult[] expected)
         {
-            string microsoftWindowsAzureStorageCSharpSourceCode = @"
-using System;
+            string microsoftWindowsAzureStorageCSharpSourceCode = """
 
-namespace Microsoft.WindowsAzure.Storage
-{
-    public class CloudStorageAccount
-    {
-        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
-        {
-            return """";
-        }
+                using System;
 
-        public void NormalMethod()
-        {
-        }
-    }
+                namespace Microsoft.WindowsAzure.Storage
+                {
+                    public class CloudStorageAccount
+                    {
+                        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
+                        {
+                            return "";
+                        }
 
-    public sealed class SharedAccessAccountPolicy
-    {
-    }
-}
+                        public void NormalMethod()
+                        {
+                        }
+                    }
 
-namespace NormalNamespace
-{
-    public class CloudStorageAccount
-    {
-        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
-        {
-            return """";
-        }
-    }
+                    public sealed class SharedAccessAccountPolicy
+                    {
+                    }
+                }
 
-    public sealed class SharedAccessAccountPolicy
-    {
-    }
-}";
+                namespace NormalNamespace
+                {
+                    public class CloudStorageAccount
+                    {
+                        public string GetSharedAccessSignature (SharedAccessAccountPolicy policy)
+                        {
+                            return "";
+                        }
+                    }
+
+                    public sealed class SharedAccessAccountPolicy
+                    {
+                    }
+                }
+                """;
             var csharpTest = new VerifyCS.Test
             {
                 TestState =
@@ -60,59 +62,63 @@ namespace NormalNamespace
 
             csharpTest.ExpectedDiagnostics.AddRange(expected);
 
-            await csharpTest.RunAsync(TestContext.Current.CancellationToken);
+            await csharpTest.RunAsync(CancellationToken.None);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using Microsoft.WindowsAzure.Storage;
+            await VerifyCSharpWithDependenciesAsync("""
 
-class TestClass
-{
-    public void TestMethod(SharedAccessAccountPolicy policy)
-    {
-        var cloudStorageAccount = new CloudStorageAccount();
-        cloudStorageAccount.GetSharedAccessSignature(policy);
-    }
-}",
+                using System;
+                using Microsoft.WindowsAzure.Storage;
+
+                class TestClass
+                {
+                    public void TestMethod(SharedAccessAccountPolicy policy)
+                    {
+                        var cloudStorageAccount = new CloudStorageAccount();
+                        cloudStorageAccount.GetSharedAccessSignature(policy);
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9));
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestNormalMethodOfCloudStorageAccountNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using Microsoft.WindowsAzure.Storage;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System;
+                using Microsoft.WindowsAzure.Storage;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        var cloudStorageAccount = new CloudStorageAccount();
-        cloudStorageAccount.NormalMethod();
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        var cloudStorageAccount = new CloudStorageAccount();
+                        cloudStorageAccount.NormalMethod();
+                    }
+                }
+                """);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task TestGetSharedAccessSignatureOfCloudStorageAccountOfNormalNamespaceNoDiagnosticAsync()
         {
-            await VerifyCSharpWithDependenciesAsync(@"
-using System;
-using NormalNamespace;
+            await VerifyCSharpWithDependenciesAsync("""
+                using System;
+                using NormalNamespace;
 
-class TestClass
-{
-    public void TestMethod(SharedAccessAccountPolicy policy)
-    {
-        var cloudStorageAccount = new CloudStorageAccount();
-        cloudStorageAccount.GetSharedAccessSignature(policy);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(SharedAccessAccountPolicy policy)
+                    {
+                        var cloudStorageAccount = new CloudStorageAccount();
+                        cloudStorageAccount.GetSharedAccessSignature(policy);
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)
