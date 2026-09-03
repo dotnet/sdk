@@ -8,7 +8,7 @@ export async function onRuntimeReady({ getAssemblyExports, getConfig }) {
     // Reading it here rather than in onRuntimeConfigLoaded makes the check independent of the order
     // in which the runtime evaluates library initializer modules.
     const config = getConfig();
-    if (config.debugLevel === 0 || config.environmentVariables?.["__ASPNETCORE_BROWSER_TOOLS"] !== "true") {
+    if (config.debugLevel === 0 || config.environmentVariables?.["__DOTNET_WATCH_BROWSER_TOOLS"] !== "true") {
         return;
     }
 
