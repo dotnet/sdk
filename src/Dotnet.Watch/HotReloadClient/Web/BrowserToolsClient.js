@@ -130,7 +130,10 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
 
       const batches = await response.json();
       if (batches.length !== 0) {
-        await waitForHotReloadApply();
+        if (!await waitForHotReloadApply()) {
+          throw 'The runtime did not publish the Hot Reload apply API.';
+        }
+
         for (const batch of batches) {
           applyDeltas(batch.deltas, 1);
         }
@@ -145,15 +148,19 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
     }
   }
 
-  // The runtime publishes the apply functions once it has started, which may happen after this module loads.
+  // The apply functions are published once the runtime has started, which may happen after this
+  // module loads. Wait while neither is available, including while window.Blazor itself is absent.
   async function waitForHotReloadApply() {
     const deadline = Date.now() + 10000;
-    while (window.Blazor &&
-      !window.Blazor._internal?.applyHotReloadDeltas &&
-      !window.Blazor._internal?.applyHotReload &&
-      Date.now() < deadline) {
+    while (!hasHotReloadApply() && Date.now() < deadline) {
       await new Promise(resolve => setTimeout(resolve, 50));
     }
+
+    return hasHotReloadApply();
+  }
+
+  function hasHotReloadApply() {
+    return !!(window.Blazor?._internal?.applyHotReloadDeltas || window.Blazor?._internal?.applyHotReload);
   }
 
   async function reloadWhenProviderReturns() {
@@ -306,6 +313,17 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
     console.debug('Applying managed code updates.');
 
     const AgentMessageSeverity_Error = 2
+
+    // The update must not be acknowledged as successful before the runtime published the apply API.
+    if (!await waitForHotReloadApply()) {
+      const message = 'The runtime did not publish the Hot Reload apply API.';
+      console.warn(message);
+      connection.send(JSON.stringify({
+        "success": false,
+        "log": [{ "message": message, "severity": AgentMessageSeverity_Error }]
+      }));
+      return;
+    }
 
     let applyError = undefined;
     let log = [];
