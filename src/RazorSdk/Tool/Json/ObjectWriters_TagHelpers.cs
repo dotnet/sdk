@@ -261,12 +261,7 @@ internal static partial class ObjectWriters
             {
                 writer.Write(nameof(metadata.Name), metadata.Name);
             }
-
-            static void WriteAssetPathMetadata(JsonDataWriter writer, AssetPathMetadata metadata)
-            {
-                writer.Write(nameof(metadata.Element), metadata.Element);
-                writer.Write(nameof(metadata.Attribute), metadata.Attribute);
-            }
+        }
         }
     }
 }
