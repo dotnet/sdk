@@ -130,6 +130,7 @@ Copyright (c) .NET Foundation. All rights reserved.
                                 SelfContained="$(SelfContained)"
                                 ReadyToRunEnabled="$(PublishReadyToRun)"
                                 ReadyToRunUseCrossgen2="$(PublishReadyToRunUseCrossgen2)"
+                                RequiresCrossgen2Pack="$(RequiresCrossgen2Pack)"
                                 PublishAot="$(PublishAot)"
                                 RequiresILLinkPack="$(_RequiresILLinkPack)"
                                 IsAotCompatible="$(IsAotCompatible)"

@@ -344,6 +344,16 @@
         <target state="translated">NETSDK1154: Pokud je UseCrossgen2 nastavené na true, musí se zadat Crossgen2Tool.</target>
         <note>{StrBegins="NETSDK1154: "}</note>
       </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedHostRuntimeIdentifier">
+        <source>NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</source>
+        <target state="new">NETSDK1245: The crossgen2 pack is not available for the build host platform '{0}'.</target>
+        <note>{StrBegins="NETSDK1245: "}</note>
+      </trans-unit>
+      <trans-unit id="Crossgen2UnsupportedTargetFramework">
+        <source>NETSDK1246: The crossgen2 pack is not available for the target framework.</source>
+        <target state="new">NETSDK1246: The crossgen2 pack is not available for the target framework.</target>
+        <note>{StrBegins="NETSDK1246: "}</note>
+      </trans-unit>
       <trans-unit id="Crossgen5CannotEmitSymbolsInCompositeMode">
         <source>NETSDK1166: Cannot emit symbols when publishing for .NET 5 with Crossgen2 using composite mode.</source>
         <target state="translated">NETSDK1166: Pokud se publikuje pro .NET 5 s Crossgen2 pomocí kompozitního režimu, nedají se generovat symboly.</target>

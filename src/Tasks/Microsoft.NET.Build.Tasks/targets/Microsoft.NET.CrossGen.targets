@@ -488,6 +488,29 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <!--
     ============================================================
+                                        ResolveCrossgen2ToolPath
+
+    Reports the crossgen2 executable in $(Crossgen2ToolPath) for builds that use the tool for
+    something other than compiling ReadyToRun images.
+
+    ResolveReadyToRunCompilers derives the same path, but it runs only from CreateReadyToRunImages,
+    which is part of publish, and it reports the result as an item rather than a property. Nothing
+    invokes this target either, so a consumer has to depend on it; it is separate from the
+    ReadyToRun path so that acquiring the pack and compiling images stay independent.
+    ============================================================
+    -->
+  <Target Name="ResolveCrossgen2ToolPath"
+          DependsOnTargets="ResolveFrameworkReferences"
+          Condition="'$(Crossgen2ToolPath)' == '' and '@(ResolvedCrossgen2Pack)' != ''">
+    <PropertyGroup>
+      <_Crossgen2ToolFileName>crossgen2</_Crossgen2ToolFileName>
+      <_Crossgen2ToolFileName Condition="$([MSBuild]::IsOSPlatform('Windows'))">crossgen2.exe</_Crossgen2ToolFileName>
+      <Crossgen2ToolPath>$([MSBuild]::NormalizePath('%(ResolvedCrossgen2Pack.PackageDirectory)', 'tools', '$(_Crossgen2ToolFileName)'))</Crossgen2ToolPath>
+    </PropertyGroup>
+  </Target>
+
+  <!--
+    ============================================================
                                         _CreateR2RImages
 
     Compiles assemblies in the _ReadyToRunCompileList list into ReadyToRun images
