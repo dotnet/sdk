@@ -159,6 +159,5 @@ internal sealed class DigestUtils
                 $"Digest '{digest}' encoded value does not match expected pattern for algorithm '{algorithm}': '{encodedPattern}'.");
         }
         encodedValue = Convert.FromHexString(encoded);
-        encodedValue = Convert.FromHexString(encoded);
     }
 }
