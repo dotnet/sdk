@@ -20,7 +20,7 @@ public abstract class CommandBase
 
     protected CommandBase() { }
 
-    internal string MSBuildSubmissionMetricCommandName { get; set; }
+    internal string? MSBuildSubmissionMetricCommandName { get; set; }
 
     protected void RecordProcessStartToMSBuildSubmission()
     {
