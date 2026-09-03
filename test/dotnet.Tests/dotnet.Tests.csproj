@@ -45,10 +45,6 @@
       <_Parameter1>XUnitVersion</_Parameter1>
       <_Parameter2>$(XUnitVersion)</_Parameter2>
     </AssemblyAttribute>
-    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
-      <_Parameter1>SdkVersion</_Parameter1>
-      <_Parameter2>$(Version)</_Parameter2>
-    </AssemblyAttribute>
   </ItemGroup>
 
   <Target Name="WriteExpectedTargetFrameworkMoniker" BeforeTargets="BeforeBuild" DependsOnTargets="PrepareForBuild">
