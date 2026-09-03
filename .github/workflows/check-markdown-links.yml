@@ -1,0 +1,40 @@
+name: Check Markdown Links
+
+on:
+  pull_request:
+    paths:
+      - '**/*.md'
+      - '.github/workflows/check-markdown-links.yml'
+
+permissions:
+  contents: read
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+  # build-failure-analyst.agent.md contains Markdown links whose targets use these
+  # environment variables. GitHub Actions expands them to URLs when that agent runs,
+  # but mlc scans the source statically and treats the unexpanded targets as missing
+  # local paths. This still happens in offline mode because they do not start with a
+  # URL scheme until after expansion.
+  MLC_IGNORE_DYNAMIC_LINKS: '${GH_AW_BINLOG_HOST_PATH},${GITHUB_SERVER_URL}/*'
+
+jobs:
+  check-markdown-links:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check Markdown links (offline)
+        uses: becheran/mlc@7ec24825cefe0c9c8c6bac48430e1f69e3ec356e # v1.2.0
+        with:
+          args: >-
+            .
+            --markup-types md
+            --gitignore
+            --root-dir .
+            --ignore-path .github/workflows,eng/common,test/dotnet-new.IntegrationTests/Approvals,test/TemplateEngine/Microsoft.TemplateEngine.Authoring.TemplateVerifier.IntegrationTests/Snapshots
+            --ignore-links ${{ env.MLC_IGNORE_DYNAMIC_LINKS }}
+            --offline
