@@ -56,6 +56,53 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
+        [DataRow("net8.0", true, false, false)]
+        [DataRow("net9.0", true, false, false)]
+        [DataRow("net10.0", true, true, false)]
+        [DataRow("net11.0", false, true, false)]
+        [DataRow("net11.0", true, true, true)]
+        public void Build_UsesWatchInitializerOnlyForNet11BrowserToolsBuilds(
+            string targetFramework,
+            bool browserToolsEnabled,
+            bool expectHotReloadInitializer,
+            bool expectWatchInitializer)
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
+                .WithProjectChanges((_, document) =>
+                {
+                    document.Descendants()
+                        .Single(element => element.Name.LocalName == "TargetFramework")
+                        .Value = targetFramework;
+                });
+
+            var build = CreateBuildCommand(ProjectDirectory);
+            var buildResult = browserToolsEnabled
+                ? ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true")
+                : ExecuteCommand(build);
+            buildResult.Should().Pass();
+
+            var intermediateOutputPath = build.GetIntermediateDirectory(targetFramework, "Debug").ToString();
+            var staticWebAssetsManifest = StaticWebAssetsManifest.FromJsonBytes(
+                File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
+            var hotReloadInitializers = staticWebAssetsManifest.Assets
+                .Where(asset =>
+                    asset.AssetRole == "Primary" &&
+                    asset.RelativePath.Contains(
+                        "Microsoft.DotNet.HotReload.WebAssembly.Browser",
+                        StringComparison.Ordinal) &&
+                    asset.RelativePath.EndsWith(".lib.module.js", StringComparison.Ordinal))
+                .ToArray();
+
+            Assert.HasCount(expectHotReloadInitializer ? 1 : 0, hotReloadInitializers);
+            if (expectHotReloadInitializer)
+            {
+                Assert.AreEqual(
+                    expectWatchInitializer,
+                    hotReloadInitializers[0].RelativePath.Contains(".Watch.", StringComparison.Ordinal));
+            }
+        }
+
+        [TestMethod]
         [RequiresMSBuildVersion("17.12")]
         public void JSModules_ManifestIncludesModuleTargetPaths()
         {

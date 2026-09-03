@@ -22,6 +22,8 @@ internal static class PropertyNames
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);
     public const string NonExistentFile = nameof(NonExistentFile);
+    public const string DotNetWatchBuild = nameof(DotNetWatchBuild);
+    public const string DotNetWatchBrowserTools = nameof(DotNetWatchBrowserTools);
     public const string StartupHookSupport = nameof(StartupHookSupport);
     public const string MetadataUpdaterSupport = nameof(MetadataUpdaterSupport);
     public const string Optimize = nameof(Optimize);

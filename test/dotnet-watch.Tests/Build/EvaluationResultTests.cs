@@ -167,4 +167,27 @@ public class EvaluationResultTests
             "main (net8.0)",
         ], requests.Select(r => r.ProjectInstance.GetDisplayName()));
     }
+
+    [TestMethod]
+    [DataRow(false, "True")]
+    [DataRow(true, "False")]
+    public void GetGlobalBuildProperties_OverridesReservedWatchProperties(
+        bool suppressBrowserRefresh,
+        string expectedBrowserToolsValue)
+    {
+        var environmentOptions = TestOptions.GetEnvironmentOptions() with
+        {
+            SuppressBrowserRefresh = suppressBrowserRefresh
+        };
+
+        var properties = EvaluationResult.GetGlobalBuildProperties(
+        [
+            "-p:dotnetwatchbuild=false",
+            "-p:dotnetwatchbrowsertools=user-value"
+        ],
+        environmentOptions);
+
+        Assert.AreEqual("True", properties["DotNetWatchBuild"]);
+        Assert.AreEqual(expectedBrowserToolsValue, properties["DotNetWatchBrowserTools"]);
+    }
 }

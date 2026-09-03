@@ -26,12 +26,15 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">$(WasmAgentTargetFrameworkV10)</_WasmHotReloadTfm>
       <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
       <_WasmHotReloadIntermediatePath>$(IntermediateOutputPath)hotreload\</_WasmHotReloadIntermediatePath>
+      <_WasmHotReloadModuleFileName>Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</_WasmHotReloadModuleFileName>
+      <_WasmHotReloadModuleFileName
+        Condition="'$(DotNetWatchBrowserTools)' == 'true' and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.lib.module.js</_WasmHotReloadModuleFileName>
     </PropertyGroup>
 
     <!-- Copy the JS module and DLL to intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
     <Copy
       SourceFiles="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
-      DestinationFolder="$(_WasmHotReloadIntermediatePath)"
+      DestinationFiles="$(_WasmHotReloadIntermediatePath)$(_WasmHotReloadModuleFileName)"
       SkipUnchangedFiles="true"
       Condition="'$(_WasmHotReloadPath)' != ''" />
     <Copy
@@ -45,13 +48,14 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ReferenceCopyLocalPaths>
-      <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
-        <RelativePath>_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</RelativePath>
+      <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)$(_WasmHotReloadModuleFileName)">
+        <RelativePath>_framework/$(_WasmHotReloadModuleFileName)</RelativePath>
       </_WasmHotReloadModule>
       <_WasmHotReloadModule Update="@(_WasmHotReloadModule)">
         <OriginalItemSpec>%(Identity)</OriginalItemSpec>
       </_WasmHotReloadModule>
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" />
+      <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.lib.module.js" />
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll" />
     </ItemGroup>
 
