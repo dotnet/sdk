@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 
 [assembly: HostingStartup(typeof(Microsoft.AspNetCore.Watch.BrowserRefresh.HostingStartup))]
 
@@ -24,8 +25,7 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
     internal void ConfigureServices(IServiceCollection services, Uri providerAddress)
     {
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this));
-        services.TryAddSingleton(new BrowserToolsForwarderOptions(providerAddress));
-        services.TryAddSingleton<BrowserToolsForwarder>();
+        services.TryAddSingleton(services => new BrowserToolsForwarder(providerAddress, services.GetRequiredService<ILogger<BrowserToolsForwarder>>()));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagHelperComponent, BrowserRefreshTagHelperComponent>());
     }
 

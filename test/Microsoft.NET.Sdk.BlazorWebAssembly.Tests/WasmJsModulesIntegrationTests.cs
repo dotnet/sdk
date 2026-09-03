@@ -56,50 +56,53 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         }
 
         [TestMethod]
-        [DataRow("net8.0", true, false, false)]
-        [DataRow("net9.0", true, false, false)]
-        [DataRow("net10.0", true, true, true)]
-        [DataRow("net11.0", false, true, false)]
-        [DataRow("net11.0", true, true, true)]
-        public void Build_UsesWatchInitializerForBrowserToolsBuilds(
-            string targetFramework,
-            bool browserToolsEnabled,
-            bool expectHotReloadInitializer,
-            bool expectWatchInitializer)
+        [DataRow("net8.0", false)]
+        [DataRow("net9.0", false)]
+        [DataRow("net10.0", true)]
+        [DataRow(ToolsetInfo.CurrentTargetFramework, true)]
+        public void Build_AddsDotNetWatchInitializer_WhenBrowserToolsAreEnabled(string targetFramework, bool expectHotReloadAgent)
         {
             ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
-                .WithProjectChanges((_, document) =>
-                {
-                    document.Descendants()
-                        .Single(element => element.Name.LocalName == "TargetFramework")
-                        .Value = targetFramework;
-                });
+                .WithTargetFramework(targetFramework);
 
             var build = CreateBuildCommand(ProjectDirectory);
-            var buildResult = browserToolsEnabled
-                ? ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true")
-                : ExecuteCommand(build);
-            buildResult.Should().Pass();
+            ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true").Should().Pass();
 
-            var intermediateOutputPath = build.GetIntermediateDirectory(targetFramework, "Debug").ToString();
-            var staticWebAssetsManifest = StaticWebAssetsManifest.FromJsonBytes(
-                File.ReadAllBytes(Path.Combine(intermediateOutputPath, "staticwebassets.build.json")));
-            var hotReloadInitializers = staticWebAssetsManifest.Assets
-                .Where(asset =>
-                    asset.AssetRole == "Primary" &&
-                    asset.RelativePath.Contains(
-                        "Microsoft.DotNet.HotReload.WebAssembly.Browser",
-                        StringComparison.Ordinal) &&
-                    asset.RelativePath.EndsWith(".lib.module.js", StringComparison.Ordinal))
-                .ToArray();
+            var initializers = GetLibraryInitializers(build, targetFramework);
 
-            Assert.HasCount(expectHotReloadInitializer ? 1 : 0, hotReloadInitializers);
-            if (expectHotReloadInitializer)
+            // The watch activation initializer is added for all target frameworks. It activates the browser tools
+            // client, which applies updates via the Hot Reload agent on .NET 10+ and via the runtime's own
+            // window.Blazor._internal.applyHotReload API on older versions.
+            initializers.Should().ContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*.lib.module.js");
+
+            if (expectHotReloadAgent)
             {
-                Assert.AreEqual(
-                    expectWatchInitializer,
-                    hotReloadInitializers[0].RelativePath.Contains(".Watch.", StringComparison.Ordinal));
+                initializers.Should().ContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*.lib.module.js");
             }
+            else
+            {
+                initializers.Should().NotContainMatch("*Microsoft.DotNet.HotReload.WebAssembly.Browser*");
+            }
+        }
+
+        [TestMethod]
+        public void Build_DoesNotAddDotNetWatchInitializer_WhenBrowserToolsAreDisabled()
+        {
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal");
+
+            var build = CreateBuildCommand(ProjectDirectory);
+            ExecuteCommand(build).Should().Pass();
+
+            GetLibraryInitializers(build, DefaultTfm).Should().NotContainMatch("*Microsoft.NET.Sdk.WebAssembly.DotNetWatch*");
+        }
+
+        private static string[] GetLibraryInitializers(BuildCommand build, string targetFramework)
+        {
+            var manifestPath = Path.Combine(build.GetIntermediateDirectory(targetFramework, "Debug").ToString(), "staticwebassets.build.json");
+            return StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(manifestPath)).Assets
+                .Where(asset => asset.AssetTraitValue == "JSLibraryModule")
+                .Select(asset => asset.RelativePath)
+                .ToArray();
         }
 
         [TestMethod]

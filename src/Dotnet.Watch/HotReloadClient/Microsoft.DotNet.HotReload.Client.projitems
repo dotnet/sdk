@@ -10,8 +10,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)..\HotReloadAgent.WebAssembly.Browser\wwwroot\Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js">
-      <LogicalName>Microsoft.DotNet.HotReload.BrowserTools.js</LogicalName>
+    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Web\BrowserToolsClient.js">
+      <LogicalName>Microsoft.DotNet.HotReload.BrowserToolsClient.js</LogicalName>
     </EmbeddedResource>
   </ItemGroup>
 </Project>

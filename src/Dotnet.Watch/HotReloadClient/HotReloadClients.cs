@@ -33,7 +33,7 @@ internal sealed class HotReloadClients(
     ImmutableArray<HotReloadClient> clients,
     AbstractBrowserRefreshServer? browserRefreshServer,
     bool useRefreshServerToApplyStaticAssets,
-    IBrowserToolsLaunchConfigurator? browserToolsLaunchConfigurator = null) : IDisposable
+    Action<IDictionary<string, string>>? configureBrowserToolsLaunchEnvironment = null) : IDisposable
 {
     /// <summary>
     /// Disposes all clients. Can occur unexpectedly whenever the process exits.
@@ -91,7 +91,7 @@ internal sealed class HotReloadClients(
             client.ConfigureLaunchEnvironment(environmentBuilder);
         }
 
-        browserToolsLaunchConfigurator?.ConfigureLaunchEnvironment(environmentBuilder);
+        configureBrowserToolsLaunchEnvironment?.Invoke(environmentBuilder);
     }
 
     /// <param name="environmentVariables">Environment variable to be set by the agent in the target process.</param>

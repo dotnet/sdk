@@ -39,14 +39,15 @@ Reload).
 - **Activation is app-model-specific, but the browser client is shared.** MVC and Razor
   Pages use
   [`BrowserRefreshTagHelperComponent`](Web.Middleware/BrowserRefreshTagHelperComponent.cs)
-  through the built-in body TagHelper. Standalone and hosted Blazor WASM use the runtime
-  initializer, which discovers the provider before enabling runtime mutability and
-  imports the same provider-hosted browser client. All supported target-framework
-  combinations use this provider path. Static/custom HTML that has no supported
+  through the built-in body TagHelper. Standalone and hosted Blazor WASM use a build-only
+  watch activation initializer added by the WASM SDK for every supported target
+  framework; it marks the app as running under watch and imports the provider-hosted
+  browser client. On .NET 10+ the separate Hot Reload agent initializer applies managed
+  updates; older target frameworks fall back to the runtime's own
+  `window.Blazor._internal.applyHotReload`. Static/custom HTML that has no supported
   initializer requires user-provided activation; do not add build-time `index.html`
-  rewriting. The WASM SDK ships only the runtime initializer as a build asset; the
-  browser client is embedded in and served by the provider, so do not add it back to the
-  application's static asset graph.
+  rewriting. The browser client itself is embedded in and served by the provider, so do
+  not add it back to the application's static asset graph.
 - **Server hosting startup is intentionally thin.**
   [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers only the MVC/Razor
   TagHelper component and the reserved forwarder for the modern path. The BrowserRefresh

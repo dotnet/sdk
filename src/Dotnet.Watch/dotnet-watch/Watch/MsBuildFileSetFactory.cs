@@ -33,7 +33,6 @@ internal class MSBuildFileSetFactory(
     private readonly ProjectGraphFactory _buildGraphFactory = new(
         [new ProjectRepresentation(rootProjectFile, entryPointFilePath: null)],
         buildProperties: BuildUtilities.ParseBuildPropertiesToImmutableDictionary(buildArguments)
-            .SetItem(PropertyNames.DotNetWatchBuild, bool.TrueString)
             .SetItem(PropertyNames.DotNetWatchBrowserTools, (!environmentOptions.SuppressBrowserRefresh).ToString()),
         logger,
         globalOptions,

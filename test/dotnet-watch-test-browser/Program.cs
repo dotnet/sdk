@@ -25,11 +25,8 @@ var encryptedSecret = GetEncryptedSecret(publicKey, secret);
 while (true)
 {
     using var webSocket = await OpenWebSocket(origin, webSocketUrl, encryptedSecret);
-    var buffer = new byte[8 * 1024];
 
-    while (await TryReceiveMessageAsync(
-        webSocket,
-        message => Log($"Received: {Encoding.UTF8.GetString(message)}")))
+    while (await TryReceiveMessageAsync(webSocket, message => Log($"Received: {Encoding.UTF8.GetString(message)}")))
     {
     }
 
@@ -51,9 +48,7 @@ static async Task<WebSocket> OpenWebSocket(string origin, string url, string enc
     return webSocket;
 }
 
-static async ValueTask<bool> TryReceiveMessageAsync(
-    WebSocket socket,
-    Action<ReadOnlySpan<byte>> receiver)
+static async ValueTask<bool> TryReceiveMessageAsync(WebSocket socket, Action<ReadOnlySpan<byte>> receiver)
 {
     var writer = new ArrayBufferWriter<byte>(initialCapacity: 1024);
 
@@ -126,7 +121,7 @@ static async Task WaitForBrowserToolsRouteAsync(Uri baseUrl)
         }
         catch (HttpRequestException e)
         {
-            Console.WriteLine($"Waiting for browser tools route: {e.Message}");
+            Log($"Waiting for browser tools route: {e.Message}");
         }
 
         await Task.Delay(100);

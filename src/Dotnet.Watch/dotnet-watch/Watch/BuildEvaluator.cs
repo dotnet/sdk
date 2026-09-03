@@ -101,7 +101,6 @@ internal class BuildEvaluator
         {
             var applicationArgumentsSeparator = arguments.IndexOf("--");
             var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : arguments.Count;
-            arguments.Insert(reservedPropertiesIndex++, $"-p:{PropertyNames.DotNetWatchBuild}=true");
             arguments.Insert(reservedPropertiesIndex, $"-p:{PropertyNames.DotNetWatchBrowserTools}={!_context.EnvironmentOptions.SuppressBrowserRefresh}");
         }
 

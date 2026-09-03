@@ -164,9 +164,7 @@ public class BrowserToolsForwarderTest
 
     private static async Task<WebApplication> StartForwarderAsync(Uri providerAddress)
     {
-        var forwarder = new BrowserToolsForwarder(
-            new BrowserToolsForwarderOptions(providerAddress),
-            NullLogger<BrowserToolsForwarder>.Instance);
+        var forwarder = new BrowserToolsForwarder(providerAddress, NullLogger<BrowserToolsForwarder>.Instance);
 
         return await StartApplicationAsync(async context =>
         {

@@ -36,9 +36,9 @@ internal sealed class BrowserToolsForwarder : IDisposable
     private readonly HttpClient _httpClient;
     private readonly ILogger<BrowserToolsForwarder> _logger;
 
-    public BrowserToolsForwarder(BrowserToolsForwarderOptions options, ILogger<BrowserToolsForwarder> logger)
+    public BrowserToolsForwarder(Uri providerAddress, ILogger<BrowserToolsForwarder> logger)
     {
-        _providerAddress = options.ProviderAddress;
+        _providerAddress = providerAddress;
         _logger = logger;
         _httpClient = new HttpClient(new SocketsHttpHandler
         {

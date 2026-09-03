@@ -14,9 +14,8 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.DotNet.HotReload;
 
 internal sealed class BrowserToolsEndpointRouter(
-    Guid sessionId,
     string publicKey,
-    IBrowserToolsUpdateStore updateStore,
+    BrowserToolsUpdateStore updateStore,
     AbstractBrowserRefreshServer browserServer)
 {
     private static readonly ReadOnlyMemory<byte> s_clientModule = ReadClientModule();
@@ -40,7 +39,6 @@ internal sealed class BrowserToolsEndpointRouter(
                 context,
                 new BrowserToolsSessionDescriptor(
                     BrowserToolsProtocol.Version,
-                    sessionId,
                     updateStore.GenerationId,
                     publicKey));
             return;
@@ -109,7 +107,7 @@ internal sealed class BrowserToolsEndpointRouter(
 
     private static ReadOnlyMemory<byte> ReadClientModule()
     {
-        using var stream = typeof(BrowserToolsEndpointRouter).Assembly.GetManifestResourceStream("Microsoft.DotNet.HotReload.BrowserTools.js")
+        using var stream = typeof(BrowserToolsEndpointRouter).Assembly.GetManifestResourceStream("Microsoft.DotNet.HotReload.BrowserToolsClient.js")
             ?? throw new InvalidOperationException("Browser tools client module resource is missing.");
         using var content = new MemoryStream();
         stream.CopyTo(content);
@@ -118,7 +116,6 @@ internal sealed class BrowserToolsEndpointRouter(
 
     private sealed record BrowserToolsSessionDescriptor(
         int ProtocolVersion,
-        Guid SessionId,
         Guid GenerationId,
         string PublicKey);
 }
