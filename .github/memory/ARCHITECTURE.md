@@ -59,9 +59,15 @@ and [`BuildEvaluator`](../../src/Dotnet.Watch/dotnet-watch/Watch/BuildEvaluator.
 The WebAssembly SDK uses that signal to add a build-only watch activation initializer
 ([target](../../src/WasmSdk/Sdk/Sdk.targets),
 [module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js))
-that imports the browser-tools client served by the watch provider. Server-rendered apps
-are activated instead by
-[`BrowserRefreshTagHelperComponent`](../../src/Dotnet.Watch/Web.Middleware/BrowserRefreshTagHelperComponent.cs).
+that imports the browser-tools client served by the watch provider once the WebAssembly
+runtime is ready. The Web SDK adds an equivalent build-only `afterWebStarted` initializer
+([target](../../src/WebSdk/Web/Targets/Sdk.Server.targets),
+[module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js))
+so Blazor apps rendered on the server activate too; MVC and Razor Pages responses are
+activated by
+[`BrowserRefreshTagHelperComponent`](../../src/Dotnet.Watch/Web.Middleware/BrowserRefreshTagHelperComponent.cs),
+which does not run for `.razor` root components. Activating more than once is harmless:
+module imports are cached per URL and the browser client keeps its own injection sentinel.
 Provider endpoints and secrets remain runtime launch configuration rather than build
 outputs. All supported target frameworks use the provider contract; there is no parallel
 legacy response-rewriting or application-hosted browser-script path.
