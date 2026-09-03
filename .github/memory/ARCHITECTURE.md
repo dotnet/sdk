@@ -69,8 +69,12 @@ activated by
 which does not run for `.razor` root components. Activating more than once is harmless:
 module imports are cached per URL and the browser client keeps its own injection sentinel.
 Provider endpoints and secrets remain runtime launch configuration rather than build
-outputs. All supported target frameworks use the provider contract; there is no parallel
-legacy response-rewriting or application-hosted browser-script path.
+outputs. Application hosts, including standalone WebAssembly development servers, receive
+the shared
+[`BrowserToolsForwarder`](../../src/Dotnet.Watch/Web.Middleware/BrowserToolsForwarder.cs)
+through the hosting-startup path. All supported target frameworks use the provider
+contract; there is no parallel legacy response-rewriting or application-hosted
+browser-script path.
 
 ### Resolver Plugins
 
