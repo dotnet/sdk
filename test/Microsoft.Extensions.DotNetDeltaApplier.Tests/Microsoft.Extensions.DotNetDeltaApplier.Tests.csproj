@@ -10,7 +10,6 @@
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
     <ProjectReference Include="..\..\src\Dotnet.Watch\DotNetDeltaApplier\Microsoft.Extensions.DotNetDeltaApplier.csproj" />
     <ProjectReference Include="..\Microsoft.DotNet.Test.MSTest.Utilities\Microsoft.DotNet.Test.MSTest.Utilities.csproj" />
-    <PackageReference Include="Combinatorial.MSTest" />
     <PackageReference Include="Moq" />
   </ItemGroup>
 
