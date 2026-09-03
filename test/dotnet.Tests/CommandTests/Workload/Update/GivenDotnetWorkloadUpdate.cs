@@ -93,14 +93,34 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
             msbuildServer.Verify(server => server.Shutdown(), Times.Once);
         }
 
-        private static ParseResult ParseWorkloadUpdate(Func<ParseResult, int> executeUpdate, IBuildServer msbuildServer)
+        [TestMethod]
+        [DataRow("--print-rollback", null)]
+        [DataRow("--print-download-link-only", null)]
+        [DataRow("--download-to-cache", "cache")]
+        [DataRow("--advertising-manifests-only", null)]
+        public void GivenNonMutatingWorkloadUpdateItDoesNotShutDownMSBuildServer(string option, string value)
+        {
+            var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
+            string[] arguments = value is null ? [option] : [option, value];
+
+            int exitCode = ParseWorkloadUpdate(_ => 42, msbuildServer.Object, arguments)
+                .Invoke(Parser.InvocationConfiguration);
+
+            exitCode.Should().Be(42);
+            msbuildServer.Verify(server => server.Shutdown(), Times.Never);
+        }
+
+        private static ParseResult ParseWorkloadUpdate(
+            Func<ParseResult, int> executeUpdate,
+            IBuildServer msbuildServer,
+            params string[] arguments)
         {
             var workloadCommand = new WorkloadCommandDefinition();
             WorkloadCommandParser.ConfigureCommand(workloadCommand, executeUpdate, msbuildServer);
 
             var rootCommand = new RootCommand();
             rootCommand.Subcommands.Add(workloadCommand);
-            return rootCommand.Parse(["workload", "update"]);
+            return rootCommand.Parse(["workload", "update", .. arguments]);
         }
 
         [TestMethod]

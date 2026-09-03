@@ -42,19 +42,28 @@ internal static class WorkloadCommandParser
         def.InstallCommand.SetAction(parseResult => new WorkloadInstallCommand(parseResult).Execute());
         def.UpdateCommand.SetAction(parseResult =>
         {
+            bool shouldShutdown =
+                !parseResult.GetValue(def.UpdateCommand.PrintDownloadLinkOnlyOption) &&
+                string.IsNullOrWhiteSpace(parseResult.GetValue(def.UpdateCommand.DownloadToCacheOption)) &&
+                !parseResult.GetValue(def.UpdateCommand.AdManifestOnlyOption) &&
+                !parseResult.GetValue(def.UpdateCommand.PrintRollbackOption);
+
             try
             {
                 return executeUpdate(parseResult);
             }
             finally
             {
-                try
+                if (shouldShutdown)
                 {
-                    msbuildServer.Shutdown();
-                }
-                catch (Exception e)
-                {
-                    Reporter.Verbose.WriteLine(e.ToString());
+                    try
+                    {
+                        msbuildServer.Shutdown();
+                    }
+                    catch (Exception e)
+                    {
+                        Reporter.Verbose.WriteLine(e.ToString());
+                    }
                 }
             }
         });
