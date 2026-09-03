@@ -14,27 +14,10 @@ internal static class MiddlewareEnvironmentVariables
     public const string DotNetStartupHooks = "DOTNET_STARTUP_HOOKS";
 
     /// <summary>
-    /// dotnet runtime environment variable.
-    /// </summary>
-    public const string DotNetModifiableAssemblies = "DOTNET_MODIFIABLE_ASSEMBLIES";
-
-    /// <summary>
     /// Simple names of assemblies that implement middleware components to be added to the web server.
     /// </summary>
     public const string AspNetCoreHostingStartupAssemblies = "ASPNETCORE_HOSTINGSTARTUPASSEMBLIES";
     public const char AspNetCoreHostingStartupAssembliesSeparator = ';';
-
-    /// <summary>
-    /// Comma-separated list of WebSocket end points to communicate with browser refresh client.
-    /// </summary>
-    public const string AspNetCoreAutoReloadWSEndPoint = "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT";
-
-    public const string AspNetCoreAutoReloadVirtualDirectory = "ASPNETCORE_AUTO_RELOAD_VDIR";
-
-    /// <summary>
-    /// Public key to use to communicate with browser refresh client.
-    /// </summary>
-    public const string AspNetCoreAutoReloadWSKey = "ASPNETCORE_AUTO_RELOAD_WS_KEY";
 
     public const string AspNetCoreAutoReloadProviderAddress = "ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS";
 

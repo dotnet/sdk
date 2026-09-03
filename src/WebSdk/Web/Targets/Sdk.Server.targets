@@ -44,8 +44,7 @@ Copyright (c) .NET Foundation. All rights reserved.
           Condition="'$(DotNetWatchBrowserTools)' == 'true'
             and '$(StaticWebAssetsEnabled)' == 'true'
             and '$(JSModulesEnabled)' == 'true'
-            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'
-            and $([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '11.0'))">
+            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
     <PropertyGroup>
       <_DotNetWatchBrowserToolsIntermediatePath>$(IntermediateOutputPath)dotnet-watch\</_DotNetWatchBrowserToolsIntermediatePath>
       <_DotNetWatchBrowserToolsModuleFileName>Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js</_DotNetWatchBrowserToolsModuleFileName>

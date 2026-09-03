@@ -58,10 +58,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         [TestMethod]
         [DataRow("net8.0", true, false, false)]
         [DataRow("net9.0", true, false, false)]
-        [DataRow("net10.0", true, true, false)]
+        [DataRow("net10.0", true, true, true)]
         [DataRow("net11.0", false, true, false)]
         [DataRow("net11.0", true, true, true)]
-        public void Build_UsesWatchInitializerOnlyForNet11BrowserToolsBuilds(
+        public void Build_UsesWatchInitializerForBrowserToolsBuilds(
             string targetFramework,
             bool browserToolsEnabled,
             bool expectHotReloadInitializer,

@@ -19,7 +19,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         var port = TestOptions.GetTestPort();
         App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
 
         // AddExplicitInterfaceImplementation is an implicit capability that's always added for .NET targets:
@@ -34,14 +34,6 @@ public class RazorHotReloadTests : DotNetWatchTestBase
 
         // env variable passed when launching the server:
         await App.WaitUntilOutputContains($"HOTRELOAD_DELTA_CLIENT_LOG_MESSAGES=dotnet watch 🕵️ [blazorwasm ({tfm})]");
-
-        // Middleware should have been loaded to blazor-devserver before the browser is launched:
-        await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BlazorWasmHotReloadMiddleware[0]");
-        await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserScriptMiddleware[0]");
-        await App.WaitUntilOutputContains("Middleware loaded. Script /_framework/aspnetcore-browser-refresh.js");
-        await App.WaitUntilOutputContains("Middleware loaded. Script /_framework/blazor-hotreload.js");
-        await App.WaitUntilOutputContains("dbug: Microsoft.AspNetCore.Watch.BrowserRefresh.BrowserRefreshMiddleware");
-        await App.WaitUntilOutputContains("Middleware loaded: DOTNET_MODIFIABLE_ASSEMBLIES=debug, __ASPNETCORE_BROWSER_TOOLS=true");
 
         // shouldn't see any agent messages (agent is not loaded into blazor-devserver):
         App.AssertOutputDoesNotContain("Loaded into process");
@@ -98,7 +90,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
@@ -120,7 +112,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         var port = TestOptions.GetTestPort();
         App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
     }
@@ -137,7 +129,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
         App.Process.ClearOutput();
