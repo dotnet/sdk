@@ -26,6 +26,7 @@ namespace Microsoft.DotNet.HotReload;
 /// Associated with a project instance.
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
+    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
@@ -85,6 +86,12 @@ internal abstract class AbstractBrowserRefreshServer(
         _lazyHost = await CreateAndStartHostAsync(cancellationToken);
         logger.Log(LogEvents.RefreshServerRunningAt, string.Join(",", _lazyHost.EndPoints));
     }
+
+    /// <summary>
+    /// Configures the application process to expose the browser tools provider on its own origin.
+    /// </summary>
+    public void ConfigureLaunchEnvironment(IDictionary<string, string> builder)
+        => configureLaunchEnvironment(builder, this);
 
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.

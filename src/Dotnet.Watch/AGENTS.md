@@ -41,9 +41,16 @@ Reload).
   Blazor apps rendered on the server rely on the Web SDK's build-only `afterWebStarted`
   initializer instead. Standalone and hosted Blazor WASM use a build-only watch activation
   initializer added by the WASM SDK for every supported target
-  framework; it marks the app as running under watch and imports the provider-hosted
-  browser client from `onRuntimeReady`, so the runtime's apply API exists before updates
-  replay. On .NET 10+ the separate Hot Reload agent initializer applies managed
+  framework; from `onRuntimeConfigLoaded` it sets the runtime configuration variables the
+  Hot Reload agent already looks for (`__ASPNETCORE_BROWSER_TOOLS`,
+  `DOTNET_MODIFIABLE_ASSEMBLIES`), and from `onRuntimeReady` it imports the
+  provider-hosted browser client, so the runtime's apply API exists before updates
+  replay. Blazor guarantees every `onRuntimeConfigLoaded` callback runs before any
+  `onRuntimeReady` callback and passes the same config object to all initializers, so
+  coordinate between initializer modules through that config rather than through
+  `globalThis` or a cross-module import: initializer load order is unspecified and each
+  module's URL is subject to fingerprinting. On .NET 10+ the separate Hot Reload agent
+  initializer applies managed
   updates; older target frameworks fall back to the runtime's own
   `window.Blazor._internal.applyHotReload`. Both initializers can run in the same app;
   duplicate activation is absorbed by module caching and the client's injection sentinel.

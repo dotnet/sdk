@@ -4,7 +4,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using Microsoft.Build.Graph;
-using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -62,17 +61,11 @@ internal static class DotNetWatcher
                 }
             };
 
-            var webAppModel = projectRootNode != null
-                ? HotReloadAppModel.InferFromProject(context, projectRootNode) as WebApplicationAppModel
-                : null;
-            var browserRefreshServer = webAppModel != null
-                ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode!, webAppModel, shutdownCancellationToken)
+            var browserRefreshServer = projectRootNode != null && HotReloadAppModel.InferFromProject(context, projectRootNode) is WebApplicationAppModel webAppModel
+                ? await context.BrowserRefreshServerFactory.GetOrCreateBrowserRefreshServerAsync(projectRootNode, webAppModel, shutdownCancellationToken)
                 : null;
 
-            if (browserRefreshServer != null)
-            {
-                webAppModel!.ConfigureBrowserToolsLaunchEnvironment(environmentBuilder, browserRefreshServer);
-            }
+            browserRefreshServer?.ConfigureLaunchEnvironment(environmentBuilder);
 
             Action<OutputLine>? outputObserver = null;
             if (projectRootNode != null)
