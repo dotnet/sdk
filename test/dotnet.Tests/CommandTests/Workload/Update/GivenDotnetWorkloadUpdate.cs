@@ -42,10 +42,11 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
         public void GivenWorkloadUpdateItShutsDownMSBuildServerAfterTheUpdateFinishes()
         {
             bool updateFinished = false;
+            bool shutdownAfterUpdate = false;
             var msbuildServer = new Mock<IBuildServer>(MockBehavior.Strict);
             msbuildServer
                 .Setup(server => server.Shutdown())
-                .Callback(() => updateFinished.Should().BeTrue());
+                .Callback(() => shutdownAfterUpdate = updateFinished);
 
             int exitCode = ParseWorkloadUpdate(
                 _ =>
@@ -56,6 +57,7 @@ namespace Microsoft.DotNet.Cli.Workload.Update.Tests
                 msbuildServer.Object).Invoke(Parser.InvocationConfiguration);
 
             exitCode.Should().Be(42);
+            shutdownAfterUpdate.Should().BeTrue();
             msbuildServer.Verify(server => server.Shutdown(), Times.Once);
         }
 
