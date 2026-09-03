@@ -105,9 +105,9 @@ safe-outputs:
       The generated issue_monster_assigner tool is an authorized alias for the
       dispatch-workflow safe output. gh-aw normalizes successful alias calls to
       dispatch_workflow records before detection. Treat that normalized record
-      as expected when it targets issue-monster-assigner and contains both the
-      issue_number and base_branch inputs; do not classify the normalization
-      itself as prompt injection.
+      as expected only when workflow_name is issue-monster-assigner and its
+      inputs object contains both issue_number and base_branch; do not classify
+      the normalization itself as prompt injection.
     engine:
       id: copilot
       model: gpt-5.6-luna
@@ -319,7 +319,7 @@ For each selected issue, call the generated `issue_monster_assigner` safe-output
 issue_monster_assigner(issue_number=<issue_number>, base_branch="<base_branch>")
 ```
 
-Do not call the generic `dispatch_workflow` tool directly. The generated tool requires both workflow inputs and prevents an empty or incomplete dispatch request from being recorded. gh-aw implements the generated tool through `dispatch_workflow`, so the recorded safe output is expected to use that normalized type after a valid `issue_monster_assigner` call.
+Do not call the generic `dispatch_workflow` tool directly. The generated tool requires both workflow inputs and prevents an empty or incomplete dispatch request from being recorded. gh-aw implements the generated tool through `dispatch_workflow`, so a valid `issue_monster_assigner` call is expected to produce that normalized type with `workflow_name: issue-monster-assigner` and `inputs.issue_number` plus `inputs.base_branch`.
 
 Use the exact field name `issue_number` (underscore). Do **not** use `issue-number` (hyphen), which is invalid and will fail safe-output validation.
 
