@@ -22,11 +22,10 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.DotNet.HotReload;
 
 /// <summary>
-/// Communicates with aspnetcore-browser-refresh.js loaded in the browser.
+/// Hosts the browser tools provider and communicates with browser tools clients.
 /// Associated with a project instance.
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
-    string middlewareAssemblyPath,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
@@ -68,18 +67,9 @@ internal abstract class AbstractBrowserRefreshServer(
     public ILogger Logger
         => logger;
 
-    internal string MiddlewareAssemblyPath
-        => middlewareAssemblyPath;
-
-    internal ImmutableArray<string> WebSocketEndpoints
-        => (_lazyHost ?? throw new InvalidOperationException("Server not started")).EndPoints;
-
     internal Uri ProviderAddress
         => new((_lazyHost ?? throw new InvalidOperationException("Server not started")).HttpEndPoints.First(
             static endpoint => endpoint.StartsWith("http:", StringComparison.OrdinalIgnoreCase)));
-
-    internal string VirtualDirectory
-        => (_lazyHost ?? throw new InvalidOperationException("Server not started")).VirtualDirectory;
 
     internal string PublicKey
         => _sharedSecretProvider.GetPublicKey();
@@ -137,7 +127,7 @@ internal abstract class AbstractBrowserRefreshServer(
     }
 
 #if NET
-    internal async Task AcceptBrowserConnectionAsync(HttpContext context, bool requireSharedSecret = false)
+    internal async Task AcceptBrowserConnectionAsync(HttpContext context)
     {
         if (!context.WebSockets.IsWebSocketRequest)
         {
@@ -148,7 +138,7 @@ internal abstract class AbstractBrowserRefreshServer(
         var subProtocol = context.WebSockets.WebSocketRequestedProtocols is [var requestedSubProtocol]
             ? requestedSubProtocol
             : null;
-        if (requireSharedSecret && subProtocol == null)
+        if (subProtocol == null)
         {
             context.Response.StatusCode = StatusCodes.Status400BadRequest;
             return;

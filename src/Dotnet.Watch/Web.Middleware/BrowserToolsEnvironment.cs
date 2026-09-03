@@ -10,18 +10,14 @@ namespace Microsoft.AspNetCore.Watch.BrowserRefresh;
 
 internal static class BrowserToolsEnvironment
 {
-    public const string WebSocketEndpoint = "ASPNETCORE_AUTO_RELOAD_WS_ENDPOINT";
     public const string ProviderAddress = "ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS";
 
-    public static bool IsLegacy
-        => !string.IsNullOrEmpty(Environment.GetEnvironmentVariable(WebSocketEndpoint));
-
-    public static Uri? GetProviderAddress()
+    public static Uri GetProviderAddress()
     {
         var value = Environment.GetEnvironmentVariable(ProviderAddress);
         if (string.IsNullOrEmpty(value))
         {
-            return null;
+            throw new InvalidOperationException($"The required browser tools provider address is not configured in '{ProviderAddress}'.");
         }
 
         if (!Uri.TryCreate(value, UriKind.Absolute, out var address) ||

@@ -39,7 +39,7 @@ public class BrowserTests : DotNetWatchTestBase
 
         App.Start(testAsset, ["--urls", url], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 

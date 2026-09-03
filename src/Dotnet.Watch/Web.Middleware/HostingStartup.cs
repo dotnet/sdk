@@ -4,7 +4,6 @@
 #nullable enable
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -22,66 +21,26 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
         builder.ConfigureServices(services => ConfigureServices(services, BrowserToolsEnvironment.GetProviderAddress()));
     }
 
-    internal void ConfigureServices(IServiceCollection services, Uri? providerAddress)
+    internal void ConfigureServices(IServiceCollection services, Uri providerAddress)
     {
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this));
-        if (providerAddress != null)
-        {
-            services.TryAddSingleton(new BrowserToolsForwarderOptions(providerAddress));
-            services.TryAddSingleton<BrowserToolsForwarder>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagHelperComponent, BrowserRefreshTagHelperComponent>());
-        }
+        services.TryAddSingleton(new BrowserToolsForwarderOptions(providerAddress));
+        services.TryAddSingleton<BrowserToolsForwarder>();
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagHelperComponent, BrowserRefreshTagHelperComponent>());
     }
 
     public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
     {
         return app =>
         {
-            if (BrowserToolsEnvironment.GetProviderAddress() != null)
-            {
-                app.MapWhen(
-                    static context => context.Request.Path.StartsWithSegments(ApplicationPaths.BrowserTools),
-                    static browserTools =>
-                    {
-                        browserTools.UseWebSockets();
-                        browserTools.Run(
-                            context => context.RequestServices.GetRequiredService<BrowserToolsForwarder>().ForwardAsync(context));
-                    });
-                next(app);
-                return;
-            }
-
             app.MapWhen(
-                static (context) =>
+                static context => context.Request.Path.StartsWithSegments(ApplicationPaths.BrowserTools),
+                static browserTools =>
                 {
-                    var path = context.Request.Path;
-                    return path.StartsWithSegments(ApplicationPaths.FrameworkRoot) &&
-                        (path.StartsWithSegments(ApplicationPaths.ClearSiteData) ||
-                        path.StartsWithSegments(ApplicationPaths.BlazorHotReloadMiddleware) ||
-                        path.StartsWithSegments(ApplicationPaths.BrowserRefreshJS) ||
-                        path.StartsWithSegments(ApplicationPaths.BlazorHotReloadJS));
-                },
-                static app =>
-                {
-                    app.Map(ApplicationPaths.ClearSiteData, static app => app.Run(context =>
-                    {
-                        // Scoped css files can contain links to other css files. We'll try clearing out the http caches to force the browser to re-download.
-                        // See https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Clear-Site-Data#directives
-                        context.Response.Headers["Clear-Site-Data"] = "\"cache\"";
-                        return Task.CompletedTask;
-                    }));
-
-                    app.Map(ApplicationPaths.BlazorHotReloadMiddleware, static app => app.UseMiddleware<BlazorWasmHotReloadMiddleware>());
-
-                    app.Map(ApplicationPaths.BrowserRefreshJS,
-                        static app => app.UseMiddleware<BrowserScriptMiddleware>(ApplicationPaths.BrowserRefreshJS, BrowserScriptMiddleware.GetBrowserRefreshJS()));
-
-                    // backwards compat only:
-                    app.Map(ApplicationPaths.BlazorHotReloadJS,
-                        static app => app.UseMiddleware<BrowserScriptMiddleware>(ApplicationPaths.BlazorHotReloadJS, BrowserScriptMiddleware.GetBlazorHotReloadJS()));
+                    browserTools.UseWebSockets();
+                    browserTools.Run(
+                        context => context.RequestServices.GetRequiredService<BrowserToolsForwarder>().ForwardAsync(context));
                 });
-
-            app.UseMiddleware<BrowserRefreshMiddleware>();
             next(app);
         };
     }

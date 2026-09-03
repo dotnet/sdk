@@ -11,11 +11,11 @@ namespace Microsoft.DotNet.HotReload.UnitTests;
 public class WebAssemblyHotReloadClientTests
 {
     [TestMethod]
-    public async Task NoBrowser_GatewayReplayEnabled_RetainsAndAcceptsUpdate()
+    public async Task NoBrowser_RetainsAndAcceptsUpdate()
     {
         using var server = new TestBrowserRefreshServer();
         var generationId = server.BrowserToolsUpdateStore.GenerationId;
-        using var client = CreateClient(server, generationId, enableBrowserToolsReplay: true);
+        using var client = CreateClient(server, generationId);
 
         var result = await await client.ApplyManagedCodeUpdatesAsync(
             [CreateUpdate()],
@@ -31,32 +31,14 @@ public class WebAssemblyHotReloadClientTests
         Assert.AreEqual(generationId, message.RootElement.GetProperty("generationId").GetGuid());
     }
 
-    [TestMethod]
-    public async Task NoBrowser_LegacyReplayDisabled_RejectsUnrecoverableUpdate()
-    {
-        using var server = new TestBrowserRefreshServer();
-        var generationId = server.BrowserToolsUpdateStore.GenerationId;
-        using var client = CreateClient(server, generationId, enableBrowserToolsReplay: false);
-
-        var result = await await client.ApplyManagedCodeUpdatesAsync(
-            [CreateUpdate()],
-            CancellationToken.None,
-            CancellationToken.None);
-
-        Assert.IsFalse(result);
-        Assert.IsEmpty(server.BrowserToolsUpdateStore.GetReplay(generationId).Updates);
-    }
-
     private static WebAssemblyHotReloadClient CreateClient(
         TestBrowserRefreshServer server,
-        Guid generationId,
-        bool enableBrowserToolsReplay)
+        Guid generationId)
         => new(
             new TestLogger(),
             new TestLogger(),
             server,
             generationId,
-            enableBrowserToolsReplay,
             ["Baseline"],
             new Version(11, 0),
             suppressBrowserRequestsForTesting: false);

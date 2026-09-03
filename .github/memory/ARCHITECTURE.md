@@ -56,8 +56,8 @@ shape; see [API_MAP.md](API_MAP.md#msbuild-sdk-entry-points).
 evaluation and the actual build; see
 [`EvaluationResult.GetGlobalBuildProperties`](../../src/Dotnet.Watch/Watch/Build/EvaluationResult.cs)
 and [`HotReloadDotNetWatcher`](../../src/Dotnet.Watch/Watch/HotReload/HotReloadDotNetWatcher.cs).
-For .NET 11 and later, the Web SDK uses the positive browser-tools signal to add a
-build-only `afterWebStarted` initializer
+The Web SDK uses the positive browser-tools signal to add a build-only
+`afterWebStarted` initializer
 ([target](../../src/WebSdk/Web/Targets/Sdk.Server.targets),
 [module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js)).
 The WebAssembly SDK uses the same signal to give its existing initializer a watch-only
@@ -65,7 +65,8 @@ asset identity, allowing the initializer to discover the provider only in watch 
 ([target](../../src/WasmSdk/Sdk/Sdk.targets),
 [module](../../src/Dotnet.Watch/HotReloadAgent.WebAssembly.Browser/wwwroot/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js)).
 Provider endpoints and secrets remain runtime launch configuration rather than build
-outputs, and pre-.NET 11 applications retain their compatibility activation paths.
+outputs. All supported target frameworks use the provider contract; there is no parallel
+legacy response-rewriting or application-hosted browser-script path.
 
 ### Resolver Plugins
 

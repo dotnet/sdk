@@ -14,7 +14,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     public const string ConnectionServerLogComponentName = "BrowserConnection:Server";
     public const string ConnectionAgentLogComponentName = "BrowserConnection:Agent";
 
-    // This needs to be in sync with the version BrowserRefreshMiddleware is compiled against.
+    // This needs to be in sync with the version the browser tools middleware is compiled against.
     private static readonly Version s_minimumSupportedVersion = Versions.Version6_0;
     private const string MiddlewareTargetFramework = "net6.0";
 
@@ -27,9 +27,6 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     /// </summary>
     public abstract ProjectGraphNode LaunchingProject { get; }
 
-    internal virtual bool UsesBrowserToolsProvider
-        => LaunchingProject.IsNetCoreApp(Versions.Version11_0);
-
     protected abstract ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer);
 
     public async sealed override ValueTask<HotReloadClients> CreateClientsAsync(ILogger clientLogger, ILogger agentLogger, CancellationToken cancellationToken)
@@ -41,9 +38,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             : [];
 
         var launchConfigurator = browserRefreshServer != null
-            ? CreateBrowserToolsLaunchConfigurator(
-                browserRefreshServer,
-                enableManagedHotReload: !managedClients.IsEmpty)
+            ? CreateBrowserToolsLaunchConfigurator(browserRefreshServer)
             : null;
 
         return new HotReloadClients(
@@ -57,8 +52,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         ILogger clientLogger,
         ILogger agentLogger,
         BrowserRefreshServer browserRefreshServer,
-        ProjectGraphNode clientProject,
-        bool enableBrowserToolsReplay = false)
+        ProjectGraphNode clientProject)
     {
         var capabilities = clientProject.GetWebAssemblyCapabilities().ToImmutableArray();
         var targetFramework = clientProject.GetTargetFrameworkVersion() ?? throw new InvalidOperationException($"Project doesn't define {PropertyNames.TargetFrameworkMoniker}");
@@ -69,7 +63,6 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             agentLogger,
             browserRefreshServer,
             generationId,
-            enableBrowserToolsReplay,
             capabilities,
             targetFramework,
             context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
@@ -78,17 +71,8 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
     private static string GetMiddlewareAssemblyPath()
         => GetInjectedAssemblyPath(MiddlewareTargetFramework, "Microsoft.AspNetCore.Watch.BrowserRefresh");
 
-    internal virtual IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
-        AbstractBrowserRefreshServer browserRefreshServer,
-        bool enableManagedHotReload)
-        => UsesBrowserToolsProvider
-            ? new ForwardingBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer)
-            : CreateLegacyBrowserToolsLaunchConfigurator(browserRefreshServer, enableManagedHotReload);
-
-    protected static IBrowserToolsLaunchConfigurator CreateLegacyBrowserToolsLaunchConfigurator(
-        AbstractBrowserRefreshServer browserRefreshServer,
-        bool enableManagedHotReload)
-        => new HostingStartupBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer, enableManagedHotReload);
+    internal virtual IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(AbstractBrowserRefreshServer browserRefreshServer)
+        => new ForwardingBrowserToolsLaunchConfigurator(GetMiddlewareAssemblyPath(), browserRefreshServer);
 
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {
@@ -96,17 +80,12 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
 
         if (IsServerSupported(projectNode, logger))
         {
-            var webSocketConfig = UsesBrowserToolsProvider
-                ? context.EnvironmentOptions.BrowserWebSocketConfig.WithHostName(value: null)
-                : context.EnvironmentOptions.BrowserWebSocketConfig;
-
             return new BrowserRefreshServer(
                 logger,
                 connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
                 connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
-                middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
-                webSocketConfig,
+                context.EnvironmentOptions.BrowserWebSocketConfig.WithHostName(value: null),
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
         }
 
@@ -146,7 +125,7 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
             return false;
         }
 
-        logger.Log(MessageDescriptor.UsingBrowserRefreshMiddleware);
+        logger.Log(MessageDescriptor.UsingBrowserTools);
         return true;
     }
 }

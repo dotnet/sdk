@@ -51,7 +51,7 @@ Important root files:
 | [`src/StaticWebAssetsSdk`](../../src/StaticWebAssetsSdk) | Static web asset discovery, manifests, compression, endpoints, publish, and pack logic. | Integrates Web/Razor/Blazor builds; consumed by redist and SWA tests. |
 | [`src/BlazorWasmSdk`](../../src/BlazorWasmSdk), [`src/WasmSdk`](../../src/WasmSdk) | Blazor WebAssembly and general WebAssembly SDK tasks, targets, and tools. | Integrate runtime/workload packs; consumed by redist and WASM tests. |
 | [`src/Containers`](../../src/Containers) | Container publish tasks, image construction, registry integration, and packaging. | Imported by core `Sdk.targets`; consumed by redist and container tests. |
-| [`src/Dotnet.Watch`](../../src/Dotnet.Watch) | `dotnet watch`, hot reload, browser refresh, and Aspire integration. | Integrates CLI, Roslyn, MSBuild, and ASP.NET assets; bundled by redist. |
+| [`src/Dotnet.Watch`](../../src/Dotnet.Watch) | `dotnet watch`, hot reload, browser-tools provider/forwarding, and Aspire integration. | Integrates CLI, Roslyn, MSBuild, and ASP.NET assets; bundled by redist. |
 | [`src/Dotnet.Format`](../../src/Dotnet.Format) | `dotnet format` command implementation. | Integrates CLI and Roslyn workspaces; bundled by redist. |
 | [`src/Compatibility`](../../src/Compatibility) | ApiCompat, ApiDiff, GenAPI, package validation libraries, tasks, and tools. | Consumes Roslyn/MSBuild; tested under `test/Compatibility`. |
 | [`src/Microsoft.CodeAnalysis.NetAnalyzers`](../../src/Microsoft.CodeAnalysis.NetAnalyzers) | CA analyzers, code fixes, packaging, tests, and documentation generation. | Consumes Roslyn APIs; package is bundled by redist. |
