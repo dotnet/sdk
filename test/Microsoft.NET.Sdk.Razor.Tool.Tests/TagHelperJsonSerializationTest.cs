@@ -60,6 +60,35 @@ namespace Microsoft.NET.Sdk.Razor.Tool
         }
 
         [TestMethod]
+        public void RoundTrip_AssetPathMetadata_PreservesData()
+        {
+            var json = """
+                [
+                    {
+                        "Flags": 1,
+                        "Name": "AssetPathTagHelper",
+                        "AssemblyName": "TestAssembly",
+                        "TypeName": "TestNamespace.AssetPathTagHelper",
+                        "MetadataKind": 8,
+                        "Metadata": {
+                            "Element": "img",
+                            "Attribute": "src"
+                        }
+                    }
+                ]
+                """;
+
+            var deserialized = Deserialize(json);
+            var reserialized = Serialize(deserialized);
+            var roundTripped = Deserialize(reserialized);
+
+            Assert.ContainsSingle(roundTripped);
+            var metadata = (AssetPathMetadata)roundTripped[0].Metadata;
+            Assert.AreEqual("img", metadata.Element);
+            Assert.AreEqual("src", metadata.Attribute);
+        }
+
+        [TestMethod]
         public void RoundTrip_TagHelperWithBoundAttributes_PreservesData()
         {
             // Arrange

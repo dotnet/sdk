@@ -305,18 +305,18 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.br",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\file.txt.br",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
       "BasePath": "/",
-      "RelativePath": "app.js.br",
+      "RelativePath": "file.txt.br",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\wwwroot\\app.publish.js",
+      "RelatedAsset": "${ProjectPath}\\wwwroot\\file.publish.txt",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "br",
       "AssetGroups": "",
@@ -324,23 +324,23 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\app.js.br",
+      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\file.txt.br",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.gz",
+      "Identity": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\file.txt.gz",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\",
       "BasePath": "/",
-      "RelativePath": "app.js.gz",
+      "RelativePath": "file.txt.gz",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Alternative",
       "AssetMergeBehavior": "",
       "AssetMergeSource": "",
-      "RelatedAsset": "${ProjectPath}\\wwwroot\\app.publish.js",
+      "RelatedAsset": "${ProjectPath}\\wwwroot\\file.publish.txt",
       "AssetTraitName": "Content-Encoding",
       "AssetTraitValue": "gzip",
       "AssetGroups": "",
@@ -348,7 +348,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\app.js.gz",
+      "OriginalItemSpec": "${ProjectPath}\\wwwroot\\file.txt.gz",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -449,12 +449,12 @@
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
     {
-      "Identity": "${ProjectPath}\\wwwroot\\app.publish.js",
+      "Identity": "${ProjectPath}\\wwwroot\\file.publish.txt",
       "SourceId": "ComponentApp",
       "SourceType": "Discovered",
       "ContentRoot": "${ProjectPath}\\wwwroot\\",
       "BasePath": "/",
-      "RelativePath": "app.js",
+      "RelativePath": "file.txt",
       "AssetKind": "Publish",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -468,7 +468,7 @@
       "Integrity": "__integrity__",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\app.publish.js",
+      "OriginalItemSpec": "wwwroot\\file.publish.txt",
       "FileLength": -1,
       "LastWriteTime": "0001-01-01T00:00:00+00:00"
     },
@@ -2923,8 +2923,8 @@
       ]
     },
     {
-      "Route": "app.js.br",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.br",
+      "Route": "file.txt.br",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\file.txt.br",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -2941,7 +2941,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/javascript"
+          "Value": "text/plain"
         },
         {
           "Name": "ETag",
@@ -2964,8 +2964,8 @@
       ]
     },
     {
-      "Route": "app.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.br",
+      "Route": "file.txt",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\file.txt.br",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -2988,7 +2988,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/javascript"
+          "Value": "text/plain"
         },
         {
           "Name": "ETag",
@@ -3015,8 +3015,8 @@
       ]
     },
     {
-      "Route": "app.js.gz",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.gz",
+      "Route": "file.txt.gz",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\file.txt.gz",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3033,7 +3033,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/javascript"
+          "Value": "text/plain"
         },
         {
           "Name": "ETag",
@@ -3056,8 +3056,8 @@
       ]
     },
     {
-      "Route": "app.js",
-      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\app.js.gz",
+      "Route": "file.txt",
+      "AssetFile": "${ProjectPath}\\obj\\Debug\\${Tfm}\\compressed\\publish\\file.txt.gz",
       "Selectors": [
         {
           "Name": "Content-Encoding",
@@ -3080,7 +3080,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/javascript"
+          "Value": "text/plain"
         },
         {
           "Name": "ETag",
@@ -3435,8 +3435,8 @@
       ]
     },
     {
-      "Route": "app.js",
-      "AssetFile": "${ProjectPath}\\wwwroot\\app.publish.js",
+      "Route": "file.txt",
+      "AssetFile": "${ProjectPath}\\wwwroot\\file.publish.txt",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -3449,7 +3449,7 @@
         },
         {
           "Name": "Content-Type",
-          "Value": "text/javascript"
+          "Value": "text/plain"
         },
         {
           "Name": "ETag",

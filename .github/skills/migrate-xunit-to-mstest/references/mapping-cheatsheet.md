@@ -379,7 +379,7 @@ With the pin in `global.json`, the project line simplifies to `<Project Sdk="MST
 | xUnit companion | MSTest equivalent |
 |---|---|
 | `Xunit.SkippableFact` (`[SkippableFact]`, `Skip.If`, `Skip.IfNot`) | `[Ignore]` (compile-time) or `Assert.Inconclusive("reason")` (runtime). Remove the package |
-| `Xunit.Combinatorial` (`[CombinatorialData]`, `[CombinatorialValues]`) | [`Combinatorial.MSTest`](https://github.com/Youssef1313/Combinatorial.MSTest) (community port) -- attribute surface is the same as xUnit.Combinatorial. Alternatively, expand combinations into explicit `[DataRow]`s or compute them in `[DynamicData]` |
+| `Xunit.Combinatorial` (`[CombinatorialData]`, `[CombinatorialValues]`) | MSTest 4.4+'s built-in combinatorial data support. Import `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial`; the attribute surface is the same as `Xunit.Combinatorial`. |
 | `Xunit.StaFact` (`[StaFact]`, `[WpfFact]`) | No equivalent -- manual STA thread or flag for review |
 | `Xunit.Priority` (`[TestCaseOrderer]`) | MSTest ordering is different -- flag for manual |
 | `Verify.Xunit` | `Verify.MSTest` (swap the package; same usage) |
