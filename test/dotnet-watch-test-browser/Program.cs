@@ -37,8 +37,6 @@ while (true)
     Log("""Received: {"type":"Reload"}""");
 }
 
-return 0;
-
 static async Task<WebSocket> OpenWebSocket(string origin, string url, string encryptedSecret)
 {
     var webSocket = new ClientWebSocket();
