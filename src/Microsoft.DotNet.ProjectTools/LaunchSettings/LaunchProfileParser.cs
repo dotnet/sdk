@@ -48,10 +48,9 @@ internal abstract partial class LaunchProfileParser
             return values;
         }
 
-        var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
+        var builder = values.ToBuilder();
         foreach (var (key, value) in values)
         {
-            // override previously set variables:
             builder[key] = ExpandVariables(value, evaluateExpression);
         }
 
@@ -67,7 +66,7 @@ internal abstract partial class LaunchProfileParser
             return values;
         }
 
-        var builder = ImmutableDictionary.CreateBuilder<string, string>(StringComparer.Ordinal);
+        var builder = values.ToBuilder();
         foreach (var (key, value) in values)
         {
             builder[key] = ExpandMSBuildProperties(value, evaluateExpression);
