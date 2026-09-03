@@ -58,10 +58,10 @@ namespace dotnet.Tests
         [DataRow("--multiThreaded:false", "--multiThreaded:false")]
         public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
         {
-            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
+            LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
 
-            loggerArgs.Should().Equal(expectedArg);
-            nonLoggerArgs.Should().BeEmpty();
+            msbuildArgs.Should().Equal(expectedArg);
+            otherArgs.Should().BeEmpty();
         }
 
         [TestMethod]
@@ -85,10 +85,10 @@ namespace dotnet.Tests
         [DataRow("--multithreadedextra")]
         public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
         {
-            LoggerUtility.SeparateLoggerArguments([arg], out var loggerArgs, out var nonLoggerArgs);
+            LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
 
-            loggerArgs.Should().BeEmpty();
-            nonLoggerArgs.Should().Equal(arg);
+            msbuildArgs.Should().BeEmpty();
+            otherArgs.Should().Equal(arg);
         }
 
         [TestMethod]
