@@ -787,9 +787,11 @@ public class RunCommand
             parseResult = ModifyParseResultForShorthandProjectOption(parseResult);
         }
 
-        // If the application arguments contain any logger args then we need to remove them from the application arguments and apply
-        // them to the restore args. This is because we can't model the logger command structure in MSBuild in the System.CommandLine
-        // parser, but we need logger information to synchronize the restore and build logger configurations.
+        // If the application arguments contain any MSBuild-only switches then we need to remove them from the
+        // application arguments and apply them to the build and restore args. This covers logger switches, whose
+        // command structure we can't model in the System.CommandLine parser but whose configuration has to be
+        // synchronized between restore and build, as well as engine switches such as -mt that would otherwise be
+        // handed to the launched application, which has no use for them.
         var applicationArguments = parseResult.GetValue(definition.ApplicationArguments)?.ToList() ?? [];
 
         SeparateMSBuildAndApplicationArguments(parseResult, applicationArguments, out var msbuildOnlyArgs, out var applicationArgs);

@@ -186,6 +186,56 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
+        public void DoubleDash_Mt()
+        {
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+
+            var runCommand = RunCommand.FromArgs(["b0", "-mt", "b1", "--", "a0", "-mt", "a1"]);
+
+            runCommand.ApplicationArgs.Should().Equal("b0", "b1", "a0", "-mt", "a1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain("-mt");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
+        }
+
+        [TestMethod]
+        [DataRow("true")]
+        [DataRow("false")]
+        public void DoubleDash_Mt_Value(string value)
+        {
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
+            var testAsset = tam.CopyTestAsset("HelloWorld", identifier: value).WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+
+            var runCommand = RunCommand.FromArgs(["b0", $"-mt:{value}", "b1", "--", "a0", $"-mt:{value}", "a1"]);
+
+            runCommand.ApplicationArgs.Should().Equal("b0", "b1", "a0", $"-mt:{value}", "a1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().Contain($"-mt:{value}");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
+        }
+
+        [TestMethod]
+        public void DoubleDash_Mt_Value_Unknown()
+        {
+            var tam = new TestAssetsManager(new TestContextOutputHelper(TestContext));
+            var testAsset = tam.CopyTestAsset("HelloWorld").WithSource();
+            var newWorkingDir = testAsset.Path;
+
+            Directory.SetCurrentDirectory(newWorkingDir);
+
+            var runCommand = RunCommand.FromArgs(["b0", "-mt:val1", "b1", "--", "a0", "-mt:val2", "a1"]);
+
+            runCommand.ApplicationArgs.Should().Equal("b0", "-mt:val1", "b1", "a0", "-mt:val2", "a1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("-mt:val1");
+            runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
+        }
+
+        [TestMethod]
         [OSCondition(OperatingSystems.Windows)]
         public void RunParserAcceptsWindowsPathSeparatorsOnWindows()
         {
