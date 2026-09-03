@@ -27,11 +27,8 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
         return server;
     }
 
-    /// <summary>
-    /// Standalone WASM apps are launched by blazor-devserver, which already hosts a YARP proxy.
-    /// </summary>
     [TestMethod]
-    public async Task StandaloneWasm_ReservesGatewayRoute()
+    public async Task StandaloneWasm_ForwardsFromHostingStartup()
     {
         var appModel = CreateAppModel("net10.0");
         using var server = await StartServerAsync(TestContext.CancellationToken);
@@ -39,13 +36,7 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
         var environment = new Dictionary<string, string>();
         appModel.ConfigureBrowserToolsLaunchEnvironment(environment, server);
 
-        AssertEx.SequenceEqual(
-        [
-            "ReverseProxy__Clusters__dotnet-browser-tools__Destinations__provider__Address=http://127.0.0.1:1234/",
-            "ReverseProxy__Routes__dotnet-browser-tools__ClusterId=dotnet-browser-tools",
-            "ReverseProxy__Routes__dotnet-browser-tools__Match__Path=/_framework/dotnet-browser-tools/{**catch-all}",
-            "ReverseProxy__Routes__dotnet-browser-tools__Order=-1000",
-        ], environment.OrderBy(entry => entry.Key).Select(entry => $"{entry.Key}={entry.Value}"));
+        AssertForwardingEnvironment(environment);
     }
 
     /// <summary>
@@ -61,6 +52,11 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
         var environment = new Dictionary<string, string>();
         appModel.ConfigureBrowserToolsLaunchEnvironment(environment, server);
 
+        AssertForwardingEnvironment(environment);
+    }
+
+    private static void AssertForwardingEnvironment(Dictionary<string, string> environment)
+    {
         Assert.AreEqual("http://127.0.0.1:1234/", environment["ASPNETCORE_AUTO_RELOAD_PROVIDER_ADDRESS"]);
         Assert.AreEqual("Microsoft.AspNetCore.Watch.BrowserRefresh", environment["ASPNETCORE_HOSTINGSTARTUPASSEMBLIES"]);
         Assert.EndsWith("Microsoft.AspNetCore.Watch.BrowserRefresh.dll", environment["DOTNET_STARTUP_HOOKS"]);

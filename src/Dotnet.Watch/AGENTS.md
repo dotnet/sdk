@@ -10,7 +10,7 @@ Reload).
 | `dotnet-watch` | The tool executable and CLI surface. Its command/options are defined in `CommandLine/DotnetWatchCommandDefinition.cs`. |
 | `Watch` (`Microsoft.DotNet.HotReload.Watch`) | Core watcher library: file-set computation, process launching, Hot Reload, app models. |
 | `DotNetWatchTasks` | MSBuild task bundled into the tool for design-time file collection. |
-| `DotNetDeltaApplier`, `Web.Middleware`, `BrowserRefresh` | Assemblies injected into compatible non-Gateway app models through the hosting-startup path. |
+| `DotNetDeltaApplier`, `Web.Middleware`, `BrowserRefresh` | Assemblies injected into compatible app models through the hosting-startup path. |
 | `HotReloadAgent.*`, `HotReloadClient`, `AspireService` | Shared code consumed via `.projitems`.|
 
 ## Conventions & gotchas
@@ -28,10 +28,8 @@ Reload).
   `WebAssemblyHotReloadClient`); a new app model may need its own implementation.
 - **The browser-tools provider owns the browser protocol and replay
   state.** Its fixed `/_framework/dotnet-browser-tools` HTTP/WebSocket endpoints live
-  under [`HotReloadClient/Web`](HotReloadClient/Web). Standalone Blazor WASM uses the
-  Gateway's existing YARP proxy through
-  [`BlazorWebAssemblyAppModel.cs`](Watch/AppModels/BlazorWebAssemblyAppModel.cs);
-  server-hosted web apps use the shared-framework-only
+  under [`HotReloadClient/Web`](HotReloadClient/Web). All application hosts, including
+  standalone Blazor WebAssembly development servers, use the shared-framework-only
   [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs). Keep destinations
   fixed to the trusted loopback provider address, the route root-relative, and the
   encrypted shared-secret WebSocket subprotocol intact. Do not add YARP to arbitrary
