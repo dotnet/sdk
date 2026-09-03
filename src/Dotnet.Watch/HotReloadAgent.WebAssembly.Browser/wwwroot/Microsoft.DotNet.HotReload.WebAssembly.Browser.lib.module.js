@@ -1,8 +1,11 @@
-// Set by the dotnet-watch activation initializer that the SDK adds to watch builds.
-const isHotReloadEnabled = globalThis.__dotnetWatchBrowserTools === true;
+// Set by the dotnet-watch activation initializer that the SDK adds to watch builds. Read lazily
+// because library initializer modules may be evaluated in any order.
+function isHotReloadEnabled() {
+    return globalThis.__dotnetWatchBrowserTools === true;
+}
 
 export async function onRuntimeConfigLoaded(config) {
-    if (config.debugLevel !== 0 && isHotReloadEnabled) {
+    if (config.debugLevel !== 0 && isHotReloadEnabled()) {
         if (!config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"]) {
             config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
         }
@@ -16,10 +19,10 @@ export async function onRuntimeConfigLoaded(config) {
 }
 
 export async function onRuntimeReady({ getAssemblyExports }) {
-    if (!isHotReloadEnabled) {
+    if (!isHotReloadEnabled()) {
         return;
     }
-    
+
     const exports = await getAssemblyExports("Microsoft.DotNet.HotReload.WebAssembly.Browser");
     await exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload.InitializeAsync(document.baseURI);
 
