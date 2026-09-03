@@ -8,7 +8,7 @@ using Microsoft.DotNet.Test.MSTest.Utilities;
 namespace Microsoft.DotNet.HotReload.UnitTests;
 
 internal sealed class TestBrowserRefreshServer()
-    : AbstractBrowserRefreshServer((_, _) => { }, new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
+    : AbstractBrowserRefreshServer(middlewareAssemblyPath: "", new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
 {
     public List<string> SentMessages { get; } = [];
 
