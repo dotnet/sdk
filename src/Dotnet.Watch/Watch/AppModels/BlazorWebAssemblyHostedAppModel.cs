@@ -26,11 +26,7 @@ internal sealed class BlazorWebAssemblyHostedAppModel(DotNetWatchContext context
         Debug.Assert(browserRefreshServer != null);
         return
         [
-            CreateWebAssemblyClient(
-                clientLogger,
-                agentLogger,
-                browserRefreshServer,
-                clientProject),
+            CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject),
             new DefaultHotReloadClient(clientLogger, agentLogger, GetStartupHookPath(serverProject), handlesStaticAssetUpdates: false, new NamedPipeClientTransport(clientLogger))
         ];
     }

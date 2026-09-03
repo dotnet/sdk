@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 namespace Microsoft.DotNet.Watch.UnitTests;
@@ -19,7 +19,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         var port = TestOptions.GetTestPort();
         App.Start(testAsset, ["--urls", "http://localhost:" + port], testFlags: TestFlags.MockBrowser);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
 
         // AddExplicitInterfaceImplementation is an implicit capability that's always added for .NET targets:
@@ -90,7 +90,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.PressCtrlRToRestart);
 
@@ -112,7 +112,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
         var port = TestOptions.GetTestPort();
         App.Start(testAsset, ["--urls", "http://localhost:" + port], "blazorhosted", testFlags: TestFlags.MockBrowser);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.ApplicationKind_BlazorHosted);
     }
@@ -129,7 +129,7 @@ public class RazorHotReloadTests : DotNetWatchTestBase
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.LaunchingBrowser.GetMessage($"http://localhost:{port}"));
         App.Process.ClearOutput();

@@ -9,7 +9,6 @@ using System;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.HotReload;
@@ -27,8 +26,6 @@ internal sealed class BrowserRefreshServer(
     bool suppressTimeouts)
     : AbstractBrowserRefreshServer(logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
-    private BrowserToolsEndpointRouter? _browserToolsEndpointRouter;
-
     protected override bool SuppressTimeouts
         => suppressTimeouts;
 
@@ -40,23 +37,13 @@ internal sealed class BrowserRefreshServer(
             webSocketConfig = webSocketConfig.WithSecurePort(null);
         }
 
-        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig, HandleRequestAsync, cancellationToken);
-        _browserToolsEndpointRouter = new BrowserToolsEndpointRouter(
-            Guid.NewGuid(),
-            PublicKey,
-            BrowserToolsUpdateStore,
-            this);
+        // The browser reaches the provider through the application's own origin, so the provider only
+        // listens on loopback. DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME no longer applies to this hop.
+        var router = new BrowserToolsEndpointRouter(PublicKey, BrowserToolsUpdateStore, this);
+        var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig.WithHostName(null), router.HandleAsync, cancellationToken);
 
         // URLs are only available after the server has started.
-        return new WebServerHost(
-            server,
-            webSocketEndpoints: server.ServerUrls,
-            httpEndpoints: server.HttpServerUrls);
-    }
-
-    private Task HandleRequestAsync(HttpContext context)
-    {
-        return (_browserToolsEndpointRouter ?? throw new InvalidOperationException("Server not started")).HandleAsync(context);
+        return new WebServerHost(server, server.ServerUrls, server.HttpServerUrls);
     }
 }
 

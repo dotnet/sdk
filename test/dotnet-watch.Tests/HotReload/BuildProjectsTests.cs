@@ -80,10 +80,7 @@ public class BuildProjects
         => new(Output, rootProjects?.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath).ToImmutableArray() ?? []);
 
     private static string AddReservedWatchProperties(string invocation)
-        => invocation.Replace(
-            "-p A=1",
-            "-p A=1 -p:DotNetWatchBuild=true -p:DotNetWatchBrowserTools=True",
-            StringComparison.Ordinal);
+        => invocation.Replace("-p A=1", "-p A=1 -p:DotNetWatchBrowserTools=True", StringComparison.Ordinal);
 
     [TestMethod]
     public async Task SingleProject_NotMain()

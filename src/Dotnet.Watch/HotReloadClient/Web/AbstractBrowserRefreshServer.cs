@@ -38,7 +38,6 @@ internal abstract class AbstractBrowserRefreshServer(
     private readonly TaskCompletionSource<None> _browserConnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     private readonly SharedSecretProvider _sharedSecretProvider = new();
-    private readonly BrowserToolsUpdateStore _browserToolsUpdateStore = new();
 
     // initialized by StartAsync
     private WebServerHost? _lazyHost;
@@ -74,11 +73,7 @@ internal abstract class AbstractBrowserRefreshServer(
     internal string PublicKey
         => _sharedSecretProvider.GetPublicKey();
 
-    internal IBrowserToolsUpdateStore BrowserToolsUpdateStore
-        => _browserToolsUpdateStore;
-
-    internal Guid ResetBrowserToolsGeneration()
-        => _browserToolsUpdateStore.Reset();
+    internal BrowserToolsUpdateStore BrowserToolsUpdateStore { get; } = new();
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {

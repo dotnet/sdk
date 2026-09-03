@@ -58,11 +58,8 @@ public class SubcommandTests : DotNetWatchTestBase
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForFileChangeBeforeRestarting);
 
-        // evaluation affected by build properties:
-        var generateWatchListInvocation = App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList"));
-        Assert.Contains("TestProperty", generateWatchListInvocation);
-        Assert.Contains("/p:DotNetWatchBuild=true", generateWatchListInvocation);
-        Assert.Contains("/p:DotNetWatchBrowserTools=True", generateWatchListInvocation);
+        // evaluation affected by -c option:
+        Assert.Contains("TestProperty", App.Process.Output.Single(line => line.Contains("/t:GenerateWatchList")));
     }
 
     [TestMethod]

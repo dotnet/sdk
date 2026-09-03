@@ -30,15 +30,7 @@ internal enum BrowserToolsReplayStatus
     GenerationMismatch
 }
 
-internal interface IBrowserToolsUpdateStore
-{
-    Guid GenerationId { get; }
-    BrowserToolsReplayResult GetReplay(Guid generationId);
-    void Append(BrowserToolsUpdateBatch batch);
-    Guid Reset();
-}
-
-internal sealed class BrowserToolsUpdateStore : IBrowserToolsUpdateStore
+internal sealed class BrowserToolsUpdateStore
 {
     private readonly object _guard = new();
     private Guid _generationId = Guid.NewGuid();

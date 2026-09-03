@@ -12,8 +12,6 @@ namespace Microsoft.DotNet.HotReload.UnitTests;
 [TestClass]
 public class BrowserToolsEndpointRouterTests
 {
-    private static readonly Guid s_sessionId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
-
     [TestMethod]
     public async Task Session_Get_ReturnsDescriptorAndReflectsGenerationReset()
     {
@@ -201,7 +199,7 @@ public class BrowserToolsEndpointRouterTests
     private static BrowserToolsEndpointRouter CreateRouter(
         BrowserToolsUpdateStore store,
         TestBrowserRefreshServer server)
-        => new(s_sessionId, "public-key", store, server);
+        => new("public-key", store, server);
 
     private static async Task<(DefaultHttpContext Context, byte[] Body)> InvokeAsync(
         BrowserToolsEndpointRouter router,
@@ -235,10 +233,9 @@ public class BrowserToolsEndpointRouterTests
     {
         Assert.AreEqual(JsonValueKind.Object, descriptor.ValueKind);
         Assert.AreSequenceEqual(
-            ["generationId", "protocolVersion", "publicKey", "sessionId"],
+            ["generationId", "protocolVersion", "publicKey"],
             descriptor.EnumerateObject().Select(static property => property.Name).Order(StringComparer.Ordinal));
         Assert.AreEqual(1, descriptor.GetProperty("protocolVersion").GetInt32());
-        Assert.AreEqual(s_sessionId, descriptor.GetProperty("sessionId").GetGuid());
         Assert.AreEqual(expectedGeneration, descriptor.GetProperty("generationId").GetGuid());
         Assert.AreEqual("public-key", descriptor.GetProperty("publicKey").GetString());
     }

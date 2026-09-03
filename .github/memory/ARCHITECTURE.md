@@ -51,19 +51,17 @@ shape; see [API_MAP.md](API_MAP.md#msbuild-sdk-entry-points).
 
 ### `dotnet watch` Browser-Tool Activation
 
-`dotnet watch` owns browser-tool availability and passes reserved
-`DotNetWatchBuild` and `DotNetWatchBrowserTools` properties through project-graph
-evaluation and the actual build; see
+`dotnet watch` owns browser-tool availability and passes a reserved
+`DotNetWatchBrowserTools` property through project-graph evaluation and the actual build;
+see
 [`EvaluationResult.GetGlobalBuildProperties`](../../src/Dotnet.Watch/Watch/Build/EvaluationResult.cs)
-and [`HotReloadDotNetWatcher`](../../src/Dotnet.Watch/Watch/HotReload/HotReloadDotNetWatcher.cs).
-The Web SDK uses the positive browser-tools signal to add a build-only
-`afterWebStarted` initializer
-([target](../../src/WebSdk/Web/Targets/Sdk.Server.targets),
-[module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js)).
-The WebAssembly SDK uses the same signal to give its existing initializer a watch-only
-asset identity, allowing the initializer to discover the provider only in watch builds
+and [`BuildEvaluator`](../../src/Dotnet.Watch/dotnet-watch/Watch/BuildEvaluator.cs).
+The WebAssembly SDK uses that signal to add a build-only watch activation initializer
 ([target](../../src/WasmSdk/Sdk/Sdk.targets),
-[module](../../src/Dotnet.Watch/HotReloadAgent.WebAssembly.Browser/wwwroot/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js)).
+[module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js))
+that imports the browser-tools client served by the watch provider. Server-rendered apps
+are activated instead by
+[`BrowserRefreshTagHelperComponent`](../../src/Dotnet.Watch/Web.Middleware/BrowserRefreshTagHelperComponent.cs).
 Provider endpoints and secrets remain runtime launch configuration rather than build
 outputs. All supported target frameworks use the provider contract; there is no parallel
 legacy response-rewriting or application-hosted browser-script path.
