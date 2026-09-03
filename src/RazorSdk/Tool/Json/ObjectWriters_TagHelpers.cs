@@ -262,6 +262,5 @@ internal static partial class ObjectWriters
                 writer.Write(nameof(metadata.Name), metadata.Name);
             }
         }
-        }
     }
 }
