@@ -1,25 +1,14 @@
-// Set by the dotnet-watch activation initializer that the SDK adds to watch builds. Read lazily
-// because library initializer modules may be evaluated in any order.
-function isHotReloadEnabled() {
-    return globalThis.__dotnetWatchBrowserTools === true;
-}
-
 export async function onRuntimeConfigLoaded(config) {
-    if (config.debugLevel !== 0 && isHotReloadEnabled()) {
-        if (!config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"]) {
-            config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] = "debug";
-        }
-        if (!config.environmentVariables["__ASPNETCORE_BROWSER_TOOLS"]) {
-            config.environmentVariables["__ASPNETCORE_BROWSER_TOOLS"] = "true";
-        }
-    }
-
     // Disable HotReload built-into the Blazor WebAssembly runtime
     config.environmentVariables["__BLAZOR_WEBASSEMBLY_LEGACY_HOTRELOAD"] = "false";
 }
 
-export async function onRuntimeReady({ getAssemblyExports }) {
-    if (!isHotReloadEnabled()) {
+export async function onRuntimeReady({ getAssemblyExports, getConfig }) {
+    // The dotnet-watch activation initializer sets this variable when the app is being watched.
+    // Reading it here rather than in onRuntimeConfigLoaded makes the check independent of the order
+    // in which the runtime evaluates library initializer modules.
+    const config = getConfig();
+    if (config.debugLevel === 0 || config.environmentVariables?.["__ASPNETCORE_BROWSER_TOOLS"] !== "true") {
         return;
     }
 
@@ -28,10 +17,10 @@ export async function onRuntimeReady({ getAssemblyExports }) {
 
     if (!window.Blazor) {
         window.Blazor = {};
-    }
 
-    if (!window.Blazor._internal) {
-        window.Blazor._internal = {};
+        if (!window.Blazor._internal) {
+            window.Blazor._internal = {};
+        }
     }
 
     window.Blazor._internal.applyHotReloadDeltas = (deltas, loggingLevel) => {

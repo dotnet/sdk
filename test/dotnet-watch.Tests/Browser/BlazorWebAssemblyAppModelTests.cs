@@ -15,9 +15,9 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
         }
     }
 
-    private static async Task<TestBrowserRefreshServer> StartServerAsync(CancellationToken cancellationToken)
+    private static async Task<TestBrowserRefreshServer> StartServerAsync(WebApplicationAppModel appModel, CancellationToken cancellationToken)
     {
-        var server = new TestBrowserRefreshServer()
+        var server = new TestBrowserRefreshServer(appModel.ConfigureBrowserToolsLaunchEnvironment)
         {
             CreateAndStartHostImpl = () => new WebServerHost(new TestListener(), ["ws://127.0.0.1:1234"], ["http://127.0.0.1:1234"])
         };
@@ -31,10 +31,10 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
     public async Task StandaloneWasm_ForwardsFromHostingStartup()
     {
         var appModel = CreateAppModel("net10.0");
-        using var server = await StartServerAsync(TestContext.CancellationToken);
+        using var server = await StartServerAsync(appModel, TestContext.CancellationToken);
 
         var environment = new Dictionary<string, string>();
-        appModel.ConfigureBrowserToolsLaunchEnvironment(environment, server);
+        server.ConfigureLaunchEnvironment(environment);
 
         AssertForwardingEnvironment(environment);
     }
@@ -47,10 +47,10 @@ public sealed class BlazorWebAssemblyAppModelTests : DotNetWatchTestBase
     {
         var wasmAppModel = CreateAppModel("net10.0");
         var appModel = new WebServerAppModel(wasmAppModel.Context, wasmAppModel.LaunchingProject);
-        using var server = await StartServerAsync(TestContext.CancellationToken);
+        using var server = await StartServerAsync(appModel, TestContext.CancellationToken);
 
         var environment = new Dictionary<string, string>();
-        appModel.ConfigureBrowserToolsLaunchEnvironment(environment, server);
+        server.ConfigureLaunchEnvironment(environment);
 
         AssertForwardingEnvironment(environment);
     }

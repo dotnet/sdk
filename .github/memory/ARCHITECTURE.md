@@ -60,7 +60,8 @@ The WebAssembly SDK uses that signal to add a build-only watch activation initia
 ([target](../../src/WasmSdk/Sdk/Sdk.targets),
 [module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js))
 that imports the browser-tools client served by the watch provider once the WebAssembly
-runtime is ready. The Web SDK adds an equivalent build-only `afterWebStarted` initializer
+runtime is ready, and signals the Hot Reload agent through runtime configuration rather
+than a shared global. The Web SDK adds an equivalent build-only `afterWebStarted` initializer
 ([target](../../src/WebSdk/Web/Targets/Sdk.Server.targets),
 [module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js))
 so Blazor apps rendered on the server activate too; MVC and Razor Pages responses are

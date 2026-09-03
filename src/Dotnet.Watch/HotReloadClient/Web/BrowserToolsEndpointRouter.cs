@@ -107,7 +107,7 @@ internal sealed class BrowserToolsEndpointRouter(
 
     private static ReadOnlyMemory<byte> ReadClientModule()
     {
-        using var stream = typeof(BrowserToolsEndpointRouter).Assembly.GetManifestResourceStream("Microsoft.DotNet.HotReload.BrowserToolsClient.js")
+        using var stream = typeof(BrowserToolsEndpointRouter).Assembly.GetManifestResourceStream("Microsoft.DotNet.HotReload.WebSocketScriptInjection.js")
             ?? throw new InvalidOperationException("Browser tools client module resource is missing.");
         using var content = new MemoryStream();
         stream.CopyTo(content);
