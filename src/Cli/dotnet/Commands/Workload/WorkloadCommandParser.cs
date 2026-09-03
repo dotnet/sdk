@@ -42,9 +42,21 @@ internal static class WorkloadCommandParser
         def.InstallCommand.SetAction(parseResult => new WorkloadInstallCommand(parseResult).Execute());
         def.UpdateCommand.SetAction(parseResult =>
         {
-            int exitCode = executeUpdate(parseResult);
-            msbuildServer.Shutdown();
-            return exitCode;
+            try
+            {
+                return executeUpdate(parseResult);
+            }
+            finally
+            {
+                try
+                {
+                    msbuildServer.Shutdown();
+                }
+                catch (Exception e)
+                {
+                    Reporter.Verbose.WriteLine(e.ToString());
+                }
+            }
         });
         def.ListCommand.SetAction(parseResult => new WorkloadListCommand(parseResult).Execute());
         def.SearchCommand.SetAction(parseResult => new WorkloadSearchCommand(parseResult).Execute());
