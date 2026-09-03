@@ -53,7 +53,7 @@ internal static partial class WebAssemblyHotReload
     [SupportedOSPlatform("browser")]
     public static Task InitializeAsync(string baseUri)
     {
-        if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
+        if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__DOTNET_WATCH_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
         {
             s_initialized = true;
