@@ -10,7 +10,6 @@ permissions:
   contents: read
 
 env:
-  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
   # build-failure-analyst.agent.md contains Markdown links whose targets use these
   # environment variables. GitHub Actions expands them to URLs when that agent runs,
   # but mlc scans the source statically and treats the unexpanded targets as missing
