@@ -97,6 +97,18 @@
 
   <Import Project="Sdk.targets" Sdk="Microsoft.NET.Sdk" />
 
+  <PropertyGroup>
+    <_ExpectedSdkVersion Condition="'$(StabilizePackageVersion)' == 'true'">$(VersionPrefix)</_ExpectedSdkVersion>
+    <_ExpectedSdkVersion Condition="'$(_ExpectedSdkVersion)' == ''">$(Version)</_ExpectedSdkVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Reflection.AssemblyMetadataAttribute">
+      <_Parameter1>SdkVersion</_Parameter1>
+      <_Parameter2>$(_ExpectedSdkVersion)</_Parameter2>
+    </AssemblyAttribute>
+  </ItemGroup>
+
   <Target Name="CompareCliSnapshots">
     <ItemGroup>
       <SnapshotFiles Include="$(TestHostFolder)snapshots\**\*.received.*" />

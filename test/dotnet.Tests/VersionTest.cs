@@ -3,6 +3,7 @@
 
 #nullable disable
 
+using System.Reflection;
 using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Tests
@@ -16,11 +17,18 @@ namespace Microsoft.DotNet.Tests
         [Fact]
         public void VersionCommandDisplaysCorrectVersion()
         {
+            var assemblyMetadata = typeof(GivenDotnetSdk).Assembly
+                .GetCustomAttributes(typeof(AssemblyMetadataAttribute))
+                .Cast<AssemblyMetadataAttribute>()
+                .ToDictionary(a => a.Key, a => a.Value);
+
+            var expectedVersion = assemblyMetadata["SdkVersion"];
+
             CommandResult result = new DotnetCommand(Log)
                     .Execute("--version");
 
             result.Should().Pass();
-            result.StdOut.Trim().Should().Be(SdkTestContext.Current.ToolsetUnderTest.SdkVersion);
+            result.StdOut.Trim().Should().Be(expectedVersion);
         }
 
         [Fact]
