@@ -51,7 +51,7 @@ internal static partial class WebAssemblyHotReload
 
     [JSExport]
     [SupportedOSPlatform("browser")]
-    public static void Initialize()
+    public static Task InitializeAsync(string baseUri)
     {
         if (MetadataUpdater.IsSupported && Environment.GetEnvironmentVariable("__ASPNETCORE_BROWSER_TOOLS") == "true" &&
             OperatingSystem.IsBrowser())
@@ -66,8 +66,10 @@ internal static partial class WebAssemblyHotReload
             {
                 throw new InvalidOperationException("Hot Reload agent already initialized");
             }
-
         }
+
+        // Updates applied before the browser connected are replayed by the browser tools client.
+        return Task.CompletedTask;
     }
 
     private static HotReloadAgent? GetAgent()

@@ -180,14 +180,8 @@ public class EvaluationResultTests
             SuppressBrowserRefresh = suppressBrowserRefresh
         };
 
-        var properties = EvaluationResult.GetGlobalBuildProperties(
-        [
-            "-p:dotnetwatchbuild=false",
-            "-p:dotnetwatchbrowsertools=user-value"
-        ],
-        environmentOptions);
+        var properties = EvaluationResult.GetGlobalBuildProperties(["-p:dotnetwatchbrowsertools=user-value"], environmentOptions);
 
-        Assert.AreEqual("True", properties["DotNetWatchBuild"]);
         Assert.AreEqual(expectedBrowserToolsValue, properties["DotNetWatchBrowserTools"]);
     }
 }

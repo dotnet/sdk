@@ -169,7 +169,6 @@ public class NoRestoreTests
         var expectedArguments = expectedArgumentsWithoutReservedProperties.ToList();
         var applicationArgumentsSeparator = expectedArguments.IndexOf("--");
         var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : expectedArguments.Count;
-        expectedArguments.Insert(reservedPropertiesIndex++, "-p:DotNetWatchBuild=true");
         expectedArguments.Insert(reservedPropertiesIndex, $"-p:DotNetWatchBrowserTools={browserToolsEnabled}");
 
         AssertEx.SequenceEqual(expectedArguments, actualArguments);

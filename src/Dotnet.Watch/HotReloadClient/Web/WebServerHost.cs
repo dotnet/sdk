@@ -5,49 +5,20 @@
 
 using System;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Microsoft.DotNet.HotReload;
 
-internal sealed class WebServerHost : IDisposable
+internal sealed class WebServerHost(IDisposable listener, ImmutableArray<string> endPoints, ImmutableArray<string> httpEndPoints) : IDisposable
 {
-    private readonly IDisposable _listener;
-
-    public WebServerHost(IDisposable listener, ImmutableArray<string> endPoints)
-        : this(listener, endPoints, [.. endPoints.Select(GetHttpEndpoint)])
-    {
-    }
-
-    public WebServerHost(
-        IDisposable listener,
-        ImmutableArray<string> webSocketEndpoints,
-        ImmutableArray<string> httpEndpoints)
-    {
-        _listener = listener;
-        EndPoints = webSocketEndpoints;
-        HttpEndPoints = httpEndpoints;
-    }
-
     public ImmutableArray<string> EndPoints
-    {
-        get;
-    }
+        => endPoints;
 
+    /// <summary>
+    /// Loopback HTTP addresses the browser tools provider listens on.
+    /// </summary>
     public ImmutableArray<string> HttpEndPoints
-    {
-        get;
-    }
+        => httpEndPoints;
 
     public void Dispose()
-        => _listener.Dispose();
-
-    private static string GetHttpEndpoint(string endpoint)
-    {
-        var builder = new UriBuilder(endpoint)
-        {
-            Scheme = endpoint.StartsWith("wss:", StringComparison.OrdinalIgnoreCase) ? "https" : "http"
-        };
-
-        return builder.Uri.ToString().TrimEnd('/');
-    }
+        => listener.Dispose();
 }

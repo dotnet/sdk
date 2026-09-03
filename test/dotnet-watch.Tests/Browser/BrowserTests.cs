@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Text.Json;
@@ -39,7 +39,7 @@ public class BrowserTests : DotNetWatchTestBase
 
         App.Start(testAsset, ["--urls", url], relativeProjectDirectory: "RazorApp", testFlags: TestFlags.ReadKeyFromStdin);
 
-        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserTools);
+        await App.WaitUntilOutputContains(MessageDescriptor.UsingBrowserRefreshMiddleware);
         await App.WaitUntilOutputContains(MessageDescriptor.ConfiguredToLaunchBrowser);
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -81,7 +81,7 @@ public class BrowserTests : DotNetWatchTestBase
             """);
 
         // no other browser message sent:
-        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪")));
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
 
         await App.WaitUntilOutputContains(MessageDescriptor.WaitingForChanges);
 
@@ -105,7 +105,7 @@ public class BrowserTests : DotNetWatchTestBase
             """);
 
         // no other browser message sent:
-        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪")));
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
 
         App.Process.ClearOutput();
 
@@ -123,6 +123,6 @@ public class BrowserTests : DotNetWatchTestBase
             """);
 
         // no other browser message sent:
-        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪")));
+        Assert.AreEqual(2, App.Process.Output.Count(line => line.Contains("🧪 Received:")));
     }
 }

@@ -26,15 +26,12 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_WasmHotReloadTfm Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(TargetFrameworkVersion)', '10.0'))">$(WasmAgentTargetFrameworkV10)</_WasmHotReloadTfm>
       <_WasmHotReloadPath Condition="'$(_WasmHotReloadTfm)' != ''">$([MSBuild]::NormalizeDirectory($(MSBuildThisFileDirectory), '..', 'hotreload', $(_WasmHotReloadTfm)))</_WasmHotReloadPath>
       <_WasmHotReloadIntermediatePath>$(IntermediateOutputPath)hotreload\</_WasmHotReloadIntermediatePath>
-      <_WasmHotReloadModuleFileName>Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</_WasmHotReloadModuleFileName>
-      <_WasmHotReloadModuleFileName
-        Condition="'$(DotNetWatchBrowserTools)' == 'true'">Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.lib.module.js</_WasmHotReloadModuleFileName>
     </PropertyGroup>
 
     <!-- Copy the JS module and DLL to intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
     <Copy
       SourceFiles="$(_WasmHotReloadPath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js"
-      DestinationFiles="$(_WasmHotReloadIntermediatePath)$(_WasmHotReloadModuleFileName)"
+      DestinationFolder="$(_WasmHotReloadIntermediatePath)"
       SkipUnchangedFiles="true"
       Condition="'$(_WasmHotReloadPath)' != ''" />
     <Copy
@@ -48,14 +45,13 @@ Copyright (c) .NET Foundation. All rights reserved.
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         <CopyToPublishDirectory>Never</CopyToPublishDirectory>
       </ReferenceCopyLocalPaths>
-      <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)$(_WasmHotReloadModuleFileName)">
-        <RelativePath>_framework/$(_WasmHotReloadModuleFileName)</RelativePath>
+      <_WasmHotReloadModule Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js">
+        <RelativePath>_framework/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js</RelativePath>
       </_WasmHotReloadModule>
       <_WasmHotReloadModule Update="@(_WasmHotReloadModule)">
         <OriginalItemSpec>%(Identity)</OriginalItemSpec>
       </_WasmHotReloadModule>
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js" />
-      <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.Watch.lib.module.js" />
       <FileWrites Include="$(_WasmHotReloadIntermediatePath)Microsoft.DotNet.HotReload.WebAssembly.Browser.dll" />
     </ItemGroup>
 
@@ -79,6 +75,56 @@ Copyright (c) .NET Foundation. All rights reserved.
       CandidateAssets="@(_WasmHotReloadModuleStaticWebAsset)"
       ContentTypeMappings="@(StaticWebAssetContentTypeMapping)"
       Condition="'$(_WasmHotReloadPath)' != ''">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+  </Target>
+
+  <!-- Activates the dotnet-watch browser tools client. Applies to all target frameworks: on .NET 10+
+       the Hot Reload agent module above applies managed code updates, older versions fall back to the
+       runtime's own window.Blazor._internal.applyHotReload API. -->
+  <Target Name="_WasmAddDotNetWatchBrowserToolsJsInitializer"
+          BeforeTargets="ResolveProjectStaticWebAssets"
+          AfterTargets="ResolveStaticWebAssetsConfiguration"
+          Condition="'$(DotNetWatchBrowserTools)' == 'true' and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+    <PropertyGroup>
+      <_DotNetWatchBrowserToolsIntermediatePath>$(IntermediateOutputPath)dotnet-watch\</_DotNetWatchBrowserToolsIntermediatePath>
+      <_DotNetWatchBrowserToolsModuleFileName>Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js</_DotNetWatchBrowserToolsModuleFileName>
+    </PropertyGroup>
+
+    <!-- Copy to the intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
+    <Copy
+      SourceFiles="$(MSBuildThisFileDirectory)DotNetWatch\$(_DotNetWatchBrowserToolsModuleFileName)"
+      DestinationFiles="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsModuleFileName)"
+      SkipUnchangedFiles="true" />
+
+    <ItemGroup>
+      <_DotNetWatchBrowserToolsModule Include="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsModuleFileName)">
+        <RelativePath>_framework/$(_DotNetWatchBrowserToolsModuleFileName)</RelativePath>
+      </_DotNetWatchBrowserToolsModule>
+      <_DotNetWatchBrowserToolsModule Update="@(_DotNetWatchBrowserToolsModule)">
+        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
+      </_DotNetWatchBrowserToolsModule>
+      <FileWrites Include="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsModuleFileName)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_DotNetWatchBrowserToolsModule)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      ContentRoot="$(_DotNetWatchBrowserToolsIntermediatePath)"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetKind="Build"
+      AssetTraitName="JSModule"
+      AssetTraitValue="JSLibraryModule"
+      PropertyOverrides="AssetTraitName;AssetTraitValue">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_DotNetWatchBrowserToolsStaticWebAsset" />
+    </DefineStaticWebAssets>
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_DotNetWatchBrowserToolsStaticWebAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
       <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
     </DefineStaticWebAssetEndpoints>
   </Target>

@@ -32,56 +32,6 @@ Copyright (c) .NET Foundation. All rights reserved.
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" />
 
-  <PropertyGroup>
-    <ResolveCoreStaticWebAssetsDependsOn>
-      _AddDotNetWatchBrowserToolsJsInitializer;
-      $(ResolveCoreStaticWebAssetsDependsOn)
-    </ResolveCoreStaticWebAssetsDependsOn>
-  </PropertyGroup>
-
-  <Target Name="_AddDotNetWatchBrowserToolsJsInitializer"
-          DependsOnTargets="ResolveStaticWebAssetsConfiguration"
-          Condition="'$(DotNetWatchBrowserTools)' == 'true'
-            and '$(StaticWebAssetsEnabled)' == 'true'
-            and '$(JSModulesEnabled)' == 'true'
-            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
-    <PropertyGroup>
-      <_DotNetWatchBrowserToolsIntermediatePath>$(IntermediateOutputPath)dotnet-watch\</_DotNetWatchBrowserToolsIntermediatePath>
-      <_DotNetWatchBrowserToolsModuleFileName>Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js</_DotNetWatchBrowserToolsModuleFileName>
-    </PropertyGroup>
-
-    <Copy
-      SourceFiles="$(MSBuildThisFileDirectory)DotNetWatch\$(_DotNetWatchBrowserToolsModuleFileName)"
-      DestinationFiles="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsModuleFileName)"
-      SkipUnchangedFiles="true" />
-
-    <ItemGroup>
-      <_DotNetWatchBrowserToolsModule Include="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsModuleFileName)">
-        <RelativePath>_framework/$(_DotNetWatchBrowserToolsModuleFileName)</RelativePath>
-      </_DotNetWatchBrowserToolsModule>
-      <_DotNetWatchBrowserToolsModule Update="@(_DotNetWatchBrowserToolsModule)">
-        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
-      </_DotNetWatchBrowserToolsModule>
-      <FileWrites Include="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsModuleFileName)" />
-    </ItemGroup>
-
-    <DefineStaticWebAssets
-      CandidateAssets="@(_DotNetWatchBrowserToolsModule)"
-      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
-      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
-      SourceId="$(PackageId)"
-      SourceType="Computed"
-      ContentRoot="$(_DotNetWatchBrowserToolsIntermediatePath)"
-      BasePath="$(StaticWebAssetBasePath)"
-      AssetKind="Build"
-      AssetTraitName="JSModule"
-      AssetTraitValue="JSLibraryModule"
-      PropertyOverrides="AssetTraitName;AssetTraitValue">
-      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
-      <Output TaskParameter="Assets" ItemName="_JSModuleStaticWebAsset" />
-    </DefineStaticWebAssets>
-  </Target>
-
   <!--
   ============================================================
     DefaultRuntimeHostConfigurationOptions

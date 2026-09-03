@@ -83,7 +83,14 @@ internal sealed class WebAssemblyHotReloadClient(
 
     public override void ConfigureLaunchEnvironment(IDictionary<string, string> environmentBuilder)
     {
-        // the environment is configued via browser refesh server
+        // Note:
+        // Microsoft.AspNetCore.Components.WebAssembly.Server.ComponentWebAssemblyConventions expects
+        // DOTNET_MODIFIABLE_ASSEMBLIES to be set in the blazor-devserver process, even though we are not performing
+        // Hot Reload in this process. The value is converted to the DOTNET-MODIFIABLE-ASSEMBLIES header, which is in
+        // turn converted back to an environment variable in the Mono browser runtime loader:
+        // https://github.com/dotnet/runtime/blob/342936c5a88653f0f622e9d6cb727a0e59279b31/src/mono/browser/runtime/loader/config.ts#L330
+        // .NET 10+ apps set the variable from the Hot Reload agent JS module instead.
+        environmentBuilder[AgentEnvironmentVariables.DotNetModifiableAssemblies] = "debug";
     }
 
     public override void InitiateConnection(CancellationToken cancellationToken)
@@ -106,29 +113,20 @@ internal sealed class WebAssemblyHotReloadClient(
         }
 
         // Make sure to send the same update to all browsers, the only difference is the shared secret.
-        var deltas = applicableUpdates.Select(static update => new JsonDelta
-        {
-            ModuleId = update.ModuleId,
-            MetadataDelta = ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
-            ILDelta = ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
-            PdbDelta = ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
-            UpdatedTypes = ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!,
-        }).ToArray();
+        var deltas = applicableUpdates.Select(static update => new BrowserToolsManagedCodeUpdate(
+            update.ModuleId,
+            ImmutableCollectionsMarshal.AsArray(update.MetadataDelta)!,
+            ImmutableCollectionsMarshal.AsArray(update.ILDelta)!,
+            ImmutableCollectionsMarshal.AsArray(update.PdbDelta)!,
+            ImmutableCollectionsMarshal.AsArray(update.UpdatedTypes)!)).ToArray();
 
         var loggingLevel = Logger.IsEnabled(LogLevel.Debug) ? ResponseLoggingLevel.Verbose : ResponseLoggingLevel.WarningsAndErrors;
 
         return QueueUpdateBatch(
             sendAndReceive: async batchId =>
             {
-                browserRefreshServer.BrowserToolsUpdateStore.Append(new BrowserToolsUpdateBatch(
-                    generationId,
-                    batchId,
-                    [.. deltas.Select(static delta => new BrowserToolsManagedCodeUpdate(
-                        delta.ModuleId,
-                        delta.MetadataDelta,
-                        delta.ILDelta,
-                        delta.PdbDelta,
-                        delta.UpdatedTypes))]));
+                // Retain the batch so that browsers connecting later replay it before they start receiving messages.
+                browserRefreshServer.BrowserToolsUpdateStore.Append(new BrowserToolsUpdateBatch(generationId, batchId, [.. deltas]));
 
                 // When testing abstract away the browser and pretend all changes have been applied:
                 if (suppressBrowserRequestsForTesting)
@@ -184,17 +182,8 @@ internal sealed class WebAssemblyHotReloadClient(
 
         public Guid GenerationId { get; init; }
         public int UpdateId { get; init; }
-        public JsonDelta[] Deltas { get; init; }
+        public BrowserToolsManagedCodeUpdate[] Deltas { get; init; }
         public int ResponseLoggingLevel { get; init; }
-    }
-
-    private readonly struct JsonDelta
-    {
-        public Guid ModuleId { get; init; }
-        public byte[] MetadataDelta { get; init; }
-        public byte[] ILDelta { get; init; }
-        public byte[] PdbDelta { get; init; }
-        public int[] UpdatedTypes { get; init; }
     }
 
     private readonly struct JsonApplyDeltasResponse
