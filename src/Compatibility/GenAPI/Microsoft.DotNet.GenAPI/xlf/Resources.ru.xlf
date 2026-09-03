@@ -12,6 +12,11 @@
         <target state="translated">Не удалось разрешить тип "{0}" в содержащей сборке "{1}" путем перенаправления типа. Убедитесь, что сборка указана в качестве ссылки и содержит тип.</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">Не найден узел синтаксиса.</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

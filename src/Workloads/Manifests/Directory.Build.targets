@@ -1,0 +1,24 @@
+<Project>
+
+  <Target Name="LayoutManifest" DependsOnTargets="Pack" Condition="'$(IsShipping)' == 'true'">
+    <PropertyGroup>
+      <_manifestTargetDirectory>$(ManifestDirectory)$(BuiltinWorkloadFeatureBand)\$(MSBuildProjectName.Replace('.Manifest', '').ToLower())\$(Version)</_manifestTargetDirectory>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_manifestFiles Include="@(None->WithMetadataValue('PackagePath', 'data'))" />
+      <_manifestFilesLocalize Include="@(None->WithMetadataValue('PackagePath', 'data\localize'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(_manifestFiles)"
+          DestinationFolder="$(_manifestTargetDirectory)"
+          SkipUnchangedFiles="true" />
+
+    <Copy SourceFiles="@(_manifestFilesLocalize)"
+          DestinationFolder="$(_manifestTargetDirectory)\localize"
+          SkipUnchangedFiles="true" />
+  </Target>
+
+  <Import Project="..\..\..\Directory.Build.targets" />
+
+</Project>

@@ -15,11 +15,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-dev-certs" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-dev-certs" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet dev-certs
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET Core 3.1 SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-dev-certs - Generates a self-signed certificate to enable HTTPS use in development.
@@ -28,7 +28,8 @@ dotnet-dev-certs - Generates a self-signed certificate to enable HTTPS use in de
 .nf
 \f[C]
 dotnet dev-certs https 
-  [-c|--check] [--clean] [-ep|--export-path <PATH>]
+  [-c|--check] [--check-trust-machine-readable] 
+  [--clean] [-ep|--export-path <PATH>]
   [--format] [-i|--import] [-np|--no-password]
   [-p|--password] [-q|--quiet] [-t|--trust]
   [-v|--verbose] [--version]
@@ -80,6 +81,57 @@ The HTTPS developer certificate was generated successfully.
 By default, the newly created certificate is not trusted.
 To trust the certificate, use the \f[V]--trust\f[R] option.
 .PP
+In .NET 10 and later, the generated ASP.NET Core development certificate includes these subject alternative names (SANs).
+.PP
+The \f[V]*.dev.localhost\f[R] and \f[V]*.dev.internal\f[R] SANs lets you use the certificate with \f[V]*.dev.localhost\f[R] and \f[V]*.dev.internal\f[R] hostnames for local development.
+The \f[V]host.docker.internal\f[R] and \f[V]host.containers.internal\f[R] SANs let you use the certificate in container-based local development scenarios:
+.PP
+.TS
+tab(@);
+l l.
+T{
+Type
+T}@T{
+Value
+T}
+_
+T{
+DNS name
+T}@T{
+\f[V]localhost\f[R]
+T}
+T{
+DNS name
+T}@T{
+\f[V]*.dev.localhost\f[R]
+T}
+T{
+DNS name
+T}@T{
+\f[V]*.dev.internal\f[R]
+T}
+T{
+DNS name
+T}@T{
+\f[V]host.docker.internal\f[R]
+T}
+T{
+DNS name
+T}@T{
+\f[V]host.containers.internal\f[R]
+T}
+T{
+IP address
+T}@T{
+\f[V]127.0.0.1\f[R]
+T}
+T{
+IP address
+T}@T{
+\f[V]0000:0000:0000:0000:0000:0000:0000:0001\f[R]
+T}
+.TE
+.PP
 To create a file that you can use with other tools, use the \f[V]--export-path\f[R] option.
 .RE
 .SH OPTIONS
@@ -89,6 +141,12 @@ To create a file that you can use with other tools, use the \f[V]--export-path\f
 .PP
 Checks for the existence of the development certificate but doesn\[cq]t perform any action.
 Use this option with the \f[V]--trust\f[R] option to check if the certificate is not only valid but also trusted.
+.RE
+.IP \[bu] 2
+\f[B]\f[VB]--check-trust-machine-readable\f[B]\f[R]
+.RS 2
+.PP
+Same as running \f[V]--check --trust\f[R], but outputs the results in JSON.
 .RE
 .IP \[bu] 2
 \f[B]\f[VB]--clean\f[B]\f[R]
@@ -119,6 +177,7 @@ successfully removed from the machine.
 .PP
 Exports the certificate to a file so that it can be used by other tools.
 Specify the full path to the exported certificate file, including the file name.
+The containing directories must already exist and access to them should be restricted.
 The type of certificate files that are created depends on which options are used with \f[V]--export-path\f[R]:
 .PP
 .TS
@@ -224,6 +283,8 @@ Display warnings and errors only.
 .RS 2
 .PP
 Trusts the certificate on the local machine.
+.PP
+In .NET 10 and later, if you run this option inside a Windows Subsystem for Linux (WSL) instance, the command also trusts the certificate on the Windows host.
 .PP
 If this option isn\[cq]t specified, the certificate is added to the certificate store but not to a trusted list.
 .PP

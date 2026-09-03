@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <OutputType>Exe</OutputType>
+    <AppendTargetFrameworkToOutputPath>true</AppendTargetFrameworkToOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Moq" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="..\Microsoft.DotNet.GenAPI.Tests\TestAssemblyLoaderFactory.cs" />
+    <Compile Include="..\Microsoft.DotNet.ApiSymbolExtensions.Tests\SymbolFactory.cs" />
+    <Compile Include="..\Microsoft.DotNet.ApiSymbolExtensions.Tests\TempDirectory.cs" />
+    <None
+      Include="$(RepoRoot)src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff.Tool\AttributesToExclude.txt"
+      Link="AttributesToExclude.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\ApiDiff\Microsoft.DotNet.ApiDiff\Microsoft.DotNet.ApiDiff.csproj" />
+    <ProjectReference Include="$(RepoRoot)src\Compatibility\Microsoft.DotNet.ApiSymbolExtensions\Microsoft.DotNet.ApiSymbolExtensions.csproj" />
+  </ItemGroup>
+
+</Project>

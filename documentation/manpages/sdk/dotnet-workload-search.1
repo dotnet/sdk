@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-workload-search" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-workload-search" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet workload search
 .PP
@@ -26,7 +26,7 @@ dotnet-workload-search - Searches for optional workloads.
 .IP
 .nf
 \f[C]
-dotnet workload search [<SEARCH_STRING>] [-v|--verbosity <LEVEL>]
+dotnet workload search [<SEARCH_STRING>] [-v|--verbosity <LEVEL>] [version <WORKLOAD_VERSION>]
 
 dotnet workload search -?|-h|--help
 \f[R]
@@ -46,21 +46,22 @@ The workload ID to search for, or part of it.
 For example, if you specify \f[V]maui\f[R], the command lists all of the workload IDs that have \f[V]maui\f[R] in their workload ID.
 .RE
 .SH OPTIONS
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-v|--verbosity <LEVEL>\f[B]\f[R]
-.RS 2
 .PP
 Sets the verbosity level of the command.
 Allowed values are \f[V]q[uiet]\f[R], \f[V]m[inimal]\f[R], \f[V]n[ormal]\f[R], \f[V]d[etailed]\f[R], and \f[V]diag[nostic]\f[R].
 The default is \f[V]minimal\f[R].
 For more information, see <xref:Microsoft.Build.Framework.LoggerVerbosity>.
-.RE
+.PP
+\f[B]\f[VB]version <WORKLOAD_VERSION>\f[B]\f[R]
+.PP
+A workload version to display, or one or more workloads and their versions joined by the \f[V]\[at]\f[R] character.
+Support for the \f[V]\[at]\f[R] character is available since 9.0.200 SDK.
 .SH EXAMPLES
 .IP \[bu] 2
 List all available workloads:
@@ -79,6 +80,16 @@ List all available workloads that have \[lq]maui\[rq] in their workload ID:
 .nf
 \f[C]
 dotnet workload search maui
+\f[R]
+.fi
+.RE
+.IP \[bu] 2
+Search for a workload that matches the provided version:
+.RS 2
+.IP
+.nf
+\f[C]
+dotnet workload search version maui\[at]10.0.100
 \f[R]
 .fi
 .RE

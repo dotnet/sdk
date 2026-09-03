@@ -1,7 +1,7 @@
 variables:
   ############### BUILD ###############
   buildConfiguration: Release
-  linuxOsPortableProperties: /p:OSName=linux /p:IsLinuxPortable=true
+  linuxOsglibcProperties: /p:OSName=linux
   helixTargetContainerPrefix: '@mcr.microsoft.com/dotnet-buildtools/prereqs:'
 
   ############### ARCADE ###############

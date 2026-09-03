@@ -1,6 +1,8 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.Collections;
 using System.Globalization;
 using System.Text.RegularExpressions;
@@ -36,9 +38,11 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             1183,
             1190,
             1192,
+            1209,
             1213,
             1214,
-            1219
+            1219,
+            1223
         };
 
         //ILLink lives in other repos and violated the _info requirement for no error code
@@ -104,13 +108,13 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
 
                 if (name.EndsWith("_Info"))
                 {
-                    comment.Should().NotContain("StrBegin",
+                    comment.Should().NotContain("StrBegins",
                         because: "informational messages should not have error codes.");
                 }
                 else if (!_infoExceptions.Contains(name))
                 {
 
-                    comment.Should().StartWith($@"{{StrBegin=""{prefix} ""}}",
+                    comment.Should().StartWith($@"{{StrBegins=""{prefix} ""}}",
                         because: $"localization instructions should indicate invariant error code as preceding translatable message.");
                 }
             }

@@ -8,6 +8,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 ### For Windows
 
 1. git (available from the [Git Website](http://www.git-scm.com/)) on the PATH.
+2. MSVC, C++ CMake Tools, and C++ ATL through the Visual Studio Installer via the "Desktop development with C++" workload.
 
 ### For Linux
 
@@ -15,7 +16,7 @@ In order to build and test the .NET Core Command-line Interface (CLI), you need 
 
 ### For macOS
 
-1. git (available from [Homebrew](https://www.google.com/search?client=firefox-b-1-d&q=homebrew) or the [Git Website](http://www.git-scm.com/)) on the PATH.
+1. git (available from [Homebrew](https://brew.sh) or the [Git Website](http://www.git-scm.com/)) on the PATH.
 
 ## Building
 
@@ -33,9 +34,9 @@ As part of the build, some intermediate files will get generated which may run i
 
 #### Using Visual Studio
 
-The simple way to launch Visual Studio after building via `build.cmd` is to double-click the `VS with sdk.sln` Windows shortcut in the `artifacts` folder. This will load the generated environment automatically and launch Visual Studio with the `sdk.sln` solution.
+The simple way to launch Visual Studio after building via `build.cmd` is to double-click the `VS with sdk.slnx` Windows shortcut in the `artifacts` folder. This will load the generated environment automatically and launch Visual Studio with the `sdk.slnx` solution.
 
-Alternatively, to open the solution in Visual Studio, be sure to build with `build.cmd` and run the generated environment for your shell. If you're using `cmd`, then run `artifacts\sdk-build-env.bat`. If you're using PowerShell, you need to 'dot source' `artifacts/sdk-build-env.ps1`. Finally, open Visual Studio with `devenv sdk.sln`.
+Alternatively, to open the solution in Visual Studio, be sure to build with `build.cmd` and run the generated environment for your shell. If you're using `cmd`, then run `artifacts\sdk-build-env.bat`. If you're using PowerShell, you need to 'dot source' `artifacts/sdk-build-env.ps1`. Finally, open Visual Studio with `devenv sdk.slnx`.
 
 In addition, Visual Studio must have the following option set (this option is automatically set in preview Visual Studio builds):
 
@@ -78,7 +79,7 @@ Run the following command from the root of the repository to run all the .NET Co
 
 The `dotnet` executable in the artifacts directory can be run directly.
 
-However, it's easier to configure a test environment to run the built `dotnet`. This test environment is managed by dogfood. 
+However, it's easier to configure a test environment to run the built `dotnet`. This test environment is managed by dogfood.
 The dogfood script starts a new Powershell with the environment configured to redirect SDK resolution to your build.
 
 From that shell your SDK will be available in:
@@ -145,7 +146,7 @@ Use developer command prompt for Visual Studio or put devenv on you PATH
 ```shell
 build.cmd # to have a full build first
 .\artifacts\sdk-build-env.bat
-devenv sdk.sln
+devenv sdk.slnx
 ```
 
 Note again that in Visual studio "Use previews of the .NET SDK (requires restart)" must be checked. See the above comment for how to enable this.
@@ -165,7 +166,7 @@ This should print `Hello World!`.
 
 ## Locked files
 
-If you see error like ` error MSB3021: Unable to copy file "toolset-tasks.dll" to "toolset-tasks.dll". The process cannot access the file 'toolset-tasks.dll' because it is being used by another process.`
+If you see error like ` error MSB3021: Unable to copy file "sdk-tasks.dll" to "sdk-tasks.dll". The process cannot access the file 'sdk-tasks.dll' because it is being used by another process.`
 
 You could run the following to stop all dotnet related processes
 

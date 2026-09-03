@@ -14,7 +14,7 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public ITestOutputHelper Log { get; }
 
-        public string WorkingDirectory { get; set; }
+        public string? WorkingDirectory { get; set; }
 
         public List<string> Arguments { get; set; } = new List<string>();
 
@@ -29,9 +29,13 @@ namespace Microsoft.NET.TestFramework.Commands
         /// </summary>
         public bool DisableTruncatedOutputLogging { get; set; }
 
+        public bool RedirectStandardInput { get; set; }
+
         //  These only work via Execute(), not when using GetProcessStartInfo()
-        public Action<string> CommandOutputHandler { get; set; }
-        public Action<Process> ProcessStartedHandler { get; set; }
+        public Action<string>? CommandOutputHandler { get; set; }
+        public Action<Process>? ProcessStartedHandler { get; set; }
+
+        public Encoding? StandardOutputEncoding { get; set; }
 
         protected TestCommand(ITestOutputHelper log)
         {
@@ -49,6 +53,24 @@ namespace Microsoft.NET.TestFramework.Commands
         public TestCommand WithWorkingDirectory(string workingDirectory)
         {
             WorkingDirectory = workingDirectory;
+            return this;
+        }
+
+        public TestCommand WithStandardInput(string stdin)
+        {
+            Debug.Assert(ProcessStartedHandler == null);
+            RedirectStandardInput = true;
+            ProcessStartedHandler = (process) =>
+            {
+                process.StandardInput.Write(stdin);
+                process.StandardInput.Close();
+            };
+            return this;
+        }
+
+        public TestCommand WithStandardOutputEncoding(Encoding encoding)
+        {
+            StandardOutputEncoding = encoding;
             return this;
         }
 
@@ -103,6 +125,8 @@ namespace Microsoft.NET.TestFramework.Commands
                 commandSpec.Arguments = Arguments.Concat(commandSpec.Arguments).ToList();
             }
 
+            commandSpec.RedirectStandardInput = RedirectStandardInput;
+
             return commandSpec;
         }
 
@@ -139,7 +163,9 @@ namespace Microsoft.NET.TestFramework.Commands
 
         public virtual CommandResult Execute(IEnumerable<string> args)
         {
-            var command = CreateCommandSpec(args)
+            var spec = CreateCommandSpec(args);
+
+            var command = spec
                 .ToCommand(_doNotEscapeArguments)
                 .CaptureStdOut()
                 .CaptureStdErr();
@@ -149,6 +175,17 @@ namespace Microsoft.NET.TestFramework.Commands
                 command.OnOutputLine(CommandOutputHandler);
             }
 
+            if (StandardOutputEncoding is not null)
+            {
+                command.StandardOutputEncoding(StandardOutputEncoding);
+            }
+
+            string fileToShow = Path.GetFileNameWithoutExtension(spec.FileName!).Equals("dotnet", StringComparison.OrdinalIgnoreCase) ?
+                "dotnet" :
+                spec.FileName!;
+            var display = $"{fileToShow} {string.Join(" ", spec.Arguments)}";
+
+            Log.WriteLine($"Executing '{display}':");
             var result = ((Command)command).Execute(ProcessStartedHandler);
 
             // By default, cap how much of the (potentially enormous) command output is echoed to the test
@@ -164,6 +201,17 @@ namespace Microsoft.NET.TestFramework.Commands
             {
                 using var truncatingLog = new TruncatingTestOutputHelper(Log);
                 LogCommandResult(truncatingLog, result);
+            }
+
+            Log.WriteLine($"Command '{display}' exited with exit code {result.ExitCode}.");
+
+            if (Environment.GetEnvironmentVariable("HELIX_WORKITEM_UPLOAD_ROOT") is string uploadRoot)
+            {
+                var binlogFiles = Directory.GetFiles(spec.WorkingDirectory ?? Environment.CurrentDirectory, "*.binlog");
+                foreach (string binlogFile in binlogFiles)
+                {
+                    File.Copy(binlogFile, Path.Combine(uploadRoot, Path.GetFileName(binlogFile)), true);
+                }
             }
 
             return result;

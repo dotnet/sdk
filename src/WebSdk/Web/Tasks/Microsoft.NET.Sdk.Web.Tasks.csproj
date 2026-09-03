@@ -11,6 +11,17 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(SdkTargetFramework);net472</TargetFrameworks>
+
+    <!--
+      Disable CS9057 in source-only dev/ci builds. This is necessary because the SDK distributes Microsoft.AspNetCore.Analyzers
+      with its Microsoft.NET.Sdk.Web.Tasks package. Microsoft.AspNetCore.Analyzers gets built with a dependency on the live
+      version of Microsoft.CodeAnalysis. In a dev/ci build, the assembly version associated with Microsoft.CodeAnalysis in 
+      that case is 42.42.42.4242, set by Arcade in dev/ci builds. So when building Microsoft.NET.Sdk.Web.Tasks with its
+      analyzer dependencies, it will cause CS9057 because the analyzer assembly version is not the same as the compiler
+      assembly version being used by the sdk that the project is being built with. But this is fine because the analyzer
+      is just being used here to distribute it with the Microsoft.NET.Sdk.Web.Tasks package.
+    -->
+    <NoWarn Condition="'$(DotNetBuildSourceOnly)' == 'true' and '$(OfficialBuild)' != 'true'">$(NoWarn);CS9057</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

@@ -12,6 +12,11 @@
         <target state="translated">アセンブリ '{1}' の型 '{0}' を型順方向で解決できませんでした。アセンブリが参照として指定され、型が含まれていることを確認してください。</target>
         <note />
       </trans-unit>
+      <trans-unit id="SyntaxNodeNotFound">
+        <source>Syntax node not found.</source>
+        <target state="translated">構文ノードが見つかりません。</target>
+        <note />
+      </trans-unit>
     </body>
   </file>
 </xliff>

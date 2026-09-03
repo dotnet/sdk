@@ -15,11 +15,11 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "dotnet-nuget-verify" "1" "2024-10-02" "" ".NET Documentation"
+.TH "dotnet-nuget-verify" "1" "2026-08-28" "" ".NET Documentation"
 .hy
 .SH dotnet nuget verify
 .PP
-\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 5.0.100-rc.2.x SDK and later versions
+\f[B]This article applies to:\f[R] \[u2714]\[uFE0F] .NET 6 SDK and later versions
 .SH NAME
 .PP
 dotnet-nuget-verify - Verifies a signed NuGet package.
@@ -39,6 +39,7 @@ dotnet nuget verify -h|--help
 .SH DESCRIPTION
 .PP
 The \f[V]dotnet nuget verify\f[R] command verifies a signed NuGet package.
+In .NET 10 and later versions, the command also outputs the package\[cq]s content hash, which might be useful to investigate lock file validation errors.
 .RS
 .PP
 This command requires a certificate root store that is valid for both code signing and timestamping.
@@ -313,21 +314,17 @@ T}
 \[u274C] indicates details that are \f[B]not\f[R] displayed.
 \[u2714]\[uFE0F] indicates details that are displayed.
 .RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]--configfile <FILE>\f[B]\f[R]
-.RS 2
 .PP
 The NuGet configuration file (\f[I]nuget.config\f[R]) to use.
 If specified, only the settings from this file will be used.
 If not specified, the hierarchy of configuration files from the current directory will be used.
 For more information, see Common NuGet Configurations.
-.RE
-.IP \[bu] 2
+.PP
 \f[B]\f[VB]-?|-h|--help\f[B]\f[R]
-.RS 2
 .PP
 Prints out a description of how to use the command.
-.RE
 .SH EXAMPLES
 .IP \[bu] 2
 Verify \f[I]foo.nupkg\f[R]:

@@ -1,0 +1,110 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
+
+  <PropertyGroup>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <TargetFramework>$(ToolsetTargetFramework)</TargetFramework>
+    <StrongNameKeyId>MicrosoftAspNetCore</StrongNameKeyId>
+    <OutputType>Exe</OutputType>
+    <IsUnitTestProject>true</IsUnitTestProject>
+    <EnableStyleCopAnalyzer>true</EnableStyleCopAnalyzer>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Cli\dotnet\dotnet.csproj" />
+    <ProjectReference Include="..\Microsoft.NET.TestFramework\Microsoft.NET.TestFramework.csproj" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="Verify.Xunit" />
+    <PackageReference Include="Verify.DiffPlex" />
+    <PackageReference Include="Microsoft.TemplateEngine.TestHelper" />
+    <PackageReference Include="Microsoft.TemplateEngine.Authoring.TemplateVerifier" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageDownload Include="Microsoft.TemplateSearch.TemplateDiscovery" Version="[$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)]" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Common.ProjectTemplates.9.0" VersionOverride="9.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.6.0" VersionOverride="6.0.*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.7.0" VersionOverride="7.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.8.0" VersionOverride="8.0.*-*" GeneratePathProperty="true" />
+    <PackageReference Include="Microsoft.DotNet.Web.ProjectTemplates.9.0" VersionOverride="9.0.*-*" GeneratePathProperty="true" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <GeneratedText>
+      <![CDATA[
+namespace Microsoft.DotNet.Cli.New.IntegrationTests
+{
+  internal class TemplatePackagesPaths
+  {
+      private static string FindNupkg(string namePrefix)
+      {
+          string[] files = System.IO.Directory.GetFiles(System.AppContext.BaseDirectory, namePrefix + "*.nupkg")%3B
+          if (files.Length == 0)
+              throw new System.IO.FileNotFoundException($"No nupkg matching '{namePrefix}*.nupkg' in '{System.AppContext.BaseDirectory}'")%3B
+          return files[0]%3B
+      }
+
+      public static string MicrosoftDotNetCommonProjectTemplates60Path => FindNupkg("microsoft.dotnet.common.projecttemplates.6.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates70Path => FindNupkg("microsoft.dotnet.common.projecttemplates.7.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates80Path => FindNupkg("microsoft.dotnet.common.projecttemplates.8.0.")%3B
+      public static string MicrosoftDotNetCommonProjectTemplates90Path => FindNupkg("microsoft.dotnet.common.projecttemplates.9.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates60Path => FindNupkg("microsoft.dotnet.web.projecttemplates.6.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates70Path => FindNupkg("microsoft.dotnet.web.projecttemplates.7.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates80Path => FindNupkg("microsoft.dotnet.web.projecttemplates.8.0.")%3B
+      public static string MicrosoftDotNetWebProjectTemplates90Path => FindNupkg("microsoft.dotnet.web.projecttemplates.9.0.")%3B
+  }
+
+  internal class TemplatePackageVersion
+  {
+      public const string MicrosoftTemplateSearchTemplateDiscoveryPackageVersion = "$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)"%3B
+  }
+}
+      ]]>
+    </GeneratedText>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_6_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_7_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_8_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Common_ProjectTemplates_9_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_6_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_7_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_8_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(PkgMicrosoft_DotNet_Web_ProjectTemplates_9_0)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="$(NuGetPackageRoot)microsoft.templatesearch.templatediscovery\$(MicrosoftTemplateSearchTemplateDiscoveryPackageVersion)\*.nupkg" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <Target Name="AddGeneratedFile" BeforeTargets="BeforeCompile;CoreCompile" Inputs="$(MSBuildAllProjects)" Outputs="$(IntermediateOutputPath)GeneratedFile.cs">
+    <PropertyGroup>
+      <GeneratedFilePath>$(IntermediateOutputPath)TemplatePackagesPaths.cs</GeneratedFilePath>
+    </PropertyGroup>
+    <ItemGroup>
+      <Compile Include="$(GeneratedFilePath)" />
+      <FileWrites Include="$(GeneratedFilePath)" />
+    </ItemGroup>
+    <WriteLinesToFile Lines="$(GeneratedText)" File="$(GeneratedFilePath)" WriteOnlyWhenDifferent="true" Overwrite="true" />
+  </Target>
+
+  <Target Name="CopyDBFilesToTestLayoutDir" AfterTargets="Build">
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.props" DestinationFolder="$(TestLayoutDir)" />
+    <Copy SourceFiles="TestDirectoryBuildFiles/Directory.Build.targets" DestinationFolder="$(TestLayoutDir)" />
+  </Target>
+
+  <ItemGroup>
+    <Compile Remove="TestTemplates\**\*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TestTemplates\**\*" Exclude="TestTemplates\**\bin\**;TestTemplates\**\obj\**" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Approvals\**\*" />
+    <None Include="Approvals\**\*" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

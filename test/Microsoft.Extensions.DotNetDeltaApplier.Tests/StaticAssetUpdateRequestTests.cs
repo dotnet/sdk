@@ -11,10 +11,11 @@ public class StaticAssetUpdateRequestTests
     public async Task Roundtrip()
     {
         var initial = new StaticAssetUpdateRequest(
-            assemblyName: "assembly name",
-            relativePath: "some path",
-            [1, 2, 3],
-            isApplicationProject: true,
+            new RuntimeStaticAssetUpdate(
+                assemblyName: "assembly name",
+                relativePath: "some path",
+                [1, 2, 3],
+                isApplicationProject: true),
             responseLoggingLevel: ResponseLoggingLevel.WarningsAndErrors);
 
         using var stream = new MemoryStream();
@@ -28,9 +29,9 @@ public class StaticAssetUpdateRequestTests
 
     private static void AssertEqual(StaticAssetUpdateRequest initial, StaticAssetUpdateRequest read)
     {
-        Assert.Equal(initial.AssemblyName, read.AssemblyName);
-        Assert.Equal(initial.RelativePath, read.RelativePath);
-        Assert.Equal(initial.IsApplicationProject, read.IsApplicationProject);
-        Assert.Equal(initial.Contents, read.Contents);
+        Assert.Equal(initial.Update.AssemblyName, read.Update.AssemblyName);
+        Assert.Equal(initial.Update.RelativePath, read.Update.RelativePath);
+        Assert.Equal(initial.Update.IsApplicationProject, read.Update.IsApplicationProject);
+        AssertEx.SequenceEqual(initial.Update.Contents, read.Update.Contents);
     }
 }

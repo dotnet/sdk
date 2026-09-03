@@ -1,6 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+#nullable disable
+
 using System.IO.Compression;
 using System.Reflection.Metadata;
 
@@ -288,7 +290,7 @@ namespace Microsoft.NET.Build.Tests
             }
         }
 
-        [FullMSBuildOnlyFact]
+        [FullMSBuildOnlyFact(Skip = "https://github.com/dotnet/sdk/issues/53789")]
         public void Cpp()
         {
             var testAsset = _testAssetsManager

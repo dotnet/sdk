@@ -14,7 +14,7 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Win32;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.DotNet.Installer.Windows;
+namespace Microsoft.DotNet.Cli.Installer.Windows;
 
 [SupportedOSPlatform("windows")]
 /// <summary>

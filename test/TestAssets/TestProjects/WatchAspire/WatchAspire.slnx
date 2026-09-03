@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="WatchAspire.ApiService/WatchAspire.ApiService.csproj" />
+  <Project Path="WatchAspire.AppHost/WatchAspire.AppHost.csproj" />
+  <Project Path="WatchAspire.MigrationService/WatchAspire.MigrationService.csproj" />
+  <Project Path="WatchAspire.ServiceDefaults/WatchAspire.ServiceDefaults.csproj" />
+  <Project Path="WatchAspire.Wasm/WatchAspire.Wasm.csproj" />
+  <Project Path="WatchAspire.Web/WatchAspire.Web.csproj" />
+</Solution>

@@ -1,7 +1,7 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using Microsoft.NET.Sdk.Razor.Tests;
+using Microsoft.NET.Sdk.StaticWebAssets.Tests;
 
 namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
 {
@@ -9,7 +9,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
         : IsolatedNuGetPackageFolderAspNetSdkBaselineTest(log, nameof(BlazorMultitargetIntegrationTest))
     {
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void MultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange
@@ -29,7 +29,7 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
             browserDependencies.File("captured-references.txt").Should().NotContain("Microsoft.AspNetCore.Components.Server.dll");
         }
 
-        [Fact]
+        [RequiresMSBuildVersionFact("17.12", Reason = "Needs System.Text.Json 8.0.5")]
         public void ReferencedMultiTargetApp_LoadsTheCorrectSdkBasedOnTfm()
         {
             // Arrange

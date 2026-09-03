@@ -94,11 +94,11 @@ namespace Microsoft.DotNet.PackageValidation
             _contentItemCollection = new ContentItemCollection();
             _contentItemCollection.Load(packageAssets);
 
-            PackageAssets = GetContentItemsFromPattern(_conventions.Patterns.AnyTargettedFile);
-            RefAssets = GetContentItemsFromPattern(_conventions.Patterns.CompileRefAssemblies);
-            LibAssets = GetContentItemsFromPattern(_conventions.Patterns.CompileLibAssemblies);
+            PackageAssets = _contentItemCollection.FindItems(_conventions.Patterns.AnyTargettedFile);
+            RefAssets = _contentItemCollection.FindItems(_conventions.Patterns.CompileRefAssemblies);
+            LibAssets = _contentItemCollection.FindItems(_conventions.Patterns.CompileLibAssemblies);
             CompileAssets = RefAssets.Any() ? RefAssets : LibAssets;
-            RuntimeAssets = GetContentItemsFromPattern(_conventions.Patterns.RuntimeAssemblies);
+            RuntimeAssets = _contentItemCollection.FindItems(_conventions.Patterns.RuntimeAssemblies);
             RuntimeSpecificAssets = RuntimeAssets.Where(t => t.Path.StartsWith("runtimes")).ToArray();
             Rids = RuntimeSpecificAssets.Select(t => (string)t.Properties["rid"])
                 .Distinct()
@@ -108,13 +108,6 @@ namespace Microsoft.DotNet.PackageValidation
                 .Distinct()
                 .ToArray();
             AssemblyReferences = assemblyReferences;
-
-            IEnumerable<ContentItem> GetContentItemsFromPattern(PatternSet pattern)
-            {
-                List<ContentItemGroup> itemGroups = new();
-                _contentItemCollection.PopulateItemGroups(pattern, itemGroups);
-                return itemGroups.SelectMany(i => i.Items).ToArray();
-            }
         }
 
         public static void InitializeRuntimeGraph(string runtimeGraph)
@@ -237,7 +230,7 @@ namespace Microsoft.DotNet.PackageValidation
             {
                 NuGetFramework assemblyReferencesFramework = tfmQueue.Dequeue();
 
-                NuGetFramework? bestAssemblyReferencesFramework = NuGetFrameworkUtility.GetNearest(tfmQueue.Concat(new NuGetFramework[] { framework }), assemblyReferencesFramework, (key) => key);
+                NuGetFramework? bestAssemblyReferencesFramework = NuGetFrameworkUtility.GetNearest(tfmQueue.Concat([framework]), assemblyReferencesFramework, (key) => key);
                 if (bestAssemblyReferencesFramework == framework)
                 {
                     return AssemblyReferences[assemblyReferencesFramework];

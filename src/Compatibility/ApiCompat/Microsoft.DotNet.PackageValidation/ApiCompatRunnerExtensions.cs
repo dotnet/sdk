@@ -42,6 +42,12 @@ namespace Microsoft.DotNet.PackageValidation
                 {
                     fallbackAssemblyReferences = rightPackage.FindBestAssemblyReferencesForFramework(leftTargetFramework);
                 }
+
+                // if we cannot find references for the left framework, then just use the same right references for the left assembly
+                if (fallbackAssemblyReferences is null && rightContentItems[0].Properties.TryGetValue("tfm", out tfmObj) && tfmObj is NuGetFramework rightTargetFramework)
+                {
+                    fallbackAssemblyReferences = rightPackage.FindBestAssemblyReferencesForFramework(rightTargetFramework);
+                }
             }
 
             MetadataInformation[] left = new MetadataInformation[leftContentItems.Count];

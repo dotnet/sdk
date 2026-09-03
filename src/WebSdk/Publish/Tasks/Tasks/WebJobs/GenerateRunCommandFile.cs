@@ -9,14 +9,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.WebJobs
     {
         private const string RunCommandFile = "run";
         [Required]
-        public string ProjectDirectory { get; set; }
+        public string? ProjectDirectory { get; set; }
         [Required]
-        public string WebJobsDirectory { get; set; }
+        public string? WebJobsDirectory { get; set; }
         [Required]
-        public string TargetPath { get; set; }
+        public string? TargetPath { get; set; }
         [Required]
         public bool UseAppHost { get; set; }
-        public string ExecutableExtension { get; set; }
+        public string? ExecutableExtension { get; set; }
         public bool IsLinux { get; set; }
 
         public override bool Execute()
@@ -24,11 +24,14 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.WebJobs
             string runCmdFileExtension = IsLinux ? "sh" : "cmd";
             string runCmdFileName = $"{RunCommandFile}.{runCmdFileExtension}";
 
-            bool isRunCommandFilePresent = File.Exists(Path.Combine(ProjectDirectory, runCmdFileName));
+            bool isRunCommandFilePresent = ProjectDirectory is not null && File.Exists(Path.Combine(ProjectDirectory, runCmdFileName));
             if (!isRunCommandFilePresent)
             {
                 string command = WebJobsCommandGenerator.RunCommand(TargetPath, UseAppHost, ExecutableExtension, IsLinux);
-                File.WriteAllText(Path.Combine(WebJobsDirectory, runCmdFileName), command);
+                if (WebJobsDirectory is not null)
+                {
+                    File.WriteAllText(Path.Combine(WebJobsDirectory, runCmdFileName), command);
+                }
             }
 
             return true;

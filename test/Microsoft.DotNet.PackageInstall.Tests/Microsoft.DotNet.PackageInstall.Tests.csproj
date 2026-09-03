@@ -71,8 +71,6 @@
       <testAssetSourceRoot>$(BaseOutputPath)/TestAsset/SampleGlobalTool</testAssetSourceRoot>
     </PropertyGroup>
 
-    <Copy SourceFiles="SampleGlobalTool/DotnetToolSettings.xml" DestinationFolder="$(testAssetSourceRoot)" />
-
     <MSBuild Projects="SampleGlobalTool/consoledemo.csproj"
              Targets="Restore"
              Properties="Configuration=Release;BaseOutputPath=$(testAssetSourceRoot)/bin/;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false;ForceRestoreToEvaluateSeparately=1"
@@ -85,7 +83,7 @@
 
     <MSBuild Projects="SampleGlobalTool/consoledemo.csproj"
              Targets="Pack"
-             Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
+             Properties="Configuration=Release;PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
              RemoveProperties="TargetFramework" />
   </Target>
 
@@ -96,8 +94,6 @@
       <testAssetSourceRoot>$(BaseOutputPath)/TestAsset/SampleGlobalToolWithPreview</testAssetSourceRoot>
     </PropertyGroup>
 
-    <Copy SourceFiles="SampleGlobalToolWithPreview/DotnetToolSettings.xml" DestinationFolder="$(testAssetSourceRoot)" />
-
     <MSBuild Projects="SampleGlobalToolWithPreview/consoledemo.csproj"
              Targets="Restore"
              Properties="Configuration=Release;BaseOutputPath=$(testAssetSourceRoot)/bin/;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false;ForceRestoreToEvaluateSeparately=1"
@@ -110,7 +106,7 @@
 
     <MSBuild Projects="SampleGlobalToolWithPreview/consoledemo.csproj"
              Targets="Pack"
-             Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
+             Properties="Configuration=Release;PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
              RemoveProperties="TargetFramework" />
   </Target>
 
@@ -121,8 +117,6 @@
       <testAssetSourceRoot>$(BaseOutputPath)/TestAsset/SampleGlobalToolWithDifferentCasing</testAssetSourceRoot>
     </PropertyGroup>
 
-    <Copy SourceFiles="SampleGlobalToolWithDifferentCasing/DotnetToolSettings.xml" DestinationFolder="$(testAssetSourceRoot)" />
-
     <MSBuild Projects="SampleGlobalToolWithDifferentCasing/ConsoleDemoWithCasing.csproj"
              Targets="Restore"
              Properties="Configuration=Release;BaseOutputPath=$(testAssetSourceRoot)/bin/;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false;ForceRestoreToEvaluateSeparately=1"
@@ -135,7 +129,7 @@
 
     <MSBuild Projects="SampleGlobalToolWithDifferentCasing/ConsoleDemoWithCasing.csproj"
              Targets="Pack"
-             Properties="Configuration=Release;NuspecFile=includepublish.nuspec;NuspecBasePath=$(testAssetSourceRoot);PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
+             Properties="Configuration=Release;PackageOutputPath=$(OutputPath)TestAssetLocalNugetFeed;BaseIntermediateOutputPath=$(testAssetSourceRoot)/obj/;ImportDirectoryBuildProps=false;ImportDirectoryBuildTargets=false"
              RemoveProperties="TargetFramework" />
   </Target>
 

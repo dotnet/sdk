@@ -8,18 +8,18 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
     public class DeploymentResponse
     {
         [JsonPropertyName("id")]
-        public string Id { get; set; }
+        public string? Id { get; set; }
 
         [JsonPropertyName("status")]
         public DeployStatus? Status { get; set; }
 
         [JsonPropertyName("log_url")]
-        public string LogUrl { get; set; }
+        public string? LogUrl { get; set; }
     }
 
     public static class DeploymentResponseExtensions
     {
-        public static string GetLogUrlWithId(this DeploymentResponse deploymentResponse)
+        public static string? GetLogUrlWithId(this DeploymentResponse deploymentResponse)
         {
             if (deploymentResponse is null
                 || string.IsNullOrEmpty(deploymentResponse.LogUrl)
@@ -37,7 +37,7 @@ namespace Microsoft.NET.Sdk.Publish.Tasks.ZipDeploy
                 if (!string.IsNullOrEmpty(pathAndQuery))
                 {
                     string[] pathAndQueryParts = pathAndQuery.Split(new char[] { '/' }, StringSplitOptions.RemoveEmptyEntries);
-                    string[] pathWithIdParts = new string[pathAndQueryParts.Length];
+                    string?[] pathWithIdParts = new string[pathAndQueryParts.Length];
 
                     for (int i = pathAndQueryParts.Length - 1; i >= 0; i--)
                     {

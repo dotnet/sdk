@@ -42,6 +42,19 @@ public class EndToEndTests : IDisposable
         _loggerFactory.Dispose();
     }
 
+    internal static readonly string _oldFramework = "net9.0";
+    // CLI will not let us to target net9.0 anymore but we still need it because images for net10.0 aren't ready yet.
+    // so we let it create net10.0 app, then change the target. Since we're building just small sample applications, it works.
+    internal static void ChangeTargetFrameworkAfterAppCreation(string path)
+    {
+        DirectoryInfo d = new DirectoryInfo(path);
+        FileInfo[] Files = d.GetFiles("*.csproj"); //Getting .csproj files
+        string csprojFilename = Files[0].Name; // There is only one
+        string text = File.ReadAllText(Path.Combine(path, csprojFilename));
+        text = text.Replace("net10.0", _oldFramework);
+        File.WriteAllText(Path.Combine(path, csprojFilename), text);
+    }
+
     [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/49502")]
     public async Task ApiEndToEndWithRegistryPushAndPull()
     {
@@ -340,14 +353,17 @@ public class EndToEndTests : IDisposable
             .Execute()
             .Should().Pass();
 
+        ChangeTargetFrameworkAfterAppCreation(Path.Combine(TestSettings.TestArtifactsDirectory, testName, "MinimalTestApp"));
+
+
         var publishCommand =
-            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", tfm, "-c", "Debug")
+            new DotnetCommand(_testOutput, "publish", "-bl", "MinimalTestApp", "-r", rid, "-f", _oldFramework, "-c", "Debug")
                 .WithWorkingDirectory(workingDirectory);
 
         publishCommand.Execute()
             .Should().Pass();
 
-        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", tfm, rid, "publish");
+        string publishDirectory = Path.Join(workingDirectory, "MinimalTestApp", "bin", "Debug", _oldFramework, rid, "publish");
         return publishDirectory;
     }
 
@@ -400,7 +416,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = ToolsetInfo.CurrentTargetFramework;
+                .Value = _oldFramework;
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -413,7 +429,7 @@ public class EndToEndTests : IDisposable
             document
                 .Descendants()
                 .First(e => e.Name.LocalName == "TargetFramework")
-                .Value = ToolsetInfo.CurrentTargetFramework;
+                .Value = _oldFramework;
 
             stream.SetLength(0);
             await document.SaveAsync(stream, SaveOptions.None, CancellationToken.None);
@@ -529,7 +545,6 @@ public class EndToEndTests : IDisposable
 
         newProjectDir.Create();
         privateNuGetAssets.Create();
-
         new DotnetNewCommand(_testOutput, projectType, "-f", ToolsetInfo.CurrentTargetFramework)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
@@ -542,16 +557,16 @@ public class EndToEndTests : IDisposable
         {
             File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-            (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+            (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+            new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
                 .Should().Pass();
 
             // Add package to the project
-            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+            new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion ?? string.Empty)
                 .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
                 .WithWorkingDirectory(newProjectDir.FullName)
                 .Execute()
@@ -615,16 +630,14 @@ public class EndToEndTests : IDisposable
         processResult.Should().Pass();
         Assert.NotNull(processResult.StdOut);
         string appContainerId = processResult.StdOut.Trim();
-
         bool everSucceeded = false;
-
         if (projectType == "webapi")
         {
             var portCommand =
             ContainerCli.PortCommand(_testOutput, containerName, 8080)
                 .Execute();
             portCommand.Should().Pass();
-            var port = portCommand.StdOut.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
+            var port = portCommand.StdOut?.Trim().Split("\n")[0]; // only take the first port, which should be 0.0.0.0:PORT. the second line will be an ip6 port, if any.
             _testOutput.WriteLine($"Discovered port was '{port}'");
             var tempUri = new Uri($"http://{port}", UriKind.Absolute);
             var appUri = new UriBuilder(tempUri)
@@ -710,19 +723,20 @@ public class EndToEndTests : IDisposable
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .Execute()
             .Should().Pass();
+        ChangeTargetFrameworkAfterAppCreation(newProjectDir.FullName);
 
         File.Copy(Path.Combine(TestContext.Current.TestExecutionDirectory, "NuGet.config"), Path.Combine(newProjectDir.FullName, "NuGet.config"));
 
-        (string packagePath, string packageVersion) = ToolsetUtils.GetContainersPackagePath();
+        (string? packagePath, string? packageVersion) = ToolsetUtils.GetContainersPackagePath();
 
-        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath), "--name", "local-temp")
+        new DotnetCommand(_testOutput, "nuget", "add", "source", Path.GetDirectoryName(packagePath) ?? string.Empty, "--name", "local-temp")
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
             .Should().Pass();
 
         // Add package to the project
-        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", ToolsetInfo.CurrentTargetFramework, "-v", packageVersion)
+        new DotnetCommand(_testOutput, "add", "package", "Microsoft.NET.Build.Containers", "-f", _oldFramework, "-v", packageVersion ?? string.Empty)
             .WithEnvironmentVariable("NUGET_PACKAGES", privateNuGetAssets.FullName)
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -768,7 +782,7 @@ public class EndToEndTests : IDisposable
     public void EndToEnd_SingleArch_NoRid()
     {
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
 
         string imageName = NewImageName();
         string imageTag = "1.0";
@@ -806,7 +820,7 @@ public class EndToEndTests : IDisposable
         string image = $"{imageName}:{tag}";
 
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
 
         // Run PublishContainer for multi-arch
         CommandResult commandResult = new DotnetCommand(
@@ -822,8 +836,8 @@ public class EndToEndTests : IDisposable
 
         // Check that the app was published for each RID, one image was created locally
         commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-arm64"))
             .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-x64'")
             .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-arm64'")
             .And.HaveStdOutContaining($"Pushed image '{image}' to local registry");
@@ -864,7 +878,7 @@ public class EndToEndTests : IDisposable
         string qualifiedImageName = $"{imageName}:{imageTag}";
 
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
 
         // Run PublishContainer for multi-arch-capable, but single-arch actual
         CommandResult commandResult = new DotnetCommand(
@@ -889,7 +903,7 @@ public class EndToEndTests : IDisposable
         // and image index was NOT created
         commandResult.Should().Pass()
             // no rid-specific path because we didn't pass RuntimeIdentifier
-            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-x64"))
             .And.HaveStdOutContaining($"Pushed image '{qualifiedImageName}' to local registry")
             .And.NotHaveStdOutContaining("Pushed image index");
 
@@ -915,7 +929,7 @@ public class EndToEndTests : IDisposable
         string qualifiedImageName = $"{imageName}:{imageTag}";
 
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
 
         // Run PublishContainer for multi-arch-capable, but single-arch actual
         CommandResult commandResult = new DotnetCommand(
@@ -937,8 +951,8 @@ public class EndToEndTests : IDisposable
         // images were created locally for each RID
         // and image index was NOT created
         commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64", configuration: "Release"))
-            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64", configuration: "Release"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-x64", configuration: "Release"))
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-arm64", configuration: "Release"))
             .And.HaveStdOutContaining($"Pushed image '{qualifiedImageName}' to local registry")
             .And.NotHaveStdOutContaining("Pushed image index");
 
@@ -956,7 +970,7 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    private DirectoryInfo CreateNewProject(string template, [CallerMemberName] string callerMemberName = "")
+    private DirectoryInfo CreateNewProject(string template, string tfm = ToolsetInfo.CurrentTargetFramework, [CallerMemberName] string callerMemberName = "")
     {
         DirectoryInfo newProjectDir = new DirectoryInfo(Path.Combine(TestSettings.TestArtifactsDirectory, callerMemberName));
 
@@ -967,7 +981,7 @@ public class EndToEndTests : IDisposable
 
         newProjectDir.Create();
 
-        new DotnetNewCommand(_testOutput, template, "-f", ToolsetInfo.CurrentTargetFramework)
+        new DotnetNewCommand(_testOutput, template, "-f", tfm)
             .WithVirtualHive()
             .WithWorkingDirectory(newProjectDir.FullName)
             .Execute()
@@ -976,8 +990,8 @@ public class EndToEndTests : IDisposable
         return newProjectDir;
     }
 
-    private string GetPublishArtifactsPath(string projectDir, string rid, string configuration = "Debug")
-        => Path.Combine(projectDir, "bin", configuration, ToolsetInfo.CurrentTargetFramework, rid, "publish");
+    private string GetPublishArtifactsPath(string projectDir, string tfm, string rid, string configuration = "Debug")
+        => Path.Combine(projectDir, "bin", configuration, tfm, rid, "publish");
 
     /**
     [InlineData("endtoendmultiarch-archivepublishing")]
@@ -991,7 +1005,7 @@ public class EndToEndTests : IDisposable
         string imageTarball = Path.Combine(archiveOutput, $"{imageName}.tar.gz");
 
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
 
         // Run PublishContainer for multi-arch with ContainerArchiveOutputPath
         CommandResult commandResult = new DotnetCommand(
@@ -1008,8 +1022,8 @@ public class EndToEndTests : IDisposable
 
         // Check that the app was published for each RID, one image was created in local archive
         commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-arm64"))
             .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-x64'")
             .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-arm64'")
             .And.HaveStdOutContaining($"Pushed image '{image}' to local archive at '{imageTarball}'");
@@ -1062,7 +1076,7 @@ public class EndToEndTests : IDisposable
         string imageFromRegistry = $"{registry}/{imageIndex}";
 
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
 
         // Run PublishContainer for multi-arch with ContainerRegistry
         CommandResult commandResult = new DotnetCommand(
@@ -1081,8 +1095,8 @@ public class EndToEndTests : IDisposable
         // images for each RID were pushed to remote registry
         // and image index was pushed to remote registry
         commandResult.Should().Pass()
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-arm64"))
             .And.HaveStdOutContaining($"Pushed image '{imageX64}' to registry '{registry}'.")
             .And.HaveStdOutContaining($"Pushed image '{imageArm64}' to registry '{registry}'.")
             .And.HaveStdOutContaining($"Pushed image index '{imageIndex}' to registry '{registry}'.");
@@ -1128,11 +1142,11 @@ public class EndToEndTests : IDisposable
         newProjectDir.Delete(true);
     }
 
-    [DockerAvailableFact(checkContainerdStoreAvailability: true)]
+    [DockerAvailableFact(Skip = "https://github.com/dotnet/sdk/issues/45181")]
     public void EndToEndMultiArch_ContainerRuntimeIdentifiersOverridesRuntimeIdentifiers()
     {
         // Create a new console project
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
         string imageName = NewImageName();
         string imageTag = "1.0";
 
@@ -1153,8 +1167,8 @@ public class EndToEndTests : IDisposable
         // Check that the app was published only for RID from ContainerRuntimeIdentifiers
         // images were built only for RID for from ContainerRuntimeIdentifiers
         commandResult.Should().Pass()
-            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-x64"))
-            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, "linux-arm64"))
+            .And.NotHaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-x64"))
+            .And.HaveStdOutContaining(GetPublishArtifactsPath(newProjectDir.FullName, _oldFramework, "linux-arm64"))
             .And.NotHaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-x64'")
             .And.HaveStdOutContaining($"Building image '{imageName}' for runtime identifier 'linux-arm64'");
 
@@ -1170,7 +1184,7 @@ public class EndToEndTests : IDisposable
         string image = $"{imageName}:{tag}";
 
         // Create new console app, set ContainerEnvironmentVariables, and set to output env variable
-        DirectoryInfo newProjectDir = CreateNewProject("console");
+        DirectoryInfo newProjectDir = CreateNewProject("console", _oldFramework);
         var csprojPath = Path.Combine(newProjectDir.FullName, $"{nameof(EndToEndMultiArch_EnvVariables)}.csproj");
         var csprojContent = File.ReadAllText(csprojPath);
         csprojContent = csprojContent.Replace("</Project>",
@@ -1239,7 +1253,7 @@ public class EndToEndTests : IDisposable
         string image = $"{imageName}:{tag}";
 
         // Create new web app, set ContainerPort
-        DirectoryInfo newProjectDir = CreateNewProject("webapp");
+        DirectoryInfo newProjectDir = CreateNewProject("webapp", _oldFramework);
         var csprojPath = Path.Combine(newProjectDir.FullName, $"{nameof(EndToEndMultiArch_Ports)}.csproj");
         var csprojContent = File.ReadAllText(csprojPath);
         csprojContent = csprojContent.Replace("</Project>",
@@ -1358,7 +1372,7 @@ public class EndToEndTests : IDisposable
             image)
         .Execute();
         inspectResult.Should().Pass();
-        var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut);
+        var labels = JsonSerializer.Deserialize<Dictionary<string, string>>(inspectResult.StdOut ?? string.Empty);
         labels.Should().NotBeNull().And.HaveCountGreaterThan(0);
         labels!.Values.Should().AllSatisfy(value => value.Should().NotBeNullOrEmpty());
 
@@ -1514,6 +1528,7 @@ public class EndToEndTests : IDisposable
             .Execute();
 
         publishResult.Should().Pass();
+        publishResult.StdOut.Should().NotBeNull();
         var jsonDump = JsonDocument.Parse(publishResult.StdOut);
         var index = JsonDocument.Parse(jsonDump.RootElement.GetProperty("Properties").GetProperty("GeneratedImageIndex").ToString());
         var containers = jsonDump.RootElement.GetProperty("Items").GetProperty("GeneratedContainers").EnumerateArray().ToArray();

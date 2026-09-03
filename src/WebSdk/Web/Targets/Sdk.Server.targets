@@ -48,6 +48,16 @@ Copyright (c) .NET Foundation. All rights reserved.
                                     Condition="'$(MvcEnhancedModelMetadataSupport)' != ''"
                                     Value="$(MvcEnhancedModelMetadataSupport)"
                                     Trim="true" />
+    <RuntimeHostConfigurationOption Include="Microsoft.AspNetCore.Components.Endpoints.NavigationManager.DisableThrowNavigationException"
+                                    Condition="'$(BlazorDisableThrowNavigationException)' != ''"
+                                    Value="$(BlazorDisableThrowNavigationException)"
+                                    Trim="true" />
   </ItemGroup>
+
+  <Target Name="WarnOnDeprecatedAssets"
+    BeforeTargets="CoreCompile"
+    Condition="'$(IncludeOpenAPIAnalyzers)' == 'true'">
+    <Warning Code="ASPDEPR007" Text="The IncludeOpenAPIAnalyzers property and its associated MVC API analyzers are deprecated and will be removed in a future release." HelpLink="https://aka.ms/aspnet/deprecate/007" />
+  </Target>
 
 </Project>

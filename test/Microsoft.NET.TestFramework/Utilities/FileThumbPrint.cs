@@ -2,7 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Diagnostics;
-using System.Security.Cryptography;
+using System.IO.Hashing;
 
 namespace Microsoft.NET.TestFramework.Utilities
 {
@@ -25,10 +25,9 @@ namespace Microsoft.NET.TestFramework.Utilities
         public static FileThumbPrint Create(string path)
         {
             byte[] hashBytes;
-            using (var sha1 = SHA1.Create())
             using (var fileStream = File.OpenRead(path))
             {
-                hashBytes = sha1.ComputeHash(fileStream);
+                hashBytes = XxHash3.Hash(File.ReadAllBytes(fileStream.Name));
             }
 
             var hash = Convert.ToBase64String(hashBytes);
@@ -54,15 +53,26 @@ namespace Microsoft.NET.TestFramework.Utilities
             return thumbprintLookup;
         }
 
-        public bool Equals(FileThumbPrint other)
+        public bool Equals(FileThumbPrint? other)
         {
             return
-                string.Equals(Path, other.Path, StringComparison.Ordinal) &&
-                LastWriteTimeUtc == other.LastWriteTimeUtc &&
+                string.Equals(Path, other?.Path, StringComparison.Ordinal) &&
+                LastWriteTimeUtc == other?.LastWriteTimeUtc &&
                 string.Equals(Hash, other.Hash, StringComparison.Ordinal);
         }
 
-        public override int GetHashCode() => LastWriteTimeUtc.GetHashCode();
+        public override int GetHashCode()
+        {
+#if NETCOREAPP3_1_OR_GREATER
+            return HashCode.Combine(Path, LastWriteTimeUtc, Hash);
+#else
+            int hashCode = 1601069575;
+            hashCode = hashCode * -1521134295 + EqualityComparer<string?>.Default.GetHashCode(Path);
+            hashCode = hashCode * -1521134295 + EqualityComparer<DateTime?>.Default.GetHashCode(LastWriteTimeUtc);
+            hashCode = hashCode * -1521134295 + EqualityComparer<string?>.Default.GetHashCode(Hash);
+            return hashCode;
+#endif
+        }
 
         private string GetDebuggerDisplay()
         {
