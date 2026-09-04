@@ -26,7 +26,8 @@ namespace Microsoft.DotNet.HotReload;
 /// Associated with a project instance.
 /// </summary>
 internal abstract class AbstractBrowserRefreshServer(
-    string middlewareAssemblyPath,
+    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
+    SharedSecretProvider sessionKey,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
@@ -35,10 +36,26 @@ internal abstract class AbstractBrowserRefreshServer(
 
     private static int s_lastConnectionId;
 
-    private readonly List<BrowserConnection> _activeConnections = [];
-    private readonly TaskCompletionSource<None> _browserConnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    /// <summary>
+    /// The RSA key pair whose public half is pinned into the application build output for the
+    /// lifetime of the <c>dotnet watch</c> invocation. Owned by the caller and deliberately not
+    /// disposed here: several servers share a single invocation scoped key.
+    /// </summary>
+    protected SharedSecretProvider SessionKey => sessionKey;
 
-    private readonly SharedSecretProvider _sharedSecretProvider = new();
+    /// <summary>
+    /// Guards the connection list, the retained updates and the baseline epoch together.
+    /// Publishing a connection with its replay snapshot and appending an update batch with the list
+    /// of connections that receive it live must be mutually atomic, otherwise a browser connecting
+    /// concurrently would either apply a batch twice or miss it entirely.
+    /// </summary>
+    private readonly object _stateGuard = new();
+
+    private readonly List<BrowserConnection> _activeConnections = [];
+    private ImmutableArray<BrowserToolsUpdateBatch> _retainedUpdates = [];
+    private int _epoch;
+
+    private readonly TaskCompletionSource<None> _browserConnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     // initialized by StartAsync
     private WebServerHost? _lazyHost;
@@ -46,7 +63,7 @@ internal abstract class AbstractBrowserRefreshServer(
     public virtual void Dispose()
     {
         BrowserConnection[] connectionsToDispose;
-        lock (_activeConnections)
+        lock (_stateGuard)
         {
             connectionsToDispose = [.. _activeConnections];
             _activeConnections.Clear();
@@ -58,7 +75,8 @@ internal abstract class AbstractBrowserRefreshServer(
         }
 
         _lazyHost?.Dispose();
-        _sharedSecretProvider.Dispose();
+
+        // The session key is owned by the watcher and shared by all providers of the invocation.
     }
 
     protected abstract ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken);
@@ -71,10 +89,42 @@ internal abstract class AbstractBrowserRefreshServer(
         => new((_lazyHost ?? throw new InvalidOperationException("Server not started")).HttpEndPoints.First(
             static endpoint => endpoint.StartsWith("http:", StringComparison.OrdinalIgnoreCase)));
 
-    internal string PublicKey
-        => _sharedSecretProvider.GetPublicKey();
+    /// <summary>
+    /// Discards the updates retained for the previous application baseline and closes the browser
+    /// connections bound to it, so that browsers connecting afterwards only observe the new
+    /// baseline. Returns the epoch that identifies the new baseline; update batches produced by a
+    /// client of an earlier baseline are dropped.
+    /// </summary>
+    internal int ResetUpdates()    {
+        BrowserConnection[] connectionsToDispose;
+        int epoch;
 
-    internal BrowserToolsUpdateStore BrowserToolsUpdateStore { get; } = new();
+        lock (_stateGuard)
+        {
+            _retainedUpdates = [];
+            epoch = ++_epoch;
+            connectionsToDispose = [.. _activeConnections];
+            _activeConnections.Clear();
+        }
+
+        foreach (var connection in connectionsToDispose)
+        {
+            connection.Dispose();
+        }
+
+        return epoch;
+    }
+
+    /// <summary>
+    /// The updates a browser connecting right now would replay before observing any live message.
+    /// </summary>
+    internal ImmutableArray<BrowserToolsUpdateBatch> GetRetainedUpdates()
+    {
+        lock (_stateGuard)
+        {
+            return _retainedUpdates;
+        }
+    }
 
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
@@ -88,42 +138,29 @@ internal abstract class AbstractBrowserRefreshServer(
     }
 
     /// <summary>
-    /// Configures the application process to forward <see cref="BrowserToolsProtocol.RoutePrefix"/>
-    /// to the provider from a hosting startup.
+    /// Configures the application process to expose the browser tools provider on its own origin.
+    /// How that is done depends on the host, so the app model supplies the implementation.
     /// </summary>
     public void ConfigureLaunchEnvironment(IDictionary<string, string> builder)
-    {
-        builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadProviderAddress] = ProviderAddress.AbsoluteUri;
-
-        // Loading the assembly as a startup hook makes the out-of-application BrowserRefresh
-        // assembly resolvable when ASP.NET Core activates its hosting startup by simple name.
-        builder.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
-        builder.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
-
-        if (logger.IsEnabled(LogLevel.Trace))
-        {
-            // enable debug logging from the hosting startup:
-            builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
-        }
-    }
+        => configureLaunchEnvironment(builder, this);
 
     /// <summary>
     /// Takes ownership of the <paramref name="clientSocket"/>.
+    /// Publishes the connection and captures the updates it has to replay atomically.
     /// </summary>
-    protected BrowserConnection OnBrowserConnected(WebSocket clientSocket, string? subProtocol)
+    protected BrowserConnection OnBrowserConnected(WebSocket clientSocket, string? sharedSecret)
     {
         bool connectionPublished = false;
         try
         {
-            var sharedSecret = (subProtocol != null) ? _sharedSecretProvider.DecryptSecret(WebUtility.UrlDecode(subProtocol)) : null;
-
             var connectionId = Interlocked.Increment(ref s_lastConnectionId);
             var serverLogger = connectionServerLoggerFactory(connectionId);
             var agentLogger = connectionAgentLoggerFactory(connectionId);
-            var connection = new BrowserConnection(clientSocket, sharedSecret, connectionId, serverLogger, agentLogger);
 
-            lock (_activeConnections)
+            BrowserConnection connection;
+            lock (_stateGuard)
             {
+                connection = new BrowserConnection(clientSocket, sharedSecret, connectionId, serverLogger, agentLogger, _retainedUpdates);
                 _activeConnections.Add(connection);
             }
 
@@ -140,6 +177,49 @@ internal abstract class AbstractBrowserRefreshServer(
                 clientSocket.Dispose();
             }
         }
+    }
+
+    /// <summary>
+    /// Sends the session initialization message, which carries the updates the browser has to apply
+    /// before it observes any live message, and waits for the browser to acknowledge it. Live
+    /// messages queued for the connection in the meantime are released once this completes.
+    /// </summary>
+    protected async ValueTask InitializeBrowserConnectionAsync(BrowserConnection connection, CancellationToken cancellationToken)
+    {
+        var message = SerializeJson(new JsonInitializeSessionRequest
+        {
+            SharedSecret = connection.SharedSecret,
+            Updates = connection.PendingReplayUpdates,
+        });
+
+        bool? initialized = null;
+        if (await connection.TrySendMessageAsync(message, cancellationToken))
+        {
+            initialized = await connection.TryReceiveMessageAsync(
+                new ResponseFunc<bool>(static (value, logger) => ReceiveUpdateApplyResponse(value, logger)),
+                cancellationToken);
+        }
+
+        if (initialized != true)
+        {
+            connection.ServerLogger.LogDebug("Failed to initialize the browser tools session.");
+            connection.Dispose();
+            return;
+        }
+
+        connection.Initialized.TrySetResult(true);
+    }
+
+    internal static bool ReceiveUpdateApplyResponse(ReadOnlySpan<byte> value, ILogger logger)
+    {
+        var data = DeserializeJson<JsonApplyDeltasResponse>(value);
+
+        foreach (var entry in data.Log)
+        {
+            HotReloadClient.ReportLogEntry(logger, entry.Message, (AgentMessageSeverity)entry.Severity);
+        }
+
+        return data.Success;
     }
 
 #if NET
@@ -160,9 +240,25 @@ internal abstract class AbstractBrowserRefreshServer(
             return;
         }
 
+        // The browser generated secret, encrypted with the build-pinned public key, is the only
+        // credential. Reject before upgrading the connection so an unauthenticated peer never gets
+        // a socket.
+        string sharedSecret;
+        try
+        {
+            sharedSecret = SessionKey.DecryptSecret(WebUtility.UrlDecode(subProtocol));
+        }
+        catch (Exception e)
+        {
+            logger.LogDebug("Rejecting a browser connection with an invalid encrypted secret: {Message}", e.Message);
+            context.Response.StatusCode = StatusCodes.Status400BadRequest;
+            return;
+        }
+
         var clientSocket = await context.WebSockets.AcceptWebSocketAsync(subProtocol);
 
-        var connection = OnBrowserConnected(clientSocket, subProtocol);
+        var connection = OnBrowserConnected(clientSocket, sharedSecret);
+        await InitializeBrowserConnectionAsync(connection, context.RequestAborted);
         await connection.Disconnected.Task;
     }
 #endif
@@ -226,17 +322,72 @@ internal abstract class AbstractBrowserRefreshServer(
 
     private IReadOnlyCollection<BrowserConnection> GetOpenBrowserConnections()
     {
-        lock (_activeConnections)
+        lock (_stateGuard)
         {
             return [.. _activeConnections.Where(b => b.ClientSocket.State == WebSocketState.Open)];
         }
+    }
+
+    /// <summary>
+    /// Retains <paramref name="batch"/> for browsers that connect later and captures the connections
+    /// that have to receive it live. Both happen under a single lock: a browser that registers before
+    /// the append receives the batch live and not in its replay snapshot, and a browser that registers
+    /// after it receives it in the snapshot and is not in the captured list. Hence every browser
+    /// applies every batch exactly once, in order, without any wire level update identity.
+    ///
+    /// Returns false if <paramref name="epoch"/> is stale, which means the batch was produced by a
+    /// client of a previous application baseline and must be dropped.
+    /// </summary>
+    private bool TryAppendUpdate(int epoch, BrowserToolsUpdateBatch batch, out IReadOnlyCollection<BrowserConnection> liveConnections)
+    {
+        lock (_stateGuard)
+        {
+            if (epoch != _epoch)
+            {
+                liveConnections = [];
+                return false;
+            }
+
+            _retainedUpdates = _retainedUpdates.Add(batch);
+            liveConnections = [.. _activeConnections.Where(b => b.ClientSocket.State == WebSocketState.Open)];
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// Retains a managed code update batch and delivers it to the browsers connected at that moment.
+    /// </summary>
+    /// <returns>
+    /// True unless a browser reported that it failed to apply the update, or if the batch belongs to
+    /// a superseded baseline and was dropped. When several browsers are connected the result is the
+    /// last reported one, which matches the pre-existing behavior of this path.
+    /// </returns>
+    internal async ValueTask<bool> SendManagedCodeUpdateAsync<TRequest>(
+        int epoch,
+        BrowserToolsUpdateBatch batch,
+        Func<string?, TRequest> request,
+        CancellationToken cancellationToken)
+    {
+        if (!TryAppendUpdate(epoch, batch, out var liveConnections))
+        {
+            logger.LogDebug("Discarding an update batch produced for a superseded application baseline.");
+            return true;
+        }
+
+        var result = await SendAndReceiveAsync(
+            liveConnections,
+            request,
+            new ResponseFunc<bool>(static (value, logger) => ReceiveUpdateApplyResponse(value, logger)),
+            cancellationToken);
+
+        return result ?? true;
     }
 
     private void DisposeClosedBrowserConnections()
     {
         List<BrowserConnection>? lazyConnectionsToDispose = null;
 
-        lock (_activeConnections)
+        lock (_stateGuard)
         {
             var j = 0;
             for (var i = 0; i < _activeConnections.Count; i++)
@@ -291,35 +442,41 @@ internal abstract class AbstractBrowserRefreshServer(
         await SendAndReceiveAsync<ReadOnlyMemory<byte>, None>(request: _ => messageBytes, response: null, cancellationToken);
     }
 
+    internal ValueTask<TResult?> SendAndReceiveAsync<TRequest, TResult>(
+        Func<string?, TRequest>? request,
+        ResponseFunc<TResult>? response,
+        CancellationToken cancellationToken)
+        where TResult : struct
+        => SendAndReceiveAsync(GetOpenBrowserConnections(), request, response, cancellationToken);
+
     internal virtual async ValueTask<TResult?> SendAndReceiveAsync<TRequest, TResult>(
+        IReadOnlyCollection<BrowserConnection> openConnections,
         Func<string?, TRequest>? request,
         ResponseFunc<TResult>? response,
         CancellationToken cancellationToken)
         where TResult : struct
     {
         var responded = false;
-        var openConnections = GetOpenBrowserConnections();
         var result = default(TResult?);
 
+        // Each connection owns its socket, so run them concurrently. Sequential delivery would let a
+        // browser that has not acknowledged its session initialization yet hold up every other
+        // browser, since the wait below has no timeout by design.
+        var exchanges = new List<Task<(bool received, TResult? result, bool responded)>>(openConnections.Count);
         foreach (var connection in openConnections)
         {
-            if (request != null)
-            {
-                var requestValue = request(connection.SharedSecret);
-                var requestBytes = requestValue is ReadOnlyMemory<byte> bytes ? bytes : SerializeJson(requestValue);
+            exchanges.Add(ExchangeAsync(connection));
+        }
 
-                if (!await connection.TrySendMessageAsync(requestBytes, cancellationToken))
-                {
-                    continue;
-                }
+        // Fold in connection order so the observable outcome matches a sequential exchange.
+        foreach (var (received, connectionResult, connectionResponded) in await Task.WhenAll(exchanges))
+        {
+            if (received)
+            {
+                result = connectionResult;
             }
 
-            if (response != null && (result = await connection.TryReceiveMessageAsync(response, cancellationToken)) == null)
-            {
-                continue;
-            }
-
-            responded = true;
+            responded |= connectionResponded;
         }
 
         if (openConnections.Count == 0)
@@ -333,6 +490,35 @@ internal abstract class AbstractBrowserRefreshServer(
 
         DisposeClosedBrowserConnections();
         return result;
+
+        async Task<(bool received, TResult? result, bool responded)> ExchangeAsync(BrowserConnection connection)
+        {
+            // Live messages must not overtake the session initialization message, which carries the
+            // updates produced before the connection was established.
+            if (!await connection.WaitForInitializationAsync(cancellationToken))
+            {
+                return (false, null, false);
+            }
+
+            if (request != null)
+            {
+                var requestValue = request(connection.SharedSecret);
+                var requestBytes = requestValue is ReadOnlyMemory<byte> bytes ? bytes : SerializeJson(requestValue);
+
+                if (!await connection.TrySendMessageAsync(requestBytes, cancellationToken))
+                {
+                    return (false, null, false);
+                }
+            }
+
+            if (response == null)
+            {
+                return (false, null, true);
+            }
+
+            var connectionResult = await connection.TryReceiveMessageAsync(response, cancellationToken);
+            return (true, connectionResult, connectionResult != null);
+        }
     }
 
     public ValueTask RefreshBrowserAsync(CancellationToken cancellationToken)
@@ -387,5 +573,30 @@ internal abstract class AbstractBrowserRefreshServer(
     {
         public string Type => "UpdateStaticFile";
         public string Path { get; init; }
+    }
+
+    /// <summary>
+    /// The first message sent on an accepted connection. It echoes the browser generated secret back
+    /// so that the browser can authenticate the provider, and carries the updates produced before the
+    /// connection was established. The browser applies them and acknowledges with
+    /// <see cref="JsonApplyDeltasResponse"/> before it starts observing live messages.
+    /// </summary>
+    private readonly struct JsonInitializeSessionRequest
+    {
+        public string Type => "InitializeSession";
+        public string? SharedSecret { get; init; }
+        public ImmutableArray<BrowserToolsUpdateBatch> Updates { get; init; }
+    }
+
+    internal readonly struct JsonApplyDeltasResponse
+    {
+        public bool Success { get; init; }
+        public IEnumerable<JsonLogEntry> Log { get; init; }
+    }
+
+    internal readonly struct JsonLogEntry
+    {
+        public string Message { get; init; }
+        public int Severity { get; init; }
     }
 }

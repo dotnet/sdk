@@ -65,7 +65,11 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             var intermediateOutputPath = build.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
             var jsModulesManifestPath = Path.Combine(intermediateOutputPath, "jsmodules", "jsmodules.build.manifest.json");
 
-            ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true").Should().Pass();
+            // The assets are only produced when dotnet-watch supplies the public half of the key it
+            // created for the invocation, so both properties are required to activate them.
+            string[] watchArguments = ["/p:DotNetWatchBrowserTools=true", "/p:DotNetWatchBrowserToolsPublicKey=TestPublicKey"];
+
+            ExecuteCommand(build, watchArguments).Should().Pass();
             File.ReadAllText(jsModulesManifestPath)
                 .Should().Contain("Microsoft.NET.Sdk.Web.DotNetWatch")
                 .And.Contain("lib.module.js");
@@ -77,7 +81,7 @@ namespace Microsoft.NET.Sdk.StaticWebAssets.Tests
             }
 
             var publish = CreatePublishCommand(projectDirectory);
-            ExecuteCommand(publish, "/p:DotNetWatchBrowserTools=true").Should().Pass();
+            ExecuteCommand(publish, watchArguments).Should().Pass();
 
             var publishManifestPath = Path.Combine(
                 publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString(),

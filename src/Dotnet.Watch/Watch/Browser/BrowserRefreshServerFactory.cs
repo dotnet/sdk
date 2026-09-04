@@ -15,6 +15,15 @@ namespace Microsoft.DotNet.Watch;
 /// Reload message is sent to the browser in that case.
 ///
 /// The instances are also reused if the project file is updated or the project graph is reloaded.
+///
+/// Owns the browser tools session key. A single key pair is created per <c>dotnet watch</c>
+/// invocation, before any project is built, because the public half has to be passed to the build as
+/// a global MSBuild property and global properties apply to the whole project graph. Per project keys
+/// are therefore not expressible: the key has to exist before the graph and the app model are known.
+/// Project isolation is unaffected - each provider listens on its own loopback port that is only
+/// reachable through its own application's forwarder, and all providers of an invocation live in this
+/// process and share its trust domain. Aspire runs a separate watcher process per app host, so it
+/// gets a separate key.
 /// </summary>
 internal sealed class BrowserRefreshServerFactory : IDisposable
 {
@@ -22,6 +31,26 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
 
     // Null value is cached for project instances that are not web projects or do not support browser refresh for other reason.
     private readonly Dictionary<ProjectInstanceId, BrowserRefreshServer?> _servers = [];
+
+    /// <summary>
+    /// The private half never leaves this process: it is not written to disk, to build output, to
+    /// MSBuild properties or to logs. Only the public half is handed to the build.
+    /// </summary>
+    private readonly SharedSecretProvider _sessionKey = new();
+
+    /// <summary>
+    /// Base64 encoded X.509 SubjectPublicKeyInfo of the session key, stable for the lifetime of the
+    /// watch invocation including incremental rebuilds. A new invocation rotates it.
+    /// </summary>
+    public string PublicKey { get; }
+
+    public SharedSecretProvider SessionKey
+        => _sessionKey;
+
+    public BrowserRefreshServerFactory()
+    {
+        PublicKey = _sessionKey.GetPublicKey();
+    }
 
     public void Dispose()
     {
@@ -37,6 +66,8 @@ internal sealed class BrowserRefreshServerFactory : IDisposable
         {
             server?.Dispose();
         };
+
+        _sessionKey.Dispose();
     }
 
     public async ValueTask<BrowserRefreshServer?> GetOrCreateBrowserRefreshServerAsync(ProjectGraphNode projectNode, WebApplicationAppModel appModel, CancellationToken cancellationToken)

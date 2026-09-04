@@ -1,58 +1,154 @@
-// dotnet-watch browser tools client. Served by the dotnet-watch provider as browser-tools.js.
-const hotReloadActiveKey = '_dotnet_watch_hot_reload_active';
-// Ensure we only try to connect once, even if the module is imported by multiple activation paths.
-const scriptInjectedSentinel = '_dotnet_watch_ws_injected';
+// dotnet-watch browser tools client.
+//
+// This module is part of the application build output. It must never be downloaded from the
+// dotnet-watch provider: the provider is the party this client authenticates, so executable code
+// served by it could not be trusted. The generated configuration module pins the provider's public
+// key at build time and passes it to startBrowserTools.
 
-export async function startBrowserTools(routeBase = new URL('./', import.meta.url)) {
+const hotReloadActiveKey = '_dotnet_watch_hot_reload_active';
+// Ensures we only connect once even when several activation paths import this module.
+const scriptInjectedSentinel = '_dotnet_watch_ws_injected';
+const replayResponseLoggingLevel = 1;
+const AgentMessageSeverity_Warning = 1;
+const AgentMessageSeverity_Error = 2;
+// Bounds how long the replay waits for the Hot Reload agent. Only spent when there is something to
+// replay and the apply API is still missing, which is the case that would otherwise lose updates.
+const hotReloadAgentReadyTimeoutMs = 10000;
+
+/**
+ * Connects to the dotnet-watch browser tools provider.
+ *
+ * @param {object} config Build-generated configuration.
+ * @param {string} config.publicKey Base64 SubjectPublicKeyInfo of the provider's session key.
+ * @param {string} config.connectPath Root-relative route of the provider's WebSocket endpoint.
+ * @param {string} config.clearCachePath Root-relative route of the provider's cache reset endpoint.
+ * @param {string} config.moduleUrl URL of the generated configuration module. Polled to detect that
+ *                                  the application is reachable again after it restarted.
+ */
+export async function startBrowserTools(config) {
   if (window.hasOwnProperty(scriptInjectedSentinel)) {
     return;
   }
   window[scriptInjectedSentinel] = true;
 
-  const session = await getSession(routeBase);
-  if (!session) {
+  const { publicKey, connectPath, clearCachePath, moduleUrl } = config;
+
+  const sharedSecret = await getSecret(publicKey);
+  if (!sharedSecret) {
     delete window[scriptInjectedSentinel];
-    console.debug('Unable to discover the browser refresh server.');
+    console.debug('Unable to protect the dotnet-watch browser tools connection. Browser tools are disabled.');
     return;
   }
 
-  const sharedSecret = await getSecret(session.publicKey);
-  const connectUrl = new URL('connect', routeBase);
+  const connectUrl = new URL(connectPath, document.baseURI);
   connectUrl.protocol = connectUrl.protocol === 'https:' ? 'wss:' : 'ws:';
+
+  let closing = false;
+  let waiting = false;
+
+  // The provider sends the session initialization message, which carries the updates produced
+  // before this browser connected, as the first message on the socket. It releases live messages
+  // for this connection only after the browser acknowledges that message, so chaining the live
+  // message queue on the initialization promise preserves the order even if a live message somehow
+  // arrives early.
+  let completeInitialization;
+  let failInitialization;
+  const initialized = new Promise((resolve, reject) => { completeInitialization = resolve; failInitialization = reject; });
+  initialized.catch(() => { });
+
+  let initializationMessageReceived = false;
+  let receiveInitializationMessage;
+  const initializationMessage = new Promise(resolve => receiveInitializationMessage = resolve);
+  let messageQueue = initialized;
 
   let connection;
   try {
-    connection = await getWebSocket(connectUrl);
+    connection = await getWebSocket(connectUrl, sharedSecret.encryptedSharedSecret, message => {
+      if (!initializationMessageReceived) {
+        initializationMessageReceived = true;
+        receiveInitializationMessage(message);
+      } else {
+        messageQueue = messageQueue
+          .then(() => handleMessage(message))
+          .catch(error => console.debug('Failed to process a browser refresh message.', error));
+      }
+    });
   } catch (ex) {
     console.debug(ex);
   }
+
   if (!connection) {
     delete window[scriptInjectedSentinel];
     console.debug('Unable to establish a connection to the browser refresh server.');
     return;
   }
 
-  let waiting = false;
-  // Updates applied before the socket was accepted are replayed first, so messages received in the
-  // meantime are queued and processed in order once the replay completes.
-  let active = false;
-  let closing = false;
-  let lastAppliedUpdateId;
-  let messageQueue = Promise.resolve();
-  const pendingMessages = [];
-
-  connection.onmessage = function (message) {
-    if (active) {
-      enqueue(message);
-    } else {
-      pendingMessages.push(message);
+  connection.onerror = function (event) { console.debug('dotnet-watch reload socket error.', event) }
+  connection.onclose = function () {
+    delete window[scriptInjectedSentinel];
+    failInitialization('The browser tools connection was closed.');
+    console.debug('dotnet-watch reload socket closed.');
+    if (!closing) {
+      // The browser reaches the provider through the application, so the socket dies when the
+      // application restarts and any pending Reload message is lost. Reload once it is back.
+      reloadWhenApplicationReturns();
     }
   }
 
-  function enqueue(message) {
-    messageQueue = messageQueue
-      .then(() => handleMessage(message))
-      .catch(error => console.error('Failed to process a browser refresh message.', error));
+  if (await initializeSession()) {
+    completeInitialization();
+  } else {
+    closing = true;
+    connection.close();
+  }
+
+  async function initializeSession() {
+    let payload;
+    try {
+      payload = JSON.parse((await withTimeout(initializationMessage, 30000)).data);
+    } catch (error) {
+      console.debug('Unable to initialize the browser tools session.', error);
+      return false;
+    }
+
+    if (payload.type !== 'InitializeSession') {
+      console.error(`Expected the browser tools session initialization message but received '${payload.type}'.`);
+      return false;
+    }
+
+    if (!authenticateProvider(payload.sharedSecret)) {
+      console.error('Unable to validate the browser refresh server. Closing the connection.');
+      return false;
+    }
+
+    const log = [];
+    let applyError;
+    try {
+      const updates = payload.updates ?? [];
+      if (updates.length && !(await waitForDeltaApplyApi())) {
+        // Keep initializing: the connection is still useful for reloads, diagnostics and CSS, and
+        // failing here would close the socket and reload the page into the same state. Surface the
+        // condition in the dotnet-watch console instead.
+        log.push({
+          "message": 'The Hot Reload agent did not become available in time, so the updates produced before this browser connected were not applied.',
+          "severity": AgentMessageSeverity_Warning
+        });
+      }
+
+      for (const update of updates) {
+        const entries = applyDeltas(update.deltas, replayResponseLoggingLevel);
+        if (entries && entries.length) {
+          log.push(...entries);
+        }
+      }
+    } catch (error) {
+      console.warn('Unable to replay Hot Reload updates.', error);
+      applyError = error;
+      log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
+    }
+
+    connection.send(JSON.stringify({ "success": !applyError, "log": log }));
+    return !applyError;
   }
 
   async function handleMessage(message) {
@@ -61,9 +157,8 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
       'Reload': () => reload(),
       'Wait': () => wait(),
       'UpdateStaticFile': () => updateStaticFile(payload.path),
-      'ApplyManagedCodeUpdates': () => applyManagedCodeUpdates(payload.generationId, payload.sharedSecret, payload.updateId, payload.deltas, payload.responseLoggingLevel),
+      'ApplyManagedCodeUpdates': () => applyManagedCodeUpdates(payload.sharedSecret, payload.deltas, payload.responseLoggingLevel),
       'ReportDiagnostics': () => reportDiagnostics(payload.diagnostics),
-      'GetApplyUpdateCapabilities': () => getApplyUpdateCapabilities(),
       'RefreshBrowser': () => refreshBrowser()
     };
 
@@ -74,101 +169,23 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
     }
   }
 
-  connection.onerror = function (event) { console.debug('dotnet-watch reload socket error.', event) }
-  connection.onclose = function () {
-    delete window[scriptInjectedSentinel];
-    console.debug('dotnet-watch reload socket closed.');
-    if (!closing) {
-      // The browser reaches the provider through the application, so the socket dies when the
-      // application restarts and the Reload message is lost. Reload once the provider is back.
-      reloadWhenProviderReturns();
-    }
-  }
-  connection.onopen = function () { console.debug('dotnet-watch reload socket connected.') }
-
-  if (!await replayUpdates()) {
-    closing = true;
-    connection.close();
-    return;
+  // The provider proves it decrypted the secret this browser generated, which is only possible for
+  // the process holding the private key matching the build-pinned public key.
+  function authenticateProvider(providerSecret) {
+    return providerSecret === sharedSecret.encodedSharedSecret;
   }
 
-  active = true;
-  pendingMessages.splice(0).forEach(enqueue);
-
-  async function getSession(routeBase) {
-    try {
-      const response = await fetch(new URL('session.json', routeBase), { cache: 'no-store', headers: { 'accept': 'application/json' } });
-      if (!response.ok || !response.headers.get('content-type')?.includes('application/json')) {
-        return undefined;
-      }
-
-      const descriptor = await response.json();
-      return descriptor?.protocolVersion === 1 &&
-        typeof descriptor.generationId === 'string' &&
-        typeof descriptor.publicKey === 'string'
-        ? descriptor
-        : undefined;
-    } catch (error) {
-      console.debug(error);
-      return undefined;
-    }
-  }
-
-  // Applies the updates the server accumulated before this browser connected.
-  async function replayUpdates() {
-    try {
-      const response = await fetch(new URL(`updates/${encodeURIComponent(session.generationId)}.json`, routeBase), { cache: 'no-store', headers: { 'accept': 'application/json' } });
-      if (response.status === 409) {
-        // The server started a new generation while we were connecting.
-        location.reload();
-        return false;
-      }
-
-      if (!response.ok) {
-        throw `Browser refresh server replay failed with status ${response.status}.`;
-      }
-
-      const batches = await response.json();
-      if (batches.length !== 0) {
-        if (!await waitForHotReloadApply()) {
-          throw 'The runtime did not publish the Hot Reload apply API.';
-        }
-
-        for (const batch of batches) {
-          applyDeltas(batch.deltas, 1);
-        }
-
-        lastAppliedUpdateId = batches[batches.length - 1].updateId;
-      }
-
-      return true;
-    } catch (error) {
-      console.warn('Unable to replay Hot Reload updates.', error);
-      return false;
-    }
-  }
-
-  // The apply functions are published once the runtime has started, which may happen after this
-  // module loads. Wait while neither is available, including while window.Blazor itself is absent.
-  async function waitForHotReloadApply() {
-    const deadline = Date.now() + 10000;
-    while (!hasHotReloadApply() && Date.now() < deadline) {
-      await new Promise(resolve => setTimeout(resolve, 50));
-    }
-
-    return hasHotReloadApply();
-  }
-
-  function hasHotReloadApply() {
-    return !!(window.Blazor?._internal?.applyHotReloadDeltas || window.Blazor?._internal?.applyHotReload);
-  }
-
-  async function reloadWhenProviderReturns() {
+  async function reloadWhenApplicationReturns() {
     while (true) {
       await new Promise(resolve => setTimeout(resolve, 100));
-      if (await getSession(routeBase)) {
-        location.reload();
-        return;
+      try {
+        const response = await fetch(moduleUrl, { cache: 'no-store' });
+        if (response.ok) {
+          location.reload();
+          return;
+        }
+      } catch (error) {
+        // The application is still restarting.
       }
     }
   }
@@ -188,7 +205,7 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
       document.querySelector(`link[href^="${document.baseURI}${path}"]`);
 
     // Receive a Clear-site-data header.
-    await fetch(new URL('clear-cache', routeBase), { cache: 'no-store' });
+    await fetch(new URL(clearCachePath, document.baseURI), { cache: 'no-store' });
 
     if (!styleElement || !styleElement.parentNode) {
       console.debug('Unable to find a stylesheet to update. Updating all local css files.');
@@ -202,26 +219,6 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
     [...document.querySelectorAll('link')]
       .filter(l => l.baseURI === document.baseURI)
       .forEach(e => updateCssElement(e));
-  }
-
-  function getMessageAndStack(error) {
-    const message = error.message || '<unknown error>'
-    let messageAndStack = error.stack || message
-    if (!messageAndStack.includes(message)) {
-      messageAndStack = message + "\n" + messageAndStack;
-    }
-
-    return messageAndStack
-  }
-
-  function getApplyUpdateCapabilities() {
-    let applyUpdateCapabilities;
-    try {
-      applyUpdateCapabilities = window.Blazor._internal.getApplyUpdateCapabilities();
-    } catch (error) {
-      applyUpdateCapabilities = "!" + getMessageAndStack(error);
-    }
-    connection.send(applyUpdateCapabilities);
   }
 
   function updateCssElement(styleElement) {
@@ -289,41 +286,12 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
     return [];
   }
 
-  async function applyManagedCodeUpdates(generationId, serverSecret, updateId, deltas, responseLoggingLevel) {
-    if (generationId !== session.generationId) {
-      // The server restarted and the updates this page replayed no longer apply.
-      closing = true;
-      connection.close();
-      location.reload();
-      return;
-    }
-
-    if (sharedSecret && (serverSecret != sharedSecret.encodedSharedSecret)) {
-      // Validate the shared secret if it was specified. It might be unspecified in older versions of VS
-      // that do not support this feature as yet.
+  function applyManagedCodeUpdates(providerSecret, deltas, responseLoggingLevel) {
+    if (!authenticateProvider(providerSecret)) {
       throw 'Unable to validate the server. Rejecting apply-update payload.';
     }
 
-    if (lastAppliedUpdateId !== undefined && updateId <= lastAppliedUpdateId) {
-      // Already applied while replaying updates the server had accumulated before we connected.
-      connection.send(JSON.stringify({ "success": true, "log": [] }));
-      return;
-    }
-
     console.debug('Applying managed code updates.');
-
-    const AgentMessageSeverity_Error = 2
-
-    // The update must not be acknowledged as successful before the runtime published the apply API.
-    if (!await waitForHotReloadApply()) {
-      const message = 'The runtime did not publish the Hot Reload apply API.';
-      console.warn(message);
-      connection.send(JSON.stringify({
-        "success": false,
-        "log": [{ "message": message, "severity": AgentMessageSeverity_Error }]
-      }));
-      return;
-    }
 
     let applyError = undefined;
     let log = [];
@@ -341,7 +309,6 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
     }));
 
     if (!applyError) {
-      lastAppliedUpdateId = updateId;
       displayChangesAppliedToast();
     }
   }
@@ -427,38 +394,14 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
     setInterval(function () { document.title = glyphs[i++ % glyphs.length] + ' ' + title; }, 240);
   }
 
-  async function getSecret(serverKeyString) {
-    if (!serverKeyString || !window.crypto || !window.crypto.subtle) {
-      return null;
-    }
-
-    const secretBytes = window.crypto.getRandomValues(new Uint8Array(32)); // 32-bytes of entropy
-
-    // Based on https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#subjectpublickeyinfo_import
-    const binaryServerKey = str2ab(atob(serverKeyString));
-    const serverKey = await window.crypto.subtle.importKey('spki', binaryServerKey, { name: "RSA-OAEP", hash: "SHA-256" }, false, ['encrypt']);
-    const encrypted = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, serverKey, secretBytes);
-    return {
-      encryptedSharedSecret: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
-      encodedSharedSecret: btoa(String.fromCharCode(...secretBytes)),
-    };
-
-    function str2ab(str) {
-      const buf = new ArrayBuffer(str.length);
-      const bufView = new Uint8Array(buf);
-      for (let i = 0, strLen = str.length; i < strLen; i++) {
-        bufView[i] = str.charCodeAt(i);
-      }
-      return buf;
-    }
-  }
-
-  function getWebSocket(url) {
+  function getWebSocket(url, encryptedSecret, onMessage) {
     return new Promise((resolve, reject) => {
-      const encryptedSecret = sharedSecret && sharedSecret.encryptedSharedSecret;
-      const protocol = encryptedSecret ? encodeURIComponent(encryptedSecret) : [];
-      const webSocket = new WebSocket(url, protocol);
+      const webSocket = new WebSocket(url, encodeURIComponent(encryptedSecret));
       let opened = false;
+
+      // Listen for messages before the socket opens so that the session initialization message,
+      // which the provider sends first, can never be missed.
+      webSocket.addEventListener('message', onMessage);
 
       function onOpen() {
         opened = true;
@@ -496,5 +439,87 @@ export async function startBrowserTools(routeBase = new URL('./', import.meta.ur
         window.Blazor?.addEventListener('enhancedload', displayChangesAppliedToast);
       }
     });
+  }
+}
+
+function getMessageAndStack(error) {
+  const message = error.message || '<unknown error>'
+  let messageAndStack = error.stack || message
+  if (!messageAndStack.includes(message)) {
+    messageAndStack = message + "\n" + messageAndStack;
+  }
+
+  return messageAndStack
+}
+
+// Rendezvous with the Hot Reload agent's library initializer. Both modules create the object,
+// because library initializer module evaluation order is not guaranteed, and only the agent
+// resolves it. Kept in sync with Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js.
+function hotReloadAgentSignal() {
+  const agent = globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT ||= {};
+  if (!agent.ready) {
+    agent.ready = new Promise(resolve => { agent.setReady = resolve; });
+  }
+
+  return agent;
+}
+
+function hasDeltaApplyApi() {
+  return !!(window.Blazor?._internal?.applyHotReloadDeltas || window.Blazor?._internal?.applyHotReload);
+}
+
+// The provider sends the replay snapshot once, so applying it before the agent installed the apply
+// API would drop those updates while still reporting success. Wait for the agent to finish starting.
+// Runtimes that install the apply API through their own bootstrap never publish the signal, so the
+// wait is bounded and best effort.
+async function waitForDeltaApplyApi() {
+  if (hasDeltaApplyApi()) {
+    return true;
+  }
+
+  try {
+    await withTimeout(hotReloadAgentSignal().ready, hotReloadAgentReadyTimeoutMs);
+  } catch (error) {
+    console.debug('Timed out waiting for the Hot Reload agent.', error);
+  }
+
+  return hasDeltaApplyApi();
+}
+
+function withTimeout(promise, milliseconds) {
+  return new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => reject(`Timed out after ${milliseconds}ms.`), milliseconds);
+    promise.then(
+      value => { clearTimeout(timeout); resolve(value); },
+      error => { clearTimeout(timeout); reject(error); });
+  });
+}
+
+// Generates the secret this browser uses to authenticate the provider and encrypts it with the
+// build-pinned public key. The secret itself never leaves the browser in clear text and is never
+// persisted.
+async function getSecret(serverKeyString) {
+  if (!serverKeyString || !window.crypto || !window.crypto.subtle) {
+    return null;
+  }
+
+  const secretBytes = window.crypto.getRandomValues(new Uint8Array(32)); // 32-bytes of entropy
+
+  // Based on https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto/importKey#subjectpublickeyinfo_import
+  const binaryServerKey = str2ab(atob(serverKeyString));
+  const serverKey = await window.crypto.subtle.importKey('spki', binaryServerKey, { name: "RSA-OAEP", hash: "SHA-256" }, false, ['encrypt']);
+  const encrypted = await window.crypto.subtle.encrypt({ name: 'RSA-OAEP' }, serverKey, secretBytes);
+  return {
+    encryptedSharedSecret: btoa(String.fromCharCode(...new Uint8Array(encrypted))),
+    encodedSharedSecret: btoa(String.fromCharCode(...secretBytes)),
+  };
+
+  function str2ab(str) {
+    const buf = new ArrayBuffer(str.length);
+    const bufView = new Uint8Array(buf);
+    for (let i = 0, strLen = str.length; i < strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return buf;
   }
 }

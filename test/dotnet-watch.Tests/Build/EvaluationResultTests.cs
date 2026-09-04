@@ -169,19 +169,24 @@ public class EvaluationResultTests
     }
 
     [TestMethod]
-    [DataRow(false, "True")]
-    [DataRow(true, "False")]
+    [DataRow(false, "True", "test-public-key")]
+    [DataRow(true, "False", "")]
     public void GetGlobalBuildProperties_OverridesReservedWatchProperties(
         bool suppressBrowserRefresh,
-        string expectedBrowserToolsValue)
+        string expectedBrowserToolsValue,
+        string expectedPublicKey)
     {
         var environmentOptions = TestOptions.GetEnvironmentOptions() with
         {
             SuppressBrowserRefresh = suppressBrowserRefresh
         };
 
-        var properties = EvaluationResult.GetGlobalBuildProperties(["-p:dotnetwatchbrowsertools=user-value"], environmentOptions);
+        var properties = EvaluationResult.GetGlobalBuildProperties(
+            ["-p:dotnetwatchbrowsertools=user-value", "-p:dotnetwatchbrowsertoolspublickey=user-key"],
+            environmentOptions,
+            browserToolsPublicKey: "test-public-key");
 
         Assert.AreEqual(expectedBrowserToolsValue, properties["DotNetWatchBrowserTools"]);
+        Assert.AreEqual(expectedPublicKey, properties["DotNetWatchBrowserToolsPublicKey"]);
     }
 }

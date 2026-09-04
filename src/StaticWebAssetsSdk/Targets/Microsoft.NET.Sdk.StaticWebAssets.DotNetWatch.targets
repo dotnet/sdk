@@ -1,0 +1,155 @@
+<!--
+***********************************************************************************************
+Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets
+
+WARNING:  DO NOT MODIFY this file unless you are knowledgeable about MSBuild and have
+          created a backup copy.  Incorrect changes to this file will make it
+          impossible to load or build your projects from the command-line or the IDE.
+
+Copyright (c) .NET Foundation. All rights reserved.
+***********************************************************************************************
+-->
+<Project>
+
+  <PropertyGroup>
+    <!-- Fixed, same-origin route the dotnet-watch provider is forwarded on. Must match
+         Microsoft.DotNet.HotReload.BrowserToolsProtocol.RoutePrefix. -->
+    <DotNetWatchBrowserToolsRoutePrefix Condition="'$(DotNetWatchBrowserToolsRoutePrefix)' == ''">/_framework/dotnet-browser-tools</DotNetWatchBrowserToolsRoutePrefix>
+  </PropertyGroup>
+
+  <!--
+    Produces the dotnet-watch browser tools assets for the current project:
+
+      * the SDK specific JS initializer, which activates the tools at the right point of the
+        application lifecycle,
+      * the browser tools client, and
+      * a generated configuration module that pins the provider's public key and route.
+
+    The client is served by the application rather than by the dotnet-watch provider on purpose.
+    The browser authenticates the provider with the pinned public key, so accepting executable
+    code from that same provider would make the authentication meaningless.
+
+    Only the public key reaches the build. The provider keeps the private key in memory for the
+    lifetime of the dotnet-watch invocation, and the secret the browser generates is never
+    persisted. The assets are build only ('AssetKind=Build' and 'CopyToPublishDirectory=Never')
+    so that neither publish output nor a plain build contains them.
+
+    SDKs opt in by setting DotNetWatchBrowserToolsAssetPrefix and
+    DotNetWatchBrowserToolsInitializerFile.
+  -->
+  <Target Name="_DefineDotNetWatchBrowserToolsAssets"
+          DependsOnTargets="ResolveStaticWebAssetsConfiguration"
+          BeforeTargets="ResolveProjectStaticWebAssets"
+          AfterTargets="ResolveStaticWebAssetsConfiguration"
+          Condition="'$(DotNetWatchBrowserTools)' == 'true'
+            and '$(DotNetWatchBrowserToolsAssetPrefix)' != ''
+            and '$(DotNetWatchBrowserToolsPublicKey)' != ''
+            and '$(StaticWebAssetsEnabled)' == 'true'
+            and '$(JSModulesEnabled)' == 'true'
+            and '$(TargetFrameworkIdentifier)' == '.NETCoreApp'">
+
+    <PropertyGroup>
+      <_DotNetWatchBrowserToolsIntermediatePath>$(IntermediateOutputPath)dotnet-watch\</_DotNetWatchBrowserToolsIntermediatePath>
+      <_DotNetWatchBrowserToolsInitializerFileName>$(DotNetWatchBrowserToolsAssetPrefix).lib.module.js</_DotNetWatchBrowserToolsInitializerFileName>
+      <_DotNetWatchBrowserToolsClientFileName>$(DotNetWatchBrowserToolsAssetPrefix).BrowserTools.js</_DotNetWatchBrowserToolsClientFileName>
+      <_DotNetWatchBrowserToolsConfigFileName>$(DotNetWatchBrowserToolsAssetPrefix).BrowserTools.Config.js</_DotNetWatchBrowserToolsConfigFileName>
+      <_DotNetWatchBrowserToolsClientSource>$(MSBuildThisFileDirectory)DotNetWatch\dotnet-watch-browser-tools.js</_DotNetWatchBrowserToolsClientSource>
+      <_DotNetWatchBrowserToolsConfigTemplate>$(MSBuildThisFileDirectory)DotNetWatch\dotnet-watch-browser-tools.config.js.template</_DotNetWatchBrowserToolsConfigTemplate>
+    </PropertyGroup>
+
+    <!-- Copy to the intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
+    <Copy
+      SourceFiles="$(DotNetWatchBrowserToolsInitializerFile);$(_DotNetWatchBrowserToolsClientSource)"
+      DestinationFiles="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsInitializerFileName);$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsClientFileName)"
+      SkipUnchangedFiles="true" />
+
+    <PropertyGroup>
+      <_DotNetWatchBrowserToolsConfigContent>$([System.IO.File]::ReadAllText('$(_DotNetWatchBrowserToolsConfigTemplate)'))</_DotNetWatchBrowserToolsConfigContent>
+      <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__CLIENT_MODULE__', '$(_DotNetWatchBrowserToolsClientFileName)'))</_DotNetWatchBrowserToolsConfigContent>
+      <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__ROUTE_PREFIX__', '$(DotNetWatchBrowserToolsRoutePrefix)'))</_DotNetWatchBrowserToolsConfigContent>
+      <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__PUBLIC_KEY__', '$(DotNetWatchBrowserToolsPublicKey)'))</_DotNetWatchBrowserToolsConfigContent>
+    </PropertyGroup>
+
+    <!-- WriteOnlyWhenDifferent keeps the build incremental: the key is stable for the whole
+         dotnet-watch invocation, so rebuilds must not rewrite this file. -->
+    <WriteLinesToFile
+      File="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsConfigFileName)"
+      Lines="$([MSBuild]::Escape($(_DotNetWatchBrowserToolsConfigContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+
+    <ItemGroup>
+      <_DotNetWatchBrowserToolsInitializer Include="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsInitializerFileName)">
+        <RelativePath>_framework/$(_DotNetWatchBrowserToolsInitializerFileName)</RelativePath>
+      </_DotNetWatchBrowserToolsInitializer>
+      <_DotNetWatchBrowserToolsInitializer Update="@(_DotNetWatchBrowserToolsInitializer)">
+        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
+      </_DotNetWatchBrowserToolsInitializer>
+
+      <_DotNetWatchBrowserToolsClientModule Include="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsClientFileName)">
+        <RelativePath>_framework/$(_DotNetWatchBrowserToolsClientFileName)</RelativePath>
+      </_DotNetWatchBrowserToolsClientModule>
+      <_DotNetWatchBrowserToolsClientModule Include="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsConfigFileName)">
+        <RelativePath>_framework/$(_DotNetWatchBrowserToolsConfigFileName)</RelativePath>
+      </_DotNetWatchBrowserToolsClientModule>
+      <_DotNetWatchBrowserToolsClientModule Update="@(_DotNetWatchBrowserToolsClientModule)">
+        <OriginalItemSpec>%(Identity)</OriginalItemSpec>
+      </_DotNetWatchBrowserToolsClientModule>
+
+      <FileWrites Include="@(_DotNetWatchBrowserToolsInitializer);@(_DotNetWatchBrowserToolsClientModule)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssets
+      CandidateAssets="@(_DotNetWatchBrowserToolsInitializer)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      ContentRoot="$(_DotNetWatchBrowserToolsIntermediatePath)"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetKind="Build"
+      CopyToPublishDirectory="Never"
+      AssetTraitName="JSModule"
+      AssetTraitValue="JSLibraryModule"
+      PropertyOverrides="AssetTraitName;AssetTraitValue">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_DotNetWatchBrowserToolsInitializerAsset" />
+    </DefineStaticWebAssets>
+
+    <!-- The Web SDK relies on the JS modules pipeline to define the initializer endpoint and to add
+         it to the JS initializer manifest, while the WebAssembly SDK defines the endpoint itself. -->
+    <ItemGroup Condition="'$(DotNetWatchBrowserToolsRegisterInitializerAsJSModule)' == 'true'">
+      <_JSModuleStaticWebAsset Include="@(_DotNetWatchBrowserToolsInitializerAsset)" />
+    </ItemGroup>
+
+    <DefineStaticWebAssetEndpoints
+      Condition="'$(DotNetWatchBrowserToolsRegisterInitializerAsJSModule)' != 'true'"
+      CandidateAssets="@(_DotNetWatchBrowserToolsInitializerAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+
+    <!-- The client and the generated configuration are plain modules that the initializer and the
+         browser refresh TagHelper import, so they must not be reported as JS initializers. -->
+    <DefineStaticWebAssets
+      CandidateAssets="@(_DotNetWatchBrowserToolsClientModule)"
+      FingerprintCandidates="$(StaticWebAssetsFingerprintContent)"
+      FingerprintPatterns="@(StaticWebAssetFingerprintPattern)"
+      SourceId="$(PackageId)"
+      SourceType="Computed"
+      ContentRoot="$(_DotNetWatchBrowserToolsIntermediatePath)"
+      BasePath="$(StaticWebAssetBasePath)"
+      AssetKind="Build"
+      CopyToPublishDirectory="Never">
+      <Output TaskParameter="Assets" ItemName="StaticWebAsset" />
+      <Output TaskParameter="Assets" ItemName="_DotNetWatchBrowserToolsClientAsset" />
+    </DefineStaticWebAssets>
+
+    <DefineStaticWebAssetEndpoints
+      CandidateAssets="@(_DotNetWatchBrowserToolsClientAsset)"
+      ContentTypeMappings="@(StaticWebAssetContentTypeMapping)">
+      <Output TaskParameter="Endpoints" ItemName="StaticWebAssetEndpoint" />
+    </DefineStaticWebAssetEndpoints>
+  </Target>
+
+</Project>

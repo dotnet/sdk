@@ -26,6 +26,7 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
     {
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter>(this));
         services.TryAddSingleton(services => new BrowserToolsForwarder(providerAddress, services.GetRequiredService<ILogger<BrowserToolsForwarder>>()));
+        services.AddHttpContextAccessor();
         services.TryAddEnumerable(ServiceDescriptor.Singleton<ITagHelperComponent, BrowserRefreshTagHelperComponent>());
     }
 
@@ -33,8 +34,13 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
     {
         return app =>
         {
+            // Only the endpoints the provider actually exposes are forwarded. The route is registered
+            // ahead of UsePathBase so it is absolute, which matches the route pinned into the
+            // generated configuration module.
             app.MapWhen(
-                static context => context.Request.Path.StartsWithSegments(ApplicationPaths.BrowserTools),
+                static context =>
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsConnect, StringComparison.OrdinalIgnoreCase) ||
+                    context.Request.Path.Equals(ApplicationPaths.BrowserToolsClearCache, StringComparison.OrdinalIgnoreCase),
                 static browserTools =>
                 {
                     browserTools.UseWebSockets();

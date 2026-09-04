@@ -10,8 +10,5 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="$(MSBuildThisFileDirectory)**\*.cs" />
-    <EmbeddedResource Include="$(MSBuildThisFileDirectory)Web\WebSocketScriptInjection.js">
-      <LogicalName>Microsoft.DotNet.HotReload.WebSocketScriptInjection.js</LogicalName>
-    </EmbeddedResource>
   </ItemGroup>
 </Project>

@@ -1,9 +1,8 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Collections.Immutable;
 using System.Net.WebSockets;
-using System.Text.Json;
+using System.Security.Cryptography;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 
@@ -13,89 +12,10 @@ namespace Microsoft.DotNet.HotReload.UnitTests;
 public class BrowserToolsEndpointRouterTests
 {
     [TestMethod]
-    public async Task Session_Get_ReturnsDescriptorAndReflectsGenerationReset()
-    {
-        var store = new BrowserToolsUpdateStore();
-        var initialGeneration = store.GenerationId;
-        using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
-
-        var (initialContext, initialBody) = await InvokeAsync(
-            router,
-            HttpMethods.Get,
-            BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.SessionPath);
-
-        AssertJsonResponse(initialContext, initialBody);
-        using var initialDocument = JsonDocument.Parse(initialBody);
-        AssertSessionDescriptor(initialDocument.RootElement, initialGeneration);
-
-        var newGeneration = store.Reset();
-
-        var (resetContext, resetBody) = await InvokeAsync(
-            router,
-            HttpMethods.Get,
-            BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.SessionPath);
-
-        Assert.AreNotEqual(initialGeneration, newGeneration);
-        AssertJsonResponse(resetContext, resetBody);
-        using var resetDocument = JsonDocument.Parse(resetBody);
-        AssertSessionDescriptor(resetDocument.RootElement, newGeneration);
-    }
-
-    [TestMethod]
-    public async Task Updates_CurrentGeneration_ReturnsOrderedBatches()
-    {
-        var store = new BrowserToolsUpdateStore();
-        var generation = store.GenerationId;
-        var firstModuleId = Guid.Parse("11111111-1111-1111-1111-111111111111");
-        var secondModuleId = Guid.Parse("22222222-2222-2222-2222-222222222222");
-        store.Append(CreateBatch(generation, updateId: 0, firstModuleId, deltaSeed: 10));
-        store.Append(CreateBatch(generation, updateId: 2, secondModuleId, deltaSeed: 20));
-        using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
-
-        var (context, body) = await InvokeAsync(
-            router,
-            HttpMethods.Get,
-            $"{BrowserToolsProtocol.RoutePrefix}{BrowserToolsProtocol.UpdatesPath}/{generation:D}.json");
-
-        AssertJsonResponse(context, body);
-        using var document = JsonDocument.Parse(body);
-        var batches = document.RootElement;
-        Assert.AreEqual(JsonValueKind.Array, batches.ValueKind);
-        Assert.AreEqual(2, batches.GetArrayLength());
-        AssertBatch(batches[0], generation, updateId: 0, firstModuleId, deltaSeed: 10);
-        AssertBatch(batches[1], generation, updateId: 2, secondModuleId, deltaSeed: 20);
-    }
-
-    [TestMethod]
-    public async Task Updates_StaleGeneration_ReturnsConflictWithoutBody()
-    {
-        var store = new BrowserToolsUpdateStore();
-        var staleGeneration = store.GenerationId;
-        store.Append(CreateBatch(
-            staleGeneration,
-            updateId: 0,
-            Guid.Parse("33333333-3333-3333-3333-333333333333"),
-            deltaSeed: 30));
-        store.Reset();
-        using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
-
-        var (context, body) = await InvokeAsync(
-            router,
-            HttpMethods.Get,
-            $"{BrowserToolsProtocol.RoutePrefix}{BrowserToolsProtocol.UpdatesPath}/{staleGeneration:D}.json");
-
-        AssertEmptyResponse(context, body, StatusCodes.Status409Conflict);
-    }
-
-    [TestMethod]
     public async Task ClearCache_Get_ReturnsNoContentAndClearSiteData()
     {
-        var store = new BrowserToolsUpdateStore();
         using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
             router,
@@ -107,54 +27,38 @@ public class BrowserToolsEndpointRouterTests
     }
 
     [TestMethod]
-    [DataRow(BrowserToolsProtocol.ClientModulePath)]
-    [DataRow(BrowserToolsProtocol.BootstrapModulePath)]
-    public async Task BrowserScript_Get_ReturnsJavaScript(string scriptPath)
-    {
-        var store = new BrowserToolsUpdateStore();
-        using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
-
-        var (context, body) = await InvokeAsync(
-            router,
-            HttpMethods.Get,
-            BrowserToolsProtocol.RoutePrefix + scriptPath);
-
-        AssertResponse(context, StatusCodes.Status200OK);
-        Assert.AreEqual("text/javascript; charset=utf-8", context.Response.ContentType);
-        Assert.AreEqual((long?)body.Length, context.Response.ContentLength);
-        Assert.IsNotEmpty(body);
-    }
-
-    [TestMethod]
     [DataRow("POST")]
     [DataRow("PUT")]
     [DataRow("DELETE")]
     [DataRow("HEAD")]
     public async Task KnownEndpoint_NonGetMethod_ReturnsMethodNotAllowed(string method)
     {
-        var store = new BrowserToolsUpdateStore();
         using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
             router,
             method,
-            BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.SessionPath);
+            BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ClearCachePath);
 
         AssertEmptyResponse(context, body, StatusCodes.Status405MethodNotAllowed);
     }
 
+    /// <summary>
+    /// The provider must never serve executable JavaScript: the browser tools client and its
+    /// configuration are part of the application build output. Serving them from the provider
+    /// would make authenticating the provider with the build pinned public key meaningless.
+    /// </summary>
     [TestMethod]
-    [DataRow("/updates/not-a-guid.json")]
-    [DataRow("/updates/44444444-4444-4444-4444-444444444444")]
-    [DataRow("/updates/55555555-5555-5555-5555-555555555555.json/extra")]
+    [DataRow("/browser-tools-bootstrap.js")]
+    [DataRow("/browser-tools-client.js")]
+    [DataRow("/session.json")]
+    [DataRow("/updates/44444444-4444-4444-4444-444444444444.json")]
     [DataRow("/unknown")]
-    public async Task UnknownOrMalformedGet_ReturnsNotFound(string route)
+    public async Task RemovedOrUnknownGet_ReturnsNotFound(string route)
     {
-        var store = new BrowserToolsUpdateStore();
         using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
             router,
@@ -167,9 +71,8 @@ public class BrowserToolsEndpointRouterTests
     [TestMethod]
     public async Task Connect_NonWebSocketRequest_ReturnsBadRequest()
     {
-        var store = new BrowserToolsUpdateStore();
         using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
+        var router = new BrowserToolsEndpointRouter(server);
 
         var (context, body) = await InvokeAsync(
             router,
@@ -180,26 +83,86 @@ public class BrowserToolsEndpointRouterTests
     }
 
     [TestMethod]
-    public async Task Connect_WebSocketWithoutSharedSecret_ReturnsBadRequest()
+    public async Task Connect_WebSocketWithoutSharedSecret_IsRejectedBeforeAcceptance()
     {
-        var store = new BrowserToolsUpdateStore();
         using var server = new TestBrowserRefreshServer();
-        var router = CreateRouter(store, server);
+        var context = await ConnectAsync(server, subProtocol: null);
+
+        AssertResponse(context, StatusCodes.Status400BadRequest);
+    }
+
+    [TestMethod]
+    [DataRow("not-base-64!")]
+    [DataRow("AAAA")]
+    public async Task Connect_WebSocketWithMalformedSharedSecret_IsRejectedBeforeAcceptance(string subProtocol)
+    {
+        using var server = new TestBrowserRefreshServer();
+        var context = await ConnectAsync(server, subProtocol);
+
+        AssertResponse(context, StatusCodes.Status400BadRequest);
+    }
+
+    /// <summary>
+    /// A secret encrypted with a key pair other than the one pinned into the application build
+    /// output must not authenticate: this is what prevents a rogue provider or a stale browser tab
+    /// from talking to this provider.
+    /// </summary>
+    [TestMethod]
+    public async Task Connect_WebSocketWithForeignKey_IsRejectedBeforeAcceptance()
+    {
+        using var server = new TestBrowserRefreshServer();
+        using var foreignKey = new SharedSecretProvider();
+
+        var context = await ConnectAsync(server, EncryptSecret(foreignKey));
+
+        AssertResponse(context, StatusCodes.Status400BadRequest);
+    }
+
+    /// <summary>
+    /// The sub-protocol is URL encoded on the wire because base64 contains '+' and '/'.
+    /// A secret encrypted with the server's own key must reach acceptance.
+    /// </summary>
+    [TestMethod]
+    public async Task Connect_WebSocketWithMatchingKey_ReachesAcceptance()
+    {
+        using var server = new TestBrowserRefreshServer();
+        var feature = new TestWebSocketFeature();
+
+        // The test feature refuses to complete the upgrade, so reaching it is the observable signal
+        // that decryption succeeded and the request was authenticated.
+        await Assert.ThrowsExactlyAsync<InvalidOperationException>(
+            () => ConnectAsync(server, Uri.EscapeDataString(EncryptSecret(server.Key)), feature));
+
+        Assert.IsTrue(feature.AcceptAttempted);
+    }
+
+    private static string EncryptSecret(SharedSecretProvider key)
+    {
+        using var rsa = RSA.Create();
+        rsa.ImportSubjectPublicKeyInfo(Convert.FromBase64String(key.GetPublicKey()), out _);
+        return Convert.ToBase64String(rsa.Encrypt(RandomNumberGenerator.GetBytes(32), RSAEncryptionPadding.OaepSHA256));
+    }
+
+    private static async Task<DefaultHttpContext> ConnectAsync(
+        TestBrowserRefreshServer server,
+        string? subProtocol,
+        TestWebSocketFeature? feature = null)
+    {
+        var router = new BrowserToolsEndpointRouter(server);
         var context = new DefaultHttpContext();
-        context.Features.Set<IHttpWebSocketFeature>(new TestWebSocketFeature());
+        context.Features.Set<IHttpWebSocketFeature>(feature ?? new TestWebSocketFeature());
         context.Request.Method = HttpMethods.Get;
         context.Request.Path = BrowserToolsProtocol.RoutePrefix + BrowserToolsProtocol.ConnectPath;
         context.Response.Body = new MemoryStream();
 
+        if (subProtocol != null)
+        {
+            context.Request.Headers.SecWebSocketProtocol = subProtocol;
+        }
+
         await router.HandleAsync(context);
-
-        AssertEmptyResponse(context, [], StatusCodes.Status400BadRequest);
+        return context;
     }
-
-    private static BrowserToolsEndpointRouter CreateRouter(
-        BrowserToolsUpdateStore store,
-        TestBrowserRefreshServer server)
-        => new("public-key", store, server);
 
     private static async Task<(DefaultHttpContext Context, byte[] Body)> InvokeAsync(
         BrowserToolsEndpointRouter router,
@@ -217,67 +180,6 @@ public class BrowserToolsEndpointRouterTests
         return (context, ((MemoryStream)context.Response.Body).ToArray());
     }
 
-    private static BrowserToolsUpdateBatch CreateBatch(Guid generationId, int updateId, Guid moduleId, byte deltaSeed)
-        => new(
-            generationId,
-            updateId,
-            ImmutableArray.Create(
-                new BrowserToolsManagedCodeUpdate(
-                    moduleId,
-                    [deltaSeed, (byte)(deltaSeed + 1)],
-                    [(byte)(deltaSeed + 2), (byte)(deltaSeed + 3)],
-                    [(byte)(deltaSeed + 4)],
-                    [deltaSeed, deltaSeed + 100])));
-
-    private static void AssertSessionDescriptor(JsonElement descriptor, Guid expectedGeneration)
-    {
-        Assert.AreEqual(JsonValueKind.Object, descriptor.ValueKind);
-        Assert.AreSequenceEqual(
-            ["generationId", "protocolVersion", "publicKey"],
-            descriptor.EnumerateObject().Select(static property => property.Name).Order(StringComparer.Ordinal));
-        Assert.AreEqual(1, descriptor.GetProperty("protocolVersion").GetInt32());
-        Assert.AreEqual(expectedGeneration, descriptor.GetProperty("generationId").GetGuid());
-        Assert.AreEqual("public-key", descriptor.GetProperty("publicKey").GetString());
-    }
-
-    private static void AssertBatch(
-        JsonElement batch,
-        Guid expectedGeneration,
-        int updateId,
-        Guid expectedModuleId,
-        byte deltaSeed)
-    {
-        Assert.AreEqual(expectedGeneration, batch.GetProperty("generationId").GetGuid());
-        Assert.AreEqual(updateId, batch.GetProperty("updateId").GetInt32());
-
-        var deltas = batch.GetProperty("deltas");
-        Assert.AreEqual(JsonValueKind.Array, deltas.ValueKind);
-        Assert.AreEqual(1, deltas.GetArrayLength());
-
-        var delta = deltas[0];
-        Assert.AreEqual(expectedModuleId, delta.GetProperty("moduleId").GetGuid());
-        Assert.AreSequenceEqual(
-            [deltaSeed, (byte)(deltaSeed + 1)],
-            delta.GetProperty("metadataDelta").GetBytesFromBase64());
-        Assert.AreSequenceEqual(
-            [(byte)(deltaSeed + 2), (byte)(deltaSeed + 3)],
-            delta.GetProperty("ilDelta").GetBytesFromBase64());
-        Assert.AreSequenceEqual(
-            [(byte)(deltaSeed + 4)],
-            delta.GetProperty("pdbDelta").GetBytesFromBase64());
-        Assert.AreSequenceEqual(
-            [deltaSeed, deltaSeed + 100],
-            delta.GetProperty("updatedTypes").EnumerateArray().Select(static item => item.GetInt32()));
-    }
-
-    private static void AssertJsonResponse(DefaultHttpContext context, byte[] body)
-    {
-        AssertResponse(context, StatusCodes.Status200OK);
-        Assert.AreEqual("application/json", context.Response.ContentType);
-        Assert.AreEqual((long?)body.Length, context.Response.ContentLength);
-        Assert.IsNotEmpty(body);
-    }
-
     private static void AssertEmptyResponse(DefaultHttpContext context, byte[] body, int expectedStatusCode)
     {
         AssertResponse(context, expectedStatusCode);
@@ -292,9 +194,14 @@ public class BrowserToolsEndpointRouterTests
 
     private sealed class TestWebSocketFeature : IHttpWebSocketFeature
     {
+        public bool AcceptAttempted { get; private set; }
+
         public bool IsWebSocketRequest => true;
 
         public Task<WebSocket> AcceptAsync(WebSocketAcceptContext context)
-            => throw new InvalidOperationException("The unauthenticated WebSocket must be rejected before acceptance.");
+        {
+            AcceptAttempted = true;
+            throw new InvalidOperationException("Acceptance is not supported by the test feature.");
+        }
     }
 }
