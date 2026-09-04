@@ -1712,6 +1712,47 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     }
 
     [TestMethod]
+    public void Api_RunCommand_LaunchProfileExpansionUsesArtifactsPath()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        string programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.run.json"), """
+            {
+              "profiles": {
+                "Program": {
+                  "commandName": "Executable",
+                  "executablePath": "$(ArtifactsPath)",
+                  "workingDirectory": "$(ArtifactsPath)",
+                  "environmentVariables": {
+                    "PROFILE_ARTIFACTS": "$(ArtifactsPath)"
+                  }
+                }
+              }
+            }
+            """);
+
+        string artifactsPath = Path.Join(testInstance.Path, "custom-artifacts");
+
+        new DotnetCommand(Log, "run-api")
+            .WithEnvironmentVariable("DOTNET_ROOT", string.Empty)
+            .WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", string.Empty)
+            .WithStandardInput($$"""
+                {"$type":"GetRunCommand","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":{{ToJson(artifactsPath)}}}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($$"""
+                {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(artifactsPath)}},"CommandLineArguments":"","WorkingDirectory":{{ToJson(artifactsPath)}}
+                """)
+            .And.HaveStdOutContaining($$"""
+                "PROFILE_ARTIFACTS":{{ToJson(artifactsPath)}}
+                """);
+    }
+
+    [TestMethod]
     public void Api_VirtualProjectBuilder_CreateProjectRootElement()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
