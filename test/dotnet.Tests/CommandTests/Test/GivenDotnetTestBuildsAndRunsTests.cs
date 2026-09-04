@@ -64,10 +64,15 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .Should().Contain("(try 2)")
                     .And.NotContain("(try 3)")
                     .And.NotContain("(try 4)")
-                    .And.Contain("total: 1 (+1 retried)")
+                    .And.Contain("total: 1")
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")
-                    .And.Contain("skipped: 0");
+                    .And.Contain("skipped: 0")
+                    // The test failed on the first attempt and passed on the retry, so it is reported as flaky and
+                    // accounted for by the retry lines that replaced the old 'total: 1 (+1 retried)' suffix.
+                    .And.Contain("flaky: 1 (passed after retry)")
+                    .And.Contain("retried: 1 test(s), 1 extra run(s)")
+                    .And.Contain("Flaky tests:");
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
@@ -134,15 +139,23 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             var launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
             var runJsonPath = Path.Join(testInstance.Path, "TestProjectWithLaunchSettings.run.json");
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchArgument>--from-launch-settings</LaunchArgument>
+                    <LaunchEnvironment>TestValue1</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
 
-            File.WriteAllText(launchSettingsPath, $$"""
+            File.WriteAllText(launchSettingsPath, """
                 {
                     "profiles": {
                         "ConsoleApp25": {
                             "commandName": "Project",
-                            "commandLineArgs": "--from-launch-settings",
+                            "commandLineArgs": "$(LaunchArgument)",
                             "environmentVariables": {
-                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "{{EnvironmentVariableReference("TEST_ENV_VAR")}}"
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
                             }
                         }
                     }
@@ -156,7 +169,6 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
             CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
                                     .WithWorkingDirectory(testInstance.Path)
-                                    .WithEnvironmentVariable("TEST_ENV_VAR", "TestValue1")
                                     .Execute("-c", configuration);
 
             if (!SdkTestContext.IsLocalized())
@@ -173,6 +185,84 @@ namespace Microsoft.DotNet.Cli.Test.Tests
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")
                     .And.Contain("skipped: 1");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunTestProjectWithInvalidMSBuildExpressionInLaunchSettings_ShouldReturnExitCodeSuccess()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithTests")
+                .WithSource();
+
+            string propertiesDirectory = Path.Join(testInstance.Path, "Properties");
+            Directory.CreateDirectory(propertiesDirectory);
+            File.WriteAllText(Path.Join(propertiesDirectory, "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithTests": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)"
+                        }
+                    }
+                }
+                """);
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdErr.Should().Contain("could not be applied");
+                result.StdOut.Should().Contain("Test run summary: Passed!");
+            }
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+        }
+
+        [TestMethod]
+        public void RunTestProjectWithIgnoredInvalidLaunchArguments_AppliesEnvironmentVariables()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("TestProjectWithLaunchSettings")
+                .WithSource();
+
+            File.WriteAllText(Path.Join(testInstance.Path, "Properties", "launchSettings.json"), """
+                {
+                    "profiles": {
+                        "TestProjectWithLaunchSettings": {
+                            "commandName": "Project",
+                            "commandLineArgs": "$([)",
+                            "applicationUrl": "$([)",
+                            "environmentVariables": {
+                                "MY_VARIABLE_FROM_LAUNCH_SETTINGS": "$(LaunchEnvironment)"
+                            }
+                        }
+                    }
+                }
+                """);
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchEnvironment>expanded-environment</LaunchEnvironment>
+                  </PropertyGroup>
+                </Project>
+                """);
+            string programPath = Path.Join(testInstance.Path, "Program.cs");
+            File.WriteAllText(
+                programPath,
+                File.ReadAllText(programPath).Replace(
+                    "if (!args.Contains(\"--from-launch-settings\"))",
+                    "if (args.Contains(\"--from-launch-settings\"))"));
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug, "--no-launch-profile-arguments");
+
+            if (!SdkTestContext.IsLocalized())
+            {
+                result.StdOut.Should().Contain("MY_VARIABLE_FROM_LAUNCH_SETTINGS=expanded-environment");
             }
 
             result.ExitCode.Should().Be(ExitCodes.Success);
@@ -285,6 +375,131 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             }
 
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+        }
+
+        [TestMethod]
+        public void RunMultipleTestProjectsWithPerModuleResultsDirectoryLayout_ShouldCreateSeparateDirectories()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+
+            // Mirrors the artifacts output layout: <results>/<project>/<pivot>.
+            Directory.GetDirectories(resultsDirectory).Select(Path.GetFileName)
+                .Should().BeEquivalentTo(["TestProject", "OtherTestProject"]);
+            foreach (string projectDirectory in Directory.GetDirectories(resultsDirectory))
+            {
+                Directory.GetDirectories(projectDirectory).Select(Path.GetFileName)
+                    .Should().ContainSingle().Which.Should().MatchRegex(@"^net\d+\.\d+_[a-z0-9\-\.]+$");
+            }
+        }
+
+        [TestMethod]
+        public void RunMultipleTestProjectsWritingTheSameReportName_ShouldOverwriteWithFlatLayout()
+        {
+            // Regression coverage for https://github.com/microsoft/codecoverage/issues/226: both
+            // projects write the same relative report file name into the shared results directory,
+            // so only one report survives. This documents the behavior 'per-module' exists to fix.
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    // Serialize the modules so the two processes cannot race on the same file:
+                    // the point of this test is which file survives, not concurrent write behavior.
+                    "--max-parallel-test-modules", "1");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+            Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories)
+                .Should().ContainSingle("both projects write into the same directory with the flat layout");
+        }
+
+        [TestMethod]
+        public void RunMultipleTestProjectsWritingTheSameReportName_ShouldKeepBothWithPerModuleLayout()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2, "each project writes its report into its own directory");
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["TestProjectA", "TestProjectB"]);
+        }
+
+        [TestMethod]
+        public void RunMultipleTestProjectsWithArtifactsOutput_ShouldKeepReportsUnderArtifacts()
+        {
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            File.WriteAllText(
+                Path.Combine(testInstance.Path, "Directory.Build.props"),
+                """
+                <Project>
+                  <PropertyGroup>
+                    <UseArtifactsOutput>true</UseArtifactsOutput>
+                  </PropertyGroup>
+                </Project>
+                """);
+            string resultsDirectory = Path.Combine(testInstance.Path, "artifacts", "test");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute("-c", TestingConstants.Debug);
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2, "artifacts output defaults to a collision-safe per-module layout");
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["TestProjectA", "TestProjectB"]);
+            Directory.Exists(Path.Combine(testInstance.Path, "TestResults")).Should().BeFalse();
+        }
+
+        [TestMethod]
+        public void RunTestProjectsWithTheSameNameAndPerModuleLayout_ShouldDisambiguateAndKeepBothReports()
+        {
+            // Two distinct projects both named 'Tests' would share a project folder, so the layout
+            // appends an identity hash. Also covers the default results directory (no
+            // --results-directory), which is the shape most users will hit first.
+            TestAsset testInstance = TestAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDuplicateProjectNames", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            Directory.GetDirectories(resultsDirectory).Select(Path.GetFileName)
+                .Should().HaveCount(2).And.AllSatisfy(name => name.Should().MatchRegex("^Tests_[0-9a-f]{16}$"));
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2);
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["src", "samples"]);
         }
 
         [DataRow(TestingConstants.Debug)]
@@ -698,9 +913,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
 
                 result.StdErr.Should().Contain("System.InvalidOperationException: A test session start event was received without a corresponding test session end.");
 
-                // TODO: It's much better to introduce a new kind of "summary" indicating
-                // that the test app exited with zero exit code before sending test session end event
-                result.StdOut.Should().Contain("Test run summary: Passed!")
+                result.StdOut.Should().Contain("Test run summary: Failed!")
                     .And.Contain("total: 1")
                     .And.Contain("succeeded: 1")
                     .And.Contain("failed: 0")

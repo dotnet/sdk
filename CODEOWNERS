@@ -12,6 +12,13 @@
 /src/Cli/ @dotnet/dotnet-cli
 /test/dotnet.Tests/ @dotnet/dotnet-cli
 
+# Area-run-file
+/src/Cli/Microsoft.DotNet.FileBasedPrograms/ @dotnet/run-file
+/src/Cli/dotnet/Commands/Run/ @dotnet/run-file
+/src/Cli/dotnet/Commands/Project/Convert/ @dotnet/run-file
+/test/dotnet.Tests/CommandTests/Run/ @dotnet/run-file
+/test/dotnet.Tests/CommandTests/Project/Convert/ @dotnet/run-file
+
 # Area-NetSDK
 /src/Tasks/Microsoft.NET.Build.Tasks/ @dotnet/dotnet-cli
 /test/Microsoft.NET.Build.Tests/ @dotnet/dotnet-cli
@@ -102,10 +109,10 @@
 /src/Tasks/Microsoft.NET.Build.Tasks/targets/Microsoft.NET.ClickOnce.targets @sujitnayak
 
 # Area-Watch
-/test/TestAssets/TestProjects/Watch*/ @tmat @dotnet/roslyn-ide
-/test/dotnet-watch.Tests/ @tmat @dotnet/roslyn-ide
+/test/TestAssets/TestProjects/Watch*/ @dotnet/hot-reload
+/test/dotnet-watch.Tests/ @dotnet/hot-reload
 /test/Microsoft.AspNetCore.Watch.BrowserRefresh.Tests/ @dotnet/aspnet-blazor-eng
-/src/Dotnet.Watch/ @tmat @dotnet/roslyn-ide
+/src/Dotnet.Watch/ @dotnet/hot-reload
 /src/Dotnet.Watch/BrowserRefresh @dotnet/aspnet-blazor-eng
 /src/Dotnet.Watch/AspireService @dotnet/aspnet-blazor-eng
 

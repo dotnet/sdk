@@ -33,6 +33,6 @@ static Microsoft.DotNet.FileBasedPrograms.BuildServiceExtensions.Wrap(this Micro
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.CreateProjectInstanceAsync(Microsoft.DotNet.FileBasedPrograms.IBuildService! buildService, string! entryPointFilePath, string! targetFramework, Microsoft.DotNet.FileBasedPrograms.IProjectCollection! projectCollection, System.Action<string!, int, string!>! errorReporter) -> System.Threading.Tasks.ValueTask<Microsoft.DotNet.FileBasedPrograms.IProjectInstance!>
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetPropertyFromSourceFile(string! sourceFilePath, string! propertyName) -> string?
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.GetVirtualProjectPath(string! entryPointFilePath) -> string!
-static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.IsValidEntryPointPath(string! entryPointFilePath) -> bool
+static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.IsValidEntryPointPath(string! entryPointFilePath, bool requireFileToExist = true) -> bool
 static Microsoft.DotNet.FileBasedPrograms.VirtualProjectBuilder.TryGetEntryPointFilePathFromVirtualProjectPath(string! projectPath, out string? entryPointFilePath) -> bool
 static Microsoft.DotNet.ProjectTools.LaunchSettings.TryFindLaunchSettingsFile(string! projectOrEntryPointFilePath, string? launchProfile, System.Action<string!, bool>! report) -> string?

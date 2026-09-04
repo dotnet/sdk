@@ -177,7 +177,15 @@ namespace Microsoft.TemplateEngine.Core.Expressions.Shared
                 try
                 {
                     object? evalResult = expression?.Evaluate();
-                    result = (bool)Convert.ChangeType(evalResult, typeof(bool));
+                    // Unspecified choice parameters have defaultValue: "" which evaluates as empty string → treat as false
+                    if (evalResult is string evalStr && string.IsNullOrEmpty(evalStr))
+                    {
+                        result = false;
+                    }
+                    else
+                    {
+                        result = (bool)Convert.ChangeType(evalResult, typeof(bool));
+                    }
                 }
                 catch (Exception e)
                 {

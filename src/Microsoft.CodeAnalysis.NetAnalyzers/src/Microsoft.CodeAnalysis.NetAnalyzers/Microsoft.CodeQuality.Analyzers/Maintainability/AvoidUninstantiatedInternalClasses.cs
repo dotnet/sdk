@@ -8,7 +8,6 @@ using System.Collections.Immutable;
 using System.Linq;
 using Analyzer.Utilities;
 using Analyzer.Utilities.Extensions;
-using Analyzer.Utilities.Lightup;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Operations;
@@ -84,7 +83,7 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
                     {
                         instantiatedTypes.TryAdd(namedType, null);
                     }
-                }, OperationKind.ObjectCreation, OperationKindEx.CollectionExpression);
+                }, OperationKind.ObjectCreation, OperationKind.CollectionExpression);
 
                 startContext.RegisterSymbolAction(context =>
                 {

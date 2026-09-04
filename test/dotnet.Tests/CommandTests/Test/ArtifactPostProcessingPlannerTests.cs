@@ -207,12 +207,129 @@ public class ArtifactPostProcessingPlannerTests
         plan.Jobs[0].Application.Should().BeSameAs(arm64);
     }
 
+    [TestMethod]
+    public void Plan_DifferentKindsSharingAnExtension_AreNotMerged()
+    {
+        // JUnit and NUnit3 both write '.xml'. Extension-only matching would collapse them into one
+        // group and hand a JUnit merger a set of NUnit3 reports; the kind is what keeps them apart.
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            ["example.junit", "example.nunit3"],
+            [".xml"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A-junit.xml", "example.junit", "A.dll", "x64"),
+            CreateArtifact("B-junit.xml", "example.junit", "B.dll", "x64"),
+            CreateArtifact("A-nunit.xml", "example.nunit3", "A.dll", "x64"),
+            CreateArtifact("B-nunit.xml", "example.nunit3", "B.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan([application], artifacts);
+
+        plan.Jobs.Should().ContainSingle();
+        ArtifactPostProcessingGroup[] groups = [.. plan.Jobs[0].Groups];
+        groups.Select(group => group.Key).Should().BeEquivalentTo("example.junit", "example.nunit3");
+        groups.Should().OnlyContain(
+            group => group.Artifacts.Count == 2,
+            "each kind keeps its own inputs even though both write the same file extension");
+    }
+
+    [TestMethod]
+    public void Plan_TaggedArtifact_IsNotAlsoRoutedThroughTheExtensionFallback()
+    {
+        // A tagged artifact must never appear in both its kind group and the fallback group for its
+        // extension: the merge tool would then receive it twice and double-count its tests.
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            ["microsoft.testing.trx"],
+            [".trx"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A.trx", "microsoft.testing.trx", "A.dll", "x64"),
+            CreateArtifact("B.trx", "microsoft.testing.trx", "B.dll", "x64"),
+            CreateArtifact("C.trx", kind: null, "C.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan([application], artifacts);
+
+        string[] plannedPaths =
+            [.. plan.Jobs.SelectMany(job => job.Groups).SelectMany(group => group.Artifacts).Select(artifact => artifact.Path)];
+        plannedPaths.Should().OnlyHaveUniqueItems();
+        plannedPaths.Should().BeEquivalentTo("A.trx", "B.trx", "C.trx");
+    }
+
+    [TestMethod]
+    [DataRow((int)TestRunCancellationReason.MaximumFailedTests)]
+    [DataRow((int)TestRunCancellationReason.Timeout)]
+    public void Plan_PolicyTruncatedRun_OnlyIncludesOptedInKinds(int cancellationReason)
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            ["microsoft.testing.trx", "example.summary"],
+            [],
+            truncatedRunKinds: ["example.summary"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A.trx", "microsoft.testing.trx", "A.dll", "x64"),
+            CreateArtifact("B.trx", "microsoft.testing.trx", "B.dll", "x64"),
+            CreateArtifact("A.summary", "example.summary", "A.dll", "x64"),
+            CreateArtifact("B.summary", "example.summary", "B.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [application],
+            artifacts,
+            (TestRunCancellationReason)cancellationReason);
+
+        plan.Jobs.Should().ContainSingle();
+        plan.Jobs[0].Groups.Should().ContainSingle();
+        plan.Jobs[0].Groups[0].Key.Should().Be("example.summary");
+    }
+
+    [TestMethod]
+    [DataRow((int)TestRunCancellationReason.MaximumFailedTests)]
+    [DataRow((int)TestRunCancellationReason.Timeout)]
+    public void Plan_PolicyTruncatedRun_OnlyIncludesOptedInExtensions(int cancellationReason)
+    {
+        ArtifactPostProcessingApplication application = CreateApplication(
+            "A.dll",
+            "net10.0",
+            "x64",
+            [],
+            [".trx", ".summary"],
+            truncatedRunExtensions: [".summary"]);
+        ArtifactPostProcessingArtifact[] artifacts =
+        [
+            CreateArtifact("A.trx", kind: null, "A.dll", "x64"),
+            CreateArtifact("B.trx", kind: null, "B.dll", "x64"),
+            CreateArtifact("A.summary", kind: null, "A.dll", "x64"),
+            CreateArtifact("B.summary", kind: null, "B.dll", "x64"),
+        ];
+
+        ArtifactPostProcessingPlan plan = ArtifactPostProcessingPlanner.Plan(
+            [application],
+            artifacts,
+            (TestRunCancellationReason)cancellationReason);
+
+        plan.Jobs.Should().ContainSingle();
+        plan.Jobs[0].Groups.Should().ContainSingle();
+        plan.Jobs[0].Groups[0].Key.Should().Be(".summary");
+    }
+
     private static ArtifactPostProcessingApplication CreateApplication(
         string targetPath,
         string targetFramework,
         string architecture,
         string[] kinds,
-        string[] extensions)
+        string[] extensions,
+        string[]? truncatedRunKinds = null,
+        string[]? truncatedRunExtensions = null)
         => new(
             new TestModule(
                 new RunProperties("dotnet", targetPath, null),
@@ -226,7 +343,9 @@ public class ArtifactPostProcessingPlannerTests
             targetFramework,
             architecture,
             new HashSet<string>(kinds, StringComparer.Ordinal),
-            new HashSet<string>(extensions, StringComparer.Ordinal));
+            new HashSet<string>(extensions, StringComparer.Ordinal),
+            new HashSet<string>(truncatedRunKinds ?? [], StringComparer.Ordinal),
+            new HashSet<string>(truncatedRunExtensions ?? [], StringComparer.Ordinal));
 
     private static ArtifactPostProcessingArtifact CreateArtifact(
         string path,

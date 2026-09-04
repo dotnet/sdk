@@ -6,12 +6,13 @@ on:
     types: [opened, reopened, ready_for_review]
     branches:
       - 'release/[0-9]*'
-      # ignore 10.0.4xx until we release it
-      - '!release/10.0.4xx'
 
 permissions:
   contents: read
   pull-requests: write
+
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
 
 jobs:
   add-servicing-label:

@@ -13,6 +13,9 @@ permissions:
   actions: write # For managing the operation state cache
   issues: write
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   add-label:
     runs-on: ubuntu-latest
@@ -25,7 +28,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@0717577d45739eb3c851188b29f50ed6c0b2194e # v2
         with:
           persist-credentials: false
 

@@ -18,7 +18,6 @@ internal static class PropertyNames
     public const string HotReloadAutoRestart = nameof(HotReloadAutoRestart);
     public const string DefaultItemExcludes = nameof(DefaultItemExcludes);
     public const string CustomCollectWatchItems = nameof(CustomCollectWatchItems);
-    public const string DotNetWatchBuild = nameof(DotNetWatchBuild);
     public const string DesignTimeBuild = nameof(DesignTimeBuild);
     public const string SkipCompilerExecution = nameof(SkipCompilerExecution);
     public const string ProvideCommandLineArgs = nameof(ProvideCommandLineArgs);

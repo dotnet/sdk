@@ -15,9 +15,12 @@ permissions:
   pull-requests: write
   actions: write
 
+env:
+  DOTNET_CLI_TELEMETRY_SESSIONID: gha-${{ github.repository_id }}-${{ github.run_id }}-${{ github.run_attempt }}
+
 jobs:
   backport:
-    uses: dotnet/arcade/.github/workflows/backport-base.yml@main
+    uses: dotnet/arcade/.github/workflows/backport-base.yml@306225d7029934938d109e18df390f04e366a68d # main
     with:
         pr_labels: backport
         pr_description_template: |

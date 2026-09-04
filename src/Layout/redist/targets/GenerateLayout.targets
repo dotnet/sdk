@@ -620,9 +620,15 @@
     <ItemGroup>
       <PdbsToDelete Include="$(OutputPath)/**/*.pdb" />
       <PdbsToDelete Include="$(OutputPath)/**/*.ni.*.map" />
+      <!-- Native AOT debug symbols (e.g. aspnetcoretools) on non-Windows. -->
+      <PdbsToDelete Include="$(OutputPath)/**/*.dbg" />
     </ItemGroup>
 
     <Delete Files="@(PdbsToDelete)" />
+
+    <!-- dSYM bundles are directories; MSBuild item globs don't match them, so use find. -->
+    <Exec Command="find '$(OutputPath)' -type d -name '*.dSYM' -prune -exec rm -rf -- {} +"
+          Condition="'$(OSName)' == 'osx'" />
   </Target>
 
   <Target Name="RetargetTools">
