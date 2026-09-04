@@ -157,7 +157,7 @@ internal sealed class Program(
             return false;
         }
 
-        var runParseResult = runCommandDefinition.Parse(options.CommandArgumentsWithoutBinLog, CommandLineOptions.ParserConfiguration);
+        var runParseResult = runCommandDefinition.Parse(options.CommandArgumentsForFileDiscovery, CommandLineOptions.ParserConfiguration);
         if (runParseResult.GetValue(runCommandDefinition.ApplicationArguments) is not [var firstArg, ..])
         {
             entryPointPath = null;
