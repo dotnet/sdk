@@ -37,7 +37,6 @@ partial class CSharpCompilerCommand
             "/deterministic+",
             "/langversion:15.0",
             "/features:FileBasedProgram",
-            $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/codestyle/cs/build/config/analysislevelstyle_default.globalconfig",
             $"/analyzerconfig:{objDir}/{FileName}.GeneratedMSBuildEditorConfig.editorconfig",
             $"/analyzerconfig:{SdkPath}/Sdks/Microsoft.NET.Sdk/analyzers/build/config/analysislevel_11_default.globalconfig",
             $"/analyzer:{SdkPath}/Sdks/Microsoft.NET.Sdk/targets/../analyzers/Microsoft.CodeAnalysis.CSharp.NetAnalyzers.dll",
