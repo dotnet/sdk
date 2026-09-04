@@ -18,7 +18,7 @@ internal delegate (IToolPackageStore, IToolPackageStoreQuery, IToolPackageDownlo
     IEnumerable<string> additionalRestoreArguments = null,
     string currentWorkingDirectory = null);
 
-internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdateCommandDefinition>  
+internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdateCommandDefinition>
 {
     private readonly CreateShellShimRepository _createShellShimRepository;
     private readonly CreateToolPackageStoresAndDownloaderAndUninstaller _createToolPackageStoreDownloaderUninstaller;
@@ -45,9 +45,8 @@ internal sealed class ToolUpdateGlobalOrToolPathCommand : CommandBase<ToolUpdate
             store: _store);
     }
 
-    public override int Execute()
-    {
-        _toolInstallGlobalOrToolPathCommand.Execute();
-        return 0;
-    }
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+    public Task<int> Execute(CancellationToken cancellationToken) =>
+        _toolInstallGlobalOrToolPathCommand.Execute(cancellationToken);
 }

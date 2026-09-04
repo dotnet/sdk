@@ -73,7 +73,9 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         _restoreActionConfig = Definition.RestoreOptions.ToRestoreActionConfig(result);
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+    public async Task<int> Execute(CancellationToken cancellationToken)
     {
         FilePath? customManifestFileLocation = GetCustomManifestFileLocation();
 
@@ -109,10 +111,25 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
             _localToolsResolverCache,
             _fileSystem);
 
-        ToolRestoreResult[] toolRestoreResults =
-            [.. packagesFromManifest
-                .AsEnumerable()
-                .Select(package => toolPackageRestorer.InstallPackage(package, configFile))];
+        ToolRestoreResult[] toolRestoreResults;
+        if (_restoreActionConfig.DisableParallel)
+        {
+            var results = new List<ToolRestoreResult>(packagesFromManifest.Count);
+            foreach (ToolManifestPackage package in packagesFromManifest)
+            {
+                results.Add(await toolPackageRestorer
+                    .InstallPackageAsync(package, configFile, cancellationToken)
+                    .ConfigureAwait(false));
+            }
+
+            toolRestoreResults = [.. results];
+        }
+        else
+        {
+            toolRestoreResults = await Task.WhenAll(
+                packagesFromManifest.Select(
+                    package => toolPackageRestorer.InstallPackageAsync(package, configFile, cancellationToken))).ConfigureAwait(false);
+        }
 
         Dictionary<RestoredCommandIdentifier, ToolCommand> downloaded =
             toolRestoreResults.Select(result => result.SaveToCache)
@@ -140,7 +157,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
             {
                 _reporter.WriteLine();
                 _reporter.WriteLine(string.Join(Environment.NewLine, successMessage));
-                
+
                 // Display warnings for successful restorations even in partial failure case
                 var warnings = toolRestoreResults.Where(r => r.IsSuccess && !string.IsNullOrEmpty(r.Warning)).Select(r => r.Warning);
                 if (warnings.Any())
@@ -161,7 +178,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
         {
             _reporter.WriteLine(string.Join(Environment.NewLine,
                 toolRestoreResults.Where(r => r.IsSuccess).Select(r => r.Message)));
-            
+
             // Display warnings for newer versions available
             var warnings = toolRestoreResults.Where(r => r.IsSuccess && !string.IsNullOrEmpty(r.Warning)).Select(r => r.Warning);
             if (warnings.Any())
@@ -169,7 +186,7 @@ internal class ToolRestoreCommand : CommandBase<ToolRestoreCommandDefinition>
                 _reporter.WriteLine();
                 _reporter.WriteLine(string.Join(Environment.NewLine, warnings).Yellow());
             }
-            
+
             _reporter.WriteLine();
             _reporter.WriteLine(CliCommandStrings.LocalToolsRestoreWasSuccessful.Green());
 

@@ -16,6 +16,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         private const string PackageId = "global.tool.console.demo";
         private const string PackageVersion = "1.0.4";
 
+        public TestContext TestContext { get; set; } = null!;
 
         public ToolUninstallCommandTests()
         {
@@ -29,7 +30,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(string.Format(
@@ -44,7 +45,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(
@@ -59,7 +60,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);
@@ -73,7 +74,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolUninstallCommand = new ToolUninstallCommand(result);
 
-            Action a = () => toolUninstallCommand.Execute();
+            Action a = () => toolUninstallCommand.Execute(TestContext.CancellationToken).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>().And.Message
                 .Should().Contain(CliCommandStrings.OnlyLocalOptionSupportManifestFileOption);

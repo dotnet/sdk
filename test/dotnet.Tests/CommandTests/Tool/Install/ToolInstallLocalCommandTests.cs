@@ -112,7 +112,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            toolInstallCommand.Execute().Should().Be(0);
+            toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _fileSystem.File.Delete(Path.Combine(_temporaryDirectory, "nuget.config"));
         }
@@ -122,7 +122,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
 
-            toolInstallLocalCommand.Execute().Should().Be(0);
+            toolInstallLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             AssertDefaultInstallSuccess();
         }
@@ -143,7 +143,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            toolInstallLocalCommand.Execute().Should().Be(0);
+            toolInstallLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
         }
 
         [TestMethod]
@@ -162,7 +162,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            Action a = () => toolInstallLocalCommand.Execute();
+            Action a = () => toolInstallLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
 
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
@@ -189,7 +189,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _toolManifestFinder.Find(new FilePath(explicitManifestFilePath)).Should().HaveCount(1);
         }
 
@@ -208,7 +208,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _fileSystem.File.ReadAllText(_manifestFilePath).Should()
                 .Contain("\"rollForward\": true");
         }
@@ -228,7 +228,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _fileSystem.File.ReadAllText(_manifestFilePath).Should()
                 .Contain("\"rollForward\": false");
         }
@@ -242,7 +242,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _parseResult,
                 toolInstallLocalCommand: toolInstallLocalCommand);
 
-            toolInstallCommand.Execute().Should().Be(0);
+            toolInstallCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             AssertDefaultInstallSuccess();
         }
 
@@ -251,7 +251,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
         {
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
 
-            toolInstallLocalCommand.Execute().Should().Be(0);
+            toolInstallLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             _reporter.Lines[0].Should()
                 .Contain(
@@ -275,7 +275,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            Action a = () => installLocalCommand.Execute();
+            Action a = () => installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             a.Should().Throw<GracefulException>()
                 .And.Message.Should()
                 .Contain(CliCommandStrings.ToolInstallationRestoreFailed);
@@ -295,7 +295,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
 
-            Action a = () => toolInstallLocalCommand.Execute();
+            Action a = () => toolInstallLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult();
             a.Should().Throw<GracefulException>();
 
             _localToolsResolverCache.TryLoad(new RestoredCommandIdentifier(
@@ -321,7 +321,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
 
             var toolInstallLocalCommand = GetDefaultTestToolInstallLocalCommand();
 
-            toolInstallLocalCommand.Execute().Should().Be(0);
+            toolInstallLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
 
             // Verify the tool was added to the existing .config manifest
             var manifestPackages = _toolManifestFinder.Find();
@@ -363,7 +363,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             AssertDefaultInstallSuccess();
         }
 
@@ -381,7 +381,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             AssertDefaultInstallSuccess();
         }
 
@@ -399,7 +399,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             var manifestPackages = _toolManifestFinder.Find();
             manifestPackages.Should().HaveCount(1);
             var addedPackage = manifestPackages.Single();
@@ -435,7 +435,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
@@ -456,7 +456,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
@@ -480,7 +480,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 
@@ -501,7 +501,7 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 _localToolsResolverCache,
                 _reporter);
 
-            installLocalCommand.Execute().Should().Be(0);
+            installLocalCommand.Execute(CancellationToken.None).GetAwaiter().GetResult().Should().Be(0);
             _fileSystem.File.Exists(Path.Combine(_temporaryDirectory, "dotnet-tools.json")).Should().BeTrue();
         }
 

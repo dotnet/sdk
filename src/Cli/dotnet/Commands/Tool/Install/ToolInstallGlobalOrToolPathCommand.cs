@@ -51,7 +51,6 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
     private readonly bool _updateAll;
     private readonly string? _currentWorkingDirectory;
     private readonly bool? _verifySignatures;
-
     internal readonly RestoreActionConfig restoreActionConfig;
 
     public ToolInstallGlobalOrToolPathCommand(
@@ -139,19 +138,39 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         return defaultOption;
     }
 
-    public override int Execute()
+    public override int Execute() => Execute(CancellationToken.None).GetAwaiter().GetResult();
+
+    public async Task<int> Execute(CancellationToken cancellationToken)
     {
         if (_updateAll)
         {
             Debug.Assert(_store != null);
 
-            var toolIds = _store.EnumeratePackages()
-                .Where(p => ToolListGlobalOrToolPathCommand.PackageHasCommand(p, Reporter.Output))
-                .OrderBy(p => p.Id);
+            DirectoryPath? toolPath = string.IsNullOrEmpty(_toolPath)
+                ? null
+                : new DirectoryPath(_toolPath);
+            var (toolPackageStore, _, _, _) =
+                _createToolPackageStoreDownloaderUninstaller(toolPath, _forwardRestoreArguments, _currentWorkingDirectory);
+
+            PackageId[] toolIds = await ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
+                toolPackageStore.Root,
+                new PackageId("all"),
+                packageVersionDisplay: "*",
+                cancellationToken,
+                action: () => Task.FromResult(
+                    _store.EnumeratePackages()
+                        .Where(p => ToolListGlobalOrToolPathCommand.PackageHasCommand(p, Reporter.Output))
+                        .OrderBy(p => p.Id)
+                        .Select(p => new PackageId(p.Id.ToString()))
+                        .ToArray())).ConfigureAwait(false);
 
             foreach (var toolId in toolIds)
             {
-                ExecuteInstallCommand(new PackageId(toolId.Id.ToString()), versionRange: null);
+                await ExecuteInstallCommandAsync(
+                    toolId,
+                    versionRange: null,
+                    cancellationToken,
+                    requireExistingPackage: true).ConfigureAwait(false);
             }
             return 0;
         }
@@ -164,10 +183,17 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             _parseResult.GetValue(Definition.VersionOption),
             _parseResult.GetValue(Definition.PrereleaseOption));
 
-        return ExecuteInstallCommand(new PackageId(_packageIdentityWithRange.Value.Id), versionRange);
+        return await ExecuteInstallCommandAsync(
+            new PackageId(_packageIdentityWithRange.Value.Id),
+            versionRange,
+            cancellationToken).ConfigureAwait(false);
     }
 
-    private int ExecuteInstallCommand(PackageId packageId, VersionRange? versionRange)
+    private async Task<int> ExecuteInstallCommandAsync(
+        PackageId packageId,
+        VersionRange? versionRange,
+        CancellationToken cancellationToken,
+        bool requireExistingPackage = false)
     {
         using var _activity = Activities.Source.StartActivity("install-tool");
         _activity?.DisplayName = $"Install {packageId}";
@@ -192,14 +218,51 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         var appHostSourceDirectory = ShellShimTemplateFinder.GetDefaultAppHostSourceDirectory();
         IShellShimRepository shellShimRepository = _createShellShimRepository(appHostSourceDirectory, toolPath);
 
+        return await ToolPackageDownloaderBase.ExecuteWithToolInstallStoreLockAsync(
+            toolPackageStore.Root,
+            packageId,
+            packageVersionDisplay: versionRange?.OriginalString ?? "*",
+            cancellationToken,
+            action: () => ExecuteInstallCommandUnderLockAsync(
+                packageId,
+                versionRange,
+                toolPackageStoreQuery,
+                toolPackageDownloader,
+                toolPackageUninstaller,
+                shellShimRepository,
+                _activity,
+                cancellationToken,
+                requireExistingPackage)).ConfigureAwait(false);
+    }
+
+    private async Task<int> ExecuteInstallCommandUnderLockAsync(
+        PackageId packageId,
+        VersionRange? versionRange,
+        IToolPackageStoreQuery toolPackageStoreQuery,
+        IToolPackageDownloader toolPackageDownloader,
+        IToolPackageUninstaller toolPackageUninstaller,
+        IShellShimRepository shellShimRepository,
+        Activity? activity,
+        CancellationToken cancellationToken,
+        bool requireExistingPackage)
+    {
         var oldPackage = TryGetOldPackage(toolPackageStoreQuery, packageId);
+
+        if (requireExistingPackage && oldPackage == null)
+        {
+            return 0;
+        }
 
         if (oldPackage != null)
         {
-            NuGetVersion nugetVersion = GetBestMatchNugetVersion(packageId, versionRange, toolPackageDownloader);
-            _activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
-            _activity?.SetTag("tool.package.id", packageId);
-            _activity?.SetTag("tool.package.version", nugetVersion);
+            NuGetVersion nugetVersion = await GetBestMatchNugetVersionAsync(
+                packageId,
+                versionRange,
+                toolPackageDownloader,
+                cancellationToken).ConfigureAwait(false);
+            activity?.DisplayName = $"Install {packageId}@{nugetVersion}";
+            activity?.SetTag("tool.package.id", packageId);
+            activity?.SetTag("tool.package.version", nugetVersion);
 
             if (ToolVersionAlreadyInstalled(oldPackage, nugetVersion))
             {
@@ -208,7 +271,7 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
             }
         }
 
-        TransactionalAction.Run(() =>
+        await TransactionalAction.RunAsync(async () =>
         {
             if (oldPackage != null)
             {
@@ -219,10 +282,10 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 }, packageId);
             }
 
-            RunWithHandlingInstallError(() =>
+            await RunWithHandlingInstallErrorAsync(async () =>
             {
                 var toolPackageDownloaderActivity = Activities.Source.StartActivity("download-tool-package");
-                IToolPackage newInstalledPackage = toolPackageDownloader.InstallPackage(
+                IToolPackage newInstalledPackage = await toolPackageDownloader.InstallPackageAsync(
                     new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
                     packageId: packageId,
                     versionRange: versionRange,
@@ -231,7 +294,8 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     isGlobalTool: true,
                     isGlobalToolRollForward: _allowRollForward,
                     verifySignatures: _verifySignatures ?? true,
-                    restoreActionConfig: restoreActionConfig);
+                    restoreActionConfig: restoreActionConfig,
+                    cancellationToken: cancellationToken).ConfigureAwait(false);
 
                 EnsureVersionIsHigher(oldPackage, newInstalledPackage, _allowPackageDowngrade);
 
@@ -247,7 +311,9 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                     framework = string.IsNullOrEmpty(_framework) ? null : NuGetFramework.Parse(_framework);
                 }
                 var shimActivity = Activities.Source.StartActivity("create-shell-shim");
-                string appHostSourceDirectory = _shellShimTemplateFinder.ResolveAppHostSourceDirectoryAsync(_architecture, framework, RuntimeInformation.ProcessArchitecture).Result;
+                string appHostSourceDirectory = await _shellShimTemplateFinder
+                    .ResolveAppHostSourceDirectoryAsync(_architecture, framework, RuntimeInformation.ProcessArchitecture)
+                    .ConfigureAwait(false);
 
                 shellShimRepository.CreateShim(newInstalledPackage.Command, newInstalledPackage.PackagedShims);
                 shimActivity?.Dispose();
@@ -262,21 +328,26 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
                 }
 
                 PrintSuccessMessage(oldPackage, newInstalledPackage);
-            }, packageId);
-        });
+            }, packageId).ConfigureAwait(false);
+        }).ConfigureAwait(false);
 
         return 0;
     }
 
-    private NuGetVersion GetBestMatchNugetVersion(PackageId packageId, VersionRange? versionRange, IToolPackageDownloader toolPackageDownloader)
+    private async Task<NuGetVersion> GetBestMatchNugetVersionAsync(
+        PackageId packageId,
+        VersionRange? versionRange,
+        IToolPackageDownloader toolPackageDownloader,
+        CancellationToken cancellationToken)
     {
-        return toolPackageDownloader.GetNuGetVersion(
+        return (await toolPackageDownloader.GetNuGetVersionAsync(
             packageLocation: new PackageLocation(nugetConfig: GetConfigFile(), sourceFeedOverrides: _source, additionalFeeds: _addSource),
             packageId: packageId,
             versionRange: versionRange,
             verbosity: _verbosity,
-            restoreActionConfig: restoreActionConfig
-        ).version;
+            restoreActionConfig: restoreActionConfig,
+            cancellationToken: cancellationToken
+        ).ConfigureAwait(false)).version;
     }
 
     private static bool ToolVersionAlreadyInstalled(IToolPackage? oldPackageNullable, NuGetVersion nuGetVersion)
@@ -309,11 +380,11 @@ internal sealed class ToolInstallGlobalOrToolPathCommand : CommandBase<ToolUpdat
         }
     }
 
-    private static void RunWithHandlingInstallError(Action installAction, PackageId packageId)
+    private static async Task RunWithHandlingInstallErrorAsync(Func<Task> installAction, PackageId packageId)
     {
         try
         {
-            installAction();
+            await installAction().ConfigureAwait(false);
         }
         catch (Exception ex)
             when (InstallToolCommandLowLevelErrorConverter.ShouldConvertToUserFacingError(ex))

@@ -1,7 +1,6 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.Commands;
@@ -48,6 +47,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
         private readonly Dictionary<PackageId, IReadOnlyList<FilePath>> _packagedShimsMap;
         private readonly Dictionary<PackageId, IEnumerable<NuGetFramework>> _frameworksMap;
         private readonly Action? _downloadCallback;
+        private readonly Func<CancellationToken, Task>? _downloadAsyncCallback;
 
         public ToolPackageDownloaderMock(
             IToolPackageStore store,
@@ -57,7 +57,8 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             Action? downloadCallback = null,
             Dictionary<PackageId, IEnumerable<string>>? warningsMap = null,
             Dictionary<PackageId, IReadOnlyList<FilePath>>? packagedShimsMap = null,
-            Dictionary<PackageId, IEnumerable<NuGetFramework>>? frameworksMap = null
+            Dictionary<PackageId, IEnumerable<NuGetFramework>>? frameworksMap = null,
+            Func<CancellationToken, Task>? downloadAsyncCallback = null
         )
         {
             _toolPackageStore = store ?? throw new ArgumentNullException(nameof(store)); ;
@@ -72,6 +73,7 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             _packagedShimsMap = packagedShimsMap ?? new Dictionary<PackageId, IReadOnlyList<FilePath>>();
             _frameworksMap = frameworksMap ?? new Dictionary<PackageId, IEnumerable<NuGetFramework>>();
             _downloadCallback = downloadCallback;
+            _downloadAsyncCallback = downloadAsyncCallback;
 
             if (feeds == null)
             {
@@ -96,16 +98,23 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
             }
         }
 
-        public IToolPackage InstallPackage(PackageLocation packageLocation, PackageId packageId,
+        public async Task<IToolPackage> InstallPackageAsync(PackageLocation packageLocation, PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange? versionRange = null,
             string? targetFramework = null,
             bool isGlobalTool = false,
             bool isGlobalToolRollForward = false,
             bool verifySignatures = false,
-            RestoreActionConfig? restoreActionConfig = null
-            )
+            RestoreActionConfig? restoreActionConfig = null,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
+
+            if (_downloadAsyncCallback is not null)
+            {
+                await _downloadAsyncCallback(cancellationToken);
+            }
+
             string? rollbackDirectory = null;
             var packageRootDirectory = _toolPackageStore.GetRootPackageDirectory(packageId);
 
@@ -311,13 +320,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                    || (f.Type == MockFeedType.ExplicitNugetConfig && f.Uri == nugetConfig.Value);
         }
 
-        public (NuGetVersion version, PackageSource source) GetNuGetVersion(
+        public Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
             PackageLocation packageLocation,
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange? versionRange = null,
-            RestoreActionConfig? restoreActionConfig = null)
+            RestoreActionConfig? restoreActionConfig = null,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
 
             if (string.IsNullOrEmpty(packageId.ToString()))
@@ -332,10 +343,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageLocation.RootConfigDirectory,
                 packageLocation.SourceFeedOverrides);
 
-            return (NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed"));
+            return Task.FromResult((NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed")));
         }
 
-        public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string? targetFramework, VerbosityOptions verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
+        public Task<IToolPackage?> TryGetDownloadedToolAsync(
+            PackageId packageId,
+            NuGetVersion packageVersion,
+            string? targetFramework,
+            VerbosityOptions verbosity,
+            CancellationToken cancellationToken = default) => throw new NotImplementedException();
 
         private class TestToolPackage : IToolPackage
         {
