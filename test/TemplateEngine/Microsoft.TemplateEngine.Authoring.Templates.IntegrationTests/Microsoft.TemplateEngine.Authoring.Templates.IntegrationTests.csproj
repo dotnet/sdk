@@ -1,6 +1,7 @@
 <Project Sdk="MSTest.Sdk">
 
   <PropertyGroup>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
     <TargetFramework>$(NetCurrent)</TargetFramework>
     <NoWarn>$(NoWarn);MSTESTEXP</NoWarn>
   </PropertyGroup>

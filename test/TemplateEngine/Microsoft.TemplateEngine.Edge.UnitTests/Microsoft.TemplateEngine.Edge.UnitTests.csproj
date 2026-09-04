@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
+    <!-- Test classes use isolated settings helpers, while methods within several classes share
+         mutable package providers, package-manager state, and culture-sensitive fixtures. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>

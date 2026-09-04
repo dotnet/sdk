@@ -4,6 +4,9 @@
     <TargetFrameworks>$(NetCurrent);$(NetFrameworkCurrent)</TargetFrameworks>
     <IsTestProject>true</IsTestProject>
     <ImplicitUsings>enable</ImplicitUsings>
+    <!-- Test classes have isolated fixtures, but methods in environment-backed classes share
+         class-scoped EnvironmentSettingsHelper instances. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <ItemGroup>
