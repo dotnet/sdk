@@ -15,12 +15,16 @@ using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
 using Microsoft.Extensions.EnvironmentAbstractions;
 using NuGet.Configuration;
+using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
 
 namespace Microsoft.DotNet.Cli.Commands.Tool.Execute;
 
 internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinitionBase>
 {
+    internal const int DefaultFeedTimeoutMilliseconds = 100;
+    internal const string FeedTimeoutEnvironmentVariableName = "DNX_FEED_TIMEOUT_MILLISECONDS";
+
     private readonly PackageIdentityWithRange _packageToolIdentityArgument;
     private readonly IEnumerable<string> _forwardArguments;
     private readonly bool _allowRollForward;
@@ -28,7 +32,8 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
     private readonly string[] _sources;
     private readonly string[] _addSource;
     private readonly VerbosityOptions _verbosity;
-    private readonly IToolPackageDownloader _toolPackageDownloader = ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
+    private readonly IToolPackageDownloader _toolPackageDownloader =
+        ToolPackageFactory.CreateToolPackageStoresAndDownloader().downloader;
 
     private readonly RestoreActionConfig _restoreActionConfig;
 
@@ -48,7 +53,9 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _toolManifestFinder = toolManifestFinder ?? new ToolManifestFinder(new DirectoryPath(currentWorkingDirectory ?? Directory.GetCurrentDirectory()));
     }
 
-    public override int Execute()
+    public override int Execute() => ExecuteAsync(CancellationToken.None).GetAwaiter().GetResult();
+
+    internal async Task<int> ExecuteAsync(CancellationToken cancellationToken)
     {
         var versionRange = VersionRangeUtilities.GetVersionRange(
             _packageToolIdentityArgument.VersionRange?.OriginalString,
@@ -80,7 +87,10 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                     localToolsResolverCache,
                     new FileSystemWrapper());
 
-                var restoreResult = toolPackageRestorer.InstallPackage(toolManifestPackage, _configFile == null ? null : new FilePath(_configFile));
+                var restoreResult = await toolPackageRestorer.InstallPackageAsync(
+                    toolManifestPackage,
+                    _configFile == null ? null : new FilePath(_configFile),
+                    cancellationToken);
 
                 if (!restoreResult.IsSuccess)
                 {
@@ -109,13 +119,60 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 sourceFeedOverrides: _sources,
                 additionalFeeds: _addSource);
 
-        (var bestVersion, var packageSource) = _toolPackageDownloader.GetNuGetVersion(packageLocation, packageId, _verbosity, versionRange, _restoreActionConfig);
+        VersionRange effectiveVersionRange = versionRange ?? VersionRange.Parse("*");
+        IToolPackage? toolPackage = null;
+        PackageSource? packageSource = null;
+        NuGetVersion? bestVersion = null;
+
+        if (!_restoreActionConfig.NoCache &&
+            _toolPackageDownloader.TryGetBestDownloadedTool(
+                packageId,
+                effectiveVersionRange,
+                targetFramework: null,
+                verbosity: _verbosity,
+                out IToolPackage? cachedToolPackage))
+        {
+            if (IsExactVersion(effectiveVersionRange))
+            {
+                toolPackage = cachedToolPackage;
+            }
+            else
+            {
+                (bestVersion, packageSource) = await ProbeFeedsForBestVersionAsync(
+                    _toolPackageDownloader,
+                    packageLocation,
+                    packageId,
+                    effectiveVersionRange,
+                    cachedToolPackage.Version,
+                    _verbosity,
+                    _restoreActionConfig,
+                    cancellationToken);
+
+                if (bestVersion is null || bestVersion <= cachedToolPackage.Version)
+                {
+                    toolPackage = cachedToolPackage;
+                }
+            }
+        }
+
+        if (toolPackage is null && bestVersion is null)
+        {
+            (bestVersion, packageSource) = await _toolPackageDownloader.GetNuGetVersionAsync(
+                packageLocation,
+                packageId,
+                _verbosity,
+                effectiveVersionRange,
+                _restoreActionConfig,
+                cancellationToken);
+        }
+
         toolLocationActivity?.SetTag("tool.exec.kind", "one-shot");
         toolLocationActivity?.Stop();
 
         //  TargetFramework is null, which means to use the current framework.  Global tools can override the target framework to use (or select assets for),
         //  but we don't support this for local or one-shot tools.
-        if (!_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion, targetFramework: null, verbosity: _verbosity, out var toolPackage))
+        if (toolPackage is null &&
+            !_toolPackageDownloader.TryGetDownloadedTool(packageId, bestVersion!, targetFramework: null, verbosity: _verbosity, out toolPackage))
         {
             //  We've already determined which source we will use and will use it to download the package.
             //  So set the package location here to override the source feeds to just the source we already resolved to.
@@ -125,13 +182,13 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
                 nugetConfig: _configFile != null ? new(_configFile) : null,
                 sourceFeedOverrides: _sources,
                 additionalFeeds: _addSource,
-                packageSourceOverrides: [packageSource]);
+                packageSourceOverrides: [packageSource!]);
 
             toolPackage = _toolPackageDownloader.InstallPackage(
                 downloadPackageLocation,
                 packageId: packageId,
                 verbosity: _verbosity,
-                versionRange: new VersionRange(bestVersion, true, bestVersion, true),
+                versionRange: new VersionRange(bestVersion!, true, bestVersion!, true),
                 isGlobalToolRollForward: false,
                 restoreActionConfig: _restoreActionConfig);
         }
@@ -145,4 +202,55 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         var result = command.Execute();
         return result.ExitCode;
     }
+
+    internal static async Task<(NuGetVersion? version, PackageSource? source)> ProbeFeedsForBestVersionAsync(
+        IToolPackageDownloader toolPackageDownloader,
+        PackageLocation packageLocation,
+        PackageId packageId,
+        VersionRange versionRange,
+        NuGetVersion cachedVersion,
+        VerbosityOptions verbosity,
+        RestoreActionConfig restoreActionConfig,
+        CancellationToken cancellationToken)
+    {
+        using var timeoutTokenSource = new CancellationTokenSource(GetFeedTimeoutMilliseconds());
+        using var linkedTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutTokenSource.Token);
+
+        try
+        {
+            return await toolPackageDownloader.GetNuGetVersionAsync(
+                packageLocation,
+                packageId,
+                verbosity,
+                versionRange,
+                restoreActionConfig,
+                linkedTokenSource.Token);
+        }
+        catch (OperationCanceledException) when (timeoutTokenSource.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
+        {
+            return (cachedVersion, null);
+        }
+        catch (Exception e) when (IsFeedProbeFailure(e))
+        {
+            return (cachedVersion, null);
+        }
+    }
+
+    internal static int GetFeedTimeoutMilliseconds()
+        => int.TryParse(
+                Environment.GetEnvironmentVariable(FeedTimeoutEnvironmentVariableName),
+                out int timeoutMilliseconds) &&
+            timeoutMilliseconds > 0
+                ? timeoutMilliseconds
+                : DefaultFeedTimeoutMilliseconds;
+
+    private static bool IsExactVersion(VersionRange versionRange)
+        => versionRange.HasLowerAndUpperBounds &&
+           versionRange.MinVersion == versionRange.MaxVersion &&
+           versionRange.IsMinInclusive &&
+           versionRange.IsMaxInclusive;
+
+    private static bool IsFeedProbeFailure(Exception exception)
+        => exception is NuGetPackageNotFoundException or FatalProtocolException or HttpRequestException ||
+           exception.InnerException is not null && IsFeedProbeFailure(exception.InnerException);
 }

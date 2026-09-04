@@ -167,16 +167,17 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [TestMethod]
         [DataRow(false)]
         [DataRow(true)]
-        public void GivenAllButNoPackageVersionItReturnLatestStableVersion(bool testMockBehaviorIsInSync)
+        public async Task GivenAllButNoPackageVersionItReturnLatestStableVersion(bool testMockBehaviorIsInSync)
         {
             var (store, storeQuery, downloader, uninstaller, reporter, fileSystem, testDir) = Setup(
                 useMock: testMockBehaviorIsInSync,
                 includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.GetNuGetVersion(
+            var package = (await downloader.GetNuGetVersionAsync(
                 new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config")),
                 packageId: TestPackageId,
-                verbosity: TestVerbosity).version;
+                verbosity: TestVerbosity,
+                cancellationToken: TestContext.CancellationToken)).version;
 
             package.OriginalVersion.Should().Be(TestPackageVersion);
         }
@@ -188,7 +189,7 @@ namespace Microsoft.DotNet.PackageInstall.Tests
         [DataRow(true, "1.*", TestPackageVersion)]
         [DataRow(false, TestPackageVersion, TestPackageVersion)]
         [DataRow(true, TestPackageVersion, TestPackageVersion)]
-        public void GivenASpecificVersionGetCorrectVersion(bool testMockBehaviorIsInSync, string requestedVersion, string expectedVersion)
+        public async Task GivenASpecificVersionGetCorrectVersion(bool testMockBehaviorIsInSync, string requestedVersion, string expectedVersion)
         {
 
             var emptySource = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
@@ -198,11 +199,12 @@ namespace Microsoft.DotNet.PackageInstall.Tests
                 useMock: testMockBehaviorIsInSync,
                 includeLocalFeedInNugetConfig: true);
 
-            var package = downloader.GetNuGetVersion(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
+            var package = (await downloader.GetNuGetVersionAsync(new PackageLocation(nugetConfig: testDir.WithFile("NuGet.config"),
                     additionalFeeds: new[] { emptySource }),
                 packageId: TestPackageId,
                 verbosity: TestVerbosity,
-                versionRange: VersionRange.Parse(requestedVersion)).version;
+                versionRange: VersionRange.Parse(requestedVersion),
+                cancellationToken: TestContext.CancellationToken)).version;
 
             package.OriginalVersion.Should().Be(expectedVersion);
         }

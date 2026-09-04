@@ -311,13 +311,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                    || (f.Type == MockFeedType.ExplicitNugetConfig && f.Uri == nugetConfig.Value);
         }
 
-        public (NuGetVersion version, PackageSource source) GetNuGetVersion(
+        public Task<(NuGetVersion version, PackageSource source)> GetNuGetVersionAsync(
             PackageLocation packageLocation,
             PackageId packageId,
             VerbosityOptions verbosity,
             VersionRange? versionRange = null,
-            RestoreActionConfig? restoreActionConfig = null)
+            RestoreActionConfig? restoreActionConfig = null,
+            CancellationToken cancellationToken = default)
         {
+            cancellationToken.ThrowIfCancellationRequested();
             versionRange = VersionRange.Parse(versionRange?.OriginalString ?? "*");
 
             if (string.IsNullOrEmpty(packageId.ToString()))
@@ -332,8 +334,15 @@ namespace Microsoft.DotNet.Tools.Tests.ComponentMocks
                 packageLocation.RootConfigDirectory,
                 packageLocation.SourceFeedOverrides);
 
-            return (NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed"));
+            return Task.FromResult((NuGetVersion.Parse(feedPackage.Version), new PackageSource("http://mock-feed", "MockFeed")));
         }
+
+        public bool TryGetBestDownloadedTool(
+            PackageId packageId,
+            VersionRange versionRange,
+            string? targetFramework,
+            VerbosityOptions verbosity,
+            [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
 
         public bool TryGetDownloadedTool(PackageId packageId, NuGetVersion packageVersion, string? targetFramework, VerbosityOptions verbosity, [NotNullWhen(true)] out IToolPackage? toolPackage) => throw new NotImplementedException();
 
