@@ -22,12 +22,11 @@ internal class DefaultRegistryAPI : IRegistryAPI
     // Making this a round 30 for convenience.
     private static TimeSpan LongRequestTimeout = TimeSpan.FromMinutes(30);
 
-    internal DefaultRegistryAPI(string registryName, Uri baseUri, ILogger logger, RegistryMode mode)
+    internal DefaultRegistryAPI(string registryName, Uri baseUri, bool isInsecureRegistry, ILogger logger, RegistryMode mode)
     {
-        bool isAmazonECRRegistry = baseUri.IsAmazonECRRegistry();
         _baseUri = baseUri;
         _logger = logger;
-        _client = CreateClient(registryName, baseUri, logger, isAmazonECRRegistry, mode);
+        _client = CreateClient(registryName, baseUri, logger, isInsecureRegistry, mode);
         Manifest = new DefaultManifestOperations(_baseUri, registryName, _client, _logger);
         Blob = new DefaultBlobOperations(_baseUri, registryName, _client, _logger);
     }
@@ -36,28 +35,13 @@ internal class DefaultRegistryAPI : IRegistryAPI
 
     public IManifestOperations Manifest { get; }
 
-    private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isAmazonECRRegistry, RegistryMode mode)
+    private static HttpClient CreateClient(string registryName, Uri baseUri, ILogger logger, bool isInsecureRegistry, RegistryMode mode)
     {
-        var innerHandler = new SocketsHttpHandler()
-        {
-            UseCookies = false,
-            // the rest of the HTTP stack has an very long timeout (see below) but we should still have a reasonable timeout for the initial connection
-            ConnectTimeout = TimeSpan.FromSeconds(30)
-        };
-
-        // Ignore certificate for https localhost repository.
-        if (baseUri.Host == "localhost" && baseUri.Scheme == "https")
-        {
-            innerHandler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions()
-            {
-                RemoteCertificateValidationCallback = (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors)
-                                                        => (sender as SslStream)?.TargetHostName == "localhost"
-            };
-        }
+        HttpMessageHandler innerHandler = CreateHttpHandler(registryName, baseUri, isInsecureRegistry, logger);
 
         HttpMessageHandler clientHandler = new AuthHandshakeMessageHandler(registryName, innerHandler, logger, mode);
 
-        if (isAmazonECRRegistry)
+        if (baseUri.IsAmazonECRRegistry())
         {
             clientHandler = new AmazonECRMessageHandler(clientHandler);
         }
@@ -70,5 +54,46 @@ internal class DefaultRegistryAPI : IRegistryAPI
         client.DefaultRequestHeaders.Add("User-Agent", $".NET Container Library v{Constants.Version}");
 
         return client;
+    }
+
+    private static HttpMessageHandler CreateHttpHandler(string registryName, Uri baseUri, bool allowInsecure, ILogger logger)
+    {
+        var socketsHttpHandler = new SocketsHttpHandler()
+        {
+            UseCookies = false,
+            // the rest of the HTTP stack has an very long timeout (see below) but we should still have a reasonable timeout for the initial connection
+            ConnectTimeout = TimeSpan.FromSeconds(30)
+        };
+
+        if (!allowInsecure)
+        {
+            return socketsHttpHandler;
+        }
+
+        socketsHttpHandler.SslOptions = new System.Net.Security.SslClientAuthenticationOptions()
+        {
+            RemoteCertificateValidationCallback = IgnoreCertificateErrorsForSpecificHost(baseUri.Host)
+        };
+
+        return new FallbackToHttpMessageHandler(registryName, baseUri.Host, baseUri.Port, socketsHttpHandler, logger);
+    }
+
+    private static RemoteCertificateValidationCallback IgnoreCertificateErrorsForSpecificHost(string host)
+    {
+        return (object sender, X509Certificate? certificate, X509Chain? chain, SslPolicyErrors sslPolicyErrors) =>
+        {
+            if (sslPolicyErrors == SslPolicyErrors.None)
+            {
+                return true;
+            }
+
+            // Ignore certificate errors for the hostname.
+            if ((sender as SslStream)?.TargetHostName == host)
+            {
+                return true;
+            }
+
+            return false;
+        };
     }
 }

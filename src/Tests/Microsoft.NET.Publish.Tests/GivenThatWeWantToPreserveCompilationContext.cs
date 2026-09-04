@@ -13,7 +13,6 @@ namespace Microsoft.NET.Publish.Tests
 
         [Theory]
         [InlineData("net46", "netstandard1.3", false)]
-        [InlineData("netcoreapp1.1", "netstandard1.3", false)]
         [InlineData("netcoreapp2.0", "netstandard2.0", false)]
         [InlineData("netcoreapp2.0", "netstandard2.0", true)]
         [InlineData("netcoreapp3.0", "netstandard2.0", false)]
@@ -48,7 +47,7 @@ namespace Microsoft.NET.Publish.Tests
 
             testProject.ReferencedProjects.Add(testLibraryProject);
             testProject.PackageReferences.Add(new TestPackageReference("Newtonsoft.Json", ToolsetInfo.GetNewtonsoftJsonPackageVersion()));
-            testProject.PackageReferences.Add(new TestPackageReference("System.Data.SqlClient", "4.4.3"));
+            testProject.PackageReferences.Add(new TestPackageReference("System.Data.SqlClient", ToolsetInfo.GetSystemDataSqlClientPackageVersion()));
 
             var testAsset = _testAssetsManager.CreateTestProject(testProject, identifier: appTargetFramework + withoutCopyingRefs);
 
@@ -185,7 +184,7 @@ namespace Microsoft.NET.Publish.Tests
             {
                 "<StoreArtifacts>",
                 $@"  <Package Id=""Newtonsoft.Json"" Version=""{ToolsetInfo.GetNewtonsoftJsonPackageVersion()}"" />",
-                @"  <Package Id=""System.Data.SqlClient"" Version=""4.3.0"" />",
+                $@"  <Package Id=""System.Data.SqlClient"" Version=""{ToolsetInfo.GetSystemDataSqlClientPackageVersion()}"" />",
                 "</StoreArtifacts>",
             });
 
@@ -305,94 +304,6 @@ System.Security.Cryptography.Encoding.dll
 System.Security.Cryptography.Primitives.dll
 System.Security.Cryptography.X509Certificates.dll
 System.Xml.ReaderWriter.dll
-TestLibrary.dll"
-            },
-            {
-                "netcoreapp1.1",
-@"TestApp.dll
-Microsoft.CSharp.dll
-Microsoft.VisualBasic.dll
-Microsoft.Win32.Primitives.dll
-Newtonsoft.Json.dll
-System.AppContext.dll
-System.Buffers.dll
-System.Collections.dll
-System.Collections.Concurrent.dll
-System.Collections.Immutable.dll
-System.ComponentModel.dll
-System.ComponentModel.Annotations.dll
-System.Console.dll
-System.Collections.NonGeneric.dll
-System.ComponentModel.Primitives.dll
-System.ComponentModel.TypeConverter.dll
-System.Data.Common.dll
-System.Data.SqlClient.dll
-System.Diagnostics.Debug.dll
-System.Diagnostics.DiagnosticSource.dll
-System.Diagnostics.Process.dll
-System.Diagnostics.Tools.dll
-System.Diagnostics.Tracing.dll
-System.Dynamic.Runtime.dll
-System.Globalization.dll
-System.Globalization.Calendars.dll
-System.Globalization.Extensions.dll
-System.IO.dll
-System.IO.Compression.dll
-System.IO.Compression.ZipFile.dll
-System.IO.FileSystem.dll
-System.IO.FileSystem.Primitives.dll
-System.IO.FileSystem.Watcher.dll
-System.IO.MemoryMappedFiles.dll
-System.IO.UnmanagedMemoryStream.dll
-System.Linq.dll
-System.Linq.Expressions.dll
-System.Linq.Parallel.dll
-System.Linq.Queryable.dll
-System.Net.Http.dll
-System.Net.NameResolution.dll
-System.Net.Primitives.dll
-System.Net.Requests.dll
-System.Net.Security.dll
-System.Net.Sockets.dll
-System.Net.WebHeaderCollection.dll
-System.Numerics.Vectors.dll
-System.ObjectModel.dll
-System.Reflection.dll
-System.Reflection.DispatchProxy.dll
-System.Reflection.Extensions.dll
-System.Reflection.Metadata.dll
-System.Reflection.Primitives.dll
-System.Reflection.TypeExtensions.dll
-System.Resources.Reader.dll
-System.Resources.ResourceManager.dll
-System.Runtime.dll
-System.Runtime.Extensions.dll
-System.Runtime.Handles.dll
-System.Runtime.InteropServices.dll
-System.Runtime.InteropServices.RuntimeInformation.dll
-System.Runtime.Numerics.dll
-System.Runtime.Serialization.Primitives.dll
-System.Runtime.Serialization.Formatters.dll
-System.Security.Cryptography.Algorithms.dll
-System.Security.Cryptography.Encoding.dll
-System.Security.Cryptography.OpenSsl.dll
-System.Security.Cryptography.Primitives.dll
-System.Security.Cryptography.X509Certificates.dll
-System.Security.Principal.dll
-System.Text.Encoding.dll
-System.Text.Encoding.Extensions.dll
-System.Text.RegularExpressions.dll
-System.Threading.dll
-System.Threading.Tasks.dll
-System.Threading.Tasks.Dataflow.dll
-System.Threading.Tasks.Extensions.dll
-System.Threading.Tasks.Parallel.dll
-System.Threading.Thread.dll
-System.Threading.ThreadPool.dll
-System.Threading.Timer.dll
-System.Xml.ReaderWriter.dll
-System.Xml.XDocument.dll
-System.Xml.XmlDocument.dll
 TestLibrary.dll"
             },
             {

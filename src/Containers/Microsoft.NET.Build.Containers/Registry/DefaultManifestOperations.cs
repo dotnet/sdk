@@ -33,16 +33,15 @@ internal class DefaultManifestOperations : IManifestOperations
         {
             HttpStatusCode.OK => response,
             HttpStatusCode.NotFound => throw new RepositoryNotFoundException(_registryName, repositoryName, reference),
-            HttpStatusCode.Unauthorized => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
+            HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden => throw new UnableToAccessRepositoryException(_registryName, repositoryName),
             _ => await LogAndThrowContainerHttpException<HttpResponseMessage>(response, cancellationToken).ConfigureAwait(false)
         };
     }
 
-    public async Task PutAsync(string repositoryName, string reference, ManifestV2 manifest, CancellationToken cancellationToken)
+    public async Task PutAsync(string repositoryName, string reference, string manifestJson, string mediaType, CancellationToken cancellationToken)
     {
-        string jsonString = JsonSerializer.SerializeToNode(manifest)?.ToJsonString() ?? "";
-        HttpContent manifestUploadContent = new StringContent(jsonString);
-        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(manifest.MediaType);
+        HttpContent manifestUploadContent = new StringContent(manifestJson);
+        manifestUploadContent.Headers.ContentType = new MediaTypeHeaderValue(mediaType);
 
         HttpResponseMessage putResponse = await _client.PutAsync(new Uri(_baseUri, $"/v2/{repositoryName}/manifests/{reference}"), manifestUploadContent, cancellationToken).ConfigureAwait(false);
 

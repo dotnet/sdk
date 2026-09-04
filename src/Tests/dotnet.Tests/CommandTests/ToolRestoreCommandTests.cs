@@ -119,10 +119,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory),
+                        false),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
                         new[] {_toolCommandNameB},
-                        new DirectoryPath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory),
+                        false)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
@@ -156,10 +158,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory),
+                        false),
                     new ToolManifestPackage(_packageIdB, _packageVersionB,
                         new[] {_toolCommandNameB},
-                        new DirectoryPath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory),
+                        false)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
@@ -191,10 +195,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory),
+                        false),
                     new ToolManifestPackage(_packageIdWithCommandNameCollisionWithA,
                         _packageVersionWithCommandNameCollisionWithA, new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory),
+                        false)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
@@ -246,10 +252,12 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory),
+                        false),
                     new ToolManifestPackage(new PackageId("non-exists"), NuGetVersion.Parse("1.0.0"),
                         new[] {new ToolCommandName("non-exists")},
-                        new DirectoryPath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory),
+                        false)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
@@ -289,7 +297,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {differentCommandNameA, differentCommandNameB},
-                        new DirectoryPath(_temporaryDirectory)),
+                        new DirectoryPath(_temporaryDirectory),
+                        false),
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
@@ -457,7 +466,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory),
+                        false)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,
@@ -484,7 +494,8 @@ namespace Microsoft.DotNet.Tests.Commands.Tool
                 {
                     new ToolManifestPackage(_packageIdA, _packageVersionA,
                         new[] {_toolCommandNameA},
-                        new DirectoryPath(_temporaryDirectory))
+                        new DirectoryPath(_temporaryDirectory),
+                        false)
                 });
 
             ToolRestoreCommand toolRestoreCommand = new ToolRestoreCommand(_parseResult,

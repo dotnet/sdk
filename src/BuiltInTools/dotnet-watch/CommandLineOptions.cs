@@ -237,7 +237,9 @@ Examples:
         errorCode = new CliConfiguration(rootCommand)
         {
             Output = output ?? Console.Out,
-            Error = error ?? Console.Error
+            Error = error ?? Console.Error,
+            Directives = { new EnvironmentVariablesDirective() },
+
         }.Invoke(args);
 
         return options;

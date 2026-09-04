@@ -77,6 +77,11 @@
         <target state="translated">Zależność manifestu obciążenia „{0}” w wersji „{1}” jest niższa niż w wersji "{2}" wymaganej przez manifest „{3}”[{4}]</target>
         <note />
       </trans-unit>
+      <trans-unit id="ManifestDoesNotExist">
+        <source>No manifest with ID {0} exists.</source>
+        <target state="translated">Nie istnieje żaden manifest o identyfikatorze {0}.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="ManifestFromInstallStateNotFound">
         <source>Workload manifest {0}, which was specified in {1}, was not found. Running "dotnet workload repair" may resolve this.</source>
         <target state="translated">Nie znaleziono manifestu obciążenia {0}, który został określony w: {1}. Uruchomienie polecenia "dotnet workload repair" może rozwiązać ten problem.</target>

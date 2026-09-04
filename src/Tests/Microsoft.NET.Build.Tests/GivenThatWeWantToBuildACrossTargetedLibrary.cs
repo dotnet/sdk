@@ -140,5 +140,46 @@ namespace Microsoft.NET.Build.Tests
             string outputPathValue = File.ReadAllText(Path.Combine(testAsset.TestRoot, testProject.Name, "OutputPathValue.txt"));
             outputPathValue.Trim().Should().NotContain("\\\\");
         }
+
+        [RequiresMSBuildVersionFact("17.9.0.61803")]
+        public void OuterBuildImportsUserFile()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};net7.0"
+            };
+
+            testProject.ProjectChanges.Add(xml =>
+            {
+                var target = """
+                    <Target Name="WriteValue" AfterTargets="Build">
+                        <WriteLinesToFile File="$(MSBuildProjectDirectory)\OutputPathValue.txt"
+                                      Lines="User value is: $(UserValue)"
+                                      Overwrite="true" />
+                    </Target>
+                """;
+
+                xml.Root.Add(XElement.Parse(target));
+            });
+
+            string temp = $"{testProject.Name}.csproj.user";
+            testProject.SourceFiles[temp] = """
+                 <Project>
+                    <PropertyGroup>
+                        <UserValue>A User defined value</UserValue>
+                    </PropertyGroup>
+                </Project>
+                """;
+
+            var testAsset = _testAssetsManager.CreateTestProject(testProject);
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass();
+
+            string outputPathValue = File.ReadAllText(Path.Combine(testAsset.TestRoot, testProject.Name, "OutputPathValue.txt"));
+            outputPathValue.Should().Contain("User value is: A User defined value");
+        }
     }
 }

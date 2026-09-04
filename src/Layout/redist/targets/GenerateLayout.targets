@@ -117,10 +117,27 @@
       <DotnetFormatConfigFiles Include="$(Pkgdotnet-format)/tools/net8.0/any/**/*.config" />
     </ItemGroup>
 
+    <!-- SDK Microsoft.Build assemblies to overlay for version consistency -->
+    <ItemGroup>
+      <SdkMicrosoftBuildFiles Include="$(OutputPath)/Microsoft.Build.dll" />
+      <SdkMicrosoftBuildFiles Include="$(OutputPath)/Microsoft.Build.Framework.dll" />
+      <SdkMicrosoftBuildFiles Include="$(OutputPath)/Microsoft.Build.Tasks.Core.dll" />
+      <SdkMicrosoftBuildFiles Include="$(OutputPath)/Microsoft.Build.Utilities.Core.dll" />
+    </ItemGroup>
+
     <Error Condition="'@(DotnetFormatDllFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
     <Error Condition="'@(DotnetFormatConfigFiles)' == ''" Text="Something moved around in dotnet-format package, adjust code here accordingly. TFM change?" />
+
+    <!-- Copy dotnet-format files first -->
     <Copy SourceFiles="@(DotnetFormatDllFiles)" DestinationFiles="@(DotnetFormatDllFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
     <Copy SourceFiles="@(DotnetFormatConfigFiles)" DestinationFiles="@(DotnetFormatConfigFiles->'$(DotnetFormatDestinationDirectory)/%(RecursiveDir)%(Filename)%(Extension)')" />
+
+    <!-- Overlay newer Microsoft.Build.* assemblies from SDK for version consistency
+         this does not fix deps.json inconsistencies but ensures we don't ship vulnerable packages -->
+    <Copy SourceFiles="@(SdkMicrosoftBuildFiles)"
+          DestinationFolder="$(DotnetFormatDestinationDirectory)"
+          Condition="Exists('%(FullPath)')"
+          OverwriteReadOnlyFiles="true" />
   </Target>
 
   <Target Name="PublishMSBuildExtensions"

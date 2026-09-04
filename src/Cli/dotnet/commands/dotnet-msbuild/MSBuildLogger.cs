@@ -32,6 +32,19 @@ namespace Microsoft.DotNet.Tools.MSBuild
         internal const string UseArtifactsOutputTelemetryPropertyKey = "UseArtifactsOutput";
         internal const string ArtifactsPathLocationTypeTelemetryPropertyKey = "ArtifactsPathLocationType";
 
+        /// <summary>
+        /// This is defined in <see cref="ComputeDotnetBaseImageAndTag.cs"/>
+        /// </summary>
+        internal const string SdkContainerPublishBaseImageInferenceEventName = "sdk/container/inference";
+        /// <summary>
+        /// This is defined in <see cref="CreateNewImage.cs"/>
+        /// </summary>
+        internal const string SdkContainerPublishSuccessEventName = "sdk/container/publish/success";
+        /// <summary>
+        /// This is defined in <see cref="CreateNewImage.cs"/>
+        /// </summary>
+        internal const string SdkContainerPublishErrorEventName = "sdk/container/publish/error";
+
         public MSBuildLogger()
         {
             try
@@ -130,7 +143,10 @@ namespace Microsoft.DotNet.Tools.MSBuild
                 case PublishPropertiesTelemetryEventName:
                 case ReadyToRunTelemetryEventName:
                 case WorkloadPublishPropertiesTelemetryEventName:
-                    TrackEvent(telemetry, args.EventName, args.Properties, Array.Empty<string>(), Array.Empty<string>() );
+                case SdkContainerPublishBaseImageInferenceEventName:
+                case SdkContainerPublishSuccessEventName:
+                case SdkContainerPublishErrorEventName:
+                    TrackEvent(telemetry, args.EventName, args.Properties, Array.Empty<string>(), Array.Empty<string>());
                     break;
                 default:
                     // Ignore unknown events
@@ -147,7 +163,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
             {
                 if (eventProperties.TryGetValue(propertyToBeHashed, out string value))
                 {
-                    // Lets lazy allocate in case there is tons of telemetry 
+                    // Lets lazy allocate in case there is tons of telemetry
                     properties ??= new Dictionary<string, string>(eventProperties);
                     properties[propertyToBeHashed] = Sha256Hasher.HashWithNormalizedCasing(value);
                 }
@@ -157,7 +173,7 @@ namespace Microsoft.DotNet.Tools.MSBuild
             {
                 if (eventProperties.TryGetValue(propertyToBeMeasured, out string value))
                 {
-                    // Lets lazy allocate in case there is tons of telemetry 
+                    // Lets lazy allocate in case there is tons of telemetry
                     properties ??= new Dictionary<string, string>(eventProperties);
                     properties.Remove(propertyToBeMeasured);
                     if (double.TryParse(value, CultureInfo.InvariantCulture, out double realValue))

@@ -43,6 +43,15 @@
     <ProjectReference Include="..\Microsoft.DotNet.ApiCompatibility\Microsoft.DotNet.ApiCompatibility.csproj" />
     <!-- We carry NuGet as part of the package in case the package is used with an older SDKs or with full framework MSBuild. -->
     <PackageReference Include="NuGet.Packaging" PrivateAssets="All" Publish="true"/>
+    <!-- The ApiCompatibility/PackageValidation stuff depends on CodeAnalysis.CSharp at the version that is
+         currently built into the SDK. That may in turn have transitive dependencies on System.Collections.Immutable
+         and System.Reflection.Metadata, which could bump the versions of those packages past the versions guaranteed
+         by the .NET Framework MSBuild in the minimum supported VS environment. Reference CA.C# here with PrivateAssets
+         to prevent flowing the higher dependencies to the main SDK tasks assembly. This would be unsafe in general,
+         but the only reason that Microsoft.NET.Build.Tasks.csproj references this project is for _deployment_, and
+         it should never share types with this assembly. Within this task, the RoslynResolver should provide a good
+         closure of references. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" ExcludeAssets="Runtime" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>

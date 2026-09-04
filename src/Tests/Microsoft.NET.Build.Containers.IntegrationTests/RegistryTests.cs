@@ -47,7 +47,7 @@ public class RegistryTests : IDisposable
             containerName,
             containerTag,
             "linux-x64",
-            ridgraphfile,
+            ToolsetUtils.RidGraphManifestPicker,
             cancellationToken: default).ConfigureAwait(false);
 
         Assert.NotNull(downloadedImage);

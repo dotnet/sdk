@@ -7,6 +7,11 @@
         <target state="translated">Yalnızca reklam bildirimlerini güncelleştirin.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CannotCombineOptions">
+        <source>Cannot use the {0} and {1} options together.</source>
+        <target state="translated">{0} ve {1} seçenekleri birlikte kullanılamaz.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CommandDescription">
         <source>Update all installed workloads.</source>
         <target state="translated">Tüm yüklü iş yüklerini güncelleştirin.</target>
@@ -20,6 +25,11 @@
       <trans-unit id="FromRollbackDefinitionOptionDescription">
         <source>Update workloads based on specified rollback definition file.</source>
         <target state="translated">İş yüklerini belirtilen geri alma tanım dosyasına göre güncelleştirin.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="NoWorkloadUpdateFound">
+        <source>No workload update found.</source>
+        <target state="translated">İş yükü güncelleştirmesi bulunamadı.</target>
         <note />
       </trans-unit>
       <trans-unit id="NoWorkloadsToUpdate">
@@ -42,6 +52,11 @@
         <target state="translated">Aşağıdaki nedenlerle '{0}' iş yükü güncelleştirilemedi:</target>
         <note />
       </trans-unit>
+      <trans-unit id="UpdateFromRollbackSwitchesModeToLooseManifests">
+        <source>Updating to a rollback file is not compatible with workload sets. Install and Update will now use loose manifests. To update to a specific workload version, use --version.</source>
+        <target state="translated">Geri alma dosyasının güncelleştirilmesi iş yükü kümeleriyle uyumlu değil. Yükle ve Güncelleştir özelliği artık bağımsız bildirimler kullanıyor. Belirli bir iş yükü sürümünde güncelleştirmek için “--version” komutunu kullanın.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="UpdateSucceeded">
         <source>Successfully updated workload(s): {0}.</source>
         <target state="translated">İş yükleri başarıyla güncelleştirildi: {0}.</target>
@@ -60,6 +75,11 @@
       <trans-unit id="WorkloadUpdateFailed">
         <source>Workload update failed: {0}</source>
         <target state="translated">İş yükü güncelleştirmesi başarısız oldu: {0}</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="WorkloadVersionRequestedNotFound">
+        <source>Workload version {0} not found.</source>
+        <target state="translated">{0} iş yükü sürümü bulunamadı.</target>
         <note />
       </trans-unit>
     </body>
