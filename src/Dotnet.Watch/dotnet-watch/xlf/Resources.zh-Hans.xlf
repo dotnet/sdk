@@ -71,13 +71,12 @@ Examples:
   dotnet-watch 在启动的所有子进程上将此变量设置为 "1"。
 
   DOTNET_WATCH_ITERATION
-  dotnet-watch 将此变量设置为 "1"，每次递增一
-  一个文件已更改，并且命令已重新启动。
+  dotnet-watch 将此变量设置为 "1"，每次文件更改
+  并且命令重新启动时递增一。
 
   DOTNET_WATCH_SUPPRESS_EMOJIS
-  当设置为 "1" 或 "true" 时，dotnet-watch 不会在 
- 中显示表情符号
-  控制台输出。
+  当设置为 "1" 或 "true" 时，dotnet-watch 不会在控制台输出中
+  显示表情符号。
 
 备注:
   特殊选项 "--" 用于分隔选项的末尾和
