@@ -118,6 +118,10 @@ internal static class AotRunCommand
         if (profileResult.Profile is ExecutableLaunchProfile executableProfile &&
             (executableCanBypassCache || plan?.Tier == RunTier.CachedLaunch))
         {
+            EnsureLaunchProfileDoesNotRequireMSBuild(
+                executableProfile,
+                baseArguments: null,
+                applicationArguments);
             if (noBuild)
             {
                 artifactsPath = null;
@@ -135,6 +139,10 @@ internal static class AotRunCommand
         else if (plan is { Launch: { } launchInfo })
         {
             validatedRunProperties = launchInfo.RunProperties;
+            EnsureLaunchProfileDoesNotRequireMSBuild(
+                profileResult.Profile,
+                validatedRunProperties?.Arguments,
+                applicationArguments);
             command = launchInfo.Command;
             commandArguments = CommonRunHelpers.CombineRunArguments(
                 validatedRunProperties?.Arguments,
@@ -196,6 +204,32 @@ internal static class AotRunCommand
         return exitCode;
     }
 
+    private static void EnsureLaunchProfileDoesNotRequireMSBuild(
+        LaunchProfile? launchProfile,
+        string? baseArguments,
+        string[] applicationArguments)
+    {
+        bool requiresMSBuild = launchProfile switch
+        {
+            ExecutableLaunchProfile profile =>
+                LaunchProfileParser.RequiresMSBuildExpansion(profile.ExecutablePath) ||
+                LaunchProfileParser.RequiresMSBuildExpansion(profile.WorkingDirectory) ||
+                profile.EnvironmentVariables.Values.Any(LaunchProfileParser.RequiresMSBuildExpansion),
+            ProjectLaunchProfile profile =>
+                LaunchProfileParser.RequiresMSBuildExpansion(profile.ApplicationUrl) ||
+                profile.EnvironmentVariables.Values.Any(LaunchProfileParser.RequiresMSBuildExpansion),
+            _ => false,
+        };
+
+        if (requiresMSBuild ||
+            (applicationArguments.Length == 0 &&
+             string.IsNullOrEmpty(baseArguments) &&
+             LaunchProfileParser.RequiresMSBuildExpansion(launchProfile?.CommandLineArgs)))
+        {
+            throw CreateManagedFallbackException("the launch profile contains MSBuild properties");
+        }
+    }
+
     private static int Launch(AotRunInvocation invocation)
     {
         var commandSpec = new CommandSpec(
@@ -234,7 +268,13 @@ internal static class AotRunCommand
             // Explicit verbosity is not eligible for the AOT path, so every reachable invocation
             // has the managed command's default non-quiet run verbosity.
             reportUsingLaunchSettings: true,
-            (message, isError) => messages.Add((message, isError)));
+            (message, isError) => messages.Add((message, isError)),
+            new LaunchProfileParserOptions(
+                EvaluateExpression: null,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: false,
+                ExpandCommandLineArgs: false),
+            out _);
         if (result.FailureReason is not null)
         {
             messages.Add((string.Format(
