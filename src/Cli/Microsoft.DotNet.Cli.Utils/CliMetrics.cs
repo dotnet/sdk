@@ -33,7 +33,7 @@ internal static class CliMetrics
         }
         catch (Exception ex) when (ex is not (OutOfMemoryException or StackOverflowException or AccessViolationException))
         {
-            Debug.WriteLine($"dotnet CLI metrics disabled for this measurement: {ex}");
+            Debug.WriteLine($"Couldn't collect dotnet CLI metrics for command '{commandName}': {ex}");
         }
     }
 
@@ -45,7 +45,7 @@ internal static class CliMetrics
         }
         catch (Exception ex) when (ex is not (OutOfMemoryException or StackOverflowException or AccessViolationException))
         {
-            Debug.WriteLine($"dotnet CLI metrics disabled for this measurement: {ex}");
+            Debug.WriteLine($"Couldn't collect dotnet CLI metrics for command '{commandName}': {ex}");
         }
     }
 
