@@ -84,6 +84,10 @@
 
     <!-- Hacky workaround for the fact that we don't publish the package yet. -->
     <Target Name="CopyNupkgToCustomFolder" AfterTargets="Pack">
+        <ItemGroup>
+            <_StagedContainersPackages Include="$(TestLayoutDir)Container/package/Microsoft.NET.Build.Containers.*.nupkg" />
+        </ItemGroup>
+        <Delete Files="@(_StagedContainersPackages)" />
         <Copy SourceFiles="$(ArtifactsDir)packages/$(Configuration)/NonShipping/Microsoft.NET.Build.Containers.$(Version).nupkg"
             DestinationFiles="$(TestLayoutDir)Container/package/Microsoft.NET.Build.Containers.$(Version).nupkg" />
     </Target>

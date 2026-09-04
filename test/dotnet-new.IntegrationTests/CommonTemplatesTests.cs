@@ -3,7 +3,6 @@
 
 using System.Diagnostics;
 using System.Text.RegularExpressions;
-using Microsoft.DotNet.Cli.Commands.New;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 using Microsoft.TemplateEngine.Authoring.TemplateVerifier;
@@ -94,7 +93,8 @@ namespace Microsoft.DotNet.Cli.New.IntegrationTests
             if (expectedTemplateName.Equals("global.json file") &&
                 (args == null || !args.Contains("--sdk-version")))
             {
-                string sdkVersionUnderTest = await new SdkInfoProvider().GetCurrentVersionAsync(default);
+                string sdkVersionUnderTest = SdkTestContext.Current.ToolsetUnderTest?.SdkVersion
+                    ?? throw new InvalidOperationException("The SDK under test is not configured.");
                 options.CustomScrubbers?.AddScrubber(sb => sb.Replace(sdkVersionUnderTest, "%CURRENT-VER%"), "json");
             }
 
