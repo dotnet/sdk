@@ -178,9 +178,19 @@ Ejecute "dotnet {1} --show-aliases" sin argumentos para mostrar todos los alias.
         <target state="translated">Para obtener más información sobre el código de salida, consulte https://aka.ms/templating-exit-codes#{0}</target>
         <note>{0} is the exit code</note>
       </trans-unit>
+      <trans-unit id="CannotUseAddSourceWithSourceMapping">
+        <source>The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</source>
+        <target state="new">The --add-source option cannot be combined with package source mapping. To use an additional source, update your NuGet configuration file's source mapping settings. Learn more: https://aka.ms/nuget-package-source-mapping</target>
+        <note />
+      </trans-unit>
       <trans-unit id="Change">
         <source>Change</source>
         <target state="translated">Cambiar</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="CliTemplateSearchCoordinator_Error_AllFeedsFailed">
+        <source>Unable to verify template package availability: none of the selected NuGet feeds could be reached.</source>
+        <target state="new">Unable to verify template package availability: none of the selected NuGet feeds could be reached.</target>
         <note />
       </trans-unit>
       <trans-unit id="CliTemplateSearchCoordinator_Error_NoSources">

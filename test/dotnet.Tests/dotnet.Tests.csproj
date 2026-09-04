@@ -22,7 +22,6 @@
     <None Include="CommandTests\Test\snapshots\**\*" TargetPath="snapshots\%(RecursiveDir)\%(FileName)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <None Include="ShellShimTests\WpfBinaryTestAssets\testwpf.dll" TargetPath="WpfBinaryTestAssets\testwpf.dll" CopyToOutputDirectory="PreserveNewest" />
     <None Include="CollectCodeCoverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="queryResultSample.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <!-- Windows-only test files that reference Installer\Windows, VisualStudio, and MSI types -->

@@ -3,6 +3,7 @@
 
 using System.CommandLine;
 using System.CommandLine.Parsing;
+using Microsoft.DotNet.Cli.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Commands.New;
 
@@ -187,4 +188,19 @@ public static class SharedOptionsFactory
     {
         Description = CommandDefinitionStrings.Option_ProjectPath
     }.AcceptExistingOnly();
+
+    public const string SourceOptionName = "--source";
+
+    public static Option<string[]> CreateSourceOption() => new Option<string[]>(SourceOptionName, "-s")
+    {
+        Arity = new ArgumentArity(1, 99),
+        Description = CommandDefinitionStrings.SourceDescription,
+        HelpName = CommandDefinitionStrings.SourceArgumentName
+    }.AllowSingleArgPerToken();
+
+    public const string ConfigFileOptionName = "--configfile";
+
+    public static Option<FileInfo> CreateConfigFileOption() => CommonOptions.CreateConfigFileOption(
+        CommandDefinitionStrings.ConfigFileDescription,
+        CommandDefinitionStrings.ConfigFileArgumentName);
 }

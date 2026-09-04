@@ -8,13 +8,17 @@ Arguments:
   <template-name>  If specified, only the templates matching the name will be shown.
 
 Options:
-  --author <author>                      Filters the templates based on the template author.
-  -lang, --language <language>           Filters templates based on language.
-  --type <type>                          Filters templates based on available types. Predefined values are "project" and "item".
-  --tag <tag>                            Filters the templates based on the tag.
-  --package <package>                    Filters the templates based on NuGet package ID.
-  --columns-all                          Displays all columns in the output. [default: False]
-  --columns <author|language|tags|type>  Specifies the columns to display in the output.
-  -v, --verbosity <LEVEL>                Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic]. [default: normal]
-  -d, --diagnostics                      Enables diagnostic output. [default: False]
-  -?, -h, --help                         Show command line help.
+  --author <author>                            Filters the templates based on the template author.
+  -lang, --language <language>                 Filters templates based on language.
+  --type <type>                                Filters templates based on available types. Predefined values are "project" and "item".
+  --tag <tag>                                  Filters the templates based on the tag.
+  --package <package>                          Filters the templates based on NuGet package ID.
+  --columns-all                                Displays all columns in the output. [default: False]
+  --columns <author|language|tags|type>        Specifies the columns to display in the output.
+  -s, --source <Source>                        The package source to search. You can pass multiple `--source` options to search multiple package sources. Example: `--source https://api.nuget.org/v3/index.json`.
+  --configfile <ConfigFile>                    The NuGet configuration file. If specified, only the settings from this file will be used. If not specified, the hierarchy of configuration files from the current directory will be used. For more information, see https://docs.microsoft.com/nuget/consume-packages/configuring-nuget-behavior
+  --add-source, --nuget-source <nuget-source>  Specifies a NuGet source to use.
+  --interactive                                Allows the command to stop and wait for user input or action (for example to complete authentication). [default: False]
+  -v, --verbosity <LEVEL>                      Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic]. [default: normal]
+  -d, --diagnostics                            Enables diagnostic output. [default: False]
+  -?, -h, --help                               Show command line help.

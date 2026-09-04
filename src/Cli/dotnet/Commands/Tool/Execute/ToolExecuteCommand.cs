@@ -40,7 +40,7 @@ internal sealed class ToolExecuteCommand : CommandBase<ToolExecuteCommandDefinit
         _packageToolIdentityArgument = result.GetValue(Definition.PackageIdentityArgument);
         _forwardArguments = result.GetValue(Definition.CommandArgument) ?? [];
         _allowRollForward = result.GetValue(Definition.RollForwardOption);
-        _configFile = result.GetValue(Definition.ConfigOption);
+        _configFile = result.GetValue(Definition.ConfigOption)?.FullName;
         _sources = result.GetValue(Definition.SourceOption) ?? [];
         _addSource = result.GetValue(Definition.AddSourceOption) ?? [];
         _verbosity = result.GetValue(Definition.VerbosityOption);

@@ -343,7 +343,7 @@ internal class WorkloadAdvertisingManifestUpdater(
         var manifests = GetInstalledManifestIds();
         //  TODO: This doesn't seem to account for differing feature bands
         var availableUpdates = await Task.WhenAll(manifests.Select(manifest => NewerManifestPackageExists(manifest))).ConfigureAwait(false);
-        return availableUpdates.Any();
+        return availableUpdates.Any(updateAvailable => updateAvailable);
     }
 
     private async Task<bool> NewerManifestPackageExists(ManifestId manifest)
@@ -351,7 +351,7 @@ internal class WorkloadAdvertisingManifestUpdater(
         try
         {
             var currentVersion = NuGetVersion.Parse(_workloadResolver.GetManifestVersion(manifest.ToString()));
-            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand));
+            var latestVersion = await _nugetPackageDownloader.GetLatestPackageVersion(_workloadManifestInstaller.GetManifestPackageId(manifest, _sdkFeatureBand), _packageSourceLocation);
             return latestVersion > currentVersion;
         }
         catch (Exception)

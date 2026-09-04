@@ -39,6 +39,11 @@
     <!-- Ignore checking for OS API compatibility as we aren't targeting just the Windows platform  -->
     <NoWarn>$(NoWarn);CA1416</NoWarn>
 
+    <!-- Source-built NuGet.Protocol's newer Newtonsoft.Json annotations expose warnings in
+         two obsolete compatibility constructors. NuGet/NuGet.Client#7518 suppresses them
+         while compiling NuGet.Protocol, but not for downstream AOT consumers. -->
+    <WarningsNotAsErrors Condition="'$(DotNetBuildSourceOnly)' == 'true' or '$(DotNetBuildFromVMR)' == 'true'">$(WarningsNotAsErrors);IL2026;IL3053</WarningsNotAsErrors>
+
     <!--
       Enable control flow guard
       https://github.com/dotnet/docs/blob/main/docs/core/deploying/native-aot/security.md#control-flow-guard

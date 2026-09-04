@@ -2138,8 +2138,8 @@ El valor predeterminado es "false". Sin embargo, cuando el destino es .NET 7 o i
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchCommandDescription">
-        <source>Search dotnet tools in nuget.org</source>
-        <target state="translated">Busca las herramientas dotnet en nuget.org.</target>
+        <source>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</source>
+        <target state="needs-review-translation">Busca las herramientas dotnet en nuget.org.</target>
         <note />
       </trans-unit>
       <trans-unit id="ToolSearchPrereleaseDescription">

@@ -1221,7 +1221,7 @@ The default is to publish a framework-dependent application.</value>
     <value>Arguments forwarded to the tool</value>
   </data>
   <data name="ToolSearchCommandDescription" xml:space="preserve">
-    <value>Search dotnet tools in nuget.org</value>
+    <value>Search dotnet tools in the configured NuGet package source(s). If no source is specified, all enabled sources in the NuGet configuration are searched.</value>
   </data>
   <data name="ToolSearchPrereleaseDescription" xml:space="preserve">
     <value>Include pre-release packages.</value>
