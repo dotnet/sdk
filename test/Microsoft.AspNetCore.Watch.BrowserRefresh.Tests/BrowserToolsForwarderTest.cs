@@ -162,6 +162,93 @@ public class BrowserToolsForwarderTest
         Assert.AreEqual("browser request", observation.Payload);
     }
 
+    /// <summary>
+    /// The provider rejects a browser that does not present a decryptable encrypted secret before it
+    /// upgrades the connection, so the rejection is an ordinary HTTP response. That deliberate status is
+    /// part of the authentication contract and has to survive the hop through the application origin,
+    /// which is the only origin the browser ever talks to.
+    /// </summary>
+    [TestMethod]
+    [DataRow(StatusCodes.Status400BadRequest)]
+    [DataRow(StatusCodes.Status403Forbidden)]
+    public async Task ForwardWebSocketAsync_PreservesProviderPreUpgradeStatus(int providerStatusCode)
+    {
+        await using var provider = await StartApplicationAsync(context =>
+        {
+            // Mirrors AbstractBrowserRefreshServer.AcceptBrowserConnectionAsync: status only, no upgrade.
+            context.Response.StatusCode = providerStatusCode;
+            return Task.CompletedTask;
+        });
+
+        await using var application = await StartForwarderAsync(GetAddress(provider));
+
+        Assert.AreEqual(
+            (HttpStatusCode)providerStatusCode,
+            await ConnectAndGetFailureStatusAsync(application, "invalid-encrypted-secret"));
+    }
+
+    /// <summary>
+    /// A provider that is gone or unreachable never produced a status, so the forwarder must keep
+    /// reporting a gateway error instead of inventing an authentication failure.
+    /// </summary>
+    [TestMethod]
+    public async Task ForwardWebSocketAsync_WhenProviderIsUnavailable_ReturnsBadGateway()
+    {
+        // Start and immediately stop a provider so the address is real but nothing is listening on it.
+        var provider = await StartApplicationAsync(_ => Task.CompletedTask);
+        var providerAddress = GetAddress(provider);
+        await provider.StopAsync(TestContext.CancellationToken);
+        await provider.DisposeAsync();
+
+        await using var application = await StartForwarderAsync(providerAddress);
+
+        Assert.AreEqual(
+            HttpStatusCode.BadGateway,
+            await ConnectAndGetFailureStatusAsync(application, "encrypted-secret"));
+    }
+
+    /// <summary>
+    /// A provider that switched protocols and then failed handshake validation reports 101, because the
+    /// status is recorded before the upgrade response is validated. Relaying it would make the application
+    /// claim a protocol switch it never performed, so it has to stay a gateway error.
+    /// </summary>
+    [TestMethod]
+    public async Task ForwardWebSocketAsync_WhenTheUpgradeFailsAfterSwitchingProtocols_ReturnsBadGateway()
+    {
+        await using var provider = await StartApplicationAsync(async context =>
+        {
+            // Accepting a subprotocol the client never requested completes the 101 but fails validation.
+            using var socket = await context.WebSockets.AcceptWebSocketAsync("a-protocol-the-client-did-not-request");
+        });
+
+        await using var application = await StartForwarderAsync(GetAddress(provider));
+
+        Assert.AreEqual(
+            HttpStatusCode.BadGateway,
+            await ConnectAndGetFailureStatusAsync(application, "encrypted-secret"));
+    }
+
+    private async Task<HttpStatusCode> ConnectAndGetFailureStatusAsync(WebApplication application, string? subProtocol)
+    {
+        using var browserSocket = new ClientWebSocket();
+        browserSocket.Options.CollectHttpResponseDetails = true;
+        if (subProtocol != null)
+        {
+            browserSocket.Options.AddSubProtocol(subProtocol);
+        }
+
+        var webSocketAddress = new UriBuilder(GetAddress(application))
+        {
+            Scheme = "ws",
+            Path = "/_framework/dotnet-browser-tools/connect",
+        }.Uri;
+
+        await Assert.ThrowsExactlyAsync<WebSocketException>(
+            () => browserSocket.ConnectAsync(webSocketAddress, TestContext.CancellationToken));
+
+        return browserSocket.HttpStatusCode;
+    }
+
     private static async Task<WebApplication> StartForwarderAsync(Uri providerAddress)
     {
         var forwarder = new BrowserToolsForwarder(providerAddress, NullLogger<BrowserToolsForwarder>.Instance);

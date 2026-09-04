@@ -83,13 +83,16 @@ tools.
 The [WebAssembly SDK](../../src/WasmSdk/Sdk/Sdk.targets) and the
 [Web SDK](../../src/WebSdk/Web/Targets/Sdk.Server.targets) opt in by naming their asset
 prefix and initializer
-([WebAssembly module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js),
+([WebAssembly module](../../src/WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template),
 [Web module](../../src/WebSdk/Web/Targets/DotNetWatch/Microsoft.NET.Sdk.Web.DotNetWatch.lib.module.js)).
 The WebAssembly initializer signals the Hot Reload agent through the watch-private
 `__DOTNET_WATCH_BROWSER_TOOLS` runtime configuration variable rather than a shared global
 or the legacy `__ASPNETCORE_BROWSER_TOOLS` switch, and must not capture globals at module
 evaluation because Blazor runs every `onRuntimeConfigLoaded` before any `onRuntimeReady`
-and does not guarantee initializer load order. MVC and Razor Pages responses are activated
+and does not guarantee initializer load order. .NET 9 is the single exception: its runtime
+creates the Hot Reload agent only when `__ASPNETCORE_BROWSER_TOOLS` is set, so the
+initializer is generated from a template whose gate the targets substitute for that target
+framework version alone. MVC and Razor Pages responses are activated
 by
 [`BrowserRefreshTagHelperComponent`](../../src/Dotnet.Watch/Web.Middleware/BrowserRefreshTagHelperComponent.cs),
 which does not run for `.razor` root components. Activating more than once is harmless:
@@ -99,12 +102,15 @@ Application hosts reach the provider through the shared
 [`BrowserToolsForwarder`](../../src/Dotnet.Watch/Web.Middleware/BrowserToolsForwarder.cs),
 which
 [`WebApplicationAppModel`](../../src/Dotnet.Watch/Watch/AppModels/WebApplicationAppModel.cs)
-installs through the hosting-startup path. Standalone WebAssembly projects are the
-exception: they are served by the Blazor Gateway, a separate YARP host that does not
-activate ASP.NET Core hosting startups, so
+installs through the hosting-startup path. The forwarder relays the provider's pre-upgrade
+HTTP error status for a rejected WebSocket handshake and reports 502 for everything else,
+including a provider that never answered. Standalone WebAssembly projects need both paths:
 [`BlazorWebAssemblyAppModel`](../../src/Dotnet.Watch/Watch/AppModels/BlazorWebAssemblyAppModel.cs)
-configures a gateway reverse-proxy route to the provider through `ReverseProxy__*`
-environment variables instead.
+adds a gateway reverse-proxy route to the provider through `ReverseProxy__*`
+environment variables, because the Blazor Gateway is a separate YARP host that does not
+activate ASP.NET Core hosting startups, and keeps the inherited hosting-startup
+configuration because older target frameworks are served by `blazor-devserver`, an ordinary
+ASP.NET Core host.
 
 The provider serves no JavaScript. Its remaining HTTP surface is the `/connect` WebSocket
 and `/clear-cache`; see
@@ -115,7 +121,10 @@ current snapshot first and releases live messages only after the browser acknowl
 That gate is per connection, so the provider fans out to connected browsers in parallel and
 one slow or unacknowledged browser cannot delay delivery to the others. All supported target
 frameworks use this contract; there is no parallel legacy
-response-rewriting path.
+response-rewriting path. The one legacy route that survives,
+`/_framework/blazor-hotreload`, is answered locally by the injected middleware with an empty
+update array purely because the .NET 9 WebAssembly runtime probes it during initialization;
+it is never forwarded and never carries deltas.
 
 ### Resolver Plugins
 
