@@ -310,6 +310,41 @@ public class CommandLineOptionsTests
     }
 
     [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("/mt")]
+    [DataRow("--mt")]
+    [DataRow("-multiThreaded")]
+    [DataRow("/multiThreaded")]
+    [DataRow("--multiThreaded")]
+    [DataRow("-mt:true")]
+    [DataRow("--multiThreaded:false")]
+    public void MultiThreadedOption(string option)
+    {
+        var options = VerifyOptions([option]);
+
+        AssertEx.SequenceEqual([option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--property:NuGetInteractive=false", option], options.BuildArguments);
+    }
+
+    [TestMethod]
+    [DataRow("-mt")]
+    [DataRow("/mt")]
+    [DataRow("--mt")]
+    [DataRow("-multiThreaded")]
+    [DataRow("/multiThreaded")]
+    [DataRow("--multiThreaded")]
+    [DataRow("-mt:true")]
+    [DataRow("--multiThreaded:false")]
+    public void MultiThreadedOption_AfterDashDash(string option)
+    {
+        var options = VerifyOptions(["--", option]);
+
+        AssertEx.SequenceEqual(["--", option], options.CommandArguments);
+        AssertEx.SequenceEqual(["--", option], options.CommandArgumentsWithoutBinLog);
+        AssertEx.SequenceEqual(["--property:NuGetInteractive=false"], options.BuildArguments);
+    }
+
+    [TestMethod]
     [CombinatorialData]
     public void OptionsSpecifiedBeforeOrAfterRun(bool afterRun)
     {
