@@ -13,6 +13,7 @@ using Microsoft.DotNet.Cli.Commands.Build;
 using Microsoft.DotNet.Cli.Commands.MSBuild;
 using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Commands.Test;
+using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.DotNet.Watch;
@@ -78,11 +79,18 @@ internal sealed class CommandLineOptions
 
         // Options that the subcommand forwards to build command.
         // Exclude --framework option as it is passed to `dotnet build` and `dotnet run` explicitly by the watcher.
-        var buildOptions = command.Options.Where(o => o.ForwardingFunction is not null && o.Name != CommonOptions.FrameworkOptionName);
+        // Reuse watch's --verbosity option instance so we don't add a duplicate option to the command.
+        var buildOptions = command.Options
+            .Where(o => o.ForwardingFunction is not null && o.Name != CommonOptions.FrameworkOptionName)
+            .Select(o => o.Name == definition.VerbosityOption.Name ? definition.VerbosityOption : o)
+            .ToList();
 
         foreach (var buildOption in buildOptions)
         {
-            definition.Options.Add(buildOption);
+            if (buildOption != definition.VerbosityOption)
+            {
+                definition.Options.Add(buildOption);
+            }
         }
 
         // reparse with forwarded options:
@@ -130,8 +138,7 @@ internal sealed class CommandLineOptions
         var msbuildCommandDefinition = new MSBuildCommandDefinition();
 
         var buildArguments = buildOptions
-            .Select(option => option.ForwardingFunction!(parseResult))
-            .SelectMany(args => args)
+            .SelectMany(option => GetForwardedBuildArguments(option, parseResult, definition))
             .Where(arg => !msbuildCommandDefinition.Parse(arg).HasOption(msbuildCommandDefinition.TargetOption))
             .ToList();
 
@@ -144,6 +151,8 @@ internal sealed class CommandLineOptions
             ? LogLevel.Debug
             : parseResult.GetValue(definition.QuietOption)
             ? LogLevel.Warning
+            : parseResult.GetValue(definition.VerbosityOption) is VerbosityOptions verbosity
+            ? ToLogLevel(verbosity)
             : LogLevel.Information;
 
         var launchProfile = parseResult.GetValue(definition.NoLaunchProfileOption)
@@ -173,6 +182,43 @@ internal sealed class CommandLineOptions
             TargetFramework = parseResult.GetValue(definition.FrameworkOption),
             Device = parseResult.GetValue(definition.DeviceOption),
         };
+    }
+
+    /// <summary>
+    /// Maps MSBuild-style <see cref="VerbosityOptions"/> to watch log levels.
+    /// Aligns with existing <c>--quiet</c> (Warning), <c>--verbose</c> (Debug),
+    /// and <c>--verbosity:diagnostic</c> (Trace) behavior.
+    /// </summary>
+    internal static LogLevel ToLogLevel(VerbosityOptions verbosity)
+        => verbosity switch
+        {
+            VerbosityOptions.q or VerbosityOptions.quiet => LogLevel.Warning,
+            VerbosityOptions.m or VerbosityOptions.minimal => LogLevel.Information,
+            VerbosityOptions.n or VerbosityOptions.normal => LogLevel.Information,
+            VerbosityOptions.d or VerbosityOptions.detailed => LogLevel.Debug,
+            VerbosityOptions.diag or VerbosityOptions.diagnostic => LogLevel.Trace,
+            _ => LogLevel.Information,
+        };
+
+    private static IEnumerable<string> GetForwardedBuildArguments(
+        Option option,
+        ParseResult parseResult,
+        DotnetWatchCommandDefinition definition)
+    {
+        if (option == definition.VerbosityOption)
+        {
+            if (parseResult.GetValue(definition.QuietOption))
+            {
+                return ["--verbosity:quiet"];
+            }
+
+            if (parseResult.GetValue(definition.VerboseOption))
+            {
+                return ["--verbosity:detailed"];
+            }
+        }
+
+        return option.ForwardingFunction!(parseResult);
     }
 
     /// <summary>
@@ -213,6 +259,19 @@ internal sealed class CommandLineOptions
             // skip watch specific option:
             if (definition.IsWatchOption(optionResult.Option))
             {
+                // Forward --quiet/--verbose as --verbosity to subcommands that support it.
+                if (!optionResult.Implicit && command.Options.Any(option => option.Name == definition.VerbosityOption.Name))
+                {
+                    if (optionResult.Option == definition.QuietOption)
+                    {
+                        arguments.Add("--verbosity:quiet");
+                    }
+                    else if (optionResult.Option == definition.VerboseOption)
+                    {
+                        arguments.Add("--verbosity:detailed");
+                    }
+                }
+
                 continue;
             }
 

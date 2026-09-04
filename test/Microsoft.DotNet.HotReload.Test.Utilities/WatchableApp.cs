@@ -18,7 +18,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
         : IAsyncDisposable
     {
         public static WatchableApp CreateDotnetWatchApp(ITestOutputHelper logger)
-            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["-bl"]);
+            => new(logger, SdkTestContext.Current.ToolsetUnderTest.DotNetHostPath, "watch", ["--verbosity:diagnostic", "-bl"]);
 
         public DebugTestOutputLogger Logger { get; } = new DebugTestOutputLogger(logger);
 
@@ -37,10 +37,10 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
         public void SuppressVerboseLogging()
         {
-            // remove default -bl args
+            // remove default --verbosity:diagnostic and -bl args
             WatchArgs.Clear();
 
-            // override the default used for testing ("trace"):
+            // override the default used for testing ("true"):
             EnvironmentVariables.Add("DOTNET_CLI_CONTEXT_VERBOSE", "");
         }
 
@@ -201,7 +201,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
             info.Environment.Add("__DOTNET_WATCH_TEST_FLAGS", testFlags.ToString());
             info.Environment.Add("__DOTNET_WATCH_TEST_OUTPUT_DIR", testOutputPath);
             info.Environment.Add("Microsoft_CodeAnalysis_EditAndContinue_LogDir", testOutputPath);
-            info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "trace");
+            info.Environment.Add("DOTNET_CLI_CONTEXT_VERBOSE", "true");
 
             // Aspire DCP logging:
             info.Environment.Add("DCP_DIAGNOSTICS_LOG_FOLDER", Path.Combine(testOutputPath, "dcp"));

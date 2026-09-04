@@ -4,6 +4,7 @@
 using System.CommandLine;
 using Microsoft.DotNet.Cli;
 using Microsoft.DotNet.Cli.CommandLine;
+using Microsoft.DotNet.Cli.Utils;
 
 namespace Microsoft.DotNet.Watch;
 
@@ -12,6 +13,7 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
     // dotnet-watch specific options:
     public readonly Option<bool> QuietOption = new("--quiet", "-q") { Description = Resources.Help_Quiet, Arity = ArgumentArity.Zero };
     public readonly Option<bool> VerboseOption = new("--verbose") { Description = Resources.Help_Verbose, Arity = ArgumentArity.Zero };
+    public readonly Option<VerbosityOptions?> VerbosityOption = CommonOptions.CreateVerbosityOption();
     public readonly Option<bool> ListOption = new("--list") { Description = Resources.Help_List, Arity = ArgumentArity.Zero };
     public readonly Option<bool> NoHotReloadOption = new("--no-hot-reload") { Description = Resources.Help_NoHotReload, Arity = ArgumentArity.Zero };
     public readonly Option<bool> NonInteractiveOption = new("--non-interactive") { Description = Resources.Help_NonInteractive, Arity = ArgumentArity.Zero };
@@ -85,6 +87,7 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
 
         Options.Add(QuietOption);
         Options.Add(VerboseOption);
+        Options.Add(VerbosityOption);
         Options.Add(ListOption);
         Options.Add(NoHotReloadOption);
         Options.Add(NonInteractiveOption);
@@ -102,6 +105,16 @@ internal sealed class DotnetWatchCommandDefinition : RootCommand
             if (v.HasOption(QuietOption) && v.HasOption(VerboseOption))
             {
                 v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, QuietOption.Name, VerboseOption.Name));
+            }
+
+            if (v.HasOption(QuietOption) && v.HasOption(VerbosityOption))
+            {
+                v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, QuietOption.Name, VerbosityOption.Name));
+            }
+
+            if (v.HasOption(VerboseOption) && v.HasOption(VerbosityOption))
+            {
+                v.AddError(string.Format(Resources.Cannot_specify_both_0_and_1_options, VerboseOption.Name, VerbosityOption.Name));
             }
 
             var hasLongProjectOption = v.HasOption(LongProjectOption);
