@@ -280,7 +280,7 @@ namespace Microsoft.NetCore.Analyzers.Performance
         private static bool IsPropertyAccessSafe(IPropertyReferenceOperation propRef, IMethodSymbol containingMethod)
         {
             // Unsafe if indexer is being written to
-            if (propRef.Parent is IAssignmentOperation assignment && assignment.Target == propRef)
+            if (propRef.GetValueUsageInfo(containingMethod).IsWrittenTo())
             {
                 return false;
             }
