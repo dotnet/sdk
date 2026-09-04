@@ -177,6 +177,7 @@ public class LaunchSettingsParserTests
             {
                 "commandName": "Project",
                 "commandLineArgs": "arg1 {{EnvironmentVariableReference(s_environmentVariableName1)}} arg3",
+                "workingDirectory": "{{Path.Combine("..", EnvironmentVariableReference(s_environmentVariableName1)).Replace("\\", "\\\\")}}",
                 "environmentVariables": {
                     "{{s_environmentVariableNameUnset}}": "{{EnvironmentVariableReference(s_environmentVariableName2)}}",
                     "VAR1": "{{EnvironmentVariableReference(s_environmentVariableNameUnset)}}",
@@ -187,6 +188,7 @@ public class LaunchSettingsParserTests
 
         var model = Assert.IsExactInstanceOfType<ProjectLaunchProfile>(settings.Profile);
 
+        Assert.AreEqual(Path.Combine(root, "ENV_VALUE1"), model.WorkingDirectory);
         Assert.AreEqual("arg1 ENV_VALUE1 arg3", model.CommandLineArgs);
         Assert.AreSequenceEqual(
         [

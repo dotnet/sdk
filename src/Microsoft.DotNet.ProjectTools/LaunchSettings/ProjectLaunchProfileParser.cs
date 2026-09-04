@@ -23,6 +23,11 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
             return LaunchProfileParseResult.Failure(Resources.LaunchProfileIsNotAJsonObject);
         }
 
+        if (!TryParseWorkingDirectory(launchSettingsPath, profile.WorkingDirectory, out var workingDirectory, out var error))
+        {
+            return LaunchProfileParseResult.Failure(error);
+        }
+
         return LaunchProfileParseResult.Success(new ProjectLaunchProfile
         {
             LaunchProfileName = launchProfileName,
@@ -30,6 +35,7 @@ internal sealed class ProjectLaunchProfileParser : LaunchProfileParser
             LaunchBrowser = profile.LaunchBrowser,
             LaunchUrl = profile.LaunchUrl,
             ApplicationUrl = profile.ApplicationUrl,
+            WorkingDirectory = workingDirectory,
             DotNetRunMessages = profile.DotNetRunMessages,
             EnvironmentVariables = ParseEnvironmentVariables(profile.EnvironmentVariables),
         });
