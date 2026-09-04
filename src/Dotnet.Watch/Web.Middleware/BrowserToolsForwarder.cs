@@ -10,6 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.WebSockets;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -35,6 +36,17 @@ internal sealed class BrowserToolsForwarder : IDisposable
     private readonly Uri _providerAddress;
     private readonly HttpClient _httpClient;
     private readonly ILogger<BrowserToolsForwarder> _logger;
+
+    // ClientWebSocketOptions.CollectHttpResponseDetails and ClientWebSocket.HttpStatusCode were added in
+    // .NET 7. This assembly targets the lowest runtime it can be injected into, but it executes on the
+    // application's runtime, which is newer in practice. Without them a failed upgrade only reports
+    // WebSocketError.NotAWebSocket, which says the provider answered with some HTTP status but not which
+    // one, so an older host keeps the previous gateway-error behavior rather than inventing a status.
+    private static readonly PropertyInfo? s_collectHttpResponseDetails =
+        typeof(ClientWebSocketOptions).GetProperty("CollectHttpResponseDetails", BindingFlags.Public | BindingFlags.Instance);
+
+    private static readonly PropertyInfo? s_httpStatusCode =
+        typeof(ClientWebSocket).GetProperty("HttpStatusCode", BindingFlags.Public | BindingFlags.Instance);
 
     public BrowserToolsForwarder(Uri providerAddress, ILogger<BrowserToolsForwarder> logger)
     {
@@ -96,6 +108,7 @@ internal sealed class BrowserToolsForwarder : IDisposable
     {
         using var providerSocket = new ClientWebSocket();
         providerSocket.Options.Proxy = null;
+        TryCollectHttpResponseDetails(providerSocket.Options);
 
         foreach (var protocol in context.WebSockets.WebSocketRequestedProtocols)
         {
@@ -113,6 +126,21 @@ internal sealed class BrowserToolsForwarder : IDisposable
         }
         catch (WebSocketException exception)
         {
+            // The provider rejects an unauthenticated browser before upgrading the connection, so its
+            // deliberate pre-upgrade status is part of the contract and must survive the hop through the
+            // application origin. Only an error status the provider actually produced is forwarded; a
+            // genuine upstream or network failure, or a handshake that failed after the provider had
+            // already switched protocols, has none and stays a gateway error.
+            var providerStatus = TryGetProviderStatusCode(providerSocket);
+            if (providerStatus is int status)
+            {
+                _logger.LogDebug(
+                    "The browser tools provider rejected a WebSocket handshake with status {StatusCode}.",
+                    status);
+                context.Response.StatusCode = status;
+                return;
+            }
+
             _logger.LogError(exception, "Unable to connect to the browser tools WebSocket provider.");
             context.Response.StatusCode = StatusCodes.Status502BadGateway;
             return;
@@ -135,6 +163,26 @@ internal sealed class BrowserToolsForwarder : IDisposable
             browserSocket.Abort();
             throw;
         }
+    }
+
+    // Enables the upstream response details on runtimes that support them. Best effort: when the property
+    // is missing the socket simply reports no status and the caller falls back to a gateway error.
+    private static void TryCollectHttpResponseDetails(ClientWebSocketOptions options)
+        => s_collectHttpResponseDetails?.SetValue(options, true);
+
+    // Returns the HTTP status the provider rejected the upgrade with, or null when it produced none or
+    // answered something other than a rejection. With CollectHttpResponseDetails the runtime records the
+    // status before it validates the upgrade response, so a 101 whose handshake later failed validation is
+    // also reported here; relaying that would make the application claim a protocol switch that never
+    // happened. Only an error status is a deliberate rejection; anything else is a gateway failure.
+    private static int? TryGetProviderStatusCode(ClientWebSocket socket)
+    {
+        if (s_httpStatusCode?.GetValue(socket) is HttpStatusCode statusCode && (int)statusCode >= 400)
+        {
+            return (int)statusCode;
+        }
+
+        return null;
     }
 
     private Uri CreateProviderUri(PathString path, QueryString query)

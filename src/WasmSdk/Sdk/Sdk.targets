@@ -80,12 +80,13 @@ Copyright (c) .NET Foundation. All rights reserved.
   </Target>
 
   <!-- Activates the dotnet-watch browser tools client. Applies to all target frameworks: on .NET 10+
-       the Hot Reload agent module above applies managed code updates, older versions fall back to the
-       runtime's own window.Blazor._internal.applyHotReload API. The assets are produced by
-       Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. -->
+       the Hot Reload agent module above applies managed code updates, older versions use the runtime's
+       own window.Blazor._internal apply API. The assets are produced by
+       Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets, which substitutes the target framework
+       specific tokens in the initializer template. -->
   <PropertyGroup>
     <DotNetWatchBrowserToolsAssetPrefix>Microsoft.NET.Sdk.WebAssembly.DotNetWatch</DotNetWatchBrowserToolsAssetPrefix>
-    <DotNetWatchBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)DotNetWatch\Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js</DotNetWatchBrowserToolsInitializerFile>
+    <DotNetWatchBrowserToolsInitializerFile>$(MSBuildThisFileDirectory)DotNetWatch\Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template</DotNetWatchBrowserToolsInitializerFile>
   </PropertyGroup>
 
   <Import Sdk="Microsoft.NET.Sdk.Publish" Project="Sdk.targets" Condition="'$(_WasmSdkImportsMicrosoftNETSdkPublish)' == 'true'" />
