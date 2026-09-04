@@ -57,8 +57,11 @@ internal sealed class WorkloadListCommand : WorkloadCommandBase<WorkloadListComm
         _includePreviews = parseResult.GetValue(Definition.IncludePreviewsOption);
         string userProfileDir1 = userProfileDir ?? CliFolderPathCalculator.DotnetUserProfileFolderPath;
 
+        var packageSourceLocation = parseResult.ToPackageSourceLocation(Definition.ConfigOption, Definition.SourceOption);
+
         _workloadManifestUpdater = workloadManifestUpdater ?? new WorkloadManifestUpdater(resolvedReporter,
-            _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer);
+            _workloadListHelper.WorkloadResolver, PackageDownloader, userProfileDir1, _workloadListHelper.WorkloadRecordRepo, _workloadListHelper.Installer,
+            packageSourceLocation);
     }
 
     public override int Execute()
