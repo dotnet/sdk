@@ -717,7 +717,7 @@ class Program
         }
 
         [TestMethod]
-        [DataRow("netcoreapp11.1")]
+        [DataRow("netcoreapp12.1")]
         [DataRow("netstandard2.2")]
         public void It_fails_to_build_if_targeting_a_higher_framework_than_is_supported(string targetFramework)
         {

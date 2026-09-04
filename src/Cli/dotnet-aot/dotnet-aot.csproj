@@ -51,7 +51,7 @@
 
     <!--
       Declare RuntimeIdentifier so that centralized NuGet restore (via sdk.slnx) generates
-      the RID-specific target (e.g. net11.0/win-x64) in project.assets.json. Without this,
+      the RID-specific target (e.g. net12.0/win-x64) in project.assets.json. Without this,
       the assets file only has the TFM target and Publish fails with NETSDK1047.
       Conditioned to platforms where NativeAOT publish is supported.
     -->

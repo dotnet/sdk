@@ -85,6 +85,7 @@
     <PackageReference Include="NuGet.CommandLine.XPlat" />
     <PackageReference Include="Microsoft.Build" />
     <PackageReference Include="Microsoft.NET.HostModel" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
     <ProjectReference Include="$(TemplateEngSrcDir)Microsoft.TemplateEngine.Orchestrator.RunnableProjects\Microsoft.TemplateEngine.Orchestrator.RunnableProjects.csproj" GlobalPropertiesToRemove="PublishDir" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="System.CommandLine" />

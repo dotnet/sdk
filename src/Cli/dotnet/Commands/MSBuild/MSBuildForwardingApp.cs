@@ -98,7 +98,7 @@ public class MSBuildForwardingApp : CommandBase
             modifiedMSBuildArgs,
             msbuildPath: msbuildPath,
             forceOutOfProc: forceOutOfProc);
-        InitializeRequiredEnvironmentVariables();
+        RefreshRequiredEnvironmentVariables();
     }
 
     public IEnumerable<string> MSBuildArguments { get { return _forwardingAppWithoutLogging.GetAllArguments(); } }
@@ -110,9 +110,11 @@ public class MSBuildForwardingApp : CommandBase
 
     public ProcessStartInfo GetProcessStartInfo() => _forwardingAppWithoutLogging.GetProcessStartInfo();
 
-    private void InitializeRequiredEnvironmentVariables()
+    internal void RefreshRequiredEnvironmentVariables()
     {
         EnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_TELEMETRY_SESSIONID, TelemetryClient.CurrentSessionId);
+        EnvironmentVariable(Activities.TRACEPARENT, null);
+        EnvironmentVariable(Activities.TRACESTATE, null);
 
         if (ActivityContextFactory.MakeActivityContextEnvironment() is { } activityContextEnvironment)
         {
@@ -135,6 +137,7 @@ public class MSBuildForwardingApp : CommandBase
         // Ignore Ctrl-C for the remainder of the command's execution
         // Forwarding commands will just spawn the child process and exit
         Console.CancelKeyPress += (sender, e) => { e.Cancel = true; };
+        RefreshRequiredEnvironmentVariables();
         return _forwardingAppWithoutLogging.Execute();
     }
 }

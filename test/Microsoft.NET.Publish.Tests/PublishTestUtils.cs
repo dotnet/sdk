@@ -7,7 +7,8 @@ namespace Microsoft.NET.Publish.Tests
 {
     internal static class PublishTestUtils
     {
-#if NET11_0
+        // NetTFMUpdate: Product test scenarios remain on net11.0 until tests are retargeted separately.
+#if NET12_0
 
         /// <summary>
         /// This list should contain the TFMs that we're interested in validating publishing support for

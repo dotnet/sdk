@@ -20,6 +20,9 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp.CodeRefactoring.Testing" />
     <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic.CodeFix.Testing" />
     <PackageReference Include="System.ComponentModel.Composition" />
+    <!-- NetTFMUpdate: Remove these when the net12 targeting pack provides prune package data. -->
+    <PackageReference Include="System.Formats.Asn1" />
+    <PackageReference Include="System.Private.Uri" VersionOverride="4.3.2" />
   </ItemGroup>
 
   <ItemGroup>
