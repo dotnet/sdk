@@ -50,6 +50,11 @@ Define version-specific properties for those values. While `N-1` is prerelease, 
 exact available package versions. After `N-1` releases, replace temporary pins with
 `(N-1).0.$(VersionFeature...)` and remove the temporary follow-up comment.
 
+While `N-1` is still the current TFM, keep its generated metadata aligned with the live
+packs bundled in the SDK. Activate the frozen values only after the netN targeting packs
+become current; otherwise the SDK advertises pack versions that are not installed and
+isolated-source restores fail.
+
 Do not leave the previous TFM bound to live `Microsoft*PackageVersion` properties. Those
 properties will advance to netN when new dependencies flow.
 

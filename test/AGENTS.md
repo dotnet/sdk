@@ -58,6 +58,10 @@ Guidance for changes under `test/`.
 - **MSTest output is live.** `test/testconfig.json` is copied beside each MSTest
   test executable as `<AssemblyName>.testconfig.json`, so console, trace, and
   `TestContext` output is both captured in the result and shown while the test runs.
+- **Use MSTest's built-in combinatorial data support.** Import
+  `Microsoft.VisualStudio.TestTools.UnitTesting.Combinatorial` for
+  `[CombinatorialData]`, `[CombinatorialValues]`, and `[CombinatorialRange]`; do not add
+  the third-party `Combinatorial.MSTest` package.
 - **Run all local tests through `run-tests`.** It selects and executes the appropriate
   test platform while preserving actionable output and diagnostics.
 - **Map new substantive test areas for targeted testing.** Prefer adding a

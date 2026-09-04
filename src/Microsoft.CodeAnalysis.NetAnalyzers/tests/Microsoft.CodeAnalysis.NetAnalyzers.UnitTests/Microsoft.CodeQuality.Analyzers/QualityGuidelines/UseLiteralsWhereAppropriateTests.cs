@@ -20,17 +20,19 @@ namespace Microsoft.CodeQuality.Analyzers.QualityGuidelines.UnitTests
         [TestMethod]
         public async Task CA1802_Diagnostics_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class Class1
-{
-    static readonly string f1 = """";
-    static readonly string f2 = ""Nothing"";
-    static readonly string f3,f4 = ""Message is shown only for f4"";
-    static readonly int f5 = 3;
-    const int f6 = 3;
-    static readonly int f7 = 8 + f6;
-    internal static readonly int f8 = 8 + f6;
-}",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                public class Class1
+                {
+                    static readonly string f1 = "";
+                    static readonly string f2 = "Nothing";
+                    static readonly string f3,f4 = "Message is shown only for f4";
+                    static readonly int f5 = 3;
+                    const int f6 = 3;
+                    static readonly int f7 = 8 + f6;
+                    internal static readonly int f8 = 8 + f6;
+                }
+                """,
                 GetCSharpEmptyStringResultAt(line: 4, column: 28, symbolName: "f1"),
                 GetCSharpDefaultResultAt(line: 5, column: 28, symbolName: "f2"),
                 GetCSharpDefaultResultAt(line: 6, column: 31, symbolName: "f4"),
@@ -42,37 +44,40 @@ public class Class1
         [TestMethod]
         public async Task CA1802_NoDiagnostics_CSharpAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-public class Class1
-{
-    public static readonly string f1 = """"; // Not private or Internal
-    static string f3, f4 = ""Message is shown only for f4""; // Not readonly
-    readonly int f5 = 3; // Not static
-    const int f6 = 3; // Is already const
-    static int f9 = getF9();
-    static readonly int f7 = 8 + f9; // f9 is not a const
-    static readonly string f8 = null; // null value
+            await VerifyCS.VerifyAnalyzerAsync("""
+                public class Class1
+                {
+                    public static readonly string f1 = ""; // Not private or Internal
+                    static string f3, f4 = "Message is shown only for f4"; // Not readonly
+                    readonly int f5 = 3; // Not static
+                    const int f6 = 3; // Is already const
+                    static int f9 = getF9();
+                    static readonly int f7 = 8 + f9; // f9 is not a const
+                    static readonly string f8 = null; // null value
 
-    private static int getF9()
-    {
-        throw new System.NotImplementedException();
-    }
-}");
+                    private static int getF9()
+                    {
+                        throw new System.NotImplementedException();
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task CA1802_Diagnostics_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class Class1
-    Shared ReadOnly f1 As String = """"
-    Shared ReadOnly f2 As String = ""Nothing""
-    Shared ReadOnly f3 As String, f4 As String = ""Message is shown only for f4""
-    Shared ReadOnly f5 As Integer = 3
-    Const f6 As Integer = 3
-    Shared ReadOnly f7 As Integer = 8 + f6
-    Friend Shared ReadOnly f8 As Integer = 8 + f6
-End Class",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                Public Class Class1
+                    Shared ReadOnly f1 As String = ""
+                    Shared ReadOnly f2 As String = "Nothing"
+                    Shared ReadOnly f3 As String, f4 As String = "Message is shown only for f4"
+                    Shared ReadOnly f5 As Integer = 3
+                    Const f6 As Integer = 3
+                    Shared ReadOnly f7 As Integer = 8 + f6
+                    Friend Shared ReadOnly f8 As Integer = 8 + f6
+                End Class
+                """,
                 GetBasicEmptyStringResultAt(line: 3, column: 21, symbolName: "f1"),
                 GetBasicDefaultResultAt(line: 4, column: 21, symbolName: "f2"),
                 GetBasicDefaultResultAt(line: 5, column: 35, symbolName: "f4"),
@@ -84,26 +89,27 @@ End Class",
         [TestMethod]
         public async Task CA1802_NoDiagnostics_VisualBasicAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-Public Class Class1
-    ' Not Private or Friend
-    Public Shared ReadOnly f1 As String = """"
-    ' Not Readonly
-    Shared f3 As String, f4 As String = ""Message is shown only for f4""
-    ' Not Shared
-    ReadOnly f5 As Integer = 3
-    ' Is already Const
-    Const f6 As Integer = 3
-    Shared f9 As Integer = getF9()
-    ' f9 is not a Const
-    Shared ReadOnly f7 As Integer = 8 + f9
-    ' null value
-    Shared ReadOnly f8 As String = Nothing
+            await VerifyVB.VerifyAnalyzerAsync("""
+                Public Class Class1
+                    ' Not Private or Friend
+                    Public Shared ReadOnly f1 As String = ""
+                    ' Not Readonly
+                    Shared f3 As String, f4 As String = "Message is shown only for f4"
+                    ' Not Shared
+                    ReadOnly f5 As Integer = 3
+                    ' Is already Const
+                    Const f6 As Integer = 3
+                    Shared f9 As Integer = getF9()
+                    ' f9 is not a Const
+                    Shared ReadOnly f7 As Integer = 8 + f9
+                    ' null value
+                    Shared ReadOnly f8 As String = Nothing
 
-    Private Shared Function getF9() As Integer
-        Throw New System.NotImplementedException()
-    End Function
-End Class");
+                    Private Shared Function getF9() As Integer
+                        Throw New System.NotImplementedException()
+                    End Function
+                End Class
+                """);
         }
 
         [TestMethod]
@@ -129,18 +135,22 @@ End Class");
                 {
                     Sources =
                     {
-                        @"
-public class Test
-{
-    private readonly int field = 0;
-}
-"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") }
+                            public class Test
+                            {
+                                private readonly int field = 0;
+                            }
+
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) }
                 },
             };
             csTest.ExpectedDiagnostics.AddRange(expected);
@@ -161,17 +171,21 @@ public class Test
                 {
                     Sources =
                     {
-                        @"
-Public Class Test
-    Private ReadOnly field As Integer = 0
-End Class
-"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") }
+                            Public Class Test
+                                Private ReadOnly field As Integer = 0
+                            End Class
+
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) }
                 }
             };
             vbTest.ExpectedDiagnostics.AddRange(expected);
@@ -185,14 +199,15 @@ End Class
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
+                TestCode = """
+                    using System;
 
-public class Class1
-{
-	internal static readonly IntPtr field1 = (nint)0;
-	internal static readonly UIntPtr field2 = (nuint)0;
-}",
+                    public class Class1
+                    {
+                    	internal static readonly IntPtr field1 = (nint)0;
+                    	internal static readonly UIntPtr field2 = (nuint)0;
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -203,24 +218,28 @@ public class Class1
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
+                TestCode = """
 
-public class Class1
-{
-    internal static readonly nint field = (nint)0;
-}",
+                    using System;
+
+                    public class Class1
+                    {
+                        internal static readonly nint field = (nint)0;
+                    }
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCSharpDefaultResultAt(6, 35, "field"),
                 },
-                FixedCode = @"
-using System;
+                FixedCode = """
 
-public class Class1
-{
-    internal const nint field = (nint)0;
-}",
+                    using System;
+
+                    public class Class1
+                    {
+                        internal const nint field = (nint)0;
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -231,24 +250,28 @@ public class Class1
             {
                 LanguageVersion = CodeAnalysis.CSharp.LanguageVersion.CSharp9,
                 ReferenceAssemblies = ReferenceAssemblies.Net.Net50,
-                TestCode = @"
-using System;
+                TestCode = """
 
-public class Class1
-{
-    internal static readonly nuint field = (nuint)0;
-}",
+                    using System;
+
+                    public class Class1
+                    {
+                        internal static readonly nuint field = (nuint)0;
+                    }
+                    """,
                 ExpectedDiagnostics =
                 {
                     GetCSharpDefaultResultAt(6, 36, "field"),
                 },
-                FixedCode = @"
-using System;
+                FixedCode = """
 
-public class Class1
-{
-    internal const nuint field = (nuint)0;
-}",
+                    using System;
+
+                    public class Class1
+                    {
+                        internal const nuint field = (nuint)0;
+                    }
+                    """,
             }.RunAsync(CancellationToken.None);
         }
 
@@ -257,13 +280,14 @@ public class Class1
         {
             return new VerifyCS.Test
             {
-                TestCode = @"
-using System.Reflection;
+                TestCode = """
+                    using System.Reflection;
 
-public class Class
-{
-    private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-}"
+                    public class Class
+                    {
+                        private static readonly BindingFlags BindingFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                    }
+                    """
             }.RunAsync(CancellationToken.None);
         }
 
@@ -272,13 +296,14 @@ public class Class
         {
             return new VerifyCS.Test
             {
-                TestCode = @"
-using System.Reflection;
+                TestCode = """
+                    using System.Reflection;
 
-public class Class
-{
-    private static readonly BindingFlags BindingFlags = (BindingFlags)(BindingFlags.Public | BindingFlags.NonPublic);
-}"
+                    public class Class
+                    {
+                        private static readonly BindingFlags BindingFlags = (BindingFlags)(BindingFlags.Public | BindingFlags.NonPublic);
+                    }
+                    """
             }.RunAsync(CancellationToken.None);
         }
 
@@ -287,20 +312,22 @@ public class Class
         {
             return new VerifyCS.Test
             {
-                TestCode = @"
-using System.Reflection;
+                TestCode = """
+                    using System.Reflection;
 
-public class Class
-{
-    private static readonly BindingFlags {|#0:B|} = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-}",
-                FixedCode = @"
-using System.Reflection;
+                    public class Class
+                    {
+                        private static readonly BindingFlags {|#0:B|} = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                    }
+                    """,
+                FixedCode = """
+                    using System.Reflection;
 
-public class Class
-{
-    private const BindingFlags B = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
-}",
+                    public class Class
+                    {
+                        private const BindingFlags B = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance;
+                    }
+                    """,
                 ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("B") }
             }.RunAsync(CancellationToken.None);
         }
@@ -310,20 +337,22 @@ public class Class
         {
             return new VerifyCS.Test
             {
-                TestCode = @"
-using System.Reflection;
+                TestCode = """
+                    using System.Reflection;
 
-public class Class
-{
-    private static readonly BindingFlags {|#0:BindingFlags|} = (BindingFlags)5;
-}",
-                FixedCode = @"
-using System.Reflection;
+                    public class Class
+                    {
+                        private static readonly BindingFlags {|#0:BindingFlags|} = (BindingFlags)5;
+                    }
+                    """,
+                FixedCode = """
+                    using System.Reflection;
 
-public class Class
-{
-    private const BindingFlags BindingFlags = (BindingFlags)5;
-}",
+                    public class Class
+                    {
+                        private const BindingFlags BindingFlags = (BindingFlags)5;
+                    }
+                    """,
                 ExpectedDiagnostics = { new DiagnosticResult(UseLiteralsWhereAppropriateAnalyzer.DefaultRule).WithLocation(0).WithArguments("BindingFlags") }
             }.RunAsync(CancellationToken.None);
         }

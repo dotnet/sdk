@@ -54,16 +54,86 @@ public class LaunchSettingsProfileTest
             projectPath: Path.Combine(project.TestRoot, "Project1", "Project1.csproj"),
             entryPointFilePath: null);
 
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: "http", Logger);
+        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: "http", Logger, static value => value);
         Assert.IsNotNull(expected);
         Assert.AreEqual("http://localhost:5000", expected.ApplicationUrl);
 
-        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "https", Logger);
+        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "https", Logger, static value => value);
         Assert.IsNotNull(expected);
         Assert.AreEqual("https://localhost:5001", expected.ApplicationUrl);
 
-        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "notfound", Logger);
+        expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "notfound", Logger, static value => value);
         Assert.IsNotNull(expected);
+    }
+
+    [TestMethod]
+    public void ExpandsMSBuildPropertiesInLaunchUrl()
+    {
+        var project = TestAssets.CreateTestProject(new TestProject("Project1")
+        {
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+        });
+
+        WriteFile(project, Path.Combine("Properties", "launchSettings.json"),
+        """
+        {
+          "profiles": {
+            "http": {
+              "applicationUrl": "$(ApplicationUrl)",
+              "commandName": "Project",
+              "launchUrl": "$(LaunchUrl)"
+            }
+          }
+        }
+        """);
+
+        var projectPath = new ProjectRepresentation(
+            projectPath: Path.Combine(project.TestRoot, "Project1", "Project1.csproj"),
+            entryPointFilePath: null);
+
+        var properties = new Dictionary<string, string>
+        {
+            ["$(LaunchUrl)"] = "path",
+        };
+        var profile = LaunchSettingsProfile.ReadLaunchProfile(projectPath, "http", Logger, value => properties[value]);
+
+        Assert.IsNotNull(profile);
+        Assert.AreEqual("$(ApplicationUrl)", profile.ApplicationUrl);
+        Assert.AreEqual("path", profile.LaunchUrl);
+    }
+
+    [TestMethod]
+    public void InvalidMSBuildPropertyInLaunchUrlDisablesLaunchProfile()
+    {
+        var project = TestAssets.CreateTestProject(new TestProject("Project1")
+        {
+            TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+        });
+
+        WriteFile(project, Path.Combine("Properties", "launchSettings.json"),
+        """
+        {
+          "profiles": {
+            "http": {
+              "commandName": "Project",
+              "launchBrowser": true,
+              "launchUrl": "$([)"
+            }
+          }
+        }
+        """);
+
+        var projectPath = new ProjectRepresentation(
+            projectPath: Path.Combine(project.TestRoot, "Project1", "Project1.csproj"),
+            entryPointFilePath: null);
+
+        var profile = LaunchSettingsProfile.ReadLaunchProfile(
+            projectPath,
+            "http",
+            Logger,
+            static _ => throw new Microsoft.Build.Exceptions.InvalidProjectFileException("Invalid expression."));
+
+        Assert.IsNull(profile);
     }
 
     [TestMethod]
@@ -89,7 +159,7 @@ public class LaunchSettingsProfileTest
             projectPath: Path.Combine(project.Path, "Project1", "Project1.csproj"),
             entryPointFilePath: null);
 
-        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: null, Logger);
+        var expected = LaunchSettingsProfile.ReadLaunchProfile(projectPath, launchProfileName: null, Logger, static value => value);
         Assert.IsNull(expected);
     }
 
