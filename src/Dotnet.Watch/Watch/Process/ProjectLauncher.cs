@@ -78,12 +78,12 @@ internal sealed class ProjectLauncher(
                 (EnvironmentOptions.SuppressEmojis ? Emoji.Default : Emoji.Agent).GetLogMessagePrefix(EnvironmentOptions.LogMessagePrefix) + $"[{projectDisplayName}]";
         }
 
+        // Observes main project process output and launches browser when the URL is found in the output.
+        var outputObserver = context.BrowserLauncher.TryGetBrowserLaunchOutputObserver(projectNode, projectOptions, clients.BrowserRefreshServer, cancellationToken);
+
         clients.ConfigureLaunchEnvironment(environmentBuilder);
 
         processSpec.Arguments = GetProcessArguments(projectOptions, environmentBuilder);
-
-        // Observes main project process output and launches browser when the URL is found in the output.
-        var outputObserver = context.BrowserLauncher.TryGetBrowserLaunchOutputObserver(projectNode, projectOptions, clients.BrowserRefreshServer, cancellationToken);
 
         processSpec.RedirectOutput(outputObserver, context.ProcessOutputReporter, context.EnvironmentOptions, projectDisplayName);
 

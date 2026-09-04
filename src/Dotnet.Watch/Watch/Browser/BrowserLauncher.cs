@@ -13,7 +13,7 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter processOutputReporter, EnvironmentOptions environmentOptions)
 {
     // interlocked
-    private ImmutableHashSet<ProjectInstanceId> _browserLaunchAttempted = [];
+    private ImmutableHashSet<(ProjectInstanceId Project, bool UsesLaunchUrlBootstrap)> _browserLaunchAttempted = [];
 
     /// <summary>
     /// Returns an output observing action that triggers the launch of the browser, or null if the browser should not be launched.
@@ -24,7 +24,10 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
         AbstractBrowserRefreshServer? server,
         CancellationToken cancellationToken)
     {
-        if (!CanLaunchBrowser(projectOptions, out var launchProfile))
+        var canLaunchBrowser = CanLaunchBrowser(projectOptions, out var launchProfile);
+        server?.ConfigureLaunchUrlBootstrap(canLaunchBrowser);
+
+        if (!canLaunchBrowser)
         {
             if (environmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser))
             {
@@ -34,13 +37,18 @@ internal sealed class BrowserLauncher(ILogger logger, IProcessOutputReporter pro
             return null;
         }
 
+        Debug.Assert(launchProfile != null);
         return WebServerProcessStateObserver.GetObserver(projectNode, url =>
         {
             if (projectOptions.IsMainProject &&
-                ImmutableInterlocked.Update(ref _browserLaunchAttempted, static (set, key) => set.Add(key), projectNode.ProjectInstance.GetId()))
+                ImmutableInterlocked.Update(
+                    ref _browserLaunchAttempted,
+                    static (set, key) => set.Add(key),
+                    (projectNode.ProjectInstance.GetId(), server?.UsesLaunchUrlBootstrap == true)))
             {
                 // first build iteration of a root project:
                 var launchUrl = GetLaunchUrl(launchProfile.LaunchUrl, url);
+                launchUrl = server?.AddLaunchUrlBootstrap(launchUrl) ?? launchUrl;
                 LaunchBrowser(launchUrl, server);
             }
             else if (server != null)

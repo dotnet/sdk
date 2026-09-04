@@ -17,11 +17,26 @@ internal sealed class BlazorWebAssemblyAppModel(DotNetWatchContext context, Proj
 {
     public override ProjectGraphNode LaunchingProject => clientProject;
 
+    internal override bool UseLaunchUrlBootstrap
+        => clientProject.GetTargetFrameworkVersion() is { Major: >= 11 } &&
+           IsBrowserHotReloadInitializerEnabled();
+
     public override bool ManagedHotReloadRequiresBrowserRefresh => true;
 
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);
         return [CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject)];
+    }
+
+    private bool IsBrowserHotReloadInitializerEnabled()
+    {
+        var configuredValue = clientProject.ProjectInstance.GetPropertyValue(PropertyNames.WasmEnableHotReload);
+        return bool.TryParse(configuredValue, out var isEnabled)
+            ? isEnabled
+            : string.Equals(
+                clientProject.ProjectInstance.GetPropertyValue(PropertyNames.Configuration),
+                "Debug",
+                StringComparison.OrdinalIgnoreCase);
     }
 }

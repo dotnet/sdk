@@ -10,7 +10,7 @@ Reload).
 | `dotnet-watch` | The tool executable and CLI surface. Its command/options are defined in `CommandLine/DotnetWatchCommandDefinition.cs`. |
 | `Watch` (`Microsoft.DotNet.HotReload.Watch`) | Core watcher library: file-set computation, process launching, Hot Reload, app models. |
 | `DotNetWatchTasks` | MSBuild task bundled into the tool for design-time file collection. |
-| `DotNetDeltaApplier`, `Web.Middleware`, `BrowserRefresh` | Assemblies **injected into the running app** via `DOTNET_STARTUP_HOOKS`. |
+| `DotNetDeltaApplier`, `Web.Middleware`, `BrowserRefresh` | Assemblies injected into supported running apps via `DOTNET_STARTUP_HOOKS`; modern standalone Blazor WebAssembly uses the browser initializer instead. |
 | `HotReloadAgent.*`, `HotReloadClient`, `AspireService` | Shared code consumed via `.projitems`.|
 
 ## Conventions & gotchas
@@ -26,6 +26,13 @@ Reload).
   named-pipe protocol; Blazor WASM uses JSON over WebSocket. Each protocol has its
   own `HotReloadClient` subclass (e.g. `DefaultHotReloadClient`,
   `WebAssemblyHotReloadClient`); a new app model may need its own implementation.
+- **Standalone Blazor WebAssembly bootstrap differs by TFM.** .NET 11+ receives the
+  browser-refresh WebSocket endpoints and public key in a launch URL fragment. The
+  `Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js` initializer consumes
+  and removes that fragment and retains applied deltas in watcher-scoped session storage
+  for page reloads. Older, hosted, initializer-disabled, and non-automatically-launched
+  apps retain the injected middleware path. Never place the browser-generated shared
+  secret in the launch URL.
 - **`CompilationHandler` drives Roslyn** via
   `Microsoft.CodeAnalysis.ExternalAccess.HotReload`; unsupported edits fall
   back to a full rebuild + restart.

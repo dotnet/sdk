@@ -26,12 +26,16 @@ internal abstract class AbstractBrowserRefreshServer(
     string middlewareAssemblyPath,
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
-    Func<int, ILogger> connectionAgentLoggerFactory) : IDisposable
+    Func<int, ILogger> connectionAgentLoggerFactory,
+    bool useLaunchUrlBootstrap = false) : IDisposable
 {
+    private const string LaunchUrlConfigParameter = "__dotnet_watch";
     private static readonly JsonSerializerOptions s_jsonSerializerOptions = new(JsonSerializerDefaults.Web);
 
     private static int s_lastConnectionId;
 
+    private readonly bool _supportsLaunchUrlBootstrap = useLaunchUrlBootstrap;
+    private bool _useLaunchUrlBootstrap = useLaunchUrlBootstrap;
     private readonly List<BrowserConnection> _activeConnections = [];
     private readonly TaskCompletionSource<None> _browserConnected = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
@@ -64,6 +68,15 @@ internal abstract class AbstractBrowserRefreshServer(
     public ILogger Logger
         => logger;
 
+    internal bool UsesLaunchUrlBootstrap
+        => _useLaunchUrlBootstrap;
+
+    internal bool SupportsLaunchUrlBootstrap
+        => _supportsLaunchUrlBootstrap;
+
+    internal void ConfigureLaunchUrlBootstrap(bool browserWillBeLaunched)
+        => _useLaunchUrlBootstrap = _supportsLaunchUrlBootstrap && browserWillBeLaunched;
+
     public async ValueTask StartAsync(CancellationToken cancellationToken)
     {
         if (_lazyHost != null)
@@ -80,6 +93,20 @@ internal abstract class AbstractBrowserRefreshServer(
         if (_lazyHost == null)
         {
             throw new InvalidOperationException("Server not started");
+        }
+
+        if (_useLaunchUrlBootstrap)
+        {
+            builder.Remove(MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint);
+            builder.Remove(MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSKey);
+            builder.Remove(MiddlewareEnvironmentVariables.AspNetCoreAutoReloadVirtualDirectory);
+            builder.Remove(MiddlewareEnvironmentVariables.LoggingLevel);
+            builder.RemoveListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
+            builder.RemoveListItem(
+                MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies,
+                Path.GetFileNameWithoutExtension(middlewareAssemblyPath),
+                MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
+            return;
         }
 
         builder[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadWSEndPoint] = string.Join(",", _lazyHost.EndPoints);
@@ -104,6 +131,30 @@ internal abstract class AbstractBrowserRefreshServer(
             // enable debug logging from middleware:
             builder[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
         }
+    }
+
+    public string AddLaunchUrlBootstrap(string launchUrl)
+    {
+        if (!_useLaunchUrlBootstrap)
+        {
+            return launchUrl;
+        }
+
+        if (_lazyHost == null)
+        {
+            throw new InvalidOperationException("Server not started");
+        }
+
+        var config = JsonSerializer.Serialize(
+            new BrowserRefreshConfig
+            {
+                WebSocketUrls = string.Join(",", _lazyHost.EndPoints),
+                ServerKey = _sharedSecretProvider.GetPublicKey(),
+            },
+            s_jsonSerializerOptions);
+
+        var separator = launchUrl.Contains('#') ? '&' : '#';
+        return $"{launchUrl}{separator}{LaunchUrlConfigParameter}={Uri.EscapeDataString(config)}";
     }
 
     /// <summary>
@@ -361,5 +412,11 @@ internal abstract class AbstractBrowserRefreshServer(
     {
         public string Type => "UpdateStaticFile";
         public string Path { get; init; }
+    }
+
+    private readonly struct BrowserRefreshConfig
+    {
+        public string WebSocketUrls { get; init; }
+        public string ServerKey { get; init; }
     }
 }

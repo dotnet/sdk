@@ -5,8 +5,8 @@ using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-internal class TestBrowserRefreshServer(string middlewareAssemblyPath)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
+internal class TestBrowserRefreshServer(string middlewareAssemblyPath, bool useLaunchUrlBootstrap = false)
+    : AbstractBrowserRefreshServer(middlewareAssemblyPath, new TestLogger(), _ => new TestLogger(), _ => new TestLogger(), useLaunchUrlBootstrap)
 {
     public Func<WebServerHost>? CreateAndStartHostImpl;
 
