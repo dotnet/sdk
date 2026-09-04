@@ -6,6 +6,7 @@
 using System;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -47,6 +48,22 @@ internal sealed class HostingStartup : IHostingStartup, IStartupFilter
                     browserTools.Run(
                         context => context.RequestServices.GetRequiredService<BrowserToolsForwarder>().ForwardAsync(context));
                 });
+
+            // The .NET 9 WebAssembly runtime probes the legacy HTTP replay endpoint when its Hot Reload
+            // agent starts and reports an error unless it receives a successful JSON response. Updates
+            // produced before a browser connected are replayed over the authenticated WebSocket, so the
+            // application answers the probe locally with an empty update set. Nothing is forwarded to the
+            // provider and no update is ever served over this unauthenticated route.
+            app.MapWhen(
+                static context =>
+                    HttpMethods.IsGet(context.Request.Method) &&
+                    context.Request.Path.Equals(ApplicationPaths.LegacyPreviousDeltas, StringComparison.OrdinalIgnoreCase),
+                static legacyReplay => legacyReplay.Run(static context =>
+                {
+                    context.Response.ContentType = "application/json";
+                    return context.Response.WriteAsync("[]", context.RequestAborted);
+                }));
+
             next(app);
         };
     }

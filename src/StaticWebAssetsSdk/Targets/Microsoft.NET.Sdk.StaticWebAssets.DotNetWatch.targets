@@ -55,15 +55,32 @@ Copyright (c) .NET Foundation. All rights reserved.
       <_DotNetWatchBrowserToolsConfigFileName>$(DotNetWatchBrowserToolsAssetPrefix).BrowserTools.Config.js</_DotNetWatchBrowserToolsConfigFileName>
       <_DotNetWatchBrowserToolsClientSource>$(MSBuildThisFileDirectory)DotNetWatch\dotnet-watch-browser-tools.js</_DotNetWatchBrowserToolsClientSource>
       <_DotNetWatchBrowserToolsConfigTemplate>$(MSBuildThisFileDirectory)DotNetWatch\dotnet-watch-browser-tools.config.js.template</_DotNetWatchBrowserToolsConfigTemplate>
+
+      <!--
+        .NET 9.0 is the only target framework whose built-in WebAssembly Hot Reload agent has to be turned
+        on explicitly. Microsoft.AspNetCore.Components.WebAssembly.HotReload.WebAssemblyHotReload only
+        creates its agent from InitializeAsync, which runs when __ASPNETCORE_BROWSER_TOOLS is set, and
+        every apply entry point returns without applying anything while that agent is null.
+
+        .NET 8.0 must not set it: its agent is created lazily by the apply entry point itself, and its
+        InitializeAsync additionally imports the application hosted blazor-hotreload.js module that this
+        SDK no longer produces. .NET 10.0 and later ship the Hot Reload agent with the SDK instead.
+      -->
+      <_DotNetWatchBrowserToolsRuntimeHotReloadAgent>false</_DotNetWatchBrowserToolsRuntimeHotReloadAgent>
+      <_DotNetWatchBrowserToolsRuntimeHotReloadAgent
+        Condition="$([MSBuild]::VersionEquals('$(TargetFrameworkVersion)', '9.0'))">true</_DotNetWatchBrowserToolsRuntimeHotReloadAgent>
     </PropertyGroup>
 
     <!-- Copy to the intermediate folder to avoid duplicate identity when multiple projects reference the same SDK file -->
     <Copy
-      SourceFiles="$(DotNetWatchBrowserToolsInitializerFile);$(_DotNetWatchBrowserToolsClientSource)"
-      DestinationFiles="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsInitializerFileName);$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsClientFileName)"
+      SourceFiles="$(_DotNetWatchBrowserToolsClientSource)"
+      DestinationFiles="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsClientFileName)"
       SkipUnchangedFiles="true" />
 
     <PropertyGroup>
+      <_DotNetWatchBrowserToolsInitializerContent>$([System.IO.File]::ReadAllText('$(DotNetWatchBrowserToolsInitializerFile)'))</_DotNetWatchBrowserToolsInitializerContent>
+      <_DotNetWatchBrowserToolsInitializerContent>$(_DotNetWatchBrowserToolsInitializerContent.Replace('__RUNTIME_HOT_RELOAD_AGENT__', '$(_DotNetWatchBrowserToolsRuntimeHotReloadAgent)'))</_DotNetWatchBrowserToolsInitializerContent>
+
       <_DotNetWatchBrowserToolsConfigContent>$([System.IO.File]::ReadAllText('$(_DotNetWatchBrowserToolsConfigTemplate)'))</_DotNetWatchBrowserToolsConfigContent>
       <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__CLIENT_MODULE__', '$(_DotNetWatchBrowserToolsClientFileName)'))</_DotNetWatchBrowserToolsConfigContent>
       <_DotNetWatchBrowserToolsConfigContent>$(_DotNetWatchBrowserToolsConfigContent.Replace('__ROUTE_PREFIX__', '$(DotNetWatchBrowserToolsRoutePrefix)'))</_DotNetWatchBrowserToolsConfigContent>
@@ -71,7 +88,13 @@ Copyright (c) .NET Foundation. All rights reserved.
     </PropertyGroup>
 
     <!-- WriteOnlyWhenDifferent keeps the build incremental: the key is stable for the whole
-         dotnet-watch invocation, so rebuilds must not rewrite this file. -->
+         dotnet-watch invocation, so rebuilds must not rewrite these files. -->
+    <WriteLinesToFile
+      File="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsInitializerFileName)"
+      Lines="$([MSBuild]::Escape($(_DotNetWatchBrowserToolsInitializerContent)))"
+      Overwrite="true"
+      WriteOnlyWhenDifferent="true" />
+
     <WriteLinesToFile
       File="$(_DotNetWatchBrowserToolsIntermediatePath)$(_DotNetWatchBrowserToolsConfigFileName)"
       Lines="$([MSBuild]::Escape($(_DotNetWatchBrowserToolsConfigContent)))"

@@ -73,8 +73,8 @@ Reload).
   config rather
   than through `globalThis` or a cross-module import: initializer load order is unspecified
   and each module's URL is subject to fingerprinting. Do not use
-  `__ASPNETCORE_BROWSER_TOOLS` for this handshake because older runtimes interpret it as a
-  request to load the removed application-hosted `blazor-hotreload.js`. On .NET 10+ the
+  `__ASPNETCORE_BROWSER_TOOLS` as that handshake, because .NET 8 interprets it as a request
+  to load the removed application-hosted `blazor-hotreload.js`. On .NET 10+ the
   separate Hot Reload agent initializer applies managed
   updates; older target frameworks fall back to the runtime's own
   `window.Blazor._internal.applyHotReload`. Both initializers can run in the same app;
@@ -98,6 +98,33 @@ Reload).
   The wait is bounded and best effort so runtimes that install the apply API through their
   own bootstrap, or pages that never boot WebAssembly, degrade to a logged warning instead
   of a reload loop.
+- **.NET 9 WebAssembly is the one target framework that needs
+  `__ASPNETCORE_BROWSER_TOOLS`.** Its `WebAssemblyHotReload` creates the Hot Reload agent
+  only inside `InitializeAsync`, which the runtime calls only when that variable is set, so
+  without it `applyHotReloadDeltas` returns an empty log and applies nothing while the
+  browser still reports success. The
+  [initializer template](../WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template)
+  therefore has a `__RUNTIME_HOT_RELOAD_AGENT__` placeholder that
+  [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
+  substitutes with `true` only when `TargetFrameworkVersion` equals `9.0`. .NET 8 must not
+  get it (it would import the removed `blazor-hotreload.js`) and .NET 10+ must not get it
+  (the SDK ships its own agent). That initialization path also fetches
+  `/_framework/blazor-hotreload` for previously applied deltas, so
+  [`HostingStartup`](Web.Middleware/HostingStartup.cs) answers that route locally with an
+  empty update array: replay belongs to the authenticated WebSocket, and serving deltas over
+  an unauthenticated route would be a security regression. The route is not forwarded to the
+  provider, and its only consumer is the .NET 9 WebAssembly runtime.
+- **The forwarder preserves the provider's pre-upgrade rejection.** The provider answers an
+  invalid encrypted subprotocol with a status-only HTTP 400 *before* accepting the
+  WebSocket. [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs) opts into
+  `ClientWebSocketOptions.CollectHttpResponseDetails` and, on a failed upgrade, relays
+  `ClientWebSocket.HttpStatusCode` only when it is an error status, falling back to 502
+  otherwise. The narrowing matters: that property is recorded before the upgrade response is
+  validated, so a handshake that failed *after* the provider switched protocols reports 101,
+  and relaying it would make the application announce an upgrade it never performed. Both
+  members are .NET 7+ while the
+  assembly targets `net6.0`, so they are reached through cached reflection. Do not widen this
+  into a blanket status mapping and do not swallow genuine transport failures.
 - **Server hosting startup is intentionally thin.**
   [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers only the MVC/Razor
   TagHelper component and the reserved forwarder for the modern path. The BrowserRefresh

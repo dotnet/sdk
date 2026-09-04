@@ -1,15 +1,26 @@
 // Activates the dotnet-watch browser tools client. Added to the app by the SDK during dotnet-watch builds.
 
+// Substituted by Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets. True only when the target
+// framework's built-in WebAssembly Hot Reload agent has to be enabled explicitly.
+const useRuntimeHotReloadAgent = __RUNTIME_HOT_RELOAD_AGENT__;
+
 export function onRuntimeConfigLoaded(config) {
     if (config.debugLevel === 0) {
         return;
     }
 
     // Signals to Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js that the app is watched.
-    // Do not use __ASPNETCORE_BROWSER_TOOLS here: older runtimes interpret it as a request
-    // to load the legacy application-hosted blazor-hotreload.js module.
+    // Do not use __ASPNETCORE_BROWSER_TOOLS for this: .NET 8 interprets it as a request to load the
+    // legacy application-hosted blazor-hotreload.js module, which the SDK no longer produces.
     config.environmentVariables["DOTNET_MODIFIABLE_ASSEMBLIES"] ??= "debug";
     config.environmentVariables["__DOTNET_WATCH_BROWSER_TOOLS"] ??= "true";
+
+    if (useRuntimeHotReloadAgent) {
+        // .NET 9 keeps its Hot Reload agent null unless WebAssemblyHotReload.InitializeAsync runs, and
+        // that only happens when this variable is set. Without it applyHotReloadDeltas returns an empty
+        // log and silently applies nothing, so an edit is acknowledged but never takes effect.
+        config.environmentVariables["__ASPNETCORE_BROWSER_TOOLS"] ??= "true";
+    }
 }
 
 export async function onRuntimeReady() {

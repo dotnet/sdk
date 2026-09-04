@@ -5,10 +5,24 @@ using Microsoft.DotNet.HotReload;
 
 namespace Microsoft.DotNet.Watch.UnitTests;
 
-internal class TestBrowserRefreshServer(Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment)
-    : AbstractBrowserRefreshServer(configureLaunchEnvironment, new SharedSecretProvider(), new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
+internal class TestBrowserRefreshServer : AbstractBrowserRefreshServer
 {
     public Func<WebServerHost>? CreateAndStartHostImpl;
+
+    public TestBrowserRefreshServer(
+        Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
+        SharedSecretProvider sharedSecretProvider)
+        : base(configureLaunchEnvironment, sharedSecretProvider, new TestLogger(), _ => new TestLogger(), _ => new TestLogger())
+    {
+        SharedSecretProvider = sharedSecretProvider;
+    }
+
+    public TestBrowserRefreshServer(Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment)
+        : this(configureLaunchEnvironment, new SharedSecretProvider())
+    {
+    }
+
+    public SharedSecretProvider SharedSecretProvider { get; }
 
     protected override ValueTask<WebServerHost> CreateAndStartHostAsync(CancellationToken cancellationToken)
         => ValueTask.FromResult((CreateAndStartHostImpl ?? throw new NotImplementedException())());
