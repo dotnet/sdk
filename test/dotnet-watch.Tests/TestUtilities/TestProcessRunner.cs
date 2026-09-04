@@ -10,7 +10,7 @@ internal class TestProcessRunner()
 {
     public Func<ProcessSpec, ILogger, ProcessLaunchResult?, int?>? RunImpl;
 
-    public async override Task<int> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
+    public async override Task<int?> RunAsync(ProcessSpec processSpec, ILogger logger, ProcessLaunchResult? launchResult, CancellationToken processTerminationToken)
     {
         var result = RunImpl?.Invoke(processSpec, logger, launchResult);
         return result ?? await base.RunAsync(processSpec, logger, launchResult, processTerminationToken);

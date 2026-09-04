@@ -104,7 +104,7 @@ internal sealed class RunningProjectsManager(ProcessRunner processRunner, ILogge
         if (launchResult.ProcessId == null)
         {
             // process failed to start:
-            Debug.Assert(processTask.IsCompleted && processTask.Result == int.MinValue);
+            Debug.Assert(processTask.IsCompleted && processTask.Result is null);
 
             // error already reported
             return null;
