@@ -182,6 +182,7 @@ namespace PackageValidationTests { public class MyForwardedType : ISomeInterface
         }
 
         [TestMethod]
+        [DoNotParallelize] // Concurrent pack/restore child processes can emit shared-cache diagnostics to stderr.
         public void ValidateReferencesAreRespectedForPlatformSpecificTFMs()
         {
             TestProject testProject = CreateTestProject("public class MyType { }", $"netstandard2.0;{ToolsetInfo.CurrentTargetFramework}-windows");
