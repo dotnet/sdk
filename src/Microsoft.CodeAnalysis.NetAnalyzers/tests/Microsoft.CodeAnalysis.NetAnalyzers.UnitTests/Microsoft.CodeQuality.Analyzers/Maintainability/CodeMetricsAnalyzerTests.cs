@@ -25,17 +25,19 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability.CodeMetrics.UnitTests
         [DataRow("\n")]
         public async Task CA1501_CSharp_VerifyDiagnosticAsync(string lineEndings)
         {
-            var source = @"
-class BaseClass { }
-class FirstDerivedClass : BaseClass { }
-class SecondDerivedClass : FirstDerivedClass { }
-class ThirdDerivedClass : SecondDerivedClass { }
-class FourthDerivedClass : ThirdDerivedClass { }
-class FifthDerivedClass : FourthDerivedClass { }
+            var source = """
 
-// This class violates the rule.
-class SixthDerivedClass : FifthDerivedClass { }
-".ReplaceLineEndings(lineEndings);
+                class BaseClass { }
+                class FirstDerivedClass : BaseClass { }
+                class SecondDerivedClass : FirstDerivedClass { }
+                class ThirdDerivedClass : SecondDerivedClass { }
+                class FourthDerivedClass : ThirdDerivedClass { }
+                class FifthDerivedClass : FourthDerivedClass { }
+
+                // This class violates the rule.
+                class SixthDerivedClass : FifthDerivedClass { }
+
+                """.ReplaceLineEndings(lineEndings);
             DiagnosticResult[] expected = new[] {
                  GetCSharpCA1501ExpectedDiagnostic(10, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyCS.VerifyAnalyzerAsync(source, expected);
@@ -44,34 +46,36 @@ class SixthDerivedClass : FifthDerivedClass { }
         [TestMethod]
         public async Task CA1501_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class BaseClass
-End Class
+            var source = """
 
-Class FirstDerivedClass
-    Inherits BaseClass
-End Class
+                Class BaseClass
+                End Class
 
-Class SecondDerivedClass
-    Inherits FirstDerivedClass
-End Class
+                Class FirstDerivedClass
+                    Inherits BaseClass
+                End Class
 
-Class ThirdDerivedClass
-    Inherits SecondDerivedClass
-End Class
+                Class SecondDerivedClass
+                    Inherits FirstDerivedClass
+                End Class
 
-Class FourthDerivedClass
-    Inherits ThirdDerivedClass
-End Class
+                Class ThirdDerivedClass
+                    Inherits SecondDerivedClass
+                End Class
 
-Class FifthDerivedClass
-    Inherits FourthDerivedClass
-End Class
+                Class FourthDerivedClass
+                    Inherits ThirdDerivedClass
+                End Class
 
-Class SixthDerivedClass
-    Inherits FifthDerivedClass
-End Class
-";
+                Class FifthDerivedClass
+                    Inherits FourthDerivedClass
+                End Class
+
+                Class SixthDerivedClass
+                    Inherits FifthDerivedClass
+                End Class
+
+                """;
             DiagnosticResult[] expected = new[] {
                  GetBasicCA1501ExpectedDiagnostic(25, 7, "SixthDerivedClass", 6, 6, "FifthDerivedClass, FourthDerivedClass, ThirdDerivedClass, SecondDerivedClass, FirstDerivedClass, BaseClass")};
             await VerifyVB.VerifyAnalyzerAsync(source, expected);
@@ -80,16 +84,20 @@ End Class
         [TestMethod]
         public async Task CA1501_Configuration_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class BaseClass { }
-class FirstDerivedClass : BaseClass { }
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            var source = """
 
-CA1501: 0
-";
+                class BaseClass { }
+                class FirstDerivedClass : BaseClass { }
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1501: 0
+
+                """;
             DiagnosticResult[] expected = new[] {
                 GetCSharpCA1501ExpectedDiagnostic(3, 7, "FirstDerivedClass", 1, 1, "BaseClass")};
             await VerifyCSharpAsync(source, additionalText, expected);
@@ -98,20 +106,24 @@ CA1501: 0
         [TestMethod]
         public async Task CA1501_Configuration_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class BaseClass
-End Class
+            var source = """
 
-Class FirstDerivedClass
-    Inherits BaseClass
-End Class
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Class BaseClass
+                End Class
 
-CA1501: 0
-";
+                Class FirstDerivedClass
+                    Inherits BaseClass
+                End Class
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1501: 0
+
+                """;
             DiagnosticResult[] expected = new[] {
                 GetBasicCA1501ExpectedDiagnostic(5, 7, "FirstDerivedClass", 1, 1, "BaseClass")};
             await VerifyBasicAsync(source, additionalText, expected);
@@ -131,11 +143,12 @@ CA1501: 0
                 TestState =
                 {
                     Sources = { "public class MyUC : System.Windows.Forms.UserControl {}", },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+                        """) },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
             }.RunAsync(CancellationToken.None);
@@ -146,16 +159,18 @@ CA1501: 0
                 {
                     Sources =
                     {
-                        @"
-Public Class MyUC
-    Inherits System.Windows.Forms.UserControl
-End Class",
+                        """
+                            Public Class MyUC
+                                Inherits System.Windows.Forms.UserControl
+                            End Class
+                            """,
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+                        """) },
                 },
                 ReferenceAssemblies = AdditionalMetadataReferences.DefaultWithWinForms,
             }.RunAsync(CancellationToken.None);
@@ -183,10 +198,11 @@ End Class",
                 {
                     Sources =
                     {
-                        @"
-Public Class MyUC
-    Inherits {|#0:System.NonExistentType|}
-End Class",
+                        """
+                            Public Class MyUC
+                                Inherits {|#0:System.NonExistentType|}
+                            End Class
+                            """,
                     },
                     ExpectedDiagnostics =
                     {
@@ -202,12 +218,14 @@ End Class",
         [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = T:MyCompany.MyProduct.MyFunction.SomeClass*")]
         public async Task CA1501_WildcardTypePrefixNoNamespaceAsync(string editorConfigText)
         {
-            var codeMetricsConfigText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            var codeMetricsConfigText = """
 
-CA1501: 0
-";
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1501: 0
+
+                """;
 
             var csharpTest = new VerifyCS.Test
             {
@@ -215,23 +233,25 @@ CA1501: 0
                 {
                     Sources =
                     {
-                        @"
-namespace MyCompany.MyProduct.MyFunction
-{
-    public class SomeClass {}
-    public class C1 : SomeClass {}
+                        """
 
-    public class SomeClass1 {}
-    public class SomeClass2 : SomeClass1 {}
-    public class C2 : SomeClass2 {}
-}
+                            namespace MyCompany.MyProduct.MyFunction
+                            {
+                                public class SomeClass {}
+                                public class C1 : SomeClass {}
 
-public class SomeClass {}
-public class C1 : SomeClass {}
+                                public class SomeClass1 {}
+                                public class SomeClass2 : SomeClass1 {}
+                                public class C2 : SomeClass2 {}
+                            }
 
-public class SomeClass1 {}
-public class SomeClass2 : SomeClass1 {}
-public class C2 : SomeClass2 {}"
+                            public class SomeClass {}
+                            public class C1 : SomeClass {}
+
+                            public class SomeClass1 {}
+                            public class SomeClass2 : SomeClass1 {}
+                            public class C2 : SomeClass2 {}
+                            """
                     },
                     AdditionalFiles =
                     {
@@ -239,11 +259,13 @@ public class C2 : SomeClass2 {}"
                     },
                     AnalyzerConfigFiles =
                     {
-                        ("/.editorconfig", $@"root = true
+                        ("/.editorconfig", $"""
+                            root = true
 
-[*]
-{editorConfigText}
-"),
+                            [*]
+                            {editorConfigText}
+
+                            """),
                     },
                 },
             };
@@ -275,44 +297,46 @@ public class C2 : SomeClass2 {}"
                 {
                     Sources =
                     {
-                        @"
-Namespace MyCompany.MyProduct.MyFunction
-    Public Class SomeClass
-    End Class
+                        """
 
-    Public Class C1
-        Inherits SomeClass
-    End Class
+                            Namespace MyCompany.MyProduct.MyFunction
+                                Public Class SomeClass
+                                End Class
 
-    Public Class SomeClass1
-    End Class
+                                Public Class C1
+                                    Inherits SomeClass
+                                End Class
 
-    Public Class SomeClass2
-        Inherits SomeClass1
-    End Class
+                                Public Class SomeClass1
+                                End Class
 
-    Public Class C2
-        Inherits SomeClass2
-    End Class
-End Namespace
+                                Public Class SomeClass2
+                                    Inherits SomeClass1
+                                End Class
 
-Public Class SomeClass
-End Class
+                                Public Class C2
+                                    Inherits SomeClass2
+                                End Class
+                            End Namespace
 
-Public Class C1
-    Inherits SomeClass
-End Class
+                            Public Class SomeClass
+                            End Class
 
-Public Class SomeClass1
-End Class
+                            Public Class C1
+                                Inherits SomeClass
+                            End Class
 
-Public Class SomeClass2
-    Inherits SomeClass1
-End Class
+                            Public Class SomeClass1
+                            End Class
 
-Public Class C2
-    Inherits SomeClass2
-End Class"
+                            Public Class SomeClass2
+                                Inherits SomeClass1
+                            End Class
+
+                            Public Class C2
+                                Inherits SomeClass2
+                            End Class
+                            """
                     },
                     AdditionalFiles =
                     {
@@ -320,11 +344,13 @@ End Class"
                     },
                     AnalyzerConfigFiles =
                     {
-                        ("/.editorconfig", $@"root = true
+                        ("/.editorconfig", $"""
+                            root = true
 
-[*]
-{editorConfigText}
-"),
+                            [*]
+                            {editorConfigText}
+
+                            """),
                     },
                 },
             };
@@ -360,12 +386,14 @@ End Class"
         [DataRow("dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = N:MyComp*")]
         public async Task CA1501_WildcardNamespacePrefixAsync(string editorConfigText)
         {
-            var codeMetricsConfigText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            var codeMetricsConfigText = """
 
-CA1501: 0
-";
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1501: 0
+
+                """;
 
             var csharpTest = new VerifyCS.Test
             {
@@ -373,22 +401,24 @@ CA1501: 0
                 {
                     Sources =
                     {
-                        @"
-namespace MyCompany.MyProduct.MyFunction
-{
-    public class SomeClass {}
-    public class C1 : SomeClass {}
-}
+                        """
 
-namespace MyCompany2.SomeOtherProduct
-{
-    public class SomeClass {}
-    public class C1 : SomeClass {}
-}
+                            namespace MyCompany.MyProduct.MyFunction
+                            {
+                                public class SomeClass {}
+                                public class C1 : SomeClass {}
+                            }
 
-public class SomeClass {}
-public class C1 : SomeClass {}
-"
+                            namespace MyCompany2.SomeOtherProduct
+                            {
+                                public class SomeClass {}
+                                public class C1 : SomeClass {}
+                            }
+
+                            public class SomeClass {}
+                            public class C1 : SomeClass {}
+
+                            """
                     },
                     AdditionalFiles =
                     {
@@ -396,11 +426,13 @@ public class C1 : SomeClass {}
                     },
                     AnalyzerConfigFiles =
                     {
-                        ("/.editorconfig", $@"root = true
+                        ("/.editorconfig", $"""
+                            root = true
 
-[*]
-{editorConfigText}
-"),
+                            [*]
+                            {editorConfigText}
+
+                            """),
                     },
                     ExpectedDiagnostics =
                     {
@@ -423,31 +455,33 @@ public class C1 : SomeClass {}
                 {
                     Sources =
                     {
-                        @"
-Namespace MyCompany.MyProduct.MyFunction
-    Public Class SomeClass
-    End Class
+                        """
 
-    Public Class C1
-        Inherits SomeClass
-    End Class
-End Namespace
+                            Namespace MyCompany.MyProduct.MyFunction
+                                Public Class SomeClass
+                                End Class
 
-Namespace MyCompany2.SomeOtherProduct
-    Public Class SomeClass
-    End Class
+                                Public Class C1
+                                    Inherits SomeClass
+                                End Class
+                            End Namespace
 
-    Public Class C1
-        Inherits SomeClass
-    End Class
-End Namespace
+                            Namespace MyCompany2.SomeOtherProduct
+                                Public Class SomeClass
+                                End Class
 
-Public Class SomeClass
-End Class
+                                Public Class C1
+                                    Inherits SomeClass
+                                End Class
+                            End Namespace
 
-Public Class C1
-    Inherits SomeClass
-End Class"
+                            Public Class SomeClass
+                            End Class
+
+                            Public Class C1
+                                Inherits SomeClass
+                            End Class
+                            """
                     },
                     AdditionalFiles =
                     {
@@ -455,11 +489,13 @@ End Class"
                     },
                     AnalyzerConfigFiles =
                     {
-                        ("/.editorconfig", $@"root = true
+                        ("/.editorconfig", $"""
+                            root = true
 
-[*]
-{editorConfigText}
-"),
+                            [*]
+                            {editorConfigText}
+
+                            """),
                     },
                     ExpectedDiagnostics =
                     {
@@ -482,12 +518,12 @@ End Class"
         {
             var editorConfigText = "dotnet_code_quality.CA1501.additional_inheritance_excluded_symbol_names = Some*";
 
-            var codeMetricsConfigText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            var codeMetricsConfigText = """
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1501: 1
-";
+                CA1501: 1
+                """;
 
             await new VerifyCS.Test
             {
@@ -495,32 +531,32 @@ CA1501: 1
                 {
                     Sources =
                     {
-                        @"
-namespace SomeNamespace
-{
-    public class C {}
-    public class C1 : C {}
-}
+                        """
+                            namespace SomeNamespace
+                            {
+                                public class C {}
+                                public class C1 : C {}
+                            }
 
-namespace MyCompany.SomeProduct
-{
-    public class C {}
-    public class C1 : C {}
-}
+                            namespace MyCompany.SomeProduct
+                            {
+                                public class C {}
+                                public class C1 : C {}
+                            }
 
-namespace MyNamespace
-{
-    public class SomeClass
-    {
-        public class C {}
-    }
+                            namespace MyNamespace
+                            {
+                                public class SomeClass
+                                {
+                                    public class C {}
+                                }
 
-    public class C2 : SomeClass.C {} // excluded because C's containing type starts with 'Some'
-}
+                                public class C2 : SomeClass.C {} // excluded because C's containing type starts with 'Some'
+                            }
 
-public class SomeClass {}
-public class C1 : SomeClass {}
-"
+                            public class SomeClass {}
+                            public class C1 : SomeClass {}
+                            """
                     },
                     AdditionalFiles =
                     {
@@ -528,11 +564,12 @@ public class C1 : SomeClass {}
                     },
                     AnalyzerConfigFiles =
                     {
-                        ("/.editorconfig", $@"root = true
+                        ("/.editorconfig", $"""
+                            root = true
 
-[*]
-{editorConfigText}
-"),
+                            [*]
+                            {editorConfigText}
+                            """),
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -543,42 +580,43 @@ public class C1 : SomeClass {}
                 {
                     Sources =
                     {
-                        @"
-Namespace SomeNamespace
-    Public Class C
-    End Class
+                        """
+                            Namespace SomeNamespace
+                                Public Class C
+                                End Class
 
-    Public Class C1
-        Inherits C
-    End Class
-End Namespace
+                                Public Class C1
+                                    Inherits C
+                                End Class
+                            End Namespace
 
-Namespace MyCompany.SomeProduct
-    Public Class C
-    End Class
+                            Namespace MyCompany.SomeProduct
+                                Public Class C
+                                End Class
 
-    Public Class C1
-        Inherits C
-    End Class
-End Namespace
+                                Public Class C1
+                                    Inherits C
+                                End Class
+                            End Namespace
 
-Namespace MyNamespace
-    Public Class SomeClass
-        Public Class C
-        End Class
-    End Class
+                            Namespace MyNamespace
+                                Public Class SomeClass
+                                    Public Class C
+                                    End Class
+                                End Class
 
-    Public Class C2
-        Inherits SomeClass.C
-    End Class
-End Namespace
+                                Public Class C2
+                                    Inherits SomeClass.C
+                                End Class
+                            End Namespace
 
-Public Class SomeClass
-End Class
+                            Public Class SomeClass
+                            End Class
 
-Public Class C1
-    Inherits SomeClass
-End Class"
+                            Public Class C1
+                                Inherits SomeClass
+                            End Class
+                            """
                     },
                     AdditionalFiles =
                     {
@@ -586,11 +624,12 @@ End Class"
                     },
                     AnalyzerConfigFiles =
                     {
-                        ("/.editorconfig", $@"root = true
+                        ("/.editorconfig", $"""
+                            root = true
 
-[*]
-{editorConfigText}
-"),
+                            [*]
+                            {editorConfigText}
+                            """),
                     },
                 },
             }.RunAsync(CancellationToken.None);
@@ -603,19 +642,21 @@ End Class"
         [TestMethod]
         public async Task CA1502_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class C
-{
-    void M(bool b)
-    {
-        // Default threshold = 25
-        var x = b && b && b && b && b && b && b &&
-            b && b && b && b && b && b && b &&
-            b && b && b && b && b && b && b &&
-            b && b && b && b && b && b && b;
-    }
-}
-";
+            var source = """
+
+                class C
+                {
+                    void M(bool b)
+                    {
+                        // Default threshold = 25
+                        var x = b && b && b && b && b && b && b &&
+                            b && b && b && b && b && b && b &&
+                            b && b && b && b && b && b && b &&
+                            b && b && b && b && b && b && b;
+                    }
+                }
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(4,10): warning CA1502: 'M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
                 GetCSharpCA1502ExpectedDiagnostic(4, 10, "M", 28, 26)};
@@ -625,33 +666,35 @@ class C
         [TestMethod]
         public async Task CA1502_CSharp_VerifyDiagnosticInPropertyAsync()
         {
-            var source = @"
-class C
-{
-    bool b;
+            var source = """
 
-    bool M
-    {
-        get
-        {
-            // Default threshold = 25
-            var x = b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b;
-            return x;
-        }
-        set
-        {
-            // Default threshold = 25
-            var x = b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b;
-        }
-    }
-}
-";
+                class C
+                {
+                    bool b;
+
+                    bool M
+                    {
+                        get
+                        {
+                            // Default threshold = 25
+                            var x = b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b;
+                            return x;
+                        }
+                        set
+                        {
+                            // Default threshold = 25
+                            var x = b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b;
+                        }
+                    }
+                }
+
+                """;
             DiagnosticResult[] expected = new[]
             {
                 // Test0.cs(8,9): warning CA1502: 'get_M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
@@ -665,32 +708,34 @@ class C
         [TestMethod]
         public async Task CA1502_CSharp_VerifyDiagnosticInEventAsync()
         {
-            var source = @"
-class C
-{
-    bool b;
+            var source = """
 
-    event System.EventHandler M
-    {
-        add
-        {
-            // Default threshold = 25
-            var x = b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b;
-        }
-        remove
-        {
-            // Default threshold = 25
-            var x = b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b &&
-                b && b && b && b && b && b && b;
-        }
-    }
-}
-";
+                class C
+                {
+                    bool b;
+
+                    event System.EventHandler M
+                    {
+                        add
+                        {
+                            // Default threshold = 25
+                            var x = b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b;
+                        }
+                        remove
+                        {
+                            // Default threshold = 25
+                            var x = b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b &&
+                                b && b && b && b && b && b && b;
+                        }
+                    }
+                }
+
+                """;
             DiagnosticResult[] expected = new[]
             {
                 // Test0.cs(8,9): warning CA1502: 'add_M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
@@ -704,16 +749,18 @@ class C
         [TestMethod]
         public async Task CA1502_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class C
-    Private Sub M(ByVal b As Boolean)
-        Dim x = b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso
-            b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso
-            b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso
-            b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b
-    End Sub
-End Class
-";
+            var source = """
+
+                Class C
+                    Private Sub M(ByVal b As Boolean)
+                        Dim x = b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso
+                            b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso
+                            b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso
+                            b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b AndAlso b
+                    End Sub
+                End Class
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(3,17): warning CA1502: 'M' has a cyclomatic complexity of '28'. Rewrite or refactor the code to decrease its complexity below '26'.
                 GetBasicCA1502ExpectedDiagnostic(3, 17, "M", 28, 26)};
@@ -723,27 +770,31 @@ End Class
         [TestMethod]
         public async Task CA1502_Configuration_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class C
-{
-    void M1(bool b)
-    {
-        var x = b && b && b && b;
-    }
+            var source = """
 
-    void M2(bool b)
-    {
-        var x = b && b;
-    }
-}
-";
+                class C
+                {
+                    void M1(bool b)
+                    {
+                        var x = b && b && b && b;
+                    }
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                    void M2(bool b)
+                    {
+                        var x = b && b;
+                    }
+                }
 
-CA1502: 2
-";
+                """;
+
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1502: 2
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(4,10): warning CA1502: 'M1' has a cyclomatic complexity of '4'. Rewrite or refactor the code to decrease its complexity below '3'.
                 GetCSharpCA1502ExpectedDiagnostic(4, 10, "M1", 4, 3)};
@@ -753,23 +804,27 @@ CA1502: 2
         [TestMethod]
         public async Task CA1502_Configuration_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class C
-    Private Sub M1(ByVal b As Boolean)
-        Dim x = b AndAlso b AndAlso b AndAlso b
-    End Sub
+            var source = """
 
-    Private Sub M2(ByVal b As Boolean)
-        Dim x = b AndAlso b
-    End Sub
-End Class
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Class C
+                    Private Sub M1(ByVal b As Boolean)
+                        Dim x = b AndAlso b AndAlso b AndAlso b
+                    End Sub
 
-CA1502: 2
-";
+                    Private Sub M2(ByVal b As Boolean)
+                        Dim x = b AndAlso b
+                    End Sub
+                End Class
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1502: 2
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(3,17): warning CA1502: 'M1' has a cyclomatic complexity of '4'. Rewrite or refactor the code to decrease its complexity below '3'.
                 GetBasicCA1502ExpectedDiagnostic(3, 17, "M1", 4, 3)};
@@ -779,28 +834,32 @@ CA1502: 2
         [TestMethod]
         public async Task CA1502_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class C
-{
-    void M1(bool b)
-    {
-        var x = b && b && b && b;
-    }
+            var source = """
 
-    void M2(bool b)
-    {
-        var x = b && b;
-    }
-}
-";
+                class C
+                {
+                    void M1(bool b)
+                    {
+                        var x = b && b && b && b;
+                    }
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                    void M2(bool b)
+                    {
+                        var x = b && b;
+                    }
+                }
 
-CA1502(Type): 4
-CA1502(Method): 2
-";
+                """;
+
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1502(Type): 4
+                CA1502(Method): 2
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(2,7): warning CA1502: 'C' has a cyclomatic complexity of '6'. Rewrite or refactor the code to decrease its complexity below '5'.
                 GetCSharpCA1502ExpectedDiagnostic(2, 7, "C", 6, 5),
@@ -812,24 +871,28 @@ CA1502(Method): 2
         [TestMethod]
         public async Task CA1502_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class C
-    Private Sub M1(ByVal b As Boolean)
-        Dim x = b AndAlso b AndAlso b AndAlso b
-    End Sub
+            var source = """
 
-    Private Sub M2(ByVal b As Boolean)
-        Dim x = b AndAlso b
-    End Sub
-End Class
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Class C
+                    Private Sub M1(ByVal b As Boolean)
+                        Dim x = b AndAlso b AndAlso b AndAlso b
+                    End Sub
 
-CA1502(Type): 4
-CA1502(Method): 2
-";
+                    Private Sub M2(ByVal b As Boolean)
+                        Dim x = b AndAlso b
+                    End Sub
+                End Class
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1502(Type): 4
+                CA1502(Method): 2
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(2,7): warning CA1502: 'C' has a cyclomatic complexity of '6'. Rewrite or refactor the code to decrease its complexity below '5'.
                 GetBasicCA1502ExpectedDiagnostic(2, 7, "C", 6, 5),
@@ -845,22 +908,26 @@ CA1502(Method): 2
         [TestMethod]
         public async Task CA1505_Configuration_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class C
-{
-    void M1(bool b)
-    {
-        var x = b && b && b && b;
-    }
-}
-";
+            var source = """
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                class C
+                {
+                    void M1(bool b)
+                    {
+                        var x = b && b && b && b;
+                    }
+                }
 
-CA1505: 95
-";
+                """;
+
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1505: 95
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(2,7): warning CA1505: 'C' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetCSharpCA1505ExpectedDiagnostic(2, 7, "C", 91, 94),
@@ -872,20 +939,24 @@ CA1505: 95
         [TestMethod]
         public async Task CA1505_Configuration_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class C
-    Private Sub M1(ByVal b As Boolean)
-        Dim x = b AndAlso b AndAlso b AndAlso b
-    End Sub
-End Class
-";
+            var source = """
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Class C
+                    Private Sub M1(ByVal b As Boolean)
+                        Dim x = b AndAlso b AndAlso b AndAlso b
+                    End Sub
+                End Class
 
-CA1505: 95
-";
+                """;
+
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1505: 95
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(2,7): warning CA1505: 'C' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetBasicCA1505ExpectedDiagnostic(2, 7, "C", 91, 94),
@@ -897,22 +968,26 @@ CA1505: 95
         [TestMethod]
         public async Task CA1505_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class C
-{
-    void M1(bool b)
-    {
-        var x = b && b && b && b;
-    }
-}
-";
+            var source = """
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                class C
+                {
+                    void M1(bool b)
+                    {
+                        var x = b && b && b && b;
+                    }
+                }
 
-CA1505(Type): 95
-";
+                """;
+
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1505(Type): 95
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(2,7): warning CA1505: 'C' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetCSharpCA1505ExpectedDiagnostic(2, 7, "C", 91, 94)};
@@ -922,20 +997,24 @@ CA1505(Type): 95
         [TestMethod]
         public async Task CA1505_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class C
-    Private Sub M1(ByVal b As Boolean)
-        Dim x = b AndAlso b AndAlso b AndAlso b
-    End Sub
-End Class
-";
+            var source = """
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Class C
+                    Private Sub M1(ByVal b As Boolean)
+                        Dim x = b AndAlso b AndAlso b AndAlso b
+                    End Sub
+                End Class
 
-CA1505(Type): 95
-";
+                """;
+
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1505(Type): 95
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(2,7): warning CA1505: 'C' has a maintainability index of '91'. Rewrite or refactor the code to increase its maintainability index (MI) above '94'.
                 GetBasicCA1505ExpectedDiagnostic(2, 7, "C", 91, 94)};
@@ -949,25 +1028,29 @@ CA1505(Type): 95
         [TestMethod]
         public async Task CA1506_Configuration_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class C
-{
-    void M1(C1 c1, C2 c2, C3 c3, N.C4 c4)
-    {
-    }
-}
+            var source = """
 
-class C1 { }
-class C2 { }
-class C3 { }
-namespace N { class C4 { } }
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                class C
+                {
+                    void M1(C1 c1, C2 c2, C3 c3, N.C4 c4)
+                    {
+                    }
+                }
 
-CA1506: 2
-";
+                class C1 { }
+                class C2 { }
+                class C3 { }
+                namespace N { class C4 { } }
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1506: 2
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(2,7): warning CA1506: 'C' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetCSharpCA1506ExpectedDiagnostic(2, 7, "C", 4, 2, 3),
@@ -979,40 +1062,44 @@ CA1506: 2
         [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_Configuration_CSharp_LinqAsync()
         {
-            var source = @"
-using System.Linq;
-using System.Collections.Generic;
-class C
-{
-    IEnumerable<int> TestCa1506()
-    {
-        var ints = new[] { 1, 2 };
-        return from a in ints
-               from b in ints
-               from c in ints
-               from d in ints
-               from e in ints
-               from f in ints
-               from g in ints 
-               from h in ints
-               from i in ints
-               from j in ints
-               from k in ints
-               from l in ints
-               from m in ints
-               from n in ints
-               from o in ints
-               from p in ints
-               select p;
-    }
-}
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            var source = """
 
-CA1506: 2
-";
+                using System.Linq;
+                using System.Collections.Generic;
+                class C
+                {
+                    IEnumerable<int> TestCa1506()
+                    {
+                        var ints = new[] { 1, 2 };
+                        return from a in ints
+                               from b in ints
+                               from c in ints
+                               from d in ints
+                               from e in ints
+                               from f in ints
+                               from g in ints
+                               from h in ints
+                               from i in ints
+                               from j in ints
+                               from k in ints
+                               from l in ints
+                               from m in ints
+                               from n in ints
+                               from o in ints
+                               from p in ints
+                               select p;
+                    }
+                }
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1506: 2
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(4,7): warning CA1506: 'C' is coupled with '4' different types from '3' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetCSharpCA1506ExpectedDiagnostic(4, 7, "C", 4, 3, 3),
@@ -1024,32 +1111,36 @@ CA1506: 2
         [TestMethod]
         public async Task CA1506_Configuration_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class C
-    Private Sub M1(c1 As C1, c2 As C2, c3 As C3, c4 As N.C4)
-    End Sub
-End Class
+            var source = """
 
-Class C1
-End Class
+                Class C
+                    Private Sub M1(c1 As C1, c2 As C2, c3 As C3, c4 As N.C4)
+                    End Sub
+                End Class
 
-Class C2
-End Class
+                Class C1
+                End Class
 
-Class C3
-End Class
+                Class C2
+                End Class
 
-Namespace N
-    Class C4
-    End Class
-End Namespace
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Class C3
+                End Class
 
-CA1506: 2
-";
+                Namespace N
+                    Class C4
+                    End Class
+                End Namespace
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1506: 2
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(2,7): warning CA1506: 'C' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetBasicCA1506ExpectedDiagnostic(2, 7, "C", 4, 2, 3),
@@ -1061,26 +1152,30 @@ CA1506: 2
         [TestMethod]
         public async Task CA1506_SymbolBasedConfiguration_CSharp_VerifyDiagnosticAsync()
         {
-            var source = @"
-class C
-{
-    void M1(C1 c1, C2 c2, C3 c3, N.C4 c4)
-    {
-    }
-}
+            var source = """
 
-class C1 { }
-class C2 { }
-class C3 { }
-namespace N { class C4 { } }
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                class C
+                {
+                    void M1(C1 c1, C2 c2, C3 c3, N.C4 c4)
+                    {
+                    }
+                }
 
-CA1506(Method): 2
-CA1506(Type): 10
-";
+                class C1 { }
+                class C2 { }
+                class C3 { }
+                namespace N { class C4 { } }
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1506(Method): 2
+                CA1506(Type): 10
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.cs(4,10): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetCSharpCA1506ExpectedDiagnostic(4, 10, "M1", 4, 2, 3)};
@@ -1090,33 +1185,37 @@ CA1506(Type): 10
         [TestMethod]
         public async Task CA1506_SymbolBasedConfiguration_Basic_VerifyDiagnosticAsync()
         {
-            var source = @"
-Class C
-    Private Sub M1(c1 As C1, c2 As C2, c3 As C3, c4 As N.C4)
-    End Sub
-End Class
+            var source = """
 
-Class C1
-End Class
+                Class C
+                    Private Sub M1(c1 As C1, c2 As C2, c3 As C3, c4 As N.C4)
+                    End Sub
+                End Class
 
-Class C2
-End Class
+                Class C1
+                End Class
 
-Class C3
-End Class
+                Class C2
+                End Class
 
-Namespace N
-    Class C4
-    End Class
-End Namespace
-";
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Class C3
+                End Class
 
-CA1506(Method): 2
-CA1506(Type): 10
-";
+                Namespace N
+                    Class C4
+                    End Class
+                End Namespace
+
+                """;
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA1506(Method): 2
+                CA1506(Type): 10
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // Test0.vb(3,17): warning CA1506: 'M1' is coupled with '4' different types from '2' different namespaces. Rewrite or refactor the code to decrease its class coupling below '3'.
                 GetBasicCA1506ExpectedDiagnostic(3, 17, "M1", 4, 2, 3)};
@@ -1126,123 +1225,134 @@ CA1506(Type): 10
         [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_CountCorrectlyGenericTypesAsync()
         {
-            await VerifyCSharpAsync(@"
-using System.Collections.Generic;
+            await VerifyCSharpAsync("""
 
-public class A {}
-public class B {}
+                using System.Collections.Generic;
 
-public class C
-{
-    private IEnumerable<A> a;
-    private IEnumerable<B> b;
-}",
-@"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                public class A {}
+                public class B {}
 
-CA1506: 2
-",
+                public class C
+                {
+                    private IEnumerable<A> a;
+                    private IEnumerable<B> b;
+                }
+                """,
+"""
+
+    # FORMAT:
+    # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+    CA1506: 2
+
+    """,
                 GetCSharpCA1506ExpectedDiagnostic(7, 14, "C", 3, 2, 3));
 
-            await VerifyBasicAsync(@"
-Imports System.Collections.Generic
+            await VerifyBasicAsync("""
 
-Public Class A
-End Class
+                Imports System.Collections.Generic
 
-Public Class B
-End Class
+                Public Class A
+                End Class
 
-Public Class C
-    Private a As IEnumerable(Of A)
-    Private b As IEnumerable(Of B)
-End Class",
-@"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Public Class B
+                End Class
 
-CA1506: 2
-",
+                Public Class C
+                    Private a As IEnumerable(Of A)
+                    Private b As IEnumerable(Of B)
+                End Class
+                """,
+"""
+
+    # FORMAT:
+    # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+    CA1506: 2
+
+    """,
     GetCSharpCA1506ExpectedDiagnostic(10, 14, "C", 3, 2, 3));
         }
 
         [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_LinqAnonymousTypeAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.Collections.Generic;
-using System.Linq;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.Collections.Generic;
+                using System.Linq;
 
-public static class Ca1506Tester
-{
-    public static IEnumerable<int> TestCa1506()
-    {
-        var ints = new[] { 1, 2 };
-        return from a in ints
-               from b in ints
-               from c in ints
-               from d in ints
-               from e in ints
-               from f in ints
-               from g in ints
-               from h in ints
-               from i in ints
-               from j in ints
-               from k in ints
-               from l in ints
-               from m in ints
-               from n in ints
-               from o in ints
-               from p in ints
-               select p;
-    }
-}");
+                public static class Ca1506Tester
+                {
+                    public static IEnumerable<int> TestCa1506()
+                    {
+                        var ints = new[] { 1, 2 };
+                        return from a in ints
+                               from b in ints
+                               from c in ints
+                               from d in ints
+                               from e in ints
+                               from f in ints
+                               from g in ints
+                               from h in ints
+                               from i in ints
+                               from j in ints
+                               from k in ints
+                               from l in ints
+                               from m in ints
+                               from n in ints
+                               from o in ints
+                               from p in ints
+                               select p;
+                    }
+                }
+                """);
         }
 
         [TestMethod, WorkItem(2133, "https://github.com/dotnet/roslyn-analyzers/issues/2133")]
         public async Task CA1506_ExcludeCompilerGeneratedTypesAsync()
         {
-            await VerifyCSharpAsync(@"
-[System.Runtime.CompilerServices.CompilerGeneratedAttribute]
-public class A {}
+            await VerifyCSharpAsync("""
+                [System.Runtime.CompilerServices.CompilerGeneratedAttribute]
+                public class A {}
 
-[System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")]
-public class B {}
+                [System.CodeDom.Compiler.GeneratedCodeAttribute("SampleCodeGenerator", "2.0.0.0")]
+                public class B {}
 
-public class C
-{
-    private A a;
-    private B b;
-}",
-@"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                public class C
+                {
+                    private A a;
+                    private B b;
+                }
+                """,
+"""
+    # FORMAT:
+    # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1506: 1
-");
+    CA1506: 1
+    """);
 
-            await VerifyBasicAsync(@"
-Imports System.Collections.Generic
+            await VerifyBasicAsync("""
+                Imports System.Collections.Generic
 
-<System.Runtime.CompilerServices.CompilerGeneratedAttribute>
-Public Class A
-End Class
+                <System.Runtime.CompilerServices.CompilerGeneratedAttribute>
+                Public Class A
+                End Class
 
-<System.CodeDom.Compiler.GeneratedCodeAttribute(""SampleCodeGenerator"", ""2.0.0.0"")>
-Public Class B
-End Class
+                <System.CodeDom.Compiler.GeneratedCodeAttribute("SampleCodeGenerator", "2.0.0.0")>
+                Public Class B
+                End Class
 
-Public Class C
-    Private a As A
-    Private b As B
-End Class",
-@"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                Public Class C
+                    Private a As A
+                    Private b As B
+                End Class
+                """,
+"""
+    # FORMAT:
+    # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-CA1506: 1
-");
+    CA1506: 1
+    """);
         }
 
         #endregion
@@ -1252,39 +1362,41 @@ CA1506: 1
         [TestMethod]
         public async Task CA1509_VerifyDiagnosticsAsync()
         {
-            var source = @"";
+            var source = "";
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            string additionalText = """
 
-# 1. Multiple colons
-CA1501: 1 : 2
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-# 2. Whitespace in RuleId
-CA 1501: 1
+                # 1. Multiple colons
+                CA1501: 1 : 2
 
-# 3. Invalid Code Metrics RuleId
-CA1600: 1
+                # 2. Whitespace in RuleId
+                CA 1501: 1
 
-# 4. Non-integral Threshold.
-CA1501: None
+                # 3. Invalid Code Metrics RuleId
+                CA1600: 1
 
-# 5. Not supported SymbolKind.
-CA1501(Local): 1
+                # 4. Non-integral Threshold.
+                CA1501: None
 
-# 6. Missing SymbolKind.
-CA1501(: 1
+                # 5. Not supported SymbolKind.
+                CA1501(Local): 1
 
-# 7. Missing CloseParens after SymbolKind.
-CA1501(Method: 1
+                # 6. Missing SymbolKind.
+                CA1501(: 1
 
-# 8. Multiple SymbolKinds.
-CA1501(Method)(Type): 1
+                # 7. Missing CloseParens after SymbolKind.
+                CA1501(Method: 1
 
-# 9. Missing Threshold.
-CA1501
-";
+                # 8. Multiple SymbolKinds.
+                CA1501(Method)(Type): 1
+
+                # 9. Missing Threshold.
+                CA1501
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // CodeMetricsConfig.txt(6,1): warning CA1509: Invalid entry 'CA1501: 1 : 2' in code metrics rule specification file 'CodeMetricsConfig.txt'
                 GetCA1509ExpectedDiagnostic(6, 1, "CA1501: 1 : 2", AdditionalFileName),
@@ -1310,35 +1422,35 @@ CA1501
         [TestMethod]
         public async Task CA1509_NoDiagnosticsAsync()
         {
-            var source = @"";
+            var source = "";
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+            string additionalText = """
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
 
-# 1. Duplicates are allowed
-CA1501: 1
-CA1501: 2
+                # 1. Duplicates are allowed
+                CA1501: 1
+                CA1501: 2
 
-# 2. Duplicate RuleId-SymbolKind pairs are allowed.
-CA1501(Method): 1
-CA1501(Method): 1
+                # 2. Duplicate RuleId-SymbolKind pairs are allowed.
+                CA1501(Method): 1
+                CA1501(Method): 1
 
-# 3. All valid symbol kinds
-CA1502(Assembly): 1
-CA1502(Namespace): 1
-CA1502(Type): 1
-CA1502(Method): 1
-CA1502(Field): 1
-CA1502(Property): 1
-CA1502(Event): 1
+                # 3. All valid symbol kinds
+                CA1502(Assembly): 1
+                CA1502(Namespace): 1
+                CA1502(Type): 1
+                CA1502(Method): 1
+                CA1502(Field): 1
+                CA1502(Property): 1
+                CA1502(Event): 1
 
-# 4. Whitespaces before and after the key-value pair are allowed.
-   CA1501: 1        
+                # 4. Whitespaces before and after the key-value pair are allowed.
+                   CA1501: 1
 
-# 5. Whitespaces before and after the colon are allowed.
-CA1501    :    1
-";
+                # 5. Whitespaces before and after the colon are allowed.
+                CA1501    :    1
+                """;
             await VerifyCSharpAsync(source, additionalText);
         }
 
@@ -1346,22 +1458,26 @@ CA1501    :    1
         public async Task CA1509_VerifyNoMetricDiagnosticsAsync()
         {
             // Ensure we don't report any code metric diagnostics when we have invalid entries in code metrics configuration file.
-            var source = @"
-class BaseClass { }
-class FirstDerivedClass : BaseClass { }
-class SecondDerivedClass : FirstDerivedClass { }
-class ThirdDerivedClass : SecondDerivedClass { }
-class FourthDerivedClass : ThirdDerivedClass { }
+            var source = """
 
-// This class violates the CA1501 rule for default threshold.
-class FifthDerivedClass : FourthDerivedClass { }";
+                class BaseClass { }
+                class FirstDerivedClass : BaseClass { }
+                class SecondDerivedClass : FirstDerivedClass { }
+                class ThirdDerivedClass : SecondDerivedClass { }
+                class FourthDerivedClass : ThirdDerivedClass { }
 
-            string additionalText = @"
-# FORMAT:
-# 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+                // This class violates the CA1501 rule for default threshold.
+                class FifthDerivedClass : FourthDerivedClass { }
+                """;
 
-CA 1501: 10
-";
+            string additionalText = """
+
+                # FORMAT:
+                # 'RuleId'(Optional 'SymbolKind'): 'Threshold'
+
+                CA 1501: 10
+
+                """;
             DiagnosticResult[] expected = new[] {
                 // CodeMetricsConfig.txt(5,1): warning CA1509: Invalid entry 'CA 1501: 10' in code metrics rule specification file 'CodeMetricsConfig.txt'
                 GetCA1509ExpectedDiagnostic(5, 1, "CA 1501: 10", AdditionalFileName)};

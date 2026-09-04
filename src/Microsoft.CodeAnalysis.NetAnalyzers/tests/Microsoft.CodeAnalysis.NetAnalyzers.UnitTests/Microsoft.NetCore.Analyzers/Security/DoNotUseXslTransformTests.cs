@@ -15,50 +15,54 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestConstructXslTransformDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Xsl;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        new XslTransform();
-    }
-}",
+                using System;
+                using System.Xml.Xsl;
+
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        new XslTransform();
+                    }
+                }
+                """,
             GetCSharpResultAt(9, 9));
         }
 
         [TestMethod]
         public async Task TestConstructNormalClassNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Xsl;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Xml.Xsl;
 
-class TestClass
-{
-    public void TestMethod()
-    {
-        new TestClass();
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod()
+                    {
+                        new TestClass();
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task TestInvokeMethodOfXslTransformNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml.Xsl;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Xml.Xsl;
 
-class TestClass
-{
-    public void TestMethod(XslTransform xslTransform)
-    {
-        xslTransform.Load(""url"");
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(XslTransform xslTransform)
+                    {
+                        xslTransform.Load("url");
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column)

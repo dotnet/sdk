@@ -1,0 +1,123 @@
+# This yml is used by the dotnet-sdk-sdl-checks pipeline.
+
+trigger: none
+
+pr: none
+
+schedules:
+- cron: '0 0 * * 0'
+  displayName: Weekly CodeQL/SDL build
+  branches:
+    include:
+    - main
+  always: true
+
+variables:
+- template: /eng/pipelines/templates/variables/sdk-defaults.yml
+# Variables used: DncEngInternalBuildPool
+- template: /eng/common/templates-official/variables/pool-providers.yml
+- name: DOTNET_CLI_TELEMETRY_SESSIONID
+  value: azdo-$(System.CollectionId)-$(System.TeamProjectId)-$(Build.BuildId)
+- group: AzureDevOps-Artifact-Feeds-Pats
+# Provides TSA variables for automatic bug reporting.
+- group: DotNet-CLI-SDLValidation-Params
+
+resources:
+  repositories:
+  - repository: 1esPipelines
+    type: git
+    name: 1ESPipelineTemplates/1ESPipelineTemplates
+    ref: refs/tags/release
+
+extends:
+  template: v1/1ES.Official.PipelineTemplate.yml@1esPipelines
+  parameters:
+    containers:
+      azureLinux30Amd64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-build-amd64
+      # Cross-compilation prereq image (clang + /crossrootfs/arm64 sysroot) used by the Linux arm64
+      # AOT leg. NativeAOT cross-links dotnet-aot for linux-arm64 from an x64 host; the container
+      # provides the native toolchain + sysroot and sets ROOTFS_DIR, and the leg passes
+      # /p:CrossBuild=true so ILC emits --sysroot/--target.
+      azureLinuxCrossArm64:
+        image: mcr.microsoft.com/dotnet-buildtools/prereqs:azurelinux-3.0-net11.0-cross-arm64
+        env:
+          ROOTFS_DIR: /crossrootfs/arm64
+
+    sdl:
+      sourceAnalysisPool:
+        name: $(DncEngInternalBuildPool)
+        image: 1es-windows-2022
+        os: windows
+      policheck:
+        enabled: true
+      tsa:
+        enabled: true
+      binskim:
+        enabled: true
+      componentgovernance:
+        # Refdoc: https://docs.opensource.microsoft.com/tools/cg/component-detection/variables/
+        ignoreDirectories: artifacts, .packages
+
+    stages:
+    - stage: build
+      displayName: Build
+      jobs:
+      ############### WINDOWS ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+        parameters:
+          pool:
+            name: $(DncEngInternalBuildPool)
+            image: windows.vs2026.amd64
+            os: windows
+          helixTargetQueue: windows.amd64.vs2026.pre.scout
+          oneESCompat:
+            templateFolderName: templates-official
+            publishTaskPrefix: 1ES.
+          runTests: false
+          populateInternalRuntimeVariables: true
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+          locBranch: release/10.0.3xx
+          # WORKAROUND: BinSkim requires the folder exist prior to scanning.
+          preSteps:
+          - powershell: New-Item -ItemType Directory -Path $(Build.SourcesDirectory)/artifacts/bin -Force
+            displayName: Create artifacts/bin directory
+          additionalWindowsJobParameterSets:
+          # Note: This job is only used to allow the test templates to be built locally on the agent as opposed to Helix.
+          # The tests acquire the templates' PackageReferences from NuGet, which allows them to be scanned by CG (component governance).
+          # CG is only run internally, so this job runs only in CG mode.
+          - categoryName: TestTemplatesCG
+            runTests: true
+            testExecutionMode: local
+            testProjects: $(Build.SourcesDirectory)/test/dotnet-new.IntegrationTests/dotnet-new.IntegrationTests.csproj
+            testFilter: FullyQualifiedName~Microsoft.DotNet.Cli.New.IntegrationTests.DotnetNewTestTemplatesTests
+
+      ############### LINUX ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+        parameters:
+          pool:
+            name: $(DncEngInternalBuildPool)
+            image: build.azurelinux.3.amd64
+            os: linux
+          helixTargetQueue: ubuntu.2204.amd64
+          oneESCompat:
+            templateFolderName: templates-official
+            publishTaskPrefix: 1ES.
+          runTests: false
+          populateInternalRuntimeVariables: true
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)
+
+      ############### MACOS ###############
+      - template: /eng/pipelines/templates/jobs/sdk-job-matrix.yml@self
+        parameters:
+          pool:
+            name: Azure Pipelines
+            image: macOS-latest
+            os: macOS
+          helixTargetQueue: osx.15.arm64
+          oneESCompat:
+            templateFolderName: templates-official
+            publishTaskPrefix: 1ES.
+          runTests: false
+          populateInternalRuntimeVariables: true
+          runtimeSourceProperties: /p:DotNetRuntimeSourceFeed=https://ci.dot.net/internal /p:DotNetRuntimeSourceFeedKey=$(dotnetbuilds-internal-container-read-token-base64)

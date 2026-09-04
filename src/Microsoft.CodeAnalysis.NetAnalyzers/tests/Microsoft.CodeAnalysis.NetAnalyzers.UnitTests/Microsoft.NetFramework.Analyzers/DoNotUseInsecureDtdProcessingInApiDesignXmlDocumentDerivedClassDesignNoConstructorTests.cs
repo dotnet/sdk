@@ -28,96 +28,104 @@ namespace Microsoft.NetFramework.Analyzers.UnitTests
         [TestMethod]
         public async Task NonXmlDocumentDerivedTypeWithNoConstructorShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Xml;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass : XmlResolver
-    {
-        public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
-        {
-            throw new NotImplementedException();
-        }
-    }
-}"
+                namespace TestNamespace
+                {
+                    class TestClass : XmlResolver
+                    {
+                        public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVisualBasicAnalyzerAsync(@"
-Imports System
-Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync("""
+                Imports System
+                Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Inherits XmlResolver
-        Public Overrides Function GetEntity(absoluteUri As Uri, role As String, ofObjectToReturn As Type) As Object
-            Throw New NotImplementedException()
-        End Function
-    End Class
-End Namespace");
+                Namespace TestNamespace
+                    Class TestClass
+                        Inherits XmlResolver
+                        Public Overrides Function GetEntity(absoluteUri As Uri, role As String, ofObjectToReturn As Type) As Object
+                            Throw New NotImplementedException()
+                        End Function
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task NonXmlDocumentDerivedTypeWithConstructorShouldNotGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Xml;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.Xml;
 
-namespace TestNamespace
-{
-    class TestClass : XmlResolver
-    {
-        public TestClass() {}
+                namespace TestNamespace
+                {
+                    class TestClass : XmlResolver
+                    {
+                        public TestClass() {}
 
-        public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
-        {
-            throw new NotImplementedException();
-        }
-    }
-}"
+                        public override object GetEntity(Uri absoluteUri, string role, Type ofObjectToReturn)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                }
+                """
             );
 
-            await VerifyVisualBasicAnalyzerAsync(@"
-Imports System
-Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync("""
+                Imports System
+                Imports System.Xml
 
-Namespace TestNamespace
-    Class TestClass
-        Inherits XmlResolver
-        Public Sub New()
-        End Sub
+                Namespace TestNamespace
+                    Class TestClass
+                        Inherits XmlResolver
+                        Public Sub New()
+                        End Sub
 
-        Public Overrides Function GetEntity(absoluteUri As Uri, role As String, ofObjectToReturn As Type) As Object
-            Throw New NotImplementedException()
-        End Function
-    End Class
-End Namespace");
+                        Public Overrides Function GetEntity(absoluteUri As Uri, role As String, ofObjectToReturn As Type) As Object
+                            Throw New NotImplementedException()
+                        End Function
+                    End Class
+                End Namespace
+                """);
         }
 
         [TestMethod]
         public async Task XmlDocumentDerivedTypeWithNoConstructorShouldGenerateDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.Xml;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace TestNamespace
-{
-    class TestClass : XmlDocument {}
-}",
+                using System;
+                using System.Xml;
+
+                namespace TestNamespace
+                {
+                    class TestClass : XmlDocument {}
+                }
+                """,
                 GetCA3077NoConstructorCSharpResultAt(7, 11, "TestClass")
             );
 
-            await VerifyVisualBasicAnalyzerAsync(@"
-Imports System.Xml
+            await VerifyVisualBasicAnalyzerAsync("""
 
-Namespace TestNamespace
-    Class TestClass
-        Inherits XmlDocument
-    End Class
-End Namespace",
+                Imports System.Xml
+
+                Namespace TestNamespace
+                    Class TestClass
+                        Inherits XmlDocument
+                    End Class
+                End Namespace
+                """,
                 GetCA3077NoConstructorBasicResultAt(5, 11, "TestClass")
             );
         }

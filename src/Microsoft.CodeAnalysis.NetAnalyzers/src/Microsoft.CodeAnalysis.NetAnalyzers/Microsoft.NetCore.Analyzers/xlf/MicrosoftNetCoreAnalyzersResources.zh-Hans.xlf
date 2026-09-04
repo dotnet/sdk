@@ -2413,6 +2413,26 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
         <target state="translated">为了清楚起见和提高性能，首选将 'Length'与 0 进行比较，而不是使用 'Any()'。</target>
         <note />
       </trans-unit>
+      <trans-unit id="PreferQuotedFileBasedProgramDirectiveCodeFixTitle">
+        <source>Add quotes around the directive value</source>
+        <target state="new">Add quotes around the directive value</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferQuotedFileBasedProgramDirectiveDescription">
+        <source>Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</source>
+        <target state="new">Before quoting was supported, whitespace in a file-based program '#:' directive value was taken literally. That form still works but is deprecated; wrap values that contain whitespace in double quotes so they are parsed unambiguously.</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferQuotedFileBasedProgramDirectiveMessage">
+        <source>Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</source>
+        <target state="new">Wrap the value of the '#:{0}' directive in quotes; the unquoted-whitespace form is deprecated</target>
+        <note />
+      </trans-unit>
+      <trans-unit id="PreferQuotedFileBasedProgramDirectiveTitle">
+        <source>Quote whitespace in file-based program directive values</source>
+        <target state="new">Quote whitespace in file-based program directive values</target>
+        <note />
+      </trans-unit>
       <trans-unit id="PreferReadOnlySpanOverSpanCodeFixTitle">
         <source>Change to '{0}'</source>
         <target state="new">Change to '{0}'</target>
@@ -2432,6 +2452,26 @@ Enumerable.OfType&lt;T&gt; 使用的泛型类型检查(C# 'is' operator/IL 'isin
         <source>Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</source>
         <target state="new">Use 'ReadOnlySpan&lt;T&gt;' or 'ReadOnlyMemory&lt;T&gt;' instead of 'Span&lt;T&gt;' or 'Memory&lt;T&gt;'</target>
         <note />
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsCodeFixTitle">
+        <source>Use ReadOnlySpan&lt;T&gt; property</source>
+        <target state="new">Use ReadOnlySpan&lt;T&gt; property</target>
+        <note>{Locked="ReadOnlySpan&lt;T&gt;"}</note>
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsDescription">
+        <source>If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan&lt;T&gt; property.</source>
+        <target state="new">If an array field is readonly and the array is never modified, the compiler can emit more efficient code if the readonly field is replaced with a read-only ReadOnlySpan&lt;T&gt; property.</target>
+        <note>{Locked="readonly"}{Locked="ReadOnlySpan&lt;T&gt;"}</note>
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsMessage">
+        <source>Prefer static ReadOnlySpan&lt;{0}&gt; property over static readonly {0}[] field</source>
+        <target state="new">Prefer static ReadOnlySpan&lt;{0}&gt; property over static readonly {0}[] field</target>
+        <note>{Locked="static"}{Locked="ReadOnlySpan"}{Locked="readonly"}</note>
+      </trans-unit>
+      <trans-unit id="PreferReadOnlySpanPropertiesOverReadOnlyArrayFieldsTitle">
+        <source>Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</source>
+        <target state="new">Prefer ReadOnlySpan&lt;T&gt; properties over readonly array fields</target>
+        <note>{Locked="ReadOnlySpan&lt;T&gt;"}{Locked="readonly"}</note>
       </trans-unit>
       <trans-unit id="PreferStreamAsyncMemoryOverloadsDescription">
         <source>'Stream' has a 'ReadAsync' overload that takes a 'Memory&lt;Byte&gt;' as the first argument, and a 'WriteAsync' overload that takes a 'ReadOnlyMemory&lt;Byte&gt;' as the first argument. Prefer calling the memory based overloads, which are more efficient.</source>

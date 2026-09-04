@@ -1,6 +1,7 @@
 ﻿// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Security;
 using System.Text.Json;
 using Basic.CompilerLog.Util;
 using Microsoft.Build.Evaluation;
@@ -1712,6 +1713,47 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
     }
 
     [TestMethod]
+    public void Api_RunCommand_LaunchProfileExpansionUsesArtifactsPath()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        string programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, """
+            Console.WriteLine();
+            """);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.run.json"), """
+            {
+              "profiles": {
+                "Program": {
+                  "commandName": "Executable",
+                  "executablePath": "$(ArtifactsPath)",
+                  "workingDirectory": "$(ArtifactsPath)",
+                  "environmentVariables": {
+                    "PROFILE_ARTIFACTS": "$(ArtifactsPath)"
+                  }
+                }
+              }
+            }
+            """);
+
+        string artifactsPath = Path.Join(testInstance.Path, "custom-artifacts");
+
+        new DotnetCommand(Log, "run-api")
+            .WithEnvironmentVariable("DOTNET_ROOT", string.Empty)
+            .WithEnvironmentVariable($"DOTNET_ROOT_{RuntimeInformation.OSArchitecture.ToString().ToUpperInvariant()}", string.Empty)
+            .WithStandardInput($$"""
+                {"$type":"GetRunCommand","EntryPointFileFullPath":{{ToJson(programPath)}},"ArtifactsPath":{{ToJson(artifactsPath)}}}
+                """)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining($$"""
+                {"$type":"RunCommand","Version":1,"ExecutablePath":{{ToJson(artifactsPath)}},"CommandLineArguments":"","WorkingDirectory":{{ToJson(artifactsPath)}}
+                """)
+            .And.HaveStdOutContaining($$"""
+                "PROFILE_ARTIFACTS":{{ToJson(artifactsPath)}}
+                """);
+    }
+
+    [TestMethod]
     public void Api_VirtualProjectBuilder_CreateProjectRootElement()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1817,6 +1859,59 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
 
         // TargetFramework can be evaluated.
         (await result.Project.GetPropertyValueAsync("TargetFramework")).Should().Be(ToolsetInfo.CurrentTargetFramework);
+    }
+
+    [TestMethod]
+    [DataRow(true, "", true)]
+    [DataRow(true, "FileBasedApp", false)]
+    [DataRow(false, "", false)]
+    public async Task Api_VirtualProjectBuilder_ArtifactsPathCompatibility(
+        bool defaultArtifactsPathPropsImported,
+        string artifactsPathLocationType,
+        bool expectLegacyArtifactsPath)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+        var programPath = Path.Join(testInstance.Path, "Program.cs");
+        File.WriteAllText(programPath, "Console.WriteLine();");
+
+        var artifactsPath = Path.Join(testInstance.Path, "artifacts");
+        var virtualProjectBuilder = new VirtualProjectBuilder(
+            BuildService.Instance,
+            programPath,
+            VirtualProjectBuildingCommand.TargetFramework,
+            artifactsPath: artifactsPath);
+
+        using var projectCollection = new ProjectCollection();
+        var result = await virtualProjectBuilder.CreateProjectInstanceAsync(
+            projectCollection.Wrap(),
+            VirtualProjectBuildingCommand.ThrowingReporter,
+            additionalGlobalProperties: new Dictionary<string, string>
+            {
+                ["_DefaultArtifactsPathPropsImported"] = defaultArtifactsPathPropsImported.ToString(),
+                ["_ArtifactsPathLocationType"] = artifactsPathLocationType,
+            });
+
+        var xml = result.ProjectRootElement.GetRawXml();
+        Log.WriteLine(xml);
+
+        if (expectLegacyArtifactsPath)
+        {
+            xml.Should()
+                .Contain("<IncludeProjectNameInArtifactsPaths>false</IncludeProjectNameInArtifactsPaths>")
+                .And.Contain($"<ArtifactsPath>{SecurityElement.Escape(artifactsPath)}</ArtifactsPath>")
+                .And.Contain("<PublishDir>artifacts/$(AssemblyName)</PublishDir>")
+                .And.Contain("<PackageOutputPath>artifacts/$(AssemblyName)</PackageOutputPath>")
+                .And.NotContain("<FileBasedAppArtifactsPath>");
+        }
+        else
+        {
+            xml.Should()
+                .Contain($"<FileBasedAppArtifactsPath>{SecurityElement.Escape(artifactsPath)}</FileBasedAppArtifactsPath>")
+                .And.NotContain("<IncludeProjectNameInArtifactsPaths>")
+                .And.NotContain("<ArtifactsPath>")
+                .And.NotContain("<PublishDir>")
+                .And.NotContain("<PackageOutputPath>");
+        }
     }
 
     [TestMethod, CombinatorialData]
@@ -2183,9 +2278,8 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var msbuildCallArgsString = ArgumentEscaper.EscapeAndConcatenateArgArrayForProcessStart(msbuildCallArgs);
 
         // Generate argument template code.
-        string sdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
-        string dotNetRootPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.DotNetRoot);
-        string nuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
+        CSharpCompilerCommand.SdkPath = NormalizePath(SdkTestContext.Current.ToolsetUnderTest.SdkFolderUnderTest);
+        CSharpCompilerCommand.NuGetCachePath = NormalizePath(SdkTestContext.Current.NuGetCachePath!);
         string artifactsDirNormalized = NormalizePath(artifactsDir);
         string objPath = $"{artifactsDirNormalized}/obj/debug";
         string entryPointPathNormalized = NormalizePath(entryPointPath);
@@ -2193,7 +2287,7 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
         var nuGetPackageFilePaths = new List<string>();
         bool referenceSpreadInserted = false;
         bool analyzerSpreadInserted = false;
-        const string NetCoreAppRefPackPath = "packs/Microsoft.NETCore.App.Ref/";
+        const string NetCoreAppRefPackPath = "/microsoft.netcore.app.ref/";
         var code = new StringBuilder();
         code.AppendLine($$"""
             // Licensed to the .NET Foundation under one or more agreements.
@@ -2251,23 +2345,23 @@ public sealed class RunFileTests_CscOnlyAndApi : RunFileTestBase
             string msbuildArgToVerify = rewritten;
 
             // Use variable SDK path.
-            if (rewritten.Contains(sdkPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.SdkPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(sdkPath, "{SdkPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.SdkPath, "{" + nameof(CSharpCompilerCommand.SdkPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable .NET root path.
-            if (rewritten.Contains(dotNetRootPath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.DotNetRootPath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(dotNetRootPath, "{DotNetRootPath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.DotNetRootPath, "{" + nameof(CSharpCompilerCommand.DotNetRootPath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
             }
 
             // Use variable NuGet cache path.
-            if (rewritten.Contains(nuGetCachePath, StringComparison.OrdinalIgnoreCase))
+            if (rewritten.Contains(CSharpCompilerCommand.NuGetCachePath, StringComparison.OrdinalIgnoreCase))
             {
-                rewritten = rewritten.Replace(nuGetCachePath, "{NuGetCachePath}", StringComparison.OrdinalIgnoreCase);
+                rewritten = rewritten.Replace(CSharpCompilerCommand.NuGetCachePath, "{" + nameof(CSharpCompilerCommand.NuGetCachePath) + "}", StringComparison.OrdinalIgnoreCase);
                 needsInterpolation = true;
                 fromNuGetPackage = true;
             }

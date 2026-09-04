@@ -134,6 +134,13 @@ fi
 
 export DOTNET_AOT_TEST_SDK_DIRECTORY="$SDK_DIRECTORY"
 export DOTNET_AOT_TEST_DN_PATH="$DN_PATH"
+MANAGED_TEST_MODULE="$(find "$REPO_ROOT/artifacts/bin/dotnet-aot.Tests/$CONFIGURATION" -path "*/$RID/dotnet-aot.Tests.dll" -print -quit)"
+if [[ -z "$MANAGED_TEST_MODULE" ]]; then
+    echo "ERROR: Managed test module not found for Native AOT integration validation."
+    exit 1
+fi
+export DOTNET_AOT_TEST_MANAGED_TEST_MODULE="$MANAGED_TEST_MODULE"
+export DOTNET_AOT_TEST_NUGET_CONFIG="$REPO_ROOT/NuGet.config"
 export DOTNET_AOT_SDK_DIR="$SDK_DIRECTORY"
 export DOTNET_AOT_LIBRARY_DIR="$AOT_PUBLISH_DIR"
 export DOTNET_HOST_PATH="$DOTNET"

@@ -489,6 +489,11 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <target state="translated">Nie przechowuj w pamięci podręcznej pakietów ani żądań HTTP.</target>
         <note />
       </trans-unit>
+      <trans-unit id="CmdNoDefaultExcludesDescription">
+        <source>Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</source>
+        <target state="new">Prevent default exclusion of NuGet package files and files and folders starting with a dot, e.g. .svn.</target>
+        <note />
+      </trans-unit>
       <trans-unit id="CmdNoDependenciesOptionDescription">
         <source>Do not restore project-to-project references and only restore the specified project.</source>
         <target state="translated">Nie przywracaj odwołań między projektami i przywróć tylko określony projekt.</target>
@@ -585,8 +590,8 @@ Jest to równoważne usunięciu pliku project.assets.json.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionDescriptionFormat">
-        <source>Defines the path of the project or solution file to test. Use path to the project file, or path to the directory containing the project file. If not specified, it defaults to the current directory.</source>
-        <target state="translated">Określa ścieżkę do pliku projektu lub rozwiązania do przetestowania. Użyj ścieżki do pliku projektu lub katalogu, w którym ten plik się znajduje. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
+        <source>Defines the path of the project, solution, or C# file-based app to test. Use path to the file, or path to the directory containing the project or solution file. If not specified, it defaults to the current directory.</source>
+        <target state="needs-review-translation">Określa ścieżkę do pliku projektu lub rozwiązania do przetestowania. Użyj ścieżki do pliku projektu lub katalogu, w którym ten plik się znajduje. Jeśli nie zostanie określony, domyślnie będzie to bieżący katalog.</target>
         <note />
       </trans-unit>
       <trans-unit id="CmdProjectOrSolutionPathName">

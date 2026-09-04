@@ -16,82 +16,84 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [WorkItem(6904, "https://github.com/dotnet/roslyn-analyzers/issues/6904")]
         public async Task AwaitBug()
         {
-            await TestCSAsync(@"
-                using System.Threading.Tasks;
+            await TestCSAsync("""
+                                using System.Threading.Tasks;
 
-                public class Class1
-                {
-                    private I Prop { get; set; } = new Impl1(); //<-- CA1859 
+                                public class Class1
+                                {
+                                    private I Prop { get; set; } = new Impl1(); //<-- CA1859
 
-                    public async Task Init()
-                    {
-                        Prop = await Task.FromResult<I>(new Impl2());
-                        Prop.M();
-                    }
-                }
+                                    public async Task Init()
+                                    {
+                                        Prop = await Task.FromResult<I>(new Impl2());
+                                        Prop.M();
+                                    }
+                                }
 
-                internal interface I
-                {
-                    void M();
-                }
+                                internal interface I
+                                {
+                                    void M();
+                                }
 
-                internal class Impl1 : I
-                {
-                    public void M() { }
-                }
+                                internal class Impl1 : I
+                                {
+                                    public void M() { }
+                                }
 
-                internal class Impl2 : I
-                {
-                    public void M() { }
-                }
-            ");
+                                internal class Impl2 : I
+                                {
+                                    public void M() { }
+                                }
+
+                """);
         }
 
         [TestMethod]
         [WorkItem(7078, "https://github.com/dotnet/roslyn-analyzers/issues/7078")]
         public async Task IndexerBug()
         {
-            await TestCSAsync(@"
-                using System.Collections.Generic;
+            await TestCSAsync("""
+                                using System.Collections.Generic;
 
-                public struct MailAddress { }
+                                public struct MailAddress { }
 
-                public class C
-                {
-                    private IList<MailAddress> {|#1:_field|};
-                    private IList<MailAddress> {|#2:Property|} { get; set; }
+                                public class C
+                                {
+                                    private IList<MailAddress> {|#1:_field|};
+                                    private IList<MailAddress> {|#2:Property|} { get; set; }
 
-                    internal void ParseValue1(string addresses)
-                    {
-                        IList<MailAddress> {|#0:result|} = ParseMultipleAddresses(addresses);
+                                    internal void ParseValue1(string addresses)
+                                    {
+                                        IList<MailAddress> {|#0:result|} = ParseMultipleAddresses(addresses);
 
-                        var x = result[0];
-                    }
-                    internal void ParseValue2(string addresses)
-                    {
-                        IList<MailAddress> {|#3:result|} = ParseMultipleAddresses(addresses);
+                                        var x = result[0];
+                                    }
+                                    internal void ParseValue2(string addresses)
+                                    {
+                                        IList<MailAddress> {|#3:result|} = ParseMultipleAddresses(addresses);
 
-                #nullable enable
-                        var x = result?[0];
-                #nullable disable
-                    }
-                    internal void ParseValue3(string addresses)
-                    {
-                        _field = ParseMultipleAddresses(addresses);
+                                #nullable enable
+                                        var x = result?[0];
+                                #nullable disable
+                                    }
+                                    internal void ParseValue3(string addresses)
+                                    {
+                                        _field = ParseMultipleAddresses(addresses);
 
-                        var x = _field[0];
-                    }
+                                        var x = _field[0];
+                                    }
 
-                    internal void ParseValue4(string addresses)
-                    {
-                        Property = ParseMultipleAddresses(addresses);
+                                    internal void ParseValue4(string addresses)
+                                    {
+                                        Property = ParseMultipleAddresses(addresses);
 
-                        var x = Property[0];
-                    }
+                                        var x = Property[0];
+                                    }
 
-                    internal static List<MailAddress> ParseMultipleAddresses(string data) => new();
-                }
-            ",
+                                    internal static List<MailAddress> ParseMultipleAddresses(string data) => new();
+                                }
+
+                """,
             VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
                 .WithLocation(0)
                 .WithArguments("result", "System.Collections.Generic.IList<MailAddress>", "System.Collections.Generic.List<MailAddress>"),
@@ -110,21 +112,22 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [WorkItem(7127, "https://github.com/dotnet/roslyn-analyzers/issues/7127")]
         public async Task ImmutableArrayBug()
         {
-            await TestCSAsync(@"
-                using System.Collections.Generic;
-                using System.Collections.Immutable;
+            await TestCSAsync("""
+                                using System.Collections.Generic;
+                                using System.Collections.Immutable;
 
-                public class Class1
-                {
-                    private IEnumerable<int> {|#0:CreateImmutableArrayPrivately|}()
-                    {
-                        return new ImmutableArray<int>
-                        {
-                            1, 2, 3, 4
-                        };
-                    }
-                }
-            ", VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                                public class Class1
+                                {
+                                    private IEnumerable<int> {|#0:CreateImmutableArrayPrivately|}()
+                                    {
+                                        return new ImmutableArray<int>
+                                        {
+                                            1, 2, 3, 4
+                                        };
+                                    }
+                                }
+
+                """, VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
                 .WithLocation(0)
                 .WithArguments("CreateImmutableArrayPrivately", "System.Collections.Generic.IEnumerable<int>", "System.Collections.Immutable.ImmutableArray<int>"));
         }
@@ -133,51 +136,53 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [WorkItem(6751, "https://github.com/dotnet/roslyn-analyzers/issues/6751")]
         public async Task MultipleReturns()
         {
-            await TestCSAsync(@"
-                using System;
-                using System.Collections.Generic;
+            await TestCSAsync("""
+                                using System;
+                                using System.Collections.Generic;
 
-                public abstract class Base { }
-                public sealed class Derived1 : Base { }
-                public sealed class Derived2 : Base { }
+                                public abstract class Base { }
+                                public sealed class Derived1 : Base { }
+                                public sealed class Derived2 : Base { }
 
-                internal sealed class Test
-                {
-                    private static IEnumerable<Base> M(int i)
-                    {
-                        try
-                        {
-                            switch (i)
-                            {
-                                case 0: return new Derived1[1];
-                                case 1: return new Derived2[1];
-                                default: throw new ArgumentException();
-                            }
-                        }
-                        finally
-                        {
-                        }
-                    }
-                }
-            ");
+                                internal sealed class Test
+                                {
+                                    private static IEnumerable<Base> M(int i)
+                                    {
+                                        try
+                                        {
+                                            switch (i)
+                                            {
+                                                case 0: return new Derived1[1];
+                                                case 1: return new Derived2[1];
+                                                default: throw new ArgumentException();
+                                            }
+                                        }
+                                        finally
+                                        {
+                                        }
+                                    }
+                                }
+
+                """);
         }
 
         [TestMethod]
         [WorkItem(6565, "https://github.com/dotnet/roslyn-analyzers/issues/6565")]
         public async Task DiscoverArrayUpgrades()
         {
-            await TestCSAsync(@"
-                using System;
-                using System.Collections.Generic;
+            await TestCSAsync("""
+                                using System;
+                                using System.Collections.Generic;
 
-                public class X
-                {
-                    private static IList<string> {|#0:GetListPrivate|}()
-                    {
-                        return Array.Empty<string>();
-                    }
-                }
-            ", VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
+                                public class X
+                                {
+                                    private static IList<string> {|#0:GetListPrivate|}()
+                                    {
+                                        return Array.Empty<string>();
+                                    }
+                                }
+
+                """, VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
                 .WithLocation(0)
                 .WithArguments("GetListPrivate", "System.Collections.Generic.IList<string>", "string[]"));
         }
@@ -186,130 +191,135 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [WorkItem(6687, "https://github.com/dotnet/roslyn-analyzers/issues/6687")]
         public async Task ShouldNotTrigger_ConflictingOverloads()
         {
-            await TestCSAsync(@"
-                abstract class Base
-                {
-                    public virtual string M(object o) => ""M(object)"";
-                }
+            await TestCSAsync("""
+                                abstract class Base
+                                {
+                                    public virtual string M(object o) => "M(object)";
+                                }
 
-                sealed class Derived : Base
-                {
-                    public void M(string s) {}
-                }
+                                sealed class Derived : Base
+                                {
+                                    public void M(string s) {}
+                                }
 
-                internal class C
-                {
+                                internal class C
+                                {
 
-                    private readonly Base _a = new Derived();
+                                    private readonly Base _a = new Derived();
 
-                    public void Trigger()
-                    {
-                        var s = _a.M("""");
-                    }
-                }
-            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+                                    public void Trigger()
+                                    {
+                                        var s = _a.M("");
+                                    }
+                                }
+
+                """, $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
         [TestMethod]
         [WorkItem(6704, "https://github.com/dotnet/roslyn-analyzers/issues/6704")]
         public async Task ShouldNotTrigger_ExplicitInterfaceImplementation()
         {
-            await TestCSAsync(@"
-                class Class1
-                {
-                    public void FalseWarning()
-                    {
-                        I obj = new Derived();
-                        obj.M();
-                    }
-                }
+            await TestCSAsync("""
+                                class Class1
+                                {
+                                    public void FalseWarning()
+                                    {
+                                        I obj = new Derived();
+                                        obj.M();
+                                    }
+                                }
 
-                interface I
-                {
-                    void M();
-                }
+                                interface I
+                                {
+                                    void M();
+                                }
 
-                class Base : I
-                {
-                    void I.M()
-                    {
-                    }
-                }
+                                class Base : I
+                                {
+                                    void I.M()
+                                    {
+                                    }
+                                }
 
-                class Derived : Base
-                {
-                }
-            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+                                class Derived : Base
+                                {
+                                }
+
+                """, $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
         [TestMethod]
         [WorkItem(6659, "https://github.com/dotnet/roslyn-analyzers/issues/6659")]
         public async Task ShouldNotTrigger_Visibility()
         {
-            await TestCSAsync(@"
-                internal class C
-                {
-                    internal object Obj = new Nested();
-                    internal object GetObj() => new Nested();
+            await TestCSAsync("""
+                                internal class C
+                                {
+                                    internal object Obj = new Nested();
+                                    internal object GetObj() => new Nested();
 
-                    private sealed class Nested { }
+                                    private sealed class Nested { }
 
-                    public void Test(object o)
-                    {
-                        o.ToString();
-                    }
+                                    public void Test(object o)
+                                    {
+                                        o.ToString();
+                                    }
 
-                    public void Foo()
-                    {
-                        Obj.ToString();
-                        Test(new Nested());
-                    }
-                }
-            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+                                    public void Foo()
+                                    {
+                                        Obj.ToString();
+                                        Test(new Nested());
+                                    }
+                                }
+
+                """, $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
         [TestMethod]
         public async Task ShouldNotTrigger_VisibilityNestedTypes()
         {
-            await TestCSAsync(@"
-                using System;
+            await TestCSAsync("""
+                                using System;
 
-                public class Program
-                {
-	                private static class NestedClass1
-	                {
-		                public static IDisposable Method()
-		                {
-			                return new NestedClass2();
-		                }
+                                public class Program
+                                {
+                	                private static class NestedClass1
+                	                {
+                		                public static IDisposable Method()
+                		                {
+                			                return new NestedClass2();
+                		                }
 
-		                private sealed class NestedClass2 : IDisposable
-		                {
-			                public void Dispose()
-			                {
-			                }
-		                }
-	                }
-                }
-            ", $"dotnet_code_quality.CA1859.api_surface = private,internal");
+                		                private sealed class NestedClass2 : IDisposable
+                		                {
+                			                public void Dispose()
+                			                {
+                			                }
+                		                }
+                	                }
+                                }
+
+                """, $"dotnet_code_quality.CA1859.api_surface = private,internal");
         }
 
         [TestMethod]
         public async Task ShouldNotTrigger_VirtualOverrides()
         {
-            const string Source = @"
-                internal class Foo {}
+            const string Source = """
+                                internal class Foo {}
 
-                internal class Base
-                {
-                    public virtual object GetObj() => new object();
-                }
+                                internal class Base
+                                {
+                                    public virtual object GetObj() => new object();
+                                }
 
-                internal class Derived : Base
-                {
-                    public override object GetObj() => new Foo();
-                }
-            ";
+                                internal class Derived : Base
+                                {
+                                    public override object GetObj() => new Foo();
+                                }
+
+                """;
 
             await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
         }
@@ -317,19 +327,20 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger_ParameterAssignment()
         {
-            const string Source = @"
-                class Foo
-                {
-                    static void Main()
-                    {
-                        Test(typeof(Foo));
-                    }
+            const string Source = """
+                                class Foo
+                                {
+                                    static void Main()
+                                    {
+                                        Test(typeof(Foo));
+                                    }
 
-                    private static void Test(object elementType)
-                    {
-                        elementType = elementType.ToString();
-                    }
-                }";
+                                    private static void Test(object elementType)
+                                    {
+                                        elementType = elementType.ToString();
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source);
         }
@@ -337,21 +348,22 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger_ConflictingReturns()
         {
-            const string Source = @"
-                using System;
+            const string Source = """
+                                using System;
 
-                class C
-                {
-                    private object Foo(int i)
-                    {
-                        C c = new C();
-                        if (i == 0)
-                        {
-                            return false;
-                        }
-                        return c;
-                    }
-                }";
+                                class C
+                                {
+                                    private object Foo(int i)
+                                    {
+                                        C c = new C();
+                                        if (i == 0)
+                                        {
+                                            return false;
+                                        }
+                                        return c;
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source);
         }
@@ -359,24 +371,25 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger_Switch()
         {
-            const string Source = @"
-                using System.Collections.Generic;
+            const string Source = """
+                                using System.Collections.Generic;
 
-                class Foo
-                {
-                    private static object Test(int arg)
-                    {
-                        if (arg > 4)
-                            return new List<string>();
+                                class Foo
+                                {
+                                    private static object Test(int arg)
+                                    {
+                                        if (arg > 4)
+                                            return new List<string>();
 
-                        return arg switch
-                        {
-                            0 => new List<int>(),
-                            1 => new HashSet<int>(),
-                            _ => new Dictionary<long, int>(),
-                        };
-                    }
-                }";
+                                        return arg switch
+                                        {
+                                            0 => new List<int>(),
+                                            1 => new HashSet<int>(),
+                                            _ => new Dictionary<long, int>(),
+                                        };
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source);
         }
@@ -384,45 +397,46 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger_ValidatePublicSymbolUsage()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                using System;
-                using System.Collections.Generic;
+                                using System;
+                                using System.Collections.Generic;
 
-                namespace Example
-                {
-                    public interface IFoo
-                    {
-                        public void M();
-                    }   
+                                namespace Example
+                                {
+                                    public interface IFoo
+                                    {
+                                        public void M();
+                                    }
 
-                    public class Foo : IFoo
-                    {
-                        public void M() {}
-                    }
+                                    public class Foo : IFoo
+                                    {
+                                        public void M() {}
+                                    }
 
-                    public class C1
-                    {
-                        internal void M(IFoo foo)
-                        {
-                            foo.M();
-                        }
+                                    public class C1
+                                    {
+                                        internal void M(IFoo foo)
+                                        {
+                                            foo.M();
+                                        }
 
-                        public void M2()
-                        {
-                            M(new Foo());
-                        }
-                    }
+                                        public void M2()
+                                        {
+                                            M(new Foo());
+                                        }
+                                    }
 
-                    public class C2
-                    {
-                        public void M(C1 c1, IFoo f)
-                        {
-                            c1.M(f);
-                        }
-                    }
-                }";
+                                    public class C2
+                                    {
+                                        public void M(C1 c1, IFoo f)
+                                        {
+                                            c1.M(f);
+                                        }
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source, $"dotnet_code_quality.CA1859.api_surface = public,private,internal");
         }
@@ -438,32 +452,33 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [DataRow("public", "public,private", true)]
         public async Task ConfigTest(string accessibility, string editorConfigText, bool trigger)
         {
-            var source = $@"
-                namespace Example
-                {{
-                    public interface IFoo
-                    {{
-                        void Bar();
-                    }}
+            var source = $$"""
+                                namespace Example
+                                {
+                                    public interface IFoo
+                                    {
+                                        void Bar();
+                                    }
 
-                    public class Foo : IFoo
-                    {{
-                        public void Bar() {{ }}
-                    }}
+                                    public class Foo : IFoo
+                                    {
+                                        public void Bar() { }
+                                    }
 
-                    public static class Tester
-                    {{
-                        {accessibility} static void M1(IFoo {{|#0:foo|}})
-                        {{
-                            foo.Bar();
-                        }}
+                                    public static class Tester
+                                    {
+                                        {{accessibility}} static void M1(IFoo {|#0:foo|})
+                                        {
+                                            foo.Bar();
+                                        }
 
-                        private static void M2()
-                        {{
-                            M1(new Foo());
-                        }}
-                    }}
-                }}";
+                                        private static void M2()
+                                        {
+                                            M1(new Foo());
+                                        }
+                                    }
+                                }
+                """;
 
             if (trigger)
             {
@@ -498,33 +513,34 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger1()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                using System;
-                using System.Collections.Generic;
+                                using System;
+                                using System.Collections.Generic;
 
-                namespace Example
-                {
-                    public class BaseType
-                    {
-                    }
+                                namespace Example
+                                {
+                                    public class BaseType
+                                    {
+                                    }
 
-                    public class Derived1 : BaseType
-                    {
-                    }
-                
-                    public class Derived2 : BaseType
-                    {
-                        private BaseType? Foo(int x)
-                        {
-                            if (x == 0) return null;
-                            if (x == 1) return new Derived1();
+                                    public class Derived1 : BaseType
+                                    {
+                                    }
 
-                            return this;
-                        }
-                    }
-                }";
+                                    public class Derived2 : BaseType
+                                    {
+                                        private BaseType? Foo(int x)
+                                        {
+                                            if (x == 0) return null;
+                                            if (x == 1) return new Derived1();
+
+                                            return this;
+                                        }
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source);
         }
@@ -532,41 +548,42 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger2()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                using System.Collections.Generic;
+                                using System.Collections.Generic;
 
-                namespace System
-                {
-                    public static partial class MemoryExtensions
-                    {
-                        public static unsafe bool SequenceEqual<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> other, IEqualityComparer<T>? comparer = null)
-                        {
-                            comparer = EqualityComparer<T>.Default;
-                            return comparer!.Equals(span[0], other[0]);
-                        }
+                                namespace System
+                                {
+                                    public static partial class MemoryExtensions
+                                    {
+                                        public static unsafe bool SequenceEqual<T>(this ReadOnlySpan<T> span, ReadOnlySpan<T> other, IEqualityComparer<T>? comparer = null)
+                                        {
+                                            comparer = EqualityComparer<T>.Default;
+                                            return comparer!.Equals(span[0], other[0]);
+                                        }
 
-                        public static int CommonPrefixLength<T>(this Span<T> span, ReadOnlySpan<T> other, IEqualityComparer<T>? comparer)
-                        {
-                            return comparer!.Equals(span[0], other[0]) ? 0 : 1;
-                        }
+                                        public static int CommonPrefixLength<T>(this Span<T> span, ReadOnlySpan<T> other, IEqualityComparer<T>? comparer)
+                                        {
+                                            return comparer!.Equals(span[0], other[0]) ? 0 : 1;
+                                        }
 
-                        public static bool Foo()
-                        {
-                            Span<byte> s1 = stackalloc byte[2];
-                            Span<byte> s2 = stackalloc byte[2];
-                            return SequenceEqual(s1, s2, EqualityComparer<byte>.Default);
-                        }
+                                        public static bool Foo()
+                                        {
+                                            Span<byte> s1 = stackalloc byte[2];
+                                            Span<byte> s2 = stackalloc byte[2];
+                                            return SequenceEqual(s1, s2, EqualityComparer<byte>.Default);
+                                        }
 
-                        public static int Bar()
-                        {
-                            Span<byte> s1 = stackalloc byte[2];
-                            Span<byte> s2 = stackalloc byte[2];
-                            return CommonPrefixLength(s1, s2, EqualityComparer<byte>.Default);
-                        }
-                    }
-                }";
+                                        public static int Bar()
+                                        {
+                                            Span<byte> s1 = stackalloc byte[2];
+                                            Span<byte> s2 = stackalloc byte[2];
+                                            return CommonPrefixLength(s1, s2, EqualityComparer<byte>.Default);
+                                        }
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source);
         }
@@ -574,30 +591,31 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger3()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                using System;
-                using System.IO;
+                                using System;
+                                using System.IO;
 
-                namespace Example
-                {
-                    internal static class C
-                    {
-                        private static Stream GetStream(int i)
-                        {
-                            if (i == 0)
-                            {
-                                return Stream.Null;
-                            }
+                                namespace Example
+                                {
+                                    internal static class C
+                                    {
+                                        private static Stream GetStream(int i)
+                                        {
+                                            if (i == 0)
+                                            {
+                                                return Stream.Null;
+                                            }
 
-                            return new MyStream();
-                        }
-                    }
-                }
+                                            return new MyStream();
+                                        }
+                                    }
+                                }
 
-                public class MyStream : MemoryStream { }
-                ";
+                                public class MyStream : MemoryStream { }
+
+                """;
 
             await TestCSAsync(Source);
         }
@@ -605,30 +623,31 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger4()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                using System;
-                using System.IO;
+                                using System;
+                                using System.IO;
 
-                namespace Example
-                {
-                    internal partial class C
-                    {
-                        private partial Stream GetStream(int i);
-                    }
+                                namespace Example
+                                {
+                                    internal partial class C
+                                    {
+                                        private partial Stream GetStream(int i);
+                                    }
 
-                    internal partial class C
-                    {
-                        private partial Stream GetStream(int i)
-                        {
-                            return new MyStream();
-                        }
-                    }
-                }
+                                    internal partial class C
+                                    {
+                                        private partial Stream GetStream(int i)
+                                        {
+                                            return new MyStream();
+                                        }
+                                    }
+                                }
 
-                public class MyStream : MemoryStream { }
-                ";
+                                public class MyStream : MemoryStream { }
+
+                """;
 
             await TestCSAsync(Source);
         }
@@ -636,28 +655,29 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldNotTrigger5()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                interface IFoo
-                {
-                    int M();
-                }
+                                interface IFoo
+                                {
+                                    int M();
+                                }
 
-                internal class C : IFoo
-                {
-                    int IFoo.M() => 42;
-                }
+                                internal class C : IFoo
+                                {
+                                    int IFoo.M() => 42;
+                                }
 
-                internal class Use
-                {
-                    static int Bar()
-                    {
-                        IFoo f = new C();
-                        return f.M();
-                    }
-                }
-                ";
+                                internal class Use
+                                {
+                                    static int Bar()
+                                    {
+                                        IFoo f = new C();
+                                        return f.M();
+                                    }
+                                }
+
+                """;
 
             await TestCSAsync(Source);
         }
@@ -666,24 +686,25 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [WorkItem(50328, "https://github.com/dotnet/sdk/issues/50328")]
         public async Task ShouldNotTrigger6()
         {
-            const string Source = @"
-#nullable enable
-                interface IFoo
-                {
-                    int M() => 42;
-                }
-                public class C : IFoo
-                {
-                }
-                public class Use
-                {
-                    static int Bar()
-                    {
-                        IFoo f = new C();
-                        return f.M();
-                    }
-                }
-                ";
+            const string Source = """
+                #nullable enable
+                                interface IFoo
+                                {
+                                    int M() => 42;
+                                }
+                                public class C : IFoo
+                                {
+                                }
+                                public class Use
+                                {
+                                    static int Bar()
+                                    {
+                                        IFoo f = new C();
+                                        return f.M();
+                                    }
+                                }
+
+                """;
 
             await TestCSAsync(Source);
         }
@@ -691,23 +712,24 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldTrigger_InterpolatedString_Mameof()
         {
-            const string Source = @"
-                namespace Example
-                {
-                    public class C1
-                    {
-                        private object {|#0:M0|}()
-                        {
-                            var x = 1;
-                            return $""Hello {x}"";
-                        }
+            const string Source = """
+                                namespace Example
+                                {
+                                    public class C1
+                                    {
+                                        private object {|#0:M0|}()
+                                        {
+                                            var x = 1;
+                                            return $"Hello {x}";
+                                        }
 
-                        private object {|#1:M1|}()
-                        {
-                            return nameof(M1);
-                        }
-                    }
-                }";
+                                        private object {|#1:M1|}()
+                                        {
+                                            return nameof(M1);
+                                        }
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
@@ -721,32 +743,33 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldTrigger1()
         {
-            const string Source = @"
-                namespace Example
-                {
-                    public interface IFoo<T>
-                    {
-                        void Bar();
-                    }
+            const string Source = """
+                                namespace Example
+                                {
+                                    public interface IFoo<T>
+                                    {
+                                        void Bar();
+                                    }
 
-                    public class Foo<T> : IFoo<T>
-                    {
-                        public void Bar() { }
-                    }
+                                    public class Foo<T> : IFoo<T>
+                                    {
+                                        public void Bar() { }
+                                    }
 
-                    public static class Tester
-                    {
-                        private static void Do<T>(IFoo<T> {|#0:foo|})
-                        {
-                            foo.Bar();
-                        }
+                                    public static class Tester
+                                    {
+                                        private static void Do<T>(IFoo<T> {|#0:foo|})
+                                        {
+                                            foo.Bar();
+                                        }
 
-                        private static void MakeCall()
-                        {
-                            Do<int>(new Foo<int>());
-                        }
-                     }
-                }";
+                                        private static void MakeCall()
+                                        {
+                                            Do<int>(new Foo<int>());
+                                        }
+                                     }
+                                }
+                """;
 
             await TestCSAsync(Source,
                 "dotnet_code_quality.CA1859.api_surface = all",
@@ -758,32 +781,33 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldTrigger2()
         {
-            const string Source = @"
-                namespace Example
-                {
-                    public interface IFoo<T>
-                    {
-                        void Bar();
-                    }
+            const string Source = """
+                                namespace Example
+                                {
+                                    public interface IFoo<T>
+                                    {
+                                        void Bar();
+                                    }
 
-                    public class Foo<T> : IFoo<T>
-                    {
-                        public void Bar() { }
-                    }
+                                    public class Foo<T> : IFoo<T>
+                                    {
+                                        public void Bar() { }
+                                    }
 
-                    public static class Tester
-                    {
-                        private static void Do<T>(IFoo<T> {|#0:foo|})
-                        {
-                            foo.Bar();
-                        }
+                                    public static class Tester
+                                    {
+                                        private static void Do<T>(IFoo<T> {|#0:foo|})
+                                        {
+                                            foo.Bar();
+                                        }
 
-                        private static void MakeCall<T>()
-                        {
-                            Do<T>(new Foo<T>());
-                        }
-                     }
-                }";
+                                        private static void MakeCall<T>()
+                                        {
+                                            Do<T>(new Foo<T>());
+                                        }
+                                     }
+                                }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
@@ -794,27 +818,28 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldTrigger3()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                using System;
-                using System.IO;
+                                using System;
+                                using System.IO;
 
-                namespace Example
-                {
-                    internal class C
-                    {
-                        private MemoryStream? _stream;
+                                namespace Example
+                                {
+                                    internal class C
+                                    {
+                                        private MemoryStream? _stream;
 
-                        private Stream {|#0:GetStream|}()
-                        {
-                            return _stream ?? Create();
-                        }
+                                        private Stream {|#0:GetStream|}()
+                                        {
+                                            return _stream ?? Create();
+                                        }
 
-                        private MemoryStream Create() => new MemoryStream();
-                    }
-                }
-                ";
+                                        private MemoryStream Create() => new MemoryStream();
+                                    }
+                                }
+
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
@@ -825,27 +850,28 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task ShouldTrigger4()
         {
-            const string Source = @"
-#nullable enable
+            const string Source = """
+                #nullable enable
 
-                using System;
-                using System.IO;
+                                using System;
+                                using System.IO;
 
-                namespace Example
-                {
-                    internal class C
-                    {
-                        private MemoryStream? _stream;
+                                namespace Example
+                                {
+                                    internal class C
+                                    {
+                                        private MemoryStream? _stream;
 
-                        private Stream? {|#0:GetStream|}()
-                        {
-                            return _stream ?? Create();
-                        }
+                                        private Stream? {|#0:GetStream|}()
+                                        {
+                                            return _stream ?? Create();
+                                        }
 
-                        private MemoryStream? Create() => new MemoryStream();
-                    }
-                }
-                ";
+                                        private MemoryStream? Create() => new MemoryStream();
+                                    }
+                                }
+
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
@@ -856,39 +882,40 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Params()
         {
-            const string Source = @"
-                namespace Example
-                {
-                    public interface IFoo
-                    {
-                        void Bar();
-                    }
+            const string Source = """
+                                namespace Example
+                                {
+                                    public interface IFoo
+                                    {
+                                        void Bar();
+                                    }
 
-                    public class Foo : IFoo
-                    {
-                        public void Bar() {}
-                    }
+                                    public class Foo : IFoo
+                                    {
+                                        public void Bar() {}
+                                    }
 
-                    public class Test
-                    {
-                        private void Method(IFoo {|#0:foo|})
-                        {
-                            foo.Bar();
-                        }
+                                    public class Test
+                                    {
+                                        private void Method(IFoo {|#0:foo|})
+                                        {
+                                            foo.Bar();
+                                        }
 
-                        private void Method2(IFoo foo)
-                        {
-                            foo.Bar();
-                        }
+                                        private void Method2(IFoo foo)
+                                        {
+                                            foo.Bar();
+                                        }
 
-                        private void Caller(IFoo ifoo)
-                        {
-                            Method(new Foo());
-                            Method2(new Foo());
-                            Method2(ifoo);
-                        }
-                    }
-                }";
+                                        private void Caller(IFoo ifoo)
+                                        {
+                                            Method(new Foo());
+                                            Method2(new Foo());
+                                            Method2(ifoo);
+                                        }
+                                    }
+                                }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForParameter)
@@ -899,58 +926,59 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Conditional()
         {
-            const string Source = @"
-#nullable enable
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
+            const string Source = """
+                #nullable enable
+                            namespace Example
+                            {
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
 
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
 
-                public class FooProvider
-                {
-                    public Foo Foo { get { return new Foo(); } }
-                }
+                                public class FooProvider
+                                {
+                                    public Foo Foo { get { return new Foo(); } }
+                                }
 
-                public class AttributeData
-                {
-                    public SyntaxReference? ApplicationReference { get; }
-                }
+                                public class AttributeData
+                                {
+                                    public SyntaxReference? ApplicationReference { get; }
+                                }
 
-                public abstract class SyntaxReference
-                {
-                    public abstract SyntaxNode GetSyntax();
-                }
+                                public abstract class SyntaxReference
+                                {
+                                    public abstract SyntaxNode GetSyntax();
+                                }
 
-                public abstract class SyntaxNode
-                {
-                    public Location GetLocation() => new();
-                }
+                                public abstract class SyntaxNode
+                                {
+                                    public Location GetLocation() => new();
+                                }
 
-                public class Location
-                {
-                }
+                                public class Location
+                                {
+                                }
 
-                public class Test
-                {
-                    private IFoo? {|#0:Method1|}(FooProvider? provider)
-                    {
-                        return provider?.Foo;
-                    }
+                                public class Test
+                                {
+                                    private IFoo? {|#0:Method1|}(FooProvider? provider)
+                                    {
+                                        return provider?.Foo;
+                                    }
 
-                    private void Method2()
-                    {
-                        AttributeData attr = new();
-                        _ = attr.ApplicationReference?.GetSyntax().GetLocation();
-                    }
-                }
-            }";
+                                    private void Method2()
+                                    {
+                                        AttributeData attr = new();
+                                        _ = attr.ApplicationReference?.GetSyntax().GetLocation();
+                                    }
+                                }
+                            }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
@@ -961,48 +989,49 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Tuples()
         {
-            const string Source = @"
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
-
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
-
-                public class Test
-                {
-                    private IFoo {|#0:MethodTuple|}(int x)
-                    {
-                        switch (x)
-                        {
-                            case 0:
+            const string Source = """
+                            namespace Example
                             {
-                                Foo l; IFoo m;
-                                (l, m) = MakeTuple();
-                                return l;
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
+
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
+
+                                public class Test
+                                {
+                                    private IFoo {|#0:MethodTuple|}(int x)
+                                    {
+                                        switch (x)
+                                        {
+                                            case 0:
+                                            {
+                                                Foo l; IFoo m;
+                                                (l, m) = MakeTuple();
+                                                return l;
+                                            }
+
+                                            case 1:
+                                            {
+                                                var (l, m) = MakeTuple();
+                                                return l;
+                                            }
+
+                                            default: return new Foo();
+                                        }
+                                    }
+
+                                    public (Foo, IFoo) MakeTuple()
+                                    {
+                                        return (new Foo(), new Foo());
+                                    }
+                                }
                             }
-
-                            case 1:
-                            {
-                                var (l, m) = MakeTuple();
-                                return l;
-                            }
-
-                            default: return new Foo();
-                        }
-                    }
-
-                    public (Foo, IFoo) MakeTuple()
-                    {
-                        return (new Foo(), new Foo());
-                    }
-                }
-            }";
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
@@ -1013,95 +1042,96 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Locals()
         {
-            const string Source = @"
-#nullable enable
-            using System;
+            const string Source = """
+                #nullable enable
+                            using System;
 
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
+                            namespace Example
+                            {
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
 
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
 
-                public class Test
-                {
-                    private static readonly Foo _fooField = new();
-                    private Foo FooMethod() => new Foo();
-                    private void FooRefMethod(ref Foo x) { }
-                    private void FooOutMethod(out Foo x) { x = new Foo(); }
-                    private Foo FooProp { get { return _fooField; } }
+                                public class Test
+                                {
+                                    private static readonly Foo _fooField = new();
+                                    private Foo FooMethod() => new Foo();
+                                    private void FooRefMethod(ref Foo x) { }
+                                    private void FooOutMethod(out Foo x) { x = new Foo(); }
+                                    private Foo FooProp { get { return _fooField; } }
 
-                    private static readonly IFoo _ifooField = (IFoo)new Foo();
-                    private IFoo IFooMethod() => _ifooField;
-                    private void IFooRefMethod(ref IFoo x) { }
-                    private void IFooOutMethod(out IFoo x) { x = new Foo(); }
-                    private IFoo IFooProp { get { return _ifooField; } }
+                                    private static readonly IFoo _ifooField = (IFoo)new Foo();
+                                    private IFoo IFooMethod() => _ifooField;
+                                    private void IFooRefMethod(ref IFoo x) { }
+                                    private void IFooOutMethod(out IFoo x) { x = new Foo(); }
+                                    private IFoo IFooProp { get { return _ifooField; } }
 
-                    public void Method(int x, Foo fooParam, IFoo ifooParam)
-                    {
-                        Foo fooLocal = new Foo();
-                        Foo[] fooArray = new Foo[0];
-                        Func<Foo> fooDelegate = FooMethod;
+                                    public void Method(int x, Foo fooParam, IFoo ifooParam)
+                                    {
+                                        Foo fooLocal = new Foo();
+                                        Foo[] fooArray = new Foo[0];
+                                        Func<Foo> fooDelegate = FooMethod;
 
-                        IFoo ifooLocal = new Foo();
-                        IFoo[] ifooArray = new IFoo[0];
-                        Func<IFoo> ifooDelegate = IFooMethod;
+                                        IFoo ifooLocal = new Foo();
+                                        IFoo[] ifooArray = new IFoo[0];
+                                        Func<IFoo> ifooDelegate = IFooMethod;
 
-                        IFoo? {|#0:l0|} = null;
-                        IFoo? l1 = new Foo();
-                        IFoo? l2 = new Foo();
-                        IFoo? l3 = new Foo();
-                        IFoo? l4 = new Foo();
-                        IFoo? l5 = new Foo();
-                        IFoo? l6 = new Foo();
-                        IFoo? l7 = new Foo();
-                        IFoo? l8 = new Foo();
-                        IFoo? l9 = new Foo();
+                                        IFoo? {|#0:l0|} = null;
+                                        IFoo? l1 = new Foo();
+                                        IFoo? l2 = new Foo();
+                                        IFoo? l3 = new Foo();
+                                        IFoo? l4 = new Foo();
+                                        IFoo? l5 = new Foo();
+                                        IFoo? l6 = new Foo();
+                                        IFoo? l7 = new Foo();
+                                        IFoo? l8 = new Foo();
+                                        IFoo? l9 = new Foo();
 
-                        switch (x)
-                        {
-                            case 0: l0 = new Foo(); break;
-                            case 1: l0 = null; break;
-                            case 2: l0 = null!; break;
-                            case 3: l0 = _fooField; break;
-                            case 4: l0 = fooArray[0]; break;
-                            case 5: l0 = FooProp; break;
-                            case 6: l0 = fooLocal; break;
-                            case 7: l0 = fooParam; break;
-                            case 8: l0 = FooMethod(); break;
-                            case 9: l0 = fooDelegate(); break;
-                        }
+                                        switch (x)
+                                        {
+                                            case 0: l0 = new Foo(); break;
+                                            case 1: l0 = null; break;
+                                            case 2: l0 = null!; break;
+                                            case 3: l0 = _fooField; break;
+                                            case 4: l0 = fooArray[0]; break;
+                                            case 5: l0 = FooProp; break;
+                                            case 6: l0 = fooLocal; break;
+                                            case 7: l0 = fooParam; break;
+                                            case 8: l0 = FooMethod(); break;
+                                            case 9: l0 = fooDelegate(); break;
+                                        }
 
-                        l1 = ifooLocal;
-                        l2 = _ifooField;
-                        l3 = ifooArray[0];
-                        l4 = IFooProp;
-                        l5 = IFooMethod();
-                        l6 = ifooParam;
-                        l7 = ifooDelegate();
-                        IFooRefMethod(ref l8);
-                        IFooOutMethod(out l9);
+                                        l1 = ifooLocal;
+                                        l2 = _ifooField;
+                                        l3 = ifooArray[0];
+                                        l4 = IFooProp;
+                                        l5 = IFooMethod();
+                                        l6 = ifooParam;
+                                        l7 = ifooDelegate();
+                                        IFooRefMethod(ref l8);
+                                        IFooOutMethod(out l9);
 
-                        // induce virtual calls to trigger the diags
-                        l0?.Bar();
-                        l1?.Bar();
-                        l2?.Bar();
-                        l3?.Bar();
-                        l4?.Bar();
-                        l5?.Bar();
-                        l6?.Bar();
-                        l7?.Bar();
-                        l8?.Bar();
-                        l9?.Bar();
-                    }
-                }
-            }";
+                                        // induce virtual calls to trigger the diags
+                                        l0?.Bar();
+                                        l1?.Bar();
+                                        l2?.Bar();
+                                        l3?.Bar();
+                                        l4?.Bar();
+                                        l5?.Bar();
+                                        l6?.Bar();
+                                        l7?.Bar();
+                                        l8?.Bar();
+                                        l9?.Bar();
+                                    }
+                                }
+                            }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForLocal)
@@ -1112,72 +1142,73 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Complex()
         {
-            const string Source = @"
-#pragma warning disable CS0619
+            const string Source = """
+                #pragma warning disable CS0619
 
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
+                            namespace Example
+                            {
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
 
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
 
-                public class Test
-                {
-                    IFoo {|#0:f0|} = MakeFoo();
-                    IFoo {|#1:f1|} = new Foo();
-                    IFoo {|#2:f2|};
-                    IFoo {|#3:f3|};
-                    IFoo {|#4:f4|};
-                    IFoo {|#5:f5|};
-                    IFoo {|#6:f6|};
+                                public class Test
+                                {
+                                    IFoo {|#0:f0|} = MakeFoo();
+                                    IFoo {|#1:f1|} = new Foo();
+                                    IFoo {|#2:f2|};
+                                    IFoo {|#3:f3|};
+                                    IFoo {|#4:f4|};
+                                    IFoo {|#5:f5|};
+                                    IFoo {|#6:f6|};
 
-                    public Test(int x)
-                    {
-                        f2 = MakeFoo();
-                        f3 = (x == 0) ? new Foo() : MakeFoo();
-                        f4 = new Foo();
-                        f5 ??= MakeFoo();
-                        f6 = MakeFoo() ?? MakeFoo();
-                    }
+                                    public Test(int x)
+                                    {
+                                        f2 = MakeFoo();
+                                        f3 = (x == 0) ? new Foo() : MakeFoo();
+                                        f4 = new Foo();
+                                        f5 ??= MakeFoo();
+                                        f6 = MakeFoo() ?? MakeFoo();
+                                    }
 
-                    public void M(int x)
-                    {
-                        IFoo {|#7:l0|} = MakeFoo();
-                        IFoo {|#8:l1|} = (x == 0) ? new Foo() : MakeFoo();
-                        IFoo {|#9:l2|} = new Foo();
-                        IFoo {|#10:l3|}; l3 = MakeFoo();
-                        IFoo {|#11:l4|}; l4 = (x == 0) ? new Foo() : MakeFoo();
-                        IFoo {|#12:l5|}; l5 = new Foo();
-                        IFoo {|#13:l6|}; l6 = null; l6 ??= MakeFoo();
-                        IFoo {|#14:l7|}; l7 = MakeFoo() ?? MakeFoo();
+                                    public void M(int x)
+                                    {
+                                        IFoo {|#7:l0|} = MakeFoo();
+                                        IFoo {|#8:l1|} = (x == 0) ? new Foo() : MakeFoo();
+                                        IFoo {|#9:l2|} = new Foo();
+                                        IFoo {|#10:l3|}; l3 = MakeFoo();
+                                        IFoo {|#11:l4|}; l4 = (x == 0) ? new Foo() : MakeFoo();
+                                        IFoo {|#12:l5|}; l5 = new Foo();
+                                        IFoo {|#13:l6|}; l6 = null; l6 ??= MakeFoo();
+                                        IFoo {|#14:l7|}; l7 = MakeFoo() ?? MakeFoo();
 
-                        // make virtual calls so the analyzer will trigger
-                        l0.Bar();
-                        l1.Bar();
-                        l2.Bar();
-                        l3.Bar();
-                        l4.Bar();
-                        l5.Bar();
-                        l6.Bar();
-                        l7.Bar();
-                        f0.Bar();
-                        f1.Bar();
-                        f2.Bar();
-                        f3.Bar();
-                        f4.Bar();
-                        f5.Bar();
-                        f6.Bar();
-                    }
+                                        // make virtual calls so the analyzer will trigger
+                                        l0.Bar();
+                                        l1.Bar();
+                                        l2.Bar();
+                                        l3.Bar();
+                                        l4.Bar();
+                                        l5.Bar();
+                                        l6.Bar();
+                                        l7.Bar();
+                                        f0.Bar();
+                                        f1.Bar();
+                                        f2.Bar();
+                                        f3.Bar();
+                                        f4.Bar();
+                                        f5.Bar();
+                                        f6.Bar();
+                                    }
 
-                    static Foo MakeFoo() => new Foo();
-                }
-            }";
+                                    static Foo MakeFoo() => new Foo();
+                                }
+                            }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
@@ -1244,99 +1275,100 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Fields()
         {
-            const string Source = @"
-#nullable enable
-            using System;
+            const string Source = """
+                #nullable enable
+                            using System;
 
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
+                            namespace Example
+                            {
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
 
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
 
-                public class Test
-                {
-                    private static readonly Foo _fooField = new();
-                    private Foo FooMethod() => new Foo();
-                    private void FooRefMethod(ref Foo x) { }
-                    private void FooOutMethod(out Foo x) { x = new Foo(); }
-                    private Foo FooProp { get { return _fooField; } }
+                                public class Test
+                                {
+                                    private static readonly Foo _fooField = new();
+                                    private Foo FooMethod() => new Foo();
+                                    private void FooRefMethod(ref Foo x) { }
+                                    private void FooOutMethod(out Foo x) { x = new Foo(); }
+                                    private Foo FooProp { get { return _fooField; } }
 
-                    private static readonly IFoo _ifooField = (IFoo)new Foo();
-                    private IFoo IFooMethod() => _ifooField;
-                    private void IFooRefMethod(ref IFoo x) { }
-                    private void IFooOutMethod(out IFoo x) { x = new Foo(); }
-                    private IFoo IFooProp { get { return _ifooField; } }
+                                    private static readonly IFoo _ifooField = (IFoo)new Foo();
+                                    private IFoo IFooMethod() => _ifooField;
+                                    private void IFooRefMethod(ref IFoo x) { }
+                                    private void IFooOutMethod(out IFoo x) { x = new Foo(); }
+                                    private IFoo IFooProp { get { return _ifooField; } }
 
-                    private IFoo? {|#0:l0|} = null;
-                    private IFoo? l1 = new Foo();
-                    private IFoo? l2 = new Foo();
-                    private IFoo? l3 = new Foo();
-                    private IFoo? l4 = new Foo();
-                    private IFoo? l5 = new Foo();
-                    private IFoo? l6 = new Foo();
-                    private IFoo? l7 = new Foo();
-                    private IFoo? l8 = new Foo();
-                    private IFoo? l9 = new Foo();
-                    public IFoo? l10 = new Foo();
-                    internal IFoo? l11 = new Foo();
+                                    private IFoo? {|#0:l0|} = null;
+                                    private IFoo? l1 = new Foo();
+                                    private IFoo? l2 = new Foo();
+                                    private IFoo? l3 = new Foo();
+                                    private IFoo? l4 = new Foo();
+                                    private IFoo? l5 = new Foo();
+                                    private IFoo? l6 = new Foo();
+                                    private IFoo? l7 = new Foo();
+                                    private IFoo? l8 = new Foo();
+                                    private IFoo? l9 = new Foo();
+                                    public IFoo? l10 = new Foo();
+                                    internal IFoo? l11 = new Foo();
 
-                    public void Method(int x, Foo fooParam, IFoo ifooParam)
-                    {
-                        Foo fooLocal = new Foo();
-                        Foo[] fooArray = new Foo[0];
-                        Func<Foo> fooDelegate = FooMethod;
+                                    public void Method(int x, Foo fooParam, IFoo ifooParam)
+                                    {
+                                        Foo fooLocal = new Foo();
+                                        Foo[] fooArray = new Foo[0];
+                                        Func<Foo> fooDelegate = FooMethod;
 
-                        IFoo ifooLocal = new Foo();
-                        IFoo[] ifooArray = new IFoo[0];
-                        Func<IFoo> ifooDelegate = IFooMethod;
+                                        IFoo ifooLocal = new Foo();
+                                        IFoo[] ifooArray = new IFoo[0];
+                                        Func<IFoo> ifooDelegate = IFooMethod;
 
-                        switch (x)
-                        {
-                            case 0: l0 = new Foo(); break;
-                            case 1: l0 = null; break;
-                            case 2: l0 = null!; break;
-                            case 3: l0 = _fooField; break;
-                            case 4: l0 = fooArray[0]; break;
-                            case 5: l0 = FooProp; break;
-                            case 6: l0 = fooLocal; break;
-                            case 7: l0 = fooParam; break;
-                            case 8: l0 = FooMethod(); break;
-                            case 9: l0 = fooDelegate(); break;
-                        }
+                                        switch (x)
+                                        {
+                                            case 0: l0 = new Foo(); break;
+                                            case 1: l0 = null; break;
+                                            case 2: l0 = null!; break;
+                                            case 3: l0 = _fooField; break;
+                                            case 4: l0 = fooArray[0]; break;
+                                            case 5: l0 = FooProp; break;
+                                            case 6: l0 = fooLocal; break;
+                                            case 7: l0 = fooParam; break;
+                                            case 8: l0 = FooMethod(); break;
+                                            case 9: l0 = fooDelegate(); break;
+                                        }
 
-                        l1 = ifooLocal;
-                        l2 = _ifooField;
-                        l3 = ifooArray[0];
-                        l4 = IFooProp;
-                        l5 = IFooMethod();
-                        l6 = ifooParam;
-                        l7 = ifooDelegate();
-                        IFooRefMethod(ref l8!);
-                        IFooOutMethod(out l9);
+                                        l1 = ifooLocal;
+                                        l2 = _ifooField;
+                                        l3 = ifooArray[0];
+                                        l4 = IFooProp;
+                                        l5 = IFooMethod();
+                                        l6 = ifooParam;
+                                        l7 = ifooDelegate();
+                                        IFooRefMethod(ref l8!);
+                                        IFooOutMethod(out l9);
 
-                        // induce virtual calls to trigger the diags
-                        l0?.Bar();
-                        l1?.Bar();
-                        l2?.Bar();
-                        l3?.Bar();
-                        l4?.Bar();
-                        l5?.Bar();
-                        l6?.Bar();
-                        l7?.Bar();
-                        l8?.Bar();
-                        l9?.Bar();
-                        l10?.Bar();
-                        l11?.Bar();
-                    }
-                }
-            }";
+                                        // induce virtual calls to trigger the diags
+                                        l0?.Bar();
+                                        l1?.Bar();
+                                        l2?.Bar();
+                                        l3?.Bar();
+                                        l4?.Bar();
+                                        l5?.Bar();
+                                        l6?.Bar();
+                                        l7?.Bar();
+                                        l8?.Bar();
+                                        l9?.Bar();
+                                        l10?.Bar();
+                                        l11?.Bar();
+                                    }
+                                }
+                            }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForField)
@@ -1347,50 +1379,51 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Properties()
         {
-            const string Source = @"
-#nullable enable
-            using System;
+            const string Source = """
+                #nullable enable
+                            using System;
 
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
+                            namespace Example
+                            {
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
 
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
 
-                public class Test
-                {
-                    private Foo _f = new Foo();
+                                public class Test
+                                {
+                                    private Foo _f = new Foo();
 
-                    private IFoo {|#0:P0|} { get { return new Foo(); } }
-                    private IFoo {|#1:P1|} { get; } = new Foo();
-                    private IFoo {|#2:P2|} => new Foo();
-                    private IFoo {|#3:P3|} => _f;
-                    private IFoo {|#4:P4|} { get { return _f; } }
-                    private IFoo? {|#5:P5|} { get; set; }
-                    private IFoo? P6 { get; set; }
+                                    private IFoo {|#0:P0|} { get { return new Foo(); } }
+                                    private IFoo {|#1:P1|} { get; } = new Foo();
+                                    private IFoo {|#2:P2|} => new Foo();
+                                    private IFoo {|#3:P3|} => _f;
+                                    private IFoo {|#4:P4|} { get { return _f; } }
+                                    private IFoo? {|#5:P5|} { get; set; }
+                                    private IFoo? P6 { get; set; }
 
-                    public void M(IFoo ifoo)
-                    {
-                        P5 = new Foo();
-                        P6 = ifoo;
+                                    public void M(IFoo ifoo)
+                                    {
+                                        P5 = new Foo();
+                                        P6 = ifoo;
 
-                        // induce virtual calls to trigger the diags
-                        P0.Bar();
-                        P1.Bar();
-                        P2.Bar();
-                        P3.Bar();
-                        P4.Bar();
-                        P5.Bar();
-                        P6.Bar();
-                    }
-                }
-            }";
+                                        // induce virtual calls to trigger the diags
+                                        P0.Bar();
+                                        P1.Bar();
+                                        P2.Bar();
+                                        P3.Bar();
+                                        P4.Bar();
+                                        P5.Bar();
+                                        P6.Bar();
+                                    }
+                                }
+                            }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForProperty)
@@ -1416,54 +1449,55 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task Methods()
         {
-            const string Source = @"
-            using System;
-            using System.Threading.Tasks;
+            const string Source = """
+                            using System;
+                            using System.Threading.Tasks;
 
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
+                            namespace Example
+                            {
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
 
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
 
-                public interface I4
-                {
-                    IFoo M4();
-                }
+                                public interface I4
+                                {
+                                    IFoo M4();
+                                }
 
-                public class Test : I4
-                {
-                    public IFoo M1() => new Foo();
-                    internal IFoo M2() => new Foo();
-                    private IFoo {|#0:M3|}() => new Foo();
-                    IFoo I4.M4() => new Foo();
-                    private static IFoo M5() => new Foo();
-                    private IFoo M6() => new Foo();
+                                public class Test : I4
+                                {
+                                    public IFoo M1() => new Foo();
+                                    internal IFoo M2() => new Foo();
+                                    private IFoo {|#0:M3|}() => new Foo();
+                                    IFoo I4.M4() => new Foo();
+                                    private static IFoo M5() => new Foo();
+                                    private IFoo M6() => new Foo();
 
-                    private async Task<string> M7(Task stuff)
-                    {
-                        await stuff;
-                        return ""Hello"";
-                    }
+                                    private async Task<string> M7(Task stuff)
+                                    {
+                                        await stuff;
+                                        return "Hello";
+                                    }
 
-                    private async Task<IFoo> M8(Task stuff)
-                    {
-                        await stuff;
-                        return (IFoo)new Foo();
-                    }
+                                    private async Task<IFoo> M8(Task stuff)
+                                    {
+                                        await stuff;
+                                        return (IFoo)new Foo();
+                                    }
 
-                    private static Func<IFoo> _func = M5;
+                                    private static Func<IFoo> _func = M5;
 
-                    private void Trigger() => Dispatch(M6);
-                    private void Dispatch(Func<IFoo> func) => func();
-                }
-            }";
+                                    private void Trigger() => Dispatch(M6);
+                                    private void Dispatch(Func<IFoo> func) => func();
+                                }
+                            }
+                """;
 
             await TestCSAsync(Source,
                 VerifyCS.Diagnostic(UseConcreteTypeAnalyzer.UseConcreteTypeForMethodReturn)
@@ -1474,38 +1508,39 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod]
         public async Task OutParams()
         {
-            const string Source = @"
-            namespace Example
-            {
-                public interface IFoo
-                {
-                    void Bar();
-                }
+            const string Source = """
+                            namespace Example
+                            {
+                                public interface IFoo
+                                {
+                                    void Bar();
+                                }
 
-                public class Foo : IFoo
-                {
-                    public void Bar() {}
-                }
+                                public class Foo : IFoo
+                                {
+                                    public void Bar() {}
+                                }
 
-                public class Test
-                {
-                    public void M1()
-                    {
-                        if (!GetIFoo(out var f))
-                        {
-                            f = new Foo();
-                        }
+                                public class Test
+                                {
+                                    public void M1()
+                                    {
+                                        if (!GetIFoo(out var f))
+                                        {
+                                            f = new Foo();
+                                        }
 
-                        f.Bar();
-                    }
+                                        f.Bar();
+                                    }
 
-                    public bool GetIFoo(out IFoo ifoo)
-                    {
-                        ifoo = new Foo();
-                        return true;
-                    }
-                }
-            }";
+                                    public bool GetIFoo(out IFoo ifoo)
+                                    {
+                                        ifoo = new Foo();
+                                        return true;
+                                    }
+                                }
+                            }
+                """;
 
             await TestCSAsync(Source);
         }
@@ -1513,17 +1548,18 @@ namespace Microsoft.NetCore.Analyzers.Performance.UnitTests
         [TestMethod, WorkItem(6852, "https://github.com/dotnet/roslyn-analyzers/issues/6852")]
         public async Task ShouldNotCrashForInvocationsIntoMetadata()
         {
-            const string Source = @"
-using System;
+            const string Source = """
+                using System;
 
-class C
-{
-    private void M(ValueTuple<Action> vt)
-    {
-        vt.Item1();
-    }
-}
-                ";
+                class C
+                {
+                    private void M(ValueTuple<Action> vt)
+                    {
+                        vt.Item1();
+                    }
+                }
+
+                """;
 
             await TestCSAsync(Source);
         }
@@ -1552,10 +1588,11 @@ class C
                 {
                     AnalyzerConfigFiles =
                     {
-                        ("/.editorconfig", $@"root = true
-[*]
-{editorConfigText}
-")
+                        ("/.editorconfig", $"""
+                            root = true
+                            [*]
+                            {editorConfigText}
+                            """)
                     }
                 }
             };
