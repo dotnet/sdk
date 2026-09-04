@@ -8,6 +8,7 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <PackageReference Include="Microsoft.WixToolset.Dtf.WindowsInstaller" />
   </ItemGroup>
 
   <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">

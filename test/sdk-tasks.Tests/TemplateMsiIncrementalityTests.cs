@@ -1,24 +1,19 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
-using System.ComponentModel;
-using System.Runtime.InteropServices;
 using System.Security;
-using System.Text;
 using System.Xml.Linq;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Logging;
 using Microsoft.NET.TestFramework;
 using Microsoft.NET.TestFramework.Commands;
+using WixToolset.Dtf.WindowsInstaller;
 
 namespace Microsoft.CoreSdkTasks.Tests;
 
 [TestClass]
 public class TemplateMsiIncrementalityTests : SdkTest
 {
-    private const uint ErrorSuccess = 0;
-    private const uint ErrorNoMoreItems = 259;
-
     /// <summary>
     /// Verifies the pinned WiX targets skip unchanged template MSI builds and rebuild the
     /// appropriate stages after installer-property changes, payload edits, and removals.
@@ -331,7 +326,7 @@ public class TemplateMsiIncrementalityTests : SdkTest
         var properties = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         ReadMsiRows(installerPath, "SELECT `Property`, `Value` FROM `Property`", record =>
         {
-            properties[GetMsiRecordString(record, 1)] = GetMsiRecordString(record, 2);
+            properties[(string)record[1]] = (string)record[2];
         });
         return properties;
     }
@@ -341,86 +336,24 @@ public class TemplateMsiIncrementalityTests : SdkTest
         var files = new Dictionary<string, long>(StringComparer.OrdinalIgnoreCase);
         ReadMsiRows(installerPath, "SELECT `FileName`, `FileSize` FROM `File`", record =>
         {
-            string fileName = GetMsiRecordString(record, 1);
+            string fileName = (string)record[1];
             int separator = fileName.IndexOf('|');
-            files[separator < 0 ? fileName : fileName[(separator + 1)..]] = MsiRecordGetInteger(record, 2);
+            files[separator < 0 ? fileName : fileName[(separator + 1)..]] = (int)record[2];
         });
         return files;
     }
 
-    private static void ReadMsiRows(string installerPath, string query, Action<uint> readRow)
+    private static void ReadMsiRows(string installerPath, string query, Action<Record> readRow)
     {
-        ThrowOnMsiError(MsiOpenDatabase(installerPath, IntPtr.Zero, out uint database));
-        try
+        using var database = new Database(installerPath, DatabaseOpenMode.ReadOnly);
+        using View view = database.OpenView(query);
+        view.Execute();
+        foreach (Record record in view)
         {
-            ThrowOnMsiError(MsiDatabaseOpenView(database, query, out uint view));
-            try
+            using (record)
             {
-                ThrowOnMsiError(MsiViewExecute(view, 0));
-                while (true)
-                {
-                    uint result = MsiViewFetch(view, out uint record);
-                    if (result == ErrorNoMoreItems)
-                    {
-                        break;
-                    }
-
-                    ThrowOnMsiError(result);
-                    try
-                    {
-                        readRow(record);
-                    }
-                    finally
-                    {
-                        MsiCloseHandle(record);
-                    }
-                }
-            }
-            finally
-            {
-                MsiCloseHandle(view);
+                readRow(record);
             }
         }
-        finally
-        {
-            MsiCloseHandle(database);
-        }
     }
-
-    private static string GetMsiRecordString(uint record, uint field)
-    {
-        uint length = 1024;
-        var value = new StringBuilder((int)length);
-        ThrowOnMsiError(MsiRecordGetString(record, field, value, ref length));
-        return value.ToString();
-    }
-
-    private static void ThrowOnMsiError(uint result)
-    {
-        if (result != ErrorSuccess)
-        {
-            throw new Win32Exception((int)result);
-        }
-    }
-
-    [DllImport("msi.dll", CharSet = CharSet.Unicode)]
-    private static extern uint MsiOpenDatabase(string databasePath, IntPtr persist, out uint database);
-
-    [DllImport("msi.dll", CharSet = CharSet.Unicode)]
-    private static extern uint MsiDatabaseOpenView(uint database, string query, out uint view);
-
-    [DllImport("msi.dll")]
-    private static extern uint MsiViewExecute(uint view, uint record);
-
-    [DllImport("msi.dll")]
-    private static extern uint MsiViewFetch(uint view, out uint record);
-
-    [DllImport("msi.dll", CharSet = CharSet.Unicode)]
-    private static extern uint MsiRecordGetString(uint record, uint field, StringBuilder value, ref uint length);
-
-    [DllImport("msi.dll")]
-    private static extern int MsiRecordGetInteger(uint record, uint field);
-
-    [DllImport("msi.dll")]
-    private static extern uint MsiCloseHandle(uint handle);
 }
