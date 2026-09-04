@@ -1,4 +1,4 @@
-# This yml is used by the dotnet-sdk-sdl-checks pipeline.
+# https://dev.azure.com/dnceng/internal/_build?definitionId=1675
 
 trigger: none
 
