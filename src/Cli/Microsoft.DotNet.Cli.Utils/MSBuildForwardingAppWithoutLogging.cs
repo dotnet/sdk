@@ -152,7 +152,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
     }
 
     /// <summary>
-    /// Add an environment variable to the state that will be passed to MSBuild when it is run.
+    /// Set an environment variable in the state that will be passed to MSBuild when it is run.
     /// </summary>
     public void EnvironmentVariable(string name, string? value)
     {
@@ -162,7 +162,7 @@ internal sealed class MSBuildForwardingAppWithoutLogging
         }
         else
         {
-            _msbuildRequiredEnvironmentVariables.Add(name, value);
+            _msbuildRequiredEnvironmentVariables[name] = value;
         }
 
         if (value == string.Empty || value == "\0")

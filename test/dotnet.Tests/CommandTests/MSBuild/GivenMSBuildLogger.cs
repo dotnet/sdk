@@ -334,6 +334,9 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         public void ItUsesTheCurrentParentContextForEachServerBuild()
         {
             string originalTraceParent = Environment.GetEnvironmentVariable(Activities.TRACEPARENT);
+            string originalTraceState = Environment.GetEnvironmentVariable(Activities.TRACESTATE);
+            object originalRuntimeTraceParent = AppContext.GetData(Activities.TRACEPARENT);
+            object originalRuntimeTraceState = AppContext.GetData(Activities.TRACESTATE);
             Activity ambientActivity = Activity.Current;
             Activity.Current = null;
 
@@ -346,6 +349,16 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                     Sample = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
                 };
                 ActivitySource.AddActivityListener(listener);
+
+                var staleRuntimeParent = new ActivityContext(
+                    ActivityTraceId.CreateRandom(),
+                    ActivitySpanId.CreateRandom(),
+                    ActivityTraceFlags.Recorded,
+                    isRemote: true);
+                AppContext.SetData(
+                    Activities.TRACEPARENT,
+                    $"00-{staleRuntimeParent.TraceId}-{staleRuntimeParent.SpanId}-01");
+                AppContext.SetData(Activities.TRACESTATE, "stale=value");
 
                 var firstParent = new ActivityContext(
                     ActivityTraceId.CreateRandom(),
@@ -363,12 +376,17 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
 
                 firstActivity.TraceId.Should().Be(firstParent.TraceId);
                 firstActivity.ParentSpanId.Should().Be(firstParent.SpanId);
+                firstActivity.TraceStateString.Should().BeNull();
                 secondActivity.TraceId.Should().Be(secondParent.TraceId);
                 secondActivity.ParentSpanId.Should().Be(secondParent.SpanId);
+                secondActivity.TraceStateString.Should().BeNull();
             }
             finally
             {
                 Environment.SetEnvironmentVariable(Activities.TRACEPARENT, originalTraceParent);
+                Environment.SetEnvironmentVariable(Activities.TRACESTATE, originalTraceState);
+                AppContext.SetData(Activities.TRACEPARENT, originalRuntimeTraceParent);
+                AppContext.SetData(Activities.TRACESTATE, originalRuntimeTraceState);
                 Activity.Current = ambientActivity;
             }
 
@@ -377,6 +395,7 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
                 Environment.SetEnvironmentVariable(
                     Activities.TRACEPARENT,
                     $"00-{parentContext.TraceId}-{parentContext.SpanId}-01");
+                Environment.SetEnvironmentVariable(Activities.TRACESTATE, null);
 
                 var eventSource = new PersistentDispatcher([]);
                 var logger = new MSBuildLogger(new FakeTelemetry());

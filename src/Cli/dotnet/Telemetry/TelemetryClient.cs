@@ -212,18 +212,15 @@ public class TelemetryClient : ITelemetryClient
     /// bridge via <c>hostfxr_set_runtime_property_value</c>), then falls back to the
     /// <c>TRACEPARENT</c> / <c>TRACESTATE</c> environment variables.
     /// </summary>
-    internal static ActivityContext? GetParentActivityContext()
+    internal static ActivityContext? GetParentActivityContext(bool preferEnvironmentVariables = false)
     {
-        // Runtime properties take precedence — they are set by the AOT bridge when it
-        // falls back to the managed CLI so that the managed spans become children of the
-        // AOT-side main activity.
-        var traceParent = AppContext.GetData(Activities.TRACEPARENT) as string;
-
-        // Fall back to environment variables for external callers.
-        if (string.IsNullOrEmpty(traceParent))
-        {
-            traceParent = Env.GetEnvironmentVariable(Activities.TRACEPARENT);
-        }
+        (string? traceParent, string? traceState) = preferEnvironmentVariables
+            ? GetEnvironmentContext() is { TraceParent.Length: > 0 } environmentContext
+                ? environmentContext
+                : GetRuntimeContext()
+            : GetRuntimeContext() is { TraceParent.Length: > 0 } runtimeContext
+                ? runtimeContext
+                : GetEnvironmentContext();
 
         if (string.IsNullOrEmpty(traceParent))
         {
@@ -231,12 +228,6 @@ public class TelemetryClient : ITelemetryClient
         }
 
         var carrierMap = new Dictionary<string, IEnumerable<string>?> { { "traceparent", [traceParent] } };
-
-        var traceState = AppContext.GetData(Activities.TRACESTATE) as string;
-        if (string.IsNullOrEmpty(traceState))
-        {
-            traceState = Env.GetEnvironmentVariable(Activities.TRACESTATE);
-        }
 
         if (!string.IsNullOrEmpty(traceState))
         {
@@ -252,6 +243,12 @@ public class TelemetryClient : ITelemetryClient
 
         static IEnumerable<string>? GetValueFromCarrier(Dictionary<string, IEnumerable<string>?> carrier, string key) =>
             carrier.TryGetValue(key, out var value) ? value : null;
+
+        static (string? TraceParent, string? TraceState) GetEnvironmentContext() =>
+            (Env.GetEnvironmentVariable(Activities.TRACEPARENT), Env.GetEnvironmentVariable(Activities.TRACESTATE));
+
+        static (string? TraceParent, string? TraceState) GetRuntimeContext() =>
+            (AppContext.GetData(Activities.TRACEPARENT) as string, AppContext.GetData(Activities.TRACESTATE) as string);
     }
 
     private static ActivityKind GetActivityKind(ActivityContext? parentActivityContext) =>
