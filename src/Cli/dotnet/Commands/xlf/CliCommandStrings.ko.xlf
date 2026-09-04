@@ -568,6 +568,11 @@ See https://aka.ms/dotnet-test/mtp for more information.</source>
         <target state="translated">Global.json 버전</target>
         <note />
       </trans-unit>
+      <trans-unit id="HandshakeFailuresHeader">
+        <source>Handshake failures:</source>
+        <target state="new">Handshake failures:</target>
+        <note>Section header printed at the end of a 'dotnet test' run when one or more test hosts failed to hand-shake with the SDK. Followed by per-assembly exit code, stdout and stderr.</note>
+      </trans-unit>
       <trans-unit id="HelpDefinition">
         <source>Opens the reference page in a browser for the specified command.</source>
         <target state="translated">지정된 명령에 대한 참조 페이지를 브라우저에서 엽니다.</target>

@@ -37,6 +37,9 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
     private int _handshakeFailuresCount;
 
+    private readonly object _handshakeFailuresLock = new();
+    private readonly List<HandshakeFailureRecord> _handshakeFailures = new();
+
     private readonly uint? _originalConsoleMode;
     private bool _isDiscovery;
     private bool _isHelp;
@@ -165,6 +168,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
 
         NativeMethods.RestoreConsoleMode(_originalConsoleMode);
         _assemblies.Clear();
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Clear();
+        }
+        _handshakeFailuresCount = 0;
         _buildErrorsCount = 0;
         _testExecutionStartTime = null;
         _testExecutionEndTime = null;
@@ -225,11 +233,16 @@ internal sealed partial class TerminalTestReporter : IDisposable
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, CliCommandStrings.MinimumExpectedTestsPolicyViolation, totalTests, _options.MinimumExpectedTests));
         }
+        else if (anyTestFailed || HasHandshakeFailure)
+        {
+            // Handshake failures must not be reported as a benign empty run.
+            terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
+        }
         else if (allTestsWereSkipped)
         {
             terminal.Append(CliCommandStrings.ZeroTestsRan);
         }
-        else if (anyTestFailed || anyAssemblyFailed)
+        else if (anyAssemblyFailed)
         {
             terminal.Append(string.Format(CultureInfo.CurrentCulture, "{0}!", CliCommandStrings.Failed));
         }
@@ -346,6 +359,36 @@ internal sealed partial class TerminalTestReporter : IDisposable
         terminal.AppendLine();
 
         AppendExitCodeAndUrl(terminal, exitCode, isRun: true);
+
+        AppendHandshakeFailureRecap(terminal);
+    }
+
+    private void AppendHandshakeFailureRecap(ITerminal terminal)
+    {
+        // Re-print child output after the summary so progress rendering cannot hide the actionable diagnostic.
+        HandshakeFailureRecord[] failures;
+        lock (_handshakeFailuresLock)
+        {
+            if (_handshakeFailures.Count == 0)
+            {
+                return;
+            }
+
+            failures = _handshakeFailures.ToArray();
+        }
+
+        terminal.AppendLine();
+        terminal.SetColor(TerminalColor.DarkRed);
+        terminal.AppendLine(CliCommandStrings.HandshakeFailuresHeader);
+        terminal.ResetColor();
+
+        foreach (HandshakeFailureRecord failure in failures)
+        {
+            terminal.Append(SingleIndentation);
+            AppendAssemblyLinkTargetFrameworkAndArchitecture(terminal, failure.AssemblyPath, failure.TargetFramework, architecture: null);
+            terminal.AppendLine();
+            AppendExecutableSummary(terminal, failure.ExitCode, failure.OutputData, failure.ErrorData);
+        }
     }
 
     private static void AppendExitCodeAndUrl(ITerminal terminal, int? exitCode, bool isRun)
@@ -765,6 +808,11 @@ internal sealed partial class TerminalTestReporter : IDisposable
         }
 
         Interlocked.Increment(ref _handshakeFailuresCount);
+        lock (_handshakeFailuresLock)
+        {
+            _handshakeFailures.Add(new HandshakeFailureRecord(assemblyPath, targetFramework, exitCode, outputData, errorData));
+        }
+
         _terminalWithProgress.WriteToTerminal(terminal =>
         {
             terminal.ResetColor();
@@ -799,6 +847,13 @@ internal sealed partial class TerminalTestReporter : IDisposable
         => text?.Replace('\0', '\x2400')
             // escape char
             .Replace('\x001b', '\x241b');
+
+    private readonly record struct HandshakeFailureRecord(
+        string AssemblyPath,
+        string? TargetFramework,
+        int ExitCode,
+        string OutputData,
+        string ErrorData);
 
     private static void AppendAssemblySummary(TestProgressState assemblyRun, ITerminal terminal)
     {

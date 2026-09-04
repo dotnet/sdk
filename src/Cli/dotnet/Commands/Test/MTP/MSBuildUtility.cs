@@ -103,6 +103,11 @@ internal static class MSBuildUtility
 
         LoggerUtility.SeparateBinLogArguments(parseResult.UnmatchedTokens, out var binLogArgs, out var otherArgs);
 
+        if (parseResult.GetValue(definition.NoLogoOption) && !otherArgs.Contains("--no-banner"))
+        {
+            otherArgs.Add("--no-banner");
+        }
+
         var (positionalProjectOrSolution, positionalTestModules) = GetPositionalArguments(otherArgs);
 
         var msbuildArgs = parseResult.OptionValuesToBeForwarded(definition)
