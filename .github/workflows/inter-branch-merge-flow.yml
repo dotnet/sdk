@@ -14,4 +14,4 @@ env:
 
 jobs:
   Merge:
-    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@306225d7029934938d109e18df390f04e366a68d # main
+    uses: dotnet/arcade/.github/workflows/inter-branch-merge-base.yml@888b1993681fd838d640059b079bc6a4aaa7135c # main
