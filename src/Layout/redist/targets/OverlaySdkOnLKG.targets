@@ -126,4 +126,31 @@
           DestinationFiles="@(WorkloadPackContent->'$(TestHostDotNetRoot)packs\%(RecursiveDir)%(Filename)%(Extension)')" />
   </Target>
 
+  <!-- On a cross-build, restore-toolset.{sh,ps1} downloads the target-architecture test shared
+       frameworks (6.0-9.0, plus the exact toolset versions) into a sidecar folder under artifacts,
+       rather than into the host .dotnet (whose runtimes must stay host-architecture so host tools
+       such as the NuGet credential provider keep working). Copy those target-architecture shared
+       frameworks into the test host so the Helix test payload runs them on target-architecture
+       hardware. The current major.minor band is handled by OverwriteStage0SharedFxForCrossCompilation
+       above using the locally built target-architecture files; this target covers the older bands,
+       which have no locally built binaries.
+       The sidecar path must match the one restore-toolset.{sh,ps1} write to. -->
+  <Target Name="OverlayCrossArchTestRuntimes"
+          AfterTargets="OverlaySdkOnLKG"
+          Condition="'$(TargetArchitecture)' != '$(BuildArchitecture)'">
+    <PropertyGroup>
+      <_CrossArchTestRuntimeSidecar>$([MSBuild]::NormalizeDirectory('$(ArtifactsDir)', 'test-runtimes', '$(TargetArchitecture)'))</_CrossArchTestRuntimeSidecar>
+    </PropertyGroup>
+    <ItemGroup Condition="Exists('$(_CrossArchTestRuntimeSidecar)')">
+      <_CrossArchTestRuntimeFile Include="$(_CrossArchTestRuntimeSidecar)shared\**\*"
+                                Exclude="$(_CrossArchTestRuntimeSidecar)shared\Microsoft.NETCore.App\$(MajorMinorVersion).*\**\*;
+                                         $(_CrossArchTestRuntimeSidecar)shared\Microsoft.AspNetCore.App\$(MajorMinorVersion).*\**\*" />
+    </ItemGroup>
+    <Copy Condition="'@(_CrossArchTestRuntimeFile)' != ''"
+          SourceFiles="@(_CrossArchTestRuntimeFile)"
+          DestinationFiles="@(_CrossArchTestRuntimeFile->'$(TestHostDotNetRoot)shared\%(RecursiveDir)%(Filename)%(Extension)')"
+          SkipUnchangedFiles="true"
+          UseHardLinksIfPossible="false" />
+  </Target>
+
 </Project>
