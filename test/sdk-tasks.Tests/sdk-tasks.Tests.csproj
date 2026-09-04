@@ -8,6 +8,63 @@
   <ItemGroup>
     <ProjectReference Include="$(RepoRoot)src\Tasks\sdk-tasks\sdk-tasks.csproj" />
     <ProjectReference Include="..\Microsoft.NET.TestFramework.MSTest\Microsoft.NET.TestFramework.MSTest.csproj" />
+    <PackageReference Include="Microsoft.WixToolset.Dtf.WindowsInstaller" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$([MSBuild]::IsOSPlatform('Windows'))">
+    <PackageDownload Include="Microsoft.WixToolset.Sdk" Version="[$(MicrosoftWixToolsetSdkVersion)]" />
+    <PackageDownload Include="Microsoft.WixToolset.Heat" Version="[$(MicrosoftWixToolsetSdkVersion)]" />
+    <PackageDownload Include="Microsoft.WixToolset.Util.wixext" Version="[$(MicrosoftWixToolsetSdkVersion)]" />
+    <PackageDownload Include="Microsoft.WixToolset.UI.wixext" Version="[$(MicrosoftWixToolsetSdkVersion)]" />
+    <PackageDownload Include="Microsoft.WixToolset.Dependency.wixext" Version="[$(MicrosoftWixToolsetSdkVersion)]" />
+    <PackageDownload Include="Microsoft.DotNet.Build.Tasks.Installers" Version="[$(MicrosoftDotNetBuildTasksInstallersPackageVersion)]" />
+
+    <Content Include="$(RepoRoot)src\Layout\pkg\windows\Directory.Build.props;
+                      $(RepoRoot)src\Layout\pkg\windows\Directory.Build.targets;
+                      $(RepoRoot)src\Layout\pkg\windows\StableFileIdForApphostTransform.xslt;
+                      $(RepoRoot)src\Layout\pkg\windows\dotnet.ico;
+                      $(RepoRoot)src\Layout\pkg\windows\dummyeula.rtf"
+             Link="TemplateMsiAuthoring\pkg\windows\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(RepoRoot)src\Layout\pkg\windows\msis\Directory.Build.props;
+                      $(RepoRoot)src\Layout\pkg\windows\msis\Directory.Build.targets;
+                      $(RepoRoot)src\Layout\pkg\windows\msis\directories.wxs;
+                      $(RepoRoot)src\Layout\pkg\windows\msis\provider.wxs"
+             Link="TemplateMsiAuthoring\pkg\windows\msis\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(RepoRoot)src\Layout\pkg\windows\msis\templates\**\*"
+             Exclude="$(RepoRoot)src\Layout\pkg\windows\msis\templates\**\bin\**\*;
+                      $(RepoRoot)src\Layout\pkg\windows\msis\templates\**\obj\**\*"
+             Link="TemplateMsiAuthoring\pkg\windows\msis\templates\%(RecursiveDir)%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+
+    <Content Include="$(NuGetPackageRoot)microsoft.wixtoolset.sdk\$(MicrosoftWixToolsetSdkVersion)\microsoft.wixtoolset.sdk.$(MicrosoftWixToolsetSdkVersion).nupkg"
+             Link="WixPackages\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)microsoft.wixtoolset.heat\$(MicrosoftWixToolsetSdkVersion)\microsoft.wixtoolset.heat.$(MicrosoftWixToolsetSdkVersion).nupkg"
+             Link="WixPackages\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)microsoft.wixtoolset.util.wixext\$(MicrosoftWixToolsetSdkVersion)\microsoft.wixtoolset.util.wixext.$(MicrosoftWixToolsetSdkVersion).nupkg"
+             Link="WixPackages\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)microsoft.wixtoolset.ui.wixext\$(MicrosoftWixToolsetSdkVersion)\microsoft.wixtoolset.ui.wixext.$(MicrosoftWixToolsetSdkVersion).nupkg"
+             Link="WixPackages\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)microsoft.wixtoolset.dependency.wixext\$(MicrosoftWixToolsetSdkVersion)\microsoft.wixtoolset.dependency.wixext.$(MicrosoftWixToolsetSdkVersion).nupkg"
+             Link="WixPackages\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
+    <Content Include="$(NuGetPackageRoot)microsoft.dotnet.build.tasks.installers\$(MicrosoftDotNetBuildTasksInstallersPackageVersion)\microsoft.dotnet.build.tasks.installers.$(MicrosoftDotNetBuildTasksInstallersPackageVersion).nupkg"
+             Link="WixPackages\%(Filename)%(Extension)"
+             CopyToOutputDirectory="PreserveNewest"
+             CopyToPublishDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>
