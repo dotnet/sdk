@@ -145,6 +145,17 @@ internal static class CommonRunHelpers
             return LaunchProfileParseResult.Success(model: null);
         }
 
+        // If this process was launched by a launch profile with "commandName": "Executable"
+        // (e.g. a profile that runs `dotnet watch run`), that profile has already been applied to
+        // the environment of this process. Applying the default launch profile on top of it would
+        // silently override the settings of the profile the user selected.
+        // A launch profile requested explicitly still takes precedence.
+        // See https://github.com/dotnet/sdk/issues/56023.
+        if (string.IsNullOrEmpty(launchProfile) && HasLaunchProfileBeenApplied())
+        {
+            return LaunchProfileParseResult.Success(model: null);
+        }
+
         string? launchSettingsPath = LaunchSettings.TryFindLaunchSettingsFile(
             projectOrEntryPointFilePath,
             launchProfile,
@@ -185,6 +196,14 @@ internal static class CommonRunHelpers
             {
                 apply(name, value);
             }
+
+            if (launchProfile is ExecutableLaunchProfile)
+            {
+                // The launched process is an arbitrary executable that may itself invoke SDK commands
+                // that launch the application (e.g. `dotnet watch run`). Let those commands know that
+                // a launch profile has already been applied to the environment they inherit.
+                apply(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED, "1");
+            }
         }
 
         foreach ((string name, string value) in environmentVariables)
@@ -192,6 +211,13 @@ internal static class CommonRunHelpers
             apply(name, value);
         }
     }
+
+    /// <summary>
+    /// Returns true if the environment of the current process has been configured by a launch profile
+    /// with <c>"commandName": "Executable"</c> that launched this process.
+    /// </summary>
+    private static bool HasLaunchProfileBeenApplied()
+        => Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_LAUNCH_PROFILE_APPLIED) is "1";
 
 #if !CLI_AOT
     /// <summary>
