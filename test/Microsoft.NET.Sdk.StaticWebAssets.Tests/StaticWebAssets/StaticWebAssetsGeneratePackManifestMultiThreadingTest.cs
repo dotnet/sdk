@@ -10,6 +10,7 @@ using Moq;
 
 namespace Microsoft.AspNetCore.Razor.Tasks;
 
+[DoNotParallelize]
 [TestClass]
 public class StaticWebAssetsGeneratePackManifestMultiThreadingTest
 {

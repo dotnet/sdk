@@ -9,9 +9,7 @@ using Moq;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests.StaticWebAssets;
 
-// Test parallelization is disabled assembly-wide: the MSTest.Sdk project sets
-// MSTestParallelizeScope=None, which emits [assembly: DoNotParallelize] and runs
-// tests sequentially, isolating the process-CWD mutation this test performs.
+[DoNotParallelize]
 [TestClass]
 public class FilterStaticWebAssetEndpointsMultiThreadingTest
 {
