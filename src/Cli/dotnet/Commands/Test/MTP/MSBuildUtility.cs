@@ -216,6 +216,8 @@ internal static class MSBuildUtility
 
             var perTfmBuildOptions = buildOptions with
             {
+                HasNoRestore = buildOptions.HasNoRestore ||
+                    (deviceSelection.RestoreWasPerformed && string.IsNullOrEmpty(rid)),
                 MSBuildArgs = perTfmArgs,
                 Device = device,
             };
@@ -330,18 +332,26 @@ internal static class MSBuildUtility
         MSBuildSession buildSession)
     {
         var allProjects = new ConcurrentBag<ParallelizableTestModuleGroupWithSequentialInnerModules>();
-        var nonDeviceProjects = new List<(string ProjectFilePath, string? Configuration, string? Platform)>();
+        var nonDeviceProjects = new List<(
+            string ProjectFilePath,
+            string? Configuration,
+            string? Platform,
+            IReadOnlyDictionary<string, ProjectInstance> EvaluatedProjects)>();
 
         // Phase 1: Handle device projects sequentially. Per-TFM builds use in-process MSBuild
         // (BuildManager.DefaultBuildManager), which is a process-wide singleton and cannot run concurrently.
         // The shared session may stay open across them, because it owns a build manager of its own.
         foreach (var project in projects)
         {
+            var evaluatedProjects = new Dictionary<string, ProjectInstance>(StringComparer.OrdinalIgnoreCase);
             var deviceSelection = SolutionAndProjectUtility.SelectDevicesBeforeBuild(
                 project.ProjectFilePath,
                 buildOptions,
                 buildSession,
-                evaluationContext);
+                evaluationContext,
+                project.Configuration,
+                project.Platform,
+                evaluatedProjects);
 
             if (deviceSelection is not null)
             {
@@ -364,7 +374,13 @@ internal static class MSBuildUtility
             }
             else
             {
-                nonDeviceProjects.Add(project);
+                // The solution was built before device discovery, so these evaluations are current
+                // and can be reused by the parallel property-discovery phase below.
+                nonDeviceProjects.Add((
+                    project.ProjectFilePath,
+                    project.Configuration,
+                    project.Platform,
+                    evaluatedProjects));
             }
         }
 
@@ -379,7 +395,16 @@ internal static class MSBuildUtility
             {
                 try
                 {
-                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(project.ProjectFilePath, projectCollection, evaluationContext, buildOptions, buildSession, project.Configuration, project.Platform, globalProperties);
+                    IEnumerable<ParallelizableTestModuleGroupWithSequentialInnerModules> projectsMetadata = SolutionAndProjectUtility.GetProjectProperties(
+                        project.ProjectFilePath,
+                        projectCollection,
+                        evaluationContext,
+                        buildOptions,
+                        buildSession,
+                        project.Configuration,
+                        project.Platform,
+                        globalProperties,
+                        preEvaluatedProjects: project.EvaluatedProjects);
                     foreach (var projectMetadata in projectsMetadata)
                     {
                         allProjects.Add(projectMetadata);

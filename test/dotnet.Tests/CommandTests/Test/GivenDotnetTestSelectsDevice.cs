@@ -49,6 +49,23 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
+    public void ItFindsDevicesForSingleEntryTargetFrameworksWithoutFramework()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        var result = new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .WithEnvironmentVariable("DOTNET_CLI_UI_LANGUAGE", "en-US")
+            .Execute($"-p:TargetFrameworks={ToolsetInfo.CurrentTargetFramework}");
+
+        result.Should().Fail()
+            .And.HaveStdErrContaining(string.Format(CliCommandStrings.RunCommandExceptionUnableToRunSpecifyDevice, "--device"))
+            .And.HaveStdErrContaining("test-device-1")
+            .And.HaveStdErrContaining("test-device-2");
+    }
+
+    [TestMethod]
     [DataRow("test-device-1")]
     [DataRow("test-device-2")]
     public void ItRunsTestsWithSpecifiedDevice(string deviceId)
@@ -197,19 +214,63 @@ public class GivenDotnetTestSelectsDevice : SdkTest
     }
 
     [TestMethod]
-    public void ItAutoSelectsSingleDevicePerTfm()
+    public void ItSelectsDevicesFromTargetsImportedOnlyByInnerBuilds()
     {
         var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
             .WithSource();
 
-        // Run without -f to test all TFMs. SingleDevice=true means one device per TFM
-        // is auto-selected. Device selection happens BEFORE the build so that any
-        // device-provided RuntimeIdentifier is included in the build output.
+        // Workloads import device targets only after TargetFramework is set. Run without -f
+        // to verify the outer cross-targeting evaluation does not skip device selection.
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("-p:SingleDevice=true");
+            .Execute("-p:SingleDevice=true", "-bl");
 
         result.Should().Pass();
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "DeployToDevice",
+            targets =>
+            {
+                targets.Should().HaveCount(2, "both target frameworks should be deployed");
+                targets.SelectMany(target => target.FindChildrenRecursive<Message>())
+                    .Where(message => message.Text.Contains("DeployToDevice: Deployed"))
+                    .Should().OnlyContain(message => message.Text.Contains("to device single-device"));
+            });
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "Restore",
+            targets => targets.Should().ContainSingle("device selection should restore once for all target frameworks"));
+    }
+
+    [TestMethod]
+    public void ItSelectsDevicesOnlyForTargetFrameworksThatSupportThem()
+    {
+        var testInstance = TestAssetsManager.CopyTestAsset("DotnetTestDevices")
+            .WithSource();
+
+        new DotnetTestCommand(Log, disableNewOutput: false)
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute(
+                "-p:SingleDevice=true",
+                $"-p:DeviceTargetFramework={ToolsetInfo.CurrentTargetFramework}",
+                "-bl")
+            .Should().Pass();
+
+        AssertTargetInBinlog(
+            Path.Combine(testInstance.Path, "msbuild-dotnet-test.binlog"),
+            "DeployToDevice",
+            targets =>
+            {
+                var deployMessages = targets.SelectMany(target => target.FindChildrenRecursive<Message>())
+                    .Where(message => message.Text.Contains("DeployToDevice: Deployed"))
+                    .Select(message => message.Text)
+                    .ToArray();
+
+                deployMessages.Should().Contain(message =>
+                    message.Contains($"Deployed {ToolsetInfo.CurrentTargetFramework} to device single-device"));
+                deployMessages.Should().Contain(message =>
+                    message.Contains("Deployed net9.0 to device  with RuntimeIdentifier"));
+            });
     }
 
     [TestMethod]
@@ -230,6 +291,9 @@ public class GivenDotnetTestSelectsDevice : SdkTest
             File.Copy(
                 Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"),
                 Path.Combine(dir, Path.GetFileName(dir) + ".csproj"));
+            File.Copy(
+                Path.Combine(testInstance.Path, "DotnetTestDevices.Device.targets"),
+                Path.Combine(dir, "DotnetTestDevices.Device.targets"));
         }
 
         File.Delete(Path.Combine(testInstance.Path, "DotnetTestDevices.csproj"));
@@ -238,14 +302,29 @@ public class GivenDotnetTestSelectsDevice : SdkTest
         File.WriteAllText(Path.Combine(testInstance.Path, "TestSolution.slnx"),
             """
             <Solution>
-              <Project Path="Project1\Project1.csproj" />
-              <Project Path="Project2\Project2.csproj" />
+              <Configurations>
+                <BuildType Name="Debug" />
+                <Platform Name="Any CPU" />
+              </Configurations>
+              <Project Path="Project1\Project1.csproj">
+                <BuildType Solution="Debug|*" Project="Release" />
+                <Platform Solution="*|Any CPU" Project="x64" />
+              </Project>
+              <Project Path="Project2\Project2.csproj">
+                <BuildType Solution="Debug|*" Project="Release" />
+                <Platform Solution="*|Any CPU" Project="x64" />
+              </Project>
             </Solution>
             """);
 
         var result = new DotnetTestCommand(Log, disableNewOutput: false)
             .WithWorkingDirectory(testInstance.Path)
-            .Execute("--solution", "TestSolution.slnx", "-p:SingleDevice=true", "-bl");
+            .Execute(
+                "--solution", "TestSolution.slnx",
+                "-p:SingleDevice=true",
+                "-p:ExpectedDeviceConfiguration=Release",
+                "-p:ExpectedDevicePlatform=x64",
+                "-bl");
 
         result.Should().Pass();
 
