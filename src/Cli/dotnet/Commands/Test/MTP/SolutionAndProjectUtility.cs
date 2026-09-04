@@ -599,7 +599,13 @@ internal static class SolutionAndProjectUtility
         }
 
         // TODO: Support --launch-profile and pass it here.
-        var launchSettings = TryGetLaunchProfileSettings(Path.GetDirectoryName(projectFullPath)!, Path.GetFileNameWithoutExtension(projectFullPath), project.GetPropertyValue(ProjectProperties.AppDesignerFolder), buildOptions, profileName: null);
+        var launchSettings = TryGetLaunchProfileSettings(
+            Path.GetDirectoryName(projectFullPath)!,
+            Path.GetFileNameWithoutExtension(projectFullPath),
+            project.GetPropertyValue(ProjectProperties.AppDesignerFolder),
+            buildOptions,
+            profileName: null,
+            project.ExpandString);
 
         var rootVariableName = EnvironmentVariableNames.TryGetDotNetRootArchVariableName(
             runProperties.RuntimeIdentifier,
@@ -672,7 +678,13 @@ internal static class SolutionAndProjectUtility
         }
     }
 
-    private static LaunchProfile? TryGetLaunchProfileSettings(string projectDirectory, string projectNameWithoutExtension, string appDesignerFolder, BuildOptions buildOptions, string? profileName)
+    private static LaunchProfile? TryGetLaunchProfileSettings(
+        string projectDirectory,
+        string projectNameWithoutExtension,
+        string appDesignerFolder,
+        BuildOptions buildOptions,
+        string? profileName,
+        Func<string, string> evaluateExpression)
     {
         if (buildOptions.NoLaunchProfile)
         {
@@ -707,13 +719,40 @@ internal static class SolutionAndProjectUtility
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.UsingLaunchSettingsFromMessage, launchSettingsPath));
         }
 
-        var result = LaunchSettings.ReadProfileSettingsFromFile(launchSettingsPath, profileName);
+        LaunchProfileParseResult result = CommonRunHelpers.ReadLaunchProfileFromFile(
+            launchSettingsPath,
+            profileName,
+            new LaunchProfileParserOptions(
+                evaluateExpression,
+                ExpandProjectProfile: false,
+                ExpandExecutableProfile: false,
+                ExpandCommandLineArgs: !buildOptions.NoLaunchProfileArguments));
         if (!result.Successful)
         {
             Reporter.Error.WriteLine(string.Format(CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings, profileName, result.FailureReason).Bold().Red());
             return null;
         }
 
-        return result.Profile;
+        if (result.Profile is not ProjectLaunchProfile projectProfile)
+        {
+            return result.Profile;
+        }
+
+        try
+        {
+            return ProjectLaunchProfileParser.ExpandMSBuildProperties(
+                projectProfile,
+                evaluateExpression,
+                expandCommandLineArgs: !buildOptions.NoLaunchProfileArguments,
+                expandApplicationUrl: false);
+        }
+        catch (Microsoft.Build.Exceptions.InvalidProjectFileException ex)
+        {
+            Reporter.Error.WriteLine(string.Format(
+                CliCommandStrings.RunCommandExceptionCouldNotApplyLaunchSettings,
+                profileName,
+                ex.Message).Bold().Red());
+            return null;
+        }
     }
 }

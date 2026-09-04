@@ -944,8 +944,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
         {
             var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
                 .WithSource();
-
-            // launchSettings.json specifies commandLineArgs="TestAppCommandLineArguments SecondTestAppCommandLineArguments"
+            string launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            File.WriteAllText(
+                launchSettingsPath,
+                File.ReadAllText(launchSettingsPath).Replace(
+                    "\"commandLineArgs\": \"TestAppCommandLineArguments SecondTestAppCommandLineArguments\"",
+                    "\"commandLineArgs\": \"$([)\""));
 
             new DotnetCommand(Log, "run", "--no-launch-profile-arguments")
                .WithWorkingDirectory(testInstance.Path)
@@ -955,7 +959,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .And
                .NotHaveStdOutContaining("TestAppCommandLineArguments")
                .And
-               .NotHaveStdOutContaining("SecondTestAppCommandLineArguments");
+               .NotHaveStdOutContaining("SecondTestAppCommandLineArguments")
+               .And
+               .HaveStdOutContaining("env: MyCoolEnvironmentVariableKey=MyCoolEnvironmentVariableValue")
+               .And
+               .NotHaveStdErrContaining("could not be applied");
         }
 
         [TestMethod]
@@ -966,6 +974,12 @@ namespace Microsoft.DotNet.Cli.Run.Tests
             var testAppName = "TestAppWithLaunchSettings";
             var testInstance = TestAssetsManager.CopyTestAsset(testAppName)
                 .WithSource();
+            string launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            File.WriteAllText(
+                launchSettingsPath,
+                File.ReadAllText(launchSettingsPath).Replace(
+                    "\"commandLineArgs\": \"TestAppCommandLineArguments SecondTestAppCommandLineArguments\"",
+                    "\"commandLineArgs\": \"$([)\""));
 
             new DotnetCommand(Log, "run", "-- test")
                .WithWorkingDirectory(testInstance.Path)
@@ -975,7 +989,11 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .And
                .NotHaveStdOutContaining(expectedValue)
                .And
-               .NotHaveStdOutContaining(secondExpectedValue);
+               .NotHaveStdOutContaining(secondExpectedValue)
+               .And
+               .HaveStdOutContaining("env: MyCoolEnvironmentVariableKey=MyCoolEnvironmentVariableValue")
+               .And
+               .NotHaveStdErrContaining("could not be applied");
         }
 
         [TestMethod]
@@ -991,6 +1009,34 @@ namespace Microsoft.DotNet.Cli.Run.Tests
                .Pass()
                .And
                .HaveStdOutContaining("env: ASPNETCORE_URLS=http://localhost:5000");
+        }
+
+        [TestMethod]
+        public void ItExpandsMSBuildPropertyInApplicationUrlSpecifiedInLaunchSettings()
+        {
+            var testInstance = TestAssetsManager.CopyTestAsset("TestAppWithLaunchSettings")
+                .WithSource();
+            string launchSettingsPath = Path.Join(testInstance.Path, "Properties", "launchSettings.json");
+            File.WriteAllText(
+                launchSettingsPath,
+                File.ReadAllText(launchSettingsPath).Replace(
+                    "\"applicationUrl\": \"http://localhost:5000\"",
+                    "\"applicationUrl\": \"$(LaunchApplicationUrl)\""));
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), """
+                <Project>
+                  <PropertyGroup>
+                    <LaunchApplicationUrl>http://localhost:5001</LaunchApplicationUrl>
+                  </PropertyGroup>
+                </Project>
+                """);
+
+            new DotnetCommand(Log, "run")
+               .WithWorkingDirectory(testInstance.Path)
+               .Execute()
+               .Should()
+               .Pass()
+               .And
+               .HaveStdOutContaining("env: ASPNETCORE_URLS=http://localhost:5001");
         }
 
         [TestMethod]
