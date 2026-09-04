@@ -214,14 +214,20 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
             ReadOnlySpan<ILogger> binaryLoggers = binaryLogger is null ? [] : [binaryLogger.Value];
             ReadOnlySpan<ILogger> consoleLoggers = consoleLogger is null ? [] : [consoleLogger];
             IEnumerable<ILogger> loggers = [.. binaryLoggers, .. consoleLoggers];
+            (bool multiThreaded, int maxNodeCount) = GetBuildConcurrency(MSBuildArgs.OtherMSBuildArgs);
             var projectCollection = new ProjectCollection(
-                MSBuildArgs.GlobalProperties,
-                loggers,
-                ToolsetDefinitionLocations.Default);
+                globalProperties: MSBuildArgs.GlobalProperties,
+                loggers: loggers,
+                remoteLoggers: [],
+                toolsetDefinitionLocations: ToolsetDefinitionLocations.Default,
+                maxNodeCount: maxNodeCount,
+                onlyLogCriticalEvents: false);
             var parameters = new BuildParameters(projectCollection)
             {
                 Loggers = loggers,
                 LogTaskInputs = binaryLoggers.Length != 0,
+                MaxNodeCount = maxNodeCount,
+                MultiThreaded = multiThreaded,
             };
 
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
@@ -704,6 +710,15 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
         MarkArtifactsFolderUsed();
 
         File.WriteAllText(Path.Join(directory, FileBasedAppRunPlan.BuildStartCacheFileName), Builder.EntryPointFileFullPath);
+    }
+
+    internal static (bool MultiThreaded, int MaxNodeCount) GetBuildConcurrency(IEnumerable<string> msbuildArgs)
+    {
+        bool multiThreaded = LoggerUtility.GetMultiThreadedValue(msbuildArgs) ?? false;
+
+        // The normal SDK-to-MSBuild path enables -maxcpucount by default. Preserve the existing
+        // single-node behavior unless -mt is enabled, then give the in-process nodes the same capacity.
+        return (multiThreaded, multiThreaded ? Environment.ProcessorCount : 1);
     }
 
     private void MarkBuildSuccess(FileBasedAppCacheInfo cache)

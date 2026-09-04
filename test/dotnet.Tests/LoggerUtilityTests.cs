@@ -48,6 +48,7 @@ namespace dotnet.Tests
         [DataRow("-MT", "-MT")]
         [DataRow("-mt:true", "-mt:true")]
         [DataRow("-mt:false", "-mt:false")]
+        [DataRow("-mt:", "-mt:")]
         [DataRow("-MT:False", "-MT:False")]
         [DataRow("--mt:true", "--mt:true")]
         [DataRow("/mt:false", "/mt:false")]
@@ -56,6 +57,7 @@ namespace dotnet.Tests
         [DataRow("/multithreaded", "/multithreaded")]
         [DataRow("-multithreaded:true", "-multithreaded:true")]
         [DataRow("--multiThreaded:false", "--multiThreaded:false")]
+        [DataRow("--multiThreaded:", "--multiThreaded:")]
         public void LoggerArgument_ArgumentForms(string arg, string expectedArg)
         {
             LoggerUtility.SeparateMSBuildArguments([arg], out var msbuildArgs, out var otherArgs);
@@ -80,7 +82,6 @@ namespace dotnet.Tests
         [DataRow("")]
         [DataRow("-mt:auto")]
         [DataRow("-mt:on")]
-        [DataRow("-mt:")]
         [DataRow("-mtx")]
         [DataRow("--multithreadedextra")]
         public void LoggerArgument_InvalidFormsAreNotRecognized(string arg)
@@ -119,7 +120,9 @@ namespace dotnet.Tests
         [DataRow("--mt")]
         [DataRow("-mt:true")]
         [DataRow("-mt:false")]
+        [DataRow("-mt:")]
         [DataRow("--multiThreaded")]
+        [DataRow("--multiThreaded:")]
         [DataRow("/mt")]
         public void GetBuildOptions_ForwardsMultiThreadedArgToMSBuild_NotToTestApplication(string multiThreadedArg)
         {
@@ -135,6 +138,15 @@ namespace dotnet.Tests
                 "-mt configures the MSBuild engine and must be forwarded to the underlying build invocation.");
             buildOptions.TestApplicationArguments.Should().NotContain(multiThreadedArg,
                 "-mt must not be passed to the test application, which doesn't recognize it.");
+        }
+
+        [TestMethod]
+        [DataRow(new[] { "-mt:false", "-mt" }, true)]
+        [DataRow(new[] { "-mt:false", "-mt:" }, true)]
+        [DataRow(new[] { "-mt", "-mt:false" }, false)]
+        public void MultiThreadedValue_LastSwitchWins(string[] args, bool expected)
+        {
+            LoggerUtility.GetMultiThreadedValue(args).Should().Be(expected);
         }
 
         [TestMethod]

@@ -202,6 +202,7 @@ namespace Microsoft.DotNet.Tests.ParserTests
         }
 
         [TestMethod]
+        [DataRow("")]
         [DataRow("true")]
         [DataRow("false")]
         public void DoubleDash_Mt_Value(string value)
@@ -233,6 +234,19 @@ namespace Microsoft.DotNet.Tests.ParserTests
             runCommand.ApplicationArgs.Should().Equal("b0", "-mt:val1", "b1", "a0", "-mt:val2", "a1");
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("-mt:val1");
             runCommand.MSBuildArgs.OtherMSBuildArgs.Should().NotContain("b1");
+        }
+
+        [TestMethod]
+        [DataRow(new[] { "-mt" }, true)]
+        [DataRow(new[] { "-mt:" }, true)]
+        [DataRow(new[] { "-mt:false", "-mt" }, true)]
+        [DataRow(new[] { "-mt", "-mt:false" }, false)]
+        public void FileBuildConcurrency_UsesEffectiveMultiThreadedValue(string[] args, bool expectedMultiThreaded)
+        {
+            var (multiThreaded, maxNodeCount) = VirtualProjectBuildingCommand.GetBuildConcurrency(args);
+
+            multiThreaded.Should().Be(expectedMultiThreaded);
+            maxNodeCount.Should().Be(expectedMultiThreaded ? Environment.ProcessorCount : 1);
         }
 
         [TestMethod]

@@ -148,23 +148,10 @@ internal static class LoggerUtility
         }
 
         // -mt/-multiThreaded configures the MSBuild engine, so it has to reach MSBuild rather than being
-        // handed to the launched process as an unrecognized argument. MSBuild parses the value with
-        // bool.Parse and treats a bare switch as true, so only true/false are accepted here.
-        if (switchName.Equals("mt", comp) || switchName.Equals("multiThreaded", comp))
+        // handed to the launched process as an unrecognized argument.
+        if (TryGetMultiThreadedValue(arg, out _))
         {
-            if (!hasValue)
-            {
-                return true;
-            }
-
-            if (!string.IsNullOrEmpty(switchValue) &&
-                (switchValue.Equals("true", comp) || switchValue.Equals("false", comp)))
-            {
-                return true;
-            }
-
-            msbuildArg = null;
-            return false;
+            return true;
         }
 
         if (switchName.Equals("tlp", comp) || switchName.Equals("terminalLoggerParameters", comp) ||
@@ -178,6 +165,41 @@ internal static class LoggerUtility
 
         msbuildArg = null;
         return false;
+    }
+
+    internal static bool? GetMultiThreadedValue(IEnumerable<string>? args)
+    {
+        bool? result = null;
+
+        foreach (var arg in args ?? [])
+        {
+            if (TryGetMultiThreadedValue(arg, out bool value))
+            {
+                result = value;
+            }
+        }
+
+        return result;
+    }
+
+    internal static bool TryGetMultiThreadedValue(string arg, out bool value)
+    {
+        value = false;
+
+        if (!TryParseSwitch(arg, out _, out string? switchName, out string? switchValue, out bool hasValue) ||
+            !(switchName.Equals("mt", StringComparison.OrdinalIgnoreCase) ||
+              switchName.Equals("multiThreaded", StringComparison.OrdinalIgnoreCase)))
+        {
+            return false;
+        }
+
+        if (!hasValue || string.IsNullOrEmpty(switchValue))
+        {
+            value = true;
+            return true;
+        }
+
+        return bool.TryParse(switchValue, out value);
     }
 
     private static bool TryParseSwitch(string arg, [NotNullWhen(true)] out string? prefix, [NotNullWhen(true)] out string? switchName, out string? switchValue, out bool hasValue)
