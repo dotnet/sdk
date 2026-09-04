@@ -1,0 +1,6 @@
+#nullable enable
+Microsoft.DotNet.MSBuildSdkResolver.DotNetMSBuildSdkResolver
+Microsoft.DotNet.MSBuildSdkResolver.DotNetMSBuildSdkResolver.DotNetMSBuildSdkResolver() -> void
+override Microsoft.DotNet.MSBuildSdkResolver.DotNetMSBuildSdkResolver.Name.get -> string!
+override Microsoft.DotNet.MSBuildSdkResolver.DotNetMSBuildSdkResolver.Priority.get -> int
+override Microsoft.DotNet.MSBuildSdkResolver.DotNetMSBuildSdkResolver.Resolve(Microsoft.Build.Framework.SdkReference! sdkReference, Microsoft.Build.Framework.SdkResolverContext! context, Microsoft.Build.Framework.SdkResultFactory! factory) -> Microsoft.Build.Framework.SdkResult?

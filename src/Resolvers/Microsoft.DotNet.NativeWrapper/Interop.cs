@@ -9,7 +9,12 @@ using System.Runtime.InteropServices.Marshalling;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public static partial class Interop
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    static partial class Interop
     {
         public static readonly bool RunningOnWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 #if NET

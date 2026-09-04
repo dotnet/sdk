@@ -3,7 +3,12 @@
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public class NETBundlesNativeWrapper : INETBundleProvider
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class NETBundlesNativeWrapper : INETBundleProvider
     {
         public NetEnvironmentInfo GetDotnetEnvironmentInfo(string dotnetExeDirectory)
         {

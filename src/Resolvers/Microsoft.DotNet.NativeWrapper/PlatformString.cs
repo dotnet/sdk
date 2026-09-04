@@ -11,7 +11,12 @@ namespace Microsoft.DotNet.NativeWrapper;
 ///   This is particularly useful for returned strings.
 ///  </para>
 /// </remarks>
-public readonly struct PlatformString
+#if INTERNALIZE_SHARED_TYPES
+internal
+#else
+public
+#endif
+readonly struct PlatformString
 {
     /// <summary>
     ///  The native value.

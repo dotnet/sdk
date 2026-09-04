@@ -13,7 +13,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// </summary>
     /// <remarks>This is distinct from <see cref="WorkloadId"/> to prevent accidental confusion, but the behavior is identical</remarks>
     [JsonConverter(typeof(PackIdJsonConverter))]
-    public struct WorkloadPackId : IComparable<WorkloadPackId>, IEquatable<WorkloadPackId>
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    struct WorkloadPackId : IComparable<WorkloadPackId>, IEquatable<WorkloadPackId>
     {
         string _id;
 
@@ -46,7 +51,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public static bool operator !=(WorkloadPackId a, WorkloadPackId b) => !a.Equals(b);
     }
 
-    public class PackIdJsonConverter : JsonConverter<WorkloadPackId>
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class PackIdJsonConverter : JsonConverter<WorkloadPackId>
     {
         public override WorkloadPackId Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
             new(reader.GetString() ?? string.Empty);

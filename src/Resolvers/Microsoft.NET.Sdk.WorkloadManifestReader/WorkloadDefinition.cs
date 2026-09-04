@@ -3,7 +3,12 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public abstract class BaseWorkloadDefinition
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    abstract class BaseWorkloadDefinition
     {
         public BaseWorkloadDefinition(WorkloadId id)
         {
@@ -13,7 +18,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public WorkloadId Id { get; }
     }
 
-    public class WorkloadDefinition : BaseWorkloadDefinition
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class WorkloadDefinition : BaseWorkloadDefinition
     {
         public WorkloadDefinition(
             WorkloadId id, bool isAbstract, string? description, WorkloadDefinitionKind kind, List<WorkloadId>? extends,
@@ -36,13 +46,23 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
         public List<string>? Platforms { get; }
     }
 
-    public enum WorkloadDefinitionKind
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    enum WorkloadDefinitionKind
     {
         Dev,
         Build
     }
 
-    public class WorkloadRedirect : BaseWorkloadDefinition
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class WorkloadRedirect : BaseWorkloadDefinition
     {
         public WorkloadRedirect(WorkloadId id, WorkloadId replaceWith) : base(id)
         {

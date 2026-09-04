@@ -19,7 +19,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.DotNet.TemplateLocator\Microsoft.DotNet.TemplateLocator.csproj">
+      <Aliases>templateLocator</Aliases>
+    </ProjectReference>
     <ProjectReference Include="..\..\src\Resolvers\Microsoft.DotNet.MSBuildSdkResolver\Microsoft.DotNet.MSBuildSdkResolver.csproj" />
 
     <!-- Microsoft.DotNet.MSBuildSdkResolver compiles source of Microsoft.DotNet.SdkResolver to reduce dll load. There are duplicated types-->

@@ -3,7 +3,12 @@
 
 namespace Microsoft.NET.Sdk.WorkloadManifestReader
 {
-    public class TempDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    class TempDirectoryWorkloadManifestProvider : IWorkloadManifestProvider
     {
         private readonly string _manifestsPath;
         private readonly string _sdkVersionBand;

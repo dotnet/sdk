@@ -7,7 +7,12 @@ namespace Microsoft.NET.Sdk.WorkloadManifestReader
     /// Provides a hook for the CLI layer to detect and repair corrupt workload manifest installations
     /// before the manifests are loaded by the resolver.
     /// </summary>
-    public interface IWorkloadManifestCorruptionRepairer
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    interface IWorkloadManifestCorruptionRepairer
     {
         /// <summary>
         /// Ensures that the manifests required by the current resolver are present and healthy.

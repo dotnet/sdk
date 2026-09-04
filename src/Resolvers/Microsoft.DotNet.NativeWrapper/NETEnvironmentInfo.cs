@@ -6,14 +6,24 @@ using static Microsoft.DotNet.NativeWrapper.Interop;
 
 namespace Microsoft.DotNet.NativeWrapper
 {
-    public interface INetBundleInfo
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    interface INetBundleInfo
     {
         public ReleaseVersion Version { get; }
 
         public string Path { get; }
     }
 
-    public sealed class NetSdkInfo : INetBundleInfo
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    sealed class NetSdkInfo : INetBundleInfo
     {
         public ReleaseVersion Version { get; private set; }
 
@@ -26,7 +36,12 @@ namespace Microsoft.DotNet.NativeWrapper
         }
     }
 
-    public sealed class NetRuntimeInfo : INetBundleInfo
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    sealed class NetRuntimeInfo : INetBundleInfo
     {
         public ReleaseVersion Version { get; private set; }
 
@@ -42,7 +57,12 @@ namespace Microsoft.DotNet.NativeWrapper
         }
     }
 
-    public sealed class NetEnvironmentInfo
+#if INTERNALIZE_SHARED_TYPES
+    internal
+#else
+    public
+#endif
+    sealed class NetEnvironmentInfo
     {
         public IEnumerable<NetRuntimeInfo> RuntimeInfo { get; private set; }
 
