@@ -22,6 +22,18 @@ internal sealed class BlazorWebAssemblyAppModel(DotNetWatchContext context, Proj
     protected override ImmutableArray<HotReloadClient> CreateManagedClients(ILogger clientLogger, ILogger agentLogger, BrowserRefreshServer? browserRefreshServer)
     {
         Debug.Assert(browserRefreshServer != null);
-        return [CreateWebAssemblyClient(clientLogger, agentLogger, browserRefreshServer, clientProject)];
+        return [CreateWebAssemblyClient(
+            clientLogger,
+            agentLogger,
+            browserRefreshServer,
+            clientProject,
+            enableBrowserToolsReplay: clientProject.IsNetCoreApp(Versions.Version11_0))];
     }
+
+    internal override IBrowserToolsLaunchConfigurator CreateBrowserToolsLaunchConfigurator(
+        AbstractBrowserRefreshServer browserRefreshServer,
+        BrowserToolsLaunchFeatures features)
+        => clientProject.IsNetCoreApp(Versions.Version11_0)
+            ? new GatewayProxyBrowserToolsLaunchConfigurator(browserRefreshServer.ProviderAddress)
+            : base.CreateBrowserToolsLaunchConfigurator(browserRefreshServer, features);
 }

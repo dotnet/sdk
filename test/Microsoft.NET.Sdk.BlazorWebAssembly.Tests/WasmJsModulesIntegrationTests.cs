@@ -343,6 +343,55 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 intermediateOutputPath);
         }
 
+        [TestMethod]
+        [RequiresMSBuildVersion("17.12")]
+        public void HotReloadBrowserToolsModule_IsBuildOnly()
+        {
+            const string moduleFileName = "Microsoft.DotNet.HotReload.WebAssembly.BrowserTools.lib.module.js";
+            const string moduleRelativePath = $"_framework/{moduleFileName}";
+
+            ProjectDirectory = CreateAspNetSdkTestAsset("BlazorWasmMinimal")
+                .WithProjectChanges((p, doc) =>
+                {
+                    doc.Root.Add(new XElement("PropertyGroup",
+                        new XElement("WasmFingerprintAssets", false)));
+                });
+
+            var publish = CreatePublishCommand(ProjectDirectory);
+            ExecuteCommand(publish).Should().Pass();
+
+            var outputPath = publish.GetOutputDirectory(DefaultTfm).ToString();
+            var intermediateOutputPath = publish.GetIntermediateDirectory(DefaultTfm, "Debug").ToString();
+
+            var buildManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.build.json");
+            new FileInfo(buildManifestPath).Should().Exist();
+            var buildManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(buildManifestPath));
+            var buildAsset = buildManifest.Assets.Single(
+                asset => asset.RelativePath == moduleRelativePath && asset.AssetRole == "Primary");
+
+            buildAsset.AssetKind.Should().Be("Build");
+            buildAsset.AssetRole.Should().Be("Primary");
+            buildAsset.AssetTraitName.Should().Be("JSModule");
+            buildAsset.AssetTraitValue.Should().Be("JSLibraryModule");
+
+            new FileInfo(Path.Combine(intermediateOutputPath, "hotreload", moduleFileName)).Should().Exist();
+            buildManifest.Endpoints.Single(
+                endpoint => endpoint.Route == moduleRelativePath && endpoint.Selectors.Length == 0);
+
+            var publishManifestPath = Path.Combine(intermediateOutputPath, "staticwebassets.publish.json");
+            new FileInfo(publishManifestPath).Should().Exist();
+            var publishManifest = StaticWebAssetsManifest.FromJsonBytes(File.ReadAllBytes(publishManifestPath));
+
+            publishManifest.Assets.Should().NotContain(
+                asset => asset.RelativePath.Contains(moduleFileName, StringComparison.Ordinal));
+            publishManifest.Endpoints.Should().NotContain(
+                endpoint => endpoint.Route.Contains(moduleFileName, StringComparison.Ordinal));
+
+            var publishFrameworkPath = Path.Combine(outputPath, "wwwroot", "_framework");
+            Directory.EnumerateFiles(publishFrameworkPath, "*", SearchOption.AllDirectories).Should().NotContain(
+                file => Path.GetFileName(file).StartsWith(moduleFileName, StringComparison.Ordinal));
+        }
+
         private static JsonElement GetPublishExtension(string path)
         {
             var blazorBootJson = new FileInfo(path);
