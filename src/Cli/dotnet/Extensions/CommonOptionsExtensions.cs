@@ -4,10 +4,10 @@
 #nullable disable
 
 using Microsoft.Build.Framework;
-using Microsoft.Extensions.Logging;
-using Microsoft.DotNet.Cli.Utils;
-using Microsoft.DotNet.Cli.NuGetPackageDownloader;
 using Microsoft.DotNet.Cli.Commands;
+using Microsoft.DotNet.Cli.NuGetPackageDownloader;
+using Microsoft.DotNet.Cli.Utils;
+using Microsoft.Extensions.Logging;
 using System.CommandLine;
 
 namespace Microsoft.DotNet.Cli.Extensions;
@@ -49,6 +49,12 @@ internal static class CommonOptionsExtensions
             verbosity.Equals(VerbosityOptions.diagnostic) ||
             verbosity.Equals(VerbosityOptions.d) ||
             verbosity.Equals(VerbosityOptions.detailed);
+    }
+
+    public static bool IsDiagnostic(this VerbosityOptions verbosity)
+    {
+        return verbosity.Equals(VerbosityOptions.diag) ||
+            verbosity.Equals(VerbosityOptions.diagnostic);
     }
 
     public static bool IsQuiet(this VerbosityOptions verbosity)
