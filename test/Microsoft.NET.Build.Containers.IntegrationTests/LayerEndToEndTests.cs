@@ -8,6 +8,8 @@ using System.Security.Cryptography;
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 
 [TestClass]
+// ContentStore.ArtifactRoot is read by product code that cannot acquire a test resource lock.
+[DoNotParallelize]
 public sealed class LayerEndToEndTests : SdkTest, IDisposable
 {
     public LayerEndToEndTests()

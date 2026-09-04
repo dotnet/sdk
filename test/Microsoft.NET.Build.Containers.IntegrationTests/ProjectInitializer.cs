@@ -55,10 +55,10 @@ public sealed class ProjectInitializer
         props["NETCoreSdkPortableRuntimeIdentifier"] = "linux-x64";
 
 
-        var safeBinlogFileName = projectName.Replace(" ", "_").Replace(":", "_").Replace("/", "_").Replace("\\", "_").Replace("*", "_");
+        var safeBinlogFileName = $"{projectName.Replace(" ", "_").Replace(":", "_").Replace("/", "_").Replace("\\", "_").Replace("*", "_")}-{Guid.NewGuid():N}";
         var loggers = new List<ILogger>
         {
-            new global::Microsoft.Build.Logging.BinaryLogger() {CollectProjectImports = global::Microsoft.Build.Logging.BinaryLogger.ProjectImportsCollectionMode.Embed, Verbosity = LoggerVerbosity.Diagnostic, Parameters = $"LogFile={safeBinlogFileName}.binlog" },
+            new global::Microsoft.Build.Logging.BinaryLogger() {CollectProjectImports = global::Microsoft.Build.Logging.BinaryLogger.ProjectImportsCollectionMode.Embed, Verbosity = LoggerVerbosity.Diagnostic, Parameters = $"LogFile={Path.Combine(TestSettings.TestArtifactsDirectory, safeBinlogFileName)}.binlog" },
             new global::Microsoft.Build.Logging.ConsoleLogger(LoggerVerbosity.Detailed)
         };
         CapturingLogger logs = new();

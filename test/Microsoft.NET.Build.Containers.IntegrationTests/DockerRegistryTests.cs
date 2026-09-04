@@ -5,6 +5,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Microsoft.NET.Build.Containers.IntegrationTests;
 [TestClass]
+[ResourceLock(TestSettings.DockerDaemonResource)]
 public class DockerRegistryTests : SdkTest
 {
     private TestLoggerFactory? _loggerFactory;
@@ -40,6 +41,7 @@ public class DockerRegistryTests : SdkTest
         var registryAuthDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "auth"));
         var registryCertsDir = new DirectoryInfo(Path.Combine(registryDir.FullName, "certs"));
         var registryName = "localhost:5555";
+        var registryContainerName = $"auth-registry-{TestSettings.TestRunId}";
         try
         {
             if (!registryCertsDir.Exists)
@@ -54,7 +56,7 @@ public class DockerRegistryTests : SdkTest
             // start up an authenticated registry using that dev cert
             ContainerCli.RunCommand(Log,
                 "-d", "--rm",
-                "--name", "auth-registry",
+                "--name", registryContainerName,
                 "-p", "5555:5000",
                 "-e", "REGISTRY_AUTH=htpasswd",
                 "-e", "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm",
@@ -66,7 +68,7 @@ public class DockerRegistryTests : SdkTest
                 "registry:2")
             .WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
             // verify that the registry container started successfully
-            ContainerCli.InspectCommand(Log, "auth-registry").Execute().Should().Pass();
+            ContainerCli.InspectCommand(Log, registryContainerName).Execute().Should().Pass();
             // login to that registry
             ContainerCli.LoginCommand(Log, "--username", "testuser", "--password", "testpassword", registryName).Execute().Should().Pass();
             // push an image to that registry using username/password
@@ -88,7 +90,7 @@ public class DockerRegistryTests : SdkTest
         finally
         {
             //stop the registry
-            ContainerCli.StopCommand(Log, "auth-registry").WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
+            ContainerCli.StopCommand(Log, registryContainerName).WithWorkingDirectory(registryDir.FullName).Execute().Should().Pass();
         }
     }
 }
