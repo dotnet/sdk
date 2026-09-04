@@ -14,5 +14,5 @@ Options:
   --force                                      Allows installing template packages from the specified sources even if they would override a template package from another source. [default: False]
   --prerelease                                 Allows prerelease template packages to be installed when no version is specified. [default: False]
   -v, --verbosity <LEVEL>                      Sets the verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], and diag[nostic]. [default: normal]
-  -d, --diagnostics                            Enables diagnostic output. [default: False]
+  -d, --diagnostics                            Enables diagnostic output.
   -?, -h, --help                               Show command line help.

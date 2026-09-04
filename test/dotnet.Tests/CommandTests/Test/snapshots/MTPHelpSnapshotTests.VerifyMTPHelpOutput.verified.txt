@@ -36,21 +36,21 @@ Options:
   -a, --arch <ARCH>                               The target architecture.
   --os <OS>                                       The target operating system.
   -v, -verbosity <LEVEL>                          Set the MSBuild verbosity level. Allowed values are q[uiet], m[inimal], n[ormal], d[etailed], and diag[nostic].
-  --no-restore                                    Do not restore the project before building. [default: False]
+  --no-restore                                    Do not restore the project before building.
   --no-build                                      Do not build the project before testing. Implies --no-restore. [default: False]
-  -nologo, --no-banner, --no-logo                 Run test(s), without displaying Microsoft Testplatform banner [default: False]
-  --no-dependencies                               Do not build project-to-project references and only build the specified project. [default: False]
+  -nologo, --no-banner, --no-logo                 Run test(s), without displaying Microsoft Testplatform banner
+  --no-dependencies                               Do not build project-to-project references and only build the specified project.
   --artifacts-path <ARTIFACTS_DIR>                The artifacts path. All output from the project, including build, publish, and pack output, will go in subfolders under the specified path.
-  --ucr, --use-current-runtime                    Use current runtime as the target runtime. [default: False]
-  --no-ansi                                       Disable ANSI output. [default: False]
-  --no-progress                                   Disable progress reporting. [default: False]
-  --no-artifact-post-processing                   Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications. [default: False]
+  --ucr, --use-current-runtime                    Use current runtime as the target runtime.
+  --no-ansi                                       Disable ANSI output.
+  --no-progress                                   Disable progress reporting.
+  --no-artifact-post-processing                   Do not merge compatible artifacts, such as TRX reports or code coverage files, produced by different test applications.
   --output <Detailed|Normal>                      Verbosity of test output.
   --list-tests <text|json>                        List the discovered tests instead of running the tests. Optionally accepts a format: 'text' (default) for human-readable output or 'json' for machine-readable output.
-  --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application. [default: False]
+  --no-launch-profile                             Do not attempt to use launchSettings.json or [app].run.json to configure the application.
   --no-launch-profile-arguments                   Do not use arguments specified in launch profile to run the application. [default: False]
   --device <DEVICE>                               The device identifier to use for running tests.
-  --list-devices                                  List available devices for running tests. [default: False]
+  --list-devices                                  List available devices for running tests.
   -?, -h, --help                                  Show command line help.
 
 Waiting for options and extensions...

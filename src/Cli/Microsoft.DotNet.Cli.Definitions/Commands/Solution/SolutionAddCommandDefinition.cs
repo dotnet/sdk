@@ -18,7 +18,8 @@ public sealed class SolutionAddCommandDefinition : Command
 
     public readonly Option<bool> InRootOption = new(InRootOptionName)
     {
-        Description = CommandDefinitionStrings.InRoot
+        Description = CommandDefinitionStrings.InRoot,
+        Arity = ArgumentArity.Zero
     };
 
     public const string SolutionFolderOptionName = "--solution-folder";
@@ -32,6 +33,7 @@ public sealed class SolutionAddCommandDefinition : Command
     {
         Description = CommandDefinitionStrings.SolutionAddReferencedProjectsOptionDescription,
         DefaultValueFactory = (_) => true,
+        Hidden = true,
     };
 
     public SolutionAddCommandDefinition()
