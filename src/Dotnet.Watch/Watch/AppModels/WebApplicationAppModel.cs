@@ -45,15 +45,38 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
         var capabilities = clientProject.GetWebAssemblyCapabilities().ToImmutableArray();
         var targetFramework = clientProject.GetTargetFrameworkVersion() ?? throw new InvalidOperationException($"Project doesn't define {PropertyNames.TargetFrameworkMoniker}");
 
-        return new WebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, browserRefreshServer.BrowserToolsUpdateStore.Reset(), capabilities, targetFramework, context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
+        return new WebAssemblyHotReloadClient(clientLogger, agentLogger, browserRefreshServer, browserRefreshServer.ResetUpdates(), capabilities, targetFramework, context.EnvironmentOptions.TestFlags.HasFlag(TestFlags.MockBrowser));
     }
 
     private static string GetMiddlewareAssemblyPath()
         => GetInjectedAssemblyPath(MiddlewareTargetFramework, "Microsoft.AspNetCore.Watch.BrowserRefresh");
 
     /// <summary>
-    /// Creates the browser tools provider for the project, forwarding
-    /// <see cref="BrowserToolsProtocol.RoutePrefix"/> to it from a hosting startup injected into the app.
+    /// Configures the application process to expose the browser tools provider on its own origin.
+    /// The default forwards the provider routes from a hosting startup injected into the app.
+    /// </summary>
+    internal virtual void ConfigureBrowserToolsLaunchEnvironment(IDictionary<string, string> environment, AbstractBrowserRefreshServer browserRefreshServer)
+        => AddHostingStartupEnvironment(environment, browserRefreshServer, GetMiddlewareAssemblyPath());
+
+    internal static void AddHostingStartupEnvironment(IDictionary<string, string> environment, AbstractBrowserRefreshServer browserRefreshServer, string middlewareAssemblyPath)
+    {
+        environment[MiddlewareEnvironmentVariables.AspNetCoreAutoReloadProviderAddress] = browserRefreshServer.ProviderAddress.AbsoluteUri;
+
+        // Loading the assembly as a startup hook makes the out-of-application BrowserRefresh
+        // assembly resolvable when ASP.NET Core activates its hosting startup by simple name.
+        environment.InsertListItem(MiddlewareEnvironmentVariables.DotNetStartupHooks, middlewareAssemblyPath, Path.PathSeparator);
+        environment.InsertListItem(MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssemblies, Path.GetFileNameWithoutExtension(middlewareAssemblyPath), MiddlewareEnvironmentVariables.AspNetCoreHostingStartupAssembliesSeparator);
+
+        if (browserRefreshServer.Logger.IsEnabled(LogLevel.Trace))
+        {
+            // enable debug logging from the hosting startup:
+            environment[MiddlewareEnvironmentVariables.LoggingLevel] = "Debug";
+        }
+    }
+
+    /// <summary>
+    /// Creates the browser tools provider for the project. The application host is configured by
+    /// <see cref="ConfigureBrowserToolsLaunchEnvironment"/> to expose it on the app's own origin.
     /// </summary>
     public BrowserRefreshServer? TryCreateRefreshServer(ProjectGraphNode projectNode)
     {
@@ -65,8 +88,9 @@ internal abstract class WebApplicationAppModel(DotNetWatchContext context) : Hot
                 logger,
                 connectionServerLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionServerLogComponentName, GetBrowserLoggerName(connectionId)),
                 connectionAgentLoggerFactory: connectionId => context.LoggerFactory.CreateLogger(ConnectionAgentLogComponentName, GetBrowserLoggerName(connectionId)),
-                middlewareAssemblyPath: GetMiddlewareAssemblyPath(),
+                configureLaunchEnvironment: ConfigureBrowserToolsLaunchEnvironment,
                 dotnetPath: context.EnvironmentOptions.GetMuxerPath(),
+                sessionKey: context.BrowserRefreshServerFactory.SessionKey,
                 webSocketConfig: context.EnvironmentOptions.BrowserWebSocketConfig,
                 suppressTimeouts: context.EnvironmentOptions.TestFlags != TestFlags.None);
         }

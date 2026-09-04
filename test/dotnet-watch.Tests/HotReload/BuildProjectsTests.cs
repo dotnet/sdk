@@ -66,8 +66,12 @@ public class BuildProjects
         {
             SolutionFile = processSpec.Arguments.FirstOrDefault(a => a.EndsWith(".slnx"));
 
-            // Replace path to solution, which is a temp path, with placeholder to make assertions easier.
-            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a => a == SolutionFile ? "<solution>" : a)));
+            // Replace path to solution, which is a temp path, and the randomly generated browser tools
+            // public key with placeholders to make assertions easier.
+            BuildInvocations.Add(string.Join(" ", processSpec.Arguments.Select(a =>
+                a == SolutionFile ? "<solution>" :
+                a.StartsWith("-p:DotNetWatchBrowserToolsPublicKey=", StringComparison.Ordinal) ? "-p:DotNetWatchBrowserToolsPublicKey=<key>" :
+                a)));
         }
 
         public void Dispose()
@@ -80,7 +84,7 @@ public class BuildProjects
         => new(Output, rootProjects?.Select(ProjectRepresentation.FromProjectOrEntryPointFilePath).ToImmutableArray() ?? []);
 
     private static string AddReservedWatchProperties(string invocation)
-        => invocation.Replace("-p A=1", "-p A=1 -p:DotNetWatchBrowserTools=True", StringComparison.Ordinal);
+        => invocation.Replace("-p A=1", "-p A=1 -p:DotNetWatchBrowserTools=True -p:DotNetWatchBrowserToolsPublicKey=<key>", StringComparison.Ordinal);
 
     [TestMethod]
     public async Task SingleProject_NotMain()

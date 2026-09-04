@@ -14,8 +14,10 @@ export function onRuntimeConfigLoaded(config) {
 
 export async function onRuntimeReady() {
     // Started once the runtime is up so that the Hot Reload apply API is available before updates are replayed.
+    // The configuration module is app hosted and sits next to this initializer, so resolving it relative to
+    // import.meta.url keeps it correct under any static web asset base path or fingerprinting scheme.
     try {
-        await import('/_framework/dotnet-browser-tools/browser-tools-bootstrap.js');
+        await import(new URL('./Microsoft.NET.Sdk.WebAssembly.DotNetWatch.BrowserTools.Config.js', import.meta.url).href);
     } catch (error) {
         console.debug('Unable to load the dotnet-watch browser tools.', error);
     }

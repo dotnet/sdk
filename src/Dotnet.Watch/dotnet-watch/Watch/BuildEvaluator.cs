@@ -49,6 +49,7 @@ internal class BuildEvaluator
             MainProjectOptions.Representation.PhysicalPath,
             MainProjectOptions.TargetFramework,
             _context.BuildArguments,
+            _context.BrowserRefreshServerFactory.PublicKey,
             _context.ProcessRunner,
             _context.BuildLogger,
             _context.Options,
@@ -101,7 +102,7 @@ internal class BuildEvaluator
         {
             var applicationArgumentsSeparator = arguments.IndexOf("--");
             var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : arguments.Count;
-            arguments.Insert(reservedPropertiesIndex, $"-p:{PropertyNames.DotNetWatchBrowserTools}={!_context.EnvironmentOptions.SuppressBrowserRefresh}");
+            arguments.InsertRange(reservedPropertiesIndex, ReservedBuildProperties.GetBrowserToolsArguments(_context.EnvironmentOptions, _context.BrowserRefreshServerFactory.PublicKey));
         }
 
         return arguments;

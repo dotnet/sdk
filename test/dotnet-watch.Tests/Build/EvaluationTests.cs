@@ -1,4 +1,4 @@
-﻿// Licensed to the .NET Foundation under one or more agreements.
+// Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
 extern alias MSTestFramework;
@@ -447,7 +447,7 @@ public class EvaluationTests
         var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDirectory);
         var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
-        var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], processRunner, Logger, TestOptions.GlobalOptions, options);
+        var filesetFactory = new MSBuildFileSetFactory(projectA, targetFramework: null, buildArguments: ["/p:_DotNetWatchTraceOutput=true"], browserToolsPublicKey: "", processRunner, Logger, TestOptions.GlobalOptions, options);
 
         var result = await filesetFactory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
         Assert.IsNotNull(result);
@@ -511,7 +511,7 @@ public class EvaluationTests
         var options = TestOptions.GetEnvironmentOptions(workingDirectory: Path.GetDirectoryName(project1Path)!);
         var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
 
-        var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], processRunner, Logger, TestOptions.GlobalOptions, options);
+        var factory = new MSBuildFileSetFactory(project1Path, targetFramework: null, buildArguments: [], browserToolsPublicKey: "", processRunner, Logger, TestOptions.GlobalOptions, options);
         var result = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
         Assert.IsNull(result);
 
@@ -548,7 +548,7 @@ public class EvaluationTests
             var options = TestOptions.GetEnvironmentOptions(workingDirectory: testDir) with { TestOutput = testDir };
             var processRunner = new ProcessRunner(processCleanupTimeout: TimeSpan.Zero);
             var buildArguments = targetFramework != null ? new[] { "/p:TargetFramework=" + targetFramework } : [];
-            var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, processRunner, Logger, TestOptions.GlobalOptions, options);
+            var factory = new MSBuildFileSetFactory(rootProjectPath, targetFramework: null, buildArguments, browserToolsPublicKey: "", processRunner, Logger, TestOptions.GlobalOptions, options);
             var targetsResult = await factory.TryCreateAsync(requireProjectGraph: null, CancellationToken.None);
             Assert.IsNotNull(targetsResult);
 

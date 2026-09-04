@@ -55,7 +55,8 @@ internal sealed class HotReloadDotNetWatcher
             context.RootProjects,
             buildProperties: EvaluationResult.GetGlobalBuildProperties(
                 context.BuildArguments,
-                context.EnvironmentOptions),
+                context.EnvironmentOptions,
+                context.BrowserRefreshServerFactory.PublicKey),
             context.BuildLogger,
             context.Options,
             context.EnvironmentOptions);
@@ -1258,7 +1259,7 @@ internal sealed class HotReloadDotNetWatcher
         };
 
         arguments.AddRange(_context.BuildArguments);
-        arguments.Add($"-p:{PropertyNames.DotNetWatchBrowserTools}={!_context.EnvironmentOptions.SuppressBrowserRefresh}");
+        arguments.AddRange(ReservedBuildProperties.GetBrowserToolsArguments(_context.EnvironmentOptions, _context.BrowserRefreshServerFactory.PublicKey));
 
         if (action != BuildAction.RestoreOnly && targetFramework != null)
         {

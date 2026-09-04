@@ -27,13 +27,36 @@ Reload).
   own `HotReloadClient` subclass (e.g. `DefaultHotReloadClient`,
   `WebAssemblyHotReloadClient`); a new app model may need its own implementation.
 - **The browser-tools provider owns the browser protocol and replay
-  state.** Its fixed `/_framework/dotnet-browser-tools` HTTP/WebSocket endpoints live
-  under [`HotReloadClient/Web`](HotReloadClient/Web). All application hosts, including
-  standalone Blazor WebAssembly development servers, use the shared-framework-only
-  [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs). Keep destinations
-  fixed to the trusted loopback provider address, the route root-relative, and the
-  encrypted shared-secret WebSocket subprotocol intact. Do not add YARP to arbitrary
+  state.** Its fixed `/_framework/dotnet-browser-tools` endpoints live under
+  [`HotReloadClient/Web`](HotReloadClient/Web) and are reduced to `connect` (WebSocket)
+  and `clear-cache`; the provider serves no JavaScript, no session descriptor, no protocol
+  version, and no HTTP replay. Most application hosts reach it through the
+  shared-framework-only [`BrowserToolsForwarder`](Web.Middleware/BrowserToolsForwarder.cs)
+  installed by the hosting-startup path. Standalone Blazor WebAssembly is the exception:
+  it is served by the Blazor Gateway, a separate YARP host that does not activate ASP.NET
+  Core hosting startups, so
+  [`BlazorWebAssemblyAppModel`](Watch/AppModels/BlazorWebAssemblyAppModel.cs) configures a
+  gateway reverse-proxy route through `ReverseProxy__*` environment variables instead. Keep
+  destinations fixed to the trusted loopback provider address, the route root-relative, and
+  the encrypted shared-secret WebSocket subprotocol intact. Do not add YARP to arbitrary
   applications.
+- **The browser authenticates the provider, so the provider must not serve code.**
+  `dotnet watch` creates one RSA keypair per invocation in
+  [`BrowserRefreshServerFactory`](Watch/Browser/BrowserRefreshServerFactory.cs) before any
+  project is built, and only the public half travels to MSBuild through
+  [`ReservedBuildProperties`](Watch/Build/ReservedBuildProperties.cs). The build pins that
+  key into an application-hosted configuration module and the client is an application
+  static asset; see
+  [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets).
+  Never move executable browser-tools code back into the provider, never let the private
+  key or the browser's shared secret reach disk, a build property, or a log, and keep the
+  generated assets build only.
+- **Replay lives in the WebSocket handshake.** The provider sends the current snapshot as
+  the first message on an accepted connection and releases live messages for that
+  connection only after the browser acknowledges it, so there is no wire-level generation
+  id. The internal epoch in
+  [`AbstractBrowserRefreshServer`](HotReloadClient/Web/AbstractBrowserRefreshServer.cs)
+  exists only to drop work produced by a superseded client; do not surface it on the wire.
 - **Activation is app-model-specific, but the browser client is shared.** MVC and Razor
   Pages use
   [`BrowserRefreshTagHelperComponent`](Web.Middleware/BrowserRefreshTagHelperComponent.cs)
@@ -43,23 +66,38 @@ Reload).
   initializer added by the WASM SDK for every supported target
   framework; from `onRuntimeConfigLoaded` it sets the watch-private activation variable
   `__DOTNET_WATCH_BROWSER_TOOLS` and `DOTNET_MODIFIABLE_ASSEMBLIES`, and from
-  `onRuntimeReady` it imports the
-  provider-hosted browser client, so the runtime's apply API exists before updates
-  replay. Blazor guarantees every `onRuntimeConfigLoaded` callback runs before any
-  `onRuntimeReady` callback and passes the same config object to all initializers, so
-  coordinate between initializer modules through that config rather than through
-  `globalThis` or a cross-module import: initializer load order is unspecified and each
-  module's URL is subject to fingerprinting. Do not use `__ASPNETCORE_BROWSER_TOOLS` for
-  this handshake because older runtimes interpret it as a request to load the removed
-  application-hosted `blazor-hotreload.js`. On .NET 10+ the separate Hot Reload agent
-  initializer applies managed
+  `onRuntimeReady` it imports the application-hosted configuration module. Blazor guarantees
+  every `onRuntimeConfigLoaded`
+  callback runs before any `onRuntimeReady` callback and passes the same config object to
+  all initializers, so pass *activation state* between initializer modules through that
+  config rather
+  than through `globalThis` or a cross-module import: initializer load order is unspecified
+  and each module's URL is subject to fingerprinting. Do not use
+  `__ASPNETCORE_BROWSER_TOOLS` for this handshake because older runtimes interpret it as a
+  request to load the removed application-hosted `blazor-hotreload.js`. On .NET 10+ the
+  separate Hot Reload agent initializer applies managed
   updates; older target frameworks fall back to the runtime's own
   `window.Blazor._internal.applyHotReload`. Both initializers can run in the same app;
   duplicate activation is absorbed by module caching and the client's injection sentinel.
   Static/custom HTML that has no supported
   initializer requires user-provided activation; do not add build-time `index.html`
-  rewriting. The browser client itself is embedded in and served by the provider, so do
-  not add it back to the application's static asset graph.
+  rewriting. Apps that disable `StaticWebAssetsEnabled` or `JSModulesEnabled` cannot host
+  the client and therefore cannot receive browser tools.
+- **The replay handshake waits for the Hot Reload agent through a `globalThis`
+  rendezvous.** The provider sends the replay snapshot exactly once, so applying it before
+  the agent installed `window.Blazor._internal.applyHotReloadDeltas` would drop those
+  updates while the browser still acknowledged success. Both `onRuntimeReady` callbacks run
+  unordered, so the agent publishes
+  `globalThis.__DOTNET_WATCH_HOT_RELOAD_AGENT = { ready, setReady }` synchronously before
+  its first `await` and resolves it in a `finally`, including on its disabled early-return
+  path, and the client awaits it before replaying. This is the one case that cannot use the
+  runtime config object, because the value is a promise that only exists once
+  `onRuntimeReady` has started. The helper is duplicated in
+  [`Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js`](HotReloadAgent.WebAssembly.Browser/wwwroot/Microsoft.DotNet.HotReload.WebAssembly.Browser.lib.module.js)
+  and in the Static Web Assets SDK's `dotnet-watch-browser-tools.js`; keep the two in sync.
+  The wait is bounded and best effort so runtimes that install the apply API through their
+  own bootstrap, or pages that never boot WebAssembly, degrade to a logged warning instead
+  of a reload loop.
 - **Server hosting startup is intentionally thin.**
   [`HostingStartup.cs`](Web.Middleware/HostingStartup.cs) registers only the MVC/Razor
   TagHelper component and the reserved forwarder for the modern path. The BrowserRefresh

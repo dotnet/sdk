@@ -49,7 +49,7 @@ public class BrowserToolsForwarderTest
         using var content = new StringContent("request body", Encoding.UTF8, "application/test");
         using var request = new HttpRequestMessage(
             HttpMethod.Post,
-            "/_framework/dotnet-browser-tools/session.json?name=value%20with%20space")
+            "/_framework/dotnet-browser-tools/clear-cache?name=value%20with%20space")
         {
             Content = content,
         };
@@ -69,7 +69,7 @@ public class BrowserToolsForwarderTest
         Assert.AreEqual("\"cache\"", response.Headers.GetValues("Clear-Site-Data").Single());
         Assert.AreEqual("forwarded response", responseBody);
         Assert.AreEqual(HttpMethods.Post, observation.Method);
-        Assert.AreEqual("/_framework/dotnet-browser-tools/session.json", observation.Path);
+        Assert.AreEqual("/_framework/dotnet-browser-tools/clear-cache", observation.Path);
         Assert.AreEqual("?name=value%20with%20space", observation.QueryString);
         Assert.AreEqual("preserved", observation.TestHeader);
         Assert.AreEqual("application/test; charset=utf-8", observation.ContentType);
