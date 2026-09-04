@@ -7,6 +7,7 @@ using System.Text.Json;
 namespace Microsoft.DotNet.ProjectTools.Tests;
 
 [TestClass]
+[ResourceLock(WellKnownResources.EnvironmentVariables)]
 public class LaunchSettingsParserTests
 {
     private static readonly string s_environmentVariableName1 = $"TEST_VAR1_{GetUniqueName()}";
@@ -17,6 +18,13 @@ public class LaunchSettingsParserTests
     {
         Environment.SetEnvironmentVariable(s_environmentVariableName1, "ENV_VALUE1");
         Environment.SetEnvironmentVariable(s_environmentVariableName2, "ENV_VALUE2");
+    }
+
+    [ClassCleanup]
+    public static void RestoreEnvironmentVariables()
+    {
+        Environment.SetEnvironmentVariable(s_environmentVariableName1, null);
+        Environment.SetEnvironmentVariable(s_environmentVariableName2, null);
     }
 
     // The same syntax works on Windows and Unix ($VAR does not get expanded Unix).

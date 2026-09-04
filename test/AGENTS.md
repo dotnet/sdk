@@ -29,15 +29,16 @@ Guidance for changes under `test/`.
   installed one.
 - **Test asset placement.** Put test inputs (projects, packages, workloads, etc.) in
   `test/TestAssets/`. They are automatically deployed to Helix via `test/UnitTests.proj`.
-- **Don't raise parallelism.** MSTest is repo-defaulted to `None` in
-  `test/Directory.Build.props` because of concurrency flakiness; a few projects opt
-  into `ClassLevel` or `MethodLevel` after auditing their shared resources. Cranking it
-  up without that audit causes Helix over-subscription/timeouts and test interference.
+- **Audit before raising parallelism.** New MSTest projects are repo-defaulted to `None`
+  in `test/Directory.Build.props` until their shared resources have been audited.
+  Runnable test projects override that default with `ClassLevel` or `MethodLevel` when
+  safe; keep `None` only when the whole assembly depends on one inherently serial
+  resource. Raising the scope without an audit causes Helix over-subscription/timeouts
+  and test interference.
 - **In parallelized projects, prefer `[ResourceLock]` over `[DoNotParallelize]`.** In the
-  projects that do opt in (`Microsoft.NET.Build.Tests`, `dotnet-watch.Tests`,
-  `Microsoft.NET.Build.Containers.UnitTests`, `Microsoft.TemplateEngine.Cli.UnitTests`),
-  MSTest's parallel-safety analyzers (MSTEST0073–MSTEST0077) are active, and
-  `MSTestAnalysisMode=Recommended` plus `TreatWarningsAsErrors` makes them build errors.
+  projects that opt in, MSTest's parallel-safety analyzers
+  (MSTEST0073–MSTEST0077) are active, and `MSTestAnalysisMode=Recommended` plus
+  `TreatWarningsAsErrors` makes them build errors.
   Fix them in this order:
   1. **Eliminate the shared state** — pass an environment variable to the child process
      via `TestCommand.WithEnvironmentVariable(...)` instead of

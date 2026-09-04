@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFrameworks>net472;$(SdkTargetFramework)</TargetFrameworks>
+    <MSTestParallelizeScope>MethodLevel</MSTestParallelizeScope>
     <TargetFrameworks Condition=" '$([MSBuild]::IsOSPlatform(`Windows`))' == 'false' ">$(SdkTargetFramework)</TargetFrameworks>
     <!-- For product build, the .NET Framework TFM only builds in the second build pass as it depends on assets from other
          verticals that are built in the first build pass. -->

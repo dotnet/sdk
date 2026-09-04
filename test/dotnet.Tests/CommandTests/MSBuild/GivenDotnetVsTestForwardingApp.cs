@@ -16,10 +16,12 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
         }
 
         [TestMethod]
+        [DoNotParallelize] // Concurrent dotnet test processes inherit VSTEST_CONSOLE_PATH without acquiring an environment lock.
         public void ItCanUseEnvironmentVariableToForceCustomPathToVsTestApp()
         {
             string vsTestConsolePath = "VSTEST_CONSOLE_PATH";
             string dummyPath = Path.Join(Path.GetTempPath(), "vstest.custom.console.dll");
+            string? originalVsTestConsolePath = Environment.GetEnvironmentVariable(vsTestConsolePath);
 
             try
             {
@@ -29,9 +31,8 @@ namespace Microsoft.DotNet.Cli.MSBuild.Tests
             }
             finally
             {
-                Environment.SetEnvironmentVariable(vsTestConsolePath, null);
+                Environment.SetEnvironmentVariable(vsTestConsolePath, originalVsTestConsolePath);
             }
         }
     }
 }
-
