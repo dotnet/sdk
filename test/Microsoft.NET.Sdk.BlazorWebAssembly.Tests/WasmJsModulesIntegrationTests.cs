@@ -66,7 +66,10 @@ namespace Microsoft.NET.Sdk.BlazorWebAssembly.Tests
                 .WithTargetFramework(targetFramework);
 
             var build = CreateBuildCommand(ProjectDirectory);
-            ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true").Should().Pass();
+
+            // The browser tools assets are only produced when dotnet-watch supplies the public half of
+            // the session key it created for the invocation, so both properties are required.
+            ExecuteCommand(build, "/p:DotNetWatchBrowserTools=true", "/p:DotNetWatchBrowserToolsPublicKey=TestPublicKey").Should().Pass();
 
             var initializers = GetLibraryInitializers(build, targetFramework);
 

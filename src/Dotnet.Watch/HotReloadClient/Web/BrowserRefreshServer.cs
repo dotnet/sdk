@@ -6,6 +6,7 @@
 #if NET
 
 using System;
+using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Threading;
 using System.Threading.Tasks;
@@ -21,11 +22,12 @@ internal sealed class BrowserRefreshServer(
     ILogger logger,
     Func<int, ILogger> connectionServerLoggerFactory,
     Func<int, ILogger> connectionAgentLoggerFactory,
-    string middlewareAssemblyPath,
+    Action<IDictionary<string, string>, AbstractBrowserRefreshServer> configureLaunchEnvironment,
     string dotnetPath,
+    SharedSecretProvider sessionKey,
     WebSocketConfig webSocketConfig,
     bool suppressTimeouts)
-    : AbstractBrowserRefreshServer(middlewareAssemblyPath, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
+    : AbstractBrowserRefreshServer(configureLaunchEnvironment, sessionKey, logger, connectionServerLoggerFactory, connectionAgentLoggerFactory)
 {
     protected override bool SuppressTimeouts
         => suppressTimeouts;
@@ -40,7 +42,7 @@ internal sealed class BrowserRefreshServer(
 
         // The browser reaches the provider through the application's own origin, so the provider only
         // listens on loopback. DOTNET_WATCH_AUTO_RELOAD_WS_HOSTNAME no longer applies to this hop.
-        var router = new BrowserToolsEndpointRouter(PublicKey, BrowserToolsUpdateStore, this);
+        var router = new BrowserToolsEndpointRouter(this);
         var server = await KestrelWebSocketServer.StartServerAsync(webSocketConfig.WithHostName(null), router.HandleAsync, cancellationToken);
 
         // URLs are only available after the server has started.

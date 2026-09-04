@@ -166,11 +166,22 @@ public class NoRestoreTests
         IReadOnlyList<string> actualArguments,
         bool browserToolsEnabled = true)
     {
+        // The public key is randomly generated per invocation.
+        var normalizedActualArguments = actualArguments
+            .Select(static a => a.StartsWith("-p:DotNetWatchBrowserToolsPublicKey=", StringComparison.Ordinal) && a.Length > "-p:DotNetWatchBrowserToolsPublicKey=".Length
+                ? "-p:DotNetWatchBrowserToolsPublicKey=<key>"
+                : a)
+            .ToList();
+
         var expectedArguments = expectedArgumentsWithoutReservedProperties.ToList();
         var applicationArgumentsSeparator = expectedArguments.IndexOf("--");
         var reservedPropertiesIndex = applicationArgumentsSeparator >= 0 ? applicationArgumentsSeparator : expectedArguments.Count;
-        expectedArguments.Insert(reservedPropertiesIndex, $"-p:DotNetWatchBrowserTools={browserToolsEnabled}");
+        expectedArguments.InsertRange(reservedPropertiesIndex,
+        [
+            $"-p:DotNetWatchBrowserTools={browserToolsEnabled}",
+            browserToolsEnabled ? "-p:DotNetWatchBrowserToolsPublicKey=<key>" : "-p:DotNetWatchBrowserToolsPublicKey="
+        ]);
 
-        AssertEx.SequenceEqual(expectedArguments, actualArguments);
+        AssertEx.SequenceEqual(expectedArguments, normalizedActualArguments);
     }
 }

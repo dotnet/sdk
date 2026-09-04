@@ -19,15 +19,12 @@ internal sealed class WebAssemblyHotReloadClient(
     ILogger logger,
     ILogger agentLogger,
     AbstractBrowserRefreshServer browserRefreshServer,
-    Guid generationId,
+    int baselineEpoch,
     ImmutableArray<string> projectHotReloadCapabilities,
     Version projectTargetFrameworkVersion,
     bool suppressBrowserRequestsForTesting)
     : HotReloadClient(logger, agentLogger)
 {
-    public Guid GenerationId
-        => generationId;
-
     private static readonly ImmutableArray<string> s_defaultCapabilities60 =
         ["Baseline"];
 
@@ -125,33 +122,25 @@ internal sealed class WebAssemblyHotReloadClient(
         return QueueUpdateBatch(
             sendAndReceive: async batchId =>
             {
-                // Retain the batch so that browsers connecting later replay it before they start receiving messages.
-                browserRefreshServer.BrowserToolsUpdateStore.Append(new BrowserToolsUpdateBatch(generationId, batchId, [.. deltas]));
-
                 // When testing abstract away the browser and pretend all changes have been applied:
                 if (suppressBrowserRequestsForTesting)
                 {
                     return true;
                 }
 
-                var result = await browserRefreshServer.SendAndReceiveAsync(
+                var success = await browserRefreshServer.SendManagedCodeUpdateAsync(
+                    baselineEpoch,
+                    new BrowserToolsUpdateBatch([.. deltas]),
                     request: sharedSecret => new JsonApplyManagedCodeUpdatesRequest
                     {
                         SharedSecret = sharedSecret,
-                        GenerationId = generationId,
-                        UpdateId = batchId,
                         Deltas = deltas,
                         ResponseLoggingLevel = (int)loggingLevel
                     },
-                    response: new ResponseFunc<bool>((value, logger) =>
-                    {
-                        var success = ReceiveUpdateResponse(value, logger);
-                        Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
-                        return success;
-                    }),
                     applyOperationCancellationToken);
 
-                return result ?? true;
+                Logger.Log(success ? LogEvents.UpdateBatchCompleted : LogEvents.UpdateBatchFailed, batchId);
+                return success;
             },
             applyOperationCancellationToken);
     }
@@ -159,18 +148,6 @@ internal sealed class WebAssemblyHotReloadClient(
     public override Task<Task<bool>> ApplyStaticAssetUpdatesAsync(ImmutableArray<HotReloadStaticAssetUpdate> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
         // static asset updates are handled by browser refresh server:
         => Task.FromResult(Task.FromResult(true));
-
-    private static bool ReceiveUpdateResponse(ReadOnlySpan<byte> value, ILogger logger)
-    {
-        var data = AbstractBrowserRefreshServer.DeserializeJson<JsonApplyDeltasResponse>(value);
-
-        foreach (var entry in data.Log)
-        {
-            ReportLogEntry(logger, entry.Message, (AgentMessageSeverity)entry.Severity);
-        }
-
-        return data.Success;
-    }
 
     public override Task InitialUpdatesAppliedAsync(CancellationToken cancellationToken)
         => Task.CompletedTask;
@@ -180,26 +157,7 @@ internal sealed class WebAssemblyHotReloadClient(
         public string Type => "ApplyManagedCodeUpdates";
         public string? SharedSecret { get; init; }
 
-        public Guid GenerationId { get; init; }
-        public int UpdateId { get; init; }
         public BrowserToolsManagedCodeUpdate[] Deltas { get; init; }
         public int ResponseLoggingLevel { get; init; }
-    }
-
-    private readonly struct JsonApplyDeltasResponse
-    {
-        public bool Success { get; init; }
-        public IEnumerable<JsonLogEntry> Log { get; init; }
-    }
-
-    private readonly struct JsonLogEntry
-    {
-        public string Message { get; init; }
-        public int Severity { get; init; }
-    }
-
-    private readonly struct JsonGetApplyUpdateCapabilitiesRequest
-    {
-        public string Type => "GetApplyUpdateCapabilities";
     }
 }

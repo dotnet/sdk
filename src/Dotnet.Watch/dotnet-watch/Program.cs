@@ -354,6 +354,9 @@ internal sealed class Program(
             mainProjectOptions.Representation.PhysicalPath,
             options.TargetFramework,
             options.BuildArguments,
+            // --list never starts a browser tools provider, so there is no session key and the
+            // generated browser tools assets must not be produced for it.
+            browserToolsPublicKey: "",
             processRunner,
             buildLogger,
             options.GlobalOptions,

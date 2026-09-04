@@ -9,6 +9,7 @@ internal class MockFileSetFactory() : MSBuildFileSetFactory(
     rootProjectFile: "test.csproj",
     targetFramework: null,
     buildArguments: [],
+    browserToolsPublicKey: "",
     new ProcessRunner(processCleanupTimeout: TimeSpan.Zero),
     NullLogger.Instance,
     TestOptions.GlobalOptions,
