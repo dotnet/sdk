@@ -224,6 +224,7 @@ internal sealed class VirtualProjectBuildingCommand : CommandBase
                 LogTaskInputs = binaryLoggers.Length != 0,
             };
 
+            RecordManagedEntryToMSBuildSubmission();
             BuildManager.DefaultBuildManager.BeginBuild(parameters);
 
             int exitCode = 0;
