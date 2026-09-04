@@ -232,7 +232,7 @@ public class RestoringCommand : MSBuildForwardingApp
         int exitCode;
         if (SeparateRestoreCommand != null)
         {
-            RecordProcessStartToMSBuildSubmission();
+            RecordManagedEntryToMSBuildSubmission();
             exitCode = SeparateRestoreCommand.Execute();
             if (exitCode != 0)
             {
@@ -240,7 +240,7 @@ public class RestoringCommand : MSBuildForwardingApp
             }
         }
 
-        RecordProcessStartToMSBuildSubmission();
+        RecordManagedEntryToMSBuildSubmission();
         exitCode = base.Execute();
         if (AdvertiseWorkloadUpdates)
         {

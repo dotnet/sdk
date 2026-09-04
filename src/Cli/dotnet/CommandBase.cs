@@ -22,11 +22,11 @@ public abstract class CommandBase
 
     internal string MSBuildSubmissionMetricCommandName { get; set; }
 
-    protected void RecordProcessStartToMSBuildSubmission()
+    protected void RecordManagedEntryToMSBuildSubmission()
     {
         if (MSBuildSubmissionMetricCommandName is not null)
         {
-            Microsoft.DotNet.Cli.Utils.CliMetrics.RecordProcessStartToMSBuildSubmission(MSBuildSubmissionMetricCommandName);
+            Microsoft.DotNet.Cli.Utils.CliMetrics.RecordManagedEntryToMSBuildSubmission(MSBuildSubmissionMetricCommandName);
             MSBuildSubmissionMetricCommandName = null;
         }
     }

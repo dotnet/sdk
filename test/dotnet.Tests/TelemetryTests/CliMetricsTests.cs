@@ -7,10 +7,10 @@ using Microsoft.DotNet.Cli.Utils;
 namespace Microsoft.DotNet.Tests.TelemetryTests;
 
 [TestClass]
-public class CliMetricsTests
+public class CliMetricsTests : SdkTest
 {
     [TestMethod]
-    public void ItRecordsProcessStartToMSBuildSubmissionDuration()
+    public void ItRecordsManagedEntryToMSBuildSubmissionDuration()
     {
         double? recordedDuration = null;
         string? recordedCommand = null;
@@ -20,7 +20,7 @@ public class CliMetricsTests
         listener.InstrumentPublished = (instrument, meterListener) =>
         {
             if (instrument.Meter.Name == CliMetrics.MeterName &&
-                instrument.Name == CliMetrics.ProcessStartToMSBuildSubmissionDurationName)
+                instrument.Name == CliMetrics.ManagedEntryToMSBuildSubmissionDurationName)
             {
                 recordedUnit = instrument.Unit;
                 meterListener.EnableMeasurementEvents(instrument);
@@ -39,7 +39,11 @@ public class CliMetricsTests
         });
         listener.Start();
 
-        CliMetrics.RecordProcessStartToMSBuildSubmission("pack", TimeSpan.FromMilliseconds(125));
+        DateTime startTimeUtc = new(2026, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        CliMetrics.SetManagedEntryTimeUtc(startTimeUtc);
+        CliMetrics.RecordManagedEntryToMSBuildSubmission(
+            "pack",
+            startTimeUtc + TimeSpan.FromMilliseconds(125));
 
         recordedDuration.Should().Be(0.125);
         recordedCommand.Should().Be("pack");
