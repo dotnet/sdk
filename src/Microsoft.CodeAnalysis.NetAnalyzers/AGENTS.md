@@ -73,9 +73,6 @@ the driver already implies them and the combination fails. To regenerate `.xlf` 
   consumable from `[DynamicData]`.
 - Use raw string literals for embedded source. Use raw interpolation instead of
   `string.Format` or escaped braces, while keeping single-line fragments on one line.
-- `Microsoft.CodeAnalysis.NetAnalyzers.UnitTests` sets
-  `MSTestParallelizeScope=MethodLevel`. Keep new fixtures, data sources, process-global
-  state, and filesystem paths safe for concurrent test methods.
 - Embedded C# test sources default to `LanguageVersion.CSharp7_3`; set `LanguageVersion`
   explicitly when the source uses newer syntax.
 - `test/ConditionalTests.props` registers a `NetAnalyzers` scope, so PR validation can skip
