@@ -1,8 +1,10 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Collections.Immutable;
 using System.Diagnostics;
 using Microsoft.Build.Evaluation;
+using Microsoft.Build.Execution;
 using Microsoft.Build.Graph;
 using Microsoft.DotNet.HotReload;
 using Microsoft.Extensions.Logging;
@@ -12,10 +14,7 @@ namespace Microsoft.DotNet.Watch;
 internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection collection, ILogger logger, GlobalOptions globalOptions, EnvironmentOptions environmentOptions)
 {
     // full path of proj file to list of nodes representing all target frameworks of the project (excluding outer build nodes):
-    private readonly IReadOnlyDictionary<string, IReadOnlyList<ProjectGraphNode>> _innerBuildNodes = 
-        graph.ProjectNodes.Where(n => n.ProjectInstance.GetTargetFramework() != "").GroupBy(n => n.ProjectInstance.FullPath).ToDictionary(
-            keySelector: static g => g.Key,
-            elementSelector: static g => (IReadOnlyList<ProjectGraphNode>)[.. g]);
+    private readonly ImmutableDictionary<string, ImmutableList<ProjectGraphNode>> _innerBuildNodes = CreateProjectNodeMap(graph, logger);
 
     private readonly Lazy<IReadOnlySet<string>> _lazyBuildFiles = new(() =>
         graph.ProjectNodes.SelectMany(p => p.ProjectInstance.ImportPaths)
@@ -64,27 +63,71 @@ internal sealed class LoadedProjectGraph(ProjectGraph graph, ProjectCollection c
             return projectNodes[0];
         }
 
-        ProjectGraphNode? candidate = null;
-        foreach (var node in projectNodes)
-        {
-            if (node.ProjectInstance.GetTargetFramework() == targetFramework)
-            {
-                if (candidate != null)
-                {
-                    // shouldn't be possible:
-                    logger.LogWarning("Project '{ProjectPath}' has multiple instances targeting {TargetFramework}.", projectPath, targetFramework);
-                    return candidate;
-                }
-
-                candidate = node;
-            }
-        }
-
-        if (candidate == null)
+        var node = projectNodes.SingleOrDefault(n => n.ProjectInstance.GetTargetFramework() == targetFramework);
+        if (node == null)
         {
             logger.LogError("Project '{ProjectPath}' doesn't have a target for {TargetFramework}.", projectPath, targetFramework);
         }
 
-        return candidate;
+        return node;
     }
+
+    /// <summary>
+    /// Returns a map of project nodes with <see cref="PropertyNames.TargetFramework"/> set.
+    /// Skips nodes that don't have <see cref="PropertyNames.TargetFramework"/> set (e.g. outer build nodes) or
+    /// are not unique based on path and <see cref="PropertyNames.TargetFramework"/>.
+    /// </summary>
+    /// <remarks>
+    /// Although it is valid to have project nodes in the graph that only differ in global properties other than <see cref="PropertyNames.TargetFramework"/>,
+    /// it is not generally supported in tooling.
+    /// </remarks>
+    private static ImmutableDictionary<string, ImmutableList<ProjectGraphNode>> CreateProjectNodeMap(ProjectGraph graph, ILogger logger)
+    {
+        var builder = ImmutableDictionary.CreateBuilder<string, ImmutableList<ProjectGraphNode>>();
+
+        foreach (var node in graph.ProjectNodes)
+        {
+            var projectId = node.ProjectInstance.GetId();
+            if (projectId.TargetFramework is "")
+            {
+                // skip outer build nodes
+                continue;
+            }
+
+            if (!builder.TryGetValue(projectId.ProjectPath, out var existingNodes))
+            {
+                existingNodes = [];
+            }
+            else if (existingNodes.FirstOrDefault(p => p.ProjectInstance.GetTargetFramework() == projectId.TargetFramework) is { } existingNode)
+            {
+                ReportGlobalPropertiesWarning(logger, node, existingNode);
+                continue;
+            }
+
+            builder[projectId.ProjectPath] = existingNodes.Add(node);
+        }
+
+        return builder.ToImmutable();
+    }
+
+    private static void ReportGlobalPropertiesWarning(ILogger logger, ProjectGraphNode node, ProjectGraphNode existingNode)
+    {
+        var propertiesDiff = node.ProjectInstance.GlobalProperties.Union(existingNode.ProjectInstance.GlobalProperties)
+            .Except(node.ProjectInstance.GlobalProperties.Intersect(existingNode.ProjectInstance.GlobalProperties))
+            .Select(entry => entry.Key)
+            .Distinct();
+
+        logger.LogWarning("Ignoring project instance '{ProjectPath}' ({Value1}) because another one already exists and only differs in the values of global properties: {Values2}",
+            node.ProjectInstance.FullPath,
+            DisplayProperties(node),
+            DisplayProperties(existingNode));
+
+        string DisplayProperties(ProjectGraphNode node)
+            => string.Join(",", propertiesDiff.Select(propertyName =>
+                $"{propertyName}={(node.ProjectInstance.GlobalProperties.TryGetValue(propertyName, out var value) ? value : "<unset>")}"));
+
+    public IReadOnlyDictionary<ProjectInstanceId, ProjectInstance> GetProjectInstanceMap(bool deepCopy)
+        => _innerBuildNodes.SelectMany(entry => entry.Value).ToImmutableDictionary(
+                keySelector: node => node.ProjectInstance.GetId(),
+                elementSelector: node => deepCopy ? node.ProjectInstance.DeepCopy() : node.ProjectInstance);
 }
