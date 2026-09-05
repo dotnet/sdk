@@ -102,6 +102,7 @@
   </Folder>
   <Folder Name="/src/Containers/">
     <Project Path="src/Containers/Microsoft.NET.Build.Containers/Microsoft.NET.Build.Containers.csproj" />
+    <Project Path="src/Containers/OrasProject.Oras.SourceBuild/OrasProject.Oras.SourceBuild.csproj" />
     <Project Path="src/Containers/packaging/package.csproj" />
   </Folder>
   <Folder Name="/src/Layout/">

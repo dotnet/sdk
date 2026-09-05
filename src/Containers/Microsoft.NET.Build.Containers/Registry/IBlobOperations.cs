@@ -13,11 +13,18 @@ namespace Microsoft.NET.Build.Containers;
 /// </remarks>
 internal interface IBlobOperations
 {
-    public IBlobUploadOperations Upload { get; }
+    public Task<bool> ExistsAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken);
 
-    public Task<bool> ExistsAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task<JsonNode> GetJsonAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken);
 
-    public Task<JsonNode> GetJsonAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task<Stream> GetStreamAsync(string repositoryName, Descriptor descriptor, CancellationToken cancellationToken);
 
-    public Task<Stream> GetStreamAsync(string repositoryName, string digest, CancellationToken cancellationToken);
+    public Task PushAsync(string repositoryName, Descriptor descriptor, Stream content, CancellationToken cancellationToken);
+
+    public Task MountAsync(
+        string destinationRepository,
+        string sourceRepository,
+        Descriptor descriptor,
+        Func<CancellationToken, Task<Stream>> getContent,
+        CancellationToken cancellationToken);
 }

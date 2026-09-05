@@ -347,3 +347,7 @@ override Microsoft.NET.Build.Containers.ImageIndexV1.GetHashCode() -> int
 ~override Microsoft.NET.Build.Containers.ImageIndexV1.Equals(object obj) -> bool
 Microsoft.NET.Build.Containers.ImageIndexV1.Equals(Microsoft.NET.Build.Containers.ImageIndexV1 other) -> bool
 Microsoft.NET.Build.Containers.ImageIndexV1.Deconstruct(out int schemaVersion, out string! mediaType, out Microsoft.NET.Build.Containers.PlatformSpecificOciManifest[]! manifests) -> void
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageSource.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateImageIndex.BaseImageSource.set -> void
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageSource.get -> string!
+Microsoft.NET.Build.Containers.Tasks.CreateNewImage.BaseImageSource.set -> void

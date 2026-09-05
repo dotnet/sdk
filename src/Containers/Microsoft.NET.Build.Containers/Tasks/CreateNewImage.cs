@@ -2,6 +2,7 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 
 using System.Globalization;
+using Docker.DotNet;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -14,7 +15,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
 {
     private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
+    private bool IsLocalPull => BaseImageSource.Equals("local", StringComparison.OrdinalIgnoreCase);
 
     public void Cancel() => _cancellationTokenSource.Cancel();
 
@@ -99,7 +100,7 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
     private async Task<bool> ExecuteAsyncCore(ILogger logger, ILoggerFactory msbuildLoggerFactory, CancellationToken cancellationToken)
     {
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
-        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
+        Registry sourceRegistry = new(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
@@ -113,45 +114,78 @@ public sealed partial class CreateNewImage : Microsoft.Build.Utilities.Task, ICa
         var telemetry = new Telemetry(sourceImageReference, destinationImageReference, Log);
 
         ImageBuilder? imageBuilder;
-        if (sourceRegistry is { } registry)
+        LocalImageSource? localImageSource = null;
+        try
         {
-            try
+            if (IsLocalPull)
             {
-                var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
-                imageBuilder = await registry.GetImageManifestAsync(
-                    BaseImageName,
-                    sourceImageReference.Reference,
-                    ContainerRuntimeIdentifier,
-                    picker,
+                localImageSource = await LocalImageSource.CreateAsync(
+                    sourceImageReference.ToString(),
+                    LocalRegistry,
+                    msbuildLoggerFactory,
                     cancellationToken).ConfigureAwait(false);
             }
-            catch (RepositoryNotFoundException)
-            {
-                telemetry.LogUnknownRepository();
-                Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, BaseImageDigest, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (UnableToAccessRepositoryException)
-            {
-                telemetry.LogCredentialFailure(sourceImageReference);
-                Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, registry.RegistryName);
-                return !Log.HasLoggedErrors;
-            }
-            catch (ContainerHttpException e)
-            {
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
-            catch (BaseImageNotFoundException e)
-            {
-                telemetry.LogRidMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
-                Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
-                return !Log.HasLoggedErrors;
-            }
         }
-        else
+        catch (DockerApiException e)
         {
-            throw new NotSupportedException(Resource.GetString(nameof(Strings.ImagePullNotSupported)));
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
+        }
+        catch (HttpRequestException e)
+        {
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
+        }
+
+        await using LocalImageSource? localImageSourceScope = localImageSource;
+        if (localImageSource is not null)
+        {
+            sourceImageReference = sourceImageReference with { ImageSource = localImageSource };
+        }
+
+        IImageSource imageSource = sourceImageReference.EffectiveImageSource!;
+        try
+        {
+            var picker = new RidGraphManifestPicker(RuntimeIdentifierGraphPath);
+            imageBuilder = await imageSource.GetImageManifestAsync(
+                BaseImageName,
+                sourceImageReference.Reference,
+                ContainerRuntimeIdentifier,
+                picker,
+                cancellationToken).ConfigureAwait(false);
+        }
+        catch (RepositoryNotFoundException)
+        {
+            telemetry.LogUnknownRepository();
+            Log.LogErrorWithCodeFromResources(nameof(Strings.RepositoryNotFound), BaseImageName, BaseImageTag, BaseImageDigest, sourceRegistry.RegistryName);
+            return !Log.HasLoggedErrors;
+        }
+        catch (UnableToAccessRepositoryException)
+        {
+            telemetry.LogCredentialFailure(sourceImageReference);
+            Log.LogErrorWithCodeFromResources(nameof(Strings.UnableToAccessRepository), BaseImageName, sourceRegistry.RegistryName);
+            return !Log.HasLoggedErrors;
+        }
+        catch (ContainerHttpException e)
+        {
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
+        }
+        catch (DockerApiException e) when (IsLocalPull)
+        {
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
+        }
+        catch (HttpRequestException e) when (IsLocalPull)
+        {
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
+        }
+        catch (BaseImageNotFoundException e)
+        {
+            telemetry.LogRidMismatch(e.RequestedRuntimeIdentifier, e.AvailableRuntimeIdentifiers.ToArray());
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
         }
 
         if (imageBuilder is null)

@@ -1,16 +1,15 @@
 // Licensed to the .NET Foundation under one or more agreements.
 // The .NET Foundation licenses this file to you under the MIT license.
 
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Security;
+using System.Net.Sockets;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.Extensions.Logging;
-using Microsoft.NET.Build.Containers.Resources;
-using System.Net.Sockets;
 using Moq;
-using System.Diagnostics.CodeAnalysis;
 
 namespace Microsoft.NET.Build.Containers.UnitTests;
 
@@ -50,43 +49,6 @@ public class RegistryTests : IDisposable
         Assert.IsTrue(registry.IsDockerHub);
         Assert.AreEqual("docker.io", registry.RegistryName);
         Assert.AreEqual("registry-1.docker.io", registry.BaseUri.Host);
-    }
-
-    [DataRow(HttpStatusCode.OK, true)]
-    [DataRow(HttpStatusCode.NotFound, false)]
-    [DataRow(HttpStatusCode.Unauthorized, false)]
-    [DataRow(HttpStatusCode.Forbidden, false)]
-    [DataRow(HttpStatusCode.MethodNotAllowed, false)]
-    [TestMethod]
-    public async Task ManifestExistsAsync_ReturnsExpectedResult(HttpStatusCode statusCode, bool expected)
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(ManifestExistsAsync_ReturnsExpectedResult));
-        Mock<HttpClient> client = new(MockBehavior.Loose);
-        HttpRequestMessage? request = null;
-        client.Setup(c => c.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-            .Callback<HttpRequestMessage, CancellationToken>((message, _) => request = message)
-            .ReturnsAsync(new HttpResponseMessage(statusCode));
-        DefaultManifestOperations operations = new(new Uri("https://example.com"), "example.com", client.Object, logger);
-
-        bool actual = await operations.ExistsAsync("test/repository", "sha256:1234", CancellationToken.None);
-
-        Assert.AreEqual(expected, actual);
-        Assert.IsNotNull(request);
-        Assert.AreEqual(HttpMethod.Head, request.Method);
-        Assert.AreEqual("https://example.com/v2/test/repository/manifests/sha256:1234", request.RequestUri!.AbsoluteUri);
-        Assert.IsNotEmpty(request.Headers.Accept);
-    }
-
-    [TestMethod]
-    public async Task ManifestExistsAsync_PropagatesServerErrors()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(ManifestExistsAsync_PropagatesServerErrors));
-        Mock<HttpClient> client = new(MockBehavior.Loose);
-        client.Setup(c => c.SendAsync(It.IsAny<HttpRequestMessage>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.InternalServerError));
-        DefaultManifestOperations operations = new(new Uri("https://example.com"), "example.com", client.Object, logger);
-
-        await Assert.ThrowsAsync<ContainerHttpException>(() => operations.ExistsAsync("test/repository", "sha256:1234", CancellationToken.None));
     }
 
     [TestMethod]
@@ -144,7 +106,7 @@ public class RegistryTests : IDisposable
 
         Mock<IBlobOperations> blobOperations = new(MockBehavior.Strict);
         blobOperations
-            .Setup(b => b.ExistsAsync(repository, configDigest, It.IsAny<CancellationToken>()))
+            .Setup(b => b.ExistsAsync(repository, It.Is<Descriptor>(d => d.Digest == configDigest), It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
         Mock<IManifestOperations> manifestOperations = new(MockBehavior.Strict);
         manifestOperations
@@ -172,354 +134,31 @@ public class RegistryTests : IDisposable
         await registry.PushAsync(image, source, destination, noCache: true, CancellationToken.None);
 
         manifestOperations.Verify(m => m.ExistsAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
-        blobOperations.Verify(b => b.ExistsAsync(repository, configDigest, It.IsAny<CancellationToken>()), Times.Once);
+        blobOperations.Verify(b => b.ExistsAsync(repository, It.Is<Descriptor>(d => d.Digest == configDigest), It.IsAny<CancellationToken>()), Times.Once);
         manifestOperations.Verify(m => m.PutAsync(repository, "latest", "{}", SchemaTypes.OciManifestV1, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [TestMethod]
-    public async Task RegistriesThatProvideNoUploadSizeAttemptFullUpload()
+    public async Task PushLayerAsync_UsesRegistryBlobOperations()
     {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideNoUploadSizeAttemptFullUpload));
-        var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
-        var mockLayer = new Mock<Layer>(MockBehavior.Strict);
-        mockLayer
-            .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
-        mockLayer
-            .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
+        ILogger logger = _loggerFactory.CreateLogger(nameof(PushLayerAsync_UsesRegistryBlobOperations));
+        const string repository = "testRepo";
+        Descriptor descriptor = new("application/octet-stream", "sha256:fafafafafafafafafafafafafafafafa", 1000);
+        Mock<Layer> layer = new(MockBehavior.Strict);
+        layer.Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
+        layer.Setup(l => l.Descriptor).Returns(descriptor);
 
-        var uploadPath = new Uri("/uploads/foo/12345", UriKind.Relative);
-        var api = new Mock<IRegistryAPI>(MockBehavior.Loose);
-        api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
-        api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
-        api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
+        Mock<IBlobOperations> blobOperations = new(MockBehavior.Strict);
+        blobOperations.Setup(b => b.ExistsAsync(repository, descriptor, It.IsAny<CancellationToken>())).ReturnsAsync(false);
+        blobOperations.Setup(b => b.PushAsync(repository, descriptor, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
+        Mock<IRegistryAPI> api = new(MockBehavior.Strict);
+        api.SetupGet(a => a.Blob).Returns(blobOperations.Object);
 
         Registry registry = new("public.ecr.aws", logger, api.Object);
-        await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
+        await registry.PushLayerAsync(layer.Object, repository, CancellationToken.None);
 
-        api.Verify(api => api.Blob.Upload.UploadChunkAsync(uploadPath, It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Never());
-        api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
-    }
-
-    [TestMethod]
-    public async Task RegistriesThatProvideUploadSizePrefersFullUploadWhenChunkSizeIsLowerThanContentLength()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatProvideUploadSizePrefersFullUploadWhenChunkSizeIsLowerThanContentLength));
-        var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
-        var mockLayer = new Mock<Layer>(MockBehavior.Strict);
-        var chunkSizeLessThanContentLength = 10000;
-        var registryUri = new Uri("https://public.ecr.aws");;
-        mockLayer
-            .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[100000]));
-        mockLayer
-            .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
-
-        var uploadPath = new Uri("/uploads/foo/12345", UriKind.Relative);
-        var absoluteUploadUri = new Uri(registryUri, uploadPath);
-        var api = new Mock<IRegistryAPI>(MockBehavior.Loose);
-        var uploadedCount = 0;
-        api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
-        api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
-        api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
-        api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() =>
-        {
-            uploadedCount += chunkSizeLessThanContentLength;
-            return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
-        });
-
-        Registry registry = new(registryUri, logger, api.Object);
-        await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
-
-        api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
-        api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Never);
-    }
-
-    [TestMethod]
-    public async Task RegistriesThatFailAtomicUploadFallbackToChunked()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatFailAtomicUploadFallbackToChunked));
-        var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
-        var mockLayer = new Mock<Layer>(MockBehavior.Strict);
-        var contentLength = 100000;
-        var chunkSizeLessThanContentLength = 100000;
-        var registryUri = new Uri("https://public.ecr.aws");;
-        mockLayer
-            .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[contentLength]));
-        mockLayer
-            .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
-
-        var uploadPath = new Uri("/uploads/foo/12345", UriKind.Relative);
-        var absoluteUploadUri = new Uri(registryUri, uploadPath);
-        var api = new Mock<IRegistryAPI>(MockBehavior.Loose);
-        var uploadedCount = 0;
-        api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
-        api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
-        api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Throws(new Exception("Server-side shutdown the thing"));
-        api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() =>
-        {
-            uploadedCount += chunkSizeLessThanContentLength;
-            return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
-        });
-
-        Registry registry = new(registryUri, logger, api.Object);
-        await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
-
-        api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
-        api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(contentLength / chunkSizeLessThanContentLength));
-    }
-
-    [TestMethod]
-    public async Task ChunkedUploadCalculatesChunksCorrectly()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(RegistriesThatFailAtomicUploadFallbackToChunked));
-        var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
-        var mockLayer = new Mock<Layer>(MockBehavior.Strict);
-        var contentLength = 1000000;
-        var chunkSize = 100000;
-        var registryUri = new Uri("https://public.ecr.aws");;
-        mockLayer
-            .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[contentLength]));
-        mockLayer
-            .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
-
-        var uploadPath = new Uri("/uploads/foo/12345", UriKind.Relative);
-        var absoluteUploadUri = new Uri(registryUri, uploadPath);
-        var api = new Mock<IRegistryAPI>(MockBehavior.Loose);
-        var uploadedCount = 0;
-        api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
-        api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
-        api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Throws(new Exception("Server-side shutdown the thing"));
-        api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() =>
-        {
-            uploadedCount += chunkSize;
-            return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
-        });
-
-        RegistrySettings settings = new()
-        {
-            ParallelUploadEnabled = false,
-            ForceChunkedUpload = false,
-            ChunkedUploadSizeBytes = chunkSize,
-        };
-
-        Registry registry = new(registryUri, logger, api.Object, settings);
-        await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
-
-        api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once());
-        api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(10));
-    }
-
-    [TestMethod]
-    public async Task PushAsync_Logging()
-    {
-        using TestLoggerFactory loggerFactory = new(TestContext);
-        List<(LogLevel, string)> loggedMessages = new();
-        loggerFactory.AddProvider(new InMemoryLoggerProvider(loggedMessages));
-        ILogger logger = loggerFactory.CreateLogger(nameof(PushAsync_Logging));
-
-        var repoName = "testRepo";
-        var layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
-        var mockLayer = new Mock<Layer>(MockBehavior.Strict);
-        mockLayer
-            .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[1000]));
-        mockLayer
-            .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
-
-        var uploadPath = new Uri("/uploads/foo/12345", UriKind.Relative);
-        var api = new Mock<IRegistryAPI>(MockBehavior.Loose);
-        api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
-        api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
-        api.Setup(api => api.Blob.Upload.UploadAtomicallyAsync(uploadPath, It.IsAny<Stream>(), It.IsAny<CancellationToken>())).Returns(Task.FromResult(new FinalizeUploadInformation(uploadPath)));
-
-        Registry registry = new("public.ecr.aws", logger, api.Object);
-        await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
-
-        Assert.IsNotEmpty(loggedMessages);
-        Assert.IsTrue(loggedMessages.All(m => m.Item1 == LogLevel.Trace));
-        var messages = loggedMessages.Select(m => m.Item2).ToList();
-        Assert.Contains("Started upload session for sha256:fafafafafafafafafafafafafafafafa", messages);
-        Assert.Contains("Finalized upload session for sha256:fafafafafafafafafafafafafafafafa", messages);
-    }
-
-    [TestMethod]
-    public async Task PushAsync_ForceChunkedUpload()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(PushAsync_ForceChunkedUpload));
-
-        string repoName = "testRepo";
-        string layerDigest = "sha256:fafafafafafafafafafafafafafafafa";
-        Mock<Layer> mockLayer = new(MockBehavior.Strict);
-        int contentLength = 1000000;
-        int chunkSize = 100000;
-        var registryUri = new Uri("https://public.ecr.aws");;
-        mockLayer
-            .Setup(l => l.OpenBackingFile()).Returns(new MemoryStream(new byte[contentLength]));
-        mockLayer
-            .Setup(l => l.Descriptor).Returns(new Descriptor("blah", layerDigest, 1234));
-
-        Uri uploadPath = new("/uploads/foo/12345", UriKind.Relative);
-        Uri absoluteUploadUri = new(registryUri, uploadPath);
-        Mock<IRegistryAPI> api = new(MockBehavior.Loose);
-        int uploadedCount = 0;
-        api.Setup(api => api.Blob.ExistsAsync(repoName, layerDigest, It.IsAny<CancellationToken>())).Returns(Task.FromResult(false));
-        api.Setup(api => api.Blob.Upload.StartAsync(repoName, It.IsAny<CancellationToken>())).Returns(Task.FromResult(new StartUploadInformation(uploadPath)));
-        api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() =>
-        {
-            uploadedCount += chunkSize;
-            return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
-        });
-
-        RegistrySettings settings = new()
-        {
-            ParallelUploadEnabled = false,
-            ForceChunkedUpload = true,
-            ChunkedUploadSizeBytes = chunkSize,
-        };
-
-        Registry registry = new(registryUri, logger, api.Object, settings);
-        await registry.PushLayerAsync(mockLayer.Object, repoName, CancellationToken.None);
-
-        api.Verify(api => api.Blob.Upload.UploadAtomicallyAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Never());
-        api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(10));
-    }
-
-    [TestMethod]
-    public async Task CanParseRegistryDeclaredChunkSize_FromRange()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(CanParseRegistryDeclaredChunkSize_FromRange));
-        string repoName = "testRepo";
-
-        Mock<HttpClient> client = new(MockBehavior.Loose);
-        HttpResponseMessage httpResponse = new()
-        {
-            StatusCode = HttpStatusCode.Accepted,
-        };
-        httpResponse.Headers.Add("Range", "0-100000");
-        httpResponse.Headers.Location = new Uri("https://my-registy.com/v2/testRepo/blobs/uploads/");
-        client.Setup(client => client.SendAsync(It.Is<HttpRequestMessage>(m => m.RequestUri == new Uri("https://my-registy.com/v2/testRepo/blobs/uploads/")), It.IsAny<CancellationToken>())).Returns(Task.FromResult(httpResponse));
-
-        HttpClient finalClient = client.Object;
-        DefaultBlobUploadOperations operations = new(new Uri("https://my-registy.com"), finalClient, logger);
-        StartUploadInformation result = await operations.StartAsync(repoName, CancellationToken.None);
-
-        Assert.AreEqual("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
-    }
-
-    [TestMethod]
-    public async Task CanParseRegistryDeclaredChunkSize_FromOCIChunkMinLength()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(CanParseRegistryDeclaredChunkSize_FromOCIChunkMinLength));
-        string repoName = "testRepo";
-
-        Mock<HttpClient> client = new(MockBehavior.Loose);
-        HttpResponseMessage httpResponse = new()
-        {
-            StatusCode = HttpStatusCode.Accepted,
-        };
-        httpResponse.Headers.Add("OCI-Chunk-Min-Length", "100000");
-        httpResponse.Headers.Location = new Uri("https://my-registy.com/v2/testRepo/blobs/uploads/");
-        client.Setup(client => client.SendAsync(It.Is<HttpRequestMessage>(m => m.RequestUri == new Uri("https://my-registy.com/v2/testRepo/blobs/uploads/")), It.IsAny<CancellationToken>())).Returns(Task.FromResult(httpResponse));
-
-        HttpClient finalClient = client.Object;
-        DefaultBlobUploadOperations operations = new(new Uri("https://my-registy.com"), finalClient, logger);
-        StartUploadInformation result = await operations.StartAsync(repoName, CancellationToken.None);
-
-        Assert.AreEqual("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
-    }
-
-    [TestMethod]
-    public async Task CanParseRegistryDeclaredChunkSize_None()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(CanParseRegistryDeclaredChunkSize_None));
-        string repoName = "testRepo";
-
-        Mock<HttpClient> client = new(MockBehavior.Loose);
-        HttpResponseMessage httpResponse = new()
-        {
-            StatusCode = HttpStatusCode.Accepted,
-        };
-        httpResponse.Headers.Location = new Uri("https://my-registy.com/v2/testRepo/blobs/uploads/");
-        client.Setup(client => client.SendAsync(It.Is<HttpRequestMessage>(m => m.RequestUri == new Uri("https://my-registy.com/v2/testRepo/blobs/uploads/")), It.IsAny<CancellationToken>())).Returns(Task.FromResult(httpResponse));
-
-        HttpClient finalClient = client.Object;
-        DefaultBlobUploadOperations operations = new(new Uri("https://my-registy.com"), finalClient, logger);
-        StartUploadInformation result = await operations.StartAsync(repoName, CancellationToken.None);
-
-        Assert.AreEqual("https://my-registy.com/v2/testRepo/blobs/uploads/", result.UploadUri.AbsoluteUri);
-    }
-
-    [TestMethod]
-    public async Task UploadBlobChunkedAsync_NormalFlow()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(UploadBlobChunkedAsync_NormalFlow));
-        var registryUri = new Uri("https://public.ecr.aws");;
-
-        int contentLength = 50000000;
-        int chunkSize = 10000000;
-
-        Stream testStream = new MemoryStream(new byte[contentLength]);
-
-        Uri uploadPath = new("/uploads/foo/12345", UriKind.Relative);
-        Uri absoluteUploadUri = new(registryUri, uploadPath);
-        Mock<IRegistryAPI> api = new(MockBehavior.Loose);
-        int uploadedCount = 0;
-        api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() =>
-        {
-            uploadedCount += chunkSize;
-            return Task.FromResult(ChunkUploadSuccessful(absoluteUploadUri, uploadPath, uploadedCount));
-        });
-
-        RegistrySettings settings = new()
-        {
-            ParallelUploadEnabled = false,
-            ForceChunkedUpload = false,
-            ChunkedUploadSizeBytes = chunkSize,
-        };
-
-        Registry registry = new(registryUri, logger, api.Object, settings);
-        await registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(absoluteUploadUri), CancellationToken.None);
-
-        api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(5));
-    }
-
-    [TestMethod]
-    public async Task UploadBlobChunkedAsync_Failure()
-    {
-        ILogger logger = _loggerFactory.CreateLogger(nameof(UploadBlobChunkedAsync_NormalFlow));
-        var registryUri = new Uri("https://public.ecr.aws");;
-
-        int contentLength = 50000000;
-        int chunkSize = 10000000;
-
-        Stream testStream = new MemoryStream(new byte[contentLength]);
-
-        Uri uploadPath = new("/uploads/foo/12345", UriKind.Relative);
-        Uri absoluteUploadUri = new(registryUri, uploadPath);
-        Mock<IRegistryAPI> api = new(MockBehavior.Loose);
-
-        Exception preparedException = new ApplicationException(Resource.FormatString(nameof(Strings.BlobUploadFailed), $"PATCH <uri>", HttpStatusCode.InternalServerError));
-
-        api.Setup(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>())).Returns(() =>
-        {
-            throw preparedException;
-        });
-
-        RegistrySettings settings = new()
-        {
-            ParallelUploadEnabled = false,
-            ForceChunkedUpload = false,
-            ChunkedUploadSizeBytes = chunkSize,
-        };
-
-        Registry registry = new(registryUri, logger, api.Object, settings);
-        ApplicationException receivedException = await Assert.ThrowsExactlyAsync<ApplicationException>(() => registry.UploadBlobChunkedAsync(testStream, new StartUploadInformation(absoluteUploadUri), CancellationToken.None));
-
-        Assert.AreEqual(preparedException, receivedException);
-
-        api.Verify(api => api.Blob.Upload.UploadChunkAsync(It.IsIn(absoluteUploadUri, uploadPath), It.IsAny<HttpContent>(), It.IsAny<CancellationToken>()), Times.Exactly(1));
+        blobOperations.Verify(b => b.ExistsAsync(repository, descriptor, It.IsAny<CancellationToken>()), Times.Once);
+        blobOperations.Verify(b => b.PushAsync(repository, descriptor, It.IsAny<Stream>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [TestMethod]
@@ -607,7 +246,7 @@ public class RegistryTests : IDisposable
             Exception? exception = await Assert.ThrowsAsync<Exception>(() => getManifest);
             try
             {
-                // The AuthHandshakeMessageHandler may reach its retry limit and throw an ApplicationException.
+                // The registry client may reach its retry limit and throw an ApplicationException.
                 if (exception is ApplicationException)
                 {
                     // Find the exception for the first failed attempt.
@@ -673,6 +312,28 @@ public class RegistryTests : IDisposable
     }
 
     [TestMethod]
+    [DataRow("DOTNET_CONTAINER_DEBUG_REGISTRY_FORCE_CHUNKED_UPLOAD")]
+    [DataRow("SDK_CONTAINER_DEBUG_REGISTRY_FORCE_CHUNKED_UPLOAD")]
+    public void ForceChunkedUploadEnvironmentVariablesAreSupported(string variable)
+    {
+        var registrySettings = new RegistrySettings(environment: new MockEnvironmentProvider(
+            new Dictionary<string, string> { [variable] = "true" }));
+
+        Assert.IsTrue(registrySettings.ForceChunkedUpload);
+    }
+
+    [TestMethod]
+    [DataRow("DOTNET_CONTAINER_REGISTRY_CHUNKED_UPLOAD_SIZE_BYTES")]
+    [DataRow("SDK_CONTAINER_REGISTRY_CHUNKED_UPLOAD_SIZE_BYTES")]
+    public void ChunkedUploadSizeEnvironmentVariablesAreSupported(string variable)
+    {
+        var registrySettings = new RegistrySettings(environment: new MockEnvironmentProvider(
+            new Dictionary<string, string> { [variable] = "1048576" }));
+
+        Assert.AreEqual(1024 * 1024, registrySettings.ChunkedUploadSizeBytes);
+    }
+
+    [TestMethod]
     public async Task DownloadBlobAsync_RetriesOnFailure()
     {
         // Arrange
@@ -687,7 +348,7 @@ public class RegistryTests : IDisposable
 
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
         mockRegistryAPI
-            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken))
+            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken))
             .ThrowsAsync(new Exception("Simulated failure 1")) // First attempt fails
             .ThrowsAsync(new Exception("Simulated failure 2")) // Second attempt fails
             .ReturnsAsync(new MemoryStream(responseBytes)); // Third attempt succeeds
@@ -703,7 +364,7 @@ public class RegistryTests : IDisposable
             // Assert
             Assert.IsNotNull(result);
             Assert.IsTrue(File.Exists(result)); // Ensure the file was successfully downloaded
-            mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(3)); // Verify retries
+            mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken), Times.Exactly(3)); // Verify retries
         }
         finally
         {
@@ -728,7 +389,7 @@ public class RegistryTests : IDisposable
         var mockRegistryAPI = new Mock<IRegistryAPI>(MockBehavior.Strict);
         // Simulate 5 failures (assuming your retry logic attempts 5 times before throwing)
         mockRegistryAPI
-            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken))
+            .SetupSequence(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken))
             .ThrowsAsync(new Exception("Simulated failure 1"))
             .ThrowsAsync(new Exception("Simulated failure 2"))
             .ThrowsAsync(new Exception("Simulated failure 3"))
@@ -743,12 +404,7 @@ public class RegistryTests : IDisposable
             await registry.DownloadBlobAsync(repoName, descriptor, cancellationToken);
         });
 
-        mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor.Digest, cancellationToken), Times.Exactly(5));
-    }
-
-    private static NextChunkUploadInformation ChunkUploadSuccessful(Uri requestUri, Uri uploadUrl, int? contentLength, HttpStatusCode code = HttpStatusCode.Accepted)
-    {
-        return new(uploadUrl);
+        mockRegistryAPI.Verify(api => api.Blob.GetStreamAsync(repoName, descriptor, cancellationToken), Times.Exactly(5));
     }
 
     private class MockEnvironmentProvider : IEnvironmentProvider

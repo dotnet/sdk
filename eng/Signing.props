@@ -77,6 +77,7 @@
     <FileSignInfo Include="OpenTelemetry.Instrumentation.Runtime.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="OpenTelemetry.PersistentStorage.Abstractions.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="OpenTelemetry.PersistentStorage.FileSystem.dll" CertificateName="$(ExternalCertificateId)" />
+    <FileSignInfo Include="OrasProject.Oras.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Spectre.Console.dll" CertificateName="$(ExternalCertificateId)" />
     <FileSignInfo Include="Valleysoft.DockerCredsProvider.dll" CertificateName="$(ExternalCertificateId)" />
   </ItemGroup>

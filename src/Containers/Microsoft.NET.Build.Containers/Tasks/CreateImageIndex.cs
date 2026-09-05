@@ -3,6 +3,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Nodes;
+using Docker.DotNet;
 using Microsoft.Build.Framework;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.MSBuild;
@@ -23,7 +24,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         _cancellationTokenSource.Dispose();
     }
 
-    private bool IsLocalPull => string.IsNullOrWhiteSpace(BaseRegistry);
+    private bool IsLocalPull => BaseImageSource.Equals("local", StringComparison.OrdinalIgnoreCase);
 
     public override bool Execute()
     {
@@ -51,7 +52,7 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
         ILogger logger = msbuildLoggerFactory.CreateLogger<CreateImageIndex>();
 
         RegistryMode sourceRegistryMode = BaseRegistry.Equals(OutputRegistry, StringComparison.InvariantCultureIgnoreCase) ? RegistryMode.PullFromOutput : RegistryMode.Pull;
-        Registry? sourceRegistry = IsLocalPull ? null : new Registry(BaseRegistry, logger, sourceRegistryMode);
+        Registry sourceRegistry = new(BaseRegistry, logger, sourceRegistryMode);
         SourceImageReference sourceImageReference = new(sourceRegistry, BaseImageName, BaseImageTag, BaseImageDigest);
 
         DestinationImageReference destinationImageReference = DestinationImageReference.CreateFromSettings(
@@ -61,6 +62,35 @@ public sealed partial class CreateImageIndex : Microsoft.Build.Utilities.Task, I
             ArchiveOutputPath,
             OutputRegistry,
             LocalRegistry);
+
+        LocalImageSource? localImageSource = null;
+        try
+        {
+            if (IsLocalPull && destinationImageReference.Kind == DestinationImageReferenceKind.LocalRegistry)
+            {
+                localImageSource = await LocalImageSource.CreateAsync(
+                    sourceImageReference.ToString(),
+                    LocalRegistry,
+                    msbuildLoggerFactory,
+                    cancellationToken).ConfigureAwait(false);
+            }
+        }
+        catch (DockerApiException e)
+        {
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
+        }
+        catch (HttpRequestException e)
+        {
+            Log.LogErrorFromException(e, showStackTrace: false, showDetail: true, file: null);
+            return !Log.HasLoggedErrors;
+        }
+
+        await using LocalImageSource? localImageSourceScope = localImageSource;
+        if (localImageSource is not null)
+        {
+            sourceImageReference = sourceImageReference with { ImageSource = localImageSource };
+        }
 
         var images = ParseImages(destinationImageReference.Kind);
         if (Log.HasLoggedErrors)
