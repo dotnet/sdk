@@ -424,11 +424,13 @@ namespace Microsoft.CodeQuality.Analyzers.Maintainability
         private static bool IsTypeInCurrentAssembly(string typeName, Compilation compilation, out INamedTypeSymbol? namedType)
         {
             namedType = null;
-            var nameParts = typeName.Split(s_commaArray, StringSplitOptions.RemoveEmptyEntries);
+            var typeNameSpan = typeName.AsSpan();
+            Span<Range> parts = stackalloc Range[3];
+            var partCount = typeNameSpan.Split(parts, ',',  StringSplitOptions.RemoveEmptyEntries);
 
-            return nameParts.Length >= 2 &&
-                nameParts[1].Trim().Equals(compilation.AssemblyName, StringComparison.Ordinal) &&
-                compilation.TryGetOrCreateTypeByMetadataName(nameParts[0].Trim(), out namedType) &&
+            return partCount >= 2 &&
+                typeNameSpan[parts[1]].Trim().Equals(compilation.AssemblyName, StringComparison.Ordinal) &&
+                compilation.TryGetOrCreateTypeByMetadataName(typeNameSpan[parts[0]].Trim().ToString(), out namedType) &&
                 namedType.ContainingAssembly.Equals(compilation.Assembly);
         }
     }
