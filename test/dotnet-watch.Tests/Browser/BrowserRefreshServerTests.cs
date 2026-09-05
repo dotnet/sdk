@@ -35,6 +35,40 @@ public class BrowserRefreshServerTests
     /// The server owns no knowledge of how the application is made to expose the provider routes:
     /// it delegates to the app model supplied callback.
     /// </summary>
+    /// <summary>
+    /// dotnet-watch reports an update as applied when a browser acknowledges it. A browser that could
+    /// not apply the update must therefore fail the acknowledgement instead of answering with an empty
+    /// log, which would be indistinguishable from a successful apply.
+    /// </summary>
+    [TestMethod]
+    public void ReceiveUpdateApplyResponse_BrowserReportsFailure()
+    {
+        var logger = new TestLogger();
+        var response = """
+            {"success":false,"log":[{"message":"Unable to apply managed code updates because this build of the app does not support runtime metadata updates.","severity":2}]}
+            """u8;
+
+        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+
+        Assert.IsFalse(success);
+        Assert.IsTrue(logger.HasError);
+        Assert.IsTrue(logger.GetAndClearMessages().Any(m => m.Contains("does not support runtime metadata updates")));
+    }
+
+    [TestMethod]
+    public void ReceiveUpdateApplyResponse_BrowserReportsSuccess()
+    {
+        var logger = new TestLogger();
+        var response = """
+            {"success":true,"log":[]}
+            """u8;
+
+        var success = AbstractBrowserRefreshServer.ReceiveUpdateApplyResponse(response, logger);
+
+        Assert.IsTrue(success);
+        Assert.IsFalse(logger.HasError);
+    }
+
     [TestMethod]
     public async Task ConfigureLaunchEnvironment_DelegatesToAppModel()
     {

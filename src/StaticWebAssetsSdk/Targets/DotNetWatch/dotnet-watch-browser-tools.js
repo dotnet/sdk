@@ -136,13 +136,21 @@ export async function startBrowserTools(config) {
       }
 
       for (const update of updates) {
-        const entries = applyDeltas(update.deltas, replayResponseLoggingLevel);
-        if (entries && entries.length) {
-          log.push(...entries);
+        try {
+          const entries = applyDeltas(update.deltas, replayResponseLoggingLevel);
+          if (entries && entries.length) {
+            log.push(...entries);
+          }
+        } catch (error) {
+          // Report the failure without failing the initialization, for the same reason as above:
+          // dotnet-watch prints these entries as errors, while closing the socket would only make
+          // the page reload into a browser that cannot apply updates either.
+          console.warn('Unable to replay Hot Reload updates.', error);
+          log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
         }
       }
     } catch (error) {
-      console.warn('Unable to replay Hot Reload updates.', error);
+      console.warn('Unable to initialize the browser tools session.', error);
       applyError = error;
       log.push({ "message": getMessageAndStack(error), "severity": AgentMessageSeverity_Error });
     }

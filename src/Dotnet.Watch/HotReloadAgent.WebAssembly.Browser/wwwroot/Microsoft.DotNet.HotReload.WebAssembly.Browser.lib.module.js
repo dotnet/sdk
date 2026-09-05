@@ -21,13 +21,11 @@ export async function onRuntimeReady({ getAssemblyExports, getConfig }) {
         const exports = await getAssemblyExports("Microsoft.DotNet.HotReload.WebAssembly.Browser");
         await exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload.InitializeAsync(document.baseURI);
 
-        if (!window.Blazor) {
-            window.Blazor = {};
-
-            if (!window.Blazor._internal) {
-                window.Blazor._internal = {};
-            }
-        }
+        // Blazor publishes both objects during startup, but the order in which the runtime evaluates
+        // library initializers is not guaranteed, so create whichever is still missing. Checking
+        // _internal only when Blazor itself was missing would throw once Blazor exists without it.
+        window.Blazor ??= {};
+        window.Blazor._internal ??= {};
 
         window.Blazor._internal.applyHotReloadDeltas = (deltas, loggingLevel) => {
             const result = exports.Microsoft.DotNet.HotReload.WebAssembly.Browser.WebAssemblyHotReload.ApplyHotReloadDeltas(JSON.stringify(deltas), loggingLevel);
