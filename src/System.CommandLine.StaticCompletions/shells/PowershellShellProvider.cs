@@ -81,7 +81,7 @@ Register-ArgumentCompleter -Native -CommandName '{{{binaryName}}}' -ScriptBlock 
 
     private static string ParameterValueResult(string name, string value, string? helpText) => CompletionResult(name, value, "ParameterValue", helpText);
 
-    private static string? SanitizeHelpDescription(Symbol s) => s.Description?.ReplaceLineEndings(" ").Replace("`", "``").Replace("'", "`'").Replace("\"", "`\"").Replace("$", "`$");
+    private static string? SanitizeHelpDescription(Symbol s) => s.Description?.ReplaceLineEndings(" ").Replace("`", "``").Replace("\"", "`\"").Replace("“", "`“").Replace("”", "`”").Replace("„", "`„").Replace("$", "`$");
 
     /// <summary>
     /// Generations completion-list items for the names of the given option. Typically used by commands/subcommands for static lookup lists.
