@@ -268,6 +268,94 @@ namespace Microsoft.DotNet.Cli.Test.Tests
             result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
         }
 
+        [Fact]
+        public void RunMultipleTestProjectsWithPerModuleResultsDirectoryLayout_ShouldCreateSeparateDirectories()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithTests", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.AtLeastOneTestFailed);
+
+            Directory.GetDirectories(resultsDirectory).Select(Path.GetFileName)
+                .Should().BeEquivalentTo(["TestProject", "OtherTestProject"]);
+            foreach (string projectDirectory in Directory.GetDirectories(resultsDirectory))
+            {
+                Directory.GetDirectories(projectDirectory).Select(Path.GetFileName)
+                    .Should().ContainSingle().Which.Should().MatchRegex(@"^net\d+\.\d+_[a-z0-9\-\.]+$");
+            }
+        }
+
+        [Fact]
+        public void RunMultipleTestProjectsWritingTheSameReportName_ShouldOverwriteWithFlatLayout()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    "--max-parallel-test-modules", "1");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+            Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories)
+                .Should().ContainSingle("both projects write into the same directory with the flat layout");
+        }
+
+        [Fact]
+        public void RunMultipleTestProjectsWritingTheSameReportName_ShouldKeepBothWithPerModuleLayout()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithSharedReportName", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory", resultsDirectory,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2, "each project writes its report into its own directory");
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["TestProjectA", "TestProjectB"]);
+        }
+
+        [Fact]
+        public void RunTestProjectsWithTheSameNameAndPerModuleLayout_ShouldDisambiguateAndKeepBothReports()
+        {
+            TestAsset testInstance = _testAssetsManager.CopyTestAsset("MultiTestProjectSolutionWithDuplicateProjectNames", Guid.NewGuid().ToString())
+                .WithSource();
+            string resultsDirectory = Path.Combine(testInstance.Path, "TestResults");
+
+            CommandResult result = new DotnetTestCommand(Log, disableNewOutput: false)
+                .WithWorkingDirectory(testInstance.Path)
+                .Execute(
+                    "-c", TestingConstants.Debug,
+                    "--results-directory-layout", "per-module");
+
+            result.ExitCode.Should().Be(ExitCodes.Success);
+
+            Directory.GetDirectories(resultsDirectory).Select(Path.GetFileName)
+                .Should().HaveCount(2).And.AllSatisfy(name => name.Should().MatchRegex("^Tests_[0-9a-f]{16}$"));
+
+            string[] reports = Directory.GetFiles(resultsDirectory, "report.txt", SearchOption.AllDirectories);
+            reports.Should().HaveCount(2);
+            reports.Select(File.ReadAllText).Should().BeEquivalentTo(["src", "samples"]);
+        }
+
         [InlineData(TestingConstants.Debug)]
         [InlineData(TestingConstants.Release)]
         [Theory]
