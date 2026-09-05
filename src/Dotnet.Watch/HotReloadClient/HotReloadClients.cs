@@ -136,7 +136,7 @@ internal sealed class HotReloadClients(
     /// <param name="applyOperationCancellationToken">Cancellation token for the apply operation that starts but not necessarily completes when this method returns.</param>
     /// <param name="cancellationToken">Cancellation token. The cancellation should trigger on process terminatation.</param>
     /// <returns></returns>
-    public async Task<Task> ApplyManagedCodeUpdatesAsync(ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
+    public async Task<Task<bool>> ApplyManagedCodeUpdatesAsync(ImmutableArray<ImmutableArray<HotReloadManagedCodeUpdate>> updates, CancellationToken applyOperationCancellationToken, CancellationToken cancellationToken)
     {
         // shouldn't be called if there are no clients
         Debug.Assert(IsManagedAgentSupported);
@@ -153,13 +153,16 @@ internal sealed class HotReloadClients(
 
         return CompleteApplyOperationAsync();
 
-        async Task CompleteApplyOperationAsync()
+        async Task<bool> CompleteApplyOperationAsync()
         {
             var results = await Task.WhenAll(applyTasks);
-            if (browserRefreshServer != null && results.All(isSuccess => isSuccess))
+            var success = results.All(isSuccess => isSuccess);
+            if (browserRefreshServer != null && success)
             {
                 await browserRefreshServer.RefreshBrowserAsync(cancellationToken);
             }
+
+            return success;
         }
     }
 
