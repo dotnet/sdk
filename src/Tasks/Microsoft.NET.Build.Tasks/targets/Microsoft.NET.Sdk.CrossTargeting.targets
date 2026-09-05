@@ -17,6 +17,17 @@ Copyright (c) .NET Foundation. All rights reserved.
        in order to package correctly, like the ones that add the DotnetTool PackageType. -->
   <Import Project="$(MSBuildThisFileDirectory)Microsoft.NET.PackTool.targets" Condition="'$(PackAsTool)' == 'true'" />
 
+  <Target Name="_WarnOnSingleTargetFrameworks"
+          BeforeTargets="Build"
+          Condition="'$(_TargetFrameworksHasSingleTargetFramework)' == 'true'">
+    <ItemGroup>
+      <_SingleTargetFrameworksNoWarn Include="$(NoWarn)" />
+    </ItemGroup>
+    <NETSdkWarning Condition="'@(_SingleTargetFrameworksNoWarn->AnyHaveMetadataValue('Identity', 'NETSDK1245'))' != 'true'"
+                   ResourceName="SingleTargetFrameworksIsCrossTargeting"
+                   FormatArguments="$([MSBuild]::Escape('$(_SingleTargetFrameworkCandidate)'))" />
+  </Target>
+
   <!--
   ============================================================
                               Publish

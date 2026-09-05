@@ -15,6 +15,9 @@ Copyright (c) .NET Foundation. All rights reserved.
   <!-- Using the same property as Microsoft.CSharp.targets and presumably Microsoft.VisualBasic.targets here -->
   <PropertyGroup Condition="'$(TargetFrameworks)' != '' and '$(TargetFramework)' == ''">
     <IsCrossTargetingBuild>true</IsCrossTargetingBuild>
+    <_SingleTargetFrameworkCandidate>$(TargetFrameworks.Trim().Trim('%3B').Trim())</_SingleTargetFrameworkCandidate>
+    <_TargetFrameworksHasMultipleEntries>$(_SingleTargetFrameworkCandidate.Contains('%3B'))</_TargetFrameworksHasMultipleEntries>
+    <_TargetFrameworksHasSingleTargetFramework Condition="'$(_SingleTargetFrameworkCandidate)' != '' and '$(_TargetFrameworksHasMultipleEntries)' == 'false'">true</_TargetFrameworksHasSingleTargetFramework>
   </PropertyGroup>
 
   <Import Project="$(MSBuildThisFileDirectory)..\targets\Microsoft.NET.Sdk.BeforeCommonCrossTargeting.targets"

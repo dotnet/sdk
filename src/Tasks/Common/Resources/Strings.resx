@@ -1054,5 +1054,9 @@ You may need to build the project on another operating system or architecture, o
     <value>NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</value>
     <comment>{StrBegins="NETSDK1244: "}{Locked="IncludeAllContentForSelfExtract"}</comment>
   </data>
-  <!-- The latest message added is IncludeAllContentForSelfExtractIsLegacy. Please update this value with each PR to catch parallel PRs both adding a new message -->
+  <data name="SingleTargetFrameworksIsCrossTargeting" xml:space="preserve">
+    <value>NETSDK1245: This project declares a single target framework using 'TargetFrameworks', which evaluates the project twice per build. Use &lt;TargetFramework&gt;{0}&lt;/TargetFramework&gt; instead, or set &lt;NoWarn&gt;$(NoWarn);NETSDK1245&lt;/NoWarn&gt; to keep the current behavior.</value>
+    <comment>{StrBegins="NETSDK1245: "}{Locked="TargetFrameworks"}{Locked="&lt;TargetFramework&gt;"}{Locked="{0}"}{Locked="&lt;/TargetFramework&gt;"}{Locked="&lt;NoWarn&gt;"}{Locked="$(NoWarn)"}{Locked="NETSDK1245"}{Locked="&lt;/NoWarn&gt;"}</comment>
+  </data>
+  <!-- The latest message added is SingleTargetFrameworksIsCrossTargeting. Please update this value with each PR to catch parallel PRs both adding a new message -->
 </root>

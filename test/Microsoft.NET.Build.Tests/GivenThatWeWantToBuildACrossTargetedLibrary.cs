@@ -147,6 +147,98 @@ namespace Microsoft.NET.Build.Tests
         }
 
         [TestMethod]
+        [DataRow("")]
+        [DataRow(";")]
+        [DataRow(" ; ")]
+        public void It_warns_once_when_TargetFrameworks_has_one_framework(string suffix)
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework}{suffix}"
+            };
+            SetTargetFrameworksProperty(testProject, $"{ToolsetInfo.CurrentTargetFramework}{suffix}");
+            var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: suffix.Length.ToString());
+
+            var result = new BuildCommand(testAsset)
+                .Execute("/clp:NoSummary");
+
+            result.Should().Pass();
+            System.Text.RegularExpressions.Regex.Matches(result.StdOut, "warning NETSDK1245").Count.Should().Be(1);
+        }
+
+        [TestMethod]
+        public void It_does_not_warn_for_multiple_TargetFrameworks()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = $"{ToolsetInfo.CurrentTargetFramework};netstandard2.0"
+            };
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .NotHaveStdOutContaining("NETSDK1245");
+        }
+
+        [TestMethod]
+        public void It_can_suppress_single_TargetFrameworks_warning()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+            SetTargetFrameworksProperty(testProject, ToolsetInfo.CurrentTargetFramework);
+            testProject.SourceFiles["Directory.Build.targets"] = """
+                <Project>
+                  <PropertyGroup>
+                    <NoWarn>$(NoWarn);NETSDK1245</NoWarn>
+                  </PropertyGroup>
+                </Project>
+                """;
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .NotHaveStdOutContaining("NETSDK1245");
+        }
+
+        [TestMethod]
+        public void It_does_not_suppress_single_TargetFrameworks_warning_for_another_code()
+        {
+            var testProject = new TestProject()
+            {
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework
+            };
+            SetTargetFrameworksProperty(testProject, ToolsetInfo.CurrentTargetFramework);
+            testProject.AdditionalProperties["NoWarn"] = "NETSDK12450";
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+
+            new BuildCommand(testAsset)
+                .Execute()
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining("warning NETSDK1245");
+        }
+
+        private static void SetTargetFrameworksProperty(TestProject testProject, string value)
+        {
+            testProject.ProjectChanges.Add(project =>
+            {
+                var property = project.Descendants().Single(element =>
+                    element.Name.LocalName is "TargetFramework" or "TargetFrameworks");
+                property.Name = property.Name.Namespace + "TargetFrameworks";
+                property.Value = value;
+            });
+        }
+
+        [TestMethod]
         [RequiresMSBuildVersion("17.9.0.61803")]
         public void OuterBuildImportsUserFile()
         {
