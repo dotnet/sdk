@@ -188,7 +188,7 @@ namespace Microsoft.NetCore.Analyzers.Runtime
             return (IArrayCreationOperation)model.GetOperation(node.ChildNodes().First(), cancellationToken)!;
         }
 
-        private static string GetExtractedMemberName(ISet<string> identifierNames, string parameterName)
+        private static string GetExtractedMemberName(HashSet<string> identifierNames, string parameterName)
         {
             bool hasCollectionEnding = s_collectionMemberEndings.Any(x => parameterName.EndsWith(x, true, CultureInfo.InvariantCulture));
 
