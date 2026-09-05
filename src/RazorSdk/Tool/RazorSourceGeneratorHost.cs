@@ -117,6 +117,11 @@ internal static class RazorSourceGeneratorHost
     public static CSharpParseOptions CreateParseOptions(LanguageVersion languageVersion)
         => new(languageVersion);
 
+    public static LanguageVersion GetCSharpLanguageVersion(string value)
+        => LanguageVersionFacts.TryParse(value, out var languageVersion)
+            ? languageVersion
+            : LanguageVersion.Default;
+
     private static string Bool(bool value) => value ? "true" : "false";
 
     private static void AddIfPresent(Dictionary<string, string> options, string key, string value)
