@@ -98,11 +98,22 @@ Reload).
   The wait is bounded and best effort so runtimes that install the apply API through their
   own bootstrap, or pages that never boot WebAssembly, degrade to a logged warning instead
   of a reload loop.
+- **A browser that cannot apply an update must fail the acknowledgement.** `dotnet watch`
+  treats an acknowledged update as applied, so any path that answers with an empty log is
+  indistinguishable from a successful apply and produces "C# and Razor changes applied"
+  while nothing changed. [`WebAssemblyHotReload`](HotReloadAgent.WebAssembly.Browser/WebAssemblyHotReload.cs)
+  therefore records why the agent was not created and throws that reason from
+  `ApplyHotReloadDeltas` instead of returning an empty log; the throw surfaces through
+  `[JSExport]`, the client reports `success: false`, and
+  [`RunningProjectsManager`](Watch/HotReload/RunningProjectsManager.cs) suppresses both the
+  applied message and the Aspire notification when any client's apply task failed. Replay is
+  the deliberate exception: an apply failure while initializing is logged as an error but
+  does not fail initialization, because the provider disposes a connection whose
+  initialization reported failure and the client reloads on close, which would loop.
 - **.NET 9 WebAssembly is the one target framework that needs
   `__ASPNETCORE_BROWSER_TOOLS`.** Its `WebAssemblyHotReload` creates the Hot Reload agent
   only inside `InitializeAsync`, which the runtime calls only when that variable is set, so
-  without it `applyHotReloadDeltas` returns an empty log and applies nothing while the
-  browser still reports success. The
+  without it nothing is applied. The
   [initializer template](../WasmSdk/Sdk/DotNetWatch/Microsoft.NET.Sdk.WebAssembly.DotNetWatch.lib.module.js.template)
   therefore has a `__RUNTIME_HOT_RELOAD_AGENT__` placeholder that
   [`Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets`](../StaticWebAssetsSdk/Targets/Microsoft.NET.Sdk.StaticWebAssets.DotNetWatch.targets)
