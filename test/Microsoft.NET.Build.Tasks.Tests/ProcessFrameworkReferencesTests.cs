@@ -186,6 +186,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             if (config.KnownRuntimePacks != null) task.KnownRuntimePacks = config.KnownRuntimePacks;
             if (config.KnownILLinkPacks != null) task.KnownILLinkPacks = config.KnownILLinkPacks;
             if (config.KnownILCompilerPacks != null) task.KnownILCompilerPacks = config.KnownILCompilerPacks;
+            if (config.KnownCrossgen2Packs != null) task.KnownCrossgen2Packs = config.KnownCrossgen2Packs;
             
             // Set additional AOT/trimming properties
             if (config.PublishAot.HasValue) task.PublishAot = config.PublishAot.Value;
@@ -196,6 +197,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             if (config.EnableSingleFileAnalyzer.HasValue) task.EnableSingleFileAnalyzer = config.EnableSingleFileAnalyzer.Value;
             if (config.ReadyToRunEnabled.HasValue) task.ReadyToRunEnabled = config.ReadyToRunEnabled.Value;
             if (config.ReadyToRunUseCrossgen2.HasValue) task.ReadyToRunUseCrossgen2 = config.ReadyToRunUseCrossgen2.Value;
+            if (config.RequiresCrossgen2Pack.HasValue) task.RequiresCrossgen2Pack = config.RequiresCrossgen2Pack.Value;
             
             if (!string.IsNullOrEmpty(config.NetCoreRoot)) task.NetCoreRoot = config.NetCoreRoot;
             if (!string.IsNullOrEmpty(config.NETCoreSdkVersion)) task.NETCoreSdkVersion = config.NETCoreSdkVersion;
@@ -228,6 +230,7 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public MockTaskItem[]? KnownRuntimePacks { get; set; }
             public MockTaskItem[]? KnownILLinkPacks { get; set; }
             public MockTaskItem[]? KnownILCompilerPacks { get; set; }
+            public MockTaskItem[]? KnownCrossgen2Packs { get; set; }
             public bool? PublishAot { get; set; }
             public bool? PublishTrimmed { get; set; }
             public bool? RequiresILLinkPack { get; set; }
@@ -236,9 +239,142 @@ namespace Microsoft.NET.Build.Tasks.UnitTests
             public bool? EnableSingleFileAnalyzer { get; set; }
             public bool? ReadyToRunEnabled { get; set; }
             public bool? ReadyToRunUseCrossgen2 { get; set; }
+            public bool? RequiresCrossgen2Pack { get; set; }
             public string? NetCoreRoot { get; set; }
             public string? NETCoreSdkVersion { get; set; }
             public string? NETCoreSdkPortableRuntimeIdentifier { get; set; }
+        }
+
+        /// <summary>
+        /// A KnownCrossgen2Pack is selected by exact target framework version, so
+        /// TargetFrameworkVersion here has to stay in step with the pack's TargetFramework or the
+        /// task reports an unsupported target framework and the RID never gets looked at.
+        /// </summary>
+        [TestMethod]
+        [DataRow(true, false, true, "RequiresCrossgen2Pack alone acquires the pack")]
+        [DataRow(false, true, true, "PublishReadyToRun still acquires the pack")]
+        [DataRow(false, false, false, "neither asks for it, so it is not downloaded")]
+        public void It_acquires_the_Crossgen2_pack_for_a_build_that_needs_the_tool_without_ReadyToRun(
+            bool requiresCrossgen2Pack, bool readyToRunEnabled, bool expectDownloaded, string scenario)
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App",
+                ToolsetInfo.CurrentTargetFramework, "11.0.0");
+
+            var crossgen2Pack = new MockTaskItem("Microsoft.NETCore.App.Crossgen2", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = ToolsetInfo.CurrentTargetFramework,
+                ["Crossgen2PackNamePattern"] = "Microsoft.NETCore.App.Crossgen2.**RID**",
+                ["Crossgen2PackVersion"] = "11.0.0",
+                ["Crossgen2PortableRuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64",
+                ["Crossgen2RuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64"
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "11.0",
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "win-x64",
+                NETCoreSdkPortableRuntimeIdentifier = "win-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                RequiresCrossgen2Pack = requiresCrossgen2Pack,
+                ReadyToRunEnabled = readyToRunEnabled,
+                ReadyToRunUseCrossgen2 = true,
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownCrossgen2Packs = new[] { crossgen2Pack }
+            };
+
+            var task = CreateTask(config);
+
+            task.Execute().Should().BeTrue(scenario);
+
+            var downloadedCrossgen2 = task.PackagesToDownload?
+                .Any(p => p.ItemSpec.Contains("Microsoft.NETCore.App.Crossgen2")) ?? false;
+
+            downloadedCrossgen2.Should().Be(expectDownloaded, scenario);
+        }
+
+        [TestMethod]
+        public void It_reports_the_unsupported_host_when_the_Crossgen2_pack_has_no_RID_for_it()
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App",
+                ToolsetInfo.CurrentTargetFramework, "11.0.0");
+
+            // Supported everywhere except this build's host, so only the host lookup fails.
+            var crossgen2Pack = new MockTaskItem("Microsoft.NETCore.App.Crossgen2", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = ToolsetInfo.CurrentTargetFramework,
+                ["Crossgen2PackNamePattern"] = "Microsoft.NETCore.App.Crossgen2.**RID**",
+                ["Crossgen2PackVersion"] = "11.0.0",
+                ["Crossgen2PortableRuntimeIdentifiers"] = "linux-x64",
+                ["Crossgen2RuntimeIdentifiers"] = "linux-x64"
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "11.0",
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "win-x64",
+                NETCoreSdkPortableRuntimeIdentifier = "win-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                RequiresCrossgen2Pack = true,
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownCrossgen2Packs = new[] { crossgen2Pack }
+            };
+
+            var task = CreateTask(config);
+
+            task.Execute().Should().BeFalse("the build host has no crossgen2 pack");
+
+            var engine = (MockNeverCacheBuildEngine4)task.BuildEngine;
+            var error = engine.Errors.Should().ContainSingle().Subject;
+            error.Code.Should().Be("NETSDK1245");
+            error.Message.Should().Contain("win-x64", "the message names the host it could not find a pack for");
+        }
+
+        [TestMethod]
+        public void It_reports_the_unsupported_target_framework_when_no_Crossgen2_pack_matches()
+        {
+            var netCoreAppRef = CreateKnownFrameworkReference("Microsoft.NETCore.App",
+                ToolsetInfo.CurrentTargetFramework, "11.0.0");
+
+            // The only pack targets net9.0, so the version filter rejects it before any RID lookup.
+            var crossgen2Pack = new MockTaskItem("Microsoft.NETCore.App.Crossgen2", new Dictionary<string, string>
+            {
+                ["TargetFramework"] = "net9.0",
+                ["Crossgen2PackNamePattern"] = "Microsoft.NETCore.App.Crossgen2.**RID**",
+                ["Crossgen2PackVersion"] = "9.0.0",
+                ["Crossgen2PortableRuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64",
+                ["Crossgen2RuntimeIdentifiers"] = "win-x64;linux-x64;osx-x64;osx-arm64"
+            });
+
+            var config = new TaskConfiguration
+            {
+                TargetFrameworkVersion = "11.0",
+                EnableRuntimePackDownload = true,
+                NETCoreSdkRuntimeIdentifier = "win-x64",
+                NETCoreSdkPortableRuntimeIdentifier = "win-x64",
+                RuntimeGraphPath = CreateRuntimeGraphFile(MultiPlatformRuntimeGraph),
+                RequiresCrossgen2Pack = true,
+                FrameworkReferences = new[] {
+                    new MockTaskItem("Microsoft.NETCore.App", new Dictionary<string, string> { ["IsImplicitlyDefined"] = "true" })
+                },
+                KnownFrameworkReferences = new[] { netCoreAppRef },
+                KnownCrossgen2Packs = new[] { crossgen2Pack }
+            };
+
+            var task = CreateTask(config);
+
+            task.Execute().Should().BeFalse("no crossgen2 pack matches the target framework");
+
+            var engine = (MockNeverCacheBuildEngine4)task.BuildEngine;
+            engine.Errors.Should().ContainSingle()
+                .Which.Code.Should().Be("NETSDK1246");
         }
 
         [TestMethod]
