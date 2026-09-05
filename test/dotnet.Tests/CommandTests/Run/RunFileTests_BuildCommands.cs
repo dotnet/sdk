@@ -1082,6 +1082,41 @@ public sealed class RunFileTests_BuildCommands : RunFileTestBase
                 """);
     }
 
+    [TestMethod, CombinatorialData]
+    public void LaunchProfile_MSBuildPropertyExpansion(bool cscOnly)
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory(baseDirectory: cscOnly ? OutOfTreeBaseDirectory : null);
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), s_program);
+        if (!cscOnly)
+        {
+            File.WriteAllText(Path.Join(testInstance.Path, "Directory.Build.props"), "<Project />");
+        }
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.run.json"), """
+            {
+                "profiles": {
+                    "TestProfile": {
+                        "commandName": "Project",
+                        "commandLineArgs": "\"$(MSBuildProjectDirectory)\""
+                    }
+                }
+            }
+            """);
+
+        string prefix = cscOnly
+            ? CliCommandStrings.NoBinaryLogBecauseRunningJustCsc + Environment.NewLine
+            : string.Empty;
+
+        new DotnetCommand(Log, "run", "-bl", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut(prefix + $"""
+                echo args:{testInstance.Path}
+                Hello from Program
+                """);
+    }
+
     /// <summary>
     /// <c>Properties/launchSettings.json</c> takes precedence over <c>Program.run.json</c>.
     /// </summary>

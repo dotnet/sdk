@@ -226,6 +226,7 @@ internal static partial class ObjectWriters
                 writer.WriteIfNotFalse(nameof(metadata.IsDelegateWithAwaitableResult), metadata.IsDelegateWithAwaitableResult);
                 writer.WriteIfNotFalse(nameof(metadata.IsGenericTyped), metadata.IsGenericTyped);
                 writer.WriteIfNotFalse(nameof(metadata.IsInitOnlyProperty), metadata.IsInitOnlyProperty);
+                writer.WriteIfNotFalse(nameof(metadata.AcceptsAssetPath), metadata.AcceptsAssetPath);
             }
 
             static void WriteBindMetadata(JsonDataWriter writer, BindMetadata metadata)
