@@ -10,6 +10,7 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public class GivenAWriteAppConfigWithSupportedRuntimeMultiThreading : IDisposable
     {
         private readonly List<string> _tempDirs = new();

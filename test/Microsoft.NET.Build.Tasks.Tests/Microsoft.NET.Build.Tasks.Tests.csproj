@@ -6,8 +6,8 @@
 
   <PropertyGroup>
     <TargetFramework>$(SdkTargetFramework)</TargetFramework>
-    <!-- CWD-mutating tests must run serially; emits [assembly: DoNotParallelize]. -->
-    <MSTestParallelizeScope>None</MSTestParallelizeScope>
+    <!-- CWD-mutating test classes use a shared resource lock. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
     <EnableDefaultItems>false</EnableDefaultItems>
   </PropertyGroup>
 

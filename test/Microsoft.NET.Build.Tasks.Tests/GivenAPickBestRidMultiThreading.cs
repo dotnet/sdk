@@ -6,6 +6,7 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public class GivenAPickBestRidMultiThreading
     {
         private const string RuntimeGraphContent = @"{

@@ -7,6 +7,7 @@ using Microsoft.Build.Framework;
 namespace Microsoft.NET.Build.Tasks.UnitTests
 {
     [TestClass]
+    [ResourceLock(WellKnownResources.CurrentDirectory)]
     public class GivenAResolvePackageAssetsMultiThreading
     {
         [TestMethod]
