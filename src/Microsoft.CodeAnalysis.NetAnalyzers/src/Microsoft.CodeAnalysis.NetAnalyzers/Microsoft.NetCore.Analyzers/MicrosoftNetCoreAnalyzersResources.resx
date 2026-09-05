@@ -1286,6 +1286,9 @@
   <data name="ForwardCancellationTokenToInvocationsTitle" xml:space="preserve">
     <value>Forward the 'CancellationToken' parameter to methods</value>
   </data>
+  <data name="UseCompiledLogMessagesCodeFixTitle" xml:space="preserve">
+    <value>Generate strongly-typed logging method</value>
+  </data>
   <data name="InstantiateArgumentExceptionsCorrectlyChangeToTwoArgumentCodeFixTitle" xml:space="preserve">
     <value>Change to call the two argument constructor, pass null for the message.</value>
   </data>

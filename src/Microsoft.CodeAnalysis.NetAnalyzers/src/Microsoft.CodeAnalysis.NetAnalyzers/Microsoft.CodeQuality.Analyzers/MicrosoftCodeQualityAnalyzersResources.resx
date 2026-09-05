@@ -225,6 +225,9 @@
   <data name="LoggerMessageDiagnosticUsePascalCasedLogMessageTokensDescription" xml:space="preserve">
     <value>Use PascalCase for named placeholders in the logging message template.</value>
   </data>
+  <data name="LoggerMessageDiagnosticUseCompiledLogMessagesCodeFixTitle" xml:space="preserve">
+    <value>Generate strongly-typed logging method</value>
+  </data>
   <data name="MarkAssembliesWithClsCompliantTitle" xml:space="preserve">
     <value>Mark assemblies with CLSCompliant</value>
   </data>
