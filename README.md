@@ -2,6 +2,8 @@
 
 This repository contains core functionality needed to create .NET projects that are shared between Visual Studio and the [.NET CLI](https://learn.microsoft.com/dotnet/core/tools/).
 
+**TEST ONLY - DO NOT MERGE:** [Intentionally broken local link](this-test-file-definitely-does-not-exist.md)
+
 * MSBuild tasks are under [/src/Tasks/Microsoft.NET.Build.Tasks/](src/Tasks/Microsoft.NET.Build.Tasks).
 
 See [dotnet/project-system](https://github.com/dotnet/project-system) for the project system work that is specific to Visual Studio.
