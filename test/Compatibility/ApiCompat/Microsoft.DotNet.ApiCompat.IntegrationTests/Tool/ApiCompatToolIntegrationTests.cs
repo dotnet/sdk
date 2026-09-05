@@ -15,7 +15,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
     {
         private const string TestAssetName = "ApiCompatValidateAssembliesTestProject";
 
-        [TestMethod] 
+        [TestMethod]
         public void ApiCompatTool_AssembliesIdentical_ExitsZero()
         {
             string assembly = BuildAsset(nameof(ApiCompatTool_AssembliesIdentical_ExitsZero), forceBreakingChange: false);
@@ -25,7 +25,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             result.Should().Pass();
         }
 
-        [TestMethod] 
+        [TestMethod]
         public void ApiCompatTool_BreakingChange_ReportsCP0002()
         {
             string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_BreakingChange_ReportsCP0002)}_left", forceBreakingChange: false);
@@ -39,7 +39,7 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
                 .And.Contain("Goodbye");
         }
 
-        [TestMethod] 
+        [TestMethod]
         public void ApiCompatTool_SuppressionFile_RoundTrip()
         {
             string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_SuppressionFile_RoundTrip)}_left", forceBreakingChange: false);
@@ -68,7 +68,56 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
             consumeResult.StdOut.Should().NotContain("error CP0002");
         }
 
-        [TestMethod] 
+        [TestMethod]
+        public void ApiCompatTool_ExperimentalRemoval_IsInformational()
+        {
+            string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_ExperimentalRemoval_IsInformational)}_left", forceBreakingChange: false,
+                "-p:IncludeExperimentalApis=true");
+            string implementationAssembly = BuildAsset($"{nameof(ApiCompatTool_ExperimentalRemoval_IsInformational)}_right", forceBreakingChange: false);
+
+            var result = Run("--left", contractAssembly, "--right", implementationAssembly);
+
+            result.Should().Pass();
+            string output = result.StdOut + result.StdErr;
+            output.Should().Contain("info CP0002")
+                .And.NotContain("error CP0002")
+                .And.Contain("ExperimentalRemoved");
+        }
+
+        [TestMethod]
+        public void ApiCompatTool_ExperimentalPromotion_FailsAndCanBeSuppressed()
+        {
+            string contractAssembly = BuildAsset($"{nameof(ApiCompatTool_ExperimentalPromotion_FailsAndCanBeSuppressed)}_left", forceBreakingChange: false,
+                "-p:IncludeExperimentalApis=true");
+            string implementationAssembly = BuildAsset($"{nameof(ApiCompatTool_ExperimentalPromotion_FailsAndCanBeSuppressed)}_right", forceBreakingChange: false,
+                "-p:IncludeStablePromotedApi=true");
+            string suppressionFile = Path.Combine(Path.GetDirectoryName(implementationAssembly)!, "experimental-suppressions.xml");
+
+            var result = Run("--left", contractAssembly, "--right", implementationAssembly);
+
+            result.Should().Fail();
+            (result.StdOut + result.StdErr).Should().Contain("CP0022")
+                .And.Contain("Promoted");
+
+            Run(
+                "--left", contractAssembly,
+                "--right", implementationAssembly,
+                "--generate-suppression-file",
+                "--suppression-output-file", suppressionFile)
+                .Should().Pass();
+
+            string suppressions = File.ReadAllText(suppressionFile);
+            suppressions.Should().Contain("CP0022")
+                .And.NotContain("CP0002");
+
+            Run(
+                "--left", contractAssembly,
+                "--right", implementationAssembly,
+                "--suppression-file", suppressionFile)
+                .Should().Pass();
+        }
+
+        [TestMethod]
         public void ApiCompatTool_PackageMode_DetectsRemovedApi()
         {
             // Pack the existing PackageValidationTestProject twice to produce two .nupkg files
@@ -99,14 +148,19 @@ namespace Microsoft.DotNet.ApiCompat.IntegrationTests
         /// <summary>
         /// Builds a copy of the test asset and returns the absolute path to the produced assembly.
         /// </summary>
-        private string BuildAsset(string identifier, bool forceBreakingChange)
+        private string BuildAsset(string identifier, bool forceBreakingChange, params string[] additionalArguments)
         {
             TestAsset asset = TestAssetsManager
                 .CopyTestAsset(TestAssetName, identifier: identifier)
                 .WithSource();
 
-            var args = forceBreakingChange ? new[] { "-p:ForceBreakingChange=true" } : Array.Empty<string>();
-            new BuildCommand(asset).Execute(args).Should().Pass();
+            var args = new List<string>(additionalArguments);
+            if (forceBreakingChange)
+            {
+                args.Add("-p:ForceBreakingChange=true");
+            }
+
+            new BuildCommand(asset).Execute(args.ToArray()).Should().Pass();
 
             return Path.Combine(asset.TestRoot, "bin", "Debug",
                 ToolsetInfo.CurrentTargetFramework, $"{TestAssetName}.dll");

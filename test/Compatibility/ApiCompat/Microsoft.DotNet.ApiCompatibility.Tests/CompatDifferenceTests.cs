@@ -47,6 +47,14 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             CompatDifference differentType = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Added, "T:Foo");
             CompatDifference differentMemberId = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, string.Empty, DifferenceType.Removed, "T:FooBar");
             CompatDifference differentMessage = CompatDifference.CreateWithDefaultMetadata(DiagnosticIds.TypeMustExist, "Hello", DifferenceType.Removed, "T:Foo");
+            CompatDifference differentSeverity = new(
+                difference.Left,
+                difference.Right,
+                difference.DiagnosticId,
+                difference.Message,
+                difference.Type,
+                difference.ReferenceId,
+                DifferenceSeverity.Informational);
 
             Assert.IsFalse(difference.Equals(null));
             Assert.IsTrue(difference.Equals(otherEqual));
@@ -55,6 +63,8 @@ namespace Microsoft.DotNet.ApiCompatibility.Tests
             Assert.IsFalse(difference.Equals(differentType));
             Assert.IsFalse(difference.Equals(differentMemberId));
             Assert.IsTrue(difference.Equals(differentMessage));
+            Assert.IsTrue(difference.Equals(differentSeverity));
+            Assert.AreEqual(difference.GetHashCode(), differentSeverity.GetHashCode());
         }
     }
 }

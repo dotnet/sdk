@@ -66,6 +66,11 @@ namespace Microsoft.DotNet.ApiSymbolExtensions.Filtering
         public bool Include(ISymbol symbol)
         {
             string? docId = symbol.GetDocumentationCommentId();
+            if (symbol is IErrorTypeSymbol errorType && (docId is null || docId.StartsWith("!:", StringComparison.Ordinal)))
+            {
+                docId = $"T:{errorType.ContainingNamespace}.{errorType.MetadataName}";
+            }
+
             if (docId is not null && _docIds.Contains(docId))
             {
                 return _includeDocIds;
