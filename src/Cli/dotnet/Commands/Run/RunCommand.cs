@@ -56,6 +56,7 @@ public class RunCommand
     public string[] ApplicationArgs { get; set; }
     public bool NoRestore { get; }
     public bool NoCache { get; }
+    public string? WorkingDirectory { get; }
 
     /// <summary>
     /// Parsed structure representing the MSBuild arguments that will be used to build the project.
@@ -119,7 +120,8 @@ public class RunCommand
         MSBuildArgs msbuildArgs,
         string[] applicationArgs,
         bool readCodeFromStdin,
-        IReadOnlyDictionary<string, string> environmentVariables)
+        IReadOnlyDictionary<string, string> environmentVariables,
+        string? workingDirectory)
     {
         Debug.Assert(projectFileFullPath is null ^ entryPointFileFullPath is null);
         Debug.Assert(!readCodeFromStdin || entryPointFileFullPath is not null);
@@ -139,6 +141,7 @@ public class RunCommand
         NoCache = noCache;
         MSBuildArgs = SetupSilentBuildArgs(msbuildArgs);
         EnvironmentVariables = environmentVariables;
+        WorkingDirectory = workingDirectory;
     }
 
     public int Execute()
@@ -271,13 +274,19 @@ public class RunCommand
     }
 
     internal ICommand GetTargetCommand(LaunchProfile? launchSettings, Func<ProjectCollection, ProjectInstance>? projectFactory, RunProperties? cachedRunProperties, bool runPropertiesFromEvaluation, FacadeLogger? logger)
-        => launchSettings switch
+    {
+        ICommand command = launchSettings switch
         {
             null => GetTargetCommandForProject(launchSettings: null, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
             ProjectLaunchProfile projectSettings => GetTargetCommandForProject(projectSettings, projectFactory, cachedRunProperties, runPropertiesFromEvaluation, logger),
             ExecutableLaunchProfile executableSettings => GetTargetCommandForExecutable(executableSettings),
             _ => throw new InvalidOperationException()
         };
+
+        return WorkingDirectory is null
+            ? command
+            : command.WorkingDirectory(WorkingDirectory);
+    }
 
     /// <summary>
     /// Checks if target framework selection and device selection are needed.
@@ -924,6 +933,13 @@ public class RunCommand
 
         string? projectOption = parseResult.GetValue(definition.ProjectOption);
         string? fileOption = parseResult.GetValue(definition.FileOption);
+        bool fileMode = parseResult.GetValue(definition.FileModeOption);
+        string? workingDirectory = parseResult.GetValue(definition.WorkingDirectoryOption);
+
+        if (workingDirectory is not null)
+        {
+            workingDirectory = Path.GetFullPath(workingDirectory);
+        }
 
         if (projectOption != null && fileOption != null)
         {
@@ -931,6 +947,14 @@ public class RunCommand
         }
 
         string[] args = [.. nonLoggerArgs];
+        if (fileMode)
+        {
+            (fileOption, args) = CommonRunHelpers.ProcessFileModeArguments(
+                args,
+                Directory.GetCurrentDirectory(),
+                workingDirectory);
+        }
+
         string? projectFilePath = DiscoverProjectFilePath(
             filePath: fileOption,
             projectFileOrDirectoryPath: projectOption,
@@ -1027,7 +1051,8 @@ public class RunCommand
             msbuildArgs: msbuildArgs,
             applicationArgs: args,
             readCodeFromStdin: readCodeFromStdin,
-            environmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty
+            environmentVariables: parseResult.GetValue(definition.EnvOption) ?? ImmutableDictionary<string, string>.Empty,
+            workingDirectory: workingDirectory
         );
 
         return command;

@@ -8,8 +8,12 @@ namespace Microsoft.DotNet.Cli.Commands.Dnx;
 internal sealed class DnxCommandDefinition : ToolExecuteCommandDefinitionBase
 {
     public DnxCommandDefinition()
-        : base("dnx")
+        : base("dnx", CommandDefinitionStrings.DnxPackageOrFileArgumentName)
     {
+        Description = CommandDefinitionStrings.DnxCommandDescription;
+        PackageIdentityArgument.Description = CommandDefinitionStrings.DnxPackageOrFileArgumentDescription;
+        PackageIdentityArgument.HelpName = CommandDefinitionStrings.DnxPackageOrFileArgumentName;
+        CommandArgument.Description = CommandDefinitionStrings.DnxArgumentsDescription;
         Hidden = true;
     }
 }

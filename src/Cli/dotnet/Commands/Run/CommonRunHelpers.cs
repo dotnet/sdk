@@ -18,6 +18,28 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 internal static class CommonRunHelpers
 {
     /// <summary>
+    /// Resolves the first application argument as a file-based app entry point for file mode.
+    /// </summary>
+    /// <param name="applicationArguments">Application arguments whose first value is the entry-point path.</param>
+    /// <param name="currentDirectory">The current directory.</param>
+    /// <param name="workingDirectory">The optional working directory used as the base for a relative entry-point path.</param>
+    /// <returns>The full entry-point path and remaining application arguments.</returns>
+    internal static (string EntryPointPath, string[] ApplicationArguments) ProcessFileModeArguments(
+        string[] applicationArguments,
+        string currentDirectory,
+        string? workingDirectory)
+    {
+        if (applicationArguments is not [{ } filePath, ..])
+        {
+            throw new GracefulException(CliCommandStrings.InvalidFilePath, string.Empty);
+        }
+
+        return (
+            Path.GetFullPath(filePath, workingDirectory ?? currentDirectory),
+            applicationArguments[1..]);
+    }
+
+    /// <summary>
     /// Finds the only project in a directory.
     /// </summary>
     /// <param name="directory">The directory to search.</param>

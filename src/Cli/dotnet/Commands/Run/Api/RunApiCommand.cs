@@ -128,7 +128,8 @@ internal abstract class RunApiInput
                 msbuildArgs: msbuildArgs,
                 applicationArgs: [],
                 readCodeFromStdin: false,
-                environmentVariables: ReadOnlyDictionary<string, string>.Empty);
+                environmentVariables: ReadOnlyDictionary<string, string>.Empty,
+                workingDirectory: null);
 
             var result = runCommand.ReadLaunchProfileSettings(
                 buildCommand.CreateProjectInstance,
