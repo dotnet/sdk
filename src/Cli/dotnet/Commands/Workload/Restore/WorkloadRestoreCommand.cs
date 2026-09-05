@@ -118,13 +118,16 @@ internal sealed class WorkloadRestoreCommand : WorkloadCommandBase<WorkloadResto
         var projectFiles = new List<string>();
         if (slnOrProjectArgument == null || !slnOrProjectArgument.Any())
         {
-            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, false)];
+            slnFiles = [.. SlnFileFactory.ListSolutionFilesInDirectory(currentDirectory, includeSolutionFilterFiles: true)];
             projectFiles.AddRange(Directory.GetFiles(currentDirectory, "*.*proj"));
         }
         else
         {
             slnFiles = [.. slnOrProjectArgument
-                .Where(s => Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) || Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase))
+                .Where(s =>
+                    Path.GetExtension(s).Equals(".sln", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(s).Equals(".slnx", StringComparison.OrdinalIgnoreCase) ||
+                    Path.GetExtension(s).Equals(".slnf", StringComparison.OrdinalIgnoreCase))
                 .Select(Path.GetFullPath)];
             projectFiles = [.. slnOrProjectArgument
                 .Where(s => Path.GetExtension(s).EndsWith("proj", StringComparison.OrdinalIgnoreCase))

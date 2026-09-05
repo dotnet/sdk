@@ -12,6 +12,7 @@ public class GivenDotnetWorkloadRestore : SdkTest
 
     public static string DcProjAssetName = "SolutionWithAppAndDcProj";
     public static string TransitiveReferenceNoWorkloadsAssetName = "ProjectWithEsProjReference";
+    public static string SlnfAssetName = "TestAppWithSlnfFiles";
 
     [TestMethod]
     public void ProjectsThatDoNotSupportWorkloadsAreNotInspected()
@@ -82,6 +83,28 @@ public class GivenDotnetWorkloadRestore : SdkTest
         // The command may fail for other reasons (e.g., version not found), but it should not fail with the skip-manifest-update error
         result.StdErr.Should().NotContain("Cannot use the");
         result.StdErr.Should().NotContain("--skip-manifest-update");
+    }
+
+    [TestMethod]
+    public void WorkloadRestoreSupportsSolutionFilterInput()
+    {
+        if (IsRunningInContainer())
+        {
+            // Skipping test in a Helix container environment due to read-only DOTNET_ROOT, which causes workload restore to fail when writing workload metadata.
+            return;
+        }
+
+        var projectPath =
+            TestAssetsManager
+                .CopyTestAsset(SlnfAssetName)
+                .WithSource()
+                .Path;
+
+        new DotnetWorkloadCommand(Log, "restore", "App.slnf")
+            .WithWorkingDirectory(projectPath)
+            .Execute()
+            .Should()
+            .Pass();
     }
 
     private bool IsRunningInContainer()
