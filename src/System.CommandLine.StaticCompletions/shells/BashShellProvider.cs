@@ -158,16 +158,6 @@ public class BashShellProvider : IShellProvider
         return $$"""${COMP_WORDS[0]} complete --position ${COMP_POINT} ${COMP_LINE} 2>/dev/null | tr '\n' ' '""";
     }
 
-    internal static string? GenerateOptionHandlers(Command command)
-    {
-        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(GenerateOptionHandler).Where(handler => handler is not null).ToArray();
-        if (optionHandlers.Length == 0)
-        {
-            return null;
-        }
-        return string.Join("\n", optionHandlers);
-    }
-
     /// <summary>
     /// Emit a bash command that calls compgen with a set of choices given the current work/stem, and sets those choices to COMPREPLY.
     /// Think of this like a 'return' from a function.
@@ -177,6 +167,16 @@ public class BashShellProvider : IShellProvider
     /// * a subprocess that will return such an array (aka '(dotnet complete --position 10 'dotnet ad')') </param>
     /// <returns></returns>
     internal static string GenerateChoicesPrompt(string choicesInvocation) => $$"""COMPREPLY=( $(compgen -W "{{choicesInvocation}}" -- "$cur") )""";
+
+    internal static string? GenerateOptionHandlers(Command command)
+    {
+        var optionHandlers = command.Options.Where(o => !o.Hidden).Select(o => GenerateOptionHandler(o)).Where(handler => handler is not null).ToArray();
+        if (optionHandlers.Length == 0)
+        {
+            return null;
+        }
+        return string.Join("\n", optionHandlers);
+    }
 
     /// <summary>
     /// Generates a concrete set of bash completion selection for a given option.
@@ -190,6 +190,10 @@ public class BashShellProvider : IShellProvider
         // unlike the completion-options generation, for actually implementing suggestions we should be able to handle all of the options' aliases.
         // this ensures if the user manually enters an alias we can support that usage.
         var optionNames = string.Join('|', option.Names());
+        if (string.IsNullOrEmpty(optionNames))
+        {
+            return null;
+        }
         string completionCommand;
         if (option.IsDynamic)
         {
