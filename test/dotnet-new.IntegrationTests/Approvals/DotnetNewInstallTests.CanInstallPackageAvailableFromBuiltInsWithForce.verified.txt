@@ -14,4 +14,5 @@ EditorConfig file                editorconfig             Config
 global.json file                 globaljson               Config  
 NuGet Config                     nugetconfig              Config  
 Solution File                    sln                      Solution
+XML Solution File                slnx                     Solution
 Web Config                       webconfig                Config  
