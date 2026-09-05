@@ -5,11 +5,17 @@ using System.Text.Json.Serialization;
 
 namespace Microsoft.NET.Build.Containers;
 
-public record struct ManifestListV2(int schemaVersion, string mediaType, PlatformSpecificManifest[] manifests);
+public record struct ManifestListV2(int schemaVersion, string mediaType, PlatformSpecificManifest[] manifests)
+{
+    public Dictionary<string, string>? annotations { get; init; }
+}
 
 public record struct PlatformInformation(string architecture, string os, string? variant, string[] features, [property: JsonPropertyName("os.version")][field: JsonPropertyName("os.version")] string? version);
 
 public record struct PlatformSpecificManifest(string mediaType, long size, string digest, PlatformInformation platform);
-public record struct ImageIndexV1(int schemaVersion, string mediaType, PlatformSpecificOciManifest[] manifests);
+public record struct ImageIndexV1(int schemaVersion, string mediaType, PlatformSpecificOciManifest[] manifests)
+{
+    public Dictionary<string, string>? annotations { get; init; }
+}
 
 public record struct PlatformSpecificOciManifest(string mediaType, long size, string digest, PlatformInformation platform, Dictionary<string, string> annotations);
