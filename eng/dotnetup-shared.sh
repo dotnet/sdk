@@ -47,10 +47,34 @@ function ShouldUseCachedDotnetup {
   return 0
 }
 
+# Follows redirects for a mutable 'daily' shortlink and prints the concrete,
+# versioned URL it currently points at (empty if it cannot be resolved). The daily
+# aka.ms link is a moving pointer, so downloading the script and its .sha512 as two
+# separate requests can straddle a new build publish and yield a script from one
+# build with a checksum from another. Resolving the shortlink to a single concrete
+# URL first lets us derive both the script and checksum URLs from the same build so
+# they always match. This mirrors the standalone get-dotnetup script's own binary
+# check, but is kept as a deliberately separate copy here because that script does
+# not exist in this branch and must stand alone.
+function ResolveDotnetupFinalUrl {
+  local url="$1"
+  if command -v curl > /dev/null 2>&1; then
+    # --head resolves redirects without downloading the body.
+    curl --silent --show-error --location --head --output /dev/null \
+      --write-out '%{url_effective}' "$url" 2>/dev/null
+  elif command -v wget > /dev/null 2>&1; then
+    # wget lacks --write-out; --spider -S prints the redirect headers, whose final 'Location:' is the concrete build URL. tolower() keeps awk portable.
+    wget --spider -S "$url" 2>&1 \
+      | awk 'tolower($1) == "location:" { u = $2 } END { if (u != "") print u }'
+  fi
+  # An empty result falls back to the shortlink URLs used by the caller.
+}
+
 # Downloads the public dotnetup installer from aka.ms
-# (https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.sh) and runs it to install dotnetup into
-# the directory given by $1. Returns non-zero on failure. Callers run under
-# `set -e`, so invoke via `if ! AcquireDotnetup ...; then` to handle failure.
+# (https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.sh), verifies its SHA-512
+# checksum, and runs it to install dotnetup into the directory given by $1. Returns
+# non-zero on failure. Callers run under `set -e`, so invoke via
+# `if ! AcquireDotnetup ...; then` to handle failure.
 #
 # If a local get-dotnetup.sh script exists in the repo (scripts/get-dotnetup.sh),
 # it is used directly instead of downloading from aka.ms. This supports branches
@@ -72,26 +96,84 @@ function AcquireDotnetup {
   fi
 
   local getter_url="https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.sh"
-  local getter_script
+  local checksum_url="${getter_url}.sha512"
+
+  # Pin the mutable 'daily' shortlink to the concrete build it currently resolves
+  # to, then derive both the script and checksum URLs from that single build so a
+  # publish happening mid-download cannot cause a spurious checksum mismatch.
+  local resolved_url
+  resolved_url="$(ResolveDotnetupFinalUrl "$getter_url" || true)"
+  if [[ -n "$resolved_url" && "$resolved_url" == *"/public/"* ]]; then
+    echo "Resolved get-dotnetup.sh to concrete build: $resolved_url"
+    getter_url="$resolved_url"
+    # Checksums live under the sibling 'public-checksums' path. Use sed, not bash
+    # ${var/p/r}, since bash 3.2 (macOS) keeps the escaped backslashes literally.
+    checksum_url="$(printf '%s' "$resolved_url" | sed 's#/public/#/public-checksums/#').sha512"
+  else
+    echo "Could not resolve get-dotnetup.sh shortlink to a concrete build; using shortlink URLs directly."
+  fi
+
+  local getter_script checksum_file
   # Use an explicit template: bare `mktemp` is not portable because BSD/macOS
   # mktemp requires a template (or -t prefix) and errors without one.
   getter_script="$(mktemp "${TMPDIR:-/tmp}/get-dotnetup.XXXXXX")"
+  checksum_file="${getter_script}.sha512"
 
-  local downloaded=false
+  local downloader=""
   if command -v curl > /dev/null 2>&1; then
-    if curl -fsSL --retry 3 "$getter_url" -o "$getter_script"; then downloaded=true; fi
+    downloader="curl"
   elif command -v wget > /dev/null 2>&1; then
-    if wget -q --tries=3 -O "$getter_script" "$getter_url"; then downloaded=true; fi
+    downloader="wget"
   else
     echo "Cannot download dotnetup: neither 'curl' nor 'wget' is available on PATH. Install one of them to acquire dotnetup." >&2
+    rm -f "$getter_script" "$checksum_file"
+    return 1
   fi
+
+  DownloadDotnetupFile() {
+    local url="$1" out="$2"
+    if [[ "$downloader" == "curl" ]]; then
+      curl -fsSL --retry 3 "$url" -o "$out"
+    else
+      wget -q --tries=3 -O "$out" "$url"
+    fi
+  }
 
   local result=0
-  if [[ "$downloaded" != true ]] || ! bash "$getter_script" --install-dir "$dotnetup_dir"; then
+  if ! DownloadDotnetupFile "$getter_url" "$getter_script"; then
+    echo "Failed to download dotnetup installer from $getter_url" >&2
     result=1
+  elif ! DownloadDotnetupFile "$checksum_url" "$checksum_file"; then
+    echo "Failed to download dotnetup installer checksum from $checksum_url" >&2
+    result=1
+  else
+    local expected actual
+    expected="$(awk '{print tolower($1)}' "$checksum_file")"
+    if command -v sha512sum > /dev/null 2>&1; then
+      actual="$(sha512sum "$getter_script" | awk '{print tolower($1)}')"
+    elif command -v shasum > /dev/null 2>&1; then
+      actual="$(shasum -a 512 "$getter_script" | awk '{print tolower($1)}')"
+    else
+      echo "Cannot verify dotnetup installer: neither 'sha512sum' nor 'shasum' is available on PATH." >&2
+      result=1
+    fi
+
+    if [[ "$result" -eq 0 && "$expected" != "$actual" ]]; then
+      echo "get-dotnetup.sh checksum mismatch." >&2
+      echo "  Expected: $expected" >&2
+      echo "  Actual:   $actual" >&2
+      result=1
+    fi
+
+    if [[ "$result" -eq 0 ]]; then
+      echo "get-dotnetup.sh checksum verified."
+      if ! bash "$getter_script" --install-dir "$dotnetup_dir"; then
+        result=1
+      fi
+    fi
   fi
 
-  rm -f "$getter_script"
+  rm -f "$getter_script" "$checksum_file"
   return $result
 }
 
