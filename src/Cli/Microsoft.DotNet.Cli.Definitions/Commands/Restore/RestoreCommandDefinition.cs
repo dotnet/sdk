@@ -21,6 +21,7 @@ internal sealed class RestoreCommandDefinition : Command
 
     public readonly Option<string[]> TargetOption = CreateTargetOption();
     public readonly Option<Utils.VerbosityOptions> VerbosityOption = CommonOptions.CreateVerbosityOption(Utils.VerbosityOptions.minimal);
+    public readonly Option<IEnumerable<string>> LoggerOption = CommonOptions.CreateLoggerOption();
     public readonly Option<bool> NoLogoOption = CommonOptions.CreateNoLogoOption();
 
     public readonly Option<bool> DisableBuildServersOption = CommonOptions.CreateDisableBuildServersOption();
@@ -72,6 +73,7 @@ internal sealed class RestoreCommandDefinition : Command
 
         Options.Add(NoDependenciesOption);
         Options.Add(VerbosityOption);
+        Options.Add(LoggerOption);
         Options.Add(InteractiveOption);
         Options.Add(ArtifactsPathOption);
         Options.Add(UseLockFileOption);

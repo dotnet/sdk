@@ -114,6 +114,15 @@ internal static class CommonOptions
 
     public static Option<string[]?> CreateGetResultOutputFileOption() => MSBuildMultiOption("getResultOutputFile");
 
+    public static Option<IEnumerable<string>> CreateLoggerOption() =>
+        new Option<IEnumerable<string>>("--logger", "-l")
+        {
+            Hidden = true,
+            Arity = ArgumentArity.OneOrMore
+        }
+        .ForwardAsMany(static loggers => loggers?.Select(static logger => $"--logger:{logger}") ?? Array.Empty<string>())
+        .AllowSingleArgPerToken();
+
     private static Option<string[]?> MSBuildMultiOption(string name)
         => new Option<string[]?>($"--{name}", $"-{name}", $"/{name}")
         {
