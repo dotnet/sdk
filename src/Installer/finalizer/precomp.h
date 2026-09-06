@@ -5,6 +5,7 @@
 
 #include <windows.h>
 #include <winerror.h>
+#include <Aclapi.h>
 #include <iostream>
 #include <errno.h>
 #include <wchar.h>
