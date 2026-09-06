@@ -19,44 +19,48 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         [TestMethod]
         public async Task CSharp_NoDiagnostic_NoPrefixAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                { 
-                    enum State
-                    {
-                        Ok = 0,
-                        Error = 1,
-                        Unknown = 2
-                    };
-                }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        Ok = 0,
+                                        Error = 1,
+                                        Unknown = 2
+                                    };
+                                }
+                """);
         }
 
         [TestMethod]
         public async Task Basic_NoDiagnostic_NoPrefixAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Class A
-                    Private Enum State
-                        Ok = 0
-                        Err = 1
-                        Unknown = 2
-                    End Enum
-                End Class");
+            await VerifyVB.VerifyAnalyzerAsync("""
+                                Class A
+                                    Private Enum State
+                                        Ok = 0
+                                        Err = 1
+                                        Unknown = 2
+                                    End Enum
+                                End Class
+                """);
         }
 
         [TestMethod]
         public async Task CSharp_Diagnostic_EachValuePrefixedAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2
-                    };
-                }",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        StateOk = 0,
+                                        StateError = 1,
+                                        StateUnknown = 2
+                                    };
+                                }
+                """,
                 GetCSharpResultAt(6, 25, "State"),
                 GetCSharpResultAt(7, 25, "State"),
                 GetCSharpResultAt(8, 25, "State"));
@@ -65,15 +69,17 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         [TestMethod]
         public async Task Basic_Diagnostic_EachValuePrefixedAsync()
         {
-            await VerifyVB.VerifyAnalyzerAsync(@"
-                Class A
-                    Private Enum State
-                        StateOk = 0
-                        StateErr = 1
-                        StateUnknown = 2
-                    End Enum
-                End Class
-                ",
+            await VerifyVB.VerifyAnalyzerAsync("""
+
+                                Class A
+                                    Private Enum State
+                                        StateOk = 0
+                                        StateErr = 1
+                                        StateUnknown = 2
+                                    End Enum
+                                End Class
+
+                """,
                 GetBasicResultAt(4, 25, "State"),
                 GetBasicResultAt(5, 25, "State"),
                 GetBasicResultAt(6, 25, "State"));
@@ -82,33 +88,36 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         [TestMethod]
         public async Task CSharp_NoDiagnostic_HalfOfValuesPrefixedAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        Ok = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        Invalid = 3
-                    };
-                }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        Ok = 0,
+                                        StateError = 1,
+                                        StateUnknown = 2,
+                                        Invalid = 3
+                                    };
+                                }
+                """);
         }
 
         [TestMethod]
         public async Task CSharp_Diagnostic_ThreeOfFourValuesPrefixedAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        Invalid = 3
-                    };
-                }",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        StateOk = 0,
+                                        StateError = 1,
+                                        StateUnknown = 2,
+                                        Invalid = 3
+                                    };
+                                }
+                """,
                 GetCSharpResultAt(6, 25, "State"),
                 GetCSharpResultAt(7, 25, "State"),
                 GetCSharpResultAt(8, 25, "State"));
@@ -117,27 +126,30 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
         [TestMethod]
         public async Task CSharp_Diagnostic_PrefixCaseDiffersAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                        stateOk = 0
-                    };
-                }",
+            await VerifyCS.VerifyAnalyzerAsync("""
+
+                                class A
+                                {
+                                    enum State
+                                    {
+                                        stateOk = 0
+                                    };
+                                }
+                """,
                 GetCSharpResultAt(6, 25, "State"));
         }
 
         [TestMethod]
         public async Task CSharp_NoDiagnostic_EmptyEnumAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-                class A
-                {
-                    enum State
-                    {
-                    };
-                }");
+            await VerifyCS.VerifyAnalyzerAsync("""
+                                class A
+                                {
+                                    enum State
+                                    {
+                                    };
+                                }
+                """);
         }
 
         [TestMethod]
@@ -158,23 +170,27 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        StateInvalid = 3
-                    }
-                }"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            class A
+                                            {
+                                                enum State
+                                                {
+                                                    StateOk = 0,
+                                                    StateError = 1,
+                                                    StateUnknown = 2,
+                                                    StateInvalid = 3
+                                                }
+                                            }
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics =
                     {
                         GetCSharpResultAt(6, 25, "State"),
@@ -191,21 +207,25 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                Class A
-                    Enum State
-                        StateOk = 0
-                        StateError = 1
-                        StateUnknown = 2
-                        StateInvalid = 3
-                    End Enum
-                End Class"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            Class A
+                                                Enum State
+                                                    StateOk = 0
+                                                    StateError = 1
+                                                    StateUnknown = 2
+                                                    StateInvalid = 3
+                                                End Enum
+                                            End Class
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                     ExpectedDiagnostics =
                     {
                         GetBasicResultAt(4, 25, "State"),
@@ -234,23 +254,27 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        Error = 1,
-                        Unknown = 2,
-                        Invalid = 3
-                    }
-                }"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            class A
+                                            {
+                                                enum State
+                                                {
+                                                    StateOk = 0,
+                                                    Error = 1,
+                                                    Unknown = 2,
+                                                    Invalid = 3
+                                                }
+                                            }
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 
@@ -267,21 +291,25 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                Class A
-                    Enum State
-                        StateOk = 0
-                        [Error] = 1
-                        Unknown = 2
-                        Invalid = 3
-                    End Enum
-                End Class"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            Class A
+                                                Enum State
+                                                    StateOk = 0
+                                                    [Error] = 1
+                                                    Unknown = 2
+                                                    Invalid = 3
+                                                End Enum
+                                            End Class
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 
@@ -310,23 +338,27 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                class A
-                {
-                    enum State
-                    {
-                        StateOk = 0,
-                        StateError = 1,
-                        StateUnknown = 2,
-                        Invalid = 3
-                    }
-                }"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            class A
+                                            {
+                                                enum State
+                                                {
+                                                    StateOk = 0,
+                                                    StateError = 1,
+                                                    StateUnknown = 2,
+                                                    Invalid = 3
+                                                }
+                                            }
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 
@@ -349,21 +381,25 @@ namespace Microsoft.CodeQuality.Analyzers.UnitTests.ApiDesignGuidelines
                 {
                     Sources =
                     {
-                        @"
-                Class A
-                    Enum State
-                        StateOk = 0
-                        StateError = 1
-                        StateUnknown = 2
-                        Invalid = 3
-                    End Enum
-                End Class"
-                    },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                        """
 
-[*]
-{editorConfigText}
-") },
+                                            Class A
+                                                Enum State
+                                                    StateOk = 0
+                                                    StateError = 1
+                                                    StateUnknown = 2
+                                                    Invalid = 3
+                                                End Enum
+                                            End Class
+                            """
+                    },
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
+
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 }
             };
 

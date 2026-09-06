@@ -32,9 +32,6 @@ public class PackCommand(
     public static CommandBase FromParseResult(ParseResult parseResult, string? msbuildPath = null)
     {
         var definition = (PackCommandDefinition)parseResult.CommandResult.Command;
-        var args = parseResult.GetValue(definition.SlnOrProjectOrFileArgument) ?? [];
-
-        LoggerUtility.SeparateBinLogArguments(args, out var binLogArgs, out var nonBinLogArgs);
 
         bool noBuild = parseResult.HasOption(definition.NoBuildOption);
 
@@ -65,11 +62,11 @@ public class PackCommand(
             ],
             parseResult,
             msbuildPath,
-            transformer: (msbuildArgs) =>
+            transformer: (msbuildArgs, nonLoggerArgs) =>
             {
                 ReleasePropertyProjectLocator projectLocator = new(msbuildArgs.GlobalProperties, MSBuildPropertyNames.PACK_RELEASE,
                     new ReleasePropertyProjectLocator.DependentCommandOptions(
-                            nonBinLogArgs,
+                            nonLoggerArgs,
                             parseResult.HasOption(definition.ConfigurationOption) ? parseResult.GetValue(definition.ConfigurationOption) : null
                         )
                 );
@@ -109,7 +106,8 @@ public class PackCommand(
             Exclude = new List<string>(),
             OutputDirectory = parseResult.GetValue(definition.OutputOption),
             LogLevel = MappingVerbosityToNugetLogLevel(parseResult.GetValue(definition.VerbosityOption)),
-            Arguments = [nuspecPath]
+            Arguments = [nuspecPath],
+            NoDefaultExcludes = parseResult.GetValue(definition.NoDefaultExcludesOption)
         };
 
         packArgs.Path = PackCommandRunner.GetInputFile(packArgs);
@@ -123,6 +121,9 @@ public class PackCommand(
         var version = parseResult.GetValue(definition.VersionOption);
         if (version != null)
             packArgs.Version = version.ToNormalizedString();
+
+        if (parseResult.GetValue(definition.IncludeSymbolsOption))
+            packArgs.Symbols = true;
 
         var configuration = parseResult.GetValue(definition.ConfigurationOption) ?? "Debug";
         packArgs.Properties["configuration"] = configuration;

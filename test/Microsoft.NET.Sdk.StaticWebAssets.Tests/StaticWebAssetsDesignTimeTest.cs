@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace Microsoft.NET.Sdk.StaticWebAssets.Tests;
@@ -24,6 +25,31 @@ public class StaticWebAssetsDesignTimeTest : AspNetSdkBaselineTest
 #else
     public const string Configuration = "Release";
 #endif
+
+    [TestMethod]
+    public void ResolveWebAssemblyProjectReferences_ReturnsReferencedWebAssemblyProject()
+    {
+        var testAsset = CreateAspNetSdkTestAsset("BlazorHosted");
+        var msbuild = new MSBuildCommand(
+            testAsset,
+            "ResolveWebAssemblyProjectReferences",
+            "blazorhosted");
+        msbuild.WithWorkingDirectory(testAsset.TestRoot);
+
+        var result = msbuild.Execute("-getItem:WebAssemblyProjectReference", "-nologo");
+        result.Should().Pass();
+
+        using var output = JsonDocument.Parse(result.StdOut);
+        var projectReferences = output.RootElement
+            .GetProperty("Items")
+            .GetProperty("WebAssemblyProjectReference")
+            .EnumerateArray()
+            .Select(item => item.GetProperty("Identity").GetString())
+            .ToArray();
+
+        projectReferences.Should().ContainSingle().Which.Should().Be(
+            Path.GetFullPath(Path.Combine(testAsset.TestRoot, "blazorwasm", "blazorwasm.csproj")));
+    }
 
     [TestMethod]
     public void CollectUpToDateCheckInputOutputsDesignTime_ReportsAddedFiles()

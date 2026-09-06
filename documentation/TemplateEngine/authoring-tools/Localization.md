@@ -72,7 +72,7 @@ In addition to that, localization handover process should be changed as followin
 After the translation is done, the repo should receive the PR replacing original English values in generated JSON files with localized ones. It is important to ensure that files are handed over to original location (`.template.config\localize` folder).
 
 It is recommended to setup a way to update `Microsoft.TemplateEngine.Authoring.Tasks` package version, however it is not recommended to update it on each daily build. 
-The package is released with each build of dotnet/templating repo, even if there are no changes. Therefore, updating the version on each build might be superfluous. It is recommended to update the version when the next preview or stable version is released.
+The package is released with each build of the dotnet/sdk repo, even if there are no changes. Therefore, updating the version on each build might be superfluous. It is recommended to update the version when the next preview or stable version is released.
 
 ## 3rd party templates localization
 

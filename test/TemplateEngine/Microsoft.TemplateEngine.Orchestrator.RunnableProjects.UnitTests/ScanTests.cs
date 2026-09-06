@@ -9,7 +9,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class ScanTests
     {
         public TestContext TestContext { get; set; } = null!;

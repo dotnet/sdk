@@ -15,7 +15,6 @@ namespace Microsoft.DotNet.Cli.Commands.Run;
 /// </summary>
 internal static class EnvironmentVariablesToMSBuild
 {
-    private const string PropsFileName = "dotnet-run-env.props";
     private const string ValueMetadataName = "Value";
 
     /// <summary>
@@ -83,8 +82,13 @@ internal static class EnvironmentVariablesToMSBuild
     /// Optional intermediate output path where the file will be created.
     /// If null or empty, defaults to "obj" subdirectory of the project directory.
     /// </param>
+    /// <param name="propsFileName">The name of the generated props file.</param>
     /// <returns>The full path to the created props file, or null if no environment variables were specified or projectFilePath is null.</returns>
-    public static string? CreatePropsFile(string? projectFilePath, IReadOnlyDictionary<string, string> environmentVariables, string? intermediateOutputPath = null)
+    public static string? CreatePropsFile(
+        string? projectFilePath,
+        IReadOnlyDictionary<string, string> environmentVariables,
+        string propsFileName,
+        string? intermediateOutputPath = null)
     {
         if (string.IsNullOrEmpty(projectFilePath) || environmentVariables.Count == 0)
         {
@@ -103,7 +107,7 @@ internal static class EnvironmentVariablesToMSBuild
         Directory.CreateDirectory(objDir);
 
         // Ensure we return a full path for MSBuild property usage
-        string propsFilePath = Path.GetFullPath(Path.Combine(objDir, PropsFileName));
+        string propsFilePath = Path.GetFullPath(Path.Combine(objDir, propsFileName));
         using (var stream = File.Create(propsFilePath))
         {
             WritePropsFileContent(stream, environmentVariables);
@@ -178,7 +182,6 @@ internal static class EnvironmentVariablesToMSBuild
             writer.WriteAttributeString(ValueMetadataName, value);
             writer.WriteEndElement();
         }
-
         writer.WriteEndElement(); // ItemGroup
         writer.WriteEndElement(); // Project
     }

@@ -15,78 +15,84 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task TestReadWithStreamAndValidationEventHandlerParametersDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(Stream stream, ValidationEventHandler validationEventHandler)
-    {
-        XmlSchema.Read(stream, validationEventHandler);
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Xml.Schema;
+
+                class TestClass
+                {
+                    public void TestMethod(Stream stream, ValidationEventHandler validationEventHandler)
+                    {
+                        XmlSchema.Read(stream, validationEventHandler);
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9, "XmlSchema", "Read"));
         }
 
         [TestMethod]
         public async Task TestTextReaderAndValidationEventHandlerParametersDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
 
-class TestClass
-{
-    public void TestMethod(TextReader reader, ValidationEventHandler validationEventHandler)
-    {
-        XmlSchema.Read(reader, validationEventHandler);
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Xml.Schema;
+
+                class TestClass
+                {
+                    public void TestMethod(TextReader reader, ValidationEventHandler validationEventHandler)
+                    {
+                        XmlSchema.Read(reader, validationEventHandler);
+                    }
+                }
+                """,
             GetCSharpResultAt(10, 9, "XmlSchema", "Read"));
         }
 
         [TestMethod]
         public async Task TestXmlReaderAndValidationEventHandlerParametersNoDiagnosticAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System;
-using System.Xml;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System;
+                using System.Xml;
+                using System.Xml.Schema;
 
-class TestClass
-{
-    public void TestMethod(XmlReader reader, ValidationEventHandler validationEventHandler)
-    {
-        XmlSchema.Read(reader, validationEventHandler);
-    }
-}");
+                class TestClass
+                {
+                    public void TestMethod(XmlReader reader, ValidationEventHandler validationEventHandler)
+                    {
+                        XmlSchema.Read(reader, validationEventHandler);
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task XmlSchemaReadDocSample1_SolutionAsync()
         {
-            await VerifyCS.VerifyAnalyzerAsync(@"
-using System.IO;
-using System.Xml;
-using System.Xml.Schema;
+            await VerifyCS.VerifyAnalyzerAsync("""
+                using System.IO;
+                using System.Xml;
+                using System.Xml.Schema;
 
-class TestClass
-{
-    public XmlSchema Test
-    {
-        get
-        {
-            var src = """";
-            TextReader tr = new StreamReader(src);
-            XmlReader reader = XmlReader.Create(tr, new XmlReaderSettings() { XmlResolver = null });
-            XmlSchema schema = XmlSchema.Read(reader , null);
-            return schema;
-        }
-    }
-}");
+                class TestClass
+                {
+                    public XmlSchema Test
+                    {
+                        get
+                        {
+                            var src = "";
+                            TextReader tr = new StreamReader(src);
+                            XmlReader reader = XmlReader.Create(tr, new XmlReaderSettings() { XmlResolver = null });
+                            XmlSchema schema = XmlSchema.Read(reader , null);
+                            return schema;
+                        }
+                    }
+                }
+                """);
         }
 
         private static DiagnosticResult GetCSharpResultAt(int line, int column, params string[] arguments)

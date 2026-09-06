@@ -3,6 +3,8 @@
   <PropertyGroup>
     <EnableDefaultItems>false</EnableDefaultItems>
     <OutDirName>Tests\$(MSBuildProjectName)</OutDirName>
+    <!-- Test asset paths are isolated across classes, but data-driven methods within a class can share paths. -->
+    <MSTestParallelizeScope>ClassLevel</MSTestParallelizeScope>
   </PropertyGroup>
 
   <PropertyGroup>

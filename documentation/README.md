@@ -4,6 +4,7 @@ Documents Index
 ## Overview and general information
 
 - [Intro to .NET Core CLI](general/intro-to-cli.md)
+- [Publishing a solution and its pitfalls](general/solution-publish.md)
 - [CLI UX Guidelines](general/cli-ux-guidelines.md)
 - [.NET Core native pre-requisities document](https://github.com/dotnet/core/blob/main/Documentation/prereqs.md)
 - [Roadmap and OS support](https://github.com/dotnet/core/blob/main/roadmap.md)

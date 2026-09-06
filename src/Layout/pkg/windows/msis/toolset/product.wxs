@@ -32,7 +32,7 @@
 
     <CustomAction Id="PropertyAssignPrimeCacheAndTelemetry"
                  Property="QtExecPrimeCacheAndTelemetryTarget"
-                 Value="&quot;[DOTNETHOME]\dotnet.exe&quot; exec &quot;[DOTNETHOME]\sdk\[NUGETVERSION]\dotnet.dll&quot; internal-reportinstallsuccess &quot;[EXEFULLPATH]&quot;"
+                 Value="&quot;[DOTNETHOME]\dotnet.exe&quot; exec &quot;[DOTNETHOME]\sdk\$(Version)\dotnet.dll&quot; internal-reportinstallsuccess &quot;[EXEFULLPATH]&quot;"
                  Execute="immediate" />
     <CustomAction Id="QtExecPrimeCacheAndTelemetryTarget"
                   BinaryRef="Wix4UtilCA_$(sys.BUILDARCHSHORT)"

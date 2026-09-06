@@ -94,6 +94,12 @@
     <PackageReference Update="NuGet.ProjectModel" ExcludeAssets="Runtime" />
   </ItemGroup>
 
+  <!-- MSBuildUtilities.cs is shared with the Microsoft.DotNet.FileBasedPrograms source package; this symbol
+       selects the Microsoft.DotNet.Cli namespace for the build-tasks copy. See https://github.com/dotnet/sdk/issues/51487. -->
+  <PropertyGroup>
+    <DefineConstants>$(DefineConstants);MSBUILD_BUILD_TASKS</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <Compile Include="**\*.cs" />
     <Compile Include="..\Common\**\*.cs" LinkBase="Common" />

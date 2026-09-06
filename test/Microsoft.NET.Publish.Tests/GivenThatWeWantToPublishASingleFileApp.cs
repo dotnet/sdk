@@ -220,6 +220,19 @@ namespace Microsoft.NET.Publish.Tests
 
         [TestMethod]
         [RequiresMSBuildVersion("16.8.0")]
+        public void It_warns_when_using_IncludeAllContentForSelfExtract()
+        {
+            var publishCommand = GetPublishCommand();
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier, IncludeAllContent)
+                .Should()
+                .Pass()
+                .And
+                .HaveStdOutContaining(Strings.IncludeAllContentForSelfExtractIsLegacy);
+        }
+
+        [TestMethod]
+        [RequiresMSBuildVersion("16.8.0")]
         public void It_errors_when_including_all_content_but_not_native_libraries()
         {
             var publishCommand = GetPublishCommand();
@@ -871,7 +884,7 @@ class C
 
 
             var testAsset = TestAssetsManager.CreateTestProject(testProject, identifier: cetCompat.HasValue ? cetCompat.Value.ToString() : "default");
-            var publishCommand = new PublishCommand(testAsset);
+            var publishCommand = new PublishCommand(testAsset).WithWorkingDirectory(testAsset.Path) as PublishCommand;
             publishCommand.Execute(PublishSingleFile, "/bl:" + binlogDestPath)
                 .Should()
                 .Pass();
@@ -1261,6 +1274,37 @@ class C
                     .Should()
                     .Be(shouldBeSigned, $"The app host should {(shouldBeSigned ? "" : "not ")}have a valid Mach-O signature for {rid}.");
             }
+        }
+
+        [TestMethod]
+        public void It_succeeds_when_xml_docs_generated_but_not_copied_to_output()
+        {
+            // Regression test: PublishSingleFile fails when GenerateDocumentationFile=true and
+            // CopyDocumentationFileToOutputDirectory=false because the doc file
+            // never exists in the output dir (bin/), yet was being added to the
+            // publish list using the bin/ path.
+            var testProject = new TestProject()
+            {
+                Name = "SingleFileWithDocXml",
+                TargetFrameworks = ToolsetInfo.CurrentTargetFramework,
+                IsExe = true,
+            };
+            testProject.AdditionalProperties["GenerateDocumentationFile"] = "true";
+            testProject.AdditionalProperties["CopyDocumentationFileToOutputDirectory"] = "false";
+
+            var testAsset = TestAssetsManager.CreateTestProject(testProject);
+            var publishCommand = new PublishCommand(testAsset);
+
+            publishCommand
+                .Execute(PublishSingleFile, RuntimeIdentifier)
+                .Should()
+                .Pass();
+
+            // The XML doc file should NOT be in the publish output since
+            // CopyDocumentationFileToOutputDirectory=false.
+            GetPublishDirectory(publishCommand, ToolsetInfo.CurrentTargetFramework)
+                .Should()
+                .NotHaveFile($"{testProject.Name}.xml");
         }
     }
 }

@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <!-- This source package is used by Visual Studio WebTools -->
+    <!-- This source package is used by Visual Studio Project System for an OOP service -->
     <TargetFramework>$(VisualStudioServiceTargetFramework)</TargetFramework>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <DebugType>none</DebugType>

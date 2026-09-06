@@ -10,7 +10,7 @@ namespace Microsoft.DotNet.Watch.UnitTests
 {
     internal sealed class AwaitableProcess : IAsyncDisposable
     {
-        // cancel just before we hit timeout used on CI (XUnitWorkItemTimeout value in sdk\test\UnitTests.proj)
+        // cancel just before we hit timeout used on CI (TestWorkItemTimeout value in test/UnitTests.proj)
         private static readonly TimeSpan s_timeout = Environment.GetEnvironmentVariable("HELIX_WORK_ITEM_TIMEOUT") is { } value
             ? TimeSpan.Parse(value).Subtract(TimeSpan.FromSeconds(10)) : TimeSpan.FromMinutes(10);
 
@@ -234,14 +234,20 @@ namespace Microsoft.DotNet.Watch.UnitTests
 
             try
             {
+                Logger.Log($"Killing process tree for process {Id}");
                 Process.Kill(entireProcessTree: true);
+                Logger.Log($"Killed process tree for process {Id}");
             }
-            catch
+            catch (Exception e)
             {
+                Logger.Log($"Failed to kill process tree for process {Id}: {e}");
             }
 
-            // ensure process has exited
-            await _processExitAwaiter;
+            // ensure process has exited without allowing cleanup to hang indefinitely
+            if (await Task.WhenAny(_processExitAwaiter, Task.Delay(TimeSpan.FromSeconds(30))) != _processExitAwaiter)
+            {
+                Logger.Log($"Process {Id} did not exit within 30 seconds after kill");
+            }
 
             Process.Dispose();
 

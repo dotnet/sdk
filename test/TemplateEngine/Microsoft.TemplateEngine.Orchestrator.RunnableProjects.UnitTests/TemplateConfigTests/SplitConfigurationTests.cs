@@ -9,7 +9,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class SplitConfigurationTests
     {
         public TestContext TestContext { get; set; } = null!;

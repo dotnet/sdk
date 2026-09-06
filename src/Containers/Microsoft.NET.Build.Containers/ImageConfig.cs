@@ -35,6 +35,9 @@ internal sealed class ImageConfig
     /// </summary>
     public bool IsWindows => "windows".Equals(_os, StringComparison.OrdinalIgnoreCase);
 
+    internal string Architecture => _architecture;
+    internal string OS => _os;
+
     public ReadOnlyDictionary<string, string> EnvironmentVariables => _environmentVariables.AsReadOnly();
     public HashSet<Port> Ports => _exposedPorts;
 
@@ -67,13 +70,22 @@ internal sealed class ImageConfig
     internal string[]? GetEntrypoint() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
     private string[]? GetCmd() => _config["config"]?["Entrypoint"]?.AsArray()?.Select(node => node!.GetValue<string>())?.ToArray();
     private List<HistoryEntry> GetHistory() => _config["history"]?.AsArray().Select(node => node.Deserialize<HistoryEntry>()!).ToList() ?? new List<HistoryEntry>();
-    private string GetOs() => _config["os"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'os' property.");
-    private string GetArchitecture() => _config["architecture"]?.ToString() ?? throw new ArgumentException("Base image configuration should contain an 'architecture' property.");
+    private string GetOs()
+    {
+        string? os = _config["os"]?.ToString();
+        return !string.IsNullOrEmpty(os) ? os : throw new ArgumentException("Base image configuration should contain a non-empty 'os' property.");
+    }
+
+    private string GetArchitecture()
+    {
+        string? architecture = _config["architecture"]?.ToString();
+        return !string.IsNullOrEmpty(architecture) ? architecture : throw new ArgumentException("Base image configuration should contain a non-empty 'architecture' property.");
+    }
 
     /// <summary>
     /// Builds in additional configuration and returns updated image configuration in JSON format as string.
     /// </summary>
-    internal string BuildConfig()
+    internal string BuildConfig(DateTime createdAt)
     {
         var newConfig = new JsonObject();
 
@@ -129,7 +141,7 @@ internal sealed class ImageConfig
         int numberOfLayers = _rootFsLayers.Count;
         int numberOfNonEmptyLayerHistoryEntries = _history.Count(h => h.empty_layer is null or false);
         int missingHistoryEntries = numberOfLayers - numberOfNonEmptyLayerHistoryEntries;
-        HistoryEntry customHistoryEntry = new(created: DateTime.UtcNow, author: ".NET SDK",
+        HistoryEntry customHistoryEntry = new(created: createdAt, author: ".NET SDK",
             created_by: $".NET SDK Container Tooling, version {Constants.Version}");
         for (int i = 0; i < missingHistoryEntries; i++)
         {
@@ -140,7 +152,7 @@ internal sealed class ImageConfig
         {
             ["config"] = newConfig,
             //update creation date
-            ["created"] = RFC3339Format(DateTime.UtcNow),
+            ["created"] = RFC3339Format(createdAt),
             ["rootfs"] = new JsonObject()
             {
                 ["type"] = "layers",

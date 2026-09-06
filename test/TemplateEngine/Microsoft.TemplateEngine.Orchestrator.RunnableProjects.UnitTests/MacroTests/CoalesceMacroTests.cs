@@ -12,7 +12,6 @@ using Microsoft.TemplateEngine.Utils;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.MacroTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class CoalesceMacroTests
     {
         private readonly IEngineEnvironmentSettings _engineEnvironmentSettings;

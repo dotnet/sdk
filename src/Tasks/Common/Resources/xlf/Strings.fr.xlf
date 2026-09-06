@@ -526,6 +526,11 @@
         <target state="translated">NETSDK1191: impossible de déduire un identificateur de runtime pour la propriété '{0}'. Spécifiez explicitement un RID.</target>
         <note>{StrBegins="NETSDK1191: "}</note>
       </trans-unit>
+      <trans-unit id="IncludeAllContentForSelfExtractIsLegacy">
+        <source>NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</source>
+        <target state="new">NETSDK1244: 'IncludeAllContentForSelfExtract' enables a legacy compatibility mode that extracts all managed assemblies to disk at startup. Prefer the default in-memory single-file behavior by removing the 'IncludeAllContentForSelfExtract' property from your project.</target>
+        <note>{StrBegins="NETSDK1244: "}{Locked="IncludeAllContentForSelfExtract"}</note>
+      </trans-unit>
       <trans-unit id="IncorrectPackageRoot">
         <source>NETSDK1020: Package Root {0} was incorrectly given for Resolved library {1}</source>
         <target state="translated">NETSDK1020: La racine de package {0} a été spécifiée de manière incorrecte pour la bibliothèque Resolved {1}</target>
@@ -875,6 +880,11 @@ The following are names of parameters or literal values and should not be transl
         <source>NETSDK1234: RoslynCompilerType 'Framework' is deprecated and will be removed in a future version. Please refer to {0} for more information.</source>
         <target state="translated">NETSDK1234: RoslynCompilerType « Framework » est obsolète et sera supprimé dans une future version. Pour plus d’informations, consultez {0}.</target>
         <note>{StrBegins="NETSDK1234: "}{Locked="RoslynCompilerType"}{Locked="Framework"}{Locked="{0}"}</note>
+      </trans-unit>
+      <trans-unit id="RunCommandRequiresWindowsForNetFramework">
+        <source>NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</source>
+        <target state="new">NETSDK1243: Project '{0}' targets .NET Framework, which can only be run on Windows. Either run the project on Windows, change the TargetFramework to a supported .NET TFM (for example, net{1}), or set the RunCommand property explicitly. For more information, see https://learn.microsoft.com/dotnet/core/compatibility/sdk/11/mono-launch-target-removed.</target>
+        <note>{StrBegins="NETSDK1243: "}{Locked="{0}"}{Locked="{1}"}{Locked="TargetFramework"}{Locked="RunCommand"}</note>
       </trans-unit>
       <trans-unit id="RuntimeGraphFileDoesNotExist">
         <source>NETSDK1231: File '{0}' does not exist. Please ensure the runtime graph path exists.</source>

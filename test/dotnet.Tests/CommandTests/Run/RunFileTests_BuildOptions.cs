@@ -985,6 +985,47 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
     }
 
     [TestMethod]
+    public void MissingShebangWarning_RefDirective()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        EnableRefDirective(testInstance);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "refLib.cs"), """
+            #:property OutputType=Library
+            namespace RefLib;
+            public static class Greeter
+            {
+                public static string Greet() => "hello from ref";
+            }
+            """);
+
+        File.WriteAllText(Path.Join(testInstance.Path, "refApp.cs"), """
+            #:ref refLib.cs
+            Console.WriteLine(RefLib.Greeter.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "refApp.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello from ref");
+
+        File.WriteAllText(Path.Join(testInstance.Path, "refApp.cs"), """
+            #!/usr/bin/env dotnet
+            #:ref refLib.cs
+            Console.WriteLine(RefLib.Greeter.Greet());
+            """);
+
+        new DotnetCommand(Log, "run", "refApp.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOut("hello from ref");
+    }
+
+    [TestMethod]
     public void MissingShebangWarning_CompileItemFromDirectoryBuildProps()
     {
         var testInstance = TestAssetsManager.CreateTestDirectory();
@@ -1109,6 +1150,24 @@ public sealed class RunFileTests_BuildOptions : RunFileTestBase
             .Execute()
             .Should().Pass()
             .And.HaveStdOutContaining("warning CA2266")
+            .And.HaveStdOutContaining("hello");
+    }
+
+    [TestMethod]
+    public void UnquotedDirectiveWarning()
+    {
+        var testInstance = TestAssetsManager.CreateTestDirectory();
+
+        File.WriteAllText(Path.Join(testInstance.Path, "Program.cs"), """
+            #:property Description=value with a space
+            Console.WriteLine("hello");
+            """);
+
+        new DotnetCommand(Log, "run", "Program.cs")
+            .WithWorkingDirectory(testInstance.Path)
+            .Execute()
+            .Should().Pass()
+            .And.HaveStdOutContaining("warning CA2267")
             .And.HaveStdOutContaining("hello");
     }
 

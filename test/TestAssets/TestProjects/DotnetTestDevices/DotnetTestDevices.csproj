@@ -1,5 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <Import Project="$([MSBuild]::GetDirectoryNameOfFileAbove($(MSBuildThisFileDirectory), testAsset.props))\testAsset.props" />
+  <PropertyGroup>
+    <_PostBuildDiscoveryPropsPath>$(MSBuildProjectDirectory)\post-build-discovery.props</_PostBuildDiscoveryPropsPath>
+  </PropertyGroup>
+  <Import Project="$(_PostBuildDiscoveryPropsPath)" Condition="Exists('$(_PostBuildDiscoveryPropsPath)')" />
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -11,11 +15,13 @@
     <Nullable>enable</Nullable>
     <GenerateProgramFile>false</GenerateProgramFile>
     <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
-    <IsTestingPlatformApplication>true</IsTestingPlatformApplication>
+    <IsTestingPlatformApplication Condition="'$(GeneratePostBuildDiscoveryProps)' != 'true'">true</IsTestingPlatformApplication>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Include="Program.cs" />
+    <ProjectCapability Include="RuntimeEnvironmentVariableSupport"
+                       Condition="'$(EnableRuntimeEnvironmentVariableSupport)' != 'false'" />
   </ItemGroup>
 
   <ItemGroup>
@@ -25,7 +31,7 @@
   <Target Name="ComputeAvailableDevices" Returns="@(Devices)">
     <!-- If SingleDevice property is set, return only one device -->
     <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' == 'true'">
-      <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" />
+      <Devices Include="single-device" Description="Single Device" Type="Emulator" Status="Online" RuntimeIdentifier="$(NETCoreSdkRuntimeIdentifier)" />
     </ItemGroup>
     <!-- Otherwise return multiple devices based on target framework -->
     <ItemGroup Condition="'$(NoDevices)' != 'true' and '$(SingleDevice)' != 'true' and '$(TargetFramework)' != 'net9.0'">
@@ -37,5 +43,83 @@
       <Devices Include="test-device-downlevel-2" Description="Test Device Downlevel 2" Type="Simulator" Status="Booted" />
     </ItemGroup>
   </Target>
+
+  <!-- ResolveFrameworkReferences mimics Android -->
+  <Target Name="DeployToDevice" DependsOnTargets="ResolveFrameworkReferences">
+    <Message Text="DeployToDevice: Deployed $(TargetFramework) to device $(Device) with RuntimeIdentifier $(RuntimeIdentifier)" />
+    <Message Text="DeployToDevice: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+    <Error Condition="'$(FailDeployToDevice)' == 'true'" Text="DeployToDevice failed as requested." />
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)dotnet-test-deploy.marker"
+      Lines="$(Device)|$(RuntimeIdentifier)"
+      Overwrite="true" />
+  </Target>
+
+  <Target Name="_AssertDotnetHostPath"
+          BeforeTargets="ComputeAvailableDevices;DeployToDevice;ComputeRunArguments">
+    <Error Condition="'$(DOTNET_HOST_PATH)' == ''" Text="DOTNET_HOST_PATH was not set during direct MSBuild target execution." />
+    <Message Text="DOTNET_HOST_PATH=$(DOTNET_HOST_PATH)" />
+  </Target>
+
+  <Target Name="_FailComputeRunArguments"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(FailComputeRunArguments)' == 'true'">
+    <Error Text="ComputeRunArguments failed as requested." />
+  </Target>
+
+  <Target Name="_LogRuntimeEnvironmentVariableDuringBuild"
+          BeforeTargets="_MTPBuild"
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="Build: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+  <Target Name="_GeneratePostBuildDiscoveryProps"
+          BeforeTargets="_MTPBuild"
+          Condition="'$(GeneratePostBuildDiscoveryProps)' == 'true'">
+    <ItemGroup>
+      <_PostBuildDiscoveryPropsLines Include="&lt;Project&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="  &lt;PropertyGroup&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="    &lt;IsTestingPlatformApplication&gt;true&lt;/IsTestingPlatformApplication&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="  &lt;/PropertyGroup&gt;" />
+      <_PostBuildDiscoveryPropsLines Include="&lt;/Project&gt;" />
+    </ItemGroup>
+    <WriteLinesToFile
+      File="$(_PostBuildDiscoveryPropsPath)"
+      Lines="@(_PostBuildDiscoveryPropsLines)"
+      Overwrite="true" />
+  </Target>
+
+  <Target Name="_ModifyRuntimeEnvironmentVariable"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(ModifyRuntimeEnvironmentVariable)' == 'true'">
+    <ItemGroup>
+      <RuntimeEnvironmentVariable Remove="FOO" />
+      <RuntimeEnvironmentVariable Include="FOO" Value="modified-by-target" />
+      <RuntimeEnvironmentVariable Include="INJECTED" Value="injected-by-target" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_LogRuntimeEnvironmentVariableDuringComputeRunArguments"
+          BeforeTargets="ComputeRunArguments"
+          AfterTargets="_ModifyRuntimeEnvironmentVariable"
+          Condition="'@(RuntimeEnvironmentVariable)' != ''">
+    <Message Text="ComputeRunArguments: RuntimeEnvironmentVariable=@(RuntimeEnvironmentVariable->'%(Identity)=%(Value)', ', ')" />
+  </Target>
+
+  <Target Name="_UseHttpTestTransport"
+          BeforeTargets="ComputeRunArguments"
+          Condition="'$(UseHttpTestTransport)' == 'true'">
+    <PropertyGroup>
+      <!-- Keep the host executable runnable on the build machine while exercising the browser transport selection. -->
+      <RuntimeIdentifier>browser-wasm</RuntimeIdentifier>
+    </PropertyGroup>
+  </Target>
+
+  <!-- Unlike dotnet run, dotnet test builds DeployToDevice first and ComputeRunArguments second,
+       so ResolveFrameworkReferences has to run in the second build too to mimic Android. -->
+  <Target Name="_ComputeRunArgumentsDependsOnResolveFrameworkReferences"
+          BeforeTargets="ComputeRunArguments"
+          DependsOnTargets="ResolveFrameworkReferences"
+          Condition="'$(UseHttpTestTransport)' != 'true'" />
 
 </Project>

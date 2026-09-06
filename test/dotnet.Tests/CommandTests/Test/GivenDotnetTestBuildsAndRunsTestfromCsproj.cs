@@ -339,7 +339,7 @@ namespace Microsoft.DotNet.Cli.Test.Tests
         [DataRow("m", false)]
         [DataRow("n", true)]
         [DataRow("d", true)]
-        [DataRow("diag", true)]
+        [DataRow("diag", true, IgnoreMessage = "https://github.com/dotnet/sdk/issues/54781")]
         public void ItUsesVerbosityPassedToDefineVerbosityOfConsoleLoggerOfTheTests(string verbosity, bool shouldShowPassedTests)
         {
             // Copy and restore VSTestCore project in output directory of project dotnet-vstest.Tests

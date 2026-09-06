@@ -12,7 +12,6 @@ using Microsoft.TemplateEngine.TestHelper;
 namespace Microsoft.TemplateEngine.Orchestrator.RunnableProjects.UnitTests.TemplateConfigTests
 {
     [TestClass]
-    [DoNotParallelize]
     public class PostActionTests
     {
         private static EnvironmentSettingsHelper s_environmentSettingsHelper = null!;

@@ -21,586 +21,632 @@ namespace Microsoft.NetCore.Analyzers.Security.UnitTests
         [TestMethod]
         public async Task Deserialize_Generic_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public T D<T>(string str)
-        {
-            JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
-            return s.Deserialize<T>(str);
-        }
-    }
-}",
+                using System.IO;
+                using System.Web.Script.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public T D<T>(string str)
+                        {
+                            JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
+                            return s.Deserialize<T>(str);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(12, 20, DefinitelyRule, "T JavaScriptSerializer.Deserialize<T>(string input)"));
         }
 
         [TestMethod]
         public async Task Deserialize_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public T D<T>(string str)
-        {
-            JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
-            return (T) s.Deserialize(str, typeof(T));
-        }
-    }
-}",
+                using System.IO;
+                using System.Web.Script.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public T D<T>(string str)
+                        {
+                            JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
+                            return (T) s.Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(12, 24, DefinitelyRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
-            return s.DeserializeObject(str);
-        }
-    }
-}",
+                using System.IO;
+                using System.Web.Script.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
+                            return s.DeserializeObject(str);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(12, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_AnyPath_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str, bool flag)
-        {
-            JavaScriptSerializer s;
-            if (flag)
-                s = new JavaScriptSerializer(new SimpleTypeResolver());
-            else
-                s = new JavaScriptSerializer();
-            return s.DeserializeObject(str);
-        }
-    }
-}",
+                using System.IO;
+                using System.Web.Script.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str, bool flag)
+                        {
+                            JavaScriptSerializer s;
+                            if (flag)
+                                s = new JavaScriptSerializer(new SimpleTypeResolver());
+                            else
+                                s = new JavaScriptSerializer();
+                            return s.DeserializeObject(str);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(16, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task Deserialize_FromArgument_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public T D<T>(JavaScriptSerializer s, string str)
-        {
-            return (T) s.Deserialize(str, typeof(T));
-        }
-    }
-}",
+                using System.IO;
+                using System.Web.Script.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public T D<T>(JavaScriptSerializer s, string str)
+                        {
+                            return (T) s.Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
         [TestMethod]
         public async Task Deserialize_TypeResolver_Unknown_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public T D<T>(Func<JavaScriptTypeResolver> trFactory, string str)
-        {
-            JavaScriptSerializer jss = new JavaScriptSerializer(trFactory());
-            return (T) jss.Deserialize(str, typeof(T));
-        }
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public T D<T>(Func<JavaScriptTypeResolver> trFactory, string str)
+                        {
+                            JavaScriptSerializer jss = new JavaScriptSerializer(trFactory());
+                            return (T) jss.Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(13, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
         [TestMethod]
         public async Task Deserialize_TypeResolver_UnknownNotNull_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public T D<T>(Func<JavaScriptTypeResolver> trFactory, string str)
-        {
-            JavaScriptTypeResolver tr = trFactory();
-            JavaScriptSerializer jss = tr != null ? new JavaScriptSerializer(tr) : new JavaScriptSerializer();
-            return (T) jss.Deserialize(str, typeof(T));
-        }
-    }
-}",
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
+
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public T D<T>(Func<JavaScriptTypeResolver> trFactory, string str)
+                        {
+                            JavaScriptTypeResolver tr = trFactory();
+                            JavaScriptSerializer jss = tr != null ? new JavaScriptSerializer(tr) : new JavaScriptSerializer();
+                            return (T) jss.Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(14, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
         [TestMethod]
         public async Task Deserialize_TypeResolver_UnknownNull_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public T D<T>(Func<JavaScriptTypeResolver> trFactory, string str)
-        {
-            JavaScriptTypeResolver tr = trFactory();
-            JavaScriptSerializer jss = tr == null ? new JavaScriptSerializer(tr) : new JavaScriptSerializer();
-            return (T) jss.Deserialize(str, typeof(T));
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public T D<T>(Func<JavaScriptTypeResolver> trFactory, string str)
+                        {
+                            JavaScriptTypeResolver tr = trFactory();
+                            JavaScriptSerializer jss = tr == null ? new JavaScriptSerializer(tr) : new JavaScriptSerializer();
+                            return (T) jss.Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Deserialize_FromField_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public JavaScriptSerializer Serializer;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-        public T D<T>(string str)
-        {
-            return (T) this.Serializer.Deserialize(str, typeof(T));
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public JavaScriptSerializer Serializer;
+
+                        public T D<T>(string str)
+                        {
+                            return (T) this.Serializer.Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(13, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
         [TestMethod]
         public async Task Deserialize_FromStaticField_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public static JavaScriptSerializer Serializer;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-        public T D<T>(string str)
-        {
-            return (T) Program.Serializer.Deserialize(str, typeof(T));
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public static JavaScriptSerializer Serializer;
+
+                        public T D<T>(string str)
+                        {
+                            return (T) Program.Serializer.Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(13, 24, MaybeRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
         [TestMethod]
         public async Task Deserialize_NoTypeResolver_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public T D<T>(string str)
-        {
-            return (T) new JavaScriptSerializer().Deserialize(str, typeof(T));
-        }
-    }
-}");
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public T D<T>(string str)
+                        {
+                            return (T) new JavaScriptSerializer().Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task Deserialize_CustomTypeResolver_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-namespace Blah
-{
-    public class MyTypeResolver : JavaScriptTypeResolver
-    {
-        public override Type ResolveType(string id)
-        {
-            throw new NotImplementedException();
-        }
+                namespace Blah
+                {
+                    public class MyTypeResolver : JavaScriptTypeResolver
+                    {
+                        public override Type ResolveType(string id)
+                        {
+                            throw new NotImplementedException();
+                        }
 
-        public override string ResolveTypeId(Type type)
-        {
-            throw new NotImplementedException();
-        }
-    }
+                        public override string ResolveTypeId(Type type)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
 
-    public class Program
-    {
-        public T D<T>(string str)
-        {
-            return (T) new JavaScriptSerializer(new MyTypeResolver()).Deserialize(str, typeof(T));
-        }
-    }
-}");
+                    public class Program
+                    {
+                        public T D<T>(string str)
+                        {
+                            return (T) new JavaScriptSerializer(new MyTypeResolver()).Deserialize(str, typeof(T));
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task DeserializeObject_FromLocalFunction_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            return GetSerializer().DeserializeObject(str);
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptSerializer GetSerializer() => new JavaScriptSerializer(new SimpleTypeResolver());
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            return GetSerializer().DeserializeObject(str);
+
+                            JavaScriptSerializer GetSerializer() => new JavaScriptSerializer(new SimpleTypeResolver());
+                        }
+                    }
+                }
+                """,
             GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_SimpleTypeResolverFromParameter_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(SimpleTypeResolver str1, string str2)
-        {
-            return GetSerializer().DeserializeObject(str2);
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptSerializer GetSerializer() => new JavaScriptSerializer(str1);
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(SimpleTypeResolver str1, string str2)
+                        {
+                            return GetSerializer().DeserializeObject(str2);
+
+                            JavaScriptSerializer GetSerializer() => new JavaScriptSerializer(str1);
+                        }
+                    }
+                }
+                """,
                 GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_JavaScriptTypeResolverFromParameter_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(JavaScriptTypeResolver jstr, string str)
-        {
-            return GetSerializer().DeserializeObject(str);
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptSerializer GetSerializer() => new JavaScriptSerializer(jstr);
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(JavaScriptTypeResolver jstr, string str)
+                        {
+                            return GetSerializer().DeserializeObject(str);
+
+                            JavaScriptSerializer GetSerializer() => new JavaScriptSerializer(jstr);
+                        }
+                    }
+                }
+                """,
                GetCSharpResultAt(11, 20, MaybeRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            return new JavaScriptSerializer(GetTypeResolver()).DeserializeObject(str);
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            return new JavaScriptSerializer(GetTypeResolver()).DeserializeObject(str);
+
+                            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
+                        }
+                    }
+                }
+                """,
                GetCSharpResultAt(11, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task Deserialize_InLocalFunction_SimpleTypeResolverFromLocalFunction_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str, Type t)
-        {
-            return Deserialize();
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str, Type t)
+                        {
+                            return Deserialize();
 
-            object Deserialize() => new JavaScriptSerializer(GetTypeResolver()).Deserialize(str, t);
-        }
-    }
-}",
+                            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
+
+                            object Deserialize() => new JavaScriptSerializer(GetTypeResolver()).Deserialize(str, t);
+                        }
+                    }
+                }
+                """,
                GetCSharpResultAt(16, 37, DefinitelyRule, "object JavaScriptSerializer.Deserialize(string input, Type targetType)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_InLambda_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            Func<string, object> f = (s) => new JavaScriptSerializer(GetTypeResolver()).DeserializeObject(s);
-            return f(str);
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
-        }
-    }
-}",
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            Func<string, object> f = (s) => new JavaScriptSerializer(GetTypeResolver()).DeserializeObject(s);
+                            return f(str);
+
+                            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
+                        }
+                    }
+                }
+                """,
                   GetCSharpResultAt(12, 45, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_InLambda_CustomTypeResolver_NoDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            Func<string, object> f = (s) => new JavaScriptSerializer(GetTypeResolver()).DeserializeObject(s);
-            return f(str);
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            Func<string, object> f = (s) => new JavaScriptSerializer(GetTypeResolver()).DeserializeObject(s);
+                            return f(str);
 
-            JavaScriptTypeResolver GetTypeResolver() => new MyTypeResolver();
-        }
-    }
+                            JavaScriptTypeResolver GetTypeResolver() => new MyTypeResolver();
+                        }
+                    }
 
-    public class MyTypeResolver : JavaScriptTypeResolver
-    {
-        public override Type ResolveType(string id)
-        {
-            throw new NotImplementedException();
-        }
+                    public class MyTypeResolver : JavaScriptTypeResolver
+                    {
+                        public override Type ResolveType(string id)
+                        {
+                            throw new NotImplementedException();
+                        }
 
-        public override string ResolveTypeId(Type type)
-        {
-            throw new NotImplementedException();
-        }
-    }
-}");
+                        public override string ResolveTypeId(Type type)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                }
+                """);
         }
 
         [TestMethod]
         public async Task DeserializeObject_InOtherMethod_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            return D(GetTypeResolver(), str);
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
-        }
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            return D(GetTypeResolver(), str);
 
-        public object D(JavaScriptTypeResolver tr, string s)
-        {
-            return new JavaScriptSerializer(tr).DeserializeObject(s);
-        }
-    }
-}",
+                            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
+                        }
+
+                        public object D(JavaScriptTypeResolver tr, string s)
+                        {
+                            return new JavaScriptSerializer(tr).DeserializeObject(s);
+                        }
+                    }
+                }
+                """,
                   GetCSharpResultAt(19, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_InOtherMethodThrice_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            JavaScriptTypeResolver tr = GetTypeResolver();
-            D(tr, str);
-            D(tr, str);
-            return D(tr, str);
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
-        }
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            JavaScriptTypeResolver tr = GetTypeResolver();
+                            D(tr, str);
+                            D(tr, str);
+                            return D(tr, str);
 
-        public object D(JavaScriptTypeResolver tr, string s)
-        {
-            return new JavaScriptSerializer(tr).DeserializeObject(s);
-        }
-    }
-}",
+                            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
+                        }
+
+                        public object D(JavaScriptTypeResolver tr, string s)
+                        {
+                            return new JavaScriptSerializer(tr).DeserializeObject(s);
+                        }
+                    }
+                }
+                """,
                   GetCSharpResultAt(22, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_InOtherMethod_OnceDefinitely_OnceMaybe_DefinitelyDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public JavaScriptTypeResolver OtherTypeResolver { get; set; }
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-        public object D(string str)
-        {
-            JavaScriptTypeResolver tr = GetTypeResolver();
-            D(tr, str);
-            return D(OtherTypeResolver, str);
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public JavaScriptTypeResolver OtherTypeResolver { get; set; }
 
-            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
-        }
+                        public object D(string str)
+                        {
+                            JavaScriptTypeResolver tr = GetTypeResolver();
+                            D(tr, str);
+                            return D(OtherTypeResolver, str);
 
-        public object D(JavaScriptTypeResolver tr, string s)
-        {
-            return new JavaScriptSerializer(tr).DeserializeObject(s);
-        }
-    }
-}",
+                            JavaScriptTypeResolver GetTypeResolver() => new SimpleTypeResolver();
+                        }
+
+                        public object D(JavaScriptTypeResolver tr, string s)
+                        {
+                            return new JavaScriptSerializer(tr).DeserializeObject(s);
+                        }
+                    }
+                }
+                """,
                   GetCSharpResultAt(23, 20, DefinitelyRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         public async Task DeserializeObject_InOtherMethod_CustomTypeResolver_MaybeDiagnosticAsync()
         {
-            await VerifyCSharpAnalyzerAsync(@"
-using System;
-using System.IO;
-using System.Web.Script.Serialization;
+            await VerifyCSharpAnalyzerAsync("""
 
-namespace Blah
-{
-    public class Program
-    {
-        public object D(string str)
-        {
-            return D(GetTypeResolver(), str);
+                using System;
+                using System.IO;
+                using System.Web.Script.Serialization;
 
-            JavaScriptTypeResolver GetTypeResolver() => new MyTypeResolver();
-        }
+                namespace Blah
+                {
+                    public class Program
+                    {
+                        public object D(string str)
+                        {
+                            return D(GetTypeResolver(), str);
 
-        public object D(JavaScriptTypeResolver tr, string s)
-        {
-            return new JavaScriptSerializer(tr).DeserializeObject(s);
-        }
-    }
+                            JavaScriptTypeResolver GetTypeResolver() => new MyTypeResolver();
+                        }
 
-    public class MyTypeResolver : JavaScriptTypeResolver
-    {
-        public override Type ResolveType(string id)
-        {
-            throw new NotImplementedException();
-        }
+                        public object D(JavaScriptTypeResolver tr, string s)
+                        {
+                            return new JavaScriptSerializer(tr).DeserializeObject(s);
+                        }
+                    }
 
-        public override string ResolveTypeId(Type type)
-        {
-            throw new NotImplementedException();
-        }
-    }
-}",
+                    public class MyTypeResolver : JavaScriptTypeResolver
+                    {
+                        public override Type ResolveType(string id)
+                        {
+                            throw new NotImplementedException();
+                        }
+
+                        public override string ResolveTypeId(Type type)
+                        {
+                            throw new NotImplementedException();
+                        }
+                    }
+                }
+                """,
                   GetCSharpResultAt(19, 20, MaybeRule, "object JavaScriptSerializer.DeserializeObject(string input)"));
         }
 
         [TestMethod]
         [DataRow("")]
         [DataRow("dotnet_code_quality.excluded_symbol_names = Des")]
-        [DataRow(@"dotnet_code_quality.CA2321.excluded_symbol_names = Des
-                      dotnet_code_quality.CA2322.excluded_symbol_names = Des")]
-        [DataRow(@"dotnet_code_quality.CA2321.excluded_symbol_names = D*
-                      dotnet_code_quality.CA2322.excluded_symbol_names = D*")]
+        [DataRow("""
+            dotnet_code_quality.CA2321.excluded_symbol_names = Des
+                                  dotnet_code_quality.CA2322.excluded_symbol_names = Des
+            """)]
+        [DataRow("""
+            dotnet_code_quality.CA2321.excluded_symbol_names = D*
+                                  dotnet_code_quality.CA2322.excluded_symbol_names = D*
+            """)]
         [DataRow("dotnet_code_quality.dataflow.excluded_symbol_names = Des")]
         public async Task EditorConfigConfiguration_ExcludedSymbolNamesWithValueOptionAsync(string editorConfigText)
         {
@@ -611,28 +657,32 @@ namespace Blah
                 {
                     Sources =
                     {
-                        @"
-using System.IO;
-using System.Web.Script.Serialization;
+                        """
 
-namespace Blah
-{
-    public class Program
-    {
-        public T Des<T>(string str)
-        {
-            JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
-            return s.Deserialize<T>(str);
-        }
-    }
-}"
+                            using System.IO;
+                            using System.Web.Script.Serialization;
+
+                            namespace Blah
+                            {
+                                public class Program
+                                {
+                                    public T Des<T>(string str)
+                                    {
+                                        JavaScriptSerializer s = new JavaScriptSerializer(new SimpleTypeResolver());
+                                        return s.Deserialize<T>(str);
+                                    }
+                                }
+                            }
+                            """
 
                     },
-                    AnalyzerConfigFiles = { ("/.editorconfig", $@"root = true
+                    AnalyzerConfigFiles = { ("/.editorconfig", $"""
+                        root = true
 
-[*]
-{editorConfigText}
-") },
+                        [*]
+                        {editorConfigText}
+
+                        """) },
                 },
             };
 

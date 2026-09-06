@@ -14,4 +14,5 @@ internal static class ExitCode
     public const int TestSessionAborted = 3;
     public const int ZeroTests = 8;
     public const int MinimumExpectedTestsPolicyViolation = 9;
+    public const int TestExecutionStoppedForMaxFailedTests = 13;
 }

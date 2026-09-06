@@ -60,8 +60,27 @@ function Invoke-GetDotnetupScript([string]$ScriptPath, [string]$InstallDir, [str
     if ($LASTEXITCODE -ne 0) { throw "$ErrorLabel exited with code $LASTEXITCODE." }
 }
 
+# Invokes a native command (e.g. the dotnetup executable)
+# Returns that process exit code WITHOUT letting a non-zero exit become a terminating error.
+# (This covers against $ErrorActionPreference and $PSNativeCommandUseErrorActionPreference)
+function Invoke-DotnetupNativeCommand([scriptblock]$Command) {
+    if (-not (Test-Path Variable:LASTEXITCODE)) { $global:LASTEXITCODE = 0 }
+    $ErrorActionPreference = 'Continue'
+    $PSNativeCommandUseErrorActionPreference = $false
+    try {
+        # Write command output to the host and prevent it from being returned alongside the exit code 
+        & $Command | Out-Host
+        return $LASTEXITCODE
+    }
+    catch {
+        Write-Host "dotnetup command failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        if ($LASTEXITCODE -ne 0) { return $LASTEXITCODE }
+        return 1
+    }
+}
+
 # Downloads the public dotnetup installer from aka.ms
-# (https://aka.ms/dotnetup/get-dotnetup.ps1) and runs it to install dotnetup into
+# (https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1) and runs it to install dotnetup into
 # $DotnetupDir. Throws on failure so callers can choose how to react.
 #
 # If a local get-dotnetup.ps1 script exists in the repo (scripts/get-dotnetup.ps1),
@@ -79,7 +98,7 @@ function Install-DotnetupFromAkaMs([string]$DotnetupDir) {
         return
     }
 
-    $getterUrl = 'https://aka.ms/dotnetup/get-dotnetup.ps1'
+    $getterUrl = 'https://aka.ms/dotnet/dotnetup/daily/get-dotnetup.ps1'
     $getterScript = Join-Path ([System.IO.Path]::GetTempPath()) ("get-dotnetup-{0}.ps1" -f [System.IO.Path]::GetRandomFileName())
 
     # Download the installer with retry/backoff. Invoke-WebRequest's built-in

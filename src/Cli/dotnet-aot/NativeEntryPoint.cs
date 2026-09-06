@@ -3,6 +3,7 @@
 
 using Microsoft.DotNet.Cli.CommandFactory;
 using Microsoft.DotNet.Cli.CommandFactory.CommandResolution;
+using Microsoft.DotNet.Cli.Commands.Run;
 using Microsoft.DotNet.Cli.Extensions;
 using Microsoft.DotNet.Cli.Utils;
 using Microsoft.DotNet.Cli.Utils.Extensions;
@@ -22,6 +23,15 @@ static unsafe partial class NativeEntryPoint
     ///  discovering the dotnet root via PATH / environment probing.
     /// </summary>
     internal static string? DotnetRoot { get; set; }
+
+    /// <summary>
+    ///  The versioned SDK directory (the folder containing dotnet.dll, MSBuild.dll, Sdks\, ...),
+    ///  resolved from the host-provided sdk_dir or by self-locating the dotnet-aot module. Also
+    ///  published as the "Microsoft.DotNet.Sdk.Root" AppContext value (SdkPaths.DataName) so
+    ///  compiled-in assemblies that probe AppContext.BaseDirectory can find the SDK. See
+    ///  src/Cli/dotnet-aot/SdkRootResolution.md.
+    /// </summary>
+    internal static string? SdkDirectory { get; set; }
 
     [UnmanagedCallersOnly(EntryPoint = "dotnet_execute")]
     static int Execute(
@@ -61,6 +71,41 @@ static unsafe partial class NativeEntryPoint
         string hostPath, string dotnetRoot, string sdkDir,
         string hostfxrPath, string[] args)
     {
+        // Publish the versioned SDK directory as the "Microsoft.DotNet.Sdk.Root" AppContext value
+        // (SdkPaths.DataName) for the assemblies compiled into the AOT host (MSBuild, NuGet, the command
+        // resolvers, ...) that otherwise probe AppContext.BaseDirectory - which under the NativeAOT muxer
+        // is the install root, not the versioned SDK directory. Unlike an environment variable an
+        // AppContext value is process-local and is not inherited by child processes. See
+        // src/Cli/dotnet-aot/SdkRootResolution.md.
+        //
+        // Honor a value a caller already provided (e.g. a runtimeconfig configProperties entry): it is
+        // authoritative, but it must point to a real directory - fail fast rather than handing the
+        // compiled-in assemblies a bogus SDK root. Otherwise resolve it from the host-provided sdk_dir
+        // (the muxer already resolved it to locate dotnet-aot), else self-locate the dotnet-aot module.
+        string? sdkDirectory = AppContext.GetData(SdkPaths.DataName) as string;
+        if (!string.IsNullOrEmpty(sdkDirectory))
+        {
+            if (!Directory.Exists(sdkDirectory))
+            {
+                Console.Error.WriteLine(string.Format(CliStrings.SdkRootDirectoryDoesNotExist, sdkDirectory, SdkPaths.DataName));
+                return 1;
+            }
+        }
+        else
+        {
+            sdkDirectory = SdkRootLocator.Resolve(sdkDir);
+            if (!string.IsNullOrEmpty(sdkDirectory))
+            {
+                AppContext.SetData(SdkPaths.DataName, sdkDirectory);
+            }
+            else
+            {
+                Console.Error.WriteLine(CliStrings.SdkDirectoryCouldNotBeDetermined);
+            }
+        }
+
+        SdkDirectory = string.IsNullOrEmpty(sdkDirectory) ? null : sdkDirectory;
+
         // Telemetry is best-effort and must never prevent the CLI from running. Initializing
         // it can fail on some layouts (e.g. the NativeAOT muxer cannot resolve the crypto
         // native library used to hash telemetry properties on macOS - see dotnet/sdk#54544),
@@ -116,6 +161,10 @@ static unsafe partial class NativeEntryPoint
 
         int exitCode = 1;
         bool success = false;
+        // True once a command has been handled entirely in AOT (no managed fallback). Gates the
+        // terminal telemetry emission below: the managed fallback child writes its own disk log, so
+        // we must only write ours when we did not fall back.
+        bool aotHandledInProcess = false;
 
         try
         {
@@ -129,8 +178,7 @@ static unsafe partial class NativeEntryPoint
             // can use it instead of re-probing PATH / environment for the dotnet installation.
             DotnetRoot = string.IsNullOrEmpty(dotnetRoot) ? null : dotnetRoot;
 
-            // Try the AOT-compiled path for supported commands (if enabled)
-            if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: false))
+            if (EnvironmentVariableParser.ParseBool(Environment.GetEnvironmentVariable(EnvironmentVariableNames.DOTNET_CLI_ENABLEAOT), defaultValue: true))
             {
                 ParseResult? parseResult = null;
                 using (var parse = Activities.Source.StartActivity("parse"))
@@ -161,30 +209,31 @@ static unsafe partial class NativeEntryPoint
                 {
                     if (parseResult.CanBeInvoked())
                     {
-                        try
+                        // Parse errors here usually mean the command is contributed dynamically by the managed
+                        // CLI (e.g. NuGet's `package update`/`why`) and absent from the static AOT tree, so defer.
+                        if (parseResult.Errors.Count == 0)
                         {
-                            // Invoke the built-in command in-process using the shared CommandInvocation
-                            // helper, identical to the managed CLI: same exit-code handling, including the
-                            // "new" command's 127 adjustment and Parser.ExceptionHandler. This keeps the
-                            // two entry points in parity.
-                            exitCode = CommandInvocation.ExecuteInternalCommand(parseResult);
-                            success = true;
-                            // The built-in command ran in-process (no managed fallback), so emit the same
-                            // top-level parser telemetry the managed CLI sends from Program.ProcessArgsAndExecute.
-                            SendAotParserTelemetry(parseResult, globalJsonState);
-                            return exitCode;
-                        }
-                        catch (CommandNotAvailableInAotException)
-                        {
-                            // The parsed command requires the managed CLI — fall through to the managed fallback below.
+                            try
+                            {
+                                exitCode = CommandInvocation.ExecuteInternalCommand(parseResult);
+                                success = true;
+                                aotHandledInProcess = true;
+                                SendAotParserTelemetry(parseResult, globalJsonState);
+                                return exitCode;
+                            }
+                            catch (CommandNotAvailableInAotException)
+                            {
+                                // The parsed command requires the managed CLI — fall through to the managed fallback below.
+                            }
                         }
                     }
                     // An unrecognized top-level token is either an external command (`dotnet ef`, a global
                     // or local tool, a command on the PATH, ...) or an implicit file-based app (`dotnet app.cs`).
                     // Resolve and invoke external commands in AOT when possible; defer file-based apps, legacy
                     // project tools, and anything that does not resolve to the managed CLI.
-                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDir, mainActivity, globalJsonState, out exitCode, out success))
+                    else if (parseResult is not null && TryInvokeExternalCommand(parseResult, args, sdkDirectory, mainActivity, globalJsonState, out exitCode, out success))
                     {
+                        aotHandledInProcess = true;
                         return exitCode;
                     }
                 }
@@ -192,7 +241,7 @@ static unsafe partial class NativeEntryPoint
 
             // Fall back to the fully managed dotnet CLI by hosting .NET.
             // Set a best-effort display name from args when we have not done a full parse
-            // (i.e. DOTNET_CLI_ENABLEAOT was not set or the command fell through without calling SetDisplayName).
+            // (i.e. DOTNET_CLI_ENABLEAOT was explicitly disabled or the command fell through without calling SetDisplayName).
             if (mainActivity is not null && mainActivity.DisplayName == "main")
             {
                 var fallbackName = args.Length > 0 ? $"dotnet {args[0]}" : "dotnet";
@@ -200,8 +249,8 @@ static unsafe partial class NativeEntryPoint
                 mainActivity.SetTag("command.name", fallbackName);
             }
 
-            string dotnetDll = Path.Join(sdkDir, "dotnet.dll");
-            string runtimeConfig = Path.Join(sdkDir, "dotnet.runtimeconfig.json");
+            string dotnetDll = Path.Join(sdkDirectory, "dotnet.dll");
+            string runtimeConfig = Path.Join(sdkDirectory, "dotnet.runtimeconfig.json");
 
             if (File.Exists(dotnetDll) && File.Exists(runtimeConfig))
             {
@@ -215,15 +264,28 @@ static unsafe partial class NativeEntryPoint
             }
 
             // No managed fallback available
-            Console.Error.WriteLine($"The managed fallback could not be located. Expected '{dotnetDll}' and '{runtimeConfig}'.");
+            Console.Error.WriteLine(string.Format(CliStrings.ManagedFallbackCouldNotBeLocated, dotnetDll, runtimeConfig));
             return exitCode;
         }
         finally
         {
+            if (aotHandledInProcess && TelemetryClient is Telemetry.TelemetryClient telemetryClient)
+            {
+                // Mirror the managed CLI behavior for compat (Program.cs finally)
+                telemetryClient.ThreadBlockingTrackEvent("command/finish", new Dictionary<string, string?> { { "exitCode", exitCode.ToString() } });
+            }
+
             mainActivity?.AddTag("process.exit.code", exitCode);
             mainActivity?.SetStatus(success ? ActivityStatusCode.Ok : ActivityStatusCode.Error);
             mainActivity?.Stop();
             Telemetry.TelemetryClient.FlushProviders();
+
+            if (aotHandledInProcess)
+            {
+                // The command ran entirely in AOT, so there is no managed fallback child process to persist
+                // the telemetry disk log. Write it here, mirroring Program.cs's TelemetryClient.WriteLogIfNecessary().
+                Telemetry.TelemetryClient.WriteLogIfNecessary();
+            }
         }
     }
 
@@ -233,20 +295,15 @@ static unsafe partial class NativeEntryPoint
     ///  <c>Program.ExecuteExternalCommand</c>. Returns <see langword="true"/> when the command was
     ///  resolved and executed (with its exit code in <paramref name="exitCode"/>); returns
     ///  <see langword="false"/> to signal that the invocation must be handled by the managed CLI -
-    ///  file-based apps (<c>dotnet app.cs</c>), legacy project tools, commands that do not resolve in
-    ///  AOT, or any resolution error.
+    ///  unsupported file-based app shapes, legacy project tools, commands that do not resolve in AOT,
+    ///  or any resolution error. External commands take precedence over implicit file-based apps.
     /// </summary>
     private static bool TryInvokeExternalCommand(ParseResult parseResult, string[] args, string sdkDir, Activity? mainActivity, string? globalJsonState, out int exitCode, out bool success)
     {
         exitCode = 1;
         success = false;
 
-        // File-based apps (`dotnet app.cs`) are re-dispatched by the managed CLI as `dotnet run --file`,
-        // which requires the managed `run` command. Defer them to the managed CLI.
-        if (parseResult.GetFileBasedAppEntryPointToken() is not null)
-        {
-            return false;
-        }
+        ParseResult? fileBasedRunParseResult = parseResult.TryParseFileBasedAppAsRun();
 
         string? subCommandToken = parseResult.GetValue(Parser.RootCommand.DotnetSubCommand);
         string commandName = "dotnet-" + subCommandToken;
@@ -274,11 +331,34 @@ static unsafe partial class NativeEntryPoint
             }
         }
 
-        // The AOT resolver set is a subset of the managed one (it omits the MSBuild/NuGet-based project
-        // tools resolver). When nothing resolves, defer to the managed CLI so it can resolve a project
-        // tool or report the unknown-command error exactly as it would without the AOT fast path.
+        // External resolution precedes implicit file-based dispatch in the managed CLI, so only use
+        // the file after the AOT resolver set confirms that no external command takes precedence.
         if (commandSpec is null)
         {
+            if (fileBasedRunParseResult is not null)
+            {
+                try
+                {
+                    exitCode = AotRunCommand.Execute(fileBasedRunParseResult);
+                    success = true;
+                    mainActivity?.SetDisplayName(fileBasedRunParseResult);
+                    SendAotParserTelemetry(fileBasedRunParseResult, globalJsonState);
+                    return true;
+                }
+                catch (CommandNotAvailableInAotException)
+                {
+                    return false;
+                }
+                catch (Exception exception)
+                {
+                    exitCode = Parser.ExceptionHandler(exception, fileBasedRunParseResult);
+                    success = false;
+                    return true;
+                }
+            }
+
+            // The AOT resolver set is a subset of the managed one (it omits the MSBuild/NuGet-based
+            // project-tools resolver). Defer so the managed CLI can resolve it or report the error.
             return false;
         }
 
